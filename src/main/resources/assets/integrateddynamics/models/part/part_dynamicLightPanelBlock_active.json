@@ -1,7 +1,7 @@
 {
   "parent": "integrateddynamics:block/panel",
   "textures": {
-    "back" : "integrateddynamics:blocks/parts/panel_back_active",
+    "back" : "integrateddynamics:blocks/pparts/panel_back_active",
     "front": "integrateddynamics:blocks/parts/panel_front_light"
   }
 }

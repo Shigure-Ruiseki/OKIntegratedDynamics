@@ -27,9 +27,8 @@ import ruiseki.integrateddynamics.api.evaluate.variable.IVariable;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.network.event.INetworkEvent;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
+import ruiseki.integrateddynamics.api.part.IPartState;
 import ruiseki.integrateddynamics.api.part.PartTarget;
-import ruiseki.integrateddynamics.api.part.aspect.IAspectWrite;
-import ruiseki.integrateddynamics.api.part.write.IPartStateWriter;
 import ruiseki.integrateddynamics.client.gui.GuiPartDisplay;
 import ruiseki.integrateddynamics.core.block.IgnoredBlock;
 import ruiseki.integrateddynamics.core.block.IgnoredBlockStatus;
@@ -176,16 +175,15 @@ public abstract class PartTypePanelVariableDriven<P extends PartTypePanelVariabl
     public String getBlockModelPath(IPartContainer partContainer, ForgeDirection side) {
         String status = "_inactive";
         if (partContainer != null) {
-            IPartStateWriter state = (IPartStateWriter) partContainer.getPartState(side);
-            if (state != null) {
-                IAspectWrite aspectWrite = state.getActiveAspect();
-                if (aspectWrite != null) {
-                    if (state.hasVariable() && state.isEnabled()) {
-                        status = "_active";
-                    } else {
+            IPartState stateBase = partContainer.getPartState(side);
+            if (stateBase instanceof PartTypePanelVariableDriven.State) {
+                PartTypePanelVariableDriven.State state = (PartTypePanelVariableDriven.State) stateBase;
+                if (state.hasVariable() && state.isEnabled()) {
+                    status = "_active";
+                } else if (!state.getInventory()
+                    .isEmpty()) {
                         status = "_error";
                     }
-                }
             }
         }
         return super.getBlockModelPath(partContainer, side) + status;
