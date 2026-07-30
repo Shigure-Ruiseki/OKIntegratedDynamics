@@ -1,0 +1,53 @@
+package ruiseki.integrateddynamics.client.render.valuetype;
+
+import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
+import net.minecraftforge.common.util.ForgeDirection;
+
+import ruiseki.integrateddynamics.api.client.render.valuetype.IValueTypeWorldRenderer;
+import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
+import ruiseki.integrateddynamics.api.part.IPartContainer;
+import ruiseki.integrateddynamics.api.part.IPartType;
+import ruiseki.okcore.client.renderer.GlStateManager;
+import ruiseki.okcore.helper.Helpers;
+
+/**
+ * A simple text-based value type world renderer.
+ * 
+ * @author rubensworks
+ */
+public class TextValueTypeWorldRenderer implements IValueTypeWorldRenderer {
+
+    private static final float MAX = 12.5F;
+    private static final float MARGIN_FACTOR = 1.1F;
+
+    @Override
+    public void renderValue(IPartContainer partContainer, double x, double y, double z, float partialTick,
+        int destroyStage, ForgeDirection direction, IPartType partType, IValue value,
+        TileEntityRendererDispatcher rendererDispatcher, float distanceAlpha) {
+        String string = value.getType()
+            .toCompactString(value);
+        FontRenderer fontRenderer = rendererDispatcher.getFontRenderer();
+        float height = fontRenderer.FONT_HEIGHT;
+        float width = fontRenderer.getStringWidth(string) - 1;
+        GlStateManager.pushMatrix();
+        GlStateManager.enableRescaleNormal();
+
+        float scaleX = MAX / (width * MARGIN_FACTOR);
+        float scaleY = MAX / (height * MARGIN_FACTOR);
+        float scale = Math.min(scaleX, scaleY); // Maintain aspect ratio
+        float newWidth = width * scale;
+        float newHeight = height * scale;
+        GlStateManager.translate((MAX - newWidth) / 2, (MAX - newHeight) / 2, 0F);
+        GlStateManager.scale(scale, scale, 1F);
+
+        int color = Helpers.addAlphaToColor(
+            value.getType()
+                .getDisplayColor(),
+            distanceAlpha);
+        rendererDispatcher.getFontRenderer()
+            .drawString(string, 0, 0, color);
+        GlStateManager.disableRescaleNormal();
+        GlStateManager.popMatrix();
+    }
+}

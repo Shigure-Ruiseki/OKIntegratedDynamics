@@ -1,0 +1,7 @@
+{
+  "parent": "integrateddynamics:block/panel",
+  "textures": {
+    "back" : "integrateddynamics:blocks/parts/panel_back_error",
+    "front": "integrateddynamics:blocks/parts/panel_front_dark"
+  }
+}

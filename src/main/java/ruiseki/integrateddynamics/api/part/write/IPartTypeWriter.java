@@ -1,0 +1,54 @@
+package ruiseki.integrateddynamics.api.part.write;
+
+import java.util.List;
+
+import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
+import ruiseki.integrateddynamics.api.evaluate.variable.IVariable;
+import ruiseki.integrateddynamics.api.network.IPartNetwork;
+import ruiseki.integrateddynamics.api.part.IPartType;
+import ruiseki.integrateddynamics.api.part.PartTarget;
+import ruiseki.integrateddynamics.api.part.aspect.IAspectWrite;
+
+/**
+ * A part type for writers.
+ * 
+ * @author rubensworks
+ */
+public interface IPartTypeWriter<P extends IPartTypeWriter<P, S>, S extends IPartStateWriter<P>>
+    extends IPartType<P, S> {
+
+    /**
+     * @return All possible write aspects that can be used in this part type.
+     */
+    public List<IAspectWrite> getWriteAspects();
+
+    /**
+     * Get the variable that is currently active for this part, the value in this variable will be used to write
+     * something.
+     * 
+     * @param <V>       The value type.
+     * @param network   The network this part belongs to.
+     * @param target    The target block.
+     * @param partState The state of this part.
+     * @return The variable reference to some other value that needs to be written by this part.
+     */
+    public <V extends IValue> IVariable<V> getActiveVariable(IPartNetwork network, PartTarget target, S partState);
+
+    /**
+     * Get the aspect that is currently active in this part, can be null.
+     * 
+     * @param target    The target block.
+     * @param partState The state of this part.
+     * @return The active aspect.
+     */
+    public IAspectWrite getActiveAspect(PartTarget target, S partState);
+
+    /**
+     * Update the active aspect and active variable for this part.
+     * 
+     * @param target    The target block.
+     * @param partState The state of this part.
+     */
+    public void updateActivation(PartTarget target, S partState);
+
+}

@@ -1,0 +1,7 @@
+{
+  "parent": "integrateddynamics:block/reader",
+  "textures": {
+    "back" : "integrateddynamics:blocks/parts/fluidReader_back",
+    "front": "integrateddynamics:blocks/parts/fluidReader_front"
+  }
+}

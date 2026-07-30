@@ -1,0 +1,7 @@
+{
+  "parent": "integrateddynamics:block/writer",
+  "textures": {
+    "back" : "integrateddynamics:blocks/parts/audioReader_back",
+    "front": "integrateddynamics:blocks/parts/audioWriter_front_error"
+  }
+}

@@ -1,0 +1,36 @@
+package ruiseki.integrateddynamics.part;
+
+import com.google.common.collect.Sets;
+
+import ruiseki.integrateddynamics.api.part.aspect.IAspect;
+import ruiseki.integrateddynamics.core.part.aspect.AspectRegistry;
+import ruiseki.integrateddynamics.core.part.read.PartStateReaderBase;
+import ruiseki.integrateddynamics.core.part.read.PartTypeReadBase;
+import ruiseki.integrateddynamics.part.aspect.Aspects;
+
+/**
+ * An extra-dimensional property reader part.
+ * 
+ * @author rubensworks
+ */
+public class PartTypeExtraDimensionalReader
+    extends PartTypeReadBase<PartTypeExtraDimensionalReader, PartStateReaderBase<PartTypeExtraDimensionalReader>> {
+
+    public PartTypeExtraDimensionalReader(String name) {
+        super(name);
+        AspectRegistry.getInstance()
+            .register(
+                this,
+                Sets.<IAspect>newHashSet(
+                    Aspects.Read.ExtraDimensional.INTEGER_RANDOM,
+                    Aspects.Read.ExtraDimensional.INTEGER_PLAYERCOUNT,
+                    Aspects.Read.ExtraDimensional.INTEGER_TICKTIME,
+                    Aspects.Read.ExtraDimensional.LIST_PLAYERS));
+    }
+
+    @Override
+    public PartStateReaderBase<PartTypeExtraDimensionalReader> constructDefaultState() {
+        return new PartStateReaderBase<PartTypeExtraDimensionalReader>();
+    }
+
+}

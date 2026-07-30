@@ -1,0 +1,26 @@
+package ruiseki.integrateddynamics.client.render.valuetype;
+
+import ruiseki.integrateddynamics.IntegratedDynamics;
+import ruiseki.integrateddynamics.api.client.render.valuetype.IValueTypeWorldRendererRegistry;
+import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
+
+/**
+ * A collection of all value type world renderers.
+ * 
+ * @author rubensworks
+ */
+public class ValueTypeWorldRenderers {
+
+    public static final IValueTypeWorldRendererRegistry REGISTRY = IntegratedDynamics._instance.getRegistryManager()
+        .getRegistry(IValueTypeWorldRendererRegistry.class);
+
+    public static final TextValueTypeWorldRenderer DEFAULT = new TextValueTypeWorldRenderer();
+
+    public static void load() {
+        REGISTRY.register(ValueTypes.OBJECT_ITEMSTACK, new ItemValueTypeWorldRenderer());
+        REGISTRY.register(ValueTypes.OBJECT_BLOCK, new BlockValueTypeWorldRenderer());
+        REGISTRY.register(ValueTypes.OBJECT_FLUIDSTACK, new FluidValueTypeWorldRenderer());
+        REGISTRY.register(ValueTypes.LIST, new ListValueTypeWorldRenderer());
+    }
+
+}

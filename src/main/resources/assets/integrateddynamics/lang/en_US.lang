@@ -1,0 +1,774 @@
+# General
+itemGroup.integrateddynamics=Integrated Dynamics
+general.integrateddynamics.info.none=None
+general.integrateddynamics.energyUnit.name=RF
+general.integrateddynamics.error.noNetwork=No valid network found
+
+# Gui
+gui.integrateddynamics.button.save=Save
+gui.integrateddynamics.button.rename=Rename
+gui.integrateddynamics.partsettings.updateInterval=Freq.
+gui.integrateddynamics.part.properties=Properties:
+gui.integrateddynamics.logicprogrammer.filter=Filter
+gui.integrateddynamics.waila.partConfig=Part Information
+gui.integrateddynamics.waila.proxyConfig=Proxy Information
+gui.integrateddynamics.waila.dryingBasinConfig=Drying Basin Information
+gui.integrateddynamics.waila.item=Item: %s
+gui.integrateddynamics.waila.fluid=Fluid: %s (%s mB)
+
+# Blocks
+tile.blocks.integrateddynamics.cable.name=Cable
+tile.blocks.integrateddynamics.variablestore.name=Variable Store
+tile.blocks.integrateddynamics.energyBattery.name=Energy Battery
+tile.blocks.integrateddynamics.creativeEnergyBattery.name=Creative Energy Battery
+tile.blocks.integrateddynamics.logicProgrammer.name=Logic Programmer
+tile.blocks.integrateddynamics.coalGenerator.name=Generator
+tile.blocks.integrateddynamics.coalGenerator.info=Produces energy from fuel items
+tile.blocks.integrateddynamics.proxy.name=Proxy
+tile.blocks.integrateddynamics.proxy.info=Expose a variable reference as an aspect
+tile.blocks.integrateddynamics.materializer.name=Materializer
+tile.blocks.integrateddynamics.materializer.info=Materialize the value of a variable in a new variable
+tile.blocks.integrateddynamics.menrilLog.name=Menril Log
+tile.blocks.integrateddynamics.menrilLeaves.name=Menril Leaves
+tile.blocks.integrateddynamics.menrilSapling.name=Menril Sapling
+tile.blocks.integrateddynamics.menrilPlanks.name=Menril Plank
+tile.blocks.integrateddynamics.crystalizedMenrilBlock.name=Block of Crystalized Menril
+tile.blocks.integrateddynamics.crystalizedMenrilBrick.name=Crystalized Menril Brick
+tile.blocks.integrateddynamics.blockMenrilResin.name=Menril Resin
+tile.blocks.integrateddynamics.dryingBasin.name=Drying Basin
+tile.blocks.integrateddynamics.dryingBasin.info=For drying items and fluids
+tile.blocks.integrateddynamics.squeezer.name=Squeezer
+tile.blocks.integrateddynamics.squeezer.info=For squeezing, flattening and crushing things
+tile.blocks.integrateddynamics.menrilTorch.name=Menril Torch
+
+# Items
+item.items.integrateddynamics.general.id=§e§lID: §r%s
+item.items.integrateddynamics.wrench.name=Wrench
+item.items.integrateddynamics.variable.name=Variable Card
+item.items.integrateddynamics.variable.info=Clear or copy in a crafting grid
+item.items.integrateddynamics.variable.id=§e§oVariable ID: §r§o%s
+item.items.integrateddynamics.labeller.name=Labeller
+item.items.integrateddynamics.labeller.info=Labels your variables. Also works in the Logic Programmer.
+item.items.integrateddynamics.labeller.button.write=Write
+item.items.integrateddynamics.facade.name=Facade
+item.items.integrateddynamics.facade.info=Combine with a block in crafting table
+item.items.integrateddynamics.bucketMenrilResin.name=Menril Resin Bucket
+item.items.integrateddynamics.crystalizedMenrilChunk.name=Crystalized Menril Chunk
+item.items.integrateddynamics.variableTransformer.output.name=Output Variable Transformer
+item.items.integrateddynamics.variableTransformer.input.name=Input Variable Transformer
+item.items.integrateddynamics.menrilBerries.name=Menril Berries
+item.items.integrateddynamics.menrilBerries.info=Tasty and illuminating
+
+# Fluids
+fluid.fluids.integrateddynamics.menrilresin=Menril Resin
+
+# Biomes
+biomes.integrateddynamics.biomeMeneglin=Meneglin
+
+# Value types
+valuetype.integrateddynamics.valueType=Value Type
+valuetype.integrateddynamics.tooltip.typeName=§eType: §r%s
+valuetype.integrateddynamics.tooltip.value=§e§oValue: §r%s
+valuetype.integrateddynamics.error.invalidInput=The input "%s" could not be parsed for this value type.
+valuetype.integrateddynamics.error.invalidInputItem=This value type requires an input item.
+valuetype.integrateddynamics.error.invalidListElement=Element %s is invalid: %s
+valuetype.integrateddynamics.error.block.noBlock=The inserted item is no block.
+valuetype.integrateddynamics.error.fluid.noFluid=The inserted item contains no fluid.
+
+valuetype.valuetypes.integrateddynamics.any.name=Any
+valuetype.valuetypes.integrateddynamics.any.info=Accepts any type of value.
+valuetype.valuetypes.integrateddynamics.number.name=Number
+valuetype.valuetypes.integrateddynamics.number.info=Accepts all number types.
+valuetype.valuetypes.integrateddynamics.named.name=Named
+valuetype.valuetypes.integrateddynamics.named.info=Accepts all value types that have a name.
+
+valuetype.valuetypes.integrateddynamics.boolean.name=Boolean
+valuetype.valuetypes.integrateddynamics.integer.name=Integer
+valuetype.valuetypes.integrateddynamics.double.name=Double
+valuetype.valuetypes.integrateddynamics.long.name=Long
+valuetype.valuetypes.integrateddynamics.string.name=String
+
+valuetype.valuetypes.integrateddynamics.list.name=List
+valuetype.valuetypes.integrateddynamics.block.name=Block
+valuetype.valuetypes.integrateddynamics.itemstack.name=Item
+valuetype.valuetypes.integrateddynamics.entity.name=Entity
+valuetype.valuetypes.integrateddynamics.fluidstack.name=Fluid
+
+# Part types
+parttype.parttypes.integrateddynamics.error.lowEnergy=Not enough energy
+parttype.parttypes.integrateddynamics.tooltip.disabled=Disabled
+parttype.parttypes.integrateddynamics.tooltip.inactive=Inactive
+parttype.parttypes.integrateddynamics.tooltip.errors=Errors:
+parttype.parttypes.integrateddynamics.tooltip.writer.activeAspect=Aspect: %s (%s)
+parttype.parttypes.integrateddynamics.tooltip.display.activeValue=Value: %s (%s)
+
+parttype.parttypes.integrateddynamics.audioReader.name=Audio Reader
+parttype.parttypes.integrateddynamics.audioReader.info=Reads audio information
+parttype.parttypes.integrateddynamics.blockReader.name=Block Reader
+parttype.parttypes.integrateddynamics.blockReader.info=Reads block information
+parttype.parttypes.integrateddynamics.entityReader.name=Entity Reader
+parttype.parttypes.integrateddynamics.entityReader.info=Reads entity information
+parttype.parttypes.integrateddynamics.extradimensionalReader.name=Extra-Dimensional Reader
+parttype.parttypes.integrateddynamics.extradimensionalReader.info=Reads information that is shared for all dimensions
+parttype.parttypes.integrateddynamics.fluidReader.name=Fluid Reader
+parttype.parttypes.integrateddynamics.fluidReader.info=Reads fluid tanks
+parttype.parttypes.integrateddynamics.inventoryReader.name=Inventory Reader
+parttype.parttypes.integrateddynamics.inventoryReader.info=Reads data from inventories
+parttype.parttypes.integrateddynamics.networkReader.name=Network Reader
+parttype.parttypes.integrateddynamics.networkReader.info=Reads target network properties
+parttype.parttypes.integrateddynamics.machineReader.name=Machine Reader
+parttype.parttypes.integrateddynamics.machineReader.info=Reads machine properties
+parttype.parttypes.integrateddynamics.redstoneReader.name=Redstone Reader
+parttype.parttypes.integrateddynamics.redstoneReader.info=Reads redstone values
+parttype.parttypes.integrateddynamics.worldReader.name=World Reader
+parttype.parttypes.integrateddynamics.worldReader.info=Reads things related to the world, blocks and entities
+
+parttype.parttypes.integrateddynamics.audioWriter.name=Audio Writer
+parttype.parttypes.integrateddynamics.audioWriter.info=Outputs audio and music
+parttype.parttypes.integrateddynamics.effectWriter.name=Effect Writer
+parttype.parttypes.integrateddynamics.effectWriter.info=Outputs particles
+parttype.parttypes.integrateddynamics.inventoryWriter.name=Inventory Writer
+parttype.parttypes.integrateddynamics.inventoryWriter.info=Writes to inventories
+parttype.parttypes.integrateddynamics.redstoneWriter.name=Redstone Writer
+parttype.parttypes.integrateddynamics.redstoneWriter.info=Writes to redstone
+
+parttype.parttypes.integrateddynamics.dataDrivenPanel.error.invalidType=This panel does not accept a %s.
+parttype.parttypes.integrateddynamics.staticLightPanel.name=Static Light Panel
+parttype.parttypes.integrateddynamics.staticLightPanel.info=A simply light panel that is always active
+parttype.parttypes.integrateddynamics.dynamicLightPanel.name=Dynamic Light Panel
+parttype.parttypes.integrateddynamics.dynamicLightPanel.info=Visually display a variable value in the world as light value
+parttype.parttypes.integrateddynamics.displayPanel.name=Display Panel
+parttype.parttypes.integrateddynamics.displayPanel.info=Visually display a variable value in the world as text
+
+# Variables facades
+variable.integrateddynamics.error.invalidItem=The current variable can not be used in this aspect.
+variable.integrateddynamics.error.partNotInNetwork=Part with id %s could not be found within the current network.
+variable.integrateddynamics.error.recursion=The variable with id %s is referring to itself.
+
+# Proxy
+proxy.integrateddynamics.tooltip.proxyId=§e§oProxy ID: §r§o%s
+proxy.integrateddynamics.error.proxyNotInNetwork=Proxy with id %s could not be found within the current network.
+proxy.integrateddynamics.error.proxyInvalid=Proxy with id %s is not exposing a variable.
+proxy.integrateddynamics.error.proxyInvalidType=Proxy with id %s is expected to expose a variable with type %s while %s is found.
+
+# Aspects
+aspect.integrateddynamics.tooltip.aspectName=§eAspect: §r%s
+aspect.integrateddynamics.tooltip.valueTypeName=§eType: §r%s
+aspect.integrateddynamics.tooltip.partId=§e§oPart ID: §r§o%s
+aspect.integrateddynamics.error.invalidType=This aspect expects %s, but %s was given.
+
+## Audio aspects
+aspect.aspects.integrateddynamics.read.integer.audio.instrument.piano.name=Piano Note
+aspect.aspects.integrateddynamics.read.integer.audio.instrument.piano.info=Reads a piano note, expected range [0, 24]
+aspect.aspects.integrateddynamics.read.integer.audio.instrument.bassdrum.name=Bass Drum Note
+aspect.aspects.integrateddynamics.read.integer.audio.instrument.bassdrum.info=Reads a bass drum note, expected range [0, 24]
+aspect.aspects.integrateddynamics.read.integer.audio.instrument.snare.name=Snare Note
+aspect.aspects.integrateddynamics.read.integer.audio.instrument.snare.info=Reads a snare note, expected range [0, 24]
+aspect.aspects.integrateddynamics.read.integer.audio.instrument.clicks.name=Clicks Note
+aspect.aspects.integrateddynamics.read.integer.audio.instrument.clicks.info=Reads a clicks note, expected range [0, 24]
+aspect.aspects.integrateddynamics.read.integer.audio.instrument.bassguitar.name=Bass Guitar Note
+aspect.aspects.integrateddynamics.read.integer.audio.instrument.bassguitar.info=Reads a bass guitar note, expected range [0, 24]
+
+aspect.aspects.integrateddynamics.write.integer.audio.instrument.piano.name=Piano Note
+aspect.aspects.integrateddynamics.write.integer.audio.instrument.piano.info=Output a piano note, expected range [0, 24]
+aspect.aspects.integrateddynamics.write.integer.audio.instrument.bassdrum.name=Bass Drum Note
+aspect.aspects.integrateddynamics.write.integer.audio.instrument.bassdrum.info=Output a bass drum note, expected range [0, 24]
+aspect.aspects.integrateddynamics.write.integer.audio.instrument.snare.name=Snare Note
+aspect.aspects.integrateddynamics.write.integer.audio.instrument.snare.info=Output a snare note, expected range [0, 24]
+aspect.aspects.integrateddynamics.write.integer.audio.instrument.clicks.name=Clicks Note
+aspect.aspects.integrateddynamics.write.integer.audio.instrument.clicks.info=Output a clicks note, expected range [0, 24]
+aspect.aspects.integrateddynamics.write.integer.audio.instrument.bassguitar.name=Bass Guitar Note
+aspect.aspects.integrateddynamics.write.integer.audio.instrument.bassguitar.info=Output a bass guitar note, expected range [0, 24]
+
+aspect.aspects.integrateddynamics.write.string.audio.sound.name=Sound
+aspect.aspects.integrateddynamics.write.string.audio.sound.info=Play the given sound name
+
+## Effect aspects
+aspect.aspects.integrateddynamics.write.double.effect.particle.fireworksSpark.name=Particle: Fireworks Spark
+aspect.aspects.integrateddynamics.write.double.effect.particle.fireworksSpark.info=Emit a fireworks spark particle with a certain velocity.
+aspect.aspects.integrateddynamics.write.double.effect.particle.bubble.name=Particle: Bubble
+aspect.aspects.integrateddynamics.write.double.effect.particle.bubble.info=Emit a bubble particle with a certain velocity.
+aspect.aspects.integrateddynamics.write.double.effect.particle.splash.name=Particle: Water Splash
+aspect.aspects.integrateddynamics.write.double.effect.particle.splash.info=Emit a water splash particle with a certain velocity.
+aspect.aspects.integrateddynamics.write.double.effect.particle.wake.name=Particle: Water Wake
+aspect.aspects.integrateddynamics.write.double.effect.particle.wake.info=Emit a water wake particle with a certain velocity.
+aspect.aspects.integrateddynamics.write.double.effect.particle.suspended.name=Particle: Suspend
+aspect.aspects.integrateddynamics.write.double.effect.particle.suspended.info=Emit a suspend particle with a certain velocity.
+aspect.aspects.integrateddynamics.write.double.effect.particle.depthsuspend.name=Particle: Suspend Depth
+aspect.aspects.integrateddynamics.write.double.effect.particle.depthsuspend.info=Emit a depth suspend particle with a certain velocity.
+aspect.aspects.integrateddynamics.write.double.effect.particle.crit.name=Particle: Critical
+aspect.aspects.integrateddynamics.write.double.effect.particle.crit.info=Emit a critical particle with a certain velocity.
+aspect.aspects.integrateddynamics.write.double.effect.particle.magicCrit.name=Particle: Critical Magic
+aspect.aspects.integrateddynamics.write.double.effect.particle.magicCrit.info=Emit a critical magic particle with a certain velocity.
+aspect.aspects.integrateddynamics.write.double.effect.particle.smoke.name=Particle: Smoke
+aspect.aspects.integrateddynamics.write.double.effect.particle.smoke.info=Emit a smoke particle with a certain velocity.
+aspect.aspects.integrateddynamics.write.double.effect.particle.largesmoke.name=Particle: Large Smoke
+aspect.aspects.integrateddynamics.write.double.effect.particle.largesmoke.info=Emit a large smoke particle with a certain velocity.
+aspect.aspects.integrateddynamics.write.double.effect.particle.spell.name=Particle: Spell
+aspect.aspects.integrateddynamics.write.double.effect.particle.spell.info=Emit a spell particle with a certain velocity.
+aspect.aspects.integrateddynamics.write.double.effect.particle.instantSpell.name=Particle: Instant Spell
+aspect.aspects.integrateddynamics.write.double.effect.particle.instantSpell.info=Emit an instant spell particle with a certain velocity.
+aspect.aspects.integrateddynamics.write.double.effect.particle.mobSpell.name=Particle: Mob Spell
+aspect.aspects.integrateddynamics.write.double.effect.particle.mobSpell.info=Emit a mob spell particle with a certain velocity.
+aspect.aspects.integrateddynamics.write.double.effect.particle.mobSpellAmbient.name=Particle: Ambient Mob Spell
+aspect.aspects.integrateddynamics.write.double.effect.particle.mobSpellAmbient.info=Emit an ambient mob spell particle with a certain velocity.
+aspect.aspects.integrateddynamics.write.double.effect.particle.witchMagic.name=Particle: Witch Magic
+aspect.aspects.integrateddynamics.write.double.effect.particle.witchMagic.info=Emit a witch magic particle with a certain velocity.
+aspect.aspects.integrateddynamics.write.double.effect.particle.dripWater.name=Particle: Drip Water
+aspect.aspects.integrateddynamics.write.double.effect.particle.dripWater.info=Emit a water drip particle with a certain velocity.
+aspect.aspects.integrateddynamics.write.double.effect.particle.dripLava.name=Particle: Drip Lava
+aspect.aspects.integrateddynamics.write.double.effect.particle.dripLava.info=Emit a lava drip particle with a certain velocity.
+aspect.aspects.integrateddynamics.write.double.effect.particle.angryVillager.name=Particle: Angry Villager
+aspect.aspects.integrateddynamics.write.double.effect.particle.angryVillager.info=Emit an angry villager particle with a certain velocity.
+aspect.aspects.integrateddynamics.write.double.effect.particle.happyVillager.name=Particle: Happy Villager
+aspect.aspects.integrateddynamics.write.double.effect.particle.happyVillager.info=Emit a happy villager particle with a certain velocity.
+aspect.aspects.integrateddynamics.write.double.effect.particle.townaura.name=Particle: Town Aura
+aspect.aspects.integrateddynamics.write.double.effect.particle.townaura.info=Emit a town aura particle with a certain velocity.
+aspect.aspects.integrateddynamics.write.double.effect.particle.note.name=Particle: Note
+aspect.aspects.integrateddynamics.write.double.effect.particle.note.info=Emit a note particle with a certain velocity.
+aspect.aspects.integrateddynamics.write.double.effect.particle.portal.name=Particle: Portal
+aspect.aspects.integrateddynamics.write.double.effect.particle.portal.info=Emit a portal particle with a certain velocity.
+aspect.aspects.integrateddynamics.write.double.effect.particle.enchantmenttable.name=Particle: Enchantment Table
+aspect.aspects.integrateddynamics.write.double.effect.particle.enchantmenttable.info=Emit an enchantment table particle with a certain velocity.
+aspect.aspects.integrateddynamics.write.double.effect.particle.flame.name=Particle: Flame
+aspect.aspects.integrateddynamics.write.double.effect.particle.flame.info=Emit a bubble flame with a certain velocity.
+aspect.aspects.integrateddynamics.write.double.effect.particle.lava.name=Particle: Lava
+aspect.aspects.integrateddynamics.write.double.effect.particle.lava.info=Emit a lava particle with a certain velocity.
+aspect.aspects.integrateddynamics.write.double.effect.particle.footstep.name=Particle: Footstep
+aspect.aspects.integrateddynamics.write.double.effect.particle.footstep.info=Emit a footstep particle with a certain velocity.
+aspect.aspects.integrateddynamics.write.double.effect.particle.cloud.name=Particle: Cloud
+aspect.aspects.integrateddynamics.write.double.effect.particle.cloud.info=Emit a cloud particle with a certain velocity.
+aspect.aspects.integrateddynamics.write.double.effect.particle.reddust.name=Particle: Redstone Dust
+aspect.aspects.integrateddynamics.write.double.effect.particle.reddust.info=Emit a redstone dust particle with a certain velocity.
+aspect.aspects.integrateddynamics.write.double.effect.particle.snowballpoof.name=Particle: Snowball
+aspect.aspects.integrateddynamics.write.double.effect.particle.snowballpoof.info=Emit a snowball particle with a certain velocity.
+aspect.aspects.integrateddynamics.write.double.effect.particle.snowshovel.name=Particle: Snow Shovel
+aspect.aspects.integrateddynamics.write.double.effect.particle.snowshovel.info=Emit a snow shovel particle with a certain velocity.
+aspect.aspects.integrateddynamics.write.double.effect.particle.slime.name=Particle: Slime
+aspect.aspects.integrateddynamics.write.double.effect.particle.slime.info=Emit a slime particle with a certain velocity.
+aspect.aspects.integrateddynamics.write.double.effect.particle.heart.name=Particle: Heart
+aspect.aspects.integrateddynamics.write.double.effect.particle.heart.info=Emit a heart particle with a certain velocity.
+aspect.aspects.integrateddynamics.write.double.effect.particle.barrier.name=Particle: Barrier
+aspect.aspects.integrateddynamics.write.double.effect.particle.barrier.info=Emit a barrier particle with a certain velocity.
+aspect.aspects.integrateddynamics.write.double.effect.particle.droplet.name=Particle: Water Drop
+aspect.aspects.integrateddynamics.write.double.effect.particle.droplet.info=Emit a water drop particle with a certain velocity.
+
+## Block aspects
+aspect.aspects.integrateddynamics.read.boolean.block.block.name=Has Block
+aspect.aspects.integrateddynamics.read.boolean.block.block.info=If the target space has a block
+
+aspect.aspects.integrateddynamics.read.integer.block.dimension.name=Dimension
+aspect.aspects.integrateddynamics.read.integer.block.dimension.info=The id of the target world dimension
+aspect.aspects.integrateddynamics.read.integer.block.posx.name=X Coordinate
+aspect.aspects.integrateddynamics.read.integer.block.posx.info=The X coordinate of the target
+aspect.aspects.integrateddynamics.read.integer.block.posy.name=Y Coordinate
+aspect.aspects.integrateddynamics.read.integer.block.posy.info=The Y coordinate of the target
+aspect.aspects.integrateddynamics.read.integer.block.posz.name=Z Coordinate
+aspect.aspects.integrateddynamics.read.integer.block.posz.info=The Z coordinate of the target
+
+aspect.aspects.integrateddynamics.read.block.block.name=Block
+aspect.aspects.integrateddynamics.read.block.block.info=The target block
+
+## Entity aspects
+aspect.aspects.integrateddynamics.read.integer.entity.itemframerotation.name=Item Frame Rotation
+aspect.aspects.integrateddynamics.read.integer.entity.itemframerotation.info=The index of the rotation the item in the attached Item Frame has.
+
+aspect.aspects.integrateddynamics.read.list.entity.entities.name=Entities
+aspect.aspects.integrateddynamics.read.list.entity.entities.info=The entities in the target space
+aspect.aspects.integrateddynamics.read.list.entity.players.name=Players
+aspect.aspects.integrateddynamics.read.list.entity.players.info=The players that are in this world
+
+aspect.aspects.integrateddynamics.read.entity.entity.name=Entity
+aspect.aspects.integrateddynamics.read.entity.entity.info=The selected entity in the target space
+
+aspect.aspects.integrateddynamics.read.itemstack.entity.itemframecontents.name=Item Frame
+aspect.aspects.integrateddynamics.read.itemstack.entity.itemframecontents.info=The item in an Item Frame attached to the reader
+
+## Extra-Dimensional aspects
+aspect.aspects.integrateddynamics.read.integer.extradimensional.random.name=Random
+aspect.aspects.integrateddynamics.read.integer.extradimensional.random.info=A random integer value
+aspect.aspects.integrateddynamics.read.integer.extradimensional.playercount.name=Player Count
+aspect.aspects.integrateddynamics.read.integer.extradimensional.playercount.info=The amount of players in the server
+aspect.aspects.integrateddynamics.read.integer.extradimensional.ticktime.name=Tick time
+aspect.aspects.integrateddynamics.read.integer.extradimensional.ticktime.info=The average tick time in milliseconds for the server
+aspect.aspects.integrateddynamics.read.list.extradimensional.players.name=Players
+aspect.aspects.integrateddynamics.read.list.extradimensional.players.info=The players that are online on this server
+
+## Fluid aspects
+aspect.aspects.integrateddynamics.read.boolean.fluid.empty.name=Tank Empty
+aspect.aspects.integrateddynamics.read.boolean.fluid.empty.info=If the target fluid tank is empty
+aspect.aspects.integrateddynamics.read.boolean.fluid.full.name=Tank Full
+aspect.aspects.integrateddynamics.read.boolean.fluid.full.info=If the target fluid tank is full
+aspect.aspects.integrateddynamics.read.boolean.fluid.nonempty.name=Tank Not Empty
+aspect.aspects.integrateddynamics.read.boolean.fluid.nonempty.info=If the target fluid tank has something in it
+aspect.aspects.integrateddynamics.read.boolean.fluid.applicable.name=Is Tank
+aspect.aspects.integrateddynamics.read.boolean.fluid.applicable.info=If the target has a fluid tank
+
+aspect.aspects.integrateddynamics.read.integer.fluid.amount.name=Fluid Amount
+aspect.aspects.integrateddynamics.read.integer.fluid.amount.info=The amount of fluid in mB in the active tank
+aspect.aspects.integrateddynamics.read.integer.fluid.totalamount.name=Total Fluid Amount
+aspect.aspects.integrateddynamics.read.integer.fluid.totalamount.info=The total amount of fluid in mB
+aspect.aspects.integrateddynamics.read.integer.fluid.capacity.name=Fluid Capacity
+aspect.aspects.integrateddynamics.read.integer.fluid.capacity.info=Total capacity of the active tank
+aspect.aspects.integrateddynamics.read.integer.fluid.totalcapacity.name=Total Fluid Capacity
+aspect.aspects.integrateddynamics.read.integer.fluid.totalcapacity.info=Total capacity of the tank
+aspect.aspects.integrateddynamics.read.integer.fluid.tanks.name=Tanks
+aspect.aspects.integrateddynamics.read.integer.fluid.tanks.info=The amount of tanks found at the target
+
+aspect.aspects.integrateddynamics.read.double.fluid.fillratio.name=Fluid Fill Ratio
+aspect.aspects.integrateddynamics.read.double.fluid.fillratio.info=The amount of fluid in the active tank divided by its capacity
+
+aspect.aspects.integrateddynamics.read.list.fluid.fluidstacks.name=Tank Fluids
+aspect.aspects.integrateddynamics.read.list.fluid.fluidstacks.info=The list of fluids in all tanks
+aspect.aspects.integrateddynamics.read.list.fluid.capacities.name=Tank Capacities
+aspect.aspects.integrateddynamics.read.list.fluid.capacities.info=The list of capacities of all tanks
+
+aspect.aspects.integrateddynamics.read.fluidstack.fluid.name=Tank Fluid
+aspect.aspects.integrateddynamics.read.fluidstack.fluid.info=The fluid in the target tank
+
+## Inventory aspects
+aspect.aspects.integrateddynamics.read.boolean.inventory.full.name=Inventory Full
+aspect.aspects.integrateddynamics.read.boolean.inventory.full.info=If all slots have at least one item
+aspect.aspects.integrateddynamics.read.boolean.inventory.empty.name=Inventory Empty
+aspect.aspects.integrateddynamics.read.boolean.inventory.empty.info=If all slots are empty
+aspect.aspects.integrateddynamics.read.boolean.inventory.nonempty.name=Inventory Not Empty
+aspect.aspects.integrateddynamics.read.boolean.inventory.nonempty.info=If there is at least one item
+aspect.aspects.integrateddynamics.read.boolean.inventory.applicable.name=Is Inventory
+aspect.aspects.integrateddynamics.read.boolean.inventory.applicable.info=If the target has an inventory
+
+aspect.aspects.integrateddynamics.read.integer.inventory.count.name=Inventory Count
+aspect.aspects.integrateddynamics.read.integer.inventory.count.info=Get the total amount of items
+aspect.aspects.integrateddynamics.read.integer.inventory.countslot.name=Slot Stacksize
+aspect.aspects.integrateddynamics.read.integer.inventory.countslot.info=Get the stack size in the active slot
+aspect.aspects.integrateddynamics.read.integer.inventory.slots.name=Slots
+aspect.aspects.integrateddynamics.read.integer.inventory.slots.info=The number of slots in the inventory
+aspect.aspects.integrateddynamics.read.integer.inventory.slotsfilled.name=Slots Filled
+aspect.aspects.integrateddynamics.read.integer.inventory.slotsfilled.info=The number of slots that have an item
+
+aspect.aspects.integrateddynamics.read.double.inventory.fillratio.name=Fill Ratio
+aspect.aspects.integrateddynamics.read.double.inventory.fillratio.info=The number of non-empty slots divided by the total number of slots
+
+aspect.aspects.integrateddynamics.read.list.inventory.itemstacks.name=Items
+aspect.aspects.integrateddynamics.read.list.inventory.itemstacks.info=Get a list of the items in the inventory
+
+aspect.aspects.integrateddynamics.read.itemstack.inventory.name=Slot Item
+aspect.aspects.integrateddynamics.read.itemstack.inventory.info=Get the Item in the active slot
+
+## Machine aspects
+aspect.aspects.integrateddynamics.read.boolean.machine.isworker.name=Is Worker
+aspect.aspects.integrateddynamics.read.boolean.machine.isworker.info=If the target is a worker machine
+aspect.aspects.integrateddynamics.read.boolean.machine.haswork.name=Has Work
+aspect.aspects.integrateddynamics.read.boolean.machine.haswork.info=If the target has work to process
+aspect.aspects.integrateddynamics.read.boolean.machine.canwork.name=Can Work
+aspect.aspects.integrateddynamics.read.boolean.machine.canwork.info=If the target would be able to start working in its current state
+aspect.aspects.integrateddynamics.read.boolean.machine.isworking.name=Is Working
+aspect.aspects.integrateddynamics.read.boolean.machine.isworking.info=If the target is currently working
+
+## Network aspects
+aspect.aspects.integrateddynamics.read.boolean.network.applicable.name=Is Network
+aspect.aspects.integrateddynamics.read.boolean.network.applicable.info=If the target has a network
+aspect.aspects.integrateddynamics.read.integer.network.elementcount.name=Elements
+aspect.aspects.integrateddynamics.read.boolean.network.elementcount.info=The amount of elements in the target network
+aspect.aspects.integrateddynamics.read.integer.network.energy.batterycount.name=Energy Batteries
+aspect.aspects.integrateddynamics.read.boolean.network.energy.batterycount.info=The amount of energy batteries in the target network
+aspect.aspects.integrateddynamics.read.integer.network.energy.stored.name=Energy Stored
+aspect.aspects.integrateddynamics.read.boolean.network.energy.stored.info=The amount of energy available in the target network
+aspect.aspects.integrateddynamics.read.integer.network.energy.max.name=Energy Capacity
+aspect.aspects.integrateddynamics.read.boolean.network.energy.max.info=The energy capacity of the network
+aspect.aspects.integrateddynamics.read.integer.network.energy.consumptionrate.name=Energy Consumption Rate
+aspect.aspects.integrateddynamics.read.boolean.network.energy.consumptionrate.info=The energy consumption rate of the target network
+
+## Redstone aspects
+aspect.aspects.integrateddynamics.read.boolean.redstone.high.name=Redstone High
+aspect.aspects.integrateddynamics.read.boolean.redstone.high.info=If the redstone level is at its maximum
+aspect.aspects.integrateddynamics.read.boolean.redstone.low.name=Redstone Low
+aspect.aspects.integrateddynamics.read.boolean.redstone.low.info=If there is no redstone level
+aspect.aspects.integrateddynamics.read.boolean.redstone.nonlow.name=Redstone
+aspect.aspects.integrateddynamics.read.boolean.redstone.nonlow.info=If there is a redstone level
+aspect.aspects.integrateddynamics.read.boolean.redstone.clock.name=Redstone Clock
+aspect.aspects.integrateddynamics.read.boolean.redstone.clock.info=Pulses with a configurable length and interval.
+aspect.aspects.integrateddynamics.read.integer.redstone.value.name=Redstone
+aspect.aspects.integrateddynamics.read.integer.redstone.value.info=Get the exact redstone level
+aspect.aspects.integrateddynamics.read.integer.redstone.comparator.name=Comparator
+aspect.aspects.integrateddynamics.read.integer.redstone.comparator.info=Get the comparator value
+
+aspect.aspects.integrateddynamics.write.boolean.redstone.name=Redstone
+aspect.aspects.integrateddynamics.write.boolean.redstone.info=Outputs a full redstone signal if true
+
+aspect.aspects.integrateddynamics.write.integer.redstone.name=Redstone
+aspect.aspects.integrateddynamics.write.integer.redstone.info=Outputs the value as exact redstone signal
+
+## World aspects
+aspect.aspects.integrateddynamics.read.boolean.world.entity.name=Has Entity
+aspect.aspects.integrateddynamics.read.boolean.world.entity.info=If the target space has an entity
+aspect.aspects.integrateddynamics.read.boolean.world.mob.name=Has Mob
+aspect.aspects.integrateddynamics.read.boolean.world.mob.info=If the target space has a mob
+aspect.aspects.integrateddynamics.read.boolean.world.animal.name=Has Animal
+aspect.aspects.integrateddynamics.read.boolean.world.animal.info=If the target space has an animal
+aspect.aspects.integrateddynamics.read.boolean.world.player.name=Has Player
+aspect.aspects.integrateddynamics.read.boolean.world.player.info=If the target space has a player
+aspect.aspects.integrateddynamics.read.boolean.world.item.name=Has Item
+aspect.aspects.integrateddynamics.read.boolean.world.item.info=If the target space has an item
+aspect.aspects.integrateddynamics.read.boolean.world.weather.clear.name=Weather: Clear
+aspect.aspects.integrateddynamics.read.boolean.world.weather.clear.info=If there is a clear weather in the world
+aspect.aspects.integrateddynamics.read.boolean.world.weather.raining.name=Weather: Rain
+aspect.aspects.integrateddynamics.read.boolean.world.weather.raining.info=If there it is raining in the world
+aspect.aspects.integrateddynamics.read.boolean.world.weather.thunder.name=Weather: Thunder
+aspect.aspects.integrateddynamics.read.boolean.world.weather.thunder.info=If there is a thunderstorm in the world
+aspect.aspects.integrateddynamics.read.boolean.world.isday.name=Is Day
+aspect.aspects.integrateddynamics.read.boolean.world.isday.info=If it is day in the target world
+aspect.aspects.integrateddynamics.read.boolean.world.isnight.name=Is Night
+aspect.aspects.integrateddynamics.read.boolean.world.isnight.info=If it is night in the target world
+
+aspect.aspects.integrateddynamics.read.integer.world.entity.name=Entities
+aspect.aspects.integrateddynamics.read.integer.world.entity.info=The amount of entities at the target space
+aspect.aspects.integrateddynamics.read.integer.world.raincountdown.name=Rain Countdown
+aspect.aspects.integrateddynamics.read.integer.world.raincountdown.info=The amount of ticks until it will rain in this world
+aspect.aspects.integrateddynamics.read.integer.world.ticktime.name=Tick time
+aspect.aspects.integrateddynamics.read.integer.world.ticktime.info=The average tick time in milliseconds for this world
+aspect.aspects.integrateddynamics.read.integer.world.daytime.name=Day Time
+aspect.aspects.integrateddynamics.read.integer.world.daytime.info=The time that has passed in the target world day
+aspect.aspects.integrateddynamics.read.integer.world.lightlevel.name=Light Level
+aspect.aspects.integrateddynamics.read.integer.world.lightlevel.info=The light level at the target
+aspect.aspects.integrateddynamics.read.integer.world.players.name=Player Count
+aspect.aspects.integrateddynamics.read.integer.world.players.info=The players that are online in this world
+
+aspect.aspects.integrateddynamics.read.long.world.time.name=Time
+aspect.aspects.integrateddynamics.read.long.world.time.info=The world time dependent of the set time command
+aspect.aspects.integrateddynamics.read.long.world.totaltime.name=Total Time
+aspect.aspects.integrateddynamics.read.long.world.totaltime.info=The world time independent of the set time command
+
+aspect.aspects.integrateddynamics.read.string.world.worldname.name=World Name
+aspect.aspects.integrateddynamics.read.string.world.worldname.info=The target world name
+
+# Aspect property types
+aspect.aspecttypes.integrateddynamics.integer.tankid.name=Tank ID
+aspect.aspecttypes.integrateddynamics.integer.slotid.name=Slot ID
+aspect.aspecttypes.integrateddynamics.integer.listindex.name=List Element
+aspect.aspecttypes.integrateddynamics.integer.range.name=Range
+
+aspect.aspecttypes.integrateddynamics.integer.interval.name=Pulse Interval
+aspect.aspecttypes.integrateddynamics.integer.length.name=Pulse Length
+
+aspect.aspecttypes.integrateddynamics.double.volume.name=Volume
+aspect.aspecttypes.integrateddynamics.double.frequency.name=Frequency
+
+aspect.aspecttypes.integrateddynamics.double.offsetX.name=X Offset
+aspect.aspecttypes.integrateddynamics.double.offsetY.name=Y Offset
+aspect.aspecttypes.integrateddynamics.double.offsetZ.name=Z Offset
+aspect.aspecttypes.integrateddynamics.integer.particles.name=Particle Count
+aspect.aspecttypes.integrateddynamics.double.spreadX.name=X Spread
+aspect.aspecttypes.integrateddynamics.double.spreadY.name=Y Spread
+aspect.aspecttypes.integrateddynamics.double.spreadZ.name=Z Spread
+aspect.aspecttypes.integrateddynamics.boolean.forceParticle.name=Force Spawning
+
+# Operators
+operator.integrateddynamics.tooltip.operatorName=§eOperator: §r%s (%s)
+operator.integrateddynamics.tooltip.operatorCategory=§eCategory: §r%s
+operator.integrateddynamics.tooltip.variableIds=§e§oVariable IDs: §r§o%s
+operator.integrateddynamics.tooltip.inputTypeName=§eInput Type %s: §r%s
+operator.integrateddynamics.tooltip.outputTypeName=§eOutput Type: §r%s
+operator.integrateddynamics.error.wrongInputLength=The operator %s received an input of length %s while it needs a length of %s.
+operator.integrateddynamics.error.nullType=The operator %s received an input with a null variable at position %s.
+operator.integrateddynamics.error.wrongType=The operator %s received an input with type %s at position %s while the type %s was expected.
+operator.integrateddynamics.error.variableNotInNetwork=Variable with id %s could not be found within the current network.
+operator.integrateddynamics.error.cyclicReference=Variable with id %s depends on itself, infinite recursion.
+
+operator.operators.integrateddynamics.logical.name=Logical
+operator.operators.integrateddynamics.logical.basename=Logical %s
+operator.operators.integrateddynamics.logical.and.name=And
+operator.operators.integrateddynamics.logical.or.name=Or
+operator.operators.integrateddynamics.logical.not.name=Not
+
+operator.operators.integrateddynamics.arithmetic.name=Arithmetic
+operator.operators.integrateddynamics.arithmetic.basename=Arithmetic %s
+operator.operators.integrateddynamics.arithmetic.addition.name=Addition
+operator.operators.integrateddynamics.arithmetic.subtraction.name=Subtraction
+operator.operators.integrateddynamics.arithmetic.multiplication.name=Multiplication
+operator.operators.integrateddynamics.arithmetic.division.name=Division
+operator.operators.integrateddynamics.arithmetic.maximum.name=Maximum
+operator.operators.integrateddynamics.arithmetic.maximum.info=Takes the largest of two values.
+operator.operators.integrateddynamics.arithmetic.minimum.name=Minimum
+operator.operators.integrateddynamics.arithmetic.minimum.info=Takes the smallest of two values.
+
+operator.operators.integrateddynamics.integer.name=Integer
+operator.operators.integrateddynamics.integer.basename=Integer %s
+operator.operators.integrateddynamics.integer.modulus.name=Modulus
+operator.operators.integrateddynamics.integer.increment.name=Increment
+operator.operators.integrateddynamics.integer.decrement.name=Decrement
+
+operator.operators.integrateddynamics.relational.name=Relational
+operator.operators.integrateddynamics.relational.basename=Relational %s
+operator.operators.integrateddynamics.relational.equals.name=Equals
+operator.operators.integrateddynamics.relational.equals.info=Type one and two must be equal.
+operator.operators.integrateddynamics.relational.gt.name=Greater Than
+operator.operators.integrateddynamics.relational.lt.name=Less Than
+operator.operators.integrateddynamics.relational.notequals.name=Not Equals
+operator.operators.integrateddynamics.relational.notequals.info=Type one and two must be equal.
+operator.operators.integrateddynamics.relational.ge.name=Greater Than or Equal
+operator.operators.integrateddynamics.relational.le.name=Less Than or Equal
+
+operator.operators.integrateddynamics.binary.name=Binary
+operator.operators.integrateddynamics.binary.basename=Binary %s
+operator.operators.integrateddynamics.binary.and.name=And
+operator.operators.integrateddynamics.binary.or.name=Or
+operator.operators.integrateddynamics.binary.xor.name=Xor
+operator.operators.integrateddynamics.binary.complement.name=Complement
+operator.operators.integrateddynamics.binary.rshift.name=Right Shift
+operator.operators.integrateddynamics.binary.rshift.info=Right Shift with ones fill
+operator.operators.integrateddynamics.binary.lshift.name=Left Shift
+operator.operators.integrateddynamics.binary.rzshift.name=Right Zero Shift
+operator.operators.integrateddynamics.binary.rzshift.info=Right Shift with zeros fill
+
+operator.operators.integrateddynamics.string.name=String
+operator.operators.integrateddynamics.string.basename=String %s
+operator.operators.integrateddynamics.string.length.name=Length
+operator.operators.integrateddynamics.string.length.info=The length of the given String
+operator.operators.integrateddynamics.string.concat.name=Concat
+operator.operators.integrateddynamics.string.concat.info=Concatenate the two given Strings to one
+operator.operators.integrateddynamics.string.name.name=Name
+operator.operators.integrateddynamics.string.name.info=Get the name of a named object
+
+operator.operators.integrateddynamics.double.name=Double
+operator.operators.integrateddynamics.double.round.name=Round
+operator.operators.integrateddynamics.double.round.info=Round to the nearest Integer
+operator.operators.integrateddynamics.double.ceil.name=Ceil
+operator.operators.integrateddynamics.double.ceil.info=Round up to the nearest Integer
+operator.operators.integrateddynamics.double.floor.name=Floor
+operator.operators.integrateddynamics.double.floor.info=Round down to the nearest Integer
+
+operator.operators.integrateddynamics.list.name=List
+operator.operators.integrateddynamics.list.basename=List %s
+operator.operators.integrateddynamics.list.length.name=Length
+operator.operators.integrateddynamics.list.length.info=The length of the given list
+operator.operators.integrateddynamics.list.get.name=Get
+operator.operators.integrateddynamics.list.get.info=Get the list element at the given position
+
+operator.operators.integrateddynamics.block.name=Block
+operator.operators.integrateddynamics.block.basename=Block %s
+operator.operators.integrateddynamics.block.opaque.name=Opaque
+operator.operators.integrateddynamics.block.opaque.info=If the given block is opaque, non-transparent
+operator.operators.integrateddynamics.block.itemstack.name=Item
+operator.operators.integrateddynamics.block.itemstack.info=The item representation of the given block
+operator.operators.integrateddynamics.block.mod.name=Mod
+operator.operators.integrateddynamics.block.mod.info=The name of the mod owning the given block
+operator.operators.integrateddynamics.block.breaksound.name=Block Break Sound
+operator.operators.integrateddynamics.block.breaksound.info=The break sound of the given block
+operator.operators.integrateddynamics.block.placesound.name=Block Place Sound
+operator.operators.integrateddynamics.block.placesound.info=The place sound of the given block
+operator.operators.integrateddynamics.block.stepsound.name=Block Step Sound
+operator.operators.integrateddynamics.block.stepsound.info=The step sound of the given block
+
+operator.operators.integrateddynamics.itemstack.name=Item
+operator.operators.integrateddynamics.itemstack.basename=Item %s
+operator.operators.integrateddynamics.itemstack.size.name=Size
+operator.operators.integrateddynamics.itemstack.size.info=The current stack size
+operator.operators.integrateddynamics.itemstack.maxsize.name=Max size
+operator.operators.integrateddynamics.itemstack.maxsize.info=The maximum stack size
+operator.operators.integrateddynamics.itemstack.stackable.name=Stackable
+operator.operators.integrateddynamics.itemstack.stackable.info=If the item stack can hold at least two items.
+operator.operators.integrateddynamics.itemstack.damageable.name=Damageable
+operator.operators.integrateddynamics.itemstack.damageable.info=If the item can take damage.
+operator.operators.integrateddynamics.itemstack.damage.name=Damage
+operator.operators.integrateddynamics.itemstack.damage.info=The current item damage
+operator.operators.integrateddynamics.itemstack.maxdamage.name=Max Damage
+operator.operators.integrateddynamics.itemstack.maxdamage.info=The maximum item damage
+operator.operators.integrateddynamics.itemstack.enchanted.name=Enchanted
+operator.operators.integrateddynamics.itemstack.enchanted.info=If the item is enchanted
+operator.operators.integrateddynamics.itemstack.enchantable.name=Enchantable
+operator.operators.integrateddynamics.itemstack.enchantable.info=If the item can be enchanted
+operator.operators.integrateddynamics.itemstack.repaircost.name=Repair Cost
+operator.operators.integrateddynamics.itemstack.repaircost.info=The repair cost of the item
+operator.operators.integrateddynamics.itemstack.rarity.name=Rarity
+operator.operators.integrateddynamics.itemstack.rarity.info=The rarity of the item
+operator.operators.integrateddynamics.itemstack.strength.name=Strength vs Block
+operator.operators.integrateddynamics.itemstack.strength.info=The strength this item has against the given block
+operator.operators.integrateddynamics.itemstack.canharvest.name=Can Harvest
+operator.operators.integrateddynamics.itemstack.canharvest.info=If the item can harvest the given block
+operator.operators.integrateddynamics.itemstack.block.name=Block
+operator.operators.integrateddynamics.itemstack.block.info=The block from the given item
+operator.operators.integrateddynamics.itemstack.isfluidstack.name=Has Fluid
+operator.operators.integrateddynamics.itemstack.isfluidstack.info=If the given item has a fluid
+operator.operators.integrateddynamics.itemstack.fluidstack.name=Fluid
+operator.operators.integrateddynamics.itemstack.fluidstack.info=The fluid from the given item
+operator.operators.integrateddynamics.itemstack.fluidstackcapacity.name=Fluid Capacity
+operator.operators.integrateddynamics.itemstack.fluidstackcapacity.info=The fluid capacity of the given item in mB
+operator.operators.integrateddynamics.itemstack.isnbtequal.name=NBT equals
+operator.operators.integrateddynamics.itemstack.isnbtequal.info=If the NBT tags of the given items are equal
+operator.operators.integrateddynamics.itemstack.israwitemequal.name=Raw item equals
+operator.operators.integrateddynamics.itemstack.israwitemequal.info=If the raw item of the items are equal
+operator.operators.integrateddynamics.itemstack.mod.name=Mod
+operator.operators.integrateddynamics.itemstack.mod.info=The name of the mod owning the given item
+operator.operators.integrateddynamics.itemstack.burntime.name=Fuel Burn Time
+operator.operators.integrateddynamics.itemstack.burntime.info=The fuel burn time in ticks of the given item
+operator.operators.integrateddynamics.itemstack.oredict.name=Oredictionary Names
+operator.operators.integrateddynamics.itemstack.oredict.info=The oredictionary names (strings) of the given item
+operator.operators.integrateddynamics.string.oredict.name=Oredictionary Values
+operator.operators.integrateddynamics.string.oredict.info=The oredictionary values (items) of the given name
+
+operator.operators.integrateddynamics.entity.name=Entity
+operator.operators.integrateddynamics.entity.basename=Entity %s
+operator.operators.integrateddynamics.entity.ismob.name=Is Mob
+operator.operators.integrateddynamics.entity.ismob.info=If the entity is a mob
+operator.operators.integrateddynamics.entity.isanimal.name=Is Animal
+operator.operators.integrateddynamics.entity.isanimal.info=If the entity is an animal
+operator.operators.integrateddynamics.entity.isitem.name=Is Item
+operator.operators.integrateddynamics.entity.isitem.info=If the entity is an item
+operator.operators.integrateddynamics.entity.isplayer.name=Is Player
+operator.operators.integrateddynamics.entity.isplayer.info=If the entity is a player
+operator.operators.integrateddynamics.entity.item.name=Item
+operator.operators.integrateddynamics.entity.item.info=The item from the item entity
+operator.operators.integrateddynamics.entity.health.name=Health
+operator.operators.integrateddynamics.entity.health.info=The entity health
+operator.operators.integrateddynamics.entity.width.name=Width
+operator.operators.integrateddynamics.entity.width.info=The entity width
+operator.operators.integrateddynamics.entity.height.name=Height
+operator.operators.integrateddynamics.entity.height.info=The entity height
+operator.operators.integrateddynamics.entity.isburning.name=Is Burning
+operator.operators.integrateddynamics.entity.isburning.info=If the entity is burning
+operator.operators.integrateddynamics.entity.iswet.name=Is Wet
+operator.operators.integrateddynamics.entity.iswet.info=If the entity is wet
+operator.operators.integrateddynamics.entity.issneaking.name=Is Sneaking
+operator.operators.integrateddynamics.entity.issneaking.info=If the entity is sneaking
+operator.operators.integrateddynamics.entity.iseating.name=Is Eating
+operator.operators.integrateddynamics.entity.iseating.info=If the entity is eating
+operator.operators.integrateddynamics.entity.armorinventory.name=Armor Inventory
+operator.operators.integrateddynamics.entity.armorinventory.info=The list of items the entity is carrying as armor.
+operator.operators.integrateddynamics.entity.inventory.name=Player Inventory
+operator.operators.integrateddynamics.entity.inventory.info=The list of items the player is carrying.
+operator.operators.integrateddynamics.entity.mod.name=Mod
+operator.operators.integrateddynamics.entity.mod.info=The name of the mod owning the given entity
+operator.operators.integrateddynamics.entity.targetblock.name=Target Block
+operator.operators.integrateddynamics.entity.targetblock.info=The block the given entity is currently looking at.
+operator.operators.integrateddynamics.entity.targetentity.name=Target Entity
+operator.operators.integrateddynamics.entity.targetentity.info=The entity the given entity is currently looking at.
+operator.operators.integrateddynamics.entity.helditem.name=Held Item
+operator.operators.integrateddynamics.entity.helditem.info=The item the given entity is currently holding.
+operator.operators.integrateddynamics.entity.mounted.name=Mounted Entity
+operator.operators.integrateddynamics.entity.mounted.info=The entity that is currently mounted on the given entity.
+operator.operators.integrateddynamics.entity.itemframecontents.name=Item Frame Contents
+operator.operators.integrateddynamics.entity.itemframecontents.info=The contents from the given Item Frame.
+operator.operators.integrateddynamics.entity.itemframerotation.name=Item Frame Rotation
+operator.operators.integrateddynamics.entity.itemframerotation.info=The rotation from the given Item Frame.
+operator.operators.integrateddynamics.entity.hurtsound.name=Entity Hurt Sound
+operator.operators.integrateddynamics.entity.hurtsound.info=The hurt sound of the given entity.
+operator.operators.integrateddynamics.entity.deathsound.name=Entity Death Sound
+operator.operators.integrateddynamics.entity.deathsound.info=The death sound of the given entity.
+
+operator.operators.integrateddynamics.fluidstack.name=Fluid
+operator.operators.integrateddynamics.fluidstack.basename=Fluid %s
+operator.operators.integrateddynamics.fluidstack.amount.name=Amount
+operator.operators.integrateddynamics.fluidstack.amount.info=The amount of mB
+operator.operators.integrateddynamics.fluidstack.block.name=Block
+operator.operators.integrateddynamics.fluidstack.block.info=The block of the fluid
+operator.operators.integrateddynamics.fluidstack.luminosity.name=Luminosity
+operator.operators.integrateddynamics.fluidstack.luminosity.info=The fluid luminosity
+operator.operators.integrateddynamics.fluidstack.density.name=Density
+operator.operators.integrateddynamics.fluidstack.density.info=The fluid density
+operator.operators.integrateddynamics.fluidstack.viscosity.name=Viscosity
+operator.operators.integrateddynamics.fluidstack.viscosity.info=The fluid viscosity
+operator.operators.integrateddynamics.fluidstack.isgaseous.name=Is Gaseous
+operator.operators.integrateddynamics.fluidstack.isgaseous.info=If the fluid is gaseous
+operator.operators.integrateddynamics.fluidstack.rarity.name=Rarity
+operator.operators.integrateddynamics.fluidstack.rarity.info=The fluid rarity
+operator.operators.integrateddynamics.fluidstack.israwfluidequal.name=Raw fluid equals
+operator.operators.integrateddynamics.fluidstack.israwfluidequal.info=If the raw fluids are equal
+operator.operators.integrateddynamics.fluidstack.mod.name=Mod
+operator.operators.integrateddynamics.fluidstack.mod.info=The name of the mod owning the given fluid
+
+operator.operators.integrateddynamics.general.name=General
+operator.operators.integrateddynamics.general.basename=General %s
+operator.operators.integrateddynamics.general.choice.name=Choice
+operator.operators.integrateddynamics.general.choice.info=If the first value is true, the second value is taken, otherwise the third value.\nType two and three must be equal.
+operator.operators.integrateddynamics.general.identity.name=Identity
+operator.operators.integrateddynamics.general.identity.info=A copy of the input value.
+operator.operators.integrateddynamics.general.isnull.name=Is Null
+operator.operators.integrateddynamics.general.isnull.info=If the given value is null
+operator.operators.integrateddynamics.general.isnotnull.name=Is Not Null
+operator.operators.integrateddynamics.general.isnotnull.info=If the given value is not null
+
+operator.operators.integrateddynamics.cast.name=Cast
+operator.operators.integrateddynamics.cast.basename=Cast
+operator.operators.integrateddynamics.cast.tooltip=Cast %s to %s
+
+### ----- Mod Compats ----- ###
+
+## ----- Charset ----- ##
+
+## Aspects
+aspect.aspects.integrateddynamics.read.itemstack.charsetpipe.contents.name=Pipe Contents
+aspect.aspects.integrateddynamics.read.itemstack.charsetpipe.contents.info=The item currently going through this pipe.
+aspect.aspects.integrateddynamics.read.boolean.charsetpipe.hascontents.name=Pipe Has Contents
+aspect.aspects.integrateddynamics.read.boolean.charsetpipe.hascontents.info=If an item is going through this pipe.
+aspect.aspects.integrateddynamics.read.boolean.charsetpipe.applicable.name=Is Pipe
+aspect.aspects.integrateddynamics.read.boolean.charsetpipe.applicable.info=If the target block is a pipe.
+
+aspect.aspects.integrateddynamics.write.boolean.charsetpipe.shifter.name=Pipe Shift
+aspect.aspects.integrateddynamics.write.boolean.charsetpipe.shifter.info=Enable pipe item shifting
+aspect.aspects.integrateddynamics.write.itemstack.charsetpipe.shifter.name=Single Filtered Pipe Shift
+aspect.aspects.integrateddynamics.write.itemstack.charsetpipe.shifter.info=Enable pipe item shifting for the given item
+aspect.aspects.integrateddynamics.write.list.charsetpipe.shifter.name=Filtered Pipe Shift
+aspect.aspects.integrateddynamics.write.list.charsetpipe.shifter.info=Enable pipe item shifting for the given items
+
+## ----- Thaumcraft ----- ##
+
+## Value Types
+valuetype.valuetypes.integrateddynamics.thaumcraftaspect.name=Thaumcraft Aspect
+valuetype.integrateddynamics.error.thaumcraftaspect.noAspect=The inserted item contains no aspects.
+
+## Aspects
+aspect.aspects.integrateddynamics.read.boolean.thaumcraft.isaspectcontainer.name=Is Aspect Container
+aspect.aspects.integrateddynamics.read.boolean.thaumcraft.isaspectcontainer.info=If the given block can hold aspects.
+aspect.aspects.integrateddynamics.read.list.thaumcraft.aspectcontainer.name=Aspect Container Aspects
+aspect.aspects.integrateddynamics.read.list.thaumcraft.aspectcontainer.info=All aspects in the given aspect container.
+aspect.aspects.integrateddynamics.read.thaumcraftaspect.thaumcraft.aspectcontainer.name=Aspect Container Aspect
+aspect.aspects.integrateddynamics.read.thaumcraftaspect.thaumcraft.aspectcontainer.info=The selected aspect in the given aspect container.
+
+## Operators
+operator.operators.integrateddynamics.itemstack.getitemthaumcraftaspects.name=Thaumcraft Aspects
+operator.operators.integrateddynamics.itemstack.getitemthaumcraftaspects.info=The list of Thaumcraft aspects this item has
+
+operator.operators.integrateddynamics.thaumcraft.aspect.name=Thaumcraft Aspect
+operator.operators.integrateddynamics.thaumcraft.aspect.basename=Thaumcraft Aspect %s
+operator.operators.integrateddynamics.thaumcraft.aspect.amount.name=Vis Amount
+operator.operators.integrateddynamics.thaumcraft.aspect.amount.info=The amount of vis in the aspect
+operator.operators.integrateddynamics.thaumcraft.aspect.israwaspectequal.name=Raw Aspect Equals
+operator.operators.integrateddynamics.thaumcraft.aspect.israwaspectequal.info=If the given raw aspects are equal
+operator.operators.integrateddynamics.thaumcraft.aspect.getcompoundaspects.name=Compound Aspects
+operator.operators.integrateddynamics.thaumcraft.aspect.getcompoundaspects.info=The list of aspects this aspect is made up of
+operator.operators.integrateddynamics.thaumcraft.aspect.isprimal.name=Is Aspect Primal
+operator.operators.integrateddynamics.thaumcraft.aspect.isprimal.info=If the given aspect is a primal aspect
+
+## ----- RF ----- ##
+
+## Aspects
+aspect.aspects.integrateddynamics.read.boolean.rf.applicable.name=Is RF Handler
+aspect.aspects.integrateddynamics.read.boolean.rf.applicable.info=If the target in some way handles RF
+aspect.aspects.integrateddynamics.read.boolean.rf.isreceiver.name=Is RF Receiver
+aspect.aspects.integrateddynamics.read.boolean.rf.isreceiver.info=If the target can receive RF
+aspect.aspects.integrateddynamics.read.boolean.rf.isprovider.name=Is RF Provider
+aspect.aspects.integrateddynamics.read.boolean.rf.isprovider.info=If the target can provide RF
+aspect.aspects.integrateddynamics.read.boolean.rf.canextract.name=Can Extract RF
+aspect.aspects.integrateddynamics.read.boolean.rf.canextract.info=If RF can really be extracted from the target, takes into account storage
+aspect.aspects.integrateddynamics.read.boolean.rf.caninsert.name=Can Insert RF
+aspect.aspects.integrateddynamics.read.boolean.rf.caninsert.info=If RF can really be inserted into the target, takes into account storage and capacity
+aspect.aspects.integrateddynamics.read.boolean.rf.isfull.name=Is RF Buffer Full
+aspect.aspects.integrateddynamics.read.boolean.rf.isfull.info=If the target's RF buffer is completely full
+aspect.aspects.integrateddynamics.read.boolean.rf.isempty.name=Is RF Buffer Empty
+aspect.aspects.integrateddynamics.read.boolean.rf.isempty.info=If the target's RF buffer is completely empty
+aspect.aspects.integrateddynamics.read.boolean.rf.isnonempty.name=Is RF Buffer Not Empty
+aspect.aspects.integrateddynamics.read.boolean.rf.isnonempty.info=If the target's RF buffer is not empty
+aspect.aspects.integrateddynamics.read.integer.rf.amount.name=Stored RF
+aspect.aspects.integrateddynamics.read.integer.rf.amount.info=The amount of RF stored in the target
+aspect.aspects.integrateddynamics.read.integer.rf.capacity.name=RF Capacity
+aspect.aspects.integrateddynamics.read.integer.rf.capacity.info=The RF capacity of the target
+aspect.aspects.integrateddynamics.read.double.rf.fillratio.name=RF Fill Ratio
+aspect.aspects.integrateddynamics.read.double.rf.fillratio.info=The amount of RF in the target divided by its capacity
+
+## Operators
+operator.operators.integrateddynamics.itemstack.isrfcontainer.name=Is RF Container
+operator.operators.integrateddynamics.itemstack.isrfcontainer.info=If the given item can hold RF
+operator.operators.integrateddynamics.itemstack.storedrf.name=RF Stored
+operator.operators.integrateddynamics.itemstack.storedrf.info=The amount of RF stored in this item
+operator.operators.integrateddynamics.itemstack.rfcapacity.name=RF Capacity
+operator.operators.integrateddynamics.itemstack.rfcapacity.info=The maximum amount of RF that can be stored in this item

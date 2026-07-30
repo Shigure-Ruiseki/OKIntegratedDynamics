@@ -1,0 +1,7 @@
+{
+  "parent": "integrateddynamics:block/writer",
+  "textures": {
+    "back" : "integrateddynamics:blocks/parts/effectReader_back",
+    "front": "integrateddynamics:blocks/parts/effectWriter_front_inactive"
+  }
+}

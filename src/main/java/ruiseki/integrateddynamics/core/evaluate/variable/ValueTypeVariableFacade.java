@@ -1,0 +1,106 @@
+package ruiseki.integrateddynamics.core.evaluate.variable;
+
+import java.util.List;
+
+import net.minecraft.entity.player.EntityPlayer;
+
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
+import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
+import ruiseki.integrateddynamics.api.evaluate.variable.IVariable;
+import ruiseki.integrateddynamics.api.item.IValueTypeVariableFacade;
+import ruiseki.integrateddynamics.api.network.IPartNetwork;
+import ruiseki.integrateddynamics.core.helper.L10NValues;
+import ruiseki.integrateddynamics.core.item.VariableFacadeBase;
+import ruiseki.okcore.helper.LangHelpers;
+
+/**
+ * Variable facade for variables determined by a raw value.
+ * 
+ * @author rubensworks
+ */
+@EqualsAndHashCode(callSuper = true)
+@Data
+public class ValueTypeVariableFacade<V extends IValue> extends VariableFacadeBase
+    implements IValueTypeVariableFacade<V> {
+
+    private final IValueType<V> valueType;
+    private final V value;
+    private IVariable<V> variable = null;
+
+    public ValueTypeVariableFacade(boolean generateId, IValueType<V> valueType, V value) {
+        super(generateId);
+        this.valueType = valueType;
+        this.value = value;
+    }
+
+    public ValueTypeVariableFacade(int id, IValueType<V> valueType, V value) {
+        super(id);
+        this.valueType = valueType;
+        this.value = value;
+    }
+
+    public ValueTypeVariableFacade(boolean generateId, IValueType<V> valueType, String value) {
+        super(generateId);
+        this.valueType = valueType;
+        this.value = valueType.deserialize(value);
+    }
+
+    public ValueTypeVariableFacade(int id, IValueType<V> valueType, String value) {
+        super(id);
+        this.valueType = valueType;
+        this.value = valueType.deserialize(value);
+    }
+
+    @Override
+    public IVariable<V> getVariable(IPartNetwork network) {
+        if (isValid()) {
+            if (variable == null) {
+                variable = new Variable<V>(getValueType(), getValue());
+            }
+            return variable;
+        }
+        return null;
+    }
+
+    @Override
+    public boolean isValid() {
+        return getValueType() != null && getValue() != null;
+    }
+
+    @Override
+    public void validate(IPartNetwork network, IValidator validator, IValueType containingValueType) {
+        if (!isValid()) {
+            validator.addError(new LangHelpers.UnlocalizedString(L10NValues.VARIABLE_ERROR_INVALIDITEM));
+        } else {
+            // Check expected aspect type and operator output type
+            if (!ValueHelpers.correspondsTo(getValueType(), containingValueType)) {
+                validator.addError(
+                    new LangHelpers.UnlocalizedString(
+                        L10NValues.ASPECT_ERROR_INVALIDTYPE,
+                        new LangHelpers.UnlocalizedString(containingValueType.getUnlocalizedName()),
+                        new LangHelpers.UnlocalizedString(getValueType().getUnlocalizedName())));
+            }
+        }
+    }
+
+    @Override
+    public IValueType getOutputType() {
+        return getValueType();
+    }
+
+    @SideOnly(Side.CLIENT)
+    @Override
+    public void addInformation(List<String> list, EntityPlayer entityPlayer) {
+        if (isValid()) {
+            getValueType().loadTooltip(list, false);
+            list.add(
+                LangHelpers.localize(L10NValues.VALUETYPE_TOOLTIP_VALUE, getValueType().toCompactString(getValue())));
+        }
+        super.addInformation(list, entityPlayer);
+    }
+
+}

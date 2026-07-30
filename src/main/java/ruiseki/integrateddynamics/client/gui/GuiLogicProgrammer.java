@@ -1,0 +1,415 @@
+package ruiseki.integrateddynamics.client.gui;
+
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.io.IOException;
+import java.util.List;
+
+import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.gui.GuiButton;
+import net.minecraft.client.gui.GuiTextField;
+import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.entity.player.InventoryPlayer;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.ResourceLocation;
+
+import org.apache.commons.lang3.tuple.Triple;
+import org.lwjgl.input.Keyboard;
+
+import com.google.common.collect.Lists;
+
+import ruiseki.integrateddynamics.IntegratedDynamics;
+import ruiseki.integrateddynamics.api.client.gui.subgui.IGuiInputElement;
+import ruiseki.integrateddynamics.api.logicprogrammer.ILogicProgrammerElement;
+import ruiseki.integrateddynamics.api.logicprogrammer.ILogicProgrammerElementType;
+import ruiseki.integrateddynamics.block.BlockLogicProgrammerConfig;
+import ruiseki.integrateddynamics.core.client.gui.subgui.SubGuiHolder;
+import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeGuiElement;
+import ruiseki.integrateddynamics.core.helper.L10NValues;
+import ruiseki.integrateddynamics.core.logicprogrammer.LogicProgrammerElementTypes;
+import ruiseki.integrateddynamics.core.logicprogrammer.SubGuiConfigRenderPattern;
+import ruiseki.integrateddynamics.inventory.container.ContainerLogicProgrammer;
+import ruiseki.integrateddynamics.item.ItemLabeller;
+import ruiseki.integrateddynamics.network.packet.LogicProgrammerActivateElementPacket;
+import ruiseki.integrateddynamics.network.packet.LogicProgrammerLabelPacket;
+import ruiseki.okcore.client.gui.component.button.GuiButtonText;
+import ruiseki.okcore.client.gui.container.ScrollingGuiContainer;
+import ruiseki.okcore.client.renderer.GlStateManager;
+import ruiseki.okcore.helper.Helpers;
+import ruiseki.okcore.helper.LangHelpers;
+import ruiseki.okcore.helper.RenderHelpers;
+import ruiseki.okcore.init.ModBase;
+
+/**
+ * Gui for the {@link ruiseki.integrateddynamics.block.BlockLogicProgrammer}.
+ *
+ * @author rubensworks
+ */
+public class GuiLogicProgrammer extends ScrollingGuiContainer {
+
+    public static final int BOX_HEIGHT = 18;
+    private static final Rectangle ITEM_POSITION = new Rectangle(19, 18, 56, BOX_HEIGHT - 1);
+
+    protected final SubGuiHolder subGuiHolder = new SubGuiHolder();
+    private final boolean hasLabeller;
+    protected SubGuiConfigRenderPattern operatorConfigPattern = null;
+
+    /**
+     * Make a new instance.
+     *
+     * @param inventoryPlayer The player inventory.
+     */
+    public GuiLogicProgrammer(InventoryPlayer inventoryPlayer) {
+        super(new ContainerLogicProgrammer(inventoryPlayer));
+        ContainerLogicProgrammer container = (ContainerLogicProgrammer) getContainer();
+        container.setGui(this);
+
+        this.hasLabeller = inventoryPlayer.hasItemStack(new ItemStack(ItemLabeller.getInstance()));
+    }
+
+    @Override
+    public void initGui() {
+        super.initGui();
+        subGuiHolder.initGui(this.guiLeft, this.guiTop);
+    }
+
+    protected int getScrollX() {
+        return 5;
+    }
+
+    protected int getScrollY() {
+        return 18;
+    }
+
+    protected int getScrollHeight() {
+        return 178;
+    }
+
+    @Override
+    protected int getBaseXSize() {
+        return 256;
+    }
+
+    @Override
+    protected int getBaseYSize() {
+        return 240;
+    }
+
+    @Override
+    protected int getSearchX() {
+        return 6;
+    }
+
+    protected int getSearchWidth() {
+        return 70;
+    }
+
+    @Override
+    public String getGuiTexture() {
+        return getContainer().getGuiProvider()
+            .getMod()
+            .getReferenceValue(ModBase.REFKEY_TEXTURE_PATH_GUI) + BlockLogicProgrammerConfig._instance.getNamedId()
+            + ".png";
+    }
+
+    protected float colorSmoothener(float color, boolean hover) {
+        return 1F - ((1F - color) / (hover ? 2F : 4F));
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    protected void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY) {
+        super.drawGuiContainerBackgroundLayer(partialTicks, mouseX, mouseY);
+        subGuiHolder.drawGuiContainerBackgroundLayer(
+            this.guiLeft,
+            this.guiTop,
+            mc.renderEngine,
+            fontRendererObj,
+            partialTicks,
+            mouseX,
+            mouseY);
+        FontRenderer fontRenderer = fontRendererObj;
+
+        // Draw container name
+        fontRenderer.drawString(
+            LangHelpers.localize(L10NValues.GUI_LOGICPROGRAMMER_FILTER),
+            this.guiLeft + offsetX + 5,
+            this.guiTop + offsetY + 208,
+            Helpers.RGBToInt(80, 80, 80));
+
+        // Draw operators
+        ContainerLogicProgrammer container = (ContainerLogicProgrammer) getScrollingInventoryContainer();
+        int boxHeight = BOX_HEIGHT;
+        for (int i = 0; i < container.getPageSize(); i++) {
+            if (container.isElementVisible(i)) {
+                ILogicProgrammerElement element = container.getVisibleElement(i);
+
+                GlStateManager.disableAlpha();
+                Triple<Float, Float, Float> rgb = Helpers.intToRGB(element.getColor());
+                boolean hover = LogicProgrammerElementTypes.areEqual(container.getActiveElement(), element)
+                    || isPointInRegion(getElementPosition(container, i, false), new Point(mouseX, mouseY));
+                GlStateManager.color(
+                    colorSmoothener(rgb.getLeft(), hover),
+                    colorSmoothener(rgb.getMiddle(), hover),
+                    colorSmoothener(rgb.getRight(), hover),
+                    1);
+
+                // Background
+                mc.renderEngine.bindTexture(texture);
+                drawTexturedModalRect(
+                    guiLeft + offsetX + ITEM_POSITION.x,
+                    guiTop + offsetY + ITEM_POSITION.y + boxHeight * i,
+                    19,
+                    18,
+                    ITEM_POSITION.width,
+                    ITEM_POSITION.height);
+
+                GlStateManager.enableAlpha();
+                // Arrow
+                if (hover) {
+                    drawTexturedModalRect(
+                        guiLeft + offsetX + ITEM_POSITION.x,
+                        guiTop + offsetY + ITEM_POSITION.y + boxHeight * i,
+                        0,
+                        240,
+                        3,
+                        16);
+                }
+                GlStateManager.disableAlpha();
+                GlStateManager.color(1, 1, 1, 1);
+
+                // Operator info
+                String aspectName = LangHelpers.localize(element.getSymbol());
+                RenderHelpers.drawScaledCenteredString(
+                    fontRenderer,
+                    aspectName,
+                    this.guiLeft + offsetX + (hover ? 22 : 21),
+                    this.guiTop + offsetY + 26 + boxHeight * i,
+                    53,
+                    Helpers.RGBToInt(40, 40, 40));
+            }
+        }
+    }
+
+    protected Rectangle getElementPosition(ContainerLogicProgrammer container, int i, boolean absolute) {
+        return new Rectangle(
+            ITEM_POSITION.x + offsetX + (absolute ? this.guiLeft : 0),
+            ITEM_POSITION.y + BOX_HEIGHT * i + offsetY + (absolute ? this.guiTop : 0),
+            ITEM_POSITION.width,
+            ITEM_POSITION.height);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
+        super.drawGuiContainerForegroundLayer(mouseX, mouseY);
+        subGuiHolder.drawGuiContainerForegroundLayer(
+            this.guiLeft,
+            this.guiTop,
+            mc.renderEngine,
+            fontRendererObj,
+            mouseX,
+            mouseY);
+        // Draw operator tooltips
+        ContainerLogicProgrammer container = (ContainerLogicProgrammer) getScrollingInventoryContainer();
+        for (int i = 0; i < container.getPageSize(); i++) {
+            if (container.isElementVisible(i)) {
+                ILogicProgrammerElement element = container.getVisibleElement(i);
+                if (isPointInRegion(getElementPosition(container, i, false), new Point(mouseX, mouseY))) {
+                    List<String> lines = Lists.newLinkedList();
+                    element.loadTooltip(lines);
+                    drawTooltip(lines, mouseX - this.guiLeft, mouseY - this.guiTop);
+                }
+            }
+        }
+    }
+
+    protected void onActivateElement(
+        ILogicProgrammerElement<SubGuiConfigRenderPattern, GuiLogicProgrammer, ContainerLogicProgrammer> element) {
+        subGuiHolder.addSubGui(
+            operatorConfigPattern = element
+                .createSubGui(88, 18, 160, 87, this, (ContainerLogicProgrammer) getContainer()));
+        operatorConfigPattern.initGui(guiLeft, guiTop);
+        SubGuiOperatorInfo operatorInfoPattern;
+        subGuiHolder.addSubGui(operatorInfoPattern = new SubGuiOperatorInfo(element));
+        operatorInfoPattern.initGui(guiLeft, guiTop);
+    }
+
+    protected void onDeactivateElement(ILogicProgrammerElement element) {
+        subGuiHolder.clear();
+    }
+
+    public void handleElementActivation(ILogicProgrammerElement element) {
+        ContainerLogicProgrammer container = (ContainerLogicProgrammer) getScrollingInventoryContainer();
+        ILogicProgrammerElement newActive = null;
+        onDeactivateElement(element);
+        if (container.getActiveElement() != element) {
+            newActive = element;
+            if (element != null) {
+                onActivateElement(element);
+            }
+        }
+        container.setActiveElement(
+            newActive,
+            operatorConfigPattern == null ? 0 : operatorConfigPattern.getX(),
+            operatorConfigPattern == null ? 0 : operatorConfigPattern.getY());
+        if (newActive != null) {
+            ILogicProgrammerElementType type = newActive.getType();
+            IntegratedDynamics._instance.getPacketHandler()
+                .sendToServer(new LogicProgrammerActivateElementPacket(type.getName(), type.getName(newActive)));
+        } else {
+            IntegratedDynamics._instance.getPacketHandler()
+                .sendToServer(new LogicProgrammerActivateElementPacket("", ""));
+        }
+    }
+
+    @Override
+    protected void keyTyped(char typedChar, int keyCode) {
+        try {
+            if (!subGuiHolder.keyTyped(this.checkHotbarKeys(keyCode), typedChar, keyCode)) {
+                super.keyTyped(typedChar, keyCode);
+            }
+        } catch (IOException ignore) {}
+    }
+
+    @Override
+    protected void mouseClicked(int mouseX, int mouseY, int mouseButton) {
+        try {
+            subGuiHolder.mouseClicked(mouseX, mouseY, mouseButton);
+        } catch (IOException ignore) {}
+        ContainerLogicProgrammer container = (ContainerLogicProgrammer) getScrollingInventoryContainer();
+        for (int i = 0; i < container.getPageSize(); i++) {
+            if (container.isElementVisible(i)) {
+                ILogicProgrammerElement element = container.getVisibleElement(i);
+                if (isPointInRegion(getElementPosition(container, i, false), new Point(mouseX, mouseY))) {
+                    handleElementActivation(element);
+                }
+            }
+        }
+        super.mouseClicked(mouseX, mouseY, mouseButton);
+    }
+
+    protected void label(String label) {
+        IntegratedDynamics._instance.getPacketHandler()
+            .sendToServer(new LogicProgrammerLabelPacket(label));
+    }
+
+    protected boolean hasLabeller() {
+        return this.hasLabeller;
+    }
+
+    public class SubGuiOperatorInfo extends
+        ValueTypeGuiElement.SubGuiValueTypeInfo<SubGuiConfigRenderPattern, GuiLogicProgrammer, ContainerLogicProgrammer> {
+
+        public static final int BUTTON_EDIT = 1;
+
+        private GuiTextField searchField;
+        private GuiButtonText button = null;
+
+        public SubGuiOperatorInfo(
+            IGuiInputElement<SubGuiConfigRenderPattern, GuiLogicProgrammer, ContainerLogicProgrammer> element) {
+            super(
+                GuiLogicProgrammer.this,
+                (ContainerLogicProgrammer) GuiLogicProgrammer.this.container,
+                element,
+                88,
+                106,
+                139,
+                20);
+
+            if (hasLabeller()) {
+                buttonList.add(button = new GuiButtonText(BUTTON_EDIT, 0, 0, 6, 10, "E", true));
+            }
+
+            int searchWidth = 113;
+            this.searchField = new GuiTextField(GuiLogicProgrammer.this.fontRendererObj, 0, 0, searchWidth, 11);
+            this.searchField.setMaxStringLength(64);
+            this.searchField.setEnableBackgroundDrawing(true);
+            this.searchField.setVisible(false);
+            this.searchField.setTextColor(16777215);
+            this.searchField.setCanLoseFocus(true);
+            this.searchField.setText("");
+            this.searchField.width = searchWidth;
+        }
+
+        @Override
+        public void initGui(int guiLeft, int guiTop) {
+            super.initGui(guiLeft, guiTop);
+            int searchX = 90;
+            int searchY = 110;
+            this.searchField.xPosition = guiLeft + searchX;
+            this.searchField.yPosition = guiTop + searchY;
+
+            if (hasLabeller()) {
+                button.xPosition = guiLeft + 220;
+                button.yPosition = guiTop + 111;
+            }
+        }
+
+        @Override
+        protected boolean showError() {
+            return container.canWriteActiveElementPre();
+        }
+
+        @Override
+        protected LangHelpers.UnlocalizedString getLastError() {
+            return container.getLastError();
+        }
+
+        @Override
+        protected ResourceLocation getTexture() {
+            return texture;
+        }
+
+        @Override
+        public boolean keyTyped(boolean checkHotbarKeys, char typedChar, int keyCode) throws IOException {
+            if (!checkHotbarKeys) {
+                if (!this.searchField.getVisible() || !this.searchField.textboxKeyTyped(typedChar, keyCode)) {
+                    return super.keyTyped(checkHotbarKeys, typedChar, keyCode);
+                } else {
+                    label(this.searchField.getText());
+                    return true;
+                }
+            }
+            return super.keyTyped(checkHotbarKeys, typedChar, keyCode);
+        }
+
+        @Override
+        public void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
+            if (this.searchField.getVisible()) {
+                this.searchField.mouseClicked(mouseX, mouseY, mouseButton);
+            }
+            super.mouseClicked(mouseX, mouseY, mouseButton);
+        }
+
+        @Override
+        public void drawGuiContainerBackgroundLayer(int guiLeft, int guiTop, TextureManager textureManager,
+            FontRenderer fontRenderer, float partialTicks, int mouseX, int mouseY) {
+            super.drawGuiContainerBackgroundLayer(
+                guiLeft,
+                guiTop,
+                textureManager,
+                fontRenderer,
+                partialTicks,
+                mouseX,
+                mouseY);
+            Keyboard.enableRepeatEvents(true);
+            this.searchField.drawTextBox();
+        }
+
+        @Override
+        protected void actionPerformed(GuiButton guibutton) {
+            super.actionPerformed(guibutton);
+            if (guibutton.id == BUTTON_EDIT) {
+                this.searchField.setVisible(!this.searchField.getVisible());
+                if (this.searchField.getVisible()) {
+                    this.searchField.setFocused(true);
+                    label(this.searchField.getText());
+                } else {
+                    label("");
+                }
+            }
+        }
+    }
+
+}

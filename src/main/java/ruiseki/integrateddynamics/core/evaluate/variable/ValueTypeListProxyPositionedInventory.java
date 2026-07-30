@@ -1,0 +1,56 @@
+package ruiseki.integrateddynamics.core.evaluate.variable;
+
+import net.minecraft.inventory.IInventory;
+import net.minecraft.nbt.NBTTagCompound;
+
+import ruiseki.okcore.datastructure.DimPos;
+import ruiseki.okcore.helper.TileHelpers;
+import ruiseki.okcore.persist.nbt.INBTProvider;
+import ruiseki.okcore.persist.nbt.NBTPersist;
+
+/**
+ * A list proxy for an inventory at a certain position.
+ */
+public class ValueTypeListProxyPositionedInventory extends
+    ValueTypeListProxyBase<ValueObjectTypeItemStack, ValueObjectTypeItemStack.ValueItemStack> implements INBTProvider {
+
+    @NBTPersist
+    private DimPos pos;
+
+    public ValueTypeListProxyPositionedInventory() {
+        this(null);
+    }
+
+    public ValueTypeListProxyPositionedInventory(DimPos pos) {
+        super(ValueTypeListProxyFactories.POSITIONED_INVENTORY.getName(), ValueTypes.OBJECT_ITEMSTACK);
+        this.pos = pos;
+    }
+
+    protected IInventory getInventory() {
+        return TileHelpers.getSafeTile(pos.getWorld(), pos.getBlockPos(), IInventory.class);
+    }
+
+    @Override
+    public int getLength() {
+        IInventory inventory = getInventory();
+        if (inventory == null) {
+            return 0;
+        }
+        return inventory.getSizeInventory();
+    }
+
+    @Override
+    public ValueObjectTypeItemStack.ValueItemStack get(int index) {
+        return ValueObjectTypeItemStack.ValueItemStack.of(getInventory().getStackInSlot(index));
+    }
+
+    @Override
+    public void writeGeneratedFieldsToNBT(NBTTagCompound tag) {
+
+    }
+
+    @Override
+    public void readGeneratedFieldsFromNBT(NBTTagCompound tag) {
+
+    }
+}

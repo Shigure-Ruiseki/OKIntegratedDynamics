@@ -1,0 +1,37 @@
+package ruiseki.integrateddynamics.part;
+
+import com.google.common.collect.Sets;
+
+import ruiseki.integrateddynamics.api.part.aspect.IAspect;
+import ruiseki.integrateddynamics.core.part.aspect.AspectRegistry;
+import ruiseki.integrateddynamics.core.part.read.PartStateReaderBase;
+import ruiseki.integrateddynamics.core.part.read.PartTypeReadBase;
+import ruiseki.integrateddynamics.part.aspect.Aspects;
+
+/**
+ * A reader part that can read aspects from the network it is contained in.
+ * 
+ * @author rubensworks
+ */
+public class PartTypeNetworkReader
+    extends PartTypeReadBase<PartTypeNetworkReader, PartStateReaderBase<PartTypeNetworkReader>> {
+
+    public PartTypeNetworkReader(String name) {
+        super(name);
+        AspectRegistry.getInstance()
+            .register(
+                this,
+                Sets.<IAspect>newHashSet(
+                    Aspects.Read.Network.BOOLEAN_APPLICABLE,
+                    Aspects.Read.Network.INTEGER_ELEMENT_COUNT,
+                    Aspects.Read.Network.INTEGER_ENERGY_BATTERY_COUNT,
+                    Aspects.Read.Network.INTEGER_ENERGY_STORED,
+                    Aspects.Read.Network.INTEGER_ENERGY_MAX));
+    }
+
+    @Override
+    public PartStateReaderBase<PartTypeNetworkReader> constructDefaultState() {
+        return new PartStateReaderBase<PartTypeNetworkReader>();
+    }
+
+}

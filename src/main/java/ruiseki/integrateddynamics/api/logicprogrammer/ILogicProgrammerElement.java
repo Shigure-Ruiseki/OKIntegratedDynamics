@@ -1,0 +1,93 @@
+package ruiseki.integrateddynamics.api.logicprogrammer;
+
+import net.minecraft.client.gui.Gui;
+import net.minecraft.inventory.Container;
+import net.minecraft.item.ItemStack;
+
+import ruiseki.integrateddynamics.api.client.gui.subgui.IGuiInputElement;
+import ruiseki.integrateddynamics.api.client.gui.subgui.ISubGuiBox;
+import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
+import ruiseki.integrateddynamics.api.item.IVariableFacade;
+
+/**
+ * An element instantiation inside the logic programmer.
+ *
+ * @param <G> The type of gui.
+ * @param <C> The type of container.
+ * @param <S> The sub gui box type.
+ * @author rubensworks
+ */
+public interface ILogicProgrammerElement<S extends ISubGuiBox, G extends Gui, C extends Container>
+    extends IGuiInputElement<S, G, C> {
+
+    /**
+     * @return The element type.
+     */
+    public ILogicProgrammerElementType getType();
+
+    /**
+     * @return The string used to match regex searching.
+     */
+    public String getMatchString();
+
+    /**
+     * If the given value type matches with this element's input.
+     *
+     * @param valueType The value type to match.
+     * @return If it matches
+     */
+    public boolean matchesInput(IValueType valueType);
+
+    /**
+     * If the given value type matches with this element's output.
+     *
+     * @param valueType The value type to match.
+     * @return If it matches
+     */
+    public boolean matchesOutput(IValueType valueType);
+
+    /**
+     * Called when an input item slot has been updated.
+     *
+     * @param slotId    The slot id.
+     * @param itemStack The itemstack currently in the slot, can be null.
+     */
+    public void onInputSlotUpdated(int slotId, ItemStack itemStack);
+
+    /**
+     * @return If this element can be written to an item in its current state.
+     */
+    public boolean canWriteElementPre();
+
+    /**
+     * The stack to write the current state of this element to.
+     *
+     * @param itemStack The stack to write to.
+     * @return The resulting itemstack.
+     */
+    public ItemStack writeElement(ItemStack itemStack);
+
+    /**
+     * If this element in its current state can be deactivated because of another item being inserted into the
+     * write slot.
+     *
+     * @return If this element can be deactivated.
+     */
+    public boolean canCurrentlyReadFromOtherItem();
+
+    /**
+     * @param variableFacade A variable facade
+     * @return If this element corresponds to the given variable facade.
+     */
+    public boolean isFor(IVariableFacade variableFacade);
+
+    /**
+     * Check if the given item can be inserted into the given slot.
+     *
+     * @param slotId    The slot id.
+     * @param itemStack The item that will be inserted.
+     * @return If it can be inserted.
+     */
+    public boolean isItemValidForSlot(int slotId, ItemStack itemStack);
+
+}
