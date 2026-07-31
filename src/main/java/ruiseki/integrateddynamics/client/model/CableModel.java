@@ -20,6 +20,7 @@ import com.gtnewhorizon.gtnhlib.client.model.loading.ModelDeserializer.Position;
 import com.gtnewhorizon.gtnhlib.client.model.loading.ModelRegistry;
 import com.gtnewhorizon.gtnhlib.client.model.loading.ResourceLoc;
 import com.gtnewhorizon.gtnhlib.client.model.unbaked.JSONModel;
+import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuad;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing;
 
@@ -31,6 +32,7 @@ import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.IPartType.RenderPosition;
 import ruiseki.integrateddynamics.core.tileentity.TileMultipartTicking;
 import ruiseki.okcore.datastructure.ThreadsafeCache;
+import ruiseki.okcore.helper.QuadBuilderHelpers;
 import ruiseki.okcore.mixins.early.gtnhlib.JSONModelAccessor;
 
 public class CableModel implements BakedModel {
@@ -68,7 +70,7 @@ public class CableModel implements BakedModel {
 
         for (ForgeDirection side : ForgeDirection.VALID_DIRECTIONS) {
             CACHED_CORE_FACES.put(side, buildCoreCapFace(side, icon));
-            CACHED_STANDARD_CONNECTIONS.put(side, QuadBuilderHelper.buildCustomConnectionSegment(side, 1.0f, icon));
+            CACHED_STANDARD_CONNECTIONS.put(side, buildCustomConnectionSegment(side, 1.0f, icon));
         }
 
         List<ModelQuadView> itemQuads = new ArrayList<>(48);
@@ -115,8 +117,7 @@ public class CableModel implements BakedModel {
                         float targetDepth = 1.0f - depthFactor;
 
                         if (targetDepth > MAX) {
-                            combinedQuads
-                                .addAll(QuadBuilderHelper.buildCustomConnectionSegment(side, targetDepth, cableIcon));
+                            combinedQuads.addAll(buildCustomConnectionSegment(side, targetDepth, cableIcon));
                         }
                     }
 
@@ -252,11 +253,82 @@ public class CableModel implements BakedModel {
             case EAST -> minX = MAX;
         }
 
-        Map<ModelQuadFacing, ArrayList<ModelQuadView>> store = QuadBuilderHelper
+        Map<ModelQuadFacing, ArrayList<ModelQuadView>> store = QuadBuilderHelpers
             .buildCuboidStore(minX, minY, minZ, maxX, maxY, maxZ, icon, null);
 
         ModelQuadFacing facing = ModelQuadFacing.fromForgeDir(side);
         List<ModelQuadView> quads = store.get(facing);
         return quads != null ? quads : Collections.emptyList();
+    }
+
+    public static ArrayList<ModelQuadView> buildCustomConnectionSegment(ForgeDirection side, float targetDepth,
+        IIcon icon) {
+        ArrayList<ModelQuadView> quads = new ArrayList<>();
+        float min = CableModel.MIN; // 0.375f
+        float max = CableModel.MAX; // 0.625f
+
+        float x0 = min, y0 = min, z0 = min;
+        float x1 = max, y1 = max, z1 = max;
+
+        switch (side) {
+            case DOWN -> {
+                y0 = 1.0f - targetDepth;
+                y1 = min;
+            }
+            case UP -> {
+                y0 = max;
+                y1 = targetDepth;
+            }
+            case NORTH -> {
+                z0 = 1.0f - targetDepth;
+                z1 = min;
+            }
+            case SOUTH -> {
+                z0 = max;
+                z1 = targetDepth;
+            }
+            case WEST -> {
+                x0 = 1.0f - targetDepth;
+                x1 = min;
+            }
+            case EAST -> {
+                x0 = max;
+                x1 = targetDepth;
+            }
+            default -> {
+                return quads;
+            }
+        }
+
+        for (ForgeDirection face : ForgeDirection.VALID_DIRECTIONS) {
+            if (face == side.getOpposite()) continue;
+
+            float u0 = 0, v0 = 0, u1 = 16, v1 = 16;
+            switch (face) {
+                case DOWN, UP -> {
+                    u0 = x0 * 16.0f;
+                    v0 = z0 * 16.0f;
+                    u1 = x1 * 16.0f;
+                    v1 = z1 * 16.0f;
+                }
+                case NORTH, SOUTH -> {
+                    u0 = x0 * 16.0f;
+                    v0 = (1.0f - y1) * 16.0f;
+                    u1 = x1 * 16.0f;
+                    v1 = (1.0f - y0) * 16.0f;
+                }
+                case WEST, EAST -> {
+                    u0 = z0 * 16.0f;
+                    v0 = (1.0f - y1) * 16.0f;
+                    u1 = z1 * 16.0f;
+                    v1 = (1.0f - y0) * 16.0f;
+                }
+            }
+
+            ModelQuad quad = QuadBuilderHelpers.buildFaceQuad(face, x0, y0, z0, x1, y1, z1, icon, u0, v0, u1, v1);
+            quads.add(quad);
+        }
+
+        return quads;
     }
 }
