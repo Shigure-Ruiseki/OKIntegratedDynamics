@@ -15,7 +15,8 @@ public interface IAspectProperties extends INBTSerializable {
 
     /**
      * Use this with caution!
-     * Better to use {@link IAspect#getPropertyTypes()} instead because this object might hold deprecated elements.
+     * Better to use {@link ruiseki.integrateddynamics.api.part.aspect.IAspect#getPropertyTypes()} instead because this
+     * object might hold deprecated elements.
      *
      * @return The types.
      */

@@ -24,7 +24,7 @@ import ruiseki.integrateddynamics.part.aspect.write.AspectWriteBase;
 
 /**
  * Immutable builder for aspects.
- * 
+ *
  * @param <V> The value type.
  * @param <T> The value type type.
  * @param <O> The current output type for value handling.
@@ -39,10 +39,11 @@ public class AspectBuilder<V extends IValue, T extends IValueType<V>, O> {
     private final List<IAspectValuePropagator> valuePropagators;
     private final List<IAspectWriteActivator> writeActivators;
     private final List<IAspectWriteDeactivator> writeDeactivators;
+    private final String customIconPath; // Trường lưu custom icon path
 
     private AspectBuilder(boolean read, T valueType, List<String> kinds, IAspectProperties defaultAspectProperties,
         List<IAspectValuePropagator> valuePropagators, List<IAspectWriteActivator> writeActivators,
-        List<IAspectWriteDeactivator> writeDeactivators) {
+        List<IAspectWriteDeactivator> writeDeactivators, String customIconPath) {
         this.read = read;
         this.valueType = valueType;
         this.kinds = kinds;
@@ -50,14 +51,29 @@ public class AspectBuilder<V extends IValue, T extends IValueType<V>, O> {
         this.valuePropagators = valuePropagators;
         this.writeActivators = writeActivators;
         this.writeDeactivators = writeDeactivators;
+        this.customIconPath = customIconPath;
+    }
+
+    /**
+     * Set a custom icon/texture path for this aspect.
+     *
+     * @param customIconPath Relative path inside textures/items/aspects/ (e.g. "read/block")
+     * @return The new builder instance.
+     */
+    public AspectBuilder<V, T, O> handleTexture(String customIconPath) {
+        return new AspectBuilder<>(
+            this.read,
+            this.valueType,
+            Helpers.joinList(this.kinds, null),
+            this.defaultAspectProperties,
+            Helpers.joinList(this.valuePropagators, null),
+            Helpers.joinList(this.writeActivators, null),
+            Helpers.joinList(this.writeDeactivators, null),
+            customIconPath);
     }
 
     /**
      * Add the given value propagator.
-     * 
-     * @param valuePropagator The value propagator.
-     * @param <O2>            The new output type.
-     * @return The new builder instance.
      */
     public <O2> AspectBuilder<V, T, O2> handle(IAspectValuePropagator<O, O2> valuePropagator) {
         return handle(valuePropagator, null);
@@ -65,11 +81,6 @@ public class AspectBuilder<V extends IValue, T extends IValueType<V>, O> {
 
     /**
      * Add the given value propagator.
-     * 
-     * @param valuePropagator The value propagator.
-     * @param kind            The kind to append.
-     * @param <O2>            The new output type.
-     * @return The new builder instance.
      */
     public <O2> AspectBuilder<V, T, O2> handle(IAspectValuePropagator<O, O2> valuePropagator, String kind) {
         return new AspectBuilder<>(
@@ -79,14 +90,12 @@ public class AspectBuilder<V extends IValue, T extends IValueType<V>, O> {
             this.defaultAspectProperties,
             Helpers.joinList(this.valuePropagators, valuePropagator),
             Helpers.joinList(writeActivators, null),
-            Helpers.joinList(writeDeactivators, null));
+            Helpers.joinList(writeDeactivators, null),
+            this.customIconPath);
     }
 
     /**
      * Add the given kind.
-     * 
-     * @param kind The kind to append.
-     * @return The new builder instance.
      */
     public AspectBuilder<V, T, O> appendKind(String kind) {
         return new AspectBuilder<>(
@@ -96,14 +105,12 @@ public class AspectBuilder<V extends IValue, T extends IValueType<V>, O> {
             this.defaultAspectProperties,
             Helpers.joinList(this.valuePropagators, null),
             Helpers.joinList(writeActivators, null),
-            Helpers.joinList(writeDeactivators, null));
+            Helpers.joinList(writeDeactivators, null),
+            this.customIconPath);
     }
 
     /**
      * Set the given default aspect properties.
-     * 
-     * @param aspectProperties The aspect properties.
-     * @return The new builder instance.
      */
     public AspectBuilder<V, T, O> withProperties(IAspectProperties aspectProperties) {
         return new AspectBuilder<>(
@@ -113,15 +120,12 @@ public class AspectBuilder<V extends IValue, T extends IValueType<V>, O> {
             aspectProperties,
             Helpers.joinList(this.valuePropagators, null),
             Helpers.joinList(writeActivators, null),
-            Helpers.joinList(writeDeactivators, null));
+            Helpers.joinList(writeDeactivators, null),
+            this.customIconPath);
     }
 
     /**
      * Add the given aspect activator.
-     * Only applicable for writers.
-     * 
-     * @param activator The aspect activator callback.
-     * @return The new builder instance.
      */
     public AspectBuilder<V, T, O> appendActivator(IAspectWriteActivator activator) {
         if (this.read) {
@@ -134,15 +138,12 @@ public class AspectBuilder<V extends IValue, T extends IValueType<V>, O> {
             this.defaultAspectProperties,
             Helpers.joinList(this.valuePropagators, null),
             Helpers.joinList(writeActivators, activator),
-            Helpers.joinList(writeDeactivators, null));
+            Helpers.joinList(writeDeactivators, null),
+            this.customIconPath);
     }
 
     /**
      * Add the given aspect deactivator.
-     * Only applicable for writers.
-     * 
-     * @param deactivator The aspect deactivator callback.
-     * @return The new builder instance.
      */
     public AspectBuilder<V, T, O> appendDeactivator(IAspectWriteDeactivator deactivator) {
         if (this.read) {
@@ -155,12 +156,14 @@ public class AspectBuilder<V extends IValue, T extends IValueType<V>, O> {
             this.defaultAspectProperties,
             Helpers.joinList(this.valuePropagators, null),
             Helpers.joinList(writeActivators, null),
-            Helpers.joinList(writeDeactivators, deactivator));
+            Helpers.joinList(writeDeactivators, deactivator),
+            this.customIconPath);
     }
 
     /**
      * @return The built read aspect.
      */
+    @SuppressWarnings("unchecked")
     public IAspectRead<V, T> buildRead() {
         if (!this.read) {
             throw new RuntimeException("Tried to build a reader from a writer builder");
@@ -171,6 +174,7 @@ public class AspectBuilder<V extends IValue, T extends IValueType<V>, O> {
     /**
      * @return The built write aspect.
      */
+    @SuppressWarnings("unchecked")
     public IAspectWrite<V, T> buildWrite() {
         if (this.read) {
             throw new RuntimeException("Tried to build a writer from a reader builder");
@@ -180,11 +184,6 @@ public class AspectBuilder<V extends IValue, T extends IValueType<V>, O> {
 
     /**
      * Create a new read builder for the given value type.
-     * 
-     * @param valueType The value type the eventual built aspect will output.
-     * @param <V>       The value type.
-     * @param <T>       The value type type.
-     * @return The builder instance.
      */
     public static <V extends IValue, T extends IValueType<V>> AspectBuilder<V, T, Pair<PartTarget, IAspectProperties>> forReadType(
         T valueType) {
@@ -195,16 +194,12 @@ public class AspectBuilder<V extends IValue, T extends IValueType<V>, O> {
             null,
             Collections.<IAspectValuePropagator>emptyList(),
             Collections.<IAspectWriteActivator>emptyList(),
-            Collections.<IAspectWriteDeactivator>emptyList());
+            Collections.<IAspectWriteDeactivator>emptyList(),
+            null);
     }
 
     /**
      * Create a new write builder for the given value type.
-     * 
-     * @param valueType The value type the eventual built aspect expects.
-     * @param <V>       The value type.
-     * @param <T>       The value type type.
-     * @return The builder instance.
      */
     public static <V extends IValue, T extends IValueType<V>> AspectBuilder<V, T, Triple<PartTarget, IAspectProperties, IVariable<V>>> forWriteType(
         T valueType) {
@@ -215,7 +210,8 @@ public class AspectBuilder<V extends IValue, T extends IValueType<V>, O> {
             null,
             Collections.<IAspectValuePropagator>emptyList(),
             Collections.<IAspectWriteActivator>emptyList(),
-            Collections.<IAspectWriteDeactivator>emptyList());
+            Collections.<IAspectWriteDeactivator>emptyList(),
+            null);
     }
 
     private static class BuiltReader<V extends IValue, T extends IValueType<V>> extends AspectReadBase<V, T> {
@@ -224,9 +220,20 @@ public class AspectBuilder<V extends IValue, T extends IValueType<V>, O> {
         private final List<IAspectValuePropagator> valuePropagators;
 
         public BuiltReader(AspectBuilder<V, T, V> aspectBuilder) {
-            super(deriveUnlocalizedType(aspectBuilder), aspectBuilder.defaultAspectProperties);
+            super(
+                deriveUnlocalizedType(aspectBuilder),
+                aspectBuilder.defaultAspectProperties,
+                deriveCustomIconPath(aspectBuilder));
             this.valueType = aspectBuilder.valueType;
             this.valuePropagators = aspectBuilder.valuePropagators;
+        }
+
+        protected static <V extends IValue, T extends IValueType<V>> String deriveCustomIconPath(
+            AspectBuilder<V, T, V> aspectBuilder) {
+            if (aspectBuilder.customIconPath != null) {
+                return aspectBuilder.customIconPath;
+            }
+            return "read" + deriveUnlocalizedType(aspectBuilder).replaceAll("\\.", "/");
         }
 
         protected static <V extends IValue, T extends IValueType<V>> String deriveUnlocalizedType(
@@ -239,6 +246,7 @@ public class AspectBuilder<V extends IValue, T extends IValueType<V>, O> {
             return sb.toString();
         }
 
+        @SuppressWarnings("unchecked")
         @Override
         protected V getValue(PartTarget target, IAspectProperties properties) {
             Object output = Pair.of(target, properties);
@@ -268,11 +276,22 @@ public class AspectBuilder<V extends IValue, T extends IValueType<V>, O> {
         private final List<IAspectWriteDeactivator> writeDeactivators;
 
         public BuiltWriter(AspectBuilder<V, T, V> aspectBuilder) {
-            super(deriveUnlocalizedType(aspectBuilder), aspectBuilder.defaultAspectProperties);
+            super(
+                deriveUnlocalizedType(aspectBuilder),
+                aspectBuilder.defaultAspectProperties,
+                deriveCustomIconPath(aspectBuilder));
             this.valueType = aspectBuilder.valueType;
             this.valuePropagators = aspectBuilder.valuePropagators;
             this.writeActivators = aspectBuilder.writeActivators;
             this.writeDeactivators = aspectBuilder.writeDeactivators;
+        }
+
+        protected static <V extends IValue, T extends IValueType<V>> String deriveCustomIconPath(
+            AspectBuilder<V, T, V> aspectBuilder) {
+            if (aspectBuilder.customIconPath != null) {
+                return aspectBuilder.customIconPath;
+            }
+            return "write" + deriveUnlocalizedType(aspectBuilder).replaceAll("\\.", "/");
         }
 
         protected static <V extends IValue, T extends IValueType<V>> String deriveUnlocalizedType(
@@ -290,6 +309,7 @@ public class AspectBuilder<V extends IValue, T extends IValueType<V>, O> {
             return valueType;
         }
 
+        @SuppressWarnings({ "unchecked", "rawtypes" })
         @Override
         public <P extends IPartTypeWriter<P, S>, S extends IPartStateWriter<P>> void write(P partType,
             PartTarget target, S state, IVariable<V> variable) throws EvaluationException {
@@ -316,8 +336,6 @@ public class AspectBuilder<V extends IValue, T extends IValueType<V>, O> {
             for (IAspectWriteDeactivator writeDeactivator : this.writeDeactivators) {
                 writeDeactivator.onDeactivate(partType, target, state);
             }
-
         }
     }
-
 }

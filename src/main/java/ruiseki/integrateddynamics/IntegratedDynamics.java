@@ -20,6 +20,7 @@ import cpw.mods.fml.common.event.FMLServerStartedEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import cpw.mods.fml.common.event.FMLServerStoppedEvent;
 import cpw.mods.fml.common.event.FMLServerStoppingEvent;
+import ruiseki.integrateddynamics.api.client.model.IVariableModelProviderRegistry;
 import ruiseki.integrateddynamics.api.client.render.part.IPartOverlayRendererRegistry;
 import ruiseki.integrateddynamics.api.client.render.valuetype.IValueTypeWorldRendererRegistry;
 import ruiseki.integrateddynamics.api.evaluate.operator.IOperatorRegistry;
@@ -38,6 +39,8 @@ import ruiseki.integrateddynamics.client.render.valuetype.ValueTypeWorldRenderer
 import ruiseki.integrateddynamics.core.NoteBlockEventReceiver;
 import ruiseki.integrateddynamics.core.TickHandler;
 import ruiseki.integrateddynamics.core.client.gui.ExtendedGuiHandler;
+import ruiseki.integrateddynamics.core.client.model.VariableModelProviderRegistry;
+import ruiseki.integrateddynamics.core.client.model.VariableModelProviders;
 import ruiseki.integrateddynamics.core.evaluate.ProxyVariableFacadeHandler;
 import ruiseki.integrateddynamics.core.evaluate.operator.OperatorRegistry;
 import ruiseki.integrateddynamics.core.evaluate.operator.Operators;
@@ -156,8 +159,8 @@ public class IntegratedDynamics extends ModBaseVersionable {
                 .addRegistry(IPartOverlayRendererRegistry.class, PartOverlayRendererRegistry.getInstance());
             getRegistryManager()
                 .addRegistry(IValueTypeWorldRendererRegistry.class, ValueTypeWorldRendererRegistry.getInstance());
-            // getRegistryManager().addRegistry(IVariableModelProviderRegistry.class,
-            // VariableModelProviderRegistry.getInstance());
+            getRegistryManager()
+                .addRegistry(IVariableModelProviderRegistry.class, VariableModelProviderRegistry.getInstance());
         }
         getRegistryManager().getRegistry(IVariableFacadeHandlerRegistry.class)
             .registerHandler(ProxyVariableFacadeHandler.getInstance());
@@ -175,7 +178,7 @@ public class IntegratedDynamics extends ModBaseVersionable {
         if (MinecraftHelpers.isClientSide()) {
             PartOverlayRenderers.load();
             ValueTypeWorldRenderers.load();
-            // VariableModelProviders.load();
+            VariableModelProviders.load();
         }
 
         super.preInit(event);

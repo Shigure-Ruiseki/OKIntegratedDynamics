@@ -3,14 +3,11 @@ package ruiseki.integrateddynamics.core.part.write;
 import java.util.List;
 import java.util.Map;
 
-import net.minecraft.block.Block;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraftforge.common.util.ForgeDirection;
-
-import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -24,14 +21,11 @@ import ruiseki.integrateddynamics.api.part.aspect.IAspectWrite;
 import ruiseki.integrateddynamics.api.part.write.IPartStateWriter;
 import ruiseki.integrateddynamics.api.part.write.IPartTypeWriter;
 import ruiseki.integrateddynamics.client.gui.GuiPartWriter;
-import ruiseki.integrateddynamics.core.block.IgnoredBlock;
-import ruiseki.integrateddynamics.core.block.IgnoredBlockStatus;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.integrateddynamics.core.network.event.VariableContentsUpdatedEvent;
 import ruiseki.integrateddynamics.core.part.PartTypeAspects;
 import ruiseki.integrateddynamics.inventory.container.ContainerPartWriter;
 import ruiseki.integrateddynamics.part.aspect.Aspects;
-import ruiseki.okcore.config.extendedconfig.BlockConfig;
 import ruiseki.okcore.helper.LangHelpers;
 
 /**
@@ -57,11 +51,6 @@ public abstract class PartTypeWriteBase<P extends IPartTypeWriter<P, S>, S exten
             }
         });
         return actions;
-    }
-
-    @Override
-    protected Block createBlock(BlockConfig blockConfig) {
-        return new IgnoredBlockStatus(blockConfig);
     }
 
     @Override
@@ -153,23 +142,8 @@ public abstract class PartTypeWriteBase<P extends IPartTypeWriter<P, S>, S exten
     }
 
     @Override
-    public BlockState getBlockState(IPartContainer partContainer, ForgeDirection side) {
-        IgnoredBlockStatus.Status status = IgnoredBlockStatus.Status.INACTIVE;
-        if (partContainer != null) {
-            IPartStateWriter state = (IPartStateWriter) partContainer.getPartState(side);
-            IAspectWrite aspectWrite = state.getActiveAspect();
-            if (aspectWrite != null) {
-                if (state.hasVariable() && state.isEnabled()) {
-                    status = IgnoredBlockStatus.Status.ACTIVE;
-                } else {
-                    status = IgnoredBlockStatus.Status.ERROR;
-                }
-            }
-        }
-        BlockState state = super.getBlockState(partContainer, side);
-        state.setPropertyValue(IgnoredBlock.FACING, side);
-        state.setPropertyValue(IgnoredBlockStatus.STATUS, status);
-        return state;
+    public String getItemModelPath() {
+        return super.getItemModelPath() + "_inactive";
     }
 
     @Override

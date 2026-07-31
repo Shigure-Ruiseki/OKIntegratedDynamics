@@ -1,15 +1,11 @@
 package ruiseki.integrateddynamics.part;
 
-import net.minecraft.block.Block;
-
 import ruiseki.integrateddynamics.api.part.IPartState;
-import ruiseki.integrateddynamics.core.block.IgnoredBlockStatus;
 import ruiseki.integrateddynamics.core.part.panel.PartTypePanelVariableDriven;
-import ruiseki.okcore.config.extendedconfig.BlockConfig;
 
 /**
  * A part that can display variables.
- * 
+ *
  * @author rubensworks
  */
 public class PartTypePanelDisplay
@@ -22,11 +18,6 @@ public class PartTypePanelDisplay
     @Override
     public Class<? super PartTypePanelDisplay> getPartTypeClass() {
         return PartTypePanelDisplay.class;
-    }
-
-    @Override
-    protected Block createBlock(BlockConfig blockConfig) {
-        return new IgnoredBlockStatus(blockConfig);
     }
 
     @Override

@@ -2,8 +2,6 @@ package ruiseki.integrateddynamics.api.evaluate.variable;
 
 import java.util.Collection;
 
-import net.minecraft.util.ResourceLocation;
-
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.integrateddynamics.api.item.IValueTypeVariableFacade;
@@ -47,35 +45,34 @@ public interface IValueTypeRegistry extends IRegistry, IVariableFacadeHandler<IV
     public IValueType getValueType(String name);
 
     /**
-     * Register a model resource location for the given value type.
-     *
-     * @param <V>           The value type.
-     * @param <T>           The value type type.
-     * @param valueType     The value type.
-     * @param modelLocation The model resource location.
-     */
-    @SideOnly(Side.CLIENT)
-    public <V extends IValue, T extends IValueType<V>> void registerValueTypeModel(T valueType,
-        ResourceLocation modelLocation);
-
-    /**
-     * Get the model resource location of the given value type.
+     * Register an icon path for the given value type.
      *
      * @param <V>       The value type.
      * @param <T>       The value type type.
      * @param valueType The value type.
-     * @return The model resource location.
+     * @param iconPath  The icon path (e.g., "integrateddynamics:valuetype/boolean").
      */
     @SideOnly(Side.CLIENT)
-    public <V extends IValue, T extends IValueType<V>> ResourceLocation getValueTypeModel(T valueType);
+    public <V extends IValue, T extends IValueType<V>> void registerValueTypeIconPath(T valueType, String iconPath);
 
     /**
-     * Get all registered model resource locations for the value types.
+     * Get the icon path of the given value type.
      *
-     * @return All model resource locations.
+     * @param <V>       The value type.
+     * @param <T>       The value type type.
+     * @param valueType The value type.
+     * @return The icon path string.
      */
     @SideOnly(Side.CLIENT)
-    public Collection<ResourceLocation> getValueTypeModels();
+    public <V extends IValue, T extends IValueType<V>> String getValueTypeIconPath(T valueType);
+
+    /**
+     * Get all registered icon paths for the value types.
+     *
+     * @return All icon paths.
+     */
+    @SideOnly(Side.CLIENT)
+    public Collection<String> getValueTypeIconPaths();
 
     /**
      * @return All registered value types.

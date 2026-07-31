@@ -2,43 +2,77 @@ package ruiseki.integrateddynamics.item;
 
 import java.util.List;
 
+import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.util.IIcon;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.integrateddynamics.IntegratedDynamics;
+import ruiseki.integrateddynamics.api.client.model.IVariableModelProviderRegistry;
 import ruiseki.integrateddynamics.api.item.IVariableFacade;
 import ruiseki.integrateddynamics.api.item.IVariableFacadeHandlerRegistry;
+import ruiseki.integrateddynamics.core.client.model.VariableModelProviders;
+import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeVariableFacade;
+import ruiseki.integrateddynamics.core.item.AspectVariableFacade;
+import ruiseki.integrateddynamics.core.item.ProxyVariableFacade;
 import ruiseki.okcore.config.configurable.ConfigurableItem;
 import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 
-/**
- * Item for storing variable references.
- * 
- * @author rubensworks
- */
 public class ItemVariable extends ConfigurableItem {
 
     private static ItemVariable _instance = null;
 
-    /**
-     * Get the unique instance.
-     * 
-     * @return The instance.
-     */
     public static ItemVariable getInstance() {
         return _instance;
     }
 
-    /**
-     * Make a new item instance.
-     *
-     * @param eConfig Config for this blockState.
-     */
     public ItemVariable(ExtendedConfig eConfig) {
         super(eConfig);
+    }
+
+    @SideOnly(Side.CLIENT)
+    @Override
+    public boolean requiresMultipleRenderPasses() {
+        return true;
+    }
+
+    @SideOnly(Side.CLIENT)
+    @Override
+    public int getRenderPasses(int metadata) {
+        return 2;
+    }
+
+    @SideOnly(Side.CLIENT)
+    @Override
+    public IIcon getIcon(ItemStack stack, int pass) {
+        if (pass == 0) {
+            return itemIcon;
+        }
+
+        IVariableFacade variableFacade = getVariableFacade(stack);
+        if (variableFacade != null && variableFacade.isValid()) {
+            IIcon icon = getOverlayIcon(variableFacade);
+            return icon;
+        }
+
+        return itemIcon;
+    }
+
+    @SideOnly(Side.CLIENT)
+    private IIcon getOverlayIcon(IVariableFacade variableFacade) {
+        if (variableFacade instanceof AspectVariableFacade) {
+            AspectVariableFacade facade = (AspectVariableFacade) variableFacade;
+            return VariableModelProviders.ASPECT.getIcon(facade.getAspect());
+        } else if (variableFacade instanceof ValueTypeVariableFacade<?>) {
+            ValueTypeVariableFacade<?> facade = (ValueTypeVariableFacade<?>) variableFacade;
+            return VariableModelProviders.VALUETYPE.getIcon(facade.getValueType());
+        } else if (variableFacade instanceof ProxyVariableFacade) {
+            return VariableModelProviders.PROXY.getIcon(null);
+        }
+        return null;
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -65,4 +99,12 @@ public class ItemVariable extends ConfigurableItem {
             .handle(itemStack);
     }
 
+    @Override
+    public void registerIcons(IIconRegister register) {
+        super.registerIcons(register);
+
+        IVariableModelProviderRegistry registry = IntegratedDynamics._instance.getRegistryManager()
+            .getRegistry(IVariableModelProviderRegistry.class);
+        registry.registerIcons(register);
+    }
 }

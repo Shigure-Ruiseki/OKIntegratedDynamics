@@ -37,7 +37,7 @@ import ruiseki.okcore.inventory.IGuiContainerProvider;
 
 /**
  * Gui for parts.
- * 
+ *
  * @author rubensworks
  */
 @EqualsAndHashCode(callSuper = false)
@@ -56,7 +56,7 @@ public abstract class GuiMultipartAspects<P extends IPartType<P, S> & IGuiContai
 
     /**
      * Make a new instance.
-     * 
+     *
      * @param container The container to make the GUI for.
      */
     public GuiMultipartAspects(ContainerMultipartAspects<P, S, A> container) {

@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.Set;
 
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.ResourceLocation;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
@@ -29,7 +28,7 @@ import ruiseki.okcore.helper.MinecraftHelpers;
 
 /**
  * Registry for {@link IAspect}.
- * 
+ *
  * @author rubensworks
  */
 public final class AspectRegistry implements IAspectRegistry {
@@ -45,15 +44,16 @@ public final class AspectRegistry implements IAspectRegistry {
     private Map<String, IAspect> unlocalizedAspects = Maps.newHashMap();
     private Map<String, IAspectRead> unlocalizedReadAspects = Maps.newHashMap();
     private Map<String, IAspectWrite> unlocalizedWriteAspects = Maps.newHashMap();
+
     @SideOnly(Side.CLIENT)
-    private Map<IAspect, ResourceLocation> aspectModels;
+    private Map<IAspect, String> aspectIconPaths;
 
     private AspectRegistry() {
         IntegratedDynamics._instance.getRegistryManager()
             .getRegistry(IVariableFacadeHandlerRegistry.class)
             .registerHandler(this);
         if (MinecraftHelpers.isClientSide()) {
-            aspectModels = Maps.newHashMap();
+            aspectIconPaths = Maps.newHashMap();
         }
     }
 
@@ -136,20 +136,20 @@ public final class AspectRegistry implements IAspectRegistry {
 
     @SideOnly(Side.CLIENT)
     @Override
-    public void registerAspectModel(IAspect aspect, ResourceLocation modelLocation) {
-        aspectModels.put(aspect, modelLocation);
+    public void registerAspectIconPath(IAspect aspect, String iconPath) {
+        aspectIconPaths.put(aspect, iconPath);
     }
 
     @SideOnly(Side.CLIENT)
     @Override
-    public ResourceLocation getAspectModel(IAspect aspect) {
-        return aspectModels.get(aspect);
+    public String getAspectIconPath(IAspect aspect) {
+        return aspectIconPaths.get(aspect);
     }
 
     @SideOnly(Side.CLIENT)
     @Override
-    public Collection<ResourceLocation> getAspectModels() {
-        return Collections.unmodifiableCollection(aspectModels.values());
+    public Collection<String> getAspectIconPaths() {
+        return Collections.unmodifiableCollection(aspectIconPaths.values());
     }
 
     @Override

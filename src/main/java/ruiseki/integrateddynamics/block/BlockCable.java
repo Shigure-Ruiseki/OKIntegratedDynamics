@@ -144,7 +144,6 @@ public class BlockCable extends ConfigurableBlockContainer
             return false;
         }
     };
-
     private static final IComponent<ForgeDirection, BlockCable> CABLECONNECTIONS_COMPONENT = new IComponent<ForgeDirection, BlockCable>() {
 
         @Override
@@ -183,7 +182,6 @@ public class BlockCable extends ConfigurableBlockContainer
             return CENTER_COMPONENT.destroy(world, x, y, z, position, player);
         }
     };
-
     private static final IComponent<ForgeDirection, BlockCable> PARTS_COMPONENT = new IComponent<ForgeDirection, BlockCable>() {
 
         @Override
@@ -282,6 +280,7 @@ public class BlockCable extends ConfigurableBlockContainer
         COLLIDABLE_COMPONENTS.add(CABLECONNECTIONS_COMPONENT);
         COLLIDABLE_COMPONENTS.add(PARTS_COMPONENT);
     }
+
     @Delegate
     private ICollidable collidableComponent = new CollidableComponent(this, COLLIDABLE_COMPONENTS);
     // @Delegate// <- Lombok can't handle delegations with generics, so we'll have to do it manually...

@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.Map;
 
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.ResourceLocation;
 
 import com.google.common.collect.Maps;
 
@@ -35,11 +34,11 @@ public final class ValueTypeRegistry implements IValueTypeRegistry {
 
     private final Map<String, IValueType> valueTypes = Maps.newHashMap();
     @SideOnly(Side.CLIENT)
-    private Map<IValueType, ResourceLocation> valueTypeModels;
+    private Map<IValueType, String> valueTypeIconPaths;
 
     private ValueTypeRegistry() {
         if (MinecraftHelpers.isClientSide()) {
-            valueTypeModels = Maps.newHashMap();
+            valueTypeIconPaths = Maps.newHashMap();
         }
         if (MinecraftHelpers.isModdedEnvironment()) {
             IntegratedDynamics._instance.getRegistryManager()
@@ -73,21 +72,20 @@ public final class ValueTypeRegistry implements IValueTypeRegistry {
 
     @SideOnly(Side.CLIENT)
     @Override
-    public <V extends IValue, T extends IValueType<V>> void registerValueTypeModel(T valueType,
-        ResourceLocation modelLocation) {
-        valueTypeModels.put(valueType, modelLocation);
+    public <V extends IValue, T extends IValueType<V>> void registerValueTypeIconPath(T valueType, String iconPath) {
+        valueTypeIconPaths.put(valueType, iconPath);
     }
 
     @SideOnly(Side.CLIENT)
     @Override
-    public <V extends IValue, T extends IValueType<V>> ResourceLocation getValueTypeModel(T valueType) {
-        return valueTypeModels.get(valueType);
+    public <V extends IValue, T extends IValueType<V>> String getValueTypeIconPath(T valueType) {
+        return valueTypeIconPaths.get(valueType);
     }
 
     @SideOnly(Side.CLIENT)
     @Override
-    public Collection<ResourceLocation> getValueTypeModels() {
-        return Collections.unmodifiableCollection(valueTypeModels.values());
+    public Collection<String> getValueTypeIconPaths() {
+        return Collections.unmodifiableCollection(valueTypeIconPaths.values());
     }
 
     @Override

@@ -12,12 +12,10 @@ import ruiseki.integrateddynamics.api.part.IPartState;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.block.BlockInvisibleLight;
 import ruiseki.integrateddynamics.block.BlockInvisibleLightConfig;
-import ruiseki.integrateddynamics.core.block.IgnoredBlockStatus;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeLightLevels;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.integrateddynamics.core.part.panel.PartTypePanelVariableDriven;
 import ruiseki.okcore.config.ConfigHandler;
-import ruiseki.okcore.config.extendedconfig.BlockConfig;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.helper.BlockStateHelpers;
 import ruiseki.okcore.helper.LangHelpers;
@@ -37,11 +35,6 @@ public class PartTypePanelLightDynamic
     @Override
     public Class<? super PartTypePanelLightDynamic> getPartTypeClass() {
         return PartTypePanelLightDynamic.class;
-    }
-
-    @Override
-    protected Block createBlock(BlockConfig blockConfig) {
-        return new IgnoredBlockStatus(blockConfig);
     }
 
     @Override

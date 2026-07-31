@@ -66,7 +66,6 @@ public class GuiPartWriter<P extends IPartTypeWriter<P, S> & IGuiContainerProvid
         int aspectBoxHeight = container.getAspectBoxHeight();
 
         // Render dummy target item
-        // This could be cached if this would prove to be a bottleneck
         ItemStack itemStack = container.writeAspectInfo(false, new ItemStack(ItemVariable.getInstance()), aspect);
         Rectangle pos = getElementPosition(container, index, true);
         itemRender.renderItemAndEffectIntoGUI(mc.fontRenderer, mc.getTextureManager(), itemStack, pos.x, pos.y);

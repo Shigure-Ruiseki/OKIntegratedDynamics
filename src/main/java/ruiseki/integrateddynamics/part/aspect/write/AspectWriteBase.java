@@ -1,7 +1,5 @@
 package ruiseki.integrateddynamics.part.aspect.write;
 
-import net.minecraft.util.ResourceLocation;
-
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
@@ -23,25 +21,27 @@ import ruiseki.okcore.helper.MinecraftHelpers;
 
 /**
  * Base class for write aspects.
- * 
+ *
  * @author rubensworks
  */
 public abstract class AspectWriteBase<V extends IValue, T extends IValueType<V>> extends AspectBase<V, T>
     implements IAspectWrite<V, T> {
 
     protected final String unlocalizedTypeSuffix;
+    private final String customIconPath;
 
     @Deprecated
     public AspectWriteBase() {
-        this(null, null);
+        this(null, null, "");
     }
 
-    public AspectWriteBase(String unlocalizedTypeSuffix, IAspectProperties defaultProperties) {
+    public AspectWriteBase(String unlocalizedTypeSuffix, IAspectProperties defaultProperties, String customIconPath) {
         super(defaultProperties);
         if (unlocalizedTypeSuffix == null) {
             unlocalizedTypeSuffix = "";
         }
         this.unlocalizedTypeSuffix = unlocalizedTypeSuffix;
+        this.customIconPath = customIconPath;
         if (MinecraftHelpers.isClientSide()) {
             registerModelResourceLocation();
         }
@@ -95,9 +95,10 @@ public abstract class AspectWriteBase<V extends IValue, T extends IValueType<V>>
 
     @SideOnly(Side.CLIENT)
     protected void registerModelResourceLocation() {
-        Aspects.REGISTRY.registerAspectModel(
+        Aspects.REGISTRY.registerAspectIconPath(
             this,
-            new ResourceLocation(getModId() + ":aspect/" + getUnlocalizedType().replaceAll("\\.", "/")));
+            getModId() + ":aspects/"
+                + (customIconPath.isEmpty() ? getUnlocalizedType().replaceAll("\\.", "/") : customIconPath));
     }
 
 }

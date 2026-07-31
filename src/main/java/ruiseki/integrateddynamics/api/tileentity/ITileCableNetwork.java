@@ -3,8 +3,8 @@ package ruiseki.integrateddynamics.api.tileentity;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
 
 /**
- * Interface for tile entities behind block that are a {@link ICableNetwork}.
- * 
+ * Interface for tile entities behind block that are a {@link ruiseki.integrateddynamics.api.block.cable.ICableNetwork}.
+ *
  * @author rubensworks
  */
 public interface ITileCableNetwork extends ITileCable {
@@ -17,14 +17,14 @@ public interface ITileCableNetwork extends ITileCable {
 
     /**
      * Tell the container it is part of the given network.
-     * 
+     *
      * @param network The network.
      */
     public void setNetwork(IPartNetwork network);
 
     /**
      * Get the current container network. Can be null.
-     * 
+     *
      * @return The network.
      */
     public IPartNetwork getNetwork();

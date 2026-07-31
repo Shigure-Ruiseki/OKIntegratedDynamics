@@ -7,10 +7,8 @@ import net.minecraft.world.IBlockAccess;
 
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.part.PartTarget;
-import ruiseki.integrateddynamics.core.block.IgnoredBlock;
 import ruiseki.integrateddynamics.core.part.PartStateEmpty;
 import ruiseki.integrateddynamics.core.part.panel.PartTypePanel;
-import ruiseki.okcore.config.extendedconfig.BlockConfig;
 
 /**
  * A panel part that simply emits light.
@@ -24,11 +22,6 @@ public class PartTypePanelLightStatic
 
     public PartTypePanelLightStatic(String name) {
         super(name);
-    }
-
-    @Override
-    protected Block createBlock(BlockConfig blockConfig) {
-        return new IgnoredBlock(blockConfig);
     }
 
     @Override

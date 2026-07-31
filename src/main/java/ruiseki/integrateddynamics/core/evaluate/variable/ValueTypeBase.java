@@ -2,8 +2,6 @@ package ruiseki.integrateddynamics.core.evaluate.variable;
 
 import java.util.List;
 
-import net.minecraft.util.ResourceLocation;
-
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.integrateddynamics.Reference;
@@ -15,7 +13,7 @@ import ruiseki.okcore.helper.MinecraftHelpers;
 
 /**
  * Base implementation of a value type.
- * 
+ *
  * @author rubensworks
  */
 public abstract class ValueTypeBase<V extends IValue> implements IValueType<V> {
@@ -78,10 +76,9 @@ public abstract class ValueTypeBase<V extends IValue> implements IValueType<V> {
 
     @SideOnly(Side.CLIENT)
     protected void registerModelResourceLocation() {
-        ValueTypes.REGISTRY.registerValueTypeModel(
+        ValueTypes.REGISTRY.registerValueTypeIconPath(
             this,
-            new ResourceLocation(
-                getModId() + ":valuetype" + getTypeNamespace().replace('.', '/') + getTypeName().replace('.', '/')));
+            getModId() + ":valuetypes" + getTypeNamespace().replace('.', '/') + getTypeName().replace('.', '/'));
     }
 
     @Override

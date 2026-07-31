@@ -11,11 +11,10 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+import net.minecraftforge.client.MinecraftForgeClient;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import com.google.common.collect.Maps;
-import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
-import com.gtnewhorizon.gtnhlib.blockstate.registry.BlockPropertyRegistry;
 
 import lombok.Getter;
 import ruiseki.integrateddynamics.IntegratedDynamics;
@@ -28,14 +27,12 @@ import ruiseki.integrateddynamics.api.part.IPartContainerFacade;
 import ruiseki.integrateddynamics.api.part.IPartState;
 import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartTarget;
-import ruiseki.integrateddynamics.core.block.IgnoredBlock;
+import ruiseki.integrateddynamics.client.model.ItemPartRenderer;
 import ruiseki.integrateddynamics.core.client.gui.ExtendedGuiHandler;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.integrateddynamics.core.item.ItemPart;
 import ruiseki.integrateddynamics.core.network.PartNetworkElement;
-import ruiseki.okcore.config.configurabletypeaction.BlockAction;
 import ruiseki.okcore.config.configurabletypeaction.ItemAction;
-import ruiseki.okcore.config.extendedconfig.BlockConfig;
 import ruiseki.okcore.config.extendedconfig.ItemConfig;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
@@ -59,8 +56,6 @@ public abstract class PartTypeBase<P extends IPartType<P, S>, S extends IPartSta
     private final Item item;
     private ItemConfig itemConfig;
     @Getter
-    private final Block block;
-    @Getter
     private final int guiID;
     @Getter
     private final String name;
@@ -77,40 +72,10 @@ public abstract class PartTypeBase<P extends IPartType<P, S>, S extends IPartSta
             this.guiID = -1;
         }
         this.name = name;
-        this.block = registerBlock();
         this.item = registerItem();
         this.renderPosition = renderPosition;
 
         networkEventActions = constructNetworkEventActions();
-    }
-
-    /**
-     * Factory method for creating a block instance.
-     *
-     * @param blockConfig The config to register the block for.
-     * @return The block instance.
-     */
-    protected Block createBlock(BlockConfig blockConfig) {
-        return new IgnoredBlock(blockConfig);
-    }
-
-    /**
-     * Creates and registers a block instance for this part type.
-     * This is mainly used for the block model.
-     *
-     * @return The corresponding block.
-     */
-    protected Block registerBlock() {
-        BlockConfig blockConfig = new BlockConfig(getMod(), true, "part_" + getName() + "Block", null, null) {
-
-            @Override
-            public boolean isDisableable() {
-                return false;
-            }
-        };
-        Block block = createBlock(blockConfig);
-        BlockAction.register(block, blockConfig.getSubUniqueName(), blockConfig.getTargetTab());
-        return block;
     }
 
     /**
@@ -149,7 +114,7 @@ public abstract class PartTypeBase<P extends IPartType<P, S>, S extends IPartSta
 
     @Override
     public String getItemModelPath() {
-        return getMod().getModId() + ":" + "part_" + getName() + "Item";
+        return getMod().getModId() + ":" + "part/part_" + getName() + "Block";
     }
 
     /**
@@ -196,8 +161,7 @@ public abstract class PartTypeBase<P extends IPartType<P, S>, S extends IPartSta
     @Override
     public void onInit(IInitListener.Step initStep) {
         if (MinecraftHelpers.isClientSide() && initStep == IInitListener.Step.INIT) {
-            // ItemAction.handleItemModel(getItem(), itemConfig.getNamedId(), itemConfig.getTargetTab(),
-            // getMod().getModId(), itemConfig);
+            MinecraftForgeClient.registerItemRenderer(getItem(), new ItemPartRenderer());
         }
     }
 
@@ -349,18 +313,6 @@ public abstract class PartTypeBase<P extends IPartType<P, S>, S extends IPartSta
     public void onBlockNeighborChange(IPartNetwork network, PartTarget target, S state, IBlockAccess world,
         Block neighborBlock) {
 
-    }
-
-    @Override
-    public BlockState getBlockState(IPartContainer partContainer, ForgeDirection side) {
-        BlockState state = BlockPropertyRegistry.getBlockState(new ItemStack(getBlock()));
-        state.setPropertyValue(IgnoredBlock.FACING, side);
-        return state;
-    }
-
-    @Override
-    public BlockState getBaseBlockState() {
-        return BlockPropertyRegistry.getBlockState(new ItemStack(getBlock()));
     }
 
     @Override

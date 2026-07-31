@@ -174,6 +174,7 @@ public class Aspects {
                                 .getZ());
                     }
                 })
+                .handleTexture("read/block")
                 .handle(AspectReadBuilders.PROP_GET_BLOCK)
                 .buildRead();
         }
@@ -640,6 +641,7 @@ public class Aspects {
                 .buildRead();
 
             public static final IAspectRead<ValueObjectTypeItemStack.ValueItemStack, ValueObjectTypeItemStack> OBJECT_ITEM_STACK_SLOT = AspectReadBuilders.Inventory.BUILDER_ITEMSTACK
+                .handleTexture("read/inventory/itemstack")
                 .handle(AspectReadBuilders.PROP_GET_ITEMSTACK)
                 .buildRead();
 
@@ -1097,6 +1099,7 @@ public class Aspects {
                             return null;
                         }
                     })
+                    .handleTexture("write/double/effect/particle")
                     .buildWrite();
             }
         }

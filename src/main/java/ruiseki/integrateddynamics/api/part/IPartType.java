@@ -13,8 +13,6 @@ import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
-import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
-
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.INetworkElement;
 import ruiseki.integrateddynamics.api.network.INetworkEventListener;
@@ -252,21 +250,6 @@ public interface IPartType<P extends IPartType<P, S>, S extends IPartState<P>>
      */
     public boolean onPartActivated(World world, BlockPos pos, S partState, EntityPlayer player, ForgeDirection side,
         float hitX, float hitY, float hitZ);
-
-    /**
-     * Get the base block state that will be rendered for this part.
-     * An appropriate {@link ruiseki.integrateddynamics.core.block.IgnoredBlock#FACING} property will be set.
-     *
-     * @param partContainer The tile entity.
-     * @param side          The position of the part.
-     * @return The block state to render with.
-     */
-    public BlockState getBlockState(IPartContainer partContainer, ForgeDirection side);
-
-    /**
-     * @return The default block state representation of this part.
-     */
-    public BlockState getBaseBlockState();
 
     /**
      * Called when this element is about to be removed.
