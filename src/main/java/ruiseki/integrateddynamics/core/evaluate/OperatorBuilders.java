@@ -335,21 +335,37 @@ public class OperatorBuilders {
                         new OperatorBase.SafeVariablesGetter.Shifted(1, input.getVariables()));
                 }
             });
+    public static final IterativeFunction.PrePostBuilder<IOperator, IValue> FUNCTION_ONE_OPERATOR = IterativeFunction.PrePostBuilder
+        .begin()
+        .appendPre(new IOperatorValuePropagator<OperatorBase.SafeVariablesGetter, IOperator>() {
+
+            @Override
+            public IOperator getOutput(OperatorBase.SafeVariablesGetter input) throws EvaluationException {
+                return getSafeOperator((ValueTypeOperator.ValueOperator) input.getValue(0), ValueTypes.CATEGORY_ANY);
+            }
+        });
     public static final IterativeFunction.PrePostBuilder<IOperator, IValue> FUNCTION_ONE_PREDICATE = IterativeFunction.PrePostBuilder
         .begin()
         .appendPre(new IOperatorValuePropagator<OperatorBase.SafeVariablesGetter, IOperator>() {
 
             @Override
             public IOperator getOutput(OperatorBase.SafeVariablesGetter input) throws EvaluationException {
-                return getSafeOperator((ValueTypeOperator.ValueOperator) input.getValue(0));
+                return getSafePredictate((ValueTypeOperator.ValueOperator) input.getValue(0));
             }
         });
-    public static final IterativeFunction.PrePostBuilder<Pair<IOperator, IOperator>, IValue> FUNCTION_TWO_OPERATORS = IterativeFunction.PrePostBuilder.begin()
+    public static final IterativeFunction.PrePostBuilder<Pair<IOperator, IOperator>, IValue> FUNCTION_TWO_OPERATORS = IterativeFunction.PrePostBuilder
+        .begin()
         .appendPre(new IOperatorValuePropagator<OperatorBase.SafeVariablesGetter, Pair<IOperator, IOperator>>() {
+
             @Override
-            public Pair<IOperator, IOperator> getOutput(OperatorBase.SafeVariablesGetter input) throws EvaluationException {
-                IOperator second = getSafeOperator((ValueTypeOperator.ValueOperator) input.getValue(1), ValueTypes.CATEGORY_ANY);
-                IOperator first = getSafeOperator((ValueTypeOperator.ValueOperator) input.getValue(0), second.getInputTypes()[0]);
+            public Pair<IOperator, IOperator> getOutput(OperatorBase.SafeVariablesGetter input)
+                throws EvaluationException {
+                IOperator second = getSafeOperator(
+                    (ValueTypeOperator.ValueOperator) input.getValue(1),
+                    ValueTypes.CATEGORY_ANY);
+                IOperator first = getSafeOperator(
+                    (ValueTypeOperator.ValueOperator) input.getValue(0),
+                    second.getInputTypes()[0]);
                 return Pair.of(first, second);
             }
         });
@@ -360,8 +376,8 @@ public class OperatorBuilders {
             @Override
             public Pair<IOperator, IOperator> getOutput(OperatorBase.SafeVariablesGetter input)
                 throws EvaluationException {
-                IOperator first = getSafeOperator((ValueTypeOperator.ValueOperator) input.getValue(0));
-                IOperator second = getSafeOperator((ValueTypeOperator.ValueOperator) input.getValue(1));
+                IOperator first = getSafePredictate((ValueTypeOperator.ValueOperator) input.getValue(0));
+                IOperator second = getSafePredictate((ValueTypeOperator.ValueOperator) input.getValue(1));
                 return Pair.of(first, second);
             }
         });
@@ -435,17 +451,20 @@ public class OperatorBuilders {
 
     /**
      * Get the operator from a value in a safe manner.
-
+     *
      * @param value The operator value.
      * @return The operator.
      * @throws EvaluationException If the operator is not a predicate.
      */
-    public static IOperator getSafeOperator(ValueTypeOperator.ValueOperator value, IValueType expectedOutput) throws EvaluationException {
+    public static IOperator getSafeOperator(ValueTypeOperator.ValueOperator value, IValueType expectedOutput)
+        throws EvaluationException {
         IOperator operator = value.getRawValue();
         if (!ValueHelpers.correspondsTo(operator.getOutputType(), expectedOutput)) {
-            LangHelpers.UnlocalizedString error =
-                new LangHelpers.UnlocalizedString(L10NValues.VALUETYPE_ERROR_ILLEGALPROPERY,
-                    expectedOutput, operator.getOutputType(), operator.getLocalizedNameFull());
+            LangHelpers.UnlocalizedString error = new LangHelpers.UnlocalizedString(
+                L10NValues.VALUETYPE_ERROR_ILLEGALPROPERY,
+                expectedOutput,
+                operator.getOutputType(),
+                operator.getLocalizedNameFull());
             throw new EvaluationException(error.localize());
         }
         return operator;
@@ -454,6 +473,7 @@ public class OperatorBuilders {
     /**
      * Get the predicate from a value in a safe manner.
      * It is expected that the operator returns a boolean.
+     *
      * @param value The operator value.
      * @return The operator.
      * @throws EvaluationException If the operator is not a predicate.
