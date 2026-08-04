@@ -34,6 +34,7 @@ import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeDouble;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeInteger;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeList;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeLong;
+import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeOperator;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeString;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
 import ruiseki.integrateddynamics.core.part.aspect.build.AspectBuilder;
@@ -67,6 +68,9 @@ public class AspectWriteBuilders {
         AspectBuilder.forWriteType(ValueTypes.OBJECT_ITEMSTACK));
     public static final AspectBuilder<ValueObjectTypeFluidStack.ValueFluidStack, ValueObjectTypeFluidStack, Triple<PartTarget, IAspectProperties, ValueObjectTypeFluidStack.ValueFluidStack>> BUILDER_FLUIDSTACK = getValue(
         AspectBuilder.forWriteType(ValueTypes.OBJECT_FLUIDSTACK));
+    public static final AspectBuilder<ValueTypeOperator.ValueOperator, ValueTypeOperator, Triple<PartTarget, IAspectProperties, ValueTypeOperator.ValueOperator>>
+        BUILDER_OPERATOR = getValue(AspectBuilder.forWriteType(ValueTypes.OPERATOR));
+
     // --------------- Value type propagators ---------------
     public static final IAspectValuePropagator<Triple<PartTarget, IAspectProperties, ValueTypeBoolean.ValueBoolean>, Triple<PartTarget, IAspectProperties, Boolean>> PROP_GET_BOOLEAN = new IAspectValuePropagator<Triple<PartTarget, IAspectProperties, ValueTypeBoolean.ValueBoolean>, Triple<PartTarget, IAspectProperties, Boolean>>() {
 

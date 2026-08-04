@@ -109,7 +109,7 @@ public abstract class PartStateActiveVariableBase<P extends IPartType> extends P
         this.checkedForWriteVariable = false;
         addGlobalError(null);
         this.currentVariableFacade = null;
-        this.deactivated = false;
+        //this.deactivated = false; // This *should* not be required anymore, re-activation is handled in AspectWriteBase#update.
     }
 
     /**
