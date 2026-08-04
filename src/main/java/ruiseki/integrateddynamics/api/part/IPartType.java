@@ -2,6 +2,7 @@ package ruiseki.integrateddynamics.api.part;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
@@ -12,6 +13,8 @@ import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
+
+import com.google.common.collect.ImmutableMap;
 
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.INetworkElement;
@@ -320,14 +323,14 @@ public interface IPartType<P extends IPartType<P, S>, S extends IPartState<P>>
         private final float depthFactor;
         private final float widthFactor;
         private final float heightFactor;
-        private final float[][] sidedCableCollisionBoxes;
-        private final float[][] collisionBoxes;
+        private final Map<ForgeDirection, AxisAlignedBB> sidedCableCollisionBoxes;
+        private final Map<ForgeDirection, AxisAlignedBB> collisionBoxes;
 
         public RenderPosition(float selectionDepthFactor, float depthFactor, float widthFactor, float heightFactor) {
             this.depthFactor = depthFactor;
             this.widthFactor = widthFactor;
             this.heightFactor = heightFactor;
-            this.sidedCableCollisionBoxes = new float[][] {
+            float[][] sidedCableCollisionBoxesRaw = new float[][] {
                 { CableModel.MIN, selectionDepthFactor, CableModel.MIN, CableModel.MAX, CableModel.MIN,
                     CableModel.MAX }, // DOWN
                 { CableModel.MIN, CableModel.MAX, CableModel.MIN, CableModel.MAX, 1 - selectionDepthFactor,
@@ -341,8 +344,38 @@ public interface IPartType<P extends IPartType<P, S>, S extends IPartState<P>>
                 { CableModel.MAX, CableModel.MIN, CableModel.MIN, 1 - selectionDepthFactor, CableModel.MAX,
                     CableModel.MAX }, // EAST
             };
-            this.collisionBoxes = new float[][] { { 0.19F, 0.81F }, { 0.005F, selectionDepthFactor },
+
+            ImmutableMap.Builder<ForgeDirection, AxisAlignedBB> sidedCableCollisionBoxesBuilder = ImmutableMap
+                .builder();
+            for (ForgeDirection side : ForgeDirection.VALID_DIRECTIONS) {
+                float[] b = sidedCableCollisionBoxesRaw[side.ordinal()];
+                sidedCableCollisionBoxesBuilder
+                    .put(side, AxisAlignedBB.getBoundingBox(b[0], b[1], b[2], b[3], b[4], b[5]));
+            }
+            this.sidedCableCollisionBoxes = sidedCableCollisionBoxesBuilder.build();
+
+            float[][] collisionBoxesRaw = new float[][] { { 0.19F, 0.81F }, { 0.005F, selectionDepthFactor },
                 { 0.19F, 0.81F } };
+            ImmutableMap.Builder<ForgeDirection, AxisAlignedBB> collisionBoxesBuilder = ImmutableMap.builder();
+            for (ForgeDirection side : ForgeDirection.VALID_DIRECTIONS) {
+                // Copy bounds
+                float[][] bounds = new float[collisionBoxesRaw.length][collisionBoxesRaw[0].length];
+                for (int i = 0; i < bounds.length; i++)
+                    bounds[i] = Arrays.copyOf(collisionBoxesRaw[i], collisionBoxesRaw[i].length);
+
+                // Transform bounds
+                MatrixHelpers.transform(bounds, side);
+                collisionBoxesBuilder.put(
+                    side,
+                    AxisAlignedBB.getBoundingBox(
+                        bounds[0][0],
+                        bounds[1][0],
+                        bounds[2][0],
+                        bounds[0][1],
+                        bounds[1][1],
+                        bounds[2][1]));
+            }
+            this.collisionBoxes = collisionBoxesBuilder.build();
         }
 
         public float getDepthFactor() {
@@ -358,20 +391,12 @@ public interface IPartType<P extends IPartType<P, S>, S extends IPartState<P>>
         }
 
         public AxisAlignedBB getSidedCableBoundingBox(ForgeDirection side) {
-            float[] b = sidedCableCollisionBoxes[side.ordinal()];
-            return AxisAlignedBB.getBoundingBox(b[0], b[1], b[2], b[3], b[4], b[5]);
+            return sidedCableCollisionBoxes.get(side);
+
         }
 
         public AxisAlignedBB getBoundingBox(ForgeDirection side) {
-            // Copy bounds
-            float[][] bounds = new float[collisionBoxes.length][collisionBoxes[0].length];
-            for (int i = 0; i < bounds.length; i++)
-                bounds[i] = Arrays.copyOf(collisionBoxes[i], collisionBoxes[i].length);
-
-            // Transform bounds
-            MatrixHelpers.transform(bounds, side);
-            return AxisAlignedBB
-                .getBoundingBox(bounds[0][0], bounds[1][0], bounds[2][0], bounds[0][1], bounds[1][1], bounds[2][1]);
+            return collisionBoxes.get(side);
         }
 
     }
