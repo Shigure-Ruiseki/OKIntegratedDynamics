@@ -11,7 +11,7 @@ import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
 
 /**
  * An operator that somehow combines one or more operators.
- * 
+ *
  * @author rubensworks
  */
 public class CombinedOperator extends OperatorBase {
@@ -100,6 +100,22 @@ public class CombinedOperator extends OperatorBase {
             IValue value = variables.getValue(0);
             IValue result = ValueHelpers.evaluateOperator(getOperators()[0], value);
             return ValueTypeBoolean.ValueBoolean.of(!((ValueTypeBoolean.ValueBoolean) result).getRawValue());
+        }
+    }
+
+    public static class Pipe extends OperatorsFunction {
+
+        public Pipe(IOperator... operators) {
+            super(operators);
+        }
+
+        @Override
+        public IValue evaluate(SafeVariablesGetter variables) throws EvaluationException {
+            IValue value = variables.getValue(0);
+            for (IOperator operator : getOperators()) {
+                value = ValueHelpers.evaluateOperator(operator, value);
+            }
+            return value;
         }
     }
 }
