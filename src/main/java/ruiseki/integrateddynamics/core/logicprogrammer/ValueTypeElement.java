@@ -39,7 +39,7 @@ public class ValueTypeElement
     private ValueTypeGuiElement<GuiLogicProgrammer, ContainerLogicProgrammer> innerGuiElement;
 
     public ValueTypeElement(IValueType valueType) {
-        innerGuiElement = new ValueTypeGuiElement(valueType);
+        innerGuiElement = new ValueTypeGuiElement<>(valueType, getRenderPattern());
     }
 
     @Override

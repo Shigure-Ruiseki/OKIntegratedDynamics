@@ -38,6 +38,7 @@ import ruiseki.integrateddynamics.core.helper.CableHelpers;
 import ruiseki.integrateddynamics.core.helper.PartHelpers;
 import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.datastructure.DimPos;
+import ruiseki.okcore.datastructure.EnumFacingMap;
 import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.helper.BlockHelpers;
 import ruiseki.okcore.helper.InventoryHelpers;
@@ -54,23 +55,23 @@ import ruiseki.okcore.tileentity.TileEntityOK;
 public class TileMultipartTicking extends TileEntityOK implements TileEntityOK.ITickingTile, IPartContainer,
     ITileCableNetwork, ITileCableFacadeable, PartHelpers.IPartStateHolderCallback {
 
-    private final Map<ForgeDirection, PartHelpers.PartStateHolder<?, ?>> partData = Maps.newHashMap();
+    private final EnumFacingMap<PartHelpers.PartStateHolder<?, ?>> partData = EnumFacingMap.newMap();
     @Delegate
     protected final ITickingTile tickingTileComponent = new TickingTileComponent(this);
 
     @NBTPersist
     private boolean realCable = true;
     @NBTPersist
-    private Map<Integer, Boolean> connected = Maps.newHashMap();
+    private EnumFacingMap<Boolean> connected = EnumFacingMap.newMap();
     @NBTPersist
-    private Map<Integer, Boolean> forceDisconnected = Maps.newHashMap();
+    private EnumFacingMap<Boolean> forceDisconnected = EnumFacingMap.newMap();
     @NBTPersist
-    private Map<Integer, Integer> redstoneLevels = Maps.newHashMap();
+    private EnumFacingMap<Integer> redstoneLevels = EnumFacingMap.newMap();
     @NBTPersist
-    private Map<Integer, Boolean> redstoneInputs = Maps.newHashMap();
+    private EnumFacingMap<Boolean> redstoneInputs = EnumFacingMap.newMap();
     @NBTPersist
-    private Map<Integer, Integer> lightLevels = Maps.newHashMap();
-    private Map<Integer, Integer> previousLightLevels;
+    private EnumFacingMap<Integer> lightLevels = EnumFacingMap.newMap();
+    private EnumFacingMap<Integer> previousLightLevels;
     @NBTPersist
     private String facadeBlockName = null;
     @NBTPersist
@@ -277,8 +278,8 @@ public class TileMultipartTicking extends TileEntityOK implements TileEntityOK.I
 
     public boolean isForceDisconnected(ForgeDirection side) {
         if (!isRealCable() || hasPart(side)) return true;
-        if (!forceDisconnected.containsKey(side.ordinal())) return false;
-        return forceDisconnected.get(side.ordinal());
+        if (!forceDisconnected.containsKey(side)) return false;
+        return forceDisconnected.get(side);
     }
 
     @Override
@@ -324,14 +325,14 @@ public class TileMultipartTicking extends TileEntityOK implements TileEntityOK.I
     public void setRedstoneLevel(ForgeDirection side, int level) {
         if (!getWorldObj().isRemote) {
             boolean sendUpdate = false;
-            if (redstoneLevels.containsKey(side.ordinal())) {
-                if (redstoneLevels.get(side.ordinal()) != level) {
+            if (redstoneLevels.containsKey(side)) {
+                if (redstoneLevels.get(side) != level) {
                     sendUpdate = true;
-                    redstoneLevels.put(side.ordinal(), level);
+                    redstoneLevels.put(side, level);
                 }
             } else {
                 sendUpdate = true;
-                redstoneLevels.put(side.ordinal(), level);
+                redstoneLevels.put(side, level);
             }
             if (sendUpdate) {
                 updateRedstoneInfo(side);
@@ -340,26 +341,26 @@ public class TileMultipartTicking extends TileEntityOK implements TileEntityOK.I
     }
 
     public int getRedstoneLevel(ForgeDirection side) {
-        if (redstoneLevels.containsKey(side.ordinal())) {
-            return redstoneLevels.get(side.ordinal());
+        if (redstoneLevels.containsKey(side)) {
+            return redstoneLevels.get(side);
         }
         return -1;
     }
 
     public void setAllowRedstoneInput(ForgeDirection side, boolean allow) {
-        redstoneInputs.put(side.ordinal(), allow);
+        redstoneInputs.put(side, allow);
     }
 
     public boolean isAllowRedstoneInput(ForgeDirection side) {
-        if (redstoneInputs.containsKey(side.ordinal())) {
-            return redstoneInputs.get(side.ordinal());
+        if (redstoneInputs.containsKey(side)) {
+            return redstoneInputs.get(side);
         }
         return false;
     }
 
     public void disableRedstoneLevel(ForgeDirection side) {
         if (!getWorldObj().isRemote) {
-            redstoneLevels.remove(side.ordinal());
+            redstoneLevels.remove(side);
             updateRedstoneInfo(side);
         }
     }
@@ -371,14 +372,14 @@ public class TileMultipartTicking extends TileEntityOK implements TileEntityOK.I
     public void setLightLevel(ForgeDirection side, int level) {
         if (!getWorldObj().isRemote) {
             boolean sendUpdate = false;
-            if (lightLevels.containsKey(side.ordinal())) {
-                if (lightLevels.get(side.ordinal()) != level) {
+            if (lightLevels.containsKey(side)) {
+                if (lightLevels.get(side) != level) {
                     sendUpdate = true;
-                    lightLevels.put(side.ordinal(), level);
+                    lightLevels.put(side, level);
                 }
             } else {
                 sendUpdate = true;
-                lightLevels.put(side.ordinal(), level);
+                lightLevels.put(side, level);
             }
             if (sendUpdate) {
                 updateLightInfo(side);
@@ -387,8 +388,8 @@ public class TileMultipartTicking extends TileEntityOK implements TileEntityOK.I
     }
 
     public int getLightLevel(ForgeDirection side) {
-        if (lightLevels.containsKey(side.ordinal())) {
-            return lightLevels.get(side.ordinal());
+        if (lightLevels.containsKey(side)) {
+            return lightLevels.get(side);
         }
         return 0;
     }
@@ -419,11 +420,11 @@ public class TileMultipartTicking extends TileEntityOK implements TileEntityOK.I
         World world = getWorldObj();
         for (ForgeDirection side : ForgeDirection.VALID_DIRECTIONS) {
             boolean cableConnected = CableNetworkComponent.canSideConnect(world, getPos(), side, (ICable) getBlock());
-            connected.put(side.ordinal(), cableConnected);
+            connected.put(side, cableConnected);
 
             // Remove any already existing force-disconnects for this side.
             if (!cableConnected) {
-                forceDisconnected.put(side.ordinal(), false);
+                forceDisconnected.put(side, false);
             }
         }
         markDirty();
@@ -432,17 +433,17 @@ public class TileMultipartTicking extends TileEntityOK implements TileEntityOK.I
 
     @Override
     public boolean isConnected(ForgeDirection side) {
-        return connected.containsKey(side.ordinal()) && connected.get(side.ordinal());
+        return connected.containsKey(side) && connected.get(side);
     }
 
     @Override
     public void disconnect(ForgeDirection side) {
-        forceDisconnected.put(side.ordinal(), true);
+        forceDisconnected.put(side, true);
     }
 
     @Override
     public void reconnect(ForgeDirection side) {
-        forceDisconnected.remove(side.ordinal());
+        forceDisconnected.remove(side);
     }
 
     @Override
@@ -453,7 +454,7 @@ public class TileMultipartTicking extends TileEntityOK implements TileEntityOK.I
     /**
      * @return The raw part data.
      */
-    public Map<ForgeDirection, PartHelpers.PartStateHolder<?, ?>> getPartData() {
+    public EnumFacingMap<PartHelpers.PartStateHolder<?, ?>> getPartData() {
         return this.partData;
     }
 
@@ -462,7 +463,7 @@ public class TileMultipartTicking extends TileEntityOK implements TileEntityOK.I
      *
      * @param partData The raw part data.
      */
-    public void setPartData(Map<ForgeDirection, PartHelpers.PartStateHolder<?, ?>> partData) {
+    public void setPartData(EnumFacingMap<PartHelpers.PartStateHolder<?, ?>> partData) {
         this.partData.clear();
         this.partData.putAll(partData);
     }
@@ -470,11 +471,11 @@ public class TileMultipartTicking extends TileEntityOK implements TileEntityOK.I
     /**
      * @return The raw force disconnection data.
      */
-    public Map<Integer, Boolean> getForceDisconnected() {
+    public EnumFacingMap<Boolean> getForceDisconnected() {
         return this.forceDisconnected;
     }
 
-    public void setForceDisconnected(Map<Integer, Boolean> forceDisconnected) {
+    public void setForceDisconnected(EnumFacingMap<Boolean> forceDisconnected) {
         this.forceDisconnected.clear();
         this.forceDisconnected.putAll(forceDisconnected);
     }

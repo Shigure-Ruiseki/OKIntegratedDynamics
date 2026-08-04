@@ -30,7 +30,7 @@ import ruiseki.okcore.inventory.IGuiContainerProvider;
 
 /**
  * Base class for aspects.
- * 
+ *
  * @author rubensworks
  */
 public abstract class AspectBase<V extends IValue, T extends IValueType<V>> implements IAspect<V, T> {
@@ -38,6 +38,8 @@ public abstract class AspectBase<V extends IValue, T extends IValueType<V>> impl
     private final IAspectProperties defaultProperties;
     @Getter
     private final IGuiContainerProvider propertiesGuiProvider;
+
+    private String unlocalizedName = null;
 
     @Deprecated
     public AspectBase() {
@@ -63,7 +65,7 @@ public abstract class AspectBase<V extends IValue, T extends IValueType<V>> impl
 
     @Override
     public String getUnlocalizedName() {
-        return getUnlocalizedPrefix() + ".name";
+        return unlocalizedName != null ? unlocalizedName : (unlocalizedName = getUnlocalizedPrefix() + ".name");
     }
 
     protected String getUnlocalizedPrefix() {
@@ -121,7 +123,7 @@ public abstract class AspectBase<V extends IValue, T extends IValueType<V>> impl
 
     /**
      * Creates the default properties for this aspect, only called once.
-     * 
+     *
      * @return The default properties.
      */
     @Deprecated

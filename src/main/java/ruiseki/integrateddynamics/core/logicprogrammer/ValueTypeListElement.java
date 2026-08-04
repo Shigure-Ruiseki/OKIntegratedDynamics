@@ -41,7 +41,7 @@ import ruiseki.okcore.helper.RenderHelpers;
 
 /**
  * Element for the list value type.
- * 
+ *
  * @author rubensworks
  */
 public class ValueTypeListElement extends ValueTypeElement {
@@ -340,7 +340,7 @@ public class ValueTypeListElement extends ValueTypeElement {
                 partialTicks,
                 mouseX,
                 mouseY);
-            valueTypeSelector.drawTextBox(Minecraft.getMinecraft(), mouseX, mouseY);
+            valueTypeSelector.drawTextBox(Minecraft.getMinecraft(), mouseX - guiLeft, mouseY - guiTop);
         }
 
         @Override

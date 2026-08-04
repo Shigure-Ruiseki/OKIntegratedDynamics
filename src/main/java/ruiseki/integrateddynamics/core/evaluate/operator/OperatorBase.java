@@ -16,7 +16,7 @@ import ruiseki.okcore.helper.LangHelpers;
 
 /**
  * A basic abstract implementation of an operator.
- * 
+ *
  * @author rubensworks
  */
 public abstract class OperatorBase implements IOperator {
@@ -27,6 +27,8 @@ public abstract class OperatorBase implements IOperator {
     private final IValueType outputType;
     private final IFunction function;
     private final IConfigRenderPattern renderPattern;
+
+    private String unlocalizedName = null;
 
     protected OperatorBase(String symbol, String operatorName, IValueType[] inputTypes, IValueType outputType,
         IFunction function, IConfigRenderPattern renderPattern) {
@@ -62,7 +64,7 @@ public abstract class OperatorBase implements IOperator {
 
     @Override
     public String getUnlocalizedName() {
-        return getUnlocalizedPrefix() + ".name";
+        return unlocalizedName != null ? unlocalizedName : (unlocalizedName = getUnlocalizedPrefix() + ".name");
     }
 
     @Override
@@ -215,7 +217,7 @@ public abstract class OperatorBase implements IOperator {
 
         /**
          * Evaluate this function for the given input.
-         * 
+         *
          * @param variables The input variables holder.
          * @return The output value.
          * @throws EvaluationException If an exception occurs while evaluating

@@ -1,13 +1,16 @@
 package ruiseki.integrateddynamics.core.evaluate.variable;
 
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
 import net.minecraft.util.EnumChatFormatting;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
 import lombok.ToString;
+import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeListProxy;
@@ -17,7 +20,7 @@ import ruiseki.okcore.helper.LangHelpers;
 
 /**
  * Value type with values that are strings.
- *
+ * 
  * @author rubensworks
  */
 public class ValueTypeList extends ValueObjectTypeBase<ValueTypeList.ValueList> {
@@ -28,7 +31,7 @@ public class ValueTypeList extends ValueObjectTypeBase<ValueTypeList.ValueList> 
 
     @Override
     public ValueList getDefault() {
-        return ValueList.ofList(ValueTypes.CATEGORY_ANY, Lists.<IValue>newArrayList());
+        return ValueList.ofList(ValueTypes.CATEGORY_ANY, Collections.<IValue>emptyList());
     }
 
     @Override
@@ -73,10 +76,7 @@ public class ValueTypeList extends ValueObjectTypeBase<ValueTypeList.ValueList> 
     @Override
     public ValueList materialize(ValueList value) {
         IValueTypeListProxy<IValueType<IValue>, IValue> list = value.getRawValue();
-        List<IValue> values = Lists.newArrayListWithExpectedSize(list.getLength());
-        for (IValue element : list) {
-            values.add(element);
-        }
+        List<IValue> values = ImmutableList.copyOf(list);
         return ValueList.ofList(list.getValueType(), values);
     }
 
@@ -125,12 +125,22 @@ public class ValueTypeList extends ValueObjectTypeBase<ValueTypeList.ValueList> 
 
         @Override
         public boolean hasNext() {
-            return index < value.getLength();
+            try {
+                return index < value.getLength();
+            } catch (EvaluationException e) {
+                return false;
+            }
         }
 
         @Override
         public V next() {
-            return value.get(index++);
+            try {
+                return value.get(index++);
+            } catch (EvaluationException e) {
+                e.printStackTrace();
+                return value.getValueType()
+                    .getDefault();
+            }
         }
 
         @Override

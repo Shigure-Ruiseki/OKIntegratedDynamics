@@ -3,11 +3,14 @@ package ruiseki.integrateddynamics.api.evaluate.variable;
 import java.util.Comparator;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
+import ruiseki.integrateddynamics.core.evaluate.variable.ValueHelpers;
 import ruiseki.okcore.helper.LangHelpers;
 
 /**
  * Type of value
- * 
+ *
  * @author rubensworks
  */
 public interface IValueType<V extends IValue> {
@@ -24,7 +27,7 @@ public interface IValueType<V extends IValue> {
 
     /**
      * Create an immutable default value.
-     * 
+     *
      * @return The default value of this type.
      */
     public V getDefault();
@@ -44,8 +47,9 @@ public interface IValueType<V extends IValue> {
      * 
      * @param lines              The list to add lines to.
      * @param appendOptionalInfo If shift-to-show info should be added.
+     * @param value              The value to show the tooltip for.
      */
-    public void loadTooltip(List<String> lines, boolean appendOptionalInfo);
+    public void loadTooltip(List<String> lines, boolean appendOptionalInfo, @Nullable V value);
 
     /**
      * @param value The value
@@ -66,7 +70,7 @@ public interface IValueType<V extends IValue> {
     /**
      * Check if the given type corresponds with this type.
      * To check bidirectional, use {@link ValueHelpers#correspondsTo(IValueType, IValueType)}.
-     * 
+     *
      * @param valueType The value type to check correspondence with.
      * @return If the given value type can be used with this value type.
      */
@@ -74,7 +78,7 @@ public interface IValueType<V extends IValue> {
 
     /**
      * Serialize the given value.
-     * 
+     *
      * @param value The value to serialize.
      * @return The serialized value.
      */
@@ -82,7 +86,7 @@ public interface IValueType<V extends IValue> {
 
     /**
      * Check if the given value can be deserialized.
-     * 
+     *
      * @param value The value to deserialize.
      * @return An error or null.
      */
@@ -90,7 +94,7 @@ public interface IValueType<V extends IValue> {
 
     /**
      * Deserialize the given value.
-     * 
+     *
      * @param value The value to deserialize.
      * @return The deserialized value.
      */
@@ -98,11 +102,16 @@ public interface IValueType<V extends IValue> {
 
     /**
      * Materialize the given value so that it can exist without any external references.
-     * 
+     *
      * @param value The value to materialize.
      * @return The materialized value.
      */
     public V materialize(V value);
+
+    /**
+     * @return If a default logic programmer element has to be generated.
+     */
+    public boolean hasDefaultLogicProgrammerElement();
 
     /**
      * Use this comparator for any comparisons with value types.

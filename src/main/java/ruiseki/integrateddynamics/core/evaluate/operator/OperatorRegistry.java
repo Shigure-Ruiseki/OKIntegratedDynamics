@@ -8,6 +8,7 @@ import java.util.Map;
 import net.minecraft.nbt.NBTTagCompound;
 
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
@@ -31,7 +32,7 @@ public class OperatorRegistry implements IOperatorRegistry {
     private static OperatorRegistry INSTANCE = new OperatorRegistry();
     private static final IOperatorVariableFacade INVALID_FACADE = new OperatorVariableFacade(false, null, null);
 
-    private final List<IOperator> operators = Lists.newLinkedList();
+    private final List<IOperator> operators = Lists.newArrayList();
     private final Map<String, IOperator> namedOperators = Maps.newHashMap();
     private final Multimap<List<IValueType>, IOperator> inputTypedOperators = HashMultimap.create();
     private final Multimap<IValueType, IOperator> outputTypedOperators = HashMultimap.create();
@@ -55,7 +56,7 @@ public class OperatorRegistry implements IOperatorRegistry {
     public <O extends IOperator> O register(O operator) {
         operators.add(operator);
         namedOperators.put(operator.getUniqueName(), operator);
-        inputTypedOperators.put(Lists.newArrayList(operator.getInputTypes()), operator);
+        inputTypedOperators.put(ImmutableList.copyOf(operator.getInputTypes()), operator);
         outputTypedOperators.put(operator.getOutputType(), operator);
         return operator;
     }
@@ -72,7 +73,7 @@ public class OperatorRegistry implements IOperatorRegistry {
 
     @Override
     public Collection<IOperator> getOperatorsWithInputTypes(IValueType... valueTypes) {
-        return inputTypedOperators.get(Lists.newArrayList(valueTypes));
+        return inputTypedOperators.get(ImmutableList.copyOf(valueTypes));
     }
 
     @Override

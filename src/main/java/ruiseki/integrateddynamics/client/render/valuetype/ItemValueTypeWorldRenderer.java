@@ -2,6 +2,7 @@ package ruiseki.integrateddynamics.client.render.valuetype;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.util.ForgeDirection;
@@ -58,6 +59,7 @@ public class ItemValueTypeWorldRenderer implements IValueTypeWorldRenderer {
     public static void renderItemStack(ItemStack itemStack, float alpha) {
         if (itemStack == null || itemStack.getItem() == null) return;
 
+        RenderHelper.enableGUIStandardItemLighting();
         GlStateManager.pushMatrix();
 
         GlStateManager.translate(3F, 3F, 0F);
@@ -67,5 +69,6 @@ public class ItemValueTypeWorldRenderer implements IValueTypeWorldRenderer {
         RenderHelpers.renderItem(Minecraft.getMinecraft().theWorld, itemStack, 0.0D, 0.0D, 0.0D);
 
         GlStateManager.popMatrix();
+        RenderHelper.disableStandardItemLighting();
     }
 }

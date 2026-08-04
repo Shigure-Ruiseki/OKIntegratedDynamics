@@ -2,6 +2,8 @@ package ruiseki.integrateddynamics.core.evaluate.variable;
 
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.integrateddynamics.Reference;
@@ -21,6 +23,8 @@ public abstract class ValueTypeBase<V extends IValue> implements IValueType<V> {
     private final String typeName;
     private final int color;
     private final String colorFormat;
+
+    private String unlocalizedName = null;
 
     public ValueTypeBase(String typeName, int color, String colorFormat) {
         this.typeName = typeName;
@@ -51,7 +55,7 @@ public abstract class ValueTypeBase<V extends IValue> implements IValueType<V> {
 
     @Override
     public String getUnlocalizedName() {
-        return getUnlocalizedPrefix() + ".name";
+        return unlocalizedName != null ? unlocalizedName : (unlocalizedName = getUnlocalizedPrefix() + ".name");
     }
 
     @Override
@@ -82,7 +86,7 @@ public abstract class ValueTypeBase<V extends IValue> implements IValueType<V> {
     }
 
     @Override
-    public void loadTooltip(List<String> lines, boolean appendOptionalInfo) {
+    public void loadTooltip(List<String> lines, boolean appendOptionalInfo, @Nullable V value) {
         String typeName = LangHelpers.localize(getUnlocalizedName());
         lines.add(LangHelpers.localize(L10NValues.VALUETYPE_TOOLTIP_TYPENAME, getDisplayColorFormat() + typeName));
         if (appendOptionalInfo) {
@@ -108,6 +112,11 @@ public abstract class ValueTypeBase<V extends IValue> implements IValueType<V> {
     @Override
     public String toString() {
         return LangHelpers.localize(getUnlocalizedName());
+    }
+
+    @Override
+    public boolean hasDefaultLogicProgrammerElement() {
+        return !isObject();
     }
 
     protected String getModId() {

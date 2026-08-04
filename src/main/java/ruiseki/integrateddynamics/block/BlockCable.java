@@ -98,7 +98,7 @@ public class BlockCable extends ConfigurableBlockContainer
     );
 
     // Collision components
-    private static final List<IComponent<ForgeDirection, BlockCable>> COLLIDABLE_COMPONENTS = Lists.newLinkedList();
+    private static final List<IComponent<ForgeDirection, BlockCable>> COLLIDABLE_COMPONENTS = Lists.newArrayList();
     private static final IComponent<ForgeDirection, BlockCable> CENTER_COMPONENT = new IComponent<ForgeDirection, BlockCable>() {
 
         @Override

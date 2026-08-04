@@ -13,6 +13,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import ruiseki.integrateddynamics.api.client.gui.subgui.IGuiInputElement;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
+import ruiseki.integrateddynamics.api.logicprogrammer.IConfigRenderPattern;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartTarget;
@@ -233,7 +234,7 @@ public class GuiAspectSettings extends GuiContainerExtended {
             subGuiHolder.removeSubGui(propertyConfigPattern);
             subGuiHolder.removeSubGui(propertyInfo);
         }
-        guiElement = new ValueTypeGuiElement<>(property.getType());
+        guiElement = new ValueTypeGuiElement<>(property.getType(), IConfigRenderPattern.NONE);
         subGuiHolder.addSubGui(
             propertyConfigPattern = guiElement
                 .createSubGui(8, 17, 160, 91, this, (ContainerAspectSettings) getContainer()));

@@ -11,6 +11,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
@@ -37,7 +38,7 @@ import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeString;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
 import ruiseki.integrateddynamics.core.part.aspect.build.AspectBuilder;
 import ruiseki.integrateddynamics.core.part.aspect.build.IAspectValuePropagator;
-import ruiseki.integrateddynamics.core.part.aspect.build.IAspectWriteActivator;
+import ruiseki.integrateddynamics.core.part.aspect.build.IAspectWriteDeactivator;
 import ruiseki.integrateddynamics.core.part.aspect.property.AspectProperties;
 import ruiseki.integrateddynamics.core.part.aspect.property.AspectPropertyTypeInstance;
 import ruiseki.integrateddynamics.part.aspect.write.redstone.IWriteRedstoneComponent;
@@ -46,7 +47,7 @@ import ruiseki.okcore.datastructure.BlockPos;
 
 /**
  * Collection of aspect write builders and value propagators.
- * 
+ *
  * @author rubensworks
  */
 public class AspectWriteBuilders {
@@ -64,7 +65,8 @@ public class AspectWriteBuilders {
         AspectBuilder.forWriteType(ValueTypes.LIST));
     public static final AspectBuilder<ValueObjectTypeItemStack.ValueItemStack, ValueObjectTypeItemStack, Triple<PartTarget, IAspectProperties, ValueObjectTypeItemStack.ValueItemStack>> BUILDER_ITEMSTACK = getValue(
         AspectBuilder.forWriteType(ValueTypes.OBJECT_ITEMSTACK));
-
+    public static final AspectBuilder<ValueObjectTypeFluidStack.ValueFluidStack, ValueObjectTypeFluidStack, Triple<PartTarget, IAspectProperties, ValueObjectTypeFluidStack.ValueFluidStack>> BUILDER_FLUIDSTACK = getValue(
+        AspectBuilder.forWriteType(ValueTypes.OBJECT_FLUIDSTACK));
     // --------------- Value type propagators ---------------
     public static final IAspectValuePropagator<Triple<PartTarget, IAspectProperties, ValueTypeBoolean.ValueBoolean>, Triple<PartTarget, IAspectProperties, Boolean>> PROP_GET_BOOLEAN = new IAspectValuePropagator<Triple<PartTarget, IAspectProperties, ValueTypeBoolean.ValueBoolean>, Triple<PartTarget, IAspectProperties, Boolean>>() {
 
@@ -170,7 +172,7 @@ public class AspectWriteBuilders {
         public static final IAspectProperties PROPERTIES_NOTE = new AspectProperties(
             Sets.<IAspectPropertyTypeInstance>newHashSet(PROP_VOLUME));
         public static final IAspectProperties PROPERTIES_SOUND = new AspectProperties(
-            Lists.<IAspectPropertyTypeInstance>newArrayList(PROP_VOLUME, PROP_FREQUENCY));
+            ImmutableList.<IAspectPropertyTypeInstance>of(PROP_VOLUME, PROP_FREQUENCY));
         static {
             PROPERTIES_NOTE.setValue(PROP_VOLUME, ValueTypeDouble.ValueDouble.of(3D));
             PROPERTIES_SOUND.setValue(PROP_VOLUME, ValueTypeDouble.ValueDouble.of(3D));
@@ -284,7 +286,7 @@ public class AspectWriteBuilders {
             ValueTypes.BOOLEAN,
             "aspect.aspecttypes.integrateddynamics.boolean.forceParticle.name");
         public static final IAspectProperties PROPERTIES_PARTICLE = new AspectProperties(
-            Lists.<IAspectPropertyTypeInstance>newArrayList(
+            ImmutableList.<IAspectPropertyTypeInstance>of(
                 PROP_OFFSET_X,
                 PROP_OFFSET_Y,
                 PROP_OFFSET_Z,
@@ -326,10 +328,10 @@ public class AspectWriteBuilders {
             }
         };
 
-        public static final IAspectWriteActivator ACTIVATOR = new IAspectWriteActivator() {
+        public static final IAspectWriteDeactivator DEACTIVATOR = new IAspectWriteDeactivator() {
 
             @Override
-            public <P extends IPartTypeWriter<P, S>, S extends IPartStateWriter<P>> void onActivate(P partType,
+            public <P extends IPartTypeWriter<P, S>, S extends IPartStateWriter<P>> void onDeactivate(P partType,
                 PartTarget target, S state) {
                 WRITE_REDSTONE_COMPONENT.deactivate(target);
             }
@@ -338,11 +340,11 @@ public class AspectWriteBuilders {
         public static final AspectBuilder<ValueTypeBoolean.ValueBoolean, ValueTypeBoolean, Triple<PartTarget, IAspectProperties, Boolean>> BUILDER_BOOLEAN = AspectWriteBuilders.BUILDER_BOOLEAN
             .appendKind("redstone")
             .handle(PROP_GET_BOOLEAN)
-            .appendActivator(ACTIVATOR);
+            .appendDeactivator(DEACTIVATOR);
         public static final AspectBuilder<ValueTypeInteger.ValueInteger, ValueTypeInteger, Triple<PartTarget, IAspectProperties, Integer>> BUILDER_INTEGER = AspectWriteBuilders.BUILDER_INTEGER
             .appendKind("redstone")
             .handle(PROP_GET_INTEGER)
-            .appendActivator(ACTIVATOR);
+            .appendDeactivator(DEACTIVATOR);
 
     }
 

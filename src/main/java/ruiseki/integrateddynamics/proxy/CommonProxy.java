@@ -7,6 +7,7 @@ import ruiseki.integrateddynamics.network.packet.ItemStackRenamePacket;
 import ruiseki.integrateddynamics.network.packet.LogicProgrammerActivateElementPacket;
 import ruiseki.integrateddynamics.network.packet.LogicProgrammerLabelPacket;
 import ruiseki.integrateddynamics.network.packet.LogicProgrammerValueTypeListValueChangedPacket;
+import ruiseki.integrateddynamics.network.packet.LogicProgrammerValueTypeOperatorValueChangedPacket;
 import ruiseki.integrateddynamics.network.packet.LogicProgrammerValueTypeValueChangedPacket;
 import ruiseki.okcore.init.ModBase;
 import ruiseki.okcore.network.PacketHandler;
@@ -31,6 +32,7 @@ public class CommonProxy extends CommonProxyComponent {
         packetHandler.register(ItemStackRenamePacket.class);
         packetHandler.register(LogicProgrammerValueTypeListValueChangedPacket.class);
         packetHandler.register(LogicProgrammerLabelPacket.class);
+        packetHandler.register(LogicProgrammerValueTypeOperatorValueChangedPacket.class);
 
         IntegratedDynamics.clog("Registered packet handler.");
     }

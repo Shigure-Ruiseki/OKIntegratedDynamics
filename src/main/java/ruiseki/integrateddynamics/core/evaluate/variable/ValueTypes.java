@@ -20,6 +20,7 @@ public class ValueTypes {
     public static ValueTypeLong LONG = REGISTRY.register(new ValueTypeLong());
     public static ValueTypeString STRING = REGISTRY.register(new ValueTypeString());
     public static ValueTypeList LIST = REGISTRY.register(new ValueTypeList());
+    public static ValueTypeOperator OPERATOR = REGISTRY.register(new ValueTypeOperator());
 
     // Object types
     public static ValueObjectTypeBlock OBJECT_BLOCK = REGISTRY.register(new ValueObjectTypeBlock());

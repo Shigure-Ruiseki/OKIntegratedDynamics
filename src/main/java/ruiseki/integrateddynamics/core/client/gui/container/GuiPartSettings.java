@@ -1,4 +1,4 @@
-package ruiseki.integrateddynamics.client.gui;
+package ruiseki.integrateddynamics.core.client.gui.container;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
@@ -111,7 +111,7 @@ public class GuiPartSettings extends GuiContainerExtended {
     @Override
     protected void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY) {
         super.drawGuiContainerBackgroundLayer(partialTicks, mouseX, mouseY);
-        numberField.drawTextBox(Minecraft.getMinecraft(), mouseX, mouseY);
+        numberField.drawTextBox(Minecraft.getMinecraft(), mouseX - guiLeft, mouseY - guiTop);
         fontRendererObj.drawString(
             LangHelpers.localize("gui.integrateddynamics.partsettings.updateInterval"),
             guiLeft + 8,

@@ -1,5 +1,7 @@
 package ruiseki.integrateddynamics.core.evaluate.variable;
 
+import net.minecraft.item.ItemStack;
+
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
@@ -12,7 +14,7 @@ import ruiseki.okcore.helper.BlockHelpers;
 
 /**
  * Value type with values that are blocks (these are internally stored as blockstates).
- * 
+ *
  * @author rubensworks
  */
 public class ValueObjectTypeBlock extends ValueObjectTypeBase<ValueObjectTypeBlock.ValueBlock>
@@ -29,13 +31,18 @@ public class ValueObjectTypeBlock extends ValueObjectTypeBase<ValueObjectTypeBlo
 
     @Override
     public String toCompactString(ValueBlock value) {
-        return value.getRawValue()
-            .isPresent()
-                ? value.getRawValue()
-                    .get()
-                    .getBlock()
-                    .getLocalizedName()
-                : "";
+        if (value.getRawValue()
+            .isPresent()) {
+            BlockState blockState = value.getRawValue()
+                .get();
+            ItemStack itemStack = BlockHelpers.getItemStackFromBlockState(blockState);
+            if (itemStack != null) {
+                return itemStack.getDisplayName();
+            }
+            return blockState.getBlock()
+                .getLocalizedName();
+        }
+        return "";
     }
 
     @Override

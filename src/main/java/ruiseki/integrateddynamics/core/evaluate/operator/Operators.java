@@ -24,7 +24,10 @@ import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.oredict.OreDictionary;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 import com.gtnewhorizon.gtnhlib.blockstate.registry.BlockPropertyRegistry;
@@ -56,6 +59,7 @@ import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeInteger;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeList;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeListProxyEntityArmorInventory;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeListProxyEntityInventory;
+import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeListProxyOperatorMapped;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeString;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
 import ruiseki.integrateddynamics.core.helper.Helpers;
@@ -1318,16 +1322,16 @@ public final class Operators {
                 @Override
                 public IValue evaluate(OperatorBase.SafeVariablesGetter variables) throws EvaluationException {
                     ValueObjectTypeItemStack.ValueItemStack a = variables.getValue(0);
-                    List<ValueTypeString.ValueString> names = Lists.newArrayList();
+                    ImmutableList.Builder<ValueTypeString.ValueString> builder = ImmutableList.builder();
                     if (a.getRawValue()
                         .isPresent()) {
                         for (int i : OreDictionary.getOreIDs(
                             a.getRawValue()
                                 .get())) {
-                            names.add(ValueTypeString.ValueString.of(OreDictionary.getOreName(i)));
+                            builder.add(ValueTypeString.ValueString.of(OreDictionary.getOreName(i)));
                         }
                     }
-                    return ValueTypeList.ValueList.ofList(ValueTypes.STRING, names);
+                    return ValueTypeList.ValueList.ofList(ValueTypes.STRING, builder.build());
                 }
             })
             .build());
@@ -1344,13 +1348,13 @@ public final class Operators {
                 @Override
                 public IValue evaluate(OperatorBase.SafeVariablesGetter variables) throws EvaluationException {
                     ValueTypeString.ValueString a = variables.getValue(0);
-                    List<ValueObjectTypeItemStack.ValueItemStack> stacks = Lists.newArrayList();
+                    ImmutableList.Builder<ValueObjectTypeItemStack.ValueItemStack> builder = ImmutableList.builder();
                     if (!StringUtils.isNullOrEmpty(a.getRawValue())) {
                         for (ItemStack itemStack : OreDictionary.getOres(a.getRawValue())) {
-                            stacks.add(ValueObjectTypeItemStack.ValueItemStack.of(itemStack));
+                            builder.add(ValueObjectTypeItemStack.ValueItemStack.of(itemStack));
                         }
                     }
-                    return ValueTypeList.ValueList.ofList(ValueTypes.OBJECT_ITEMSTACK, stacks);
+                    return ValueTypeList.ValueList.ofList(ValueTypes.OBJECT_ITEMSTACK, builder.build());
                 }
             })
             .build());
@@ -2088,6 +2092,28 @@ public final class Operators {
                     return ValueTypeString.ValueString.of(modName);
                 }
             })
+            .build());
+    /**
+     * Apply the given operator on all elements of a list, resulting in a new list of mapped values.
+     */
+    public static final IOperator OPERATOR_MAP = REGISTRY.register(
+        OperatorBuilders.OPERATOR_2_INFIX_LONG.output(ValueTypes.LIST)
+            .symbolOperator("map")
+            .typeValidator(OperatorBuilders.createOperatorTypeValidator(ValueTypes.LIST))
+            .function(
+                OperatorBuilders.FUNCTION_OPERATOR_TAKE_OPERATOR_LIST
+                    .build(new IOperatorValuePropagator<Pair<IOperator, OperatorBase.SafeVariablesGetter>, IValue>() {
+
+                        @Override
+                        public IValue getOutput(Pair<IOperator, OperatorBase.SafeVariablesGetter> input)
+                            throws EvaluationException {
+                            final IOperator innerOperator = input.getLeft();
+                            OperatorBase.SafeVariablesGetter variables = input.getRight();
+                            ValueTypeList.ValueList inputList = variables.getValue(0);
+                            return ValueTypeList.ValueList.ofFactory(
+                                new ValueTypeListProxyOperatorMapped(innerOperator, inputList.getRawValue()));
+                        }
+                    }))
             .build());
 
     /**

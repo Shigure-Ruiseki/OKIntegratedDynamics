@@ -10,7 +10,7 @@ import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeCategory;
 
 /**
  * Base implementation of a value type category.
- * 
+ *
  * @author rubensworks
  */
 public abstract class ValueTypeCategoryBase<V extends IValue> extends ValueTypeBase<V>
@@ -20,7 +20,7 @@ public abstract class ValueTypeCategoryBase<V extends IValue> extends ValueTypeB
 
     /**
      * Make a new instance.
-     * 
+     *
      * @param typeName    The category name.
      * @param color       The color.
      * @param colorFormat The color format.
@@ -33,7 +33,7 @@ public abstract class ValueTypeCategoryBase<V extends IValue> extends ValueTypeB
 
     /**
      * Make a new instance.
-     * 
+     *
      * @param typeName    The category name.
      * @param color       The color.
      * @param colorFormat The color format.
@@ -85,5 +85,10 @@ public abstract class ValueTypeCategoryBase<V extends IValue> extends ValueTypeB
     @Override
     public Set<IValueType<?>> getElements() {
         return Collections.unmodifiableSet(elements);
+    }
+
+    @Override
+    public boolean hasDefaultLogicProgrammerElement() {
+        return false;
     }
 }

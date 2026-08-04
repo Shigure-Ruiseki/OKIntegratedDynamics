@@ -10,7 +10,7 @@ import ruiseki.integrateddynamics.core.evaluate.operator.Operators;
 
 /**
  * Operator element type.
- * 
+ *
  * @author rubensworks
  */
 public class OperatorElementType implements ILogicProgrammerElementType<OperatorElement> {
@@ -33,7 +33,7 @@ public class OperatorElementType implements ILogicProgrammerElementType<Operator
 
     @Override
     public List<OperatorElement> createElements() {
-        List<OperatorElement> elements = Lists.newLinkedList();
+        List<OperatorElement> elements = Lists.newArrayList();
         for (IOperator operator : Operators.REGISTRY.getOperators()) {
             elements.add(new OperatorElement(operator));
         }

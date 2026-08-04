@@ -26,7 +26,7 @@ import ruiseki.okcore.item.ItemBlockOK;
  */
 public class ItemBlockCable extends ItemBlockOK {
 
-    private static final List<IUseAction> USE_ACTIONS = Lists.newLinkedList();
+    private static final List<IUseAction> USE_ACTIONS = Lists.newArrayList();
 
     public ItemBlockCable(Block block) {
         super(block);

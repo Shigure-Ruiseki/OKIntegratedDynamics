@@ -2,11 +2,12 @@ package ruiseki.integrateddynamics.core.evaluate.variable;
 
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.common.util.ForgeDirection;
-import net.minecraftforge.fluids.FluidTankInfo;
-import net.minecraftforge.fluids.IFluidHandler;
 
 import ruiseki.okcore.datastructure.DimPos;
-import ruiseki.okcore.helper.TileHelpers;
+import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
+import ruiseki.okcore.fluid.handler.IFluidHandler;
+import ruiseki.okcore.fluid.handler.IFluidTankProperties;
+import ruiseki.okcore.helper.CapabilityHelpers;
 import ruiseki.okcore.persist.nbt.INBTProvider;
 import ruiseki.okcore.persist.nbt.NBTPersist;
 
@@ -33,7 +34,9 @@ public class ValueTypeListProxyPositionedTankFluidStacks
     }
 
     protected IFluidHandler getTank() {
-        return TileHelpers.getSafeTile(pos.getWorld(), pos.getBlockPos(), IFluidHandler.class);
+        return CapabilityHelpers
+            .getCapability(pos.getWorld(), pos.getBlockPos(), CapabilityFluidHandler.FLUID_HANDLER, side)
+            .getOrNull();
     }
 
     @Override
@@ -42,7 +45,7 @@ public class ValueTypeListProxyPositionedTankFluidStacks
         if (tank == null) {
             return 0;
         }
-        FluidTankInfo[] tanks = tank.getTankInfo(side);
+        IFluidTankProperties[] tanks = tank.getTankProperties();
         if (tanks == null) {
             return 0;
         }
@@ -51,7 +54,7 @@ public class ValueTypeListProxyPositionedTankFluidStacks
 
     @Override
     public ValueObjectTypeFluidStack.ValueFluidStack get(int index) {
-        return ValueObjectTypeFluidStack.ValueFluidStack.of(getTank().getTankInfo(side)[index].fluid);
+        return ValueObjectTypeFluidStack.ValueFluidStack.of(getTank().getTankProperties()[index].getContents());
     }
 
     @Override

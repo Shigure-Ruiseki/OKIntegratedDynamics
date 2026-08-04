@@ -2,11 +2,12 @@ package ruiseki.integrateddynamics.core.evaluate.variable;
 
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.common.util.ForgeDirection;
-import net.minecraftforge.fluids.FluidTankInfo;
-import net.minecraftforge.fluids.IFluidHandler;
 
 import ruiseki.okcore.datastructure.DimPos;
-import ruiseki.okcore.helper.TileHelpers;
+import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
+import ruiseki.okcore.fluid.handler.IFluidHandler;
+import ruiseki.okcore.fluid.handler.IFluidTankProperties;
+import ruiseki.okcore.helper.CapabilityHelpers;
 import ruiseki.okcore.persist.nbt.INBTProvider;
 import ruiseki.okcore.persist.nbt.NBTPersist;
 
@@ -32,7 +33,9 @@ public class ValueTypeListProxyPositionedTankCapacities
     }
 
     protected IFluidHandler getTank() {
-        return TileHelpers.getSafeTile(pos.getWorld(), pos.getBlockPos(), IFluidHandler.class);
+        return CapabilityHelpers
+            .getCapability(pos.getWorld(), pos.getBlockPos(), CapabilityFluidHandler.FLUID_HANDLER, side)
+            .getOrNull();
     }
 
     @Override
@@ -41,7 +44,7 @@ public class ValueTypeListProxyPositionedTankCapacities
         if (tank == null) {
             return 0;
         }
-        FluidTankInfo[] tanks = tank.getTankInfo(side);
+        IFluidTankProperties[] tanks = tank.getTankProperties();
         if (tanks == null) {
             return 0;
         }
@@ -50,7 +53,7 @@ public class ValueTypeListProxyPositionedTankCapacities
 
     @Override
     public ValueTypeInteger.ValueInteger get(int index) {
-        return ValueTypeInteger.ValueInteger.of(getTank().getTankInfo(side)[index].capacity);
+        return ValueTypeInteger.ValueInteger.of(getTank().getTankProperties()[index].getCapacity());
     }
 
     @Override

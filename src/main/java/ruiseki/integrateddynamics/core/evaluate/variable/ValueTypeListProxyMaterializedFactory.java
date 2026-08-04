@@ -1,8 +1,6 @@
 package ruiseki.integrateddynamics.core.evaluate.variable;
 
-import java.util.List;
-
-import com.google.common.collect.Lists;
+import com.google.common.collect.ImmutableList;
 
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
@@ -10,7 +8,7 @@ import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeListProxyFacto
 
 /**
  * Factory for {@link ValueTypeListProxyMaterialized}.
- * 
+ *
  * @author rubensworks
  */
 public class ValueTypeListProxyMaterializedFactory implements
@@ -60,13 +58,13 @@ public class ValueTypeListProxyMaterializedFactory implements
         String[] values = new String[split.length - 1];
         System.arraycopy(split, 1, values, 0, split.length - 1);
 
-        List<IValue> list = Lists.newArrayList();
+        ImmutableList.Builder<IValue> builder = ImmutableList.builder();
         for (String serializedValue : values) {
             IValue deserializedValue = valueType
                 .deserialize(serializedValue.replaceAll(ELEMENT_DELIMITER_ESCAPED, ELEMENT_DELIMITER));
-            list.add(deserializedValue);
+            builder.add(deserializedValue);
         }
 
-        return new ValueTypeListProxyMaterialized<>(valueType, list);
+        return new ValueTypeListProxyMaterialized<>(valueType, builder.build());
     }
 }

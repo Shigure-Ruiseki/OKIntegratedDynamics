@@ -33,14 +33,14 @@ import ruiseki.okcore.helper.LangHelpers;
 
 /**
  * An item that can place parts.
- * 
+ *
  * @author rubensworks
  */
 @EqualsAndHashCode(callSuper = false)
 @Data
 public class ItemPart<P extends IPartType<P, S>, S extends IPartState<P>> extends ConfigurableItem {
 
-    private static final List<IUseAction> USE_ACTIONS = Lists.newLinkedList();
+    private static final List<IUseAction> USE_ACTIONS = Lists.newArrayList();
 
     private final IPartType<P, S> part;
 
@@ -57,7 +57,7 @@ public class ItemPart<P extends IPartType<P, S>, S extends IPartState<P>> extend
 
     /**
      * Register a use action for the cable item.
-     * 
+     *
      * @param useAction The use action.
      */
     public static void addUseAction(IUseAction useAction) {
@@ -172,7 +172,7 @@ public class ItemPart<P extends IPartType<P, S>, S extends IPartState<P>> extend
 
         /**
          * Attempt to use the given item.
-         * 
+         *
          * @param itemPart  The part item instance.
          * @param itemStack The item stack that is being used.
          * @param world     The world.

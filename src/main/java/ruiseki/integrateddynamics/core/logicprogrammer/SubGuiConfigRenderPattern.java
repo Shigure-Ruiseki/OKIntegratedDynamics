@@ -13,6 +13,7 @@ import com.google.common.collect.Lists;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import lombok.Getter;
 import ruiseki.integrateddynamics.api.client.gui.subgui.IGuiInputElement;
 import ruiseki.integrateddynamics.api.client.gui.subgui.ISubGuiBox;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
@@ -31,6 +32,7 @@ import ruiseki.okcore.helper.RenderHelpers;
 public class SubGuiConfigRenderPattern<E extends IGuiInputElement, G extends Gui, C extends Container> extends SubGuiBox
     implements ISubGuiBox {
 
+    @Getter
     protected final E element;
     private final int x, y;
     protected final G gui;

@@ -8,14 +8,12 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.FluidTankInfo;
-import net.minecraftforge.fluids.IFluidHandler;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.Nullable;
 
 import com.google.common.base.Predicate;
-import com.google.common.collect.Lists;
+import com.google.common.collect.ImmutableList;
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 
 import ruiseki.integrateddynamics.api.network.INetwork;
@@ -44,8 +42,10 @@ import ruiseki.integrateddynamics.core.part.aspect.property.AspectProperties;
 import ruiseki.integrateddynamics.core.part.aspect.property.AspectPropertyTypeInstance;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
+import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
+import ruiseki.okcore.fluid.handler.IFluidHandler;
+import ruiseki.okcore.fluid.handler.IFluidTankProperties;
 import ruiseki.okcore.helper.CapabilityHelpers;
-import ruiseki.okcore.helper.TileHelpers;
 import ruiseki.okcore.item.capability.CapabilityItemHandler;
 import ruiseki.okcore.item.handler.IItemHandler;
 
@@ -142,7 +142,7 @@ public class AspectReadBuilders {
         ValueTypes.INTEGER,
         "aspect.aspecttypes.integrateddynamics.integer.listindex.name");
     public static final IAspectProperties LIST_PROPERTIES = new AspectProperties(
-        Lists.<IAspectPropertyTypeInstance>newArrayList(PROPERTY_LISTINDEX));
+        ImmutableList.<IAspectPropertyTypeInstance>of(PROPERTY_LISTINDEX));
     static {
         LIST_PROPERTIES.setValue(PROPERTY_LISTINDEX, ValueTypeInteger.ValueInteger.of(0));
     }
@@ -153,7 +153,7 @@ public class AspectReadBuilders {
             ValueTypes.INTEGER,
             "aspect.aspecttypes.integrateddynamics.integer.range.name");
         public static final IAspectProperties NOTE_PROPERTIES = new AspectProperties(
-            Lists.<IAspectPropertyTypeInstance>newArrayList(PROPERTY_RANGE));
+            ImmutableList.<IAspectPropertyTypeInstance>of(PROPERTY_RANGE));
         static {
             NOTE_PROPERTIES.setValue(PROPERTY_RANGE, ValueTypeInteger.ValueInteger.of(64));
         }
@@ -264,43 +264,51 @@ public class AspectReadBuilders {
             ValueTypes.INTEGER,
             "aspect.aspecttypes.integrateddynamics.integer.tankid.name");
         public static final IAspectProperties PROPERTIES = new AspectProperties(
-            Lists.<IAspectPropertyTypeInstance>newArrayList(PROP_TANKID));
+            ImmutableList.<IAspectPropertyTypeInstance>of(PROP_TANKID));
         static {
             PROPERTIES.setValue(PROP_TANKID, ValueTypeInteger.ValueInteger.of(0)); // Not required in this case, but we
                                                                                    // do this here just as an example on
                                                                                    // how to set default values.
         }
 
-        public static final IAspectValuePropagator<Pair<PartTarget, IAspectProperties>, FluidTankInfo[]> PROP_GET = new IAspectValuePropagator<Pair<PartTarget, IAspectProperties>, FluidTankInfo[]>() {
+        public static final IAspectValuePropagator<Pair<PartTarget, IAspectProperties>, IFluidTankProperties[]> PROP_GET = new IAspectValuePropagator<Pair<PartTarget, IAspectProperties>, IFluidTankProperties[]>() {
 
             @Override
-            public FluidTankInfo[] getOutput(Pair<PartTarget, IAspectProperties> input) {
+            public IFluidTankProperties[] getOutput(Pair<PartTarget, IAspectProperties> input) {
                 DimPos dimPos = input.getLeft()
                     .getTarget()
                     .getPos();
-                IFluidHandler fluidHandler = TileHelpers.getSafeTile(dimPos, IFluidHandler.class);
-                if (fluidHandler != null) {
-                    return fluidHandler.getTankInfo(
+                IFluidHandler fluidHandler = CapabilityHelpers
+                    .getCapability(
+                        dimPos,
+                        CapabilityFluidHandler.FLUID_HANDLER,
                         input.getLeft()
                             .getTarget()
-                            .getSide());
+                            .getSide())
+                    .getOrNull();
+                if (fluidHandler != null) {
+                    return fluidHandler.getTankProperties();
                 }
-                return new FluidTankInfo[0];
+                return new IFluidTankProperties[0];
             }
         };
-        public static final IAspectValuePropagator<Pair<PartTarget, IAspectProperties>, FluidTankInfo> PROP_GET_ACTIVATABLE = new IAspectValuePropagator<Pair<PartTarget, IAspectProperties>, FluidTankInfo>() {
+        public static final IAspectValuePropagator<Pair<PartTarget, IAspectProperties>, IFluidTankProperties> PROP_GET_ACTIVATABLE = new IAspectValuePropagator<Pair<PartTarget, IAspectProperties>, IFluidTankProperties>() {
 
             @Override
-            public FluidTankInfo getOutput(Pair<PartTarget, IAspectProperties> input) {
+            public IFluidTankProperties getOutput(Pair<PartTarget, IAspectProperties> input) {
                 DimPos dimPos = input.getLeft()
                     .getTarget()
                     .getPos();
-                IFluidHandler fluidHandler = TileHelpers.getSafeTile(dimPos, IFluidHandler.class);
-                if (fluidHandler != null) {
-                    FluidTankInfo[] tankInfo = fluidHandler.getTankInfo(
+                IFluidHandler fluidHandler = CapabilityHelpers
+                    .getCapability(
+                        dimPos,
+                        CapabilityFluidHandler.FLUID_HANDLER,
                         input.getLeft()
                             .getTarget()
-                            .getSide());
+                            .getSide())
+                    .getOrNull();
+                if (fluidHandler != null) {
+                    IFluidTankProperties[] tankInfo = fluidHandler.getTankProperties();
                     int i = input.getRight()
                         .getValue(PROP_TANKID)
                         .getRawValue();
@@ -311,11 +319,11 @@ public class AspectReadBuilders {
                 return null;
             }
         };
-        public static final IAspectValuePropagator<FluidTankInfo, FluidStack> PROP_GET_FLUIDSTACK = new IAspectValuePropagator<FluidTankInfo, FluidStack>() {
+        public static final IAspectValuePropagator<IFluidTankProperties, FluidStack> PROP_GET_FLUIDSTACK = new IAspectValuePropagator<IFluidTankProperties, FluidStack>() {
 
             @Override
-            public FluidStack getOutput(FluidTankInfo tankInfo) {
-                return tankInfo != null ? tankInfo.fluid : null;
+            public FluidStack getOutput(IFluidTankProperties tankInfo) {
+                return tankInfo != null ? tankInfo.getContents() : null;
             }
         };
         public static final IAspectValuePropagator<Pair<PartTarget, IAspectProperties>, ValueTypeList.ValueList> PROP_GET_LIST_FLUIDSTACKS = new IAspectValuePropagator<Pair<PartTarget, IAspectProperties>, ValueTypeList.ValueList>() {
@@ -347,14 +355,14 @@ public class AspectReadBuilders {
             }
         };
 
-        public static final AspectBuilder<ValueTypeBoolean.ValueBoolean, ValueTypeBoolean, FluidTankInfo[]> BUILDER_BOOLEAN = AspectReadBuilders.BUILDER_BOOLEAN
+        public static final AspectBuilder<ValueTypeBoolean.ValueBoolean, ValueTypeBoolean, IFluidTankProperties[]> BUILDER_BOOLEAN = AspectReadBuilders.BUILDER_BOOLEAN
             .handle(PROP_GET, "fluid");
-        public static final AspectBuilder<ValueTypeInteger.ValueInteger, ValueTypeInteger, FluidTankInfo[]> BUILDER_INTEGER = AspectReadBuilders.BUILDER_INTEGER
+        public static final AspectBuilder<ValueTypeInteger.ValueInteger, ValueTypeInteger, IFluidTankProperties[]> BUILDER_INTEGER = AspectReadBuilders.BUILDER_INTEGER
             .handle(PROP_GET, "fluid");
-        public static final AspectBuilder<ValueTypeInteger.ValueInteger, ValueTypeInteger, FluidTankInfo> BUILDER_INTEGER_ACTIVATABLE = AspectReadBuilders.BUILDER_INTEGER
+        public static final AspectBuilder<ValueTypeInteger.ValueInteger, ValueTypeInteger, IFluidTankProperties> BUILDER_INTEGER_ACTIVATABLE = AspectReadBuilders.BUILDER_INTEGER
             .handle(PROP_GET_ACTIVATABLE, "fluid")
             .withProperties(PROPERTIES);
-        public static final AspectBuilder<ValueTypeDouble.ValueDouble, ValueTypeDouble, FluidTankInfo> BUILDER_DOUBLE_ACTIVATABLE = AspectReadBuilders.BUILDER_DOUBLE
+        public static final AspectBuilder<ValueTypeDouble.ValueDouble, ValueTypeDouble, IFluidTankProperties> BUILDER_DOUBLE_ACTIVATABLE = AspectReadBuilders.BUILDER_DOUBLE
             .handle(PROP_GET_ACTIVATABLE, "fluid")
             .withProperties(PROPERTIES);
 
@@ -366,7 +374,7 @@ public class AspectReadBuilders {
             ValueTypes.INTEGER,
             "aspect.aspecttypes.integrateddynamics.integer.slotid.name");
         public static final IAspectProperties PROPERTIES = new AspectProperties(
-            Lists.<IAspectPropertyTypeInstance>newArrayList(PROPERTY_SLOTID));
+            ImmutableList.<IAspectPropertyTypeInstance>of(PROPERTY_SLOTID));
         static {
             PROPERTIES.setValue(PROPERTY_SLOTID, ValueTypeInteger.ValueInteger.of(0)); // Not required in this case, but
                                                                                        // we do this here just as an
@@ -498,7 +506,7 @@ public class AspectReadBuilders {
             ValueTypes.INTEGER,
             "aspect.aspecttypes.integrateddynamics.integer.length.name");
         public static final IAspectProperties PROPERTIES_CLOCK = new AspectProperties(
-            Lists.<IAspectPropertyTypeInstance>newArrayList(PROPERTY_INTERVAL, PROPERTY_LENGTH));
+            ImmutableList.<IAspectPropertyTypeInstance>of(PROPERTY_INTERVAL, PROPERTY_LENGTH));
         static {
             PROPERTIES_CLOCK.setValue(PROPERTY_INTERVAL, ValueTypeInteger.ValueInteger.of(20));
             PROPERTIES_CLOCK.setValue(PROPERTY_LENGTH, ValueTypeInteger.ValueInteger.of(1));

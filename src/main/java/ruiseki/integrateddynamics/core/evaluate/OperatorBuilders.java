@@ -1,16 +1,23 @@
 package ruiseki.integrateddynamics.core.evaluate;
 
+import java.util.Arrays;
+
+import javax.annotation.Nullable;
+
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fluids.FluidStack;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 import com.google.common.base.Optional;
 
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.ModContainer;
 import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
+import ruiseki.integrateddynamics.api.evaluate.operator.IOperator;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeNumber;
@@ -27,8 +34,14 @@ import ruiseki.integrateddynamics.core.evaluate.variable.ValueObjectTypeItemStac
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeBoolean;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeDouble;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeInteger;
+import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeList;
+import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeOperator;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeString;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
+import ruiseki.integrateddynamics.core.helper.Helpers;
+import ruiseki.integrateddynamics.core.helper.L10NValues;
+import ruiseki.okcore.capabilities.Capability;
+import ruiseki.okcore.helper.LangHelpers;
 
 /**
  * Collection of operator builders.
@@ -288,4 +301,176 @@ public class OperatorBuilders {
     public static final IterativeFunction.PrePostBuilder<FluidStack, Boolean> FUNCTION_FLUIDSTACK_TO_BOOLEAN = FUNCTION_FLUIDSTACK
         .appendPost(PROPAGATOR_BOOLEAN_VALUE);
 
+    // --------------- Operator builders ---------------
+    public static final IterativeFunction.PrePostBuilder<Pair<IOperator, OperatorBase.SafeVariablesGetter>, IValue> FUNCTION_OPERATOR_TAKE_OPERATOR = IterativeFunction.PrePostBuilder
+        .begin()
+        .appendPre(
+            new IOperatorValuePropagator<OperatorBase.SafeVariablesGetter, Pair<IOperator, OperatorBase.SafeVariablesGetter>>() {
+
+                @Override
+                public Pair<IOperator, OperatorBase.SafeVariablesGetter> getOutput(
+                    OperatorBase.SafeVariablesGetter input) throws EvaluationException {
+                    IOperator innerOperator = ((ValueTypeOperator.ValueOperator) input.getValue(0)).getRawValue();
+                    if (innerOperator.getRequiredInputLength() == 1) {
+                        IValue applyingValue = input.getValue(1);
+                        LangHelpers.UnlocalizedString error = innerOperator
+                            .validateTypes(new IValueType[] { applyingValue.getType() });
+                        if (error != null) {
+                            throw new EvaluationException(error.localize());
+                        }
+                    } else {
+                        if (!ValueHelpers
+                            .correspondsTo(input.getVariables()[1].getType(), innerOperator.getInputTypes()[0])) {
+                            LangHelpers.UnlocalizedString error = new LangHelpers.UnlocalizedString(
+                                L10NValues.OPERATOR_ERROR_WRONGCURRYINGTYPE,
+                                new LangHelpers.UnlocalizedString(innerOperator.getUnlocalizedName()),
+                                new LangHelpers.UnlocalizedString(
+                                    input.getVariables()[0].getType()
+                                        .getUnlocalizedName()),
+                                0,
+                                new LangHelpers.UnlocalizedString(
+                                    innerOperator.getInputTypes()[0].getUnlocalizedName()));
+                            throw new EvaluationException(error.localize());
+                        }
+                    }
+                    return Pair.<IOperator, OperatorBase.SafeVariablesGetter>of(
+                        innerOperator,
+                        new OperatorBase.SafeVariablesGetter.Shifted(1, input.getVariables()));
+                }
+            });
+    public static final IterativeFunction.PrePostBuilder<Pair<IOperator, OperatorBase.SafeVariablesGetter>, IValue> FUNCTION_OPERATOR_TAKE_OPERATOR_LIST = IterativeFunction.PrePostBuilder
+        .begin()
+        .appendPre(
+            new IOperatorValuePropagator<OperatorBase.SafeVariablesGetter, Pair<IOperator, OperatorBase.SafeVariablesGetter>>() {
+
+                @Override
+                public Pair<IOperator, OperatorBase.SafeVariablesGetter> getOutput(
+                    OperatorBase.SafeVariablesGetter input) throws EvaluationException {
+                    IOperator innerOperator = ((ValueTypeOperator.ValueOperator) input.getValue(0)).getRawValue();
+                    IValue applyingValue = input.getValue(1);
+                    if (!(applyingValue instanceof ValueTypeList.ValueList)) {
+                        LangHelpers.UnlocalizedString error = new LangHelpers.UnlocalizedString(
+                            L10NValues.OPERATOR_ERROR_WRONGTYPE,
+                            "?",
+                            new LangHelpers.UnlocalizedString(
+                                applyingValue.getType()
+                                    .getUnlocalizedName()),
+                            0,
+                            new LangHelpers.UnlocalizedString(ValueTypes.LIST.getUnlocalizedName()));
+                        throw new EvaluationException(error.localize());
+                    }
+                    ValueTypeList.ValueList applyingList = (ValueTypeList.ValueList) applyingValue;
+                    LangHelpers.UnlocalizedString error = innerOperator.validateTypes(
+                        new IValueType[] { applyingList.getRawValue()
+                            .getValueType() });
+                    if (error != null) {
+                        throw new EvaluationException(error.localize());
+                    }
+                    return Pair.<IOperator, OperatorBase.SafeVariablesGetter>of(
+                        innerOperator,
+                        new OperatorBase.SafeVariablesGetter.Shifted(1, input.getVariables()));
+                }
+            });
+    public static final OperatorBuilder.IConditionalOutputTypeDeriver OPERATOR_CONDITIONAL_OUTPUT_DERIVER = new OperatorBuilder.IConditionalOutputTypeDeriver() {
+
+        @Override
+        public IValueType getConditionalOutputType(OperatorBase operator, IVariable[] input) {
+            try {
+                IOperator innerOperator = ((ValueTypeOperator.ValueOperator) input[0].getValue()).getRawValue();
+                if (innerOperator.getRequiredInputLength() == 1) {
+                    IVariable[] innerVariables = Arrays.copyOfRange(input, 1, input.length);
+                    LangHelpers.UnlocalizedString error = innerOperator
+                        .validateTypes(ValueHelpers.from(innerVariables));
+                    if (error != null) {
+                        return innerOperator.getOutputType();
+                    }
+                    return innerOperator.getConditionalOutputType(innerVariables);
+                } else {
+                    return ValueTypes.OPERATOR;
+                }
+            } catch (EvaluationException e) {
+                return ValueTypes.CATEGORY_ANY;
+            }
+        }
+    };
+    public static final OperatorBuilder<OperatorBase.SafeVariablesGetter> OPERATOR = OperatorBuilder
+        .forType(ValueTypes.OPERATOR)
+        .appendKind("operator");
+
+    public static final OperatorBuilder<OperatorBase.SafeVariablesGetter> OPERATOR_2_INFIX_LONG = OPERATOR
+        .inputTypes(new IValueType[] { ValueTypes.OPERATOR, ValueTypes.CATEGORY_ANY })
+        .renderPattern(IConfigRenderPattern.INFIX);
+
+    /**
+     * Create a type validator for operator operator type validators.
+     * 
+     * @param expectedSubTypes The expected types that must be present in the operator (not including the first
+     *                         operator type itself.
+     * @return The type validator instance.
+     */
+    public static OperatorBuilder.ITypeValidator createOperatorTypeValidator(final IValueType... expectedSubTypes) {
+        final int subOperatorLength = expectedSubTypes.length;
+        final LangHelpers.UnlocalizedString expected = new LangHelpers.UnlocalizedString(
+            Helpers.createPatternOfLength(subOperatorLength),
+            ValueHelpers.from(expectedSubTypes));
+        return new OperatorBuilder.ITypeValidator() {
+
+            @Override
+            public LangHelpers.UnlocalizedString validateTypes(OperatorBase operator, IValueType[] input) {
+                if (input.length == 0 || !ValueHelpers.correspondsTo(input[0], ValueTypes.OPERATOR)) {
+                    String givenName = input.length == 0 ? "null" : input[0].getUnlocalizedName();
+                    return new LangHelpers.UnlocalizedString(
+                        L10NValues.VALUETYPE_ERROR_INVALIDOPERATOROPERATOR,
+                        0,
+                        givenName);
+                }
+                if (input.length != subOperatorLength + 1) {
+                    IValueType[] operatorInputs = Arrays.copyOfRange(input, 1, input.length);
+                    LangHelpers.UnlocalizedString given = new LangHelpers.UnlocalizedString(
+                        Helpers.createPatternOfLength(operatorInputs.length),
+                        ValueHelpers.from(operatorInputs));
+                    return new LangHelpers.UnlocalizedString(
+                        L10NValues.VALUETYPE_ERROR_INVALIDOPERATORSIGNATURE,
+                        expected,
+                        given);
+                }
+
+                return null;
+            }
+        };
+    }
+
+    /**
+     * Helper function to create an operator function builder for deriving capabilities from an itemstack.
+     * 
+     * @param capabilityReference The capability instance reference.
+     * @param <T>                 The capability type.
+     * @return The builder.
+     */
+    public static <T> IterativeFunction.PrePostBuilder<T, IValue> getItemCapability(
+        @Nullable final ICapabilityReference<T> capabilityReference) {
+        return IterativeFunction.PrePostBuilder.begin()
+            .appendPre(new IOperatorValuePropagator<OperatorBase.SafeVariablesGetter, T>() {
+
+                @Override
+                public T getOutput(OperatorBase.SafeVariablesGetter input) throws EvaluationException {
+                    ValueObjectTypeItemStack.ValueItemStack a = input.getValue(0);
+                    if (a.getRawValue()
+                        .isPresent()
+                        && a.getRawValue()
+                            .get()
+                            .hasCapability(capabilityReference.getReference(), null)) {
+                        return a.getRawValue()
+                            .get()
+                            .getCapability(capabilityReference.getReference(), null);
+                    }
+                    return null;
+                }
+            });
+    }
+
+    public static interface ICapabilityReference<T> {
+
+        public Capability<T> getReference();
+    }
 }

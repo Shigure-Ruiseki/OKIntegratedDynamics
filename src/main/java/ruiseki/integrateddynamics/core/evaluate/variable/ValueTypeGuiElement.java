@@ -1,6 +1,8 @@
 package ruiseki.integrateddynamics.core.evaluate.variable;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
@@ -14,12 +16,12 @@ import com.google.common.collect.Lists;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 import ruiseki.integrateddynamics.api.client.gui.subgui.IGuiInputElement;
 import ruiseki.integrateddynamics.api.client.gui.subgui.ISubGuiBox;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 import ruiseki.integrateddynamics.api.logicprogrammer.IConfigRenderPattern;
+import ruiseki.integrateddynamics.core.client.gui.IDropdownEntry;
+import ruiseki.integrateddynamics.core.client.gui.IDropdownEntryListener;
 import ruiseki.integrateddynamics.core.client.gui.subgui.SubGuiBox;
 import ruiseki.integrateddynamics.core.logicprogrammer.SubGuiConfigRenderPattern;
 import ruiseki.okcore.client.gui.container.GuiContainerExtended;
@@ -30,21 +32,23 @@ import ruiseki.okcore.helper.StringHelpers;
 
 /**
  * Element for value type.
- * 
+ *
  * @author rubensworks
  */
 @Data
 public class ValueTypeGuiElement<G extends Gui, C extends Container>
-    implements IGuiInputElement<SubGuiConfigRenderPattern, G, C> {
+    implements IGuiInputElement<SubGuiConfigRenderPattern, G, C>, IDropdownEntryListener {
 
     private final IValueType valueType;
-    private final String defaultInputString;
-    @Getter
-    @Setter
+    private final IConfigRenderPattern renderPattern;
+    private String defaultInputString;
     private String inputString;
+    private Set<IDropdownEntry<?>> dropdownPossibilities = Collections.emptySet();
+    private IDropdownEntryListener dropdownEntryListener = null;
 
-    public ValueTypeGuiElement(IValueType valueType) {
+    public ValueTypeGuiElement(IValueType valueType, IConfigRenderPattern renderPattern) {
         this.valueType = valueType;
+        this.renderPattern = renderPattern;
         defaultInputString = getValueType().toCompactString(getValueType().getDefault());
     }
 
@@ -63,12 +67,12 @@ public class ValueTypeGuiElement<G extends Gui, C extends Container>
 
     @Override
     public void loadTooltip(List<String> lines) {
-        getValueType().loadTooltip(lines, true);
+        getValueType().loadTooltip(lines, true, null);
     }
 
     @Override
     public IConfigRenderPattern getRenderPattern() {
-        return IConfigRenderPattern.NONE;
+        return renderPattern;
     }
 
     @Override
@@ -94,6 +98,13 @@ public class ValueTypeGuiElement<G extends Gui, C extends Container>
     @Override
     public String getSymbol() {
         return LangHelpers.localize(getValueType().getUnlocalizedName());
+    }
+
+    @Override
+    public void onSetDropdownPossiblity(IDropdownEntry<?> dropdownEntry) {
+        if (dropdownEntryListener != null) {
+            dropdownEntryListener.onSetDropdownPossiblity(dropdownEntry);
+        }
     }
 
     @Override

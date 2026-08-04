@@ -172,7 +172,7 @@ public class PartHelpers {
      * Read parts data from nbt.
      * If the world is not null and we are running client-side,
      * a block render update will automatically be triggered if needed.
-     * 
+     *
      * @param network  The network the part will be part of.
      * @param pos      The position of the part, used for error reporting.
      * @param tag      The tag to read from.
@@ -211,7 +211,7 @@ public class PartHelpers {
                 }
             }
             if (triggerBlockRenderUpdate) {
-                world.markBlockRangeForRenderUpdate(pos, pos);
+                world.markBlockForUpdate(pos.getX(), pos.getY(), pos.getZ());
             }
         }
     }

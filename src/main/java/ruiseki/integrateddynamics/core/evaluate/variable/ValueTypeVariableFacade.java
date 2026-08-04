@@ -19,7 +19,7 @@ import ruiseki.okcore.helper.LangHelpers;
 
 /**
  * Variable facade for variables determined by a raw value.
- * 
+ *
  * @author rubensworks
  */
 @EqualsAndHashCode(callSuper = true)
@@ -96,9 +96,9 @@ public class ValueTypeVariableFacade<V extends IValue> extends VariableFacadeBas
     @Override
     public void addInformation(List<String> list, EntityPlayer entityPlayer) {
         if (isValid()) {
-            getValueType().loadTooltip(list, false);
-            list.add(
-                LangHelpers.localize(L10NValues.VALUETYPE_TOOLTIP_VALUE, getValueType().toCompactString(getValue())));
+            V value = getValue();
+            getValueType().loadTooltip(list, false, value);
+            list.add(LangHelpers.localize(L10NValues.VALUETYPE_TOOLTIP_VALUE, getValueType().toCompactString(value)));
         }
         super.addInformation(list, entityPlayer);
     }
