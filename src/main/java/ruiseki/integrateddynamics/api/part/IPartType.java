@@ -2,7 +2,6 @@ package ruiseki.integrateddynamics.api.part;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 import javax.annotation.Nullable;
 
@@ -16,8 +15,6 @@ import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
-import com.google.common.collect.ImmutableMap;
-
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.INetworkElement;
 import ruiseki.integrateddynamics.api.network.INetworkEventListener;
@@ -26,6 +23,7 @@ import ruiseki.integrateddynamics.api.network.IPartNetworkElement;
 import ruiseki.integrateddynamics.client.model.CableModel;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
+import ruiseki.okcore.datastructure.EnumFacingMap;
 import ruiseki.okcore.helper.MatrixHelpers;
 import ruiseki.okcore.init.IInitListener;
 
@@ -322,7 +320,7 @@ public interface IPartType<P extends IPartType<P, S>, S extends IPartState<P>>
      * Check if the given state change should trigger a block render update.
      * This is only called client-side.
      * The new and old partstates are never both null, at most one will be null.
-     * 
+     *
      * @param oldPartState The old part state.
      * @param newPartState The new part state.
      * @return If it should trigger a block render update.
@@ -336,8 +334,8 @@ public interface IPartType<P extends IPartType<P, S>, S extends IPartState<P>>
         private final float depthFactor;
         private final float widthFactor;
         private final float heightFactor;
-        private final Map<ForgeDirection, AxisAlignedBB> sidedCableCollisionBoxes;
-        private final Map<ForgeDirection, AxisAlignedBB> collisionBoxes;
+        private final EnumFacingMap<AxisAlignedBB> sidedCableCollisionBoxes;
+        private final EnumFacingMap<AxisAlignedBB> collisionBoxes;
 
         public RenderPosition(float selectionDepthFactor, float depthFactor, float widthFactor, float heightFactor) {
             this.depthFactor = depthFactor;
@@ -358,18 +356,15 @@ public interface IPartType<P extends IPartType<P, S>, S extends IPartState<P>>
                     CableModel.MAX }, // EAST
             };
 
-            ImmutableMap.Builder<ForgeDirection, AxisAlignedBB> sidedCableCollisionBoxesBuilder = ImmutableMap
-                .builder();
+            sidedCableCollisionBoxes = EnumFacingMap.newMap();
             for (ForgeDirection side : ForgeDirection.VALID_DIRECTIONS) {
                 float[] b = sidedCableCollisionBoxesRaw[side.ordinal()];
-                sidedCableCollisionBoxesBuilder
-                    .put(side, AxisAlignedBB.getBoundingBox(b[0], b[1], b[2], b[3], b[4], b[5]));
+                sidedCableCollisionBoxes.put(side, AxisAlignedBB.getBoundingBox(b[0], b[1], b[2], b[3], b[4], b[5]));
             }
-            this.sidedCableCollisionBoxes = sidedCableCollisionBoxesBuilder.build();
 
             float[][] collisionBoxesRaw = new float[][] { { 0.19F, 0.81F }, { 0.005F, selectionDepthFactor },
                 { 0.19F, 0.81F } };
-            ImmutableMap.Builder<ForgeDirection, AxisAlignedBB> collisionBoxesBuilder = ImmutableMap.builder();
+            collisionBoxes = EnumFacingMap.newMap();
             for (ForgeDirection side : ForgeDirection.VALID_DIRECTIONS) {
                 // Copy bounds
                 float[][] bounds = new float[collisionBoxesRaw.length][collisionBoxesRaw[0].length];
@@ -378,7 +373,7 @@ public interface IPartType<P extends IPartType<P, S>, S extends IPartState<P>>
 
                 // Transform bounds
                 MatrixHelpers.transform(bounds, side);
-                collisionBoxesBuilder.put(
+                collisionBoxes.put(
                     side,
                     AxisAlignedBB.getBoundingBox(
                         bounds[0][0],
@@ -388,7 +383,6 @@ public interface IPartType<P extends IPartType<P, S>, S extends IPartState<P>>
                         bounds[1][1],
                         bounds[2][1]));
             }
-            this.collisionBoxes = collisionBoxesBuilder.build();
         }
 
         public float getDepthFactor() {

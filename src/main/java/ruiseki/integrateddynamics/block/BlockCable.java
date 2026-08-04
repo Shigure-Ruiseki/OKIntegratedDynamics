@@ -71,6 +71,7 @@ import ruiseki.okcore.config.configurable.ConfigurableBlockContainer;
 import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
+import ruiseki.okcore.datastructure.EnumFacingMap;
 import ruiseki.okcore.helper.ItemStackHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.helper.RenderHelpers;
@@ -85,14 +86,16 @@ public class BlockCable extends ConfigurableBlockContainer
     public static final Material BLOCK_MATERIAL = Material.glass;
 
     // Collision boxes
-    public static final float[][] CABLE_COLLISION_BOXES = {
-        { CableModel.MIN, 0, CableModel.MIN, CableModel.MAX, CableModel.MIN, CableModel.MAX }, // DOWN
-        { CableModel.MIN, CableModel.MAX, CableModel.MIN, CableModel.MAX, 1, CableModel.MAX }, // UP
-        { CableModel.MIN, CableModel.MIN, 0, CableModel.MAX, CableModel.MAX, CableModel.MIN }, // NORTH
-        { CableModel.MIN, CableModel.MAX, CableModel.MAX, CableModel.MAX, CableModel.MIN, 1 }, // SOUTH
-        { 0, CableModel.MIN, CableModel.MIN, CableModel.MIN, CableModel.MAX, CableModel.MAX }, // WEST
-        { CableModel.MAX, CableModel.MIN, CableModel.MIN, 1, CableModel.MAX, CableModel.MAX }, // EAST
-    };
+    private final static AxisAlignedBB CABLE_CENTER_BOUNDINGBOX = AxisAlignedBB
+        .getBoundingBox(CableModel.MIN, CableModel.MIN, CableModel.MIN, CableModel.MAX, CableModel.MAX, CableModel.MAX);
+    private final static EnumFacingMap<AxisAlignedBB> CABLE_SIDE_BOUNDINGBOXES = EnumFacingMap.forAllValues(
+        AxisAlignedBB.getBoundingBox(CableModel.MIN, 0, CableModel.MIN, CableModel.MAX, CableModel.MIN, CableModel.MAX), // DOWN
+        AxisAlignedBB.getBoundingBox(CableModel.MIN, CableModel.MAX, CableModel.MIN, CableModel.MAX, 1, CableModel.MAX), // UP
+        AxisAlignedBB.getBoundingBox(CableModel.MIN, CableModel.MIN, 0, CableModel.MAX, CableModel.MAX, CableModel.MIN), // NORTH
+        AxisAlignedBB.getBoundingBox(CableModel.MIN, CableModel.MAX, CableModel.MAX, CableModel.MAX, CableModel.MIN, 1), // SOUTH
+        AxisAlignedBB.getBoundingBox(0, CableModel.MIN, CableModel.MIN, CableModel.MIN, CableModel.MAX, CableModel.MAX), // WEST
+        AxisAlignedBB.getBoundingBox(CableModel.MAX, CableModel.MIN, CableModel.MIN, 1, CableModel.MAX, CableModel.MAX) // EAST
+    );
 
     // Collision components
     private static final List<IComponent<ForgeDirection, BlockCable>> COLLIDABLE_COMPONENTS = Lists.newLinkedList();
@@ -644,13 +647,10 @@ public class BlockCable extends ConfigurableBlockContainer
     }
 
     public AxisAlignedBB getCableBoundingBox(ForgeDirection side) {
-        float min = CableModel.MIN;
-        float max = CableModel.MAX;
         if (side == null) {
-            return AxisAlignedBB.getBoundingBox(min, min, min, max, max, max);
+            return CABLE_CENTER_BOUNDINGBOX;
         } else {
-            float[] b = CABLE_COLLISION_BOXES[side.ordinal()];
-            return AxisAlignedBB.getBoundingBox(b[0], b[1], b[2], b[3], b[4], b[5]);
+            return CABLE_SIDE_BOUNDINGBOXES.get(side);
         }
     }
 
@@ -674,10 +674,8 @@ public class BlockCable extends ConfigurableBlockContainer
     }
 
     private AxisAlignedBB getCableBoundingBoxWithPart(World world, BlockPos pos, ForgeDirection side) {
-        float min = CableModel.MIN;
-        float max = CableModel.MAX;
         if (side == null) {
-            return AxisAlignedBB.getBoundingBox(min, min, min, max, max, max);
+            return CABLE_CENTER_BOUNDINGBOX;
         }
 
         IPartType.RenderPosition renderPosition = getPartRenderPosition(world, pos, side);
