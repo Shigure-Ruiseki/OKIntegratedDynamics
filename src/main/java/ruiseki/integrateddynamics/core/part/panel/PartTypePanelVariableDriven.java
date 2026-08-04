@@ -168,8 +168,8 @@ public abstract class PartTypePanelVariableDriven<P extends PartTypePanelVariabl
 
     @Override
     public boolean onPartActivated(World world, BlockPos pos, final S partState, EntityPlayer player,
-        ForgeDirection side, float hitX, float hitY, float hitZ) {
-        if (WrenchHelpers.isWrench(player, pos)) {
+        ItemStack heldItem, ForgeDirection side, float hitX, float hitY, float hitZ) {
+        if (WrenchHelpers.isWrench(player, heldItem, pos)) {
             WrenchHelpers.wrench(player, pos, new WrenchHelpers.IWrenchAction<Void>() {
 
                 @Override
@@ -181,7 +181,7 @@ public abstract class PartTypePanelVariableDriven<P extends PartTypePanelVariabl
             });
             return true;
         }
-        return super.onPartActivated(world, pos, partState, player, side, hitX, hitY, hitZ);
+        return super.onPartActivated(world, pos, partState, player, heldItem, side, hitX, hitY, hitZ);
     }
 
     @Override

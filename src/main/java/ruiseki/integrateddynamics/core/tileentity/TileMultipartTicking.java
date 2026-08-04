@@ -81,16 +81,16 @@ public class TileMultipartTicking extends TileEntityOK implements TileEntityOK.I
     private IPartNetwork network;
 
     @Override
-    public void writeCommon(NBTTagCompound tag) {
+    public void writeToNBT(NBTTagCompound tag) {
         this.markDirty();
-        super.writeCommon(tag);
+        super.writeToNBT(tag);
         PartHelpers.writePartsToNBT(getPos(), tag, this.partData);
     }
 
     @Override
-    public void readCommon(NBTTagCompound tag) {
+    public void readFromNBT(NBTTagCompound tag) {
         PartHelpers.readPartsFromNBT(getNetwork(), getPos(), tag, this.partData);
-        super.readCommon(tag);
+        super.readFromNBT(tag);
     }
 
     /**
@@ -113,7 +113,7 @@ public class TileMultipartTicking extends TileEntityOK implements TileEntityOK.I
 
     @Override
     public DimPos getPosition() {
-        return DimPos.of(getWorld(), getPos());
+        return DimPos.of(getWorldObj(), getPos());
     }
 
     @Override
@@ -149,7 +149,7 @@ public class TileMultipartTicking extends TileEntityOK implements TileEntityOK.I
     public void setPart(final ForgeDirection side, final IPartType part, final IPartState partState) {
         PartHelpers.setPart(
             getNetwork(),
-            getWorld(),
+            getWorldObj(),
             getPos(),
             side,
             Objects.requireNonNull(part),
@@ -187,7 +187,7 @@ public class TileMultipartTicking extends TileEntityOK implements TileEntityOK.I
             IPartType removed = partStateHolder.getPart();
             if (getNetwork() != null) {
                 INetworkElement networkElement = removed
-                    .createNetworkElement((IPartContainerFacade) getBlock(), DimPos.of(getWorld(), getPos()), side);
+                    .createNetworkElement((IPartContainerFacade) getBlock(), DimPos.of(getWorldObj(), getPos()), side);
                 if (!getNetwork().removeNetworkElementPre(networkElement)) {
                     return null;
                 }
@@ -197,9 +197,9 @@ public class TileMultipartTicking extends TileEntityOK implements TileEntityOK.I
                 networkElement.addDrops(itemStacks, true);
                 for (ItemStack itemStack : itemStacks) {
                     if (player != null) {
-                        ItemStackHelpers.spawnItemStackToPlayer(getWorld(), getPos(), itemStack, player);
+                        ItemStackHelpers.spawnItemStackToPlayer(getWorldObj(), getPos(), itemStack, player);
                     } else {
-                        InventoryHelpers.dropItems(getWorld(), itemStack, getPos());
+                        InventoryHelpers.dropItems(getWorldObj(), itemStack, getPos());
                     }
                 }
 
@@ -207,7 +207,8 @@ public class TileMultipartTicking extends TileEntityOK implements TileEntityOK.I
                 getNetwork().removeNetworkElementPost(networkElement);
             } else {
                 IntegratedDynamics.clog(Level.WARN, "Removing a part where no network reference was found.");
-                ItemStackHelpers.spawnItemStackToPlayer(getWorld(), getPos(), new ItemStack(removed.getItem()), player);
+                ItemStackHelpers
+                    .spawnItemStackToPlayer(getWorldObj(), getPos(), new ItemStack(removed.getItem()), player);
             }
             // Finally remove the part data from this tile.
             IPartType ret = partData.remove(side)
@@ -269,7 +270,7 @@ public class TileMultipartTicking extends TileEntityOK implements TileEntityOK.I
         this.worldObj.markBlockForUpdate(this.xCoord, this.yCoord, this.zCoord);
         if (!lightLevels.equals(previousLightLevels)) {
             previousLightLevels = lightLevels;
-            updateTELight();
+            this.worldObj.func_147451_t(this.xCoord, this.yCoord, this.zCoord);
         }
 
     }
@@ -281,8 +282,8 @@ public class TileMultipartTicking extends TileEntityOK implements TileEntityOK.I
     }
 
     @Override
-    protected void doUpdate() {
-        super.doUpdate();
+    protected void updateTileEntity() {
+        super.updateTileEntity();
         // If the connection data were reset, update the cable connections
         if (connected.isEmpty()) {
             updateConnections();
@@ -315,13 +316,13 @@ public class TileMultipartTicking extends TileEntityOK implements TileEntityOK.I
         int offsetY = y + opposite.offsetY;
         int offsetZ = z + opposite.offsetZ;
 
-        getWorld().notifyBlocksOfNeighborChange(x, y, z, getBlock());
+        getWorldObj().notifyBlocksOfNeighborChange(x, y, z, getBlock());
 
-        getWorld().notifyBlocksOfNeighborChange(offsetX, offsetY, offsetZ, getBlock());
+        getWorldObj().notifyBlocksOfNeighborChange(offsetX, offsetY, offsetZ, getBlock());
     }
 
     public void setRedstoneLevel(ForgeDirection side, int level) {
-        if (!getWorld().isRemote) {
+        if (!getWorldObj().isRemote) {
             boolean sendUpdate = false;
             if (redstoneLevels.containsKey(side.ordinal())) {
                 if (redstoneLevels.get(side.ordinal()) != level) {
@@ -357,7 +358,7 @@ public class TileMultipartTicking extends TileEntityOK implements TileEntityOK.I
     }
 
     public void disableRedstoneLevel(ForgeDirection side) {
-        if (!getWorld().isRemote) {
+        if (!getWorldObj().isRemote) {
             redstoneLevels.remove(side.ordinal());
             updateRedstoneInfo(side);
         }
@@ -368,7 +369,7 @@ public class TileMultipartTicking extends TileEntityOK implements TileEntityOK.I
     }
 
     public void setLightLevel(ForgeDirection side, int level) {
-        if (!getWorld().isRemote) {
+        if (!getWorldObj().isRemote) {
             boolean sendUpdate = false;
             if (lightLevels.containsKey(side.ordinal())) {
                 if (lightLevels.get(side.ordinal()) != level) {
@@ -415,7 +416,7 @@ public class TileMultipartTicking extends TileEntityOK implements TileEntityOK.I
 
     @Override
     public void updateConnections() {
-        World world = getWorld();
+        World world = getWorldObj();
         for (ForgeDirection side : ForgeDirection.VALID_DIRECTIONS) {
             boolean cableConnected = CableNetworkComponent.canSideConnect(world, getPos(), side, (ICable) getBlock());
             connected.put(side.ordinal(), cableConnected);

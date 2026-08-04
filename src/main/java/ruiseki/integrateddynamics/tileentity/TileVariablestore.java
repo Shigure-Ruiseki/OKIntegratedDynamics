@@ -23,7 +23,7 @@ import ruiseki.okcore.persist.IDirtyMarkListener;
 /**
  * A tile entity used to store variables.
  * Internally, this also acts as an expression cache
- * 
+ *
  * @author rubensworks
  */
 public class TileVariablestore extends TileCableConnectableInventory implements IVariableContainer, IDirtyMarkListener {
@@ -74,7 +74,7 @@ public class TileVariablestore extends TileCableConnectableInventory implements 
 
     @Override
     public DimPos getPosition() {
-        return DimPos.of(getWorld(), getPos());
+        return DimPos.of(this.getWorldObj(), getPos());
     }
 
     @Override
@@ -84,7 +84,7 @@ public class TileVariablestore extends TileCableConnectableInventory implements 
 
     @Override
     public void onDirty() {
-        if (!worldObj.isRemote) {
+        if (!getWorldObj().isRemote) {
             refreshVariables(inventory);
         }
     }

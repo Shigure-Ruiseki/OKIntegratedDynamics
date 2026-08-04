@@ -392,6 +392,7 @@ public class BlockCable extends ConfigurableBlockContainer
     @Override
     public boolean onBlockActivated(World world, int x, int y, int z, EntityPlayer player, int sideInt, float hitX,
         float hitY, float hitZ) {
+        ItemStack heldItem = player.getCurrentEquippedItem();
         BlockPos pos = new BlockPos(x, y, z);
         ForgeDirection side = ForgeDirection.getOrientation(sideInt);
         TileMultipartTicking tile = TileHelpers.getSafeTile(world, pos, TileMultipartTicking.class);
@@ -400,14 +401,14 @@ public class BlockCable extends ConfigurableBlockContainer
             if (rayTraceResult != null) {
                 ForgeDirection positionHit = rayTraceResult.getPositionHit();
                 if (rayTraceResult.getCollisionType() == FACADE_COMPONENT) {
-                    if (!world.isRemote && WrenchHelpers.isWrench(player, pos) && player.isSneaking()) {
+                    if (!world.isRemote && WrenchHelpers.isWrench(player, heldItem, pos) && player.isSneaking()) {
                         FACADE_COMPONENT.destroy(world, x, y, z, side, player);
                         world.notifyBlocksOfNeighborChange(x, y, z, this);
                         return true;
                     }
                     return false;
                 } else if (rayTraceResult.getCollisionType() == PARTS_COMPONENT) {
-                    if (!world.isRemote && WrenchHelpers.isWrench(player, pos)) {
+                    if (!world.isRemote && WrenchHelpers.isWrench(player, heldItem, pos)) {
                         // Remove part from cable
                         if (player.isSneaking()) {
                             PARTS_COMPONENT.destroy(world, x, y, z, rayTraceResult.getPositionHit(), player);
@@ -422,6 +423,7 @@ public class BlockCable extends ConfigurableBlockContainer
                                 pos,
                                 getPartContainer(world, pos).getPartState(positionHit),
                                 player,
+                                heldItem,
                                 positionHit,
                                 hitX,
                                 hitY,
@@ -433,6 +435,7 @@ public class BlockCable extends ConfigurableBlockContainer
                             world,
                             pos,
                             player,
+                            heldItem,
                             side,
                             rayTraceResult.getCollisionType() == CENTER_COMPONENT ? null
                                 : rayTraceResult.getPositionHit())) {
@@ -444,10 +447,10 @@ public class BlockCable extends ConfigurableBlockContainer
         return super.onBlockActivated(world, x, y, z, player, sideInt, hitX, hitY, hitZ);
     }
 
-    public static boolean onCableActivated(World world, BlockPos pos, EntityPlayer player, ForgeDirection side,
-        ForgeDirection cableConnectionHit) {
+    public static boolean onCableActivated(World world, BlockPos pos, EntityPlayer player, ItemStack heldItem,
+        ForgeDirection side, ForgeDirection cableConnectionHit) {
         ICableNetwork<?, ?> cable = CableHelpers.getInterface(world, pos, ICableNetwork.class);
-        if (WrenchHelpers.isWrench(player, pos)) {
+        if (WrenchHelpers.isWrench(player, heldItem, pos)) {
             if (player.isSneaking()) {
                 if (!(cable instanceof IPartContainerFacade)
                     || !((IPartContainerFacade) cable).getPartContainer(world, pos)

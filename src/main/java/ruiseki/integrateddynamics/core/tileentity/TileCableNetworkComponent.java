@@ -16,7 +16,7 @@ import ruiseki.okcore.tileentity.TileEntityOK;
 /**
  * A convenience component for tiles that require implementation of the {@link ITileCableNetwork} interface.
  * Don't forget to also call the {@link TileCableNetworkComponent#updateTileEntity()} method when delegating!
- * 
+ *
  * @author rubensworks
  */
 public class TileCableNetworkComponent implements ITileCableNetwork {
@@ -56,7 +56,7 @@ public class TileCableNetworkComponent implements ITileCableNetwork {
 
     @Override
     public void updateConnections() {
-        World world = tile.getWorld();
+        World world = tile.getWorldObj();
         for (ForgeDirection side : ForgeDirection.VALID_DIRECTIONS) {
             boolean cableConnected = CableNetworkComponent
                 .canSideConnect(world, tile.getPos(), side, (ICable) tile.getBlock());

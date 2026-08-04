@@ -285,8 +285,8 @@ public abstract class PartTypeBase<P extends IPartType<P, S>, S extends IPartSta
     }
 
     @Override
-    public boolean onPartActivated(World world, BlockPos pos, S partState, EntityPlayer player, ForgeDirection side,
-        float hitX, float hitY, float hitZ) {
+    public boolean onPartActivated(World world, BlockPos pos, S partState, EntityPlayer player, ItemStack heldItem,
+        ForgeDirection side, float hitX, float hitY, float hitZ) {
         // Drop through if the player is sneaking
         if (player.isSneaking() || !partState.isEnabled()) {
             return false;

@@ -11,7 +11,7 @@ import ruiseki.okcore.tileentity.TileEntityOK;
 
 /**
  * A tile entity whose block can connect with cables.
- * 
+ *
  * @author rubensworks
  */
 public class TileCableConnectable extends TileEntityOK
@@ -26,8 +26,8 @@ public class TileCableConnectable extends TileEntityOK
     private Map<Integer, Boolean> connected = Maps.newHashMap();
 
     @Override
-    protected void doUpdate() {
-        super.doUpdate();
+    protected void updateTileEntity() {
+        super.updateTileEntity();
         tileCableNetworkComponent.updateTileEntity();
     }
 

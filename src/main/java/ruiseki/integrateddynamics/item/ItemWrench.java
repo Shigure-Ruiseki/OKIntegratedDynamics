@@ -13,7 +13,7 @@ import ruiseki.okcore.datastructure.BlockPos;
 
 /**
  * The default wrench for this mod.
- * 
+ *
  * @author rubensworks
  */
 public class ItemWrench extends ConfigurableItem implements IWrench {
@@ -22,7 +22,7 @@ public class ItemWrench extends ConfigurableItem implements IWrench {
 
     /**
      * Get the unique instance.
-     * 
+     *
      * @return The instance.
      */
     public static ItemWrench getInstance() {
@@ -68,6 +68,6 @@ public class ItemWrench extends ConfigurableItem implements IWrench {
             player.swingItem();
             return !world.isRemote;
         }
-        return false;
+        return true;
     }
 }

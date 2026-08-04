@@ -248,8 +248,8 @@ public interface IPartType<P extends IPartType<P, S>, S extends IPartState<P>>
      * @param hitZ      The Z hit position.
      * @return True if the further processing should be stopped.
      */
-    public boolean onPartActivated(World world, BlockPos pos, S partState, EntityPlayer player, ForgeDirection side,
-        float hitX, float hitY, float hitZ);
+    public boolean onPartActivated(World world, BlockPos pos, S partState, EntityPlayer player, ItemStack heldItem,
+        ForgeDirection side, float hitX, float hitY, float hitZ);
 
     /**
      * Called when this element is about to be removed.

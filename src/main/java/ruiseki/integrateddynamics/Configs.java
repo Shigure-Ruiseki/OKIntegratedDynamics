@@ -3,11 +3,18 @@ package ruiseki.integrateddynamics;
 import ruiseki.integrateddynamics.block.BlockCableConfig;
 import ruiseki.integrateddynamics.block.BlockInvisibleLightConfig;
 import ruiseki.integrateddynamics.block.BlockLogicProgrammerConfig;
+import ruiseki.integrateddynamics.block.BlockMenrilLeavesConfig;
+import ruiseki.integrateddynamics.block.BlockMenrilLogConfig;
+import ruiseki.integrateddynamics.block.BlockMenrilPlanksConfig;
+import ruiseki.integrateddynamics.block.BlockMenrilSaplingConfig;
 import ruiseki.integrateddynamics.block.BlockVariablestoreConfig;
 import ruiseki.integrateddynamics.item.ItemFacadeConfig;
 import ruiseki.integrateddynamics.item.ItemLabellerConfig;
+import ruiseki.integrateddynamics.item.ItemMenrilBerriesConfig;
 import ruiseki.integrateddynamics.item.ItemVariableConfig;
+import ruiseki.integrateddynamics.item.ItemVariableTransformerConfig;
 import ruiseki.integrateddynamics.item.ItemWrenchConfig;
+import ruiseki.integrateddynamics.world.biome.BiomeMeneglinConfig;
 import ruiseki.okcore.config.ConfigHandler;
 
 public class Configs {
@@ -27,10 +34,10 @@ public class Configs {
         // configHandler.add(new BlockCoalGeneratorConfig());
         // configHandler.add(new BlockProxyConfig());
         // configHandler.add(new BlockMaterializerConfig());
-        // configHandler.add(new BlockMenrilLogConfig());
-        // configHandler.add(new BlockMenrilLeavesConfig());
-        // configHandler.add(new BlockMenrilSaplingConfig());
-        // configHandler.add(new BlockMenrilPlanksConfig());
+        configHandler.add(new BlockMenrilLogConfig());
+        configHandler.add(new BlockMenrilLeavesConfig());
+        configHandler.add(new BlockMenrilSaplingConfig());
+        configHandler.add(new BlockMenrilPlanksConfig());
         // configHandler.add(new BlockCrystalizedMenrilBlockConfig());
         // configHandler.add(new BlockCrystalizedMenrilBrickConfig());
         // configHandler.add(new BlockFluidMenrilResinConfig());
@@ -45,10 +52,10 @@ public class Configs {
         configHandler.add(new ItemFacadeConfig());
         // configHandler.add(new ItemBucketMenrilResinConfig());
         // configHandler.add(new ItemCrystalizedMenrilChunkConfig());
-        // configHandler.add(new ItemVariableTransformerConfig());
-        // configHandler.add(new ItemMenrilBerriesConfig());
+        configHandler.add(new ItemVariableTransformerConfig());
+        configHandler.add(new ItemMenrilBerriesConfig());
 
         // Biomes
-        // configHandler.add(new BiomeMeneglinConfig());
+        configHandler.add(new BiomeMeneglinConfig());
     }
 }

@@ -23,7 +23,7 @@ import ruiseki.okcore.tileentity.TileEntityOK;
 
 /**
  * A base block with a gui and tile entity that can connect to cables.
- * 
+ *
  * @author rubensworks
  */
 public abstract class BlockContainerGuiCabled extends ConfigurableBlockContainerGui
@@ -50,7 +50,8 @@ public abstract class BlockContainerGuiCabled extends ConfigurableBlockContainer
     @Override
     public boolean onBlockActivated(World world, int x, int y, int z, EntityPlayer player, int side, float subX,
         float subY, float subZ) {
-        if (!world.isRemote && WrenchHelpers.isWrench(player, new BlockPos(x, y, z)) && player.isSneaking()) {
+        ItemStack heldItem = player.getCurrentEquippedItem();
+        if (!world.isRemote && WrenchHelpers.isWrench(player, heldItem, new BlockPos(x, y, z)) && player.isSneaking()) {
             destroyBlock(world, x, y, z, true);
             return true;
         }

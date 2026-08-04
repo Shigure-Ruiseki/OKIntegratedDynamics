@@ -80,7 +80,7 @@ public class TileProxy extends TileActiveVariableBase<ProxyNetworkElement> {
             if (getStackInSlot(SLOT_WRITE_IN) != null && getStackInSlot(SLOT_WRITE_OUT) == null) {
                 // Write proxy reference
                 ItemStack outputStack = writeProxyInfo(
-                    !getWorld().isRemote,
+                    !getWorldObj().isRemote,
                     getStackInSlotOnClosing(SLOT_WRITE_IN),
                     proxyId);
                 setInventorySlotContents(SLOT_WRITE_OUT, outputStack);

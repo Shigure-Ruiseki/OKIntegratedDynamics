@@ -12,7 +12,7 @@ import ruiseki.okcore.tileentity.TileEntityOK;
 
 /**
  * A tile entity with inventory whose block can connect with cables.
- * 
+ *
  * @author rubensworks
  */
 public class TileCableConnectableInventory extends InventoryTileEntity
@@ -31,8 +31,8 @@ public class TileCableConnectableInventory extends InventoryTileEntity
     }
 
     @Override
-    protected void doUpdate() {
-        super.doUpdate();
+    protected void updateTileEntity() {
+        super.updateTileEntity();
         tileCableNetworkComponent.updateTileEntity();
     }
 

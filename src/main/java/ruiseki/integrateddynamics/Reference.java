@@ -12,5 +12,13 @@ public class Reference {
     public static final String PROXY_CLIENT = Tags.MOD_GROUP + ".proxy.ClientProxy";
     public static final String GUI_FACTORY = Tags.MOD_GROUP + ".GuiConfigOverview$ExtendedConfigGuiFactory";
 
-    public static final String PREFIX_MOD = MOD_ID + ":";
+    // Biome ID's
+    public static final int BIOME_MENEGLIN = 184;
+
+    // OREDICT NAMES
+    public static final String DICT_WOODLOG = "logWood";
+    public static final String DICT_TREELEAVES = "treeLeaves";
+    public static final String DICT_SAPLINGTREE = "treeSapling";
+    public static final String DICT_WOODPLANK = "plankWood";
+
 }

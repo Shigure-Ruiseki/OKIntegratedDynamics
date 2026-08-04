@@ -2,40 +2,41 @@ package ruiseki.integrateddynamics.core.helper;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 
 import ruiseki.integrateddynamics.api.item.IWrench;
 import ruiseki.okcore.datastructure.BlockPos;
 
 /**
  * Helper methods related to items.
- * 
+ *
  * @author rubensworks
  */
 public final class WrenchHelpers {
 
     /**
      * Checks if the given player can wrench something.
-     * 
-     * @param player The player.
-     * @param pos    The position that is being wrenched.
+     *
+     * @param player   The player.
+     * @param heldItem The item the player is holding.
+     * @param pos      The position that is being wrenched.
      * @return If the wrenching can continue with the held item.
      */
-    public static boolean isWrench(EntityPlayer player, BlockPos pos) {
-        if (player.getCurrentEquippedItem() == null) {
+    public static boolean isWrench(EntityPlayer player, ItemStack heldItem, BlockPos pos) {
+        if (heldItem == null) {
             return false;
         }
-        Item item = player.getCurrentEquippedItem()
-            .getItem();
+        Item item = heldItem.getItem();
         // TODO: add support for other mod wrenches, like the one from BC.
         return item instanceof IWrench && ((IWrench) item).canUse(player, pos);
     }
 
     /**
      * Wrench a given position.
-     * Requires the {@link WrenchHelpers#isWrench(EntityPlayer, BlockPos)}
+     * Requires the {@link WrenchHelpers#isWrench(EntityPlayer, ItemStack, BlockPos)}
      * to be passed.
      * Takes an extra parameter of any type that is forwarded to the wrench action.
-     * 
+     *
      * @param player    The player.
      * @param pos       The position that is being wrenched.
      * @param action    The actual wrench action.
@@ -55,9 +56,9 @@ public final class WrenchHelpers {
 
     /**
      * Wrench a given position.
-     * Requires the {@link WrenchHelpers#isWrench(EntityPlayer, BlockPos)}
+     * Requires the {@link WrenchHelpers#isWrench(EntityPlayer, ItemStack, BlockPos)}
      * to be passed.
-     * 
+     *
      * @param player The player.
      * @param pos    The position that is being wrenched.
      * @param action The actual wrench action.
@@ -68,14 +69,14 @@ public final class WrenchHelpers {
 
     /**
      * An action that can serve as wrenching.
-     * 
+     *
      * @param <P> The type of parameter that is passed.
      */
     public static interface IWrenchAction<P> {
 
         /**
          * Called for the actual wrenching action.
-         * 
+         *
          * @param player    The player.
          * @param pos       The position that is being wrenched.
          * @param parameter An extra parameter that is used to call this action.
@@ -91,7 +92,7 @@ public final class WrenchHelpers {
 
         /**
          * Called for the actual wrenching action.
-         * 
+         *
          * @param player    The player.
          * @param pos       The position that is being wrenched.
          * @param parameter An extra parameter that is used to call this action.
@@ -102,7 +103,7 @@ public final class WrenchHelpers {
 
         /**
          * Called for the actual wrenching action.
-         * 
+         *
          * @param player The player.
          * @param pos    The position that is being wrenched.
          */
