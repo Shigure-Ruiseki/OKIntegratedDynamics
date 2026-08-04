@@ -89,7 +89,7 @@ public class TileMultipartTicking extends TileEntityOK implements TileEntityOK.I
 
     @Override
     public void readFromNBT(NBTTagCompound tag) {
-        PartHelpers.readPartsFromNBT(getNetwork(), getPos(), tag, this.partData);
+        PartHelpers.readPartsFromNBT(getNetwork(), getPos(), tag, this.partData, getWorldObj());
         super.readFromNBT(tag);
     }
 

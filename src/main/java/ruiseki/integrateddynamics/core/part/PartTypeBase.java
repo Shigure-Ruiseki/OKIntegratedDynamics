@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
@@ -343,10 +345,20 @@ public abstract class PartTypeBase<P extends IPartType<P, S>, S extends IPartSta
         lines.add(LangHelpers.localize(L10NValues.GENERAL_ITEM_ID, state.getId()));
     }
 
+    @Override
+    public boolean shouldTriggerBlockRenderUpdate(@Nullable S oldPartState, @Nullable S newPartState) {
+        return oldPartState == null || newPartState == null;
+    }
+
     public interface IEventAction<P extends IPartType<P, S>, S extends IPartState<P>, E extends INetworkEvent> {
 
         public void onAction(IPartNetwork network, PartTarget target, S state, E event);
 
     }
 
+    public enum Status {
+        INACTIVE,
+        ACTIVE,
+        ERROR
+    }
 }

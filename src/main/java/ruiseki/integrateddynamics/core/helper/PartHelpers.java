@@ -12,6 +12,8 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.Level;
 import org.jetbrains.annotations.Nullable;
 
+import com.google.common.collect.ImmutableMap;
+
 import lombok.Data;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.block.cable.ICable;
@@ -168,14 +170,18 @@ public class PartHelpers {
 
     /**
      * Read parts data from nbt.
-     *
+     * If the world is not null and we are running client-side,
+     * a block render update will automatically be triggered if needed.
+     * 
      * @param network  The network the part will be part of.
      * @param pos      The position of the part, used for error reporting.
      * @param tag      The tag to read from.
      * @param partData The map of part data to write to.
+     * @param world    The world.
      */
     public static void readPartsFromNBT(@Nullable IPartNetwork network, BlockPos pos, NBTTagCompound tag,
-        Map<ForgeDirection, PartStateHolder<?, ?>> partData) {
+        Map<ForgeDirection, PartStateHolder<?, ?>> partData, @Nullable World world) {
+        Map<ForgeDirection, PartStateHolder<?, ?>> oldPartData = ImmutableMap.copyOf(partData);
         partData.clear();
         NBTTagList partList = tag.getTagList("parts", MinecraftHelpers.NBTTag_Types.NBTTagCompound.ordinal());
         for (int i = 0; i < partList.tagCount(); i++) {
@@ -183,6 +189,29 @@ public class PartHelpers {
             Pair<ForgeDirection, ? extends PartStateHolder<?, ?>> part = readPartFromNBT(network, pos, partTag);
             if (part != null) {
                 partData.put(part.getKey(), part.getValue());
+            }
+        }
+
+        // Trigger block render update if at least one of the parts requires it.
+        if (world != null && MinecraftHelpers.isClientSide()) {
+            boolean triggerBlockRenderUpdate = false;
+            for (ForgeDirection side : ForgeDirection.VALID_DIRECTIONS) {
+                PartStateHolder<?, ?> oldData = oldPartData.get(side);
+                PartStateHolder<?, ?> newData = partData.get(side);
+                if (oldData != null || newData != null) {
+                    IPartType oldPartType = oldData != null ? oldData.getPart() : null;
+                    IPartType newPartType = newData != null ? newData.getPart() : null;
+                    IPartState oldPartState = oldData != null ? oldData.getState() : null;
+                    IPartState newPartState = newData != null ? newData.getState() : null;
+
+                    if (oldPartType != newPartType
+                        || oldPartType.shouldTriggerBlockRenderUpdate(oldPartState, newPartState)) {
+                        triggerBlockRenderUpdate = true;
+                    }
+                }
+            }
+            if (triggerBlockRenderUpdate) {
+                world.markBlockRangeForRenderUpdate(pos, pos);
             }
         }
     }

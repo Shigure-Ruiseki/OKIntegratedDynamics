@@ -3,6 +3,8 @@ package ruiseki.integrateddynamics.core.part.panel;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Nullable;
+
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
@@ -106,7 +108,6 @@ public abstract class PartTypePanelVariableDriven<P extends PartTypePanelVariabl
                 IVariable variable = state.getVariable(network);
                 if (variable != null) {
                     newValue = variable.getValue();
-
                 }
             } catch (EvaluationException e) {
                 state.addGlobalError(new LangHelpers.UnlocalizedString(e.getLocalizedMessage()));
@@ -137,6 +138,19 @@ public abstract class PartTypePanelVariableDriven<P extends PartTypePanelVariabl
     @Override
     public Class<? extends GuiScreen> getGui() {
         return GuiPartDisplay.class;
+    }
+
+    protected Status getStatus(PartTypePanelVariableDriven.State state) {
+        Status status = Status.INACTIVE;
+        if (state != null && !state.getInventory()
+            .isEmpty()) {
+            if (state.hasVariable() && state.isEnabled()) {
+                status = Status.ACTIVE;
+            } else {
+                status = Status.ERROR;
+            }
+        }
+        return status;
     }
 
     @Override
@@ -170,7 +184,7 @@ public abstract class PartTypePanelVariableDriven<P extends PartTypePanelVariabl
     public boolean onPartActivated(World world, BlockPos pos, final S partState, EntityPlayer player,
         ItemStack heldItem, ForgeDirection side, float hitX, float hitY, float hitZ) {
         if (WrenchHelpers.isWrench(player, heldItem, pos)) {
-            WrenchHelpers.wrench(player, pos, new WrenchHelpers.IWrenchAction<Void>() {
+            WrenchHelpers.wrench(player, heldItem, pos, new WrenchHelpers.IWrenchAction<Void>() {
 
                 @Override
                 public void onWrench(EntityPlayer player, BlockPos pos, Void parameter) {
@@ -210,6 +224,12 @@ public abstract class PartTypePanelVariableDriven<P extends PartTypePanelVariabl
         super.loadTooltip(state, lines);
     }
 
+    @Override
+    public boolean shouldTriggerBlockRenderUpdate(@Nullable S oldPartState, @Nullable S newPartState) {
+        return super.shouldTriggerBlockRenderUpdate(oldPartState, newPartState)
+            || getStatus(oldPartState) != getStatus(newPartState);
+    }
+
     public static abstract class State<P extends PartTypePanelVariableDriven<P, S>, S extends PartTypePanelVariableDriven.State<P, S>>
         extends PartStateActiveVariableBase<P> {
 
@@ -232,7 +252,7 @@ public abstract class PartTypePanelVariableDriven<P extends PartTypePanelVariabl
                 tag.setString(
                     "displayValueType",
                     value.getType()
-                        .getUnlocalizedName());;
+                        .getUnlocalizedName());
                 tag.setString(
                     "displayValue",
                     value.getType()
@@ -269,5 +289,4 @@ public abstract class PartTypePanelVariableDriven<P extends PartTypePanelVariabl
             facingRotation = ForgeDirection.values()[Math.max(2, tag.getInteger("facingRotation"))];
         }
     }
-
 }

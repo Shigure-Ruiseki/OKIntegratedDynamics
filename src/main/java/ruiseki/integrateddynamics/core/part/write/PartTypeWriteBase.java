@@ -3,6 +3,8 @@ package ruiseki.integrateddynamics.core.part.write;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Nullable;
+
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
@@ -122,6 +124,19 @@ public abstract class PartTypeWriteBase<P extends IPartTypeWriter<P, S>, S exten
         state.onVariableContentsUpdated((P) this, target);
     }
 
+    protected Status getStatus(IPartStateWriter state) {
+        Status status = Status.INACTIVE;
+        if (state != null && !state.getInventory()
+            .isEmpty()) {
+            if (state.hasVariable() && state.isEnabled()) {
+                status = Status.ACTIVE;
+            } else {
+                status = Status.ERROR;
+            }
+        }
+        return status;
+    }
+
     @Override
     public String getBlockModelPath(IPartContainer partContainer, ForgeDirection side) {
         String status = "_inactive";
@@ -184,4 +199,9 @@ public abstract class PartTypeWriteBase<P extends IPartTypeWriter<P, S>, S exten
         return GuiPartWriter.class;
     }
 
+    @Override
+    public boolean shouldTriggerBlockRenderUpdate(@Nullable S oldPartState, @Nullable S newPartState) {
+        return super.shouldTriggerBlockRenderUpdate(oldPartState, newPartState)
+            || getStatus(oldPartState) != getStatus(newPartState);
+    }
 }

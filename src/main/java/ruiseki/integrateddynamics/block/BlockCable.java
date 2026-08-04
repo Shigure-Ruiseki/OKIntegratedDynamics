@@ -392,7 +392,7 @@ public class BlockCable extends ConfigurableBlockContainer
     @Override
     public boolean onBlockActivated(World world, int x, int y, int z, EntityPlayer player, int sideInt, float hitX,
         float hitY, float hitZ) {
-        ItemStack heldItem = player.getCurrentEquippedItem();
+        ItemStack heldItem = player.getHeldItem();
         BlockPos pos = new BlockPos(x, y, z);
         ForgeDirection side = ForgeDirection.getOrientation(sideInt);
         TileMultipartTicking tile = TileHelpers.getSafeTile(world, pos, TileMultipartTicking.class);
