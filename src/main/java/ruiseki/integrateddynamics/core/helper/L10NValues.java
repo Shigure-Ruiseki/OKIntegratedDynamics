@@ -36,6 +36,14 @@ public class L10NValues {
     public static final String VALUETYPE_ERROR_INVALIDINPUT = "valuetype." + NS + ".error.invalidInput";
     public static final String VALUETYPE_ERROR_INVALIDINPUTITEM = "valuetype." + NS + ".error.invalidInputItem";
     public static final String VALUETYPE_ERROR_INVALIDLISTELEMENT = "valuetype." + NS + ".error.invalidListElement";
+    public static final String VALUETYPE_ERROR_INVALIDOPERATOROPERATOR = "valuetype." + NS
+        + ".error.invalidOperatorOperator";
+    public static final String VALUETYPE_ERROR_INVALIDOPERATORSIGNATURE = "valuetype." + NS
+        + ".error.invalidOperatorSignature";
+    // 0: given-output, 1: expected-output
+    public static final String VALUETYPE_ERROR_WRONGFILTERPREDICATE = "valuetype." + NS + ".error.wrongFilterPredicate";
+    // 0: expected-output, 1:given-output, 2:given-operator
+    public static final String VALUETYPE_ERROR_ILLEGALPREDICATE = "valuetype." + NS + ".error.illegalPredicate";
     public static final String VALUETYPE_OBJECT_BLOCK_ERROR_NOBLOCK = "valuetype." + NS + ".error.block.noBlock";
     public static final String VALUETYPE_OBJECT_FLUID_ERROR_NOFLUID = "valuetype." + NS + ".error.fluid.noFluid";
     public static final String VALUETYPE_OBJECT_THAUMCRAFTASPECT_ERROR_NOASPECT = "valuetype." + NS
@@ -56,6 +64,9 @@ public class L10NValues {
     public static final String VARIABLE_ERROR_PARTNOTINNETWORK = "variable." + NS + ".error.partNotInNetwork";
     public static final String VARIABLE_ERROR_RECURSION = "variable." + NS + ".error.recursion";
 
+    public static final String OPERATOR_APPLIED_OPERATORNAME = "operator." + NS + ".applied.operatorName";
+    // 0: operator, 1: given-input, 2: position, 3: expected-input
+    public static final String OPERATOR_APPLIED_TYPE = "operator." + NS + ".applied.type";
     public static final String OPERATOR_TOOLTIP_OPERATORNAME = "operator." + NS + ".tooltip.operatorName";
     public static final String OPERATOR_TOOLTIP_OPERATORCATEGORY = "operator." + NS + ".tooltip.operatorCategory";
     public static final String OPERATOR_TOOLTIP_INPUTTYPENAME = "operator." + NS + ".tooltip.inputTypeName";
@@ -66,5 +77,6 @@ public class L10NValues {
     public static final String OPERATOR_ERROR_WRONGINPUTLENGTH = "operator." + NS + ".error.wrongInputLength";
     public static final String OPERATOR_ERROR_NULLTYPE = "operator." + NS + ".error.nullType";
     public static final String OPERATOR_ERROR_WRONGTYPE = "operator." + NS + ".error.wrongType";
+    public static final String OPERATOR_ERROR_WRONGCURRYINGTYPE = "operator." + NS + ".error.wrongCurringType";
 
 }

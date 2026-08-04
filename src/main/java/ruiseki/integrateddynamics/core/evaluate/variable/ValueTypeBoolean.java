@@ -7,10 +7,13 @@ import ruiseki.okcore.helper.Helpers;
 
 /**
  * Value type with values 'true' or 'false'
- * 
+ *
  * @author rubensworks
  */
 public class ValueTypeBoolean extends ValueTypeBase<ValueTypeBoolean.ValueBoolean> {
+
+    private static final ValueBoolean TRUE = new ValueBoolean(true);
+    private static final ValueBoolean FALSE = new ValueBoolean(false);
 
     public ValueTypeBoolean() {
         super("boolean", Helpers.RGBToInt(43, 47, 231), EnumChatFormatting.BLUE.toString());
@@ -55,7 +58,7 @@ public class ValueTypeBoolean extends ValueTypeBase<ValueTypeBoolean.ValueBoolea
         }
 
         public static ValueBoolean of(boolean value) {
-            return new ValueBoolean(value);
+            return value ? TRUE : FALSE;
         }
 
         public boolean getRawValue() {

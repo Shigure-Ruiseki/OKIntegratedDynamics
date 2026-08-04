@@ -20,7 +20,7 @@ import ruiseki.okcore.helper.LangHelpers;
 
 /**
  * Value type with operator values.
- * 
+ *
  * @author rubensworks
  */
 public class ValueTypeOperator extends ValueTypeBase<ValueTypeOperator.ValueOperator> {
@@ -45,7 +45,7 @@ public class ValueTypeOperator extends ValueTypeBase<ValueTypeOperator.ValueOper
     @Override
     public String serialize(ValueOperator value) {
         return value.getRawValue()
-            .getUnlocalizedName();
+            .getUniqueName();
     }
 
     @Override
@@ -74,7 +74,7 @@ public class ValueTypeOperator extends ValueTypeBase<ValueTypeOperator.ValueOper
 
     /**
      * Pretty formatted signature of an operator.
-     * 
+     *
      * @param operator The operator.
      * @return The signature.
      */
@@ -89,7 +89,7 @@ public class ValueTypeOperator extends ValueTypeBase<ValueTypeOperator.ValueOper
 
     /**
      * Pretty formatted signature of an operator.
-     * 
+     *
      * @param operator The operator.
      * @param indent   If the lines should be indented.
      * @return The signature.
@@ -112,7 +112,7 @@ public class ValueTypeOperator extends ValueTypeBase<ValueTypeOperator.ValueOper
                 .append(LangHelpers.localize(inputType.getUnlocalizedName()))
                 .append(EnumChatFormatting.RESET);
         }
-        sb.append(") ");
+        sb.append(")");
 
         sb = switchSignatureLineContext(lines, sb);
         sb.append(SIGNATURE_LINK + " ")

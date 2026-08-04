@@ -57,6 +57,10 @@ public abstract class OperatorBase implements IOperator {
 
     protected abstract String getUnlocalizedType();
 
+    protected IFunction getFunction() {
+        return this.function;
+    }
+
     @Override
     public String getUniqueName() {
         return getUnlocalizedName();
@@ -211,6 +215,12 @@ public abstract class OperatorBase implements IOperator {
             return this.variables;
         }
 
+        public static class Shifted extends SafeVariablesGetter {
+
+            public Shifted(int start, IVariable... variables) {
+                super(Arrays.copyOfRange(variables, start, variables.length));
+            }
+        }
     }
 
     public static interface IFunction {

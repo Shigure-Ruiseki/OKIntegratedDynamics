@@ -1,0 +1,129 @@
+package ruiseki.integrateddynamics.core.evaluate.operator;
+
+import java.util.Arrays;
+import java.util.List;
+
+import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
+import ruiseki.integrateddynamics.api.evaluate.operator.IOperator;
+import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
+import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
+import ruiseki.integrateddynamics.api.evaluate.variable.IVariable;
+import ruiseki.integrateddynamics.api.logicprogrammer.IConfigRenderPattern;
+import ruiseki.integrateddynamics.core.helper.L10NValues;
+import ruiseki.okcore.helper.LangHelpers;
+
+/**
+ * An operator that is partially being applied.
+ *
+ * @author rubensworks
+ */
+public class CurriedOperator implements IOperator {
+
+    private final IOperator baseOperator;
+    private final IVariable appliedVariable;
+
+    public CurriedOperator(IOperator baseOperator, IVariable appliedVariable) {
+        this.baseOperator = baseOperator;
+        this.appliedVariable = appliedVariable;
+    }
+
+    protected String getAppliedSymbol() {
+        return appliedVariable.getType()
+            .getTypeName();
+    }
+
+    @Override
+    public String getSymbol() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(baseOperator.getSymbol());
+        sb.append(" [");
+        sb.append(getAppliedSymbol());
+        sb.append("]");
+        return sb.toString();
+    }
+
+    @Override
+    public String getUniqueName() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(baseOperator.getUniqueName());
+        sb.append("[");
+        sb.append(getAppliedSymbol());
+        sb.append("]");
+        return sb.toString();
+    }
+
+    @Override
+    public String getUnlocalizedName() {
+        return baseOperator.getUnlocalizedName();
+    }
+
+    @Override
+    public String getUnlocalizedCategoryName() {
+        return baseOperator.getUnlocalizedCategoryName();
+    }
+
+    @Override
+    public String getLocalizedNameFull() {
+        return LangHelpers.localize(
+            L10NValues.OPERATOR_APPLIED_OPERATORNAME,
+            baseOperator.getLocalizedNameFull(),
+            getAppliedSymbol());
+    }
+
+    @Override
+    public void loadTooltip(List<String> lines, boolean appendOptionalInfo) {
+        baseOperator.loadTooltip(lines, appendOptionalInfo);
+        lines.add(LangHelpers.localize(L10NValues.OPERATOR_APPLIED_TYPE, getAppliedSymbol()));
+    }
+
+    @Override
+    public IValueType[] getInputTypes() {
+        IValueType[] baseInputTypes = baseOperator.getInputTypes();
+        return Arrays.copyOfRange(baseInputTypes, 1, baseInputTypes.length);
+    }
+
+    @Override
+    public IValueType getOutputType() {
+        return baseOperator.getOutputType();
+    }
+
+    protected IVariable[] deriveFullInputVariables(IVariable[] partialInput) {
+        IVariable[] fullInput = new IVariable[Math.min(baseOperator.getRequiredInputLength(), partialInput.length + 1)];
+        fullInput[0] = appliedVariable;
+        System.arraycopy(partialInput, 0, fullInput, 1, fullInput.length - 1);
+        return fullInput;
+    }
+
+    protected IValueType[] deriveFullInputTypes(IValueType[] partialInput) {
+        IValueType[] fullInput = new IValueType[Math
+            .min(baseOperator.getRequiredInputLength(), partialInput.length + 1)];
+        fullInput[0] = appliedVariable.getType();
+        System.arraycopy(partialInput, 0, fullInput, 1, fullInput.length - 1);
+        return fullInput;
+    }
+
+    @Override
+    public IValueType getConditionalOutputType(IVariable[] input) {
+        return baseOperator.getConditionalOutputType(deriveFullInputVariables(input));
+    }
+
+    @Override
+    public IValue evaluate(IVariable[] input) throws EvaluationException {
+        return baseOperator.evaluate(deriveFullInputVariables(input));
+    }
+
+    @Override
+    public int getRequiredInputLength() {
+        return baseOperator.getRequiredInputLength() - 1;
+    }
+
+    @Override
+    public LangHelpers.UnlocalizedString validateTypes(IValueType[] input) {
+        return baseOperator.validateTypes(deriveFullInputTypes(input));
+    }
+
+    @Override
+    public IConfigRenderPattern getRenderPattern() {
+        return IConfigRenderPattern.NONE;
+    }
+}

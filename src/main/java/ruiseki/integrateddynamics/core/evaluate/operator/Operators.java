@@ -60,6 +60,7 @@ import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeList;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeListProxyEntityArmorInventory;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeListProxyEntityInventory;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeListProxyOperatorMapped;
+import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeOperator;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeString;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
 import ruiseki.integrateddynamics.core.helper.Helpers;
@@ -2093,6 +2094,39 @@ public final class Operators {
                 }
             })
             .build());
+
+    /**
+     * ----------------------------------- OPERATOR OPERATORS -----------------------------------
+     */
+
+    /**
+     * Apply for a given operator a given value.
+     */
+    public static final IOperator OPERATOR_APPLY = REGISTRY.register(
+        OperatorBuilders.OPERATOR_2_INFIX_LONG
+            .conditionalOutputTypeDeriver(OperatorBuilders.OPERATOR_CONDITIONAL_OUTPUT_DERIVER)
+            .output(ValueTypes.CATEGORY_ANY)
+            .symbolOperator("apply")
+            .typeValidator(OperatorBuilders.createOperatorTypeValidator(ValueTypes.LIST))
+            .function(
+                OperatorBuilders.FUNCTION_OPERATOR_TAKE_OPERATOR
+                    .build(new IOperatorValuePropagator<Pair<IOperator, OperatorBase.SafeVariablesGetter>, IValue>() {
+
+                        @Override
+                        public IValue getOutput(Pair<IOperator, OperatorBase.SafeVariablesGetter> input)
+                            throws EvaluationException {
+                            IOperator innerOperator = input.getLeft();
+                            OperatorBase.SafeVariablesGetter variables = input.getRight();
+                            IVariable variable = variables.getVariables()[0];
+                            if (innerOperator.getRequiredInputLength() == 1) {
+                                return innerOperator.evaluate(new IVariable[] { variable });
+                            } else {
+                                return ValueTypeOperator.ValueOperator.of(new CurriedOperator(innerOperator, variable));
+                            }
+                        }
+                    }))
+            .build());
+
     /**
      * Apply the given operator on all elements of a list, resulting in a new list of mapped values.
      */
@@ -2114,6 +2148,107 @@ public final class Operators {
                                 new ValueTypeListProxyOperatorMapped(innerOperator, inputList.getRawValue()));
                         }
                     }))
+            .build());
+    /**
+     * Filter a list of elements by matching them all with the given predicate.
+     */
+    public static final IOperator OPERATOR_FILTER = REGISTRY.register(
+        OperatorBuilders.OPERATOR_2_INFIX_LONG.inputTypes(new IValueType[] { ValueTypes.OPERATOR, ValueTypes.LIST })
+            .output(ValueTypes.LIST)
+            .symbolOperator("filter")
+            .function(
+                OperatorBuilders.FUNCTION_OPERATOR_TAKE_OPERATOR_LIST
+                    .build(new IOperatorValuePropagator<Pair<IOperator, OperatorBase.SafeVariablesGetter>, IValue>() {
+
+                        @Override
+                        public IValue getOutput(Pair<IOperator, OperatorBase.SafeVariablesGetter> input)
+                            throws EvaluationException {
+                            final IOperator innerOperator = input.getLeft();
+                            OperatorBase.SafeVariablesGetter variables = input.getRight();
+                            ValueTypeList.ValueList<?, ?> inputList = variables.getValue(0);
+                            List<IValue> filtered = Lists.newArrayList();
+                            for (IValue value : inputList.getRawValue()) {
+                                IValue result = ValueHelpers.evaluateOperator(innerOperator, value);
+                                if (result.getType() != ValueTypes.BOOLEAN) {
+                                    LangHelpers.UnlocalizedString error = new LangHelpers.UnlocalizedString(
+                                        L10NValues.VALUETYPE_ERROR_WRONGFILTERPREDICATE,
+                                        result.getType(),
+                                        ValueTypes.BOOLEAN);
+                                    throw new EvaluationException(error.localize());
+                                } else if (((ValueTypeBoolean.ValueBoolean) result).getRawValue()) {
+                                    filtered.add(value);
+                                }
+                            }
+                            IValueType valueType = inputList.getRawValue()
+                                .getValueType();
+                            return ValueTypeList.ValueList.ofList(valueType, filtered);
+                        }
+                    }))
+            .build());
+
+    /**
+     * Takes the conjunction of two predicates.
+     */
+    public static final IOperator OPERATOR_CONJUNCTION = REGISTRY.register(
+        OperatorBuilders.OPERATOR_2_INFIX_LONG.inputTypes(new IValueType[] { ValueTypes.OPERATOR, ValueTypes.OPERATOR })
+            .output(ValueTypes.OPERATOR)
+            .symbol(".&&.")
+            .operatorName("conjunction")
+            .function(
+                OperatorBuilders.FUNCTION_TWO_PREDICATES
+                    .build(new IOperatorValuePropagator<Pair<IOperator, IOperator>, IValue>() {
+
+                        @Override
+                        public IValue getOutput(Pair<IOperator, IOperator> input) throws EvaluationException {
+                            CombinedOperator.Conjunction conjunction = new CombinedOperator.Conjunction(
+                                input.getLeft(),
+                                input.getRight());
+                            return ValueTypeOperator.ValueOperator
+                                .of(new CombinedOperator(":&&:", "p_conjunction", conjunction, ValueTypes.BOOLEAN));
+                        }
+                    }))
+            .build());
+
+    /**
+     * Takes the disjunction of two predicates.
+     */
+    public static final IOperator OPERATOR_DISJUNCTION = REGISTRY.register(
+        OperatorBuilders.OPERATOR_2_INFIX_LONG.inputTypes(new IValueType[] { ValueTypes.OPERATOR, ValueTypes.OPERATOR })
+            .output(ValueTypes.OPERATOR)
+            .symbol(".||.")
+            .operatorName("disjunction")
+            .function(
+                OperatorBuilders.FUNCTION_TWO_PREDICATES
+                    .build(new IOperatorValuePropagator<Pair<IOperator, IOperator>, IValue>() {
+
+                        @Override
+                        public IValue getOutput(Pair<IOperator, IOperator> input) throws EvaluationException {
+                            CombinedOperator.Disjunction disjunction = new CombinedOperator.Disjunction(
+                                input.getLeft(),
+                                input.getRight());
+                            return ValueTypeOperator.ValueOperator
+                                .of(new CombinedOperator(":||:", "p_disjunction", disjunction, ValueTypes.BOOLEAN));
+                        }
+                    }))
+            .build());
+
+    /**
+     * Takes the negation of a predicate.
+     */
+    public static final IOperator OPERATOR_NEGATION = REGISTRY.register(
+        OperatorBuilders.OPERATOR_1_PREFIX_LONG.inputTypes(new IValueType[] { ValueTypes.OPERATOR })
+            .output(ValueTypes.OPERATOR)
+            .symbol("!.")
+            .operatorName("negation")
+            .function(OperatorBuilders.FUNCTION_ONE_PREDICATE.build(new IOperatorValuePropagator<IOperator, IValue>() {
+
+                @Override
+                public IValue getOutput(IOperator input) throws EvaluationException {
+                    CombinedOperator.Negation negation = new CombinedOperator.Negation(input);
+                    return ValueTypeOperator.ValueOperator
+                        .of(new CombinedOperator("!:", "p_negation", negation, ValueTypes.BOOLEAN));
+                }
+            }))
             .build());
 
     /**

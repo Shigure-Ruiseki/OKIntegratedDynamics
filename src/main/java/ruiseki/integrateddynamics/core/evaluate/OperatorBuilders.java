@@ -2,8 +2,6 @@ package ruiseki.integrateddynamics.core.evaluate;
 
 import java.util.Arrays;
 
-import javax.annotation.Nullable;
-
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;
@@ -40,7 +38,6 @@ import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeString;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
 import ruiseki.integrateddynamics.core.helper.Helpers;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
-import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.helper.LangHelpers;
 
 /**
@@ -338,6 +335,27 @@ public class OperatorBuilders {
                         new OperatorBase.SafeVariablesGetter.Shifted(1, input.getVariables()));
                 }
             });
+    public static final IterativeFunction.PrePostBuilder<IOperator, IValue> FUNCTION_ONE_PREDICATE = IterativeFunction.PrePostBuilder
+        .begin()
+        .appendPre(new IOperatorValuePropagator<OperatorBase.SafeVariablesGetter, IOperator>() {
+
+            @Override
+            public IOperator getOutput(OperatorBase.SafeVariablesGetter input) throws EvaluationException {
+                return getSafePredictate((ValueTypeOperator.ValueOperator) input.getValue(0));
+            }
+        });
+    public static final IterativeFunction.PrePostBuilder<Pair<IOperator, IOperator>, IValue> FUNCTION_TWO_PREDICATES = IterativeFunction.PrePostBuilder
+        .begin()
+        .appendPre(new IOperatorValuePropagator<OperatorBase.SafeVariablesGetter, Pair<IOperator, IOperator>>() {
+
+            @Override
+            public Pair<IOperator, IOperator> getOutput(OperatorBase.SafeVariablesGetter input)
+                throws EvaluationException {
+                IOperator first = getSafePredictate((ValueTypeOperator.ValueOperator) input.getValue(0));
+                IOperator second = getSafePredictate((ValueTypeOperator.ValueOperator) input.getValue(1));
+                return Pair.of(first, second);
+            }
+        });
     public static final IterativeFunction.PrePostBuilder<Pair<IOperator, OperatorBase.SafeVariablesGetter>, IValue> FUNCTION_OPERATOR_TAKE_OPERATOR_LIST = IterativeFunction.PrePostBuilder
         .begin()
         .appendPre(
@@ -388,6 +406,7 @@ public class OperatorBuilders {
                 } else {
                     return ValueTypes.OPERATOR;
                 }
+
             } catch (EvaluationException e) {
                 return ValueTypes.CATEGORY_ANY;
             }
@@ -396,14 +415,39 @@ public class OperatorBuilders {
     public static final OperatorBuilder<OperatorBase.SafeVariablesGetter> OPERATOR = OperatorBuilder
         .forType(ValueTypes.OPERATOR)
         .appendKind("operator");
-
     public static final OperatorBuilder<OperatorBase.SafeVariablesGetter> OPERATOR_2_INFIX_LONG = OPERATOR
         .inputTypes(new IValueType[] { ValueTypes.OPERATOR, ValueTypes.CATEGORY_ANY })
         .renderPattern(IConfigRenderPattern.INFIX);
+    public static final OperatorBuilder<OperatorBase.SafeVariablesGetter> OPERATOR_1_PREFIX_LONG = OPERATOR
+        .inputTypes(new IValueType[] { ValueTypes.OPERATOR })
+        .renderPattern(IConfigRenderPattern.PREFIX_1_LONG);
+
+    // --------------- Operator helpers ---------------
+
+    /**
+     * Get the predicate operator from a value in a safe manner.
+     * It is expected that the operator returns a boolean.
+     * 
+     * @param value The operator value.
+     * @return The operator.
+     * @throws EvaluationException If the operator is not a predicate.
+     */
+    public static IOperator getSafePredictate(ValueTypeOperator.ValueOperator value) throws EvaluationException {
+        IOperator operator = value.getRawValue();
+        if (!ValueHelpers.correspondsTo(operator.getOutputType(), ValueTypes.BOOLEAN)) {
+            LangHelpers.UnlocalizedString error = new LangHelpers.UnlocalizedString(
+                L10NValues.VALUETYPE_ERROR_ILLEGALPREDICATE,
+                ValueTypes.BOOLEAN,
+                operator.getOutputType(),
+                operator.getLocalizedNameFull());
+            throw new EvaluationException(error.localize());
+        }
+        return operator;
+    }
 
     /**
      * Create a type validator for operator operator type validators.
-     * 
+     *
      * @param expectedSubTypes The expected types that must be present in the operator (not including the first
      *                         operator type itself.
      * @return The type validator instance.
@@ -438,39 +482,5 @@ public class OperatorBuilders {
                 return null;
             }
         };
-    }
-
-    /**
-     * Helper function to create an operator function builder for deriving capabilities from an itemstack.
-     * 
-     * @param capabilityReference The capability instance reference.
-     * @param <T>                 The capability type.
-     * @return The builder.
-     */
-    public static <T> IterativeFunction.PrePostBuilder<T, IValue> getItemCapability(
-        @Nullable final ICapabilityReference<T> capabilityReference) {
-        return IterativeFunction.PrePostBuilder.begin()
-            .appendPre(new IOperatorValuePropagator<OperatorBase.SafeVariablesGetter, T>() {
-
-                @Override
-                public T getOutput(OperatorBase.SafeVariablesGetter input) throws EvaluationException {
-                    ValueObjectTypeItemStack.ValueItemStack a = input.getValue(0);
-                    if (a.getRawValue()
-                        .isPresent()
-                        && a.getRawValue()
-                            .get()
-                            .hasCapability(capabilityReference.getReference(), null)) {
-                        return a.getRawValue()
-                            .get()
-                            .getCapability(capabilityReference.getReference(), null);
-                    }
-                    return null;
-                }
-            });
-    }
-
-    public static interface ICapabilityReference<T> {
-
-        public Capability<T> getReference();
     }
 }
