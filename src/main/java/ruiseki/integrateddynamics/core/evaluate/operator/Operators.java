@@ -63,6 +63,7 @@ import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeListProxyOpera
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeOperator;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeString;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
+import ruiseki.integrateddynamics.core.evaluate.variable.Variable;
 import ruiseki.integrateddynamics.core.helper.Helpers;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.integrateddynamics.core.helper.obfuscation.ObfuscationHelpers;
@@ -747,6 +748,62 @@ public final class Operators {
                     } catch (EvaluationException e) {
                         return operator.getConditionalOutputType(input);
                     }
+                }
+            })
+            .build());
+
+    /**
+     * List contains operator that takes a list, a list element to look for and returns a boolean.
+     */
+    public static final IOperator LIST_CONTAINS = REGISTRY.register(
+        OperatorBuilders.LIST.inputTypes(new IValueType[] { ValueTypes.LIST, ValueTypes.CATEGORY_ANY })
+            .renderPattern(IConfigRenderPattern.PREFIX_2_LONG)
+            .output(ValueTypes.BOOLEAN)
+            .symbolOperator("contains")
+            .function(new OperatorBase.IFunction() {
+
+                @Override
+                public IValue evaluate(OperatorBase.SafeVariablesGetter variables) throws EvaluationException {
+                    IValueTypeListProxy<IValueType<IValue>, IValue> list = ((ValueTypeList.ValueList) variables
+                        .getValue(0)).getRawValue();
+                    IValue input = variables.getValue(1);
+                    for (IValue value : list) {
+                        if (value.equals(input)) {
+                            return ValueTypeBoolean.ValueBoolean.of(true);
+                        }
+                    }
+                    return ValueTypeBoolean.ValueBoolean.of(false);
+                }
+            })
+            .build());
+
+    /**
+     * List contains operator that takes a list, a predicate that maps two list elements to a boolean, a list element
+     * and returns a boolean.
+     */
+    public static final IOperator LIST_CONTAINS_PREDICATE = REGISTRY.register(
+        OperatorBuilders.LIST
+            .inputTypes(new IValueType[] { ValueTypes.LIST, ValueTypes.OPERATOR, ValueTypes.CATEGORY_ANY })
+            .renderPattern(IConfigRenderPattern.PREFIX_3_LONG)
+            .output(ValueTypes.BOOLEAN)
+            .symbolOperator("contains_p")
+            .function(new OperatorBase.IFunction() {
+
+                @Override
+                public IValue evaluate(OperatorBase.SafeVariablesGetter variables) throws EvaluationException {
+                    IValueTypeListProxy<IValueType<IValue>, IValue> list = ((ValueTypeList.ValueList) variables
+                        .getValue(0)).getRawValue();
+                    IOperator operator = OperatorBuilders
+                        .getSafePredictate((ValueTypeOperator.ValueOperator) variables.getValue(1));
+                    IVariable container = variables.getVariables()[2];
+                    for (IValue value : list) {
+                        IValue result = operator
+                            .evaluate(new IVariable[] { container, new Variable(value.getType(), value) });
+                        if (((ValueTypeBoolean.ValueBoolean) result).getRawValue()) {
+                            return ValueTypeBoolean.ValueBoolean.of(true);
+                        }
+                    }
+                    return ValueTypeBoolean.ValueBoolean.of(false);
                 }
             })
             .build());
@@ -2171,7 +2228,8 @@ public final class Operators {
                                 IValue result = ValueHelpers.evaluateOperator(innerOperator, value);
                                 if (result.getType() != ValueTypes.BOOLEAN) {
                                     LangHelpers.UnlocalizedString error = new LangHelpers.UnlocalizedString(
-                                        L10NValues.VALUETYPE_ERROR_WRONGFILTERPREDICATE,
+                                        L10NValues.VALUETYPE_ERROR_WRONGPREDICATE,
+                                        OPERATOR_FILTER.getLocalizedNameFull(),
                                         result.getType(),
                                         ValueTypes.BOOLEAN);
                                     throw new EvaluationException(error.localize());

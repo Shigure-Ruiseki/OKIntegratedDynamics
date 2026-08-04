@@ -4,7 +4,7 @@ import org.apache.commons.lang3.tuple.Pair;
 
 /**
  * Render pattern for elements inside the logic programmer.
- * 
+ *
  * @author rubensworks
  */
 public interface IConfigRenderPattern {
@@ -87,6 +87,16 @@ public interface IConfigRenderPattern {
         80,
         22,
         new Pair[] { Pair.of(40, 2), Pair.of(60, 2) },
+        Pair.of(6, 2));
+    public static final IConfigRenderPattern PREFIX_2_LONG = new IConfigRenderPattern.Base(
+        100,
+        22,
+        new Pair[] { Pair.of(60, 2), Pair.of(80, 2) },
+        Pair.of(6, 2));
+    public static final IConfigRenderPattern PREFIX_3_LONG = new IConfigRenderPattern.Base(
+        120,
+        22,
+        new Pair[] { Pair.of(60, 2), Pair.of(80, 2), Pair.of(100, 2) },
         Pair.of(6, 2));
     public static final IConfigRenderPattern SUFFIX_1 = new IConfigRenderPattern.Base(
         40,
