@@ -1299,6 +1299,26 @@ public final class Operators {
             .build());
 
     /**
+     * If the raw items of the given stacks are equal, ignoring NBT but including damage value.
+     */
+    public static final IOperator OBJECT_ITEMSTACK_ISITEMEQUALNONBT = REGISTRY.register(OperatorBuilders.ITEMSTACK_2
+        .output(ValueTypes.BOOLEAN).symbol("=NoNBT=").operatorName("isitemequalnonbt")
+        .function(new OperatorBase.IFunction() {
+            @Override
+            public IValue evaluate(OperatorBase.SafeVariablesGetter variables) throws EvaluationException {
+                Optional<ItemStack> a = ((ValueObjectTypeItemStack.ValueItemStack) variables.getValue(0)).getRawValue();
+                Optional<ItemStack> b = ((ValueObjectTypeItemStack.ValueItemStack) variables.getValue(1)).getRawValue();
+                boolean equal = false;
+                if(a.isPresent() && b.isPresent()) {
+                    equal = ItemStackHelpers.areStacksEqual(a.get(), b.get());
+                } else if(!a.isPresent() && !b.isPresent()) {
+                    equal = true;
+                }
+                return ValueTypeBoolean.ValueBoolean.of(equal);
+            }
+        }).build());
+
+    /**
      * If the raw items of the given stacks are equal
      */
     public static final IOperator OBJECT_ITEMSTACK_ISRAWITEMEQUAL = REGISTRY.register(
@@ -1315,7 +1335,7 @@ public final class Operators {
                         .getRawValue();
                     boolean equal = false;
                     if (a.isPresent() && b.isPresent()) {
-                        equal = ItemStackHelpers.areStacksEqual(a.get(), b.get());
+                        equal = ItemStackHelpers.areItemsEqualIgnoreDurability(a.get(), b.get());
                     } else if (!a.isPresent() && !b.isPresent()) {
                         equal = true;
                     }
