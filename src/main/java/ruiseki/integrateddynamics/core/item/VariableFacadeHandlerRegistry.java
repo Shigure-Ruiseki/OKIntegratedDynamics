@@ -18,7 +18,7 @@ import ruiseki.integrateddynamics.api.item.IVariableFacadeHandlerRegistry;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
-import ruiseki.okcore.helper.ItemStackHelpers;
+import ruiseki.okcore.helper.ItemNBTHelpers;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
 
@@ -91,7 +91,7 @@ public class VariableFacadeHandlerRegistry implements IVariableFacadeHandlerRegi
             return null;
         }
         itemStack = itemStack.copy();
-        NBTTagCompound tag = ItemStackHelpers.getSafeTagCompound(itemStack);
+        NBTTagCompound tag = ItemNBTHelpers.getNBT(itemStack);
         F variableFacade = writeVariableFacade(generateId, itemStack, variableFacadeHandler, variableFacadeFactory);
         this.write(tag, variableFacade, variableFacadeHandler);
         return itemStack;
@@ -103,7 +103,7 @@ public class VariableFacadeHandlerRegistry implements IVariableFacadeHandlerRegi
         if (itemStack == null) {
             return null;
         }
-        NBTTagCompound tag = ItemStackHelpers.getSafeTagCompound(itemStack);
+        NBTTagCompound tag = ItemNBTHelpers.getNBT(itemStack);
         IVariableFacade previousVariableFacade = this.handle(tag);
         F variableFacade;
         if (generateId && previousVariableFacade.getId() > -1) {

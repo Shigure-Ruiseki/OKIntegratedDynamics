@@ -48,14 +48,16 @@ public abstract class BlockContainerCabled extends ConfigurableBlockContainer
     }
 
     @Override
-    public boolean onBlockActivated(World world, int x, int y, int z, EntityPlayer player, int side, float subX,
+    public boolean onBlockActivated(World world, int x, int y, int z, EntityPlayer player, int sideInt, float subX,
         float subY, float subZ) {
         ItemStack heldItem = player.getHeldItem();
-        if (!world.isRemote && WrenchHelpers.isWrench(player, heldItem, new BlockPos(x, y, z)) && player.isSneaking()) {
+        BlockPos pos = new BlockPos(x, y, z);
+        ForgeDirection side = ForgeDirection.getOrientation(sideInt);
+        if (!world.isRemote && WrenchHelpers.isWrench(player, heldItem, world, pos, side) && player.isSneaking()) {
             destroyBlock(world, x, y, z, true);
             return true;
         }
-        return super.onBlockActivated(world, x, y, z, player, side, subX, subY, subZ);
+        return super.onBlockActivated(world, x, y, z, player, sideInt, subX, subY, subZ);
     }
 
     @Override

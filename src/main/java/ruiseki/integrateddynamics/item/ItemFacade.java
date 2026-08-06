@@ -17,13 +17,13 @@ import ruiseki.okcore.config.configurable.ConfigurableItem;
 import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.helper.BlockHelpers;
-import ruiseki.okcore.helper.ItemStackHelpers;
+import ruiseki.okcore.helper.ItemNBTHelpers;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.TileHelpers;
 
 /**
  * An item that represents a facade of a certain type.
- * 
+ *
  * @author rubensworks
  */
 @EqualsAndHashCode(callSuper = false)
@@ -34,7 +34,7 @@ public class ItemFacade extends ConfigurableItem {
 
     /**
      * Get the unique instance.
-     * 
+     *
      * @return The instance.
      */
     public static ItemFacade getInstance() {
@@ -69,7 +69,7 @@ public class ItemFacade extends ConfigurableItem {
     }
 
     public void writeFacadeBlock(ItemStack itemStack, BlockState blockState) {
-        NBTTagCompound tag = ItemStackHelpers.getSafeTagCompound(itemStack);
+        NBTTagCompound tag = ItemNBTHelpers.getNBT(itemStack);
         Pair<String, Integer> serializedBlockState = BlockHelpers.serializeBlockState(blockState);
         tag.setString("blockName", serializedBlockState.getLeft());
         tag.setInteger("meta", serializedBlockState.getRight());

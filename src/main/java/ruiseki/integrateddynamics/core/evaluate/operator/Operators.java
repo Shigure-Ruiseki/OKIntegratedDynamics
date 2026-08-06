@@ -1301,22 +1301,28 @@ public final class Operators {
     /**
      * If the raw items of the given stacks are equal, ignoring NBT but including damage value.
      */
-    public static final IOperator OBJECT_ITEMSTACK_ISITEMEQUALNONBT = REGISTRY.register(OperatorBuilders.ITEMSTACK_2
-        .output(ValueTypes.BOOLEAN).symbol("=NoNBT=").operatorName("isitemequalnonbt")
-        .function(new OperatorBase.IFunction() {
-            @Override
-            public IValue evaluate(OperatorBase.SafeVariablesGetter variables) throws EvaluationException {
-                Optional<ItemStack> a = ((ValueObjectTypeItemStack.ValueItemStack) variables.getValue(0)).getRawValue();
-                Optional<ItemStack> b = ((ValueObjectTypeItemStack.ValueItemStack) variables.getValue(1)).getRawValue();
-                boolean equal = false;
-                if(a.isPresent() && b.isPresent()) {
-                    equal = ItemStackHelpers.areStacksEqual(a.get(), b.get());
-                } else if(!a.isPresent() && !b.isPresent()) {
-                    equal = true;
+    public static final IOperator OBJECT_ITEMSTACK_ISITEMEQUALNONBT = REGISTRY.register(
+        OperatorBuilders.ITEMSTACK_2.output(ValueTypes.BOOLEAN)
+            .symbol("=NoNBT=")
+            .operatorName("isitemequalnonbt")
+            .function(new OperatorBase.IFunction() {
+
+                @Override
+                public IValue evaluate(OperatorBase.SafeVariablesGetter variables) throws EvaluationException {
+                    Optional<ItemStack> a = ((ValueObjectTypeItemStack.ValueItemStack) variables.getValue(0))
+                        .getRawValue();
+                    Optional<ItemStack> b = ((ValueObjectTypeItemStack.ValueItemStack) variables.getValue(1))
+                        .getRawValue();
+                    boolean equal = false;
+                    if (a.isPresent() && b.isPresent()) {
+                        equal = ItemStackHelpers.areStacksEqual(a.get(), b.get());
+                    } else if (!a.isPresent() && !b.isPresent()) {
+                        equal = true;
+                    }
+                    return ValueTypeBoolean.ValueBoolean.of(equal);
                 }
-                return ValueTypeBoolean.ValueBoolean.of(equal);
-            }
-        }).build());
+            })
+            .build());
 
     /**
      * If the raw items of the given stacks are equal
@@ -2387,31 +2393,37 @@ public final class Operators {
     /**
      * Apply the given operator on all elements of a list to reduce the list to one value.
      */
-    public static final IOperator OPERATOR_REDUCE = REGISTRY.register(OperatorBuilders.OPERATOR
-        .inputTypes(new IValueType[]{ValueTypes.OPERATOR, ValueTypes.LIST, ValueTypes.CATEGORY_ANY})
-        .renderPattern(IConfigRenderPattern.PREFIX_3_LONG)
-        .output(ValueTypes.CATEGORY_ANY).symbolOperator("reduce")
-        .conditionalOutputTypeDeriver(new OperatorBuilder.IConditionalOutputTypeDeriver() {
-            @Override
-            public IValueType getConditionalOutputType(OperatorBase operator, IVariable[] input) {
-                return input[2].getType();
-            }
-        })
-        .function(new OperatorBase.IFunction() {
-            @Override
-            public IValue evaluate(OperatorBase.SafeVariablesGetter variables) throws EvaluationException {
-                IValue accumulator = variables.getValue(2);
-                final IOperator innerOperator = OperatorBuilders.getSafeOperator((ValueTypeOperator.ValueOperator)
-                    variables.getValue(0), accumulator.getType());
-                ValueTypeList.ValueList<IValueType<IValue>, IValue> inputList = variables.getValue(1);
-                for (IValue listValue : inputList.getRawValue()) {
-                    accumulator = innerOperator.evaluate(new IVariable[]{
-                        new Variable(accumulator.getType(), accumulator),
-                        new Variable(listValue.getType(), listValue)});
+    public static final IOperator OPERATOR_REDUCE = REGISTRY.register(
+        OperatorBuilders.OPERATOR
+            .inputTypes(new IValueType[] { ValueTypes.OPERATOR, ValueTypes.LIST, ValueTypes.CATEGORY_ANY })
+            .renderPattern(IConfigRenderPattern.PREFIX_3_LONG)
+            .output(ValueTypes.CATEGORY_ANY)
+            .symbolOperator("reduce")
+            .conditionalOutputTypeDeriver(new OperatorBuilder.IConditionalOutputTypeDeriver() {
+
+                @Override
+                public IValueType getConditionalOutputType(OperatorBase operator, IVariable[] input) {
+                    return input[2].getType();
                 }
-                return accumulator;
-            }
-        }).build());
+            })
+            .function(new OperatorBase.IFunction() {
+
+                @Override
+                public IValue evaluate(OperatorBase.SafeVariablesGetter variables) throws EvaluationException {
+                    IValue accumulator = variables.getValue(2);
+                    final IOperator innerOperator = OperatorBuilders.getSafeOperator(
+                        (ValueTypeOperator.ValueOperator) variables.getValue(0),
+                        accumulator.getType());
+                    ValueTypeList.ValueList<IValueType<IValue>, IValue> inputList = variables.getValue(1);
+                    for (IValue listValue : inputList.getRawValue()) {
+                        accumulator = innerOperator.evaluate(
+                            new IVariable[] { new Variable(accumulator.getType(), accumulator),
+                                new Variable(listValue.getType(), listValue) });
+                    }
+                    return accumulator;
+                }
+            })
+            .build());
 
     /**
      * ----------------------------------- GENERAL OPERATORS -----------------------------------

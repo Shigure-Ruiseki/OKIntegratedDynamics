@@ -404,14 +404,15 @@ public class BlockCable extends ConfigurableBlockContainer
             if (rayTraceResult != null) {
                 ForgeDirection positionHit = rayTraceResult.getPositionHit();
                 if (rayTraceResult.getCollisionType() == FACADE_COMPONENT) {
-                    if (!world.isRemote && WrenchHelpers.isWrench(player, heldItem, pos) && player.isSneaking()) {
+                    if (!world.isRemote && WrenchHelpers.isWrench(player, heldItem, world, pos, side)
+                        && player.isSneaking()) {
                         FACADE_COMPONENT.destroy(world, x, y, z, side, player);
                         world.notifyBlocksOfNeighborChange(x, y, z, this);
                         return true;
                     }
                     return false;
                 } else if (rayTraceResult.getCollisionType() == PARTS_COMPONENT) {
-                    if (!world.isRemote && WrenchHelpers.isWrench(player, heldItem, pos)) {
+                    if (!world.isRemote && WrenchHelpers.isWrench(player, heldItem, world, pos, side)) {
                         // Remove part from cable
                         if (player.isSneaking()) {
                             PARTS_COMPONENT.destroy(world, x, y, z, rayTraceResult.getPositionHit(), player);
@@ -453,7 +454,7 @@ public class BlockCable extends ConfigurableBlockContainer
     public static boolean onCableActivated(World world, BlockPos pos, EntityPlayer player, ItemStack heldItem,
         ForgeDirection side, ForgeDirection cableConnectionHit) {
         ICableNetwork<?, ?> cable = CableHelpers.getInterface(world, pos, ICableNetwork.class);
-        if (WrenchHelpers.isWrench(player, heldItem, pos)) {
+        if (WrenchHelpers.isWrench(player, heldItem, world, pos, side)) {
             if (player.isSneaking()) {
                 if (!(cable instanceof IPartContainerFacade)
                     || !((IPartContainerFacade) cable).getPartContainer(world, pos)

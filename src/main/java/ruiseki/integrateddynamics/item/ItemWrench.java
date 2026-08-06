@@ -3,20 +3,23 @@ package ruiseki.integrateddynamics.item;
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
-import ruiseki.integrateddynamics.api.item.IWrench;
+import ruiseki.commoncapabilities.api.capability.wrench.DefaultWrench;
+import ruiseki.commoncapabilities.capability.wrench.WrenchConfig;
+import ruiseki.okcore.capabilities.ICapabilityProvider;
 import ruiseki.okcore.config.configurable.ConfigurableItem;
 import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
-import ruiseki.okcore.datastructure.BlockPos;
+import ruiseki.okcore.modcompat.capabilities.DefaultCapabilityProvider;
 
 /**
  * The default wrench for this mod.
  *
  * @author rubensworks
  */
-public class ItemWrench extends ConfigurableItem implements IWrench {
+public class ItemWrench extends ConfigurableItem {
 
     private static ItemWrench _instance = null;
 
@@ -44,18 +47,8 @@ public class ItemWrench extends ConfigurableItem implements IWrench {
     }
 
     @Override
-    public boolean canUse(EntityPlayer player, BlockPos pos) {
-        return true;
-    }
-
-    @Override
-    public void beforeUse(EntityPlayer player, BlockPos pos) {
-
-    }
-
-    @Override
-    public void afterUse(EntityPlayer player, BlockPos pos) {
-
+    public ICapabilityProvider initCapabilities(ItemStack stack, NBTTagCompound nbt) {
+        return new DefaultCapabilityProvider<>(() -> WrenchConfig.CAPABILITY, new DefaultWrench());
     }
 
     @Override
