@@ -1,8 +1,5 @@
 package ruiseki.integrateddynamics.block;
 
-import static ruiseki.integrateddynamics.client.model.CableModel.MAX;
-import static ruiseki.integrateddynamics.client.model.CableModel.MIN;
-
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -11,7 +8,6 @@ import java.util.Set;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.particle.EffectRenderer;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -54,7 +50,6 @@ import ruiseki.integrateddynamics.api.part.IPartContainerFacade;
 import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.path.ICablePathElement;
 import ruiseki.integrateddynamics.api.tileentity.ITileCableNetwork;
-import ruiseki.integrateddynamics.block.collidable.CollidableComponent;
 import ruiseki.integrateddynamics.block.collidable.CollidableComponentCableCenter;
 import ruiseki.integrateddynamics.block.collidable.CollidableComponentCableConnections;
 import ruiseki.integrateddynamics.block.collidable.CollidableComponentFacade;
@@ -67,6 +62,7 @@ import ruiseki.integrateddynamics.core.helper.WrenchHelpers;
 import ruiseki.integrateddynamics.core.path.CablePathElement;
 import ruiseki.integrateddynamics.core.tileentity.TileMultipartTicking;
 import ruiseki.integrateddynamics.item.ItemBlockCable;
+import ruiseki.okcore.block.collidable.CollidableComponent;
 import ruiseki.okcore.block.collidable.ICollidable;
 import ruiseki.okcore.block.collidable.ICollidableParent;
 import ruiseki.okcore.block.collidable.ImmutableAxisAlignedBB;
@@ -536,11 +532,6 @@ public class BlockCable extends ConfigurableBlockContainer
         }
 
         return CABLE_CENTER_BOUNDINGBOX;
-    }
-
-    @Override
-    public void addCollisionBoxesToListParent(World world, int x, int y, int z, AxisAlignedBB mask, List<AxisAlignedBB> list, Entity collidingEntity) {
-        super.addCollisionBoxesToList(world, x, y, z, mask, list, collidingEntity);
     }
 
     @Override
