@@ -36,6 +36,7 @@ public class OperatorElement
 
     private final IOperator operator;
     private IVariableFacade[] inputVariables;
+    private boolean focused = false;
 
     @Override
     public ILogicProgrammerElementType getType() {
@@ -161,6 +162,16 @@ public class OperatorElement
     @Override
     public boolean isItemValidForSlot(int slotId, ItemStack itemStack) {
         return itemStack.getItem() == ItemVariable.getInstance();
+    }
+
+    @Override
+    public boolean isFocused(SubGuiConfigRenderPattern subGui) {
+        return focused;
+    }
+
+    @Override
+    public void setFocused(SubGuiConfigRenderPattern subGui, boolean focused) {
+        this.focused = focused;
     }
 
     @Override

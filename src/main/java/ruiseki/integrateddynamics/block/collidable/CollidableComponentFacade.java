@@ -1,0 +1,72 @@
+package ruiseki.integrateddynamics.block.collidable;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.AxisAlignedBB;
+import net.minecraft.world.World;
+import net.minecraftforge.common.util.ForgeDirection;
+
+import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
+
+import ruiseki.integrateddynamics.block.BlockCable;
+import ruiseki.integrateddynamics.item.ItemFacade;
+import ruiseki.okcore.block.collidable.ICollidable;
+import ruiseki.okcore.datastructure.BlockPos;
+import ruiseki.okcore.helper.ItemStackHelpers;
+
+public class CollidableComponentFacade implements ICollidable.IComponent<ForgeDirection, BlockCable> {
+
+    private final AxisAlignedBB BOUNDS = AxisAlignedBB.getBoundingBox(0.01, 0.01, 0.01, 0.99, 0.99, 0.99);
+
+    @Override
+    public Collection<ForgeDirection> getPossiblePositions() {
+        return Arrays.asList(new ForgeDirection[] { null });
+    }
+
+    @Override
+    public int getBoundsCount(ForgeDirection position) {
+        return 1;
+    }
+
+    @Override
+    public boolean isActive(BlockCable cable, World world, BlockPos pos, ForgeDirection direction) {
+        return cable.hasFacade(world, pos);
+    }
+
+    @Override
+    public List<AxisAlignedBB> getBounds(BlockCable cable, World world, BlockPos blockPos, ForgeDirection direction) {
+        return Collections.singletonList(BOUNDS);
+    }
+
+    @Override
+    public ItemStack getPickBlock(World world, BlockPos blockPos, ForgeDirection direction) {
+        ItemStack itemStack = new ItemStack(ItemFacade.getInstance());
+        ItemFacade.getInstance()
+            .writeFacadeBlock(
+                itemStack,
+                BlockCable.getInstance()
+                    .getFacade(world, blockPos));
+        return itemStack;
+    }
+
+    @Override
+    public boolean destroy(World world, BlockPos pos, ForgeDirection direction, EntityPlayer player, boolean b) {
+        if (!(pos.getBlock(world) instanceof BlockCable cable)) return false;
+        if (!world.isRemote) {
+            BlockState blockState = cable.getFacade(world, pos);
+            ItemStack itemStack = new ItemStack(ItemFacade.getInstance());
+            ItemFacade.getInstance()
+                .writeFacadeBlock(itemStack, blockState);
+            BlockCable.getInstance()
+                .setFacade(world, pos, null);
+            ItemStackHelpers.spawnItemStackToPlayer(world, pos, itemStack, player);
+            return true;
+        }
+        return false;
+    }
+}

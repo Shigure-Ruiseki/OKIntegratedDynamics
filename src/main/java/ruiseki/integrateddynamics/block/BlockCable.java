@@ -1,8 +1,9 @@
 package ruiseki.integrateddynamics.block;
 
-import java.util.Arrays;
+import static ruiseki.integrateddynamics.client.model.CableModel.MAX;
+import static ruiseki.integrateddynamics.client.model.CableModel.MIN;
+
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -53,19 +54,22 @@ import ruiseki.integrateddynamics.api.part.IPartContainerFacade;
 import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.path.ICablePathElement;
 import ruiseki.integrateddynamics.api.tileentity.ITileCableNetwork;
+import ruiseki.integrateddynamics.block.collidable.CollidableComponent;
+import ruiseki.integrateddynamics.block.collidable.CollidableComponentCableCenter;
+import ruiseki.integrateddynamics.block.collidable.CollidableComponentCableConnections;
+import ruiseki.integrateddynamics.block.collidable.CollidableComponentFacade;
+import ruiseki.integrateddynamics.block.collidable.CollidableComponentParts;
 import ruiseki.integrateddynamics.client.model.CableModel;
 import ruiseki.integrateddynamics.core.block.cable.CableNetworkFacadeableComponent;
 import ruiseki.integrateddynamics.core.block.cable.NetworkElementProviderComponent;
 import ruiseki.integrateddynamics.core.helper.CableHelpers;
-import ruiseki.integrateddynamics.core.helper.PartHelpers;
 import ruiseki.integrateddynamics.core.helper.WrenchHelpers;
 import ruiseki.integrateddynamics.core.path.CablePathElement;
 import ruiseki.integrateddynamics.core.tileentity.TileMultipartTicking;
 import ruiseki.integrateddynamics.item.ItemBlockCable;
-import ruiseki.integrateddynamics.item.ItemFacade;
-import ruiseki.okcore.block.collidable.CollidableComponent;
 import ruiseki.okcore.block.collidable.ICollidable;
 import ruiseki.okcore.block.collidable.ICollidableParent;
+import ruiseki.okcore.block.collidable.ImmutableAxisAlignedBB;
 import ruiseki.okcore.client.icon.Icon;
 import ruiseki.okcore.config.configurable.ConfigurableBlockContainer;
 import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
@@ -86,197 +90,29 @@ public class BlockCable extends ConfigurableBlockContainer
     public static final Material BLOCK_MATERIAL = Material.glass;
 
     // Collision boxes
-    private final static AxisAlignedBB CABLE_CENTER_BOUNDINGBOX = AxisAlignedBB
-        .getBoundingBox(CableModel.MIN, CableModel.MIN, CableModel.MIN, CableModel.MAX, CableModel.MAX, CableModel.MAX);
-    private final static EnumFacingMap<AxisAlignedBB> CABLE_SIDE_BOUNDINGBOXES = EnumFacingMap.forAllValues(
-        AxisAlignedBB.getBoundingBox(CableModel.MIN, 0, CableModel.MIN, CableModel.MAX, CableModel.MIN, CableModel.MAX), // DOWN
-        AxisAlignedBB.getBoundingBox(CableModel.MIN, CableModel.MAX, CableModel.MIN, CableModel.MAX, 1, CableModel.MAX), // UP
-        AxisAlignedBB.getBoundingBox(CableModel.MIN, CableModel.MIN, 0, CableModel.MAX, CableModel.MAX, CableModel.MIN), // NORTH
-        AxisAlignedBB.getBoundingBox(CableModel.MIN, CableModel.MAX, CableModel.MAX, CableModel.MAX, CableModel.MIN, 1), // SOUTH
-        AxisAlignedBB.getBoundingBox(0, CableModel.MIN, CableModel.MIN, CableModel.MIN, CableModel.MAX, CableModel.MAX), // WEST
-        AxisAlignedBB.getBoundingBox(CableModel.MAX, CableModel.MIN, CableModel.MIN, 1, CableModel.MAX, CableModel.MAX) // EAST
+    public final static AxisAlignedBB CABLE_CENTER_BOUNDINGBOX = ImmutableAxisAlignedBB
+        .fromBounds(CableModel.MIN, CableModel.MIN, CableModel.MIN, CableModel.MAX, CableModel.MAX, CableModel.MAX);
+    public final static EnumFacingMap<AxisAlignedBB> CABLE_SIDE_BOUNDINGBOXES = EnumFacingMap.forAllValues(
+        ImmutableAxisAlignedBB
+            .fromBounds(CableModel.MIN, 0, CableModel.MIN, CableModel.MAX, CableModel.MIN, CableModel.MAX), // DOWN
+        ImmutableAxisAlignedBB
+            .fromBounds(CableModel.MIN, CableModel.MAX, CableModel.MIN, CableModel.MAX, 1, CableModel.MAX), // UP
+        ImmutableAxisAlignedBB
+            .fromBounds(CableModel.MIN, CableModel.MIN, 0, CableModel.MAX, CableModel.MAX, CableModel.MIN), // NORTH
+        ImmutableAxisAlignedBB
+            .fromBounds(CableModel.MIN, CableModel.MAX, CableModel.MAX, CableModel.MAX, CableModel.MIN, 1), // SOUTH
+        ImmutableAxisAlignedBB
+            .fromBounds(0, CableModel.MIN, CableModel.MIN, CableModel.MIN, CableModel.MAX, CableModel.MAX), // WEST
+        ImmutableAxisAlignedBB
+            .fromBounds(CableModel.MAX, CableModel.MIN, CableModel.MIN, 1, CableModel.MAX, CableModel.MAX) // EAST
     );
 
     // Collision components
-    private static final List<IComponent<ForgeDirection, BlockCable>> COLLIDABLE_COMPONENTS = Lists.newArrayList();
-    private static final IComponent<ForgeDirection, BlockCable> CENTER_COMPONENT = new IComponent<ForgeDirection, BlockCable>() {
-
-        @Override
-        public Collection<ForgeDirection> getPossiblePositions() {
-            return Arrays.asList(new ForgeDirection[] { null });
-        }
-
-        @Override
-        public int getBoundsCount(ForgeDirection position) {
-            return 1;
-        }
-
-        @Override
-        public boolean isActive(BlockCable block, World world, int x, int y, int z, ForgeDirection forgeDirection) {
-            return block.isRealCable(world, new BlockPos(x, y, z));
-        }
-
-        @Override
-        public List<AxisAlignedBB> getBounds(BlockCable block, World world, int x, int y, int z,
-            ForgeDirection forgeDirection) {
-            return Collections.singletonList(block.getCableBoundingBox(null));
-        }
-
-        @Override
-        public ItemStack getPickBlock(World world, int x, int y, int z, ForgeDirection forgeDirection) {
-            return new ItemStack(BlockCable.getInstance());
-        }
-
-        @Override
-        public boolean destroy(World world, int x, int y, int z, ForgeDirection forgeDirection, EntityPlayer player) {
-            if (!world.isRemote) {
-                Block block = world.getBlock(x, y, z);
-                if (block instanceof BlockCable cable) {
-                    BlockPos pos = new BlockPos(x, y, z);
-                    if (cable.getPartContainer(world, pos)
-                        .hasParts()) {
-                        cable.setRealCable(world, pos, false);
-                        ItemStackHelpers.spawnItemStackToPlayer(world, pos, new ItemStack(block), player);
-                        return false;
-                    } else {
-                        cable.remove(world, pos, player);
-                        return true;
-                    }
-                }
-            }
-            return false;
-        }
-    };
-    private static final IComponent<ForgeDirection, BlockCable> CABLECONNECTIONS_COMPONENT = new IComponent<ForgeDirection, BlockCable>() {
-
-        @Override
-        public Collection<ForgeDirection> getPossiblePositions() {
-            return Arrays.asList(ForgeDirection.VALID_DIRECTIONS);
-        }
-
-        @Override
-        public int getBoundsCount(ForgeDirection position) {
-            return 1;
-        }
-
-        @Override
-        public boolean isActive(BlockCable block, World world, int x, int y, int z, ForgeDirection position) {
-            BlockPos pos = new BlockPos(x, y, z);
-            return CENTER_COMPONENT.isActive(block, world, x, y, z, position)
-                && (block.isConnected(world, pos, position) || block.hasPart(world, pos, position));
-        }
-
-        @Override
-        public List<AxisAlignedBB> getBounds(BlockCable block, World world, int x, int y, int z,
-            ForgeDirection position) {
-            BlockPos pos = new BlockPos(x, y, z);
-            return Collections.singletonList(
-                block.isConnected(world, pos, position) ? block.getCableBoundingBox(position)
-                    : block.getCableBoundingBoxWithPart(world, pos, position));
-        }
-
-        @Override
-        public ItemStack getPickBlock(World world, int x, int y, int z, ForgeDirection position) {
-            return new ItemStack(BlockCable.getInstance());
-        }
-
-        @Override
-        public boolean destroy(World world, int x, int y, int z, ForgeDirection position, EntityPlayer player) {
-            return CENTER_COMPONENT.destroy(world, x, y, z, position, player);
-        }
-    };
-    private static final IComponent<ForgeDirection, BlockCable> PARTS_COMPONENT = new IComponent<ForgeDirection, BlockCable>() {
-
-        @Override
-        public Collection<ForgeDirection> getPossiblePositions() {
-            return Arrays.asList(ForgeDirection.VALID_DIRECTIONS);
-        }
-
-        @Override
-        public int getBoundsCount(ForgeDirection position) {
-            return 1;
-        }
-
-        @Override
-        public boolean isActive(BlockCable block, World world, int x, int y, int z, ForgeDirection position) {
-            return block.hasPart(world, new BlockPos(x, y, z), position);
-        }
-
-        @Override
-        public List<AxisAlignedBB> getBounds(BlockCable block, World world, int x, int y, int z,
-            ForgeDirection position) {
-            return Collections.singletonList(block.getPartBoundingBox(world, new BlockPos(x, y, z), position));
-        }
-
-        @Override
-        public ItemStack getPickBlock(World world, int x, int y, int z, ForgeDirection position) {
-            BlockPos pos = new BlockPos(x, y, z);
-            if (!(pos.getBlock(world) instanceof BlockCable cable)) return null;
-            IPartContainer partContainer = cable.getPartContainer(world, pos);
-            return partContainer.getPart(position)
-                .getPickBlock(world, pos, partContainer.getPartState(position));
-        }
-
-        @Override
-        public boolean destroy(World world, int x, int y, int z, ForgeDirection position, EntityPlayer player) {
-            if (!world.isRemote) {
-                return PartHelpers.removePart(world, new BlockPos(x, y, z), position, player, true);
-            }
-            return false;
-        }
-    };
-    private static final IComponent<ForgeDirection, BlockCable> FACADE_COMPONENT = new IComponent<ForgeDirection, BlockCable>() {
-
-        private final AxisAlignedBB BOUNDS = AxisAlignedBB.getBoundingBox(0.01, 0.01, 0.01, 0.99, 0.99, 0.99);
-
-        @Override
-        public Collection<ForgeDirection> getPossiblePositions() {
-            return Arrays.asList(new ForgeDirection[] { null });
-        }
-
-        @Override
-        public int getBoundsCount(ForgeDirection position) {
-            return 1;
-        }
-
-        @Override
-        public boolean isActive(BlockCable cable, World world, int x, int y, int z, ForgeDirection position) {
-            return cable.hasFacade(world, new BlockPos(x, y, z));
-        }
-
-        @Override
-        public List<AxisAlignedBB> getBounds(BlockCable cable, World world, int x, int y, int z,
-            ForgeDirection forgeDirection) {
-            return Collections.singletonList(BOUNDS);
-        }
-
-        @Override
-        public ItemStack getPickBlock(World world, int x, int y, int z, ForgeDirection position) {
-            ItemStack itemStack = new ItemStack(ItemFacade.getInstance());
-            ItemFacade.getInstance()
-                .writeFacadeBlock(
-                    itemStack,
-                    BlockCable.getInstance()
-                        .getFacade(world, new BlockPos(x, y, z)));
-            return itemStack;
-        }
-
-        @Override
-        public boolean destroy(World world, int x, int y, int z, ForgeDirection forgeDirection, EntityPlayer player) {
-            BlockPos pos = new BlockPos(x, y, z);
-            if (!(pos.getBlock(world) instanceof BlockCable cable)) return false;
-            if (!world.isRemote) {
-                BlockState blockState = cable.getFacade(world, pos);
-                ItemStack itemStack = new ItemStack(ItemFacade.getInstance());
-                ItemFacade.getInstance()
-                    .writeFacadeBlock(itemStack, blockState);
-                BlockCable.getInstance()
-                    .setFacade(world, pos, null);
-                ItemStackHelpers.spawnItemStackToPlayer(world, pos, itemStack, player);
-            }
-            return false;
-        }
-    };
+    public static final List<IComponent<ForgeDirection, BlockCable>> COLLIDABLE_COMPONENTS = Lists.newArrayList();
+    public static final IComponent<ForgeDirection, BlockCable> CENTER_COMPONENT = new CollidableComponentCableCenter();
+    public static final IComponent<ForgeDirection, BlockCable> CABLECONNECTIONS_COMPONENT = new CollidableComponentCableConnections();
+    public static final IComponent<ForgeDirection, BlockCable> PARTS_COMPONENT = new CollidableComponentParts();
+    public static final IComponent<ForgeDirection, BlockCable> FACADE_COMPONENT = new CollidableComponentFacade();
     static {
         COLLIDABLE_COMPONENTS.add(FACADE_COMPONENT);
         COLLIDABLE_COMPONENTS.add(CENTER_COMPONENT);
@@ -285,7 +121,7 @@ public class BlockCable extends ConfigurableBlockContainer
     }
 
     @Delegate
-    private ICollidable collidableComponent = new CollidableComponent(this, COLLIDABLE_COMPONENTS);
+    private ICollidable<ForgeDirection> collidableComponent = new CollidableComponent<>(this, COLLIDABLE_COMPONENTS);
     // @Delegate// <- Lombok can't handle delegations with generics, so we'll have to do it manually...
     private CableNetworkFacadeableComponent<BlockCable> cableNetworkComponent = new CableNetworkFacadeableComponent<>(
         this);
@@ -328,7 +164,7 @@ public class BlockCable extends ConfigurableBlockContainer
         }
     }
 
-    protected boolean hasPart(IBlockAccess world, BlockPos pos, ForgeDirection side) {
+    public boolean hasPart(IBlockAccess world, BlockPos pos, ForgeDirection side) {
         if (world == null) return false;
         TileEntity tile = world.getTileEntity(pos.getX(), pos.getY(), pos.getZ());
         if (tile instanceof TileMultipartTicking tileMultipart) {
@@ -384,10 +220,11 @@ public class BlockCable extends ConfigurableBlockContainer
 
     @Override
     public boolean removedByPlayer(World world, EntityPlayer player, int x, int y, int z, boolean willHarvest) {
-        RayTraceResult<ForgeDirection> rayTraceResult = doRayTrace(world, x, y, z, player);
+        BlockPos pos = new BlockPos(x, y, z);
+        RayTraceResult<ForgeDirection> rayTraceResult = doRayTrace(world, pos, player);
         if (rayTraceResult != null && rayTraceResult.getCollisionType() != null) {
             return rayTraceResult.getCollisionType()
-                .destroy(world, x, y, z, rayTraceResult.getPositionHit(), player);
+                .destroy(world, pos, rayTraceResult.getPositionHit(), player, willHarvest);
         }
         return super.removedByPlayer(world, player, x, y, z, willHarvest);
     }
@@ -400,13 +237,13 @@ public class BlockCable extends ConfigurableBlockContainer
         ForgeDirection side = ForgeDirection.getOrientation(sideInt);
         TileMultipartTicking tile = TileHelpers.getSafeTile(world, pos, TileMultipartTicking.class);
         if (tile != null) {
-            RayTraceResult<ForgeDirection> rayTraceResult = doRayTrace(world, x, y, z, player);
+            RayTraceResult<ForgeDirection> rayTraceResult = doRayTrace(world, pos, player);
             if (rayTraceResult != null) {
                 ForgeDirection positionHit = rayTraceResult.getPositionHit();
                 if (rayTraceResult.getCollisionType() == FACADE_COMPONENT) {
                     if (!world.isRemote && WrenchHelpers.isWrench(player, heldItem, world, pos, side)
                         && player.isSneaking()) {
-                        FACADE_COMPONENT.destroy(world, x, y, z, side, player);
+                        FACADE_COMPONENT.destroy(world, pos, side, player, true);
                         world.notifyBlocksOfNeighborChange(x, y, z, this);
                         return true;
                     }
@@ -415,7 +252,7 @@ public class BlockCable extends ConfigurableBlockContainer
                     if (!world.isRemote && WrenchHelpers.isWrench(player, heldItem, world, pos, side)) {
                         // Remove part from cable
                         if (player.isSneaking()) {
-                            PARTS_COMPONENT.destroy(world, x, y, z, rayTraceResult.getPositionHit(), player);
+                            PARTS_COMPONENT.destroy(world, pos, rayTraceResult.getPositionHit(), player, true);
                             ItemBlockCable.playBreakSound(world, pos);
                         }
                         return true;
@@ -542,11 +379,12 @@ public class BlockCable extends ConfigurableBlockContainer
     @Override
     public ItemStack getPickBlock(MovingObjectPosition target, World world, int x, int y, int z,
         @Nullable EntityPlayer player) {
-        RayTraceResult<ForgeDirection> rayTraceResult = doRayTrace(world, x, y, z, player);
+        BlockPos pos = new BlockPos(x, y, z);
+        RayTraceResult<ForgeDirection> rayTraceResult = doRayTrace(world, pos, player);
         if (rayTraceResult != null) {
             ForgeDirection positionHit = rayTraceResult.getPositionHit();
             return rayTraceResult.getCollisionType()
-                .getPickBlock(world, x, y, z, positionHit);
+                .getPickBlock(world, pos, positionHit);
         }
         return new ItemStack(getItem(world, x, y, z), 1, getDamageValue(world, x, y, z));
     }
@@ -571,12 +409,7 @@ public class BlockCable extends ConfigurableBlockContainer
     @Nullable
     @Override
     public ForgeDirection getWatchingSide(World world, BlockPos pos, EntityPlayer player) {
-        ICollidable.RayTraceResult<ForgeDirection> rayTraceResult = doRayTrace(
-            world,
-            pos.getX(),
-            pos.getY(),
-            pos.getZ(),
-            player);
+        ICollidable.RayTraceResult<ForgeDirection> rayTraceResult = doRayTrace(world, pos, player);
         if (rayTraceResult != null) {
             return rayTraceResult.getPositionHit();
         }
@@ -674,7 +507,7 @@ public class BlockCable extends ConfigurableBlockContainer
         return IPartType.RenderPosition.NONE;
     }
 
-    private AxisAlignedBB getCableBoundingBoxWithPart(World world, BlockPos pos, ForgeDirection side) {
+    public AxisAlignedBB getCableBoundingBoxWithPart(World world, BlockPos pos, ForgeDirection side) {
         if (side == null) {
             return CABLE_CENTER_BOUNDINGBOX;
         }
@@ -687,7 +520,7 @@ public class BlockCable extends ConfigurableBlockContainer
         return renderPosition.getSidedCableBoundingBox(side);
     }
 
-    private AxisAlignedBB getPartBoundingBox(World world, BlockPos pos, ForgeDirection side) {
+    public AxisAlignedBB getPartBoundingBox(World world, BlockPos pos, ForgeDirection side) {
         if (side == null) return null;
 
         IPartType.RenderPosition renderPosition = null;
@@ -702,38 +535,12 @@ public class BlockCable extends ConfigurableBlockContainer
             }
         }
 
-        return getFallbackPartBoundingBox(side);
-    }
-
-    private AxisAlignedBB getFallbackPartBoundingBox(ForgeDirection side) {
-        if (side == null) return null;
-
-        float depth = 0.125f; // Độ dày part (1/8 block)
-        float min = 0.375f; // Lề trái/dưới (3/8 block)
-        float max = 0.625f; // Lề phải/trên (5/8 block)
-
-        switch (side) {
-            case DOWN:
-                return AxisAlignedBB.getBoundingBox(min, 0.0F, min, max, depth, max);
-            case UP:
-                return AxisAlignedBB.getBoundingBox(min, 1.0F - depth, min, max, 1.0F, max);
-            case NORTH:
-                return AxisAlignedBB.getBoundingBox(min, min, 0.0F, max, max, depth);
-            case SOUTH:
-                return AxisAlignedBB.getBoundingBox(min, min, 1.0F - depth, max, max, 1.0F);
-            case WEST:
-                return AxisAlignedBB.getBoundingBox(0.0F, min, min, depth, max, max);
-            case EAST:
-                return AxisAlignedBB.getBoundingBox(1.0F - depth, min, min, 1.0F, max, max);
-            default:
-                return AxisAlignedBB.getBoundingBox(min, min, min, max, max, max);
-        }
+        return CABLE_CENTER_BOUNDINGBOX;
     }
 
     @Override
-    public void addCollisionBoxesToListParent(World worldIn, int x, int y, int z, AxisAlignedBB mask,
-        List<AxisAlignedBB> list, Entity collidingEntity) {
-        super.addCollisionBoxesToList(worldIn, x, y, z, mask, list, collidingEntity);
+    public void addCollisionBoxesToListParent(World world, int x, int y, int z, AxisAlignedBB mask, List<AxisAlignedBB> list, Entity collidingEntity) {
+        super.addCollisionBoxesToList(world, x, y, z, mask, list, collidingEntity);
     }
 
     @Override
@@ -742,8 +549,8 @@ public class BlockCable extends ConfigurableBlockContainer
     }
 
     @Override
-    public MovingObjectPosition collisionRayTraceParent(World world, int x, int y, int z, Vec3 origin, Vec3 direction) {
-        return super.collisionRayTrace(world, x, y, z, origin, direction);
+    public MovingObjectPosition rayTraceParent(BlockPos pos, Vec3 start, Vec3 end, AxisAlignedBB boundingBox) {
+        return this.rayTrace(pos, start, end, boundingBox);
     }
 
     /* --------------- Start IDynamicRedstoneBlock --------------- */

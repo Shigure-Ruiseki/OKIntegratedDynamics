@@ -4,6 +4,8 @@ import net.minecraft.client.gui.Gui;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
 
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.integrateddynamics.api.client.gui.subgui.IGuiInputElement;
 import ruiseki.integrateddynamics.api.client.gui.subgui.ISubGuiBox;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
@@ -90,4 +92,17 @@ public interface ILogicProgrammerElement<S extends ISubGuiBox, G extends Gui, C 
      */
     public boolean isItemValidForSlot(int slotId, ItemStack itemStack);
 
+    /**
+     * @return If this element has the active focus. For typing and things like that.
+     */
+    @SideOnly(Side.CLIENT)
+    public boolean isFocused(S subGui);
+
+    /**
+     * Set the focus of this element.
+     * 
+     * @param focused If it must be focused.
+     */
+    @SideOnly(Side.CLIENT)
+    public void setFocused(S subGui, boolean focused);
 }
