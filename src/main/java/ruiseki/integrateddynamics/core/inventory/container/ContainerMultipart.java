@@ -16,6 +16,7 @@ import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.api.part.aspect.IAspect;
 import ruiseki.integrateddynamics.core.client.gui.ExtendedGuiHandler;
+import ruiseki.integrateddynamics.core.helper.PartHelpers;
 import ruiseki.integrateddynamics.core.part.PartTypeConfigurable;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.helper.MinecraftHelpers;
@@ -102,4 +103,8 @@ public abstract class ContainerMultipart<P extends IPartType<P, S> & IGuiContain
                 .getSide());
     }
 
+    @Override
+    public boolean canInteractWith(EntityPlayer playerIn) {
+        return PartHelpers.canInteractWith(getTarget(), player, this.partContainer);
+    }
 }

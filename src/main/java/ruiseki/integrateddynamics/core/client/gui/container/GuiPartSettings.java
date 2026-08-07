@@ -1,7 +1,6 @@
 package ruiseki.integrateddynamics.core.client.gui.container;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiButton;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 
@@ -20,6 +19,8 @@ import ruiseki.okcore.helper.Helpers;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.ValueNotifierHelpers;
 import ruiseki.okcore.init.ModBase;
+import ruiseki.okcore.inventory.container.ExtendedInventoryContainer;
+import ruiseki.okcore.inventory.container.button.IButtonActionClient;
 
 /**
  * Gui for part settings.
@@ -30,7 +31,7 @@ import ruiseki.okcore.init.ModBase;
 @Data
 public class GuiPartSettings extends GuiContainerExtended {
 
-    private static final int BUTTON_SAVE = 0;
+    public static final int BUTTON_SAVE = 0;
 
     private final PartTarget target;
     private final IPartContainer partContainer;
@@ -51,6 +52,20 @@ public class GuiPartSettings extends GuiContainerExtended {
         this.target = target;
         this.partContainer = partContainer;
         this.partType = partType;
+
+        putButtonAction(BUTTON_SAVE, new IButtonActionClient<GuiContainerExtended, ExtendedInventoryContainer>() {
+
+            @Override
+            public void onAction(int buttonId, GuiContainerExtended gui, ExtendedInventoryContainer container) {
+                try {
+                    int updateInterval = numberField.getInt();
+                    ValueNotifierHelpers.setValue(
+                        getContainer(),
+                        ((ContainerPartSettings) getContainer()).getLastUpdateValueId(),
+                        updateInterval);
+                } catch (NumberFormatException e) {}
+            }
+        });
     }
 
     @Override
@@ -117,19 +132,6 @@ public class GuiPartSettings extends GuiContainerExtended {
             guiLeft + 8,
             guiTop + 12,
             Helpers.RGBToInt(0, 0, 0));
-    }
-
-    @Override
-    protected void actionPerformed(GuiButton guibutton) {
-        if (guibutton.id == BUTTON_SAVE) {
-            try {
-                int updateInterval = numberField.getInt();
-                ValueNotifierHelpers.setValue(
-                    getContainer(),
-                    ((ContainerPartSettings) getContainer()).getLastUpdateValueId(),
-                    updateInterval);
-            } catch (NumberFormatException e) {}
-        }
     }
 
     @Override

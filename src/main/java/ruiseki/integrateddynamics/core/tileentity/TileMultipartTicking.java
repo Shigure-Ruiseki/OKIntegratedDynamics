@@ -90,8 +90,19 @@ public class TileMultipartTicking extends TileEntityOK implements TileEntityOK.I
 
     @Override
     public void readFromNBT(NBTTagCompound tag) {
+        EnumFacingMap<Boolean> lastConnected = connected;
+        String lastFacadeBlockName = facadeBlockName;
+        int lastFacadeMeta = facadeMeta;
+        boolean lastRealCable = realCable;
         PartHelpers.readPartsFromNBT(getNetwork(), getPos(), tag, this.partData, getWorldObj());
         super.readFromNBT(tag);
+        if (getWorldObj() != null && (lastConnected == null || connected == null
+            || !lastConnected.equals(connected)
+            || !Objects.equals(lastFacadeBlockName, facadeBlockName)
+            || lastFacadeMeta != facadeMeta
+            || lastRealCable != realCable)) {
+            getWorldObj().markBlockForUpdate(xCoord, yCoord, zCoord);
+        }
     }
 
     /**
@@ -189,6 +200,7 @@ public class TileMultipartTicking extends TileEntityOK implements TileEntityOK.I
             if (getNetwork() != null) {
                 INetworkElement networkElement = removed
                     .createNetworkElement((IPartContainerFacade) getBlock(), DimPos.of(getWorldObj(), getPos()), side);
+                networkElement.onPreRemoved(getNetwork());
                 if (!getNetwork().removeNetworkElementPre(networkElement)) {
                     return null;
                 }
@@ -198,7 +210,9 @@ public class TileMultipartTicking extends TileEntityOK implements TileEntityOK.I
                 networkElement.addDrops(itemStacks, true);
                 for (ItemStack itemStack : itemStacks) {
                     if (player != null) {
-                        ItemStackHelpers.spawnItemStackToPlayer(getWorldObj(), getPos(), itemStack, player);
+                        if (!player.capabilities.isCreativeMode) {
+                            ItemStackHelpers.spawnItemStackToPlayer(getWorldObj(), pos, itemStack, player);
+                        }
                     } else {
                         InventoryHelpers.dropItems(getWorldObj(), itemStack, getPos());
                     }
@@ -206,8 +220,8 @@ public class TileMultipartTicking extends TileEntityOK implements TileEntityOK.I
 
                 // Remove the element from the network.
                 getNetwork().removeNetworkElementPost(networkElement);
+                networkElement.onPostRemoved(getNetwork());
             } else {
-                IntegratedDynamics.clog(Level.WARN, "Removing a part where no network reference was found.");
                 ItemStackHelpers
                     .spawnItemStackToPlayer(getWorldObj(), getPos(), new ItemStack(removed.getItem()), player);
             }
@@ -498,7 +512,7 @@ public class TileMultipartTicking extends TileEntityOK implements TileEntityOK.I
         @Nullable ForgeDirection facing) {
         if (facing == null) {
             for (Map.Entry<ForgeDirection, PartHelpers.PartStateHolder<?, ?>> entry : partData.entrySet()) {
-                IPartState partState = entry.getValue()
+                IPartState<?> partState = entry.getValue()
                     .getState();
                 if (partState != null) {
                     LazyOptional<T> cap = partState.getCapability(capability);
@@ -509,12 +523,9 @@ public class TileMultipartTicking extends TileEntityOK implements TileEntityOK.I
             }
         } else {
             if (hasPart(facing)) {
-                IPartState partState = getPartState(facing);
+                IPartState<?> partState = getPartState(facing);
                 if (partState != null) {
-                    LazyOptional<T> cap = partState.getCapability(capability);
-                    if (cap.isPresent()) {
-                        return cap;
-                    }
+                    return partState.getCapability(capability);
                 }
             }
         }

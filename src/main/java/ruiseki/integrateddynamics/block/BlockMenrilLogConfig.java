@@ -1,21 +1,30 @@
 package ruiseki.integrateddynamics.block;
 
-import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
 
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.Reference;
-import ruiseki.okcore.config.configurable.ConfigurableBlockLog;
-import ruiseki.okcore.config.configurable.IConfigurable;
+import ruiseki.okcore.config.ConfigurableProperty;
+import ruiseki.okcore.config.ConfigurableTypeCategory;
 import ruiseki.okcore.config.extendedconfig.BlockConfig;
 
 /**
  * Config for the Menril Log.
- * 
+ *
  * @author rubensworks
  *
  */
 public class BlockMenrilLogConfig extends BlockConfig {
+
+    /**
+     * The 1/x chance at which a Menril Log will be filled with Menril Resin when generated.
+     * TODO Add filledMenrilLogChance
+     */
+    @ConfigurableProperty(
+        category = ConfigurableTypeCategory.WORLDGENERATION,
+        comment = "The 1/x chance at which a Menril Log will be filled with Menril Resin when generated.",
+        isCommandable = true)
+    public static int filledMenrilLogChance = 10;
 
     /**
      * The unique instance.
@@ -26,13 +35,7 @@ public class BlockMenrilLogConfig extends BlockConfig {
      * Make a new instance.
      */
     public BlockMenrilLogConfig() {
-        super(IntegratedDynamics._instance, true, "menrilLog", null, null);
-    }
-
-    @Override
-    protected IConfigurable initSubInstance() {
-        return (ConfigurableBlockLog) new ConfigurableBlockLog(this).setHardness(2.0F)
-            .setStepSound(Block.soundTypeWood);
+        super(IntegratedDynamics._instance, true, "menrilLog", null, BlockMenrilLog.class);
     }
 
     @Override

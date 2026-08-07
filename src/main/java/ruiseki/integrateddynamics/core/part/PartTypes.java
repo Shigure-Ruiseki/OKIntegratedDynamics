@@ -11,6 +11,7 @@ import ruiseki.integrateddynamics.part.PartTypeExtraDimensionalReader;
 import ruiseki.integrateddynamics.part.PartTypeFluidReader;
 import ruiseki.integrateddynamics.part.PartTypeInventoryReader;
 import ruiseki.integrateddynamics.part.PartTypeInventoryWriter;
+import ruiseki.integrateddynamics.part.PartTypeMachineReader;
 import ruiseki.integrateddynamics.part.PartTypeNetworkReader;
 import ruiseki.integrateddynamics.part.PartTypePanelDisplay;
 import ruiseki.integrateddynamics.part.PartTypePanelLightDynamic;
@@ -41,9 +42,8 @@ public final class PartTypes {
     public static final PartTypeFluidReader FLUID_READER = REGISTRY.register(new PartTypeFluidReader("fluidReader"));
     public static final PartTypeInventoryReader INVENTORY_READER = REGISTRY
         .register(new PartTypeInventoryReader("inventoryReader"));
-    // TODO: Add Machine
-    // public static final PartTypeMachineReader MACHINE_READER = REGISTRY
-    // .register(new PartTypeMachineReader("machineReader"));
+    public static final PartTypeMachineReader MACHINE_READER = REGISTRY
+        .register(new PartTypeMachineReader("machineReader"));
     public static final PartTypeNetworkReader NETWORK_READER = REGISTRY
         .register(new PartTypeNetworkReader("networkReader"));
     public static final PartTypeRedstoneReader REDSTONE_READER = REGISTRY

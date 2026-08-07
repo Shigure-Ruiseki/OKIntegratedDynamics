@@ -8,6 +8,7 @@ import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.StringUtils;
+import net.minecraft.world.World;
 
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -26,6 +27,7 @@ import ruiseki.integrateddynamics.client.gui.GuiLogicProgrammer;
 import ruiseki.integrateddynamics.core.logicprogrammer.LogicProgrammerElementTypes;
 import ruiseki.integrateddynamics.core.persist.world.LabelsWorldStorage;
 import ruiseki.integrateddynamics.item.ItemVariable;
+import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.inventory.SimpleInventory;
@@ -62,6 +64,8 @@ public class ContainerLogicProgrammer extends ScrollingInventoryContainer<ILogic
     private SimpleInventory temporaryInputSlots = null;
     private LangHelpers.UnlocalizedString lastError;
     private LoadConfigListener loadConfigListener;
+    private final World world;
+    private final BlockPos blockPos;
 
     private IValueType filterIn1 = null;
     private IValueType filterIn2 = null;
@@ -74,11 +78,15 @@ public class ContainerLogicProgrammer extends ScrollingInventoryContainer<ILogic
 
     /**
      * Make a new instance.
-     *
+     * 
      * @param inventory The player inventory.
+     * @param world     The world.
+     * @param blockPos  The position.
      */
-    public ContainerLogicProgrammer(InventoryPlayer inventory) {
+    public ContainerLogicProgrammer(InventoryPlayer inventory, World world, BlockPos blockPos) {
         super(inventory, BlockLogicProgrammer.getInstance(), getElements(), FILTERER);
+        this.world = world;
+        this.blockPos = blockPos;
         this.writeSlot = new SimpleInventory(1, "writeSlot", 1);
         this.filterSlots = new SimpleInventory(3, "filterSlots", 1);
         this.filterSlots.addDirtyMarkListener(new FilterSlotListener());
@@ -132,7 +140,10 @@ public class ContainerLogicProgrammer extends ScrollingInventoryContainer<ILogic
 
     @Override
     public boolean canInteractWith(EntityPlayer playerIn) {
-        return true;
+        return this.blockPos.getBlock(this.world) == BlockLogicProgrammer.getInstance() && playerIn.getDistanceSq(
+            (double) this.blockPos.getX() + 0.5D,
+            (double) this.blockPos.getY() + 0.5D,
+            (double) this.blockPos.getZ() + 0.5D) <= 64.0D;
     }
 
     public void setActiveElementById(String typeId, String elementId) {

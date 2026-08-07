@@ -16,7 +16,7 @@ import ruiseki.okcore.inventory.SimpleInventory;
 
 /**
  * Container for writer parts.
- * 
+ *
  * @author rubensworks
  */
 @EqualsAndHashCode(callSuper = false)
@@ -32,7 +32,7 @@ public class ContainerPartDisplay<P extends PartTypePanelVariableDriven<P, S>, S
 
     /**
      * Make a new instance.
-     * 
+     *
      * @param target        The target.
      * @param player        The player.
      * @param partContainer The part container.
@@ -82,11 +82,6 @@ public class ContainerPartDisplay<P extends PartTypePanelVariableDriven<P, S>, S
     public void onContainerClosed(EntityPlayer player) {
         getPartState().getInventory()
             .removeDirtyMarkListener(this);
-    }
-
-    @Override
-    public boolean canInteractWith(EntityPlayer player) {
-        return true;
     }
 
     @Override

@@ -104,7 +104,7 @@ public class ItemBlockCable extends ItemBlockOK {
     }
 
     public static void playBreakSound(World world, BlockPos pos) {
-        world.playAuxSFX(2001, pos.getX(), pos.getY(), pos.getZ(), Block.getIdFromBlock(pos.getBlock(world)));
+        world.playBroadcastSound(2001, pos.getX(), pos.getY(), pos.getZ(), Block.getIdFromBlock(pos.getBlock(world)));
     }
 
     @Override

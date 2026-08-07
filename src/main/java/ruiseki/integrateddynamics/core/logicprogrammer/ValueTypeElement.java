@@ -86,8 +86,7 @@ public class ValueTypeElement
 
     @Override
     public boolean canWriteElementPre() {
-        return getInnerGuiElement().getInputString() != null && !getInnerGuiElement().getInputString()
-            .isEmpty();
+        return getInnerGuiElement().getInputString() != null;
     }
 
     @Override
@@ -157,15 +156,20 @@ public class ValueTypeElement
     @Override
     @SideOnly(Side.CLIENT)
     public boolean isFocused(SubGuiConfigRenderPattern subGui) {
-        return ((ValueTypeSubGuiRenderPattern) subGui).getSearchField()
-            .isFocused();
+        if (subGui instanceof ValueTypeSubGuiRenderPattern) {
+            return ((ValueTypeSubGuiRenderPattern) subGui).getSearchField()
+                .isFocused();
+        }
+        return false;
     }
 
     @Override
     @SideOnly(Side.CLIENT)
     public void setFocused(SubGuiConfigRenderPattern subGui, boolean focused) {
-        ((ValueTypeSubGuiRenderPattern) subGui).getSearchField()
-            .setFocused(focused);
+        if (subGui instanceof ValueTypeSubGuiRenderPattern) {
+            ((ValueTypeSubGuiRenderPattern) subGui).getSearchField()
+                .setFocused(focused);
+        }
     }
 
     @Override

@@ -16,12 +16,13 @@ import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 import ruiseki.integrateddynamics.block.BlockCable;
 import ruiseki.integrateddynamics.item.ItemFacade;
 import ruiseki.okcore.block.collidable.ICollidable;
+import ruiseki.okcore.block.collidable.ImmutableAxisAlignedBB;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.helper.ItemStackHelpers;
 
 public class CollidableComponentFacade implements ICollidable.IComponent<ForgeDirection, BlockCable> {
 
-    private final AxisAlignedBB BOUNDS = AxisAlignedBB.getBoundingBox(0.01, 0.01, 0.01, 0.99, 0.99, 0.99);
+    private final AxisAlignedBB BOUNDS = ImmutableAxisAlignedBB.fromBounds(0.01, 0.01, 0.01, 0.99, 0.99, 0.99);
 
     @Override
     public Collection<ForgeDirection> getPossiblePositions() {
@@ -64,7 +65,9 @@ public class CollidableComponentFacade implements ICollidable.IComponent<ForgeDi
                 .writeFacadeBlock(itemStack, blockState);
             BlockCable.getInstance()
                 .setFacade(world, pos, null);
-            ItemStackHelpers.spawnItemStackToPlayer(world, pos, itemStack, player);
+            if (!player.capabilities.isCreativeMode) {
+                ItemStackHelpers.spawnItemStackToPlayer(world, pos, itemStack, player);
+            }
             return true;
         }
         return false;

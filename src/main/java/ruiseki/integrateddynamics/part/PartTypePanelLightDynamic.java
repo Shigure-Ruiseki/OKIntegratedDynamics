@@ -76,6 +76,12 @@ public class PartTypePanelLightDynamic
     }
 
     @Override
+    public void onPostRemoved(IPartNetwork network, PartTarget target, State state) {
+        super.onPostRemoved(network, target, state);
+        setLightLevel(target, 0);
+    }
+
+    @Override
     public void onBlockNeighborChange(IPartNetwork network, PartTarget target, State state, IBlockAccess world,
         Block neighborBlock) {
         super.onBlockNeighborChange(network, target, state, world, neighborBlock);

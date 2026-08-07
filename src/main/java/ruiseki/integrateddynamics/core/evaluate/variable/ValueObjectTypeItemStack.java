@@ -14,7 +14,7 @@ import ruiseki.okcore.helper.ItemStackHelpers;
 
 /**
  * Value type with values that are itemstacks.
- * 
+ *
  * @author rubensworks
  */
 public class ValueObjectTypeItemStack extends ValueObjectTypeBase<ValueObjectTypeItemStack.ValueItemStack>
@@ -41,8 +41,10 @@ public class ValueObjectTypeItemStack extends ValueObjectTypeBase<ValueObjectTyp
     public String serialize(ValueItemStack value) {
         NBTTagCompound tag = new NBTTagCompound();
         Optional<ItemStack> itemStack = value.getRawValue();
-        if (itemStack.isPresent()) itemStack.get()
-            .writeToNBT(tag);
+        if(itemStack.isPresent()) {
+            itemStack.get().writeToNBT(tag);
+            tag.setInteger("Count", itemStack.get().stackSize);
+        }
         return tag.toString();
     }
 
@@ -51,6 +53,7 @@ public class ValueObjectTypeItemStack extends ValueObjectTypeBase<ValueObjectTyp
         try {
             NBTTagCompound tag = (NBTTagCompound) JsonToNBT.func_150315_a(value);
             ItemStack itemStack = ItemStack.loadItemStackFromNBT(tag);
+            itemStack.stackSize = tag.getInteger("Count");
             return ValueItemStack.of(itemStack);
         } catch (NBTException e) {
             return null;

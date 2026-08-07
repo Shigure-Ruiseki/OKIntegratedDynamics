@@ -24,6 +24,8 @@ import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartContainerFacade;
 import ruiseki.integrateddynamics.api.part.IPartState;
 import ruiseki.integrateddynamics.api.part.IPartType;
+import ruiseki.integrateddynamics.api.part.PartPos;
+import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.core.network.event.UnknownPartEvent;
 import ruiseki.integrateddynamics.core.part.PartTypes;
 import ruiseki.okcore.datastructure.BlockPos;
@@ -279,6 +281,58 @@ public class PartHelpers {
             return true;
         }
         return false;
+    }
+
+    /**
+     * If the given player can currently interact with the part gui at the given position.
+     *
+     * @param target                The part target.
+     * @param player                The player.
+     * @param expectedPartContainer The expected part container.
+     * @return If the player can interact with it.
+     */
+    public static boolean canInteractWith(PartTarget target, EntityPlayer player,
+        IPartContainer expectedPartContainer) {
+        World world = target.getCenter()
+            .getPos()
+            .getWorld();
+        BlockPos blockPos = target.getCenter()
+            .getPos()
+            .getBlockPos();
+        IPartContainerFacade facade = CableHelpers.getInterface(
+            target.getCenter()
+                .getPos(),
+            IPartContainerFacade.class);
+        if (facade == null) return false;
+        IPartContainer partContainer = facade.getPartContainer(
+            world,
+            target.getCenter()
+                .getPos()
+                .getBlockPos());
+        return partContainer == expectedPartContainer && player.getDistanceSq(
+            (double) blockPos.getX() + 0.5D,
+            (double) blockPos.getY() + 0.5D,
+            (double) blockPos.getZ() + 0.5D) <= 64.0D;
+    }
+
+    /**
+     * Get a part at the given position.
+     * 
+     * @param partPos The part position.
+     * @return The part.
+     */
+    public static @Nullable PartStateHolder<?, ?> getPart(PartPos partPos) {
+        World world = partPos.getPos()
+            .getWorld();
+        BlockPos pos = partPos.getPos()
+            .getBlockPos();
+        ForgeDirection side = partPos.getSide();
+        IPartContainerFacade partContainerFacade = CableHelpers.getInterface(world, pos, IPartContainerFacade.class);
+        IPartContainer partContainer = partContainerFacade.getPartContainer(world, pos);
+        if (partContainer.hasPart(side)) {
+            return PartStateHolder.of(partContainer.getPart(side), partContainer.getPartState(side));
+        }
+        return null;
     }
 
     /**

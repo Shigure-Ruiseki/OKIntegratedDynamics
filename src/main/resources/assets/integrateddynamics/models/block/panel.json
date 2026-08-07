@@ -1,4 +1,5 @@
 {
+    "parent": "integrateddynamics:block/part",
     "__comment": "Model generated using MrCrayfish's Model Creator (http://mrcrayfish.com/modelcreator/)",
     "elements": [
         {
@@ -60,7 +61,7 @@
             "faces": {
                 "north": { "texture": "#back", "uv": [ 1.0, 0.0, 9.0, 1.0 ] },
                 "east": { "texture": "#front", "uv": [ 0.0, 0.0, 1.0, 1.0 ] },
-                "south": { "texture": "#front", "uv": [ 4.0, 2.0, 12.0, 3.0 ] },
+                "south": { "texture": "#front", "uv": [ 4.0, 3.0, 12.0, 2.0 ] },
                 "west": { "texture": "#front", "uv": [ 0.0, 0.0, 1.0, 1.0 ] },
                 "up": { "texture": "#front", "uv": [ 4.0, 0.0, 12.0, 2.0 ] },
                 "down": { "texture": "#front", "uv": [ 4.0, 3.0, 12.0, 4.0 ] }
@@ -73,7 +74,7 @@
             "faces": {
                 "north": { "texture": "#back", "uv": [ 1.0, 9.0, 9.0, 10.0 ] },
                 "east": { "texture": "#front", "uv": [ 0.0, 0.0, 1.0, 1.0 ] },
-                "south": { "texture": "#front", "uv": [ 4.0, 13.0, 12.0, 14.0 ] },
+                "south": { "texture": "#front", "uv": [ 12.0, 13.0, 4.0, 14.0 ] },
                 "west": { "texture": "#front", "uv": [ 0.0, 0.0, 1.0, 1.0 ] },
                 "up": { "texture": "#front", "uv": [ 4.0, 12.0, 12.0, 13.0 ] },
                 "down": { "texture": "#front", "uv": [ 4.0, 14.0, 12.0, 16.0 ] }

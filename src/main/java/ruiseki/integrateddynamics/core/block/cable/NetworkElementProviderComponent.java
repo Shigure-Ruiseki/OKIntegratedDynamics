@@ -6,6 +6,8 @@ import net.minecraft.block.Block;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 
+import org.jetbrains.annotations.Nullable;
+
 import com.google.common.collect.Lists;
 
 import ruiseki.integrateddynamics.api.network.INetwork;
@@ -29,21 +31,25 @@ public class NetworkElementProviderComponent<N extends INetwork> {
 
     /**
      * Called before this block is destroyed.
-     *
-     * @param network         The network
+     * 
+     * @param network         The network. Null if this element is part of a corrupted network, should not happen
+     *                        though.
      * @param world           The world.
      * @param pos             The position.
      * @param dropMainElement If the main part element should be dropped.
      */
-    public void onPreBlockDestroyed(N network, World world, BlockPos pos, boolean dropMainElement) {
+    public void onPreBlockDestroyed(@Nullable N network, World world, BlockPos pos, boolean dropMainElement) {
         // Drop all parts types as item.
         if (!world.isRemote) {
             List<ItemStack> itemStacks = Lists.newLinkedList();
             for (INetworkElement<N> networkElement : networkElementProvider.createNetworkElements(world, pos)) {
                 networkElement.addDrops(itemStacks, dropMainElement);
-                networkElement.onPreRemoved(network);
-                network.removeNetworkElementPre(networkElement);
-                network.removeNetworkElementPost(networkElement);
+                if (network != null) {
+                    networkElement.onPreRemoved(network);
+                    network.removeNetworkElementPre(networkElement);
+                    network.removeNetworkElementPost(networkElement);
+                    networkElement.onPostRemoved(network);
+                }
             }
             for (ItemStack itemStack : itemStacks) {
                 InventoryHelpers.dropItems(world, itemStack, pos);
@@ -60,7 +66,7 @@ public class NetworkElementProviderComponent<N extends INetwork> {
      * @param pos           The position of the center block.
      * @param neighborBlock The block type of the neighbour that was updated.
      */
-    public void onBlockNeighborChange(N network, World world, BlockPos pos, Block neighborBlock) {
+    public void onBlockNeighborChange(@Nullable N network, World world, BlockPos pos, Block neighborBlock) {
         if (!world.isRemote) {
             for (INetworkElement<N> networkElement : networkElementProvider.createNetworkElements(world, pos)) {
                 networkElement.onNeighborBlockChange(network, world, neighborBlock);

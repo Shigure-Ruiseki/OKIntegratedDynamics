@@ -105,4 +105,41 @@ public interface INetwork<N extends INetwork<N>> extends INBTSerializable {
      */
     public Set<INetworkElement<N>> getElements();
 
+    /**
+     * @return If this network has been killed.
+     */
+    public boolean isKilled();
+
+    /**
+     * @return If the network has changed structure or elements in the last tick.
+     */
+    public boolean hasChanged();
+
+    /**
+     * @return The number of cables in the network.
+     */
+    public int getCablesCount();
+
+    /**
+     * Get the last tick duration of the given network element.
+     *
+     * @param networkElement The networkelement
+     * @return Duration in nanoseconds
+     */
+    public long getLastSecondDuration(INetworkElement<N> networkElement);
+
+    /**
+     * Reset the last second duration counts.
+     */
+    public void resetLastSecondDurations();
+
+    /**
+     * @return If this network has crashed.
+     */
+    public boolean isCrashed();
+
+    /**
+     * @param crashed The new crashed field.
+     */
+    public void setCrashed(boolean crashed);
 }

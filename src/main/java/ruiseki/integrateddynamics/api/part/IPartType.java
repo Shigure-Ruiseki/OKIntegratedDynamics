@@ -10,7 +10,6 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
@@ -21,6 +20,7 @@ import ruiseki.integrateddynamics.api.network.INetworkEventListener;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.network.IPartNetworkElement;
 import ruiseki.integrateddynamics.client.model.CableModel;
+import ruiseki.okcore.block.collidable.ImmutableAxisAlignedBB;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
 import ruiseki.okcore.datastructure.EnumFacingMap;
@@ -264,6 +264,15 @@ public interface IPartType<P extends IPartType<P, S>, S extends IPartState<P>>
     public void onPreRemoved(IPartNetwork network, PartTarget target, S state);
 
     /**
+     * Called after this element has been removed.
+     * 
+     * @param network The network.
+     * @param state   The state
+     * @param target  The target block.
+     */
+    public void onPostRemoved(IPartNetwork network, PartTarget target, S state);
+
+    /**
      * Called when a neighbouring block is updated, more specifically when
      * {@link net.minecraft.block.Block#onNeighborChange(IBlockAccess, int, int, int, int, int, int)} is called.
      *
@@ -334,8 +343,8 @@ public interface IPartType<P extends IPartType<P, S>, S extends IPartState<P>>
         private final float depthFactor;
         private final float widthFactor;
         private final float heightFactor;
-        private final EnumFacingMap<AxisAlignedBB> sidedCableCollisionBoxes;
-        private final EnumFacingMap<AxisAlignedBB> collisionBoxes;
+        private final EnumFacingMap<ImmutableAxisAlignedBB> sidedCableCollisionBoxes;
+        private final EnumFacingMap<ImmutableAxisAlignedBB> collisionBoxes;
 
         public RenderPosition(float selectionDepthFactor, float depthFactor, float widthFactor, float heightFactor) {
             this.depthFactor = depthFactor;
@@ -359,7 +368,8 @@ public interface IPartType<P extends IPartType<P, S>, S extends IPartState<P>>
             sidedCableCollisionBoxes = EnumFacingMap.newMap();
             for (ForgeDirection side : ForgeDirection.VALID_DIRECTIONS) {
                 float[] b = sidedCableCollisionBoxesRaw[side.ordinal()];
-                sidedCableCollisionBoxes.put(side, AxisAlignedBB.getBoundingBox(b[0], b[1], b[2], b[3], b[4], b[5]));
+                sidedCableCollisionBoxes
+                    .put(side, ImmutableAxisAlignedBB.fromBounds(b[0], b[1], b[2], b[3], b[4], b[5]));
             }
 
             float[][] collisionBoxesRaw = new float[][] { { 0.19F, 0.81F }, { 0.005F, selectionDepthFactor },
@@ -375,7 +385,7 @@ public interface IPartType<P extends IPartType<P, S>, S extends IPartState<P>>
                 MatrixHelpers.transform(bounds, side);
                 collisionBoxes.put(
                     side,
-                    AxisAlignedBB.getBoundingBox(
+                    ImmutableAxisAlignedBB.fromBounds(
                         bounds[0][0],
                         bounds[1][0],
                         bounds[2][0],
@@ -397,12 +407,11 @@ public interface IPartType<P extends IPartType<P, S>, S extends IPartState<P>>
             return heightFactor;
         }
 
-        public AxisAlignedBB getSidedCableBoundingBox(ForgeDirection side) {
+        public ImmutableAxisAlignedBB getSidedCableBoundingBox(ForgeDirection side) {
             return sidedCableCollisionBoxes.get(side);
-
         }
 
-        public AxisAlignedBB getBoundingBox(ForgeDirection side) {
+        public ImmutableAxisAlignedBB getBoundingBox(ForgeDirection side) {
             return collisionBoxes.get(side);
         }
 

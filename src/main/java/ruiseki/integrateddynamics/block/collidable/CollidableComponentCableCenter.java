@@ -52,7 +52,10 @@ public class CollidableComponentCableCenter implements ICollidable.IComponent<Fo
                 if (cable.getPartContainer(world, pos)
                     .hasParts()) {
                     cable.setRealCable(world, pos, false);
-                    ItemStackHelpers.spawnItemStackToPlayer(world, pos, new ItemStack(block), player);
+                    if (!player.capabilities.isCreativeMode) {
+                        ItemStackHelpers
+                            .spawnItemStackToPlayer(world, pos, new ItemStack(BlockCable.getInstance()), player);
+                    }
                     return false;
                 } else {
                     cable.remove(world, pos, player);

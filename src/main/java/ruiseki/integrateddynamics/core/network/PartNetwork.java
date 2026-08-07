@@ -145,12 +145,16 @@ public class PartNetwork extends Network<IPartNetwork> implements IPartNetwork, 
             return false;
         }
         IPartType partType = getPartType(partId);
-        if (!(partType instanceof IPartTypeReader<?, ?>)) {
+        if (!(partType instanceof IPartTypeReader)) {
             return false;
         }
-        return ((IPartTypeReader) getPartType(partId))
-            .getVariable(PartTarget.fromCenter(partPositions.get(partId)), (IPartStateReader) partState, aspect)
-            != null;
+        try {
+            return ((IPartTypeReader) getPartType(partId))
+                .getVariable(PartTarget.fromCenter(partPositions.get(partId)), (IPartStateReader) partState, aspect)
+                != null;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
 
     @Override
@@ -248,9 +252,7 @@ public class PartNetwork extends Network<IPartNetwork> implements IPartNetwork, 
         this.partsChanged = true;
     }
 
-    private void onPartsChanged() {
-        System.out.println("Parts of network " + this + " are changed.");
-    }
+    private void onPartsChanged() {}
 
     @Override
     protected boolean canUpdate(INetworkElement<IPartNetwork> element) {

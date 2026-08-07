@@ -22,7 +22,7 @@ import ruiseki.okcore.datastructure.DimPos;
 
 /**
  * A network element for parts.
- * 
+ *
  * @author rubensworks
  */
 @Data
@@ -142,6 +142,11 @@ public class PartNetworkElement<P extends IPartType<P, S>, S extends IPartState<
     @Override
     public void onPreRemoved(IPartNetwork network) {
         part.onPreRemoved(network, target, getPartState());
+    }
+
+    @Override
+    public void onPostRemoved(IPartNetwork network) {
+        part.onPostRemoved(network, target, getPartState());
     }
 
     @Override

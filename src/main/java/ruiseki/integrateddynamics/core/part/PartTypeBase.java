@@ -254,12 +254,12 @@ public abstract class PartTypeBase<P extends IPartType<P, S>, S extends IPartSta
 
     @Override
     public void beforeNetworkKill(IPartNetwork network, PartTarget target, S state) {
-        System.out.println("killing " + state);
+
     }
 
     @Override
     public void afterNetworkAlive(IPartNetwork network, PartTarget target, S state) {
-        System.out.println("alive " + state);
+
     }
 
     @Override
@@ -308,6 +308,11 @@ public abstract class PartTypeBase<P extends IPartType<P, S>, S extends IPartSta
 
     @Override
     public void onPreRemoved(IPartNetwork network, PartTarget target, S state) {
+
+    }
+
+    @Override
+    public void onPostRemoved(IPartNetwork network, PartTarget target, S state) {
 
     }
 

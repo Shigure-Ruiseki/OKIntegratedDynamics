@@ -9,7 +9,7 @@ import ruiseki.okcore.helper.Helpers;
 /**
  * Value type with values that are integers.
  * The raw value is nullable.
- * 
+ *
  * @author rubensworks
  */
 public class ValueTypeInteger extends ValueTypeBase<ValueTypeInteger.ValueInteger>
@@ -77,6 +77,11 @@ public class ValueTypeInteger extends ValueTypeBase<ValueTypeInteger.ValueIntege
     @Override
     public ValueInteger min(ValueInteger a, ValueInteger b) {
         return ValueInteger.of(Math.min(a.getRawValue(), b.getRawValue()));
+    }
+
+    @Override
+    public String getName(ValueInteger a) {
+        return toCompactString(a);
     }
 
     @ToString

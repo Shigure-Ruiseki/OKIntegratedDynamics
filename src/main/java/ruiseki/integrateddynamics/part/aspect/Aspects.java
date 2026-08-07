@@ -10,7 +10,6 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.StringUtils;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
@@ -27,6 +26,8 @@ import com.google.common.math.DoubleMath;
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 import com.gtnewhorizon.gtnhlib.blockstate.registry.BlockPropertyRegistry;
 
+import ruiseki.commoncapabilities.api.capability.temperature.ITemperature;
+import ruiseki.commoncapabilities.api.capability.work.IWorker;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.network.IEnergyNetwork;
@@ -51,6 +52,7 @@ import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
 import ruiseki.integrateddynamics.core.part.aspect.build.IAspectValuePropagator;
 import ruiseki.integrateddynamics.part.aspect.read.AspectReadBuilders;
 import ruiseki.integrateddynamics.part.aspect.write.AspectWriteBuilders;
+import ruiseki.okcore.block.collidable.ImmutableAxisAlignedBB;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
 import ruiseki.okcore.fluid.handler.IFluidTankProperties;
@@ -204,7 +206,7 @@ public class Aspects {
                         List<net.minecraft.entity.Entity> entities = dimPos.getWorld()
                             .selectEntitiesWithinAABB(
                                 net.minecraft.entity.Entity.class,
-                                AxisAlignedBB.getBoundingBox(x, y, z, x + 1.0D, y + 1.0D, z + 1.0D),
+                                ImmutableAxisAlignedBB.fromBounds(x, y, z, x + 1.0D, y + 1.0D, z + 1.0D),
                                 IEntitySelector.selectAnything);
                         return ValueTypeList.ValueList.ofList(
                             ValueTypes.OBJECT_ENTITY,
@@ -264,7 +266,7 @@ public class Aspects {
                             List<net.minecraft.entity.Entity> entities = dimPos.getWorld()
                                 .selectEntitiesWithinAABB(
                                     net.minecraft.entity.Entity.class,
-                                    AxisAlignedBB.getBoundingBox(x, y, z, x + 1.0D, y + 1.0D, z + 1.0D),
+                                    ImmutableAxisAlignedBB.fromBounds(x, y, z, x + 1.0D, y + 1.0D, z + 1.0D),
                                     IEntitySelector.selectAnything);
                             return ValueObjectTypeEntity.ValueEntity.of(i < entities.size() ? entities.get(i) : null);
                         }
@@ -646,55 +648,102 @@ public class Aspects {
                 .buildRead();
 
         }
-        // TODO: Add Machine
-        // public static final class Machine {
-        //
-        // public static final IAspectRead<ValueTypeBoolean.ValueBoolean, ValueTypeBoolean> BOOLEAN_ISWORKER =
-        // AspectReadBuilders.Machine.BUILDER_WORKER_BOOLEAN
-        // .handle(new IAspectValuePropagator<IWorker, Boolean>() {
-        //
-        // @Override
-        // public Boolean getOutput(IWorker worker) {
-        // return worker != null;
-        // }
-        // })
-        // .handle(AspectReadBuilders.PROP_GET_BOOLEAN, "isworker")
-        // .buildRead();
-        // public static final IAspectRead<ValueTypeBoolean.ValueBoolean, ValueTypeBoolean> BOOLEAN_HASWORK =
-        // AspectReadBuilders.Machine.BUILDER_WORKER_BOOLEAN
-        // .handle(new IAspectValuePropagator<IWorker, Boolean>() {
-        //
-        // @Override
-        // public Boolean getOutput(IWorker worker) {
-        // return worker != null && worker.hasWork();
-        // }
-        // })
-        // .handle(AspectReadBuilders.PROP_GET_BOOLEAN, "haswork")
-        // .buildRead();
-        // public static final IAspectRead<ValueTypeBoolean.ValueBoolean, ValueTypeBoolean> BOOLEAN_CANWORK =
-        // AspectReadBuilders.Machine.BUILDER_WORKER_BOOLEAN
-        // .handle(new IAspectValuePropagator<IWorker, Boolean>() {
-        //
-        // @Override
-        // public Boolean getOutput(IWorker worker) {
-        // return worker != null && worker.canWork();
-        // }
-        // })
-        // .handle(AspectReadBuilders.PROP_GET_BOOLEAN, "canwork")
-        // .buildRead();
-        // public static final IAspectRead<ValueTypeBoolean.ValueBoolean, ValueTypeBoolean> BOOLEAN_ISWORKING =
-        // AspectReadBuilders.Machine.BUILDER_WORKER_BOOLEAN
-        // .handle(new IAspectValuePropagator<IWorker, Boolean>() {
-        //
-        // @Override
-        // public Boolean getOutput(IWorker worker) {
-        // return worker != null && worker.canWork() && worker.hasWork();
-        // }
-        // })
-        // .handle(AspectReadBuilders.PROP_GET_BOOLEAN, "isworking")
-        // .buildRead();
-        //
-        // }
+
+        public static final class Machine {
+
+            public static final IAspectRead<ValueTypeBoolean.ValueBoolean, ValueTypeBoolean> BOOLEAN_ISWORKER = AspectReadBuilders.Machine.BUILDER_WORKER_BOOLEAN
+                .handle(new IAspectValuePropagator<IWorker, Boolean>() {
+
+                    @Override
+                    public Boolean getOutput(IWorker worker) {
+                        return worker != null;
+                    }
+                })
+                .handle(AspectReadBuilders.PROP_GET_BOOLEAN, "isworker")
+                .buildRead();
+            public static final IAspectRead<ValueTypeBoolean.ValueBoolean, ValueTypeBoolean> BOOLEAN_HASWORK = AspectReadBuilders.Machine.BUILDER_WORKER_BOOLEAN
+                .handle(new IAspectValuePropagator<IWorker, Boolean>() {
+
+                    @Override
+                    public Boolean getOutput(IWorker worker) {
+                        return worker != null && worker.hasWork();
+                    }
+                })
+                .handle(AspectReadBuilders.PROP_GET_BOOLEAN, "haswork")
+                .buildRead();
+            public static final IAspectRead<ValueTypeBoolean.ValueBoolean, ValueTypeBoolean> BOOLEAN_CANWORK = AspectReadBuilders.Machine.BUILDER_WORKER_BOOLEAN
+                .handle(new IAspectValuePropagator<IWorker, Boolean>() {
+
+                    @Override
+                    public Boolean getOutput(IWorker worker) {
+                        return worker != null && worker.canWork();
+                    }
+                })
+                .handle(AspectReadBuilders.PROP_GET_BOOLEAN, "canwork")
+                .buildRead();
+            public static final IAspectRead<ValueTypeBoolean.ValueBoolean, ValueTypeBoolean> BOOLEAN_ISWORKING = AspectReadBuilders.Machine.BUILDER_WORKER_BOOLEAN
+                .handle(new IAspectValuePropagator<IWorker, Boolean>() {
+
+                    @Override
+                    public Boolean getOutput(IWorker worker) {
+                        return worker != null && worker.canWork() && worker.hasWork();
+                    }
+                })
+                .handle(AspectReadBuilders.PROP_GET_BOOLEAN, "isworking")
+                .buildRead();
+
+            public static final IAspectRead<ValueTypeBoolean.ValueBoolean, ValueTypeBoolean> BOOLEAN_ISTEMPERATURE = AspectReadBuilders.Machine.BUILDER_TEMPERATURE_BOOLEAN
+                .handle(new IAspectValuePropagator<ITemperature, Boolean>() {
+
+                    @Override
+                    public Boolean getOutput(ITemperature temperature) {
+                        return temperature != null;
+                    }
+                })
+                .handle(AspectReadBuilders.PROP_GET_BOOLEAN, "istemperature")
+                .buildRead();
+            public static final IAspectRead<ValueTypeDouble.ValueDouble, ValueTypeDouble> DOUBLE_TEMPERATURE = AspectReadBuilders.Machine.BUILDER_TEMPERATURE_DOUBLE
+                .handle(new IAspectValuePropagator<ITemperature, Double>() {
+
+                    @Override
+                    public Double getOutput(ITemperature temperature) {
+                        return temperature != null ? temperature.getTemperature() : 0;
+                    }
+                })
+                .handle(AspectReadBuilders.PROP_GET_DOUBLE, "temperature")
+                .buildRead();
+            public static final IAspectRead<ValueTypeDouble.ValueDouble, ValueTypeDouble> DOUBLE_MAXTEMPERATURE = AspectReadBuilders.Machine.BUILDER_TEMPERATURE_DOUBLE
+                .handle(new IAspectValuePropagator<ITemperature, Double>() {
+
+                    @Override
+                    public Double getOutput(ITemperature temperature) {
+                        return temperature != null ? temperature.getMaximumTemperature() : 0;
+                    }
+                })
+                .handle(AspectReadBuilders.PROP_GET_DOUBLE, "maxtemperature")
+                .buildRead();
+            public static final IAspectRead<ValueTypeDouble.ValueDouble, ValueTypeDouble> DOUBLE_MINTEMPERATURE = AspectReadBuilders.Machine.BUILDER_TEMPERATURE_DOUBLE
+                .handle(new IAspectValuePropagator<ITemperature, Double>() {
+
+                    @Override
+                    public Double getOutput(ITemperature temperature) {
+                        return temperature != null ? temperature.getMinimumTemperature() : 0;
+                    }
+                })
+                .handle(AspectReadBuilders.PROP_GET_DOUBLE, "mintemperature")
+                .buildRead();
+            public static final IAspectRead<ValueTypeDouble.ValueDouble, ValueTypeDouble> DOUBLE_DEFAULTTEMPERATURE = AspectReadBuilders.Machine.BUILDER_TEMPERATURE_DOUBLE
+                .handle(new IAspectValuePropagator<ITemperature, Double>() {
+
+                    @Override
+                    public Double getOutput(ITemperature temperature) {
+                        return temperature != null ? temperature.getDefaultTemperature() : 0;
+                    }
+                })
+                .handle(AspectReadBuilders.PROP_GET_DOUBLE, "defaulttemperature")
+                .buildRead();
+
+        }
 
         public static final class Network {
 
@@ -1055,6 +1104,10 @@ public class Aspects {
                         @Override
                         public Void getOutput(Triple<PartTarget, IAspectProperties, Double> input)
                             throws EvaluationException {
+                            double velocity = input.getRight();
+                            if (velocity < 0) {
+                                return null;
+                            }
                             IAspectProperties properties = input.getMiddle();
                             PartPos pos = input.getLeft()
                                 .getTarget();
@@ -1077,13 +1130,10 @@ public class Aspects {
                                 .getRawValue();
                             double zDir = properties.getValue(AspectWriteBuilders.Effect.PROP_SPREAD_Z)
                                 .getRawValue();
-                            double velocity = input.getRight();
                             World world = pos.getPos()
                                 .getWorld();
 
-                            if (!world.isRemote && world instanceof WorldServer) {
-                                WorldServer worldServer = (WorldServer) world;
-
+                            if (!world.isRemote && world instanceof WorldServer worldServer) {
                                 worldServer.func_147487_a(
                                     particleName,
                                     x,

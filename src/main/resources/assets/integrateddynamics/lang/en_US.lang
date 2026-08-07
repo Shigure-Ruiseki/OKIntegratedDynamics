@@ -16,6 +16,16 @@ gui.integrateddynamics.waila.dryingBasinConfig=Drying Basin Information
 gui.integrateddynamics.waila.item=Item: %s
 gui.integrateddynamics.waila.fluid=Fluid: %s (%s mB)
 
+# Diagnostics
+gui.integrateddynamics.diagnostics.title=Network Diagnostics
+gui.integrateddynamics.diagnostics.table.network=Network
+gui.integrateddynamics.diagnostics.table.cables=Cables
+gui.integrateddynamics.diagnostics.table.part=Part
+gui.integrateddynamics.diagnostics.table.ticktime=Ticktime (ns)
+gui.integrateddynamics.diagnostics.table.dimension=Dim
+gui.integrateddynamics.diagnostics.table.position=Position
+gui.integrateddynamics.diagnostics.table.side=side
+
 # Keybindings
 key.categories.integrateddynamics=Integrated Dynamics
 key.integrateddynamics.logicProgrammerFocusSearch=Focus Search Logic Programmer
@@ -88,7 +98,7 @@ valuetype.valuetypes.integrateddynamics.any.info=Accepts any type of value.
 valuetype.valuetypes.integrateddynamics.number.name=Number
 valuetype.valuetypes.integrateddynamics.number.info=Accepts all number types.
 valuetype.valuetypes.integrateddynamics.named.name=Named
-valuetype.valuetypes.integrateddynamics.named.info=Accepts all value types that have a name.
+valuetype.valuetypes.integrateddynamics.named.info=Accepts all value types that have a name or can be converted to a String.
 
 valuetype.valuetypes.integrateddynamics.boolean.name=Boolean
 valuetype.valuetypes.integrateddynamics.integer.name=Integer
@@ -372,6 +382,16 @@ aspect.aspects.integrateddynamics.read.boolean.machine.canwork.name=Can Work
 aspect.aspects.integrateddynamics.read.boolean.machine.canwork.info=If the target would be able to start working in its current state
 aspect.aspects.integrateddynamics.read.boolean.machine.isworking.name=Is Working
 aspect.aspects.integrateddynamics.read.boolean.machine.isworking.info=If the target is currently working
+aspect.aspects.integrateddynamics.read.boolean.machine.istemperature.name=Has Temperature
+aspect.aspects.integrateddynamics.read.boolean.machine.istemperature.info=If the target has a certain temperature
+aspect.aspects.integrateddynamics.read.double.temperature.temperature.name=Temperature
+aspect.aspects.integrateddynamics.read.double.temperature.temperature.info=The current temperature of the target in degrees Kelvin
+aspect.aspects.integrateddynamics.read.double.temperature.maxtemperature.name=Maximum Temperature
+aspect.aspects.integrateddynamics.read.double.temperature.maxtemperature.info=The maximum temperature of the target in degrees Kelvin
+aspect.aspects.integrateddynamics.read.double.temperature.mintemperature.name=Minimum Temperature
+aspect.aspects.integrateddynamics.read.double.temperature.mintemperature.info=The minimum temperature of the target in degrees Kelvin
+aspect.aspects.integrateddynamics.read.double.temperature.defaulttemperature.name=Default Temperature
+aspect.aspects.integrateddynamics.read.double.temperature.defaulttemperature.info=The default temperature of the target in degrees Kelvin
 
 ## Network aspects
 aspect.aspects.integrateddynamics.read.boolean.network.applicable.name=Is Network
@@ -541,7 +561,7 @@ operator.operators.integrateddynamics.string.length.info=The length of the given
 operator.operators.integrateddynamics.string.concat.name=Concat
 operator.operators.integrateddynamics.string.concat.info=Concatenate the two given Strings to one
 operator.operators.integrateddynamics.string.name.name=Name
-operator.operators.integrateddynamics.string.name.info=Get the name of a named object
+operator.operators.integrateddynamics.string.name.info=Get the name of a named object or converts it to a string
 
 operator.operators.integrateddynamics.double.name=Double
 operator.operators.integrateddynamics.double.round.name=Round
@@ -555,6 +575,10 @@ operator.operators.integrateddynamics.list.name=List
 operator.operators.integrateddynamics.list.basename=List %s
 operator.operators.integrateddynamics.list.length.name=Length
 operator.operators.integrateddynamics.list.length.info=The length of the given list
+operator.operators.integrateddynamics.list.empty.name=Empty
+operator.operators.integrateddynamics.list.empty.info=If the list is empty
+operator.operators.integrateddynamics.list.notempty.name=Not Empty
+operator.operators.integrateddynamics.list.notempty.info=If the list is not empty
 operator.operators.integrateddynamics.list.get.name=Get
 operator.operators.integrateddynamics.list.get.info=Get the list element at the given position
 operator.operators.integrateddynamics.list.contains.name=Contains
@@ -625,6 +649,8 @@ operator.operators.integrateddynamics.itemstack.oredict.name=Oredictionary Names
 operator.operators.integrateddynamics.itemstack.oredict.info=The oredictionary names (strings) of the given item
 operator.operators.integrateddynamics.string.oredict.name=Oredictionary Values
 operator.operators.integrateddynamics.string.oredict.info=The oredictionary values (items) of the given name
+operator.operators.integrateddynamics.itemstack.withsize.name=Item With Stacksize
+operator.operators.integrateddynamics.itemstack.withsize.info=Set the stacksize for the given item
 
 operator.operators.integrateddynamics.entity.name=Entity
 operator.operators.integrateddynamics.entity.basename=Entity %s

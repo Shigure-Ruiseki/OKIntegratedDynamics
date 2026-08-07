@@ -8,7 +8,7 @@ import ruiseki.okcore.helper.Helpers;
 
 /**
  * Value type with values that are doubles.
- * 
+ *
  * @author rubensworks
  */
 public class ValueTypeLong extends ValueTypeBase<ValueTypeLong.ValueLong>
@@ -76,6 +76,11 @@ public class ValueTypeLong extends ValueTypeBase<ValueTypeLong.ValueLong>
     @Override
     public ValueLong min(ValueLong a, ValueLong b) {
         return ValueLong.of(Math.min(a.getRawValue(), b.getRawValue()));
+    }
+
+    @Override
+    public String getName(ValueLong a) {
+        return toCompactString(a);
     }
 
     @ToString

@@ -6,13 +6,15 @@ import net.minecraft.block.Block;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.IBlockAccess;
 
+import org.jetbrains.annotations.Nullable;
+
 import lombok.Data;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.INetworkElement;
 
 /**
  * Base implementation for a network element.
- * 
+ *
  * @author rubensworks
  */
 @Data
@@ -69,7 +71,12 @@ public abstract class NetworkElementBase<N extends INetwork> implements INetwork
     }
 
     @Override
-    public void onNeighborBlockChange(N network, IBlockAccess world, Block neighborBlock) {
+    public void onPostRemoved(N network) {
+
+    }
+
+    @Override
+    public void onNeighborBlockChange(@Nullable N network, IBlockAccess world, Block neighborBlock) {
 
     }
 }

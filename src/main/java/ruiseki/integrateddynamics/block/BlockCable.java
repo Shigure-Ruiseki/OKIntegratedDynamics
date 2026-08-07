@@ -86,9 +86,9 @@ public class BlockCable extends ConfigurableBlockContainer
     public static final Material BLOCK_MATERIAL = Material.glass;
 
     // Collision boxes
-    public final static AxisAlignedBB CABLE_CENTER_BOUNDINGBOX = ImmutableAxisAlignedBB
+    public final static ImmutableAxisAlignedBB CABLE_CENTER_BOUNDINGBOX = ImmutableAxisAlignedBB
         .fromBounds(CableModel.MIN, CableModel.MIN, CableModel.MIN, CableModel.MAX, CableModel.MAX, CableModel.MAX);
-    public final static EnumFacingMap<AxisAlignedBB> CABLE_SIDE_BOUNDINGBOXES = EnumFacingMap.forAllValues(
+    private final static EnumFacingMap<ImmutableAxisAlignedBB> CABLE_SIDE_BOUNDINGBOXES = EnumFacingMap.forAllValues(
         ImmutableAxisAlignedBB
             .fromBounds(CableModel.MIN, 0, CableModel.MIN, CableModel.MAX, CableModel.MIN, CableModel.MAX), // DOWN
         ImmutableAxisAlignedBB
@@ -245,12 +245,11 @@ public class BlockCable extends ConfigurableBlockContainer
                     }
                     return false;
                 } else if (rayTraceResult.getCollisionType() == PARTS_COMPONENT) {
-                    if (!world.isRemote && WrenchHelpers.isWrench(player, heldItem, world, pos, side)) {
+                    if (!world.isRemote && WrenchHelpers.isWrench(player, heldItem, world, pos, side)
+                        && player.isSneaking()) {
                         // Remove part from cable
-                        if (player.isSneaking()) {
-                            PARTS_COMPONENT.destroy(world, pos, rayTraceResult.getPositionHit(), player, true);
-                            ItemBlockCable.playBreakSound(world, pos);
-                        }
+                        PARTS_COMPONENT.destroy(world, pos, rayTraceResult.getPositionHit(), player, true);
+                        ItemBlockCable.playBreakSound(world, pos);
                         return true;
                     } else if (isRealCable(world, pos)) {
                         // Delegate activated call to part
@@ -476,7 +475,7 @@ public class BlockCable extends ConfigurableBlockContainer
         return true;
     }
 
-    public AxisAlignedBB getCableBoundingBox(ForgeDirection side) {
+    public ImmutableAxisAlignedBB getCableBoundingBox(ForgeDirection side) {
         if (side == null) {
             return CABLE_CENTER_BOUNDINGBOX;
         } else {
@@ -503,7 +502,7 @@ public class BlockCable extends ConfigurableBlockContainer
         return IPartType.RenderPosition.NONE;
     }
 
-    public AxisAlignedBB getCableBoundingBoxWithPart(World world, BlockPos pos, ForgeDirection side) {
+    public ImmutableAxisAlignedBB getCableBoundingBoxWithPart(World world, BlockPos pos, ForgeDirection side) {
         if (side == null) {
             return CABLE_CENTER_BOUNDINGBOX;
         }
@@ -516,7 +515,7 @@ public class BlockCable extends ConfigurableBlockContainer
         return renderPosition.getSidedCableBoundingBox(side);
     }
 
-    public AxisAlignedBB getPartBoundingBox(World world, BlockPos pos, ForgeDirection side) {
+    public ImmutableAxisAlignedBB getPartBoundingBox(World world, BlockPos pos, ForgeDirection side) {
         if (side == null) return null;
 
         IPartType.RenderPosition renderPosition = null;
@@ -525,7 +524,7 @@ public class BlockCable extends ConfigurableBlockContainer
         } catch (Throwable t) {}
 
         if (renderPosition != null) {
-            AxisAlignedBB box = renderPosition.getBoundingBox(side);
+            ImmutableAxisAlignedBB box = renderPosition.getBoundingBox(side);
             if (box != null) {
                 return box;
             }
@@ -541,7 +540,17 @@ public class BlockCable extends ConfigurableBlockContainer
 
     @Override
     public MovingObjectPosition rayTraceParent(BlockPos pos, Vec3 start, Vec3 end, AxisAlignedBB boundingBox) {
-        return this.rayTrace(pos, start, end, boundingBox);
+        Vec3 vecStart = start.addVector(-pos.getX(), -pos.getY(), -pos.getZ());
+        Vec3 vecEnd = end.addVector(-pos.getX(), -pos.getY(), -pos.getZ());
+        MovingObjectPosition intercept = boundingBox.calculateIntercept(vecStart, vecEnd);
+        return intercept != null
+            ? new MovingObjectPosition(
+                pos.getX(),
+                pos.getY(),
+                pos.getZ(),
+                intercept.sideHit,
+                intercept.hitVec.addVector(pos.getX(), pos.getY(), pos.getZ()))
+            : null;
     }
 
     /* --------------- Start IDynamicRedstoneBlock --------------- */

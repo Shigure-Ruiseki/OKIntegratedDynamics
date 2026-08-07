@@ -19,7 +19,7 @@ import ruiseki.okcore.datastructure.DimPos;
 
 /**
  * A path element in the form of a cable.
- * 
+ *
  * @author rubensworks
  */
 @Data

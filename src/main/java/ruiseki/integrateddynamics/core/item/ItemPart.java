@@ -146,11 +146,8 @@ public class ItemPart<P extends IPartType<P, S>, S extends IPartState<P>> extend
         IPartType partType = getPart();
         if (partContainer.canAddPart(side, partType)) {
             partContainer.setPart(side, getPart(), partType.getState(itemStack));
-            System.out.println("Setting part " + getPart());
             ItemBlockCable.playPlaceSound(world, pos);
             return true;
-        } else {
-            System.out.println("Side occupied!");
         }
         return false;
     }

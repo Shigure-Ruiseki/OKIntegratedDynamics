@@ -27,6 +27,7 @@ import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.api.part.aspect.IAspect;
 import ruiseki.integrateddynamics.core.client.gui.ExtendedGuiHandler;
+import ruiseki.integrateddynamics.core.helper.PartHelpers;
 import ruiseki.integrateddynamics.core.item.AspectVariableFacade;
 import ruiseki.integrateddynamics.core.part.PartTypeConfigurable;
 import ruiseki.integrateddynamics.part.aspect.Aspects;
@@ -215,7 +216,7 @@ public abstract class ContainerMultipartAspects<P extends IPartType<P, S> & IGui
 
     @Override
     public boolean canInteractWith(EntityPlayer player) {
-        return true;
+        return PartHelpers.canInteractWith(getTarget(), player, this.partContainer);
     }
 
     public ItemStack writeAspectInfo(boolean generateId, ItemStack itemStack, final IAspect aspect) {

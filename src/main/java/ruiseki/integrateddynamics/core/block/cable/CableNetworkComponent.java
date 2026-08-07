@@ -28,7 +28,7 @@ import ruiseki.okcore.helper.TileHelpers;
 
 /**
  * A component for {@link ICableNetwork}.
- * 
+ *
  * @author rubensworks
  */
 public class CableNetworkComponent<C extends ICableNetwork<IPartNetwork, ICablePathElement>>
@@ -106,7 +106,9 @@ public class CableNetworkComponent<C extends ICableNetwork<IPartNetwork, ICableP
     @Override
     public void remove(World world, BlockPos pos, EntityPlayer player) {
         // world.destroyBlock(pos, true); // We don't call this directly because we don't want breaking sounds to play
-        ItemStackHelpers.spawnItemStackToPlayer(world, pos, new ItemStack(BlockCable.getInstance()), player);
+        if (!player.capabilities.isCreativeMode) {
+            ItemStackHelpers.spawnItemStackToPlayer(world, pos, new ItemStack(BlockCable.getInstance()), player);
+        }
         world.setBlockToAir(pos.getX(), pos.getY(), pos.getZ());
     }
 
@@ -141,7 +143,7 @@ public class CableNetworkComponent<C extends ICableNetwork<IPartNetwork, ICableP
 
     /**
      * Request to update the cable connections at the given position.
-     * 
+     *
      * @param world The world.
      * @param pos   The position of this block.
      */
@@ -154,7 +156,7 @@ public class CableNetworkComponent<C extends ICableNetwork<IPartNetwork, ICableP
 
     /**
      * Add this block to a network.
-     * 
+     *
      * @param world The world.
      * @param pos   The position.
      */
@@ -167,7 +169,7 @@ public class CableNetworkComponent<C extends ICableNetwork<IPartNetwork, ICableP
 
     /**
      * Remove this block from its current network.
-     * 
+     *
      * @param world The world.
      * @param pos   The position.
      * @return If the cable was removed.
@@ -178,7 +180,7 @@ public class CableNetworkComponent<C extends ICableNetwork<IPartNetwork, ICableP
 
     /**
      * Remove this block from its current network.
-     * 
+     *
      * @param world      The world.
      * @param pos        The position.
      * @param preDestroy At which stage of the block destruction this is being called.
@@ -211,7 +213,7 @@ public class CableNetworkComponent<C extends ICableNetwork<IPartNetwork, ICableP
     /**
      * Remove a single part from the current network.
      * The part is at this stage already removed from the part container.
-     * 
+     *
      * @param world   The world.
      * @param pos     The position.
      * @param network The network
@@ -228,7 +230,7 @@ public class CableNetworkComponent<C extends ICableNetwork<IPartNetwork, ICableP
     /**
      * Remove a single part from the current network.
      * The part is at this stage already removed from the part container.
-     * 
+     *
      * @param world      The world.
      * @param pos        The position.
      * @param preDestroy At which stage of the block destruction this is being called.
@@ -249,6 +251,7 @@ public class CableNetworkComponent<C extends ICableNetwork<IPartNetwork, ICableP
                 networkElement.onPreRemoved(network);
                 if (network.removeNetworkElementPre(networkElement)) {
                     network.removeNetworkElementPost(networkElement);
+                    networkElement.onPostRemoved(network);
                     network.notifyPartsChanged();
                     return true;
                 }
@@ -270,7 +273,7 @@ public class CableNetworkComponent<C extends ICableNetwork<IPartNetwork, ICableP
 
     /**
      * Called before this block is destroyed.
-     * 
+     *
      * @param world The world.
      * @param pos   The position.
      * @return If the cable can be removed.
@@ -284,7 +287,7 @@ public class CableNetworkComponent<C extends ICableNetwork<IPartNetwork, ICableP
 
     /**
      * Called before after block is destroyed.
-     * 
+     *
      * @param world The world.
      * @param pos   The position.
      * @return If the cable was removed.
@@ -299,7 +302,7 @@ public class CableNetworkComponent<C extends ICableNetwork<IPartNetwork, ICableP
     /**
      * Check if one side of a cable can connect.
      * To be used when the cable connections are being updated.
-     * 
+     *
      * @param world       The world.
      * @param pos         The center position.
      * @param side        The side from the center position to check.

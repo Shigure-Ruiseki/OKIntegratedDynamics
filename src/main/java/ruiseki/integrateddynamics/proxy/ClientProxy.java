@@ -1,10 +1,13 @@
 package ruiseki.integrateddynamics.proxy;
 
+import net.minecraftforge.common.MinecraftForge;
+
 import org.lwjgl.input.Keyboard;
 
 import cpw.mods.fml.client.registry.ClientRegistry;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.Reference;
+import ruiseki.integrateddynamics.core.network.diagnostics.NetworkDiagnosticsPartOverlayRenderer;
 import ruiseki.okcore.client.key.IKeyRegistry;
 import ruiseki.okcore.client.key.KeyBindingOK;
 import ruiseki.okcore.client.key.KeyConflictContext;
@@ -36,6 +39,12 @@ public class ClientProxy extends ClientProxyComponent {
     @Override
     public ModBase getMod() {
         return IntegratedDynamics._instance;
+    }
+
+    @Override
+    public void registerEventHooks() {
+        super.registerEventHooks();
+        MinecraftForge.EVENT_BUS.register(NetworkDiagnosticsPartOverlayRenderer.getInstance());
     }
 
     @Override

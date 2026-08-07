@@ -7,13 +7,13 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.tileentity.ITileCableNetwork;
+import ruiseki.integrateddynamics.core.helper.CableHelpers;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
-import ruiseki.okcore.helper.TileHelpers;
 
 /**
  * Object holder to refer to a block side and position.
- * 
+ *
  * @author rubensworks
  */
 public class PartPos {
@@ -68,22 +68,24 @@ public class PartPos {
 
     /**
      * Get part data from the given position.
-     * 
+     *
      * @param pos The part position.
      * @return A pair of part type and part state or null if not found.
      */
     public static Pair<IPartType, IPartState> getPartData(PartPos pos) {
-        IPartContainer partContainer = TileHelpers.getSafeTile(
-            pos.getPos()
-                .getWorld(),
-            pos.getPos()
-                .getBlockPos(),
-            IPartContainer.class);
-        if (partContainer != null) {
-            IPartType partType = partContainer.getPart(pos.getSide());
-            IPartState partState = partContainer.getPartState(pos.getSide());
-            if (partType != null && partState != null) {
-                return Pair.of(partType, partState);
+        IPartContainerFacade partContainerFacade = CableHelpers.getInterface(pos.getPos(), IPartContainerFacade.class);
+        if (partContainerFacade != null) {
+            IPartContainer partContainer = partContainerFacade.getPartContainer(
+                pos.getPos()
+                    .getWorld(),
+                pos.getPos()
+                    .getBlockPos());
+            if (partContainer != null) {
+                IPartType partType = partContainer.getPart(pos.getSide());
+                IPartState partState = partContainer.getPartState(pos.getSide());
+                if (partType != null && partState != null) {
+                    return Pair.of(partType, partState);
+                }
             }
         }
         return null;
@@ -91,17 +93,12 @@ public class PartPos {
 
     /**
      * Get the network at the given position.
-     * 
+     *
      * @param pos The part position.
      * @return The network or null if not found.
      */
     public static IPartNetwork getNetwork(PartPos pos) {
-        ITileCableNetwork cableNetwork = TileHelpers.getSafeTile(
-            pos.getPos()
-                .getWorld(),
-            pos.getPos()
-                .getBlockPos(),
-            ITileCableNetwork.class);
+        ITileCableNetwork cableNetwork = CableHelpers.getInterface(pos.getPos(), ITileCableNetwork.class);
         return cableNetwork.getNetwork();
     }
 

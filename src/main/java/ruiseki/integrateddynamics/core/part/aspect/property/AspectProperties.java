@@ -21,7 +21,7 @@ import ruiseki.okcore.helper.MinecraftHelpers;
 
 /**
  * A property that can be used inside aspects.
- * 
+ *
  * @author rubensworks
  */
 public class AspectProperties implements IAspectProperties {
@@ -30,7 +30,7 @@ public class AspectProperties implements IAspectProperties {
 
     /**
      * Make a new instance.
-     * 
+     *
      * @param propertyTypes The types these properties will have. These will be used to initialize the default values.
      */
     public AspectProperties(Collection<IAspectPropertyTypeInstance> propertyTypes) {
@@ -58,7 +58,12 @@ public class AspectProperties implements IAspectProperties {
     @Override
     @SuppressWarnings("unchecked")
     public <T extends IValueType<V>, V extends IValue> V getValue(IAspectPropertyTypeInstance<T, V> type) {
-        return (V) values.get(type);
+        IValue value = values.get(type);
+        if (value == null) {
+            value = type.getType()
+                .getDefault();
+        }
+        return (V) value;
     }
 
     @Override

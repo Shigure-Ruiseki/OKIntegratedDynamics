@@ -4,10 +4,10 @@ package ruiseki.integrateddynamics.api.evaluate.variable;
  * A numerical value type.
  * To allow for a good functioning, this requires all types to have mappings to each other in the
  * {@link IValueCastRegistry}.
- * 
+ *
  * @author rubensworks
  */
-public interface IValueTypeNumber<V extends IValue> extends IValueType<V> {
+public interface IValueTypeNumber<V extends IValue> extends IValueType<V>, IValueTypeNamed<V> {
 
     public boolean isZero(V a);
 

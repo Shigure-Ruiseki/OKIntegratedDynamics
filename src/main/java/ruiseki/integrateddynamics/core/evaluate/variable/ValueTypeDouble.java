@@ -8,7 +8,7 @@ import ruiseki.okcore.helper.Helpers;
 
 /**
  * Value type with values that are doubles.
- * 
+ *
  * @author rubensworks
  */
 public class ValueTypeDouble extends ValueTypeBase<ValueTypeDouble.ValueDouble>
@@ -76,6 +76,11 @@ public class ValueTypeDouble extends ValueTypeBase<ValueTypeDouble.ValueDouble>
     @Override
     public ValueDouble min(ValueDouble a, ValueDouble b) {
         return ValueDouble.of(Math.min(a.getRawValue(), b.getRawValue()));
+    }
+
+    @Override
+    public String getName(ValueDouble a) {
+        return toCompactString(a);
     }
 
     @ToString

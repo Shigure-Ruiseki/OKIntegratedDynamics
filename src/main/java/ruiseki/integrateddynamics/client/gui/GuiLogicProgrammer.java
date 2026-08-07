@@ -12,6 +12,7 @@ import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.World;
 
 import org.apache.commons.lang3.tuple.Triple;
 import org.lwjgl.input.Keyboard;
@@ -36,6 +37,7 @@ import ruiseki.integrateddynamics.proxy.ClientProxy;
 import ruiseki.okcore.client.gui.component.button.GuiButtonText;
 import ruiseki.okcore.client.gui.container.ScrollingGuiContainer;
 import ruiseki.okcore.client.renderer.GlStateManager;
+import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.helper.Helpers;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.RenderHelpers;
@@ -62,9 +64,11 @@ public class GuiLogicProgrammer extends ScrollingGuiContainer {
      * Make a new instance.
      *
      * @param inventoryPlayer The player inventory.
+     * @param world           The world.
+     * @param blockPos        The position.
      */
-    public GuiLogicProgrammer(InventoryPlayer inventoryPlayer) {
-        super(new ContainerLogicProgrammer(inventoryPlayer));
+    public GuiLogicProgrammer(InventoryPlayer inventoryPlayer, World world, BlockPos blockPos) {
+        super(new ContainerLogicProgrammer(inventoryPlayer, world, blockPos));
         ContainerLogicProgrammer container = (ContainerLogicProgrammer) getContainer();
         container.setGui(this);
 
@@ -322,7 +326,7 @@ public class GuiLogicProgrammer extends ScrollingGuiContainer {
                     if (isElementFocused && ClientProxy.FOCUS_LP_RENAME.isActiveAndMatches(keyCode) && hasLabeller()) {
                         // Open labeller gui
                         operatorInfoPattern.onButtonEditClick();
-                    } else if (Keyboard.KEY_ESCAPE == keyCode && (isElementFocused || isSearchFieldFocussed())) {
+                    } else if (Keyboard.KEY_LEFT == keyCode && (isElementFocused || isSearchFieldFocussed())) {
                         if (isElementFocused) {
                             container.getActiveElement()
                                 .setFocused(operatorConfigPattern, false);
@@ -353,7 +357,7 @@ public class GuiLogicProgrammer extends ScrollingGuiContainer {
                                     .setFocused(operatorConfigPattern, true);
                             }
                         } else if (!subGuiHolder.keyTyped(this.checkHotbarKeys(keyCode), typedChar, keyCode)
-                            && !isElementFocused) {
+                            && (keyCode == Keyboard.KEY_ESCAPE || !isElementFocused)) {
                                 // All others
                                 super.keyTyped(typedChar, keyCode);
                             }
@@ -381,6 +385,14 @@ public class GuiLogicProgrammer extends ScrollingGuiContainer {
             }
         }
         super.mouseClicked(mouseX, mouseY, mouseButton);
+
+        // If the search box has been selected, de-active the current element.
+        if (isSearchFieldFocussed() && container.getActiveElement() != null
+            && container.getActiveElement()
+                .isFocused(operatorConfigPattern)) {
+            container.getActiveElement()
+                .setFocused(operatorConfigPattern, false);
+        }
     }
 
     protected void label(String label) {

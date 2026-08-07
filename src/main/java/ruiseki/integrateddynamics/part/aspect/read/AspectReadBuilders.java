@@ -5,7 +5,6 @@ import java.util.List;
 import net.minecraft.entity.item.EntityItemFrame;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.AxisAlignedBB;
 import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.fluids.FluidStack;
 
@@ -16,6 +15,10 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 
+import ruiseki.commoncapabilities.api.capability.temperature.ITemperature;
+import ruiseki.commoncapabilities.api.capability.work.IWorker;
+import ruiseki.commoncapabilities.capability.temperature.TemperatureConfig;
+import ruiseki.commoncapabilities.capability.worker.WorkerConfig;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.INetworkCarrier;
 import ruiseki.integrateddynamics.api.part.PartPos;
@@ -40,6 +43,7 @@ import ruiseki.integrateddynamics.core.part.aspect.build.AspectBuilder;
 import ruiseki.integrateddynamics.core.part.aspect.build.IAspectValuePropagator;
 import ruiseki.integrateddynamics.core.part.aspect.property.AspectProperties;
 import ruiseki.integrateddynamics.core.part.aspect.property.AspectPropertyTypeInstance;
+import ruiseki.okcore.block.collidable.ImmutableAxisAlignedBB;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
 import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
@@ -445,32 +449,54 @@ public class AspectReadBuilders {
 
     }
 
-    // TODO: Add Machine
-    // public static final class Machine {
-    //
-    // public static final IAspectValuePropagator<Pair<PartTarget, IAspectProperties>, IWorker> PROP_GET_WORKER = new
-    // IAspectValuePropagator<Pair<PartTarget, IAspectProperties>, IWorker>() {
-    //
-    // @Override
-    // public IWorker getOutput(Pair<PartTarget, IAspectProperties> input) {
-    // DimPos dimPos = input.getLeft()
-    // .getTarget()
-    // .getPos();
-    // return TileHelpers.getCapability(
-    // dimPos.getWorld(),
-    // dimPos.getBlockPos(),
-    // input.getLeft()
-    // .getTarget()
-    // .getSide(),
-    // Capabilities.WORKER);
-    // }
-    // };
-    //
-    // public static final AspectBuilder<ValueTypeBoolean.ValueBoolean, ValueTypeBoolean, IWorker>
-    // BUILDER_WORKER_BOOLEAN = AspectReadBuilders.BUILDER_BOOLEAN
-    // .handle(PROP_GET_WORKER, "machine");
-    //
-    // }
+    public static final class Machine {
+
+        public static final IAspectValuePropagator<Pair<PartTarget, IAspectProperties>, IWorker> PROP_GET_WORKER = new IAspectValuePropagator<Pair<PartTarget, IAspectProperties>, IWorker>() {
+
+            @Override
+            public IWorker getOutput(Pair<PartTarget, IAspectProperties> input) {
+                DimPos dimPos = input.getLeft()
+                    .getTarget()
+                    .getPos();
+
+                return CapabilityHelpers
+                    .getCapability(
+                        dimPos.getWorld(),
+                        dimPos.getBlockPos(),
+                        WorkerConfig.CAPABILITY,
+                        input.getLeft()
+                            .getTarget()
+                            .getSide())
+                    .getOrNull();
+            }
+        };
+        public static final IAspectValuePropagator<Pair<PartTarget, IAspectProperties>, ITemperature> PROP_GET_TEMPERATURE = new IAspectValuePropagator<Pair<PartTarget, IAspectProperties>, ITemperature>() {
+
+            @Override
+            public ITemperature getOutput(Pair<PartTarget, IAspectProperties> input) {
+                DimPos dimPos = input.getLeft()
+                    .getTarget()
+                    .getPos();
+                return CapabilityHelpers
+                    .getCapability(
+                        dimPos.getWorld(),
+                        dimPos.getBlockPos(),
+                        TemperatureConfig.CAPABILITY,
+                        input.getLeft()
+                            .getTarget()
+                            .getSide())
+                    .getOrNull();
+            }
+        };
+
+        public static final AspectBuilder<ValueTypeBoolean.ValueBoolean, ValueTypeBoolean, IWorker> BUILDER_WORKER_BOOLEAN = AspectReadBuilders.BUILDER_BOOLEAN
+            .handle(PROP_GET_WORKER, "machine");
+        public static final AspectBuilder<ValueTypeBoolean.ValueBoolean, ValueTypeBoolean, ITemperature> BUILDER_TEMPERATURE_BOOLEAN = AspectReadBuilders.BUILDER_BOOLEAN
+            .handle(PROP_GET_TEMPERATURE, "temperature");
+
+        public static final AspectBuilder<ValueTypeDouble.ValueDouble, ValueTypeDouble, ITemperature> BUILDER_TEMPERATURE_DOUBLE = AspectReadBuilders.BUILDER_DOUBLE
+            .handle(PROP_GET_TEMPERATURE, "temperature");
+    }
 
     public static final class Network {
 
@@ -651,9 +677,8 @@ public class AspectReadBuilders {
             int y = dimPos.getY();
             int z = dimPos.getZ();
 
-            AxisAlignedBB box = AxisAlignedBB.getBoundingBox(x, y, z, x + 1, y + 1, z + 1);
+            ImmutableAxisAlignedBB box = ImmutableAxisAlignedBB.fromBounds(x, y, z, x + 1, y + 1, z + 1);
 
-            @SuppressWarnings("unchecked")
             List<EntityItemFrame> entities = dimPos.getWorld()
                 .getEntitiesWithinAABB(EntityItemFrame.class, box);
 

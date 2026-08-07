@@ -7,6 +7,7 @@ import net.minecraft.inventory.Slot;
 import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IVariable;
+import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.api.part.aspect.IAspectWrite;
@@ -23,7 +24,7 @@ import ruiseki.okcore.inventory.SimpleInventory;
 
 /**
  * Container for writer parts.
- * 
+ *
  * @author rubensworks
  */
 public class ContainerPartWriter<P extends IPartTypeWriter<P, S> & IGuiContainerProvider, S extends IPartStateWriter<P>>
@@ -38,7 +39,7 @@ public class ContainerPartWriter<P extends IPartTypeWriter<P, S> & IGuiContainer
 
     /**
      * Make a new instance.
-     * 
+     *
      * @param partTarget    The target.
      * @param player        The player.
      * @param partContainer The part container.
@@ -95,18 +96,24 @@ public class ContainerPartWriter<P extends IPartTypeWriter<P, S> & IGuiContainer
             String writeValue = "";
             int writeValueColor = 0;
             if (getPartContainer() instanceof ITileCableNetwork && getPartState().hasVariable()) {
-                IVariable variable = getPartState().getVariable(((ITileCableNetwork) getPartContainer()).getNetwork());
-                if (variable != null) {
-                    try {
-                        IValue value = variable.getValue();
-                        writeValue = value.getType()
-                            .toCompactString(value);
-                        writeValueColor = variable.getType()
-                            .getDisplayColor();
-                    } catch (EvaluationException e) {
-                        writeValue = "ERROR";
-                        writeValueColor = Helpers.RGBToInt(255, 0, 0);
+                IPartNetwork network = ((ITileCableNetwork) getPartContainer()).getNetwork();
+                if (network != null) {
+                    IVariable variable = getPartState().getVariable(network);
+                    if (variable != null) {
+                        try {
+                            IValue value = variable.getValue();
+                            writeValue = value.getType()
+                                .toCompactString(value);
+                            writeValueColor = variable.getType()
+                                .getDisplayColor();
+                        } catch (EvaluationException e) {
+                            writeValue = "ERROR";
+                            writeValueColor = Helpers.RGBToInt(255, 0, 0);
+                        }
                     }
+                } else {
+                    writeValue = "NETWORK CORRUPTED!";
+                    writeValueColor = Helpers.RGBToInt(255, 100, 0);
                 }
             } else {
                 writeValue = "";

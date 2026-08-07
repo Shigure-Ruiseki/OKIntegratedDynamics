@@ -39,7 +39,9 @@ public class ItemValueTypeWorldRenderer implements IValueTypeWorldRenderer {
             // Render Stack size text
             GlStateManager.pushMatrix();
             GlStateManager.translate(7F, 8.5F, 0.1F);
-            GlStateManager.scale(0.5F, 0.5F, 1F);
+            String stackSize = String.valueOf(itemStackOptional.get().stackSize);
+            float scale = 1F / ((float) stackSize.length() + 1F);
+            GlStateManager.scale(scale, scale, 1F);
 
             FontRenderer fontRenderer = rendererDispatcher != null ? rendererDispatcher.getFontRenderer()
                 : Minecraft.getMinecraft().fontRenderer;
@@ -47,11 +49,7 @@ public class ItemValueTypeWorldRenderer implements IValueTypeWorldRenderer {
                 fontRenderer = Minecraft.getMinecraft().fontRenderer;
             }
 
-            fontRenderer.drawString(
-                String.valueOf(itemStack.stackSize),
-                0,
-                0,
-                Helpers.RGBAToInt(200, 200, 200, (int) (alpha * 255F)));
+            fontRenderer.drawString(stackSize, 0, 0, Helpers.RGBAToInt(200, 200, 200, (int) (alpha * 255F)));
             GlStateManager.popMatrix();
         }
     }

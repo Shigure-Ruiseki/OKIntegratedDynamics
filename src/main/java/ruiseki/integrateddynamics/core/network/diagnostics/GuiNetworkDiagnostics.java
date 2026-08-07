@@ -1,0 +1,329 @@
+package ruiseki.integrateddynamics.core.network.diagnostics;
+
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+import java.util.Vector;
+
+import javax.swing.JFrame;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.SwingUtilities;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.world.World;
+import net.minecraftforge.common.util.ForgeDirection;
+
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
+
+import lombok.Data;
+import ruiseki.integrateddynamics.IntegratedDynamics;
+import ruiseki.integrateddynamics.api.part.PartPos;
+import ruiseki.integrateddynamics.network.packet.NetworkDiagnosticsSubscribePacket;
+import ruiseki.integrateddynamics.network.packet.PlayerTeleportPacket;
+import ruiseki.okcore.datastructure.BlockPos;
+import ruiseki.okcore.datastructure.DimPos;
+import ruiseki.okcore.helper.LangHelpers;
+
+/**
+ * Network diagnostics gui.
+ *
+ * @author rubensworks
+ */
+public class GuiNetworkDiagnostics extends JFrame {
+
+    private static GuiNetworkDiagnostics gui = null;
+    private static JTable table = null;
+    private static Vector<String> columnNames = new Vector<>();
+    private static Vector<Vector<Object>> data = new Vector<>();
+    private static DefaultTableModel model;
+
+    private static Multimap<Integer, ObservablePartData> networkData = ArrayListMultimap.create();
+
+    public static void setNetworkData(int id, RawNetworkData rawNetworkData) {
+        synchronized (networkData) {
+            Collection<ObservablePartData> previous = networkData.removeAll(id);
+
+            // The positions that were being rendered previously
+            Set<PartPos> previousPositionsWithRender = Sets.newHashSet();
+            for (ObservablePartData partData : previous) {
+                PartPos pos = partData.toPartPos();
+                if (pos != null && NetworkDiagnosticsPartOverlayRenderer.getInstance()
+                    .hasPartPos(pos)) {
+                    previousPositionsWithRender.add(pos);
+                }
+            }
+
+            if (rawNetworkData != null) {
+                List<ObservablePartData> parts = Lists.newArrayList();
+                for (RawPartData rawPartData : rawNetworkData.getParts()) {
+                    ObservablePartData partData = new ObservablePartData(
+                        rawNetworkData.getId(),
+                        rawNetworkData.getCables(),
+                        rawPartData.getDimension(),
+                        rawPartData.getPos(),
+                        rawPartData.getSide(),
+                        rawPartData.getName(),
+                        rawPartData.getLastTickDuration());
+                    parts.add(partData);
+
+                    // Remove this position from the previously rendered list
+                    PartPos pos = partData.toPartPos();
+                    if (pos != null) {
+                        previousPositionsWithRender.remove(pos);
+                    }
+                }
+
+                // Remove all remaining positions from the renderlist,
+                // because those do not exist anymore.
+                for (PartPos partPos : previousPositionsWithRender) {
+                    NetworkDiagnosticsPartOverlayRenderer.getInstance()
+                        .removePos(partPos);
+                }
+
+                networkData.putAll(id, parts);
+            }
+        }
+        if (gui != null) {
+            gui.updateTable();
+        }
+    }
+
+    public static void clearNetworkData() {
+        networkData.clear();
+    }
+
+    public static void start() {
+        if (gui == null) {
+            gui = new GuiNetworkDiagnostics();
+
+            gui.setTitle(LangHelpers.localize("gui.integrateddynamics.diagnostics.title"));
+            gui.updateTable();
+            gui.setSize(750, 500);
+            gui.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+            gui.addWindowListener(new WindowAdapter() {
+
+                @Override
+                public void windowClosing(WindowEvent e) {
+                    onCloseGui();
+                    super.windowClosing(e);
+                }
+            });
+            gui.setLocationRelativeTo((Component) null);
+        }
+        gui.setVisible(true);
+    }
+
+    protected void updateTable() {
+        try {
+            SwingUtilities.invokeAndWait(new Runnable() {
+
+                @Override
+                public void run() {
+                    synchronized (networkData) {
+                        columnNames.clear();
+                        columnNames
+                            .addElement(LangHelpers.localize("gui.integrateddynamics.diagnostics.table.network"));
+                        columnNames.addElement(LangHelpers.localize("gui.integrateddynamics.diagnostics.table.cables"));
+                        columnNames.addElement(LangHelpers.localize("gui.integrateddynamics.diagnostics.table.part"));
+                        columnNames
+                            .addElement(LangHelpers.localize("gui.integrateddynamics.diagnostics.table.ticktime"));
+                        columnNames
+                            .addElement(LangHelpers.localize("gui.integrateddynamics.diagnostics.table.dimension"));
+                        columnNames
+                            .addElement(LangHelpers.localize("gui.integrateddynamics.diagnostics.table.position"));
+                        columnNames.addElement(LangHelpers.localize("gui.integrateddynamics.diagnostics.table.side"));
+                        columnNames.addElement("_id");
+
+                        data.clear();
+                        int i = 0;
+                        for (ObservablePartData observablePartData : networkData.values()) {
+                            Vector<Object> row = new Vector<>();
+                            row.add(observablePartData.getNetworkId());
+                            row.add(observablePartData.getNetworkCables());
+                            row.add(observablePartData.getName());
+                            row.add(observablePartData.getLastTickDuration());
+                            row.add(observablePartData.getDimension());
+                            BlockPos pos = observablePartData.getPos();
+                            row.add(String.format("%s / %s / %s", pos.getX(), pos.getY(), pos.getZ()));
+                            row.add(
+                                observablePartData.getSide()
+                                    .name());
+                            row.add(i++);
+                            data.addElement(row);
+                        }
+
+                        if (table == null) {
+                            table = new JTable();
+                            model = new DefaultTableModel(data, columnNames) {
+
+                                @Override
+                                public Class getColumnClass(int column) {
+                                    // My eyes are bleeding as I write this...
+                                    // I'm terribly sorry, I must be going to hell now.
+                                    if (column == 0 || column == 1 || column == 4) {
+                                        return Integer.class;
+                                    }
+                                    if (column == 3) {
+                                        return Long.class;
+                                    }
+                                    return String.class;
+                                }
+                            };
+                            table.setModel(model);
+                            table.setDefaultRenderer(String.class, new DefaultTableCellRenderer() {
+
+                                @Override
+                                public Component getTableCellRendererComponent(JTable table, Object value,
+                                    boolean isSelected, boolean hasFocus, int row, int column) {
+                                    Component c = super.getTableCellRendererComponent(
+                                        table,
+                                        value,
+                                        isSelected,
+                                        hasFocus,
+                                        row,
+                                        column);
+                                    ObservablePartData partData = getPartDataFromRow(row);
+                                    if (partData != null && NetworkDiagnosticsPartOverlayRenderer.getInstance()
+                                        .hasPartPos(partData.toPartPos())) {
+                                        c.setBackground(Color.CYAN);
+                                    } else {
+                                        c.setBackground(isSelected ? Color.BLUE : Color.WHITE);
+                                    }
+                                    return c;
+                                }
+                            });
+                            table.getColumnModel()
+                                .removeColumn(table.getColumn("_id"));
+                            table.setAutoCreateRowSorter(true);
+                            table.addMouseListener(new MouseAdapter() {
+
+                                @Override
+                                public void mouseClicked(MouseEvent e) {
+                                    super.mouseClicked(e);
+                                    if (e.getClickCount() == 1) {
+                                        JTable target = (JTable) e.getSource();
+                                        int row = target.rowAtPoint(e.getPoint());
+                                        ObservablePartData partData = getPartDataFromRow(row);
+                                        if (partData != null) {
+                                            PartPos pos = partData.toPartPos();
+                                            if (e.getButton() == MouseEvent.BUTTON1) {
+                                                if (NetworkDiagnosticsPartOverlayRenderer.getInstance()
+                                                    .hasPartPos(pos)) {
+                                                    NetworkDiagnosticsPartOverlayRenderer.getInstance()
+                                                        .removePos(pos);
+                                                } else {
+                                                    NetworkDiagnosticsPartOverlayRenderer.getInstance()
+                                                        .addPos(pos);
+                                                }
+                                            } else if (e.getButton() == MouseEvent.BUTTON3) {
+                                                BlockPos blockPos = pos.getPos()
+                                                    .getBlockPos()
+                                                    .offset(pos.getSide());
+                                                ForgeDirection opposite = pos.getSide()
+                                                    .getOpposite();
+                                                float yaw = 0F;
+                                                switch (opposite) {
+                                                    case NORTH:
+                                                        yaw = 180F;
+                                                        break;
+                                                    case SOUTH:
+                                                        yaw = 0F;
+                                                        break;
+                                                    case WEST:
+                                                        yaw = 90F;
+                                                        break;
+                                                    case EAST:
+                                                        yaw = 270F;
+                                                        break;
+                                                    default:
+                                                        yaw = 0F;
+                                                        break;
+                                                }
+                                                IntegratedDynamics._instance.getPacketHandler()
+                                                    .sendToServer(
+                                                        new PlayerTeleportPacket(
+                                                            pos.getPos()
+                                                                .getWorld().provider.dimensionId,
+                                                            blockPos.getX(),
+                                                            blockPos.getY() - 1,
+                                                            blockPos.getZ(),
+                                                            yaw,
+                                                            0));
+                                            }
+                                        }
+                                    }
+                                }
+                            });
+                            add(new JScrollPane(table));
+                            pack();
+                        } else {
+                            table.getRowSorter()
+                                .allRowsChanged();
+                            model.fireTableDataChanged();
+                        }
+                        repaint();
+                    }
+                }
+            });
+        } catch (InterruptedException | InvocationTargetException e) {
+            e.printStackTrace();
+        }
+    }
+
+    protected static ObservablePartData getPartDataFromRow(int row) {
+        if (row < 0) {
+            return null;
+        }
+        Object[] data;
+        synchronized (networkData) {
+            data = networkData.values()
+                .toArray();
+        }
+        int internalId = (int) table.getModel()
+            .getValueAt(table.convertRowIndexToModel(row), 7);
+        if (internalId < data.length) {
+            return (ObservablePartData) data[internalId];
+        }
+        return null;
+    }
+
+    protected static void onCloseGui() {
+        IntegratedDynamics._instance.getPacketHandler()
+            .sendToServer(NetworkDiagnosticsSubscribePacket.unsubscribe());
+        NetworkDiagnosticsPartOverlayRenderer.getInstance()
+            .clearPositions();
+    }
+
+    @Data
+    public static class ObservablePartData {
+
+        private final int networkId;
+        private final int networkCables;
+        private final int dimension;
+        private final BlockPos pos;
+        private final ForgeDirection side;
+        private final String name;
+        private final long lastTickDuration;
+
+        public PartPos toPartPos() {
+            World world = Minecraft.getMinecraft().theWorld;
+            if (getDimension() == world.provider.dimensionId) {
+                return PartPos.of(DimPos.of(world, getPos()), getSide());
+            }
+            return null;
+        }
+    }
+}

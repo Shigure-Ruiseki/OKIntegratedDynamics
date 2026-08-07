@@ -224,6 +224,9 @@ public class OperatorBuilders {
     public static final OperatorBuilder<OperatorBase.SafeVariablesGetter> ITEMSTACK_2 = ITEMSTACK
         .inputTypes(2, ValueTypes.OBJECT_ITEMSTACK)
         .renderPattern(IConfigRenderPattern.INFIX);
+    public static final OperatorBuilder<OperatorBase.SafeVariablesGetter> ITEMSTACK_1_INTEGER_1 = ITEMSTACK
+        .inputTypes(new IValueType[] { ValueTypes.OBJECT_ITEMSTACK, ValueTypes.INTEGER })
+        .renderPattern(IConfigRenderPattern.INFIX);
     public static final IterativeFunction.PrePostBuilder<ItemStack, IValue> FUNCTION_ITEMSTACK = IterativeFunction.PrePostBuilder
         .begin()
         .appendPre(new IOperatorValuePropagator<OperatorBase.SafeVariablesGetter, ItemStack>() {
@@ -493,7 +496,7 @@ public class OperatorBuilders {
         final int subOperatorLength = expectedSubTypes.length;
         final LangHelpers.UnlocalizedString expected = new LangHelpers.UnlocalizedString(
             Helpers.createPatternOfLength(subOperatorLength),
-            ValueHelpers.from(expectedSubTypes));
+            (Object[]) ValueHelpers.from(expectedSubTypes));
         return new OperatorBuilder.ITypeValidator() {
 
             @Override
@@ -509,7 +512,7 @@ public class OperatorBuilders {
                     IValueType[] operatorInputs = Arrays.copyOfRange(input, 1, input.length);
                     LangHelpers.UnlocalizedString given = new LangHelpers.UnlocalizedString(
                         Helpers.createPatternOfLength(operatorInputs.length),
-                        ValueHelpers.from(operatorInputs));
+                        (Object[]) ValueHelpers.from(operatorInputs));
                     return new LangHelpers.UnlocalizedString(
                         L10NValues.VALUETYPE_ERROR_INVALIDOPERATORSIGNATURE,
                         expected,

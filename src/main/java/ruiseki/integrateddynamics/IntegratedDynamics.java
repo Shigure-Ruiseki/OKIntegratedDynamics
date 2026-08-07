@@ -36,6 +36,8 @@ import ruiseki.integrateddynamics.client.render.part.PartOverlayRendererRegistry
 import ruiseki.integrateddynamics.client.render.part.PartOverlayRenderers;
 import ruiseki.integrateddynamics.client.render.valuetype.ValueTypeWorldRendererRegistry;
 import ruiseki.integrateddynamics.client.render.valuetype.ValueTypeWorldRenderers;
+import ruiseki.integrateddynamics.command.CommandCrash;
+import ruiseki.integrateddynamics.command.CommandNetworkDiagnostics;
 import ruiseki.integrateddynamics.core.NoteBlockEventReceiver;
 import ruiseki.integrateddynamics.core.TickHandler;
 import ruiseki.integrateddynamics.core.client.gui.ExtendedGuiHandler;
@@ -111,7 +113,10 @@ public class IntegratedDynamics extends ModBaseVersionable {
 
     @Override
     protected LiteralArgumentBuilder<ICommandSender> constructBaseCommand(MinecraftServer server) {
-        return super.constructBaseCommand(server);
+        LiteralArgumentBuilder<ICommandSender> root = super.constructBaseCommand(server);
+        root.then(new CommandNetworkDiagnostics(this).make());
+        root.then(new CommandCrash(this).make());
+        return root;
     }
 
     @Override
@@ -123,23 +128,7 @@ public class IntegratedDynamics extends ModBaseVersionable {
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
 
-        // Capabilities
-        // ICapabilityCompat.ICapabilityReference<IWorker> workerReference = new
-        // ICapabilityCompat.ICapabilityReference<IWorker>() {
-        // @Override
-        // public Capability<IWorker> getCapability() {
-        // return Capabilities.WORKER;
-        // }
-        // };
-        // ModCompatLoader modCompatLoader = getModCompatLoader();
-        // modCompatLoader.addCapabilityCompat(TileDryingBasin.class, workerReference, new
-        // WorkerDryingBasinTileCompat());
-        // modCompatLoader.addCapabilityCompat(TileSqueezer.class, workerReference, new WorkerSqueezerTileCompat());
-        // modCompatLoader.addCapabilityCompat(TileCoalGenerator.class, workerReference, new
-        // WorkerCoalGeneratorTileCompat());
-
         getRegistryManager().addRegistry(IBucketRegistry.class, new BucketRegistry());
-        // getRegistryManager().addRegistry(ISuperRecipeRegistry.class, new SuperRecipeRegistry(this));
 
         getRegistryManager()
             .addRegistry(IVariableFacadeHandlerRegistry.class, VariableFacadeHandlerRegistry.getInstance());

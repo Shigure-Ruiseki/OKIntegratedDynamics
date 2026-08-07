@@ -11,6 +11,8 @@ import net.minecraft.item.ItemStack;
 
 import com.google.common.collect.Sets;
 
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import lombok.Setter;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.client.gui.subgui.ISubGuiBox;
@@ -34,7 +36,7 @@ import ruiseki.okcore.helper.MinecraftHelpers;
 
 /**
  * Element for the operator value type.
- * 
+ *
  * @author rubensworks
  */
 public class ValueTypeOperatorElement extends ValueTypeElement implements IDropdownEntryListener {
@@ -102,6 +104,7 @@ public class ValueTypeOperatorElement extends ValueTypeElement implements IDropd
     }
 
     @Override
+    @SideOnly(Side.CLIENT)
     public SubGuiConfigRenderPattern createSubGui(int baseX, int baseY, int maxWidth, int maxHeight,
         GuiLogicProgrammer gui, ContainerLogicProgrammer container) {
         return new SubGuiRenderPattern(this, baseX, baseY, maxWidth, maxHeight, gui, container);
