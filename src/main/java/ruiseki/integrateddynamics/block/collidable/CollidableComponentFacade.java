@@ -59,7 +59,8 @@ public class CollidableComponentFacade implements ICollidable.IComponent<ForgeDi
     public boolean destroy(World world, BlockPos pos, ForgeDirection direction, EntityPlayer player, boolean b) {
         if (!(pos.getBlock(world) instanceof BlockCable cable)) return false;
         if (!world.isRemote) {
-            IFacadeable facadeable = CapabilityHelpers.getCapability(world, pos, FacadeableConfig.CAPABILITY, null).getOrNull();
+            IFacadeable facadeable = CapabilityHelpers.getCapability(world, pos, FacadeableConfig.CAPABILITY, null)
+                .getOrNull();
             BlockState blockState = facadeable.getFacade();
             ItemStack itemStack = new ItemStack(ItemFacade.getInstance());
             ItemFacade.getInstance()
