@@ -8,6 +8,7 @@ import ruiseki.integrateddynamics.block.BlockMenrilLogConfig;
 import ruiseki.integrateddynamics.block.BlockMenrilPlanksConfig;
 import ruiseki.integrateddynamics.block.BlockMenrilSaplingConfig;
 import ruiseki.integrateddynamics.block.BlockVariablestoreConfig;
+import ruiseki.integrateddynamics.capability.PartContainerConfig;
 import ruiseki.integrateddynamics.item.ItemFacadeConfig;
 import ruiseki.integrateddynamics.item.ItemLabellerConfig;
 import ruiseki.integrateddynamics.item.ItemMenrilBerriesConfig;
@@ -20,6 +21,9 @@ import ruiseki.okcore.config.ConfigHandler;
 public class Configs {
 
     public static void registerBlocks(ConfigHandler configHandler) {
+
+        // Capabilities
+        configHandler.add(new PartContainerConfig());
 
         // Fluids
         // configHandler.add(new FluidMenrilResinConfig());

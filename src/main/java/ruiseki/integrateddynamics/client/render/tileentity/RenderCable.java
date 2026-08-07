@@ -25,11 +25,12 @@ public class RenderCable extends TileEntitySpecialRenderer {
     public void renderTileEntityAt(TileEntity tileEntity, double x, double y, double z, float partialTick) {
         if (!(tileEntity instanceof TileMultipartTicking tile)) return;
         if (MinecraftForgeClient.getRenderPass() == 0) {
-            for (Map.Entry<ForgeDirection, IPartType<?, ?>> entry : tile.getParts()
+            for (Map.Entry<ForgeDirection, IPartType<?, ?>> entry : tile.getPartContainer()
+                .getParts()
                 .entrySet()) {
                 for (IPartOverlayRenderer renderer : PartOverlayRenderers.REGISTRY.getRenderers(entry.getValue())) {
                     renderer.renderPartOverlay(
-                        tile,
+                        tile.getPartContainer(),
                         x,
                         y,
                         z,

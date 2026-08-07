@@ -1,0 +1,263 @@
+package ruiseki.integrateddynamics.capability;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.world.World;
+import net.minecraftforge.common.util.ForgeDirection;
+
+import org.apache.logging.log4j.Level;
+import org.jetbrains.annotations.Nullable;
+
+import com.google.common.base.Function;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+
+import ruiseki.integrateddynamics.IntegratedDynamics;
+import ruiseki.integrateddynamics.api.network.INetworkElement;
+import ruiseki.integrateddynamics.api.network.IPartNetwork;
+import ruiseki.integrateddynamics.api.part.IPartContainer;
+import ruiseki.integrateddynamics.api.part.IPartContainerFacade;
+import ruiseki.integrateddynamics.api.part.IPartState;
+import ruiseki.integrateddynamics.api.part.IPartType;
+import ruiseki.integrateddynamics.core.helper.PartHelpers;
+import ruiseki.okcore.capabilities.Capability;
+import ruiseki.okcore.datastructure.BlockPos;
+import ruiseki.okcore.datastructure.DimPos;
+import ruiseki.okcore.datastructure.EnumFacingMap;
+import ruiseki.okcore.datastructure.LazyOptional;
+import ruiseki.okcore.helper.InventoryHelpers;
+import ruiseki.okcore.helper.ItemStackHelpers;
+import ruiseki.okcore.helper.MinecraftHelpers;
+
+/**
+ * Default implementation of an {@link IPartContainer}.
+ * 
+ * @author rubensworks
+ */
+public abstract class DefaultPartContainer implements IPartContainer {
+
+    protected final EnumFacingMap<PartHelpers.PartStateHolder<?, ?>> partData = EnumFacingMap.newMap();
+
+    @Override
+    public void update() {
+        if (!MinecraftHelpers.isClientSide()) {
+            // Loop over all part states to check their dirtiness
+            for (PartHelpers.PartStateHolder<?, ?> partStateHolder : partData.values()) {
+                if (partStateHolder.getState()
+                    .isDirtyAndReset()) {
+                    markDirty();
+                }
+                if (partStateHolder.getState()
+                    .isUpdateAndReset()) {
+                    sendUpdate();
+                }
+            }
+        }
+    }
+
+    @Override
+    public DimPos getPosition() {
+        return DimPos.of(getWorld(), getPos());
+    }
+
+    @Override
+    public Map<ForgeDirection, IPartType<?, ?>> getParts() {
+        return Maps.transformValues(partData, new Function<PartHelpers.PartStateHolder<?, ?>, IPartType<?, ?>>() {
+
+            @Nullable
+            @Override
+            public IPartType<?, ?> apply(@Nullable PartHelpers.PartStateHolder<?, ?> input) {
+                return input.getPart();
+            }
+        });
+    }
+
+    @Override
+    public boolean hasParts() {
+        return !partData.isEmpty();
+    }
+
+    @Override
+    public <P extends IPartType<P, S>, S extends IPartState<P>> boolean canAddPart(ForgeDirection side,
+        IPartType<P, S> part) {
+        return !hasPart(side);
+    }
+
+    @Override
+    public <P extends IPartType<P, S>, S extends IPartState<P>> void setPart(final ForgeDirection side,
+        final IPartType<P, S> part, final IPartState<P> partState) {
+        PartHelpers.setPart(
+            getNetwork(),
+            getWorld(),
+            getPos(),
+            side,
+            Objects.requireNonNull(part),
+            Objects.requireNonNull(partState),
+            new PartHelpers.IPartStateHolderCallback() {
+
+                @Override
+                public void onSet(PartHelpers.PartStateHolder<?, ?> partStateHolder) {
+                    partData.put(side, PartHelpers.PartStateHolder.of(part, partState));
+                    sendUpdate();
+                }
+            });
+        onPartsChanged();
+    }
+
+    @Override
+    public IPartType getPart(ForgeDirection side) {
+        if (!partData.containsKey(side)) return null;
+        return partData.get(side)
+            .getPart();
+    }
+
+    @Override
+    public boolean hasPart(ForgeDirection side) {
+        return partData.containsKey(side);
+    }
+
+    @Override
+    public IPartType removePart(ForgeDirection side, EntityPlayer player) {
+        PartHelpers.PartStateHolder<?, ?> partStateHolder = partData.get(side); // Don't remove the state just yet! We
+                                                                                // might need it in network removal.
+        if (partStateHolder == null) {
+            IntegratedDynamics.clog(Level.WARN, "Attempted to remove a part at a side where no part was.");
+            return null;
+        } else {
+            IPartType removed = partStateHolder.getPart();
+            if (getNetwork() != null) {
+                INetworkElement networkElement = removed
+                    .createNetworkElement(getPartContainerFacade(), getPosition(), side);
+                networkElement.onPreRemoved(getNetwork());
+                if (!getNetwork().removeNetworkElementPre(networkElement)) {
+                    return null;
+                }
+
+                // Drop all parts types as item.
+                List<ItemStack> itemStacks = Lists.newLinkedList();
+                networkElement.addDrops(itemStacks, true);
+                for (ItemStack itemStack : itemStacks) {
+                    if (player != null) {
+                        if (!player.capabilities.isCreativeMode) {
+                            ItemStackHelpers.spawnItemStackToPlayer(getWorld(), getPos(), itemStack, player);
+                        }
+                    } else {
+                        InventoryHelpers.dropItems(getWorld(), itemStack, getPos());
+                    }
+                }
+
+                // Remove the element from the network.
+                getNetwork().removeNetworkElementPost(networkElement);
+
+                networkElement.onPostRemoved(getNetwork());
+            } else {
+                ItemStackHelpers.spawnItemStackToPlayer(getWorld(), getPos(), new ItemStack(removed.getItem()), player);
+            }
+            // Finally remove the part data from this tile.
+            IPartType ret = partData.remove(side)
+                .getPart();
+            onPartsChanged();
+            return ret;
+        }
+    }
+
+    @Override
+    public void setPartState(ForgeDirection side, IPartState partState) {
+        if (!hasPart(side)) {
+            throw new IllegalArgumentException(
+                String.format("No part at position %s was found to update the state " + "for.", getPosition()));
+        }
+        partData.put(side, PartHelpers.PartStateHolder.of(getPart(side), partState));
+        onPartsChanged();
+    }
+
+    @Override
+    public IPartState getPartState(ForgeDirection side) {
+        synchronized (partData) {
+            PartHelpers.PartStateHolder<?, ?> partStateHolder = partData.get(side);
+            if (partStateHolder == null) {
+                throw new IllegalArgumentException(
+                    String.format("No part at position %s was found to get the state from.", getPosition()));
+            }
+            return partStateHolder.getState();
+        }
+    }
+
+    @Override
+    public <T> LazyOptional<T> getCapability(Capability<T> capability, @Nullable ForgeDirection facing) {
+        if (facing == null) {
+            for (Map.Entry<ForgeDirection, PartHelpers.PartStateHolder<?, ?>> entry : partData.entrySet()) {
+                IPartState partState = entry.getValue()
+                    .getState();
+                return partState.getCapability(capability);
+            }
+        } else {
+            if (hasPart(facing)) {
+                IPartState partState = getPartState(facing);
+                return partState.getCapability(capability);
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public NBTTagCompound serializeNBT() {
+        NBTTagCompound tag = new NBTTagCompound();
+        PartHelpers.writePartsToNBT(getPos(), tag, this.partData);
+        return tag;
+    }
+
+    @Override
+    public void deserializeNBT(NBTTagCompound tag) {
+        synchronized (this.partData) {
+            PartHelpers.readPartsFromNBT(getNetwork(), getPos(), tag, this.partData, getWorld());
+        }
+    }
+
+    protected void onPartsChanged() {
+        markDirty();
+        sendUpdate();
+    }
+
+    protected abstract void markDirty();
+
+    protected abstract void sendUpdate();
+
+    protected abstract World getWorld();
+
+    protected abstract BlockPos getPos();
+
+    protected abstract IPartNetwork getNetwork();
+
+    protected abstract IPartContainerFacade getPartContainerFacade();
+
+    /**
+     * @return The raw part data.
+     */
+    public EnumFacingMap<PartHelpers.PartStateHolder<?, ?>> getPartData() {
+        return this.partData;
+    }
+
+    /**
+     * Override the part data.
+     * 
+     * @param partData The raw part data.
+     */
+    public void setPartData(Map<ForgeDirection, PartHelpers.PartStateHolder<?, ?>> partData) {
+        this.partData.clear();
+        this.partData.putAll(partData);
+    }
+
+    /**
+     * Reset the part data without signaling any neighbours or the network.
+     * Is used in block conversion.
+     */
+    public void silentResetPartData() {
+        this.partData.clear();
+    }
+}

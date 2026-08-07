@@ -39,10 +39,10 @@ import ruiseki.integrateddynamics.api.part.aspect.IAspectRead;
 import ruiseki.integrateddynamics.api.part.read.IPartStateReader;
 import ruiseki.integrateddynamics.api.part.read.IPartTypeReader;
 import ruiseki.integrateddynamics.api.path.ICablePathElement;
+import ruiseki.integrateddynamics.capability.PartContainerConfig;
 import ruiseki.integrateddynamics.core.path.Cluster;
 import ruiseki.integrateddynamics.core.path.PathFinder;
 import ruiseki.integrateddynamics.core.persist.world.NetworkWorldStorage;
-import ruiseki.integrateddynamics.core.tileentity.TileMultipartTicking;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.CompositeMap;
 import ruiseki.okcore.datastructure.DimPos;
@@ -109,14 +109,14 @@ public class PartNetwork extends Network<IPartNetwork> implements IPartNetwork, 
     @Override
     public IPartState getPartState(int partId) {
         PartPos partPos = partPositions.get(partId);
-        return TileMultipartTicking.get(partPos.getPos())
+        return PartContainerConfig.get(partPos.getPos())
             .getPartState(partPos.getSide());
     }
 
     @Override
     public IPartType getPartType(int partId) {
         PartPos partPos = partPositions.get(partId);
-        return TileMultipartTicking.get(partPos.getPos())
+        return PartContainerConfig.get(partPos.getPos())
             .getPart(partPos.getSide());
     }
 
@@ -131,7 +131,7 @@ public class PartNetwork extends Network<IPartNetwork> implements IPartNetwork, 
             return false;
         }
         PartPos partPos = partPositions.get(partId);
-        IPartContainer partContainer = TileMultipartTicking.get(partPos.getPos());
+        IPartContainer partContainer = PartContainerConfig.get(partPos.getPos());
         return partContainer != null && partContainer.hasPart(partPos.getSide());
     }
 

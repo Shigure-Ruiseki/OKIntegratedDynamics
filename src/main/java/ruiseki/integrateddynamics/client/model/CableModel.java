@@ -97,19 +97,19 @@ public class CableModel implements BakedModel {
 
         TileEntity te = worldContext.getWorld()
             .getTileEntity(worldContext.getX(), worldContext.getY(), worldContext.getZ());
-        if (!(te instanceof TileMultipartTicking cable)) {
-            return Collections.emptyList();
-        }
+        if (!(te instanceof TileMultipartTicking cable)) return Collections.emptyList();
 
         List<ModelQuadView> combinedQuads = new ArrayList<>(48);
         boolean realCable = cable.isRealCable();
 
         for (ForgeDirection side : ForgeDirection.VALID_DIRECTIONS) {
-            boolean hasPart = cable.hasPart(side);
+            boolean hasPart = cable.getPartContainer()
+                .hasPart(side);
             boolean isConnected = realCable && cable.isConnected(side);
 
             if (hasPart) {
-                IPartType<?, ?> part = cable.getPart(side);
+                IPartType<?, ?> part = cable.getPartContainer()
+                    .getPart(side);
                 if (part != null) {
                     if (realCable) {
                         RenderPosition renderPos = part.getRenderPosition();
@@ -121,7 +121,7 @@ public class CableModel implements BakedModel {
                         }
                     }
 
-                    String modelPath = part.getBlockModelPath(cable, side);
+                    String modelPath = part.getBlockModelPath(cable.getPartContainer(), side);
                     if (modelPath != null && !modelPath.isEmpty()) {
                         ResourceLoc.ModelLoc partModelLoc = parseModelLocStatic(modelPath);
                         addPartQuads(combinedQuads, partModelLoc, side, context);

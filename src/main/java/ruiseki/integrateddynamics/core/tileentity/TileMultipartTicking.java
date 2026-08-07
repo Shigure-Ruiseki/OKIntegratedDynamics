@@ -1,48 +1,33 @@
 package ruiseki.integrateddynamics.core.tileentity;
 
-import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.logging.log4j.Level;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import com.google.common.base.Function;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Delegate;
-import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.block.cable.ICable;
-import ruiseki.integrateddynamics.api.network.INetworkElement;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
-import ruiseki.integrateddynamics.api.part.IPartContainer;
-import ruiseki.integrateddynamics.api.part.IPartContainerFacade;
-import ruiseki.integrateddynamics.api.part.IPartState;
-import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.tileentity.ITileCableFacadeable;
 import ruiseki.integrateddynamics.api.tileentity.ITileCableNetwork;
+import ruiseki.integrateddynamics.capability.PartContainerConfig;
+import ruiseki.integrateddynamics.capability.TileMultipartTickingPartContainer;
 import ruiseki.integrateddynamics.core.block.cable.CableNetworkComponent;
-import ruiseki.integrateddynamics.core.helper.CableHelpers;
 import ruiseki.integrateddynamics.core.helper.PartHelpers;
 import ruiseki.okcore.capabilities.Capability;
-import ruiseki.okcore.datastructure.DimPos;
+import ruiseki.okcore.capabilities.resolver.BasicCapabilityResolver;
 import ruiseki.okcore.datastructure.EnumFacingMap;
 import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.helper.BlockHelpers;
-import ruiseki.okcore.helper.InventoryHelpers;
-import ruiseki.okcore.helper.ItemStackHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.persist.nbt.NBTPersist;
 import ruiseki.okcore.tileentity.TileEntityOK;
@@ -52,8 +37,8 @@ import ruiseki.okcore.tileentity.TileEntityOK;
  *
  * @author Ruben Taelman
  */
-public class TileMultipartTicking extends TileEntityOK implements TileEntityOK.ITickingTile, IPartContainer,
-    ITileCableNetwork, ITileCableFacadeable, PartHelpers.IPartStateHolderCallback {
+public class TileMultipartTicking extends TileEntityOK implements TileEntityOK.ITickingTile, ITileCableNetwork,
+    ITileCableFacadeable, PartHelpers.IPartStateHolderCallback {
 
     private final EnumFacingMap<PartHelpers.PartStateHolder<?, ?>> partData = EnumFacingMap.newMap();
     @Delegate
@@ -81,11 +66,19 @@ public class TileMultipartTicking extends TileEntityOK implements TileEntityOK.I
     @Setter
     private IPartNetwork network;
 
+    @Getter
+    private final TileMultipartTickingPartContainer partContainer;
+
+    public TileMultipartTicking() {
+        partContainer = new TileMultipartTickingPartContainer(this);
+        this.capabilityCache.addCapabilityResolver(
+            BasicCapabilityResolver.create(PartContainerConfig.CAPABILITY, () -> this.partContainer));
+    }
+
     @Override
     public void writeToNBT(NBTTagCompound tag) {
-        this.markDirty();
         super.writeToNBT(tag);
-        PartHelpers.writePartsToNBT(getPos(), tag, this.partData);
+        tag.setTag("partContainer", partContainer.serializeNBT());
     }
 
     @Override
@@ -95,6 +88,14 @@ public class TileMultipartTicking extends TileEntityOK implements TileEntityOK.I
         int lastFacadeMeta = facadeMeta;
         boolean lastRealCable = realCable;
         PartHelpers.readPartsFromNBT(getNetwork(), getPos(), tag, this.partData, getWorldObj());
+        if (tag.hasKey("parts", MinecraftHelpers.NBTTag_Types.NBTTagList.ordinal())
+            && !tag.hasKey("partContainer", MinecraftHelpers.NBTTag_Types.NBTTagCompound.ordinal())) {
+            // Backwards compatibility with old part saving.
+            // TODO: remove in next major MC update.
+            PartHelpers.readPartsFromNBT(getNetwork(), getPos(), tag, partContainer.getPartData(), getWorldObj());
+        } else {
+            partContainer.deserializeNBT(tag.getCompoundTag("partContainer"));
+        }
         super.readFromNBT(tag);
         if (getWorldObj() != null && (lastConnected == null || connected == null
             || !lastConnected.equals(connected)
@@ -121,137 +122,6 @@ public class TileMultipartTicking extends TileEntityOK implements TileEntityOK.I
      */
     public boolean isRealCable() {
         return this.realCable;
-    }
-
-    @Override
-    public DimPos getPosition() {
-        return DimPos.of(getWorldObj(), getPos());
-    }
-
-    @Override
-    public Map<ForgeDirection, IPartType<?, ?>> getParts() {
-        return Maps.transformValues(partData, new Function<PartHelpers.PartStateHolder<?, ?>, IPartType<?, ?>>() {
-
-            @Nullable
-            @Override
-            public IPartType<?, ?> apply(@Nullable PartHelpers.PartStateHolder<?, ?> input) {
-                return input.getPart();
-            }
-        });
-    }
-
-    @Override
-    public boolean hasParts() {
-        return !partData.isEmpty();
-    }
-
-    @Override
-    public <P extends IPartType<P, S>, S extends IPartState<P>> boolean canAddPart(ForgeDirection side,
-        IPartType<P, S> part) {
-        return !hasPart(side);
-    }
-
-    protected void onPartsChanged() {
-        markDirty();
-        sendUpdate();
-        worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
-    }
-
-    @Override
-    public void setPart(final ForgeDirection side, final IPartType part, final IPartState partState) {
-        PartHelpers.setPart(
-            getNetwork(),
-            getWorldObj(),
-            getPos(),
-            side,
-            Objects.requireNonNull(part),
-            Objects.requireNonNull(partState),
-            new PartHelpers.IPartStateHolderCallback() {
-
-                @Override
-                public void onSet(PartHelpers.PartStateHolder<?, ?> partStateHolder) {
-                    partData.put(side, PartHelpers.PartStateHolder.of(part, partState));
-                }
-            });
-        onPartsChanged();
-    }
-
-    @Override
-    public IPartType getPart(ForgeDirection side) {
-        if (!partData.containsKey(side)) return null;
-        return partData.get(side)
-            .getPart();
-    }
-
-    @Override
-    public boolean hasPart(ForgeDirection side) {
-        return partData.containsKey(side);
-    }
-
-    @Override
-    public IPartType removePart(ForgeDirection side, EntityPlayer player) {
-        PartHelpers.PartStateHolder<?, ?> partStateHolder = partData.get(side); // Don't remove the state just yet! We
-                                                                                // might need it in network removal.
-        if (partStateHolder == null) {
-            IntegratedDynamics.clog(Level.WARN, "Attempted to remove a part at a side where no part was.");
-            return null;
-        } else {
-            IPartType removed = partStateHolder.getPart();
-            if (getNetwork() != null) {
-                INetworkElement networkElement = removed
-                    .createNetworkElement((IPartContainerFacade) getBlock(), DimPos.of(getWorldObj(), getPos()), side);
-                networkElement.onPreRemoved(getNetwork());
-                if (!getNetwork().removeNetworkElementPre(networkElement)) {
-                    return null;
-                }
-
-                // Drop all parts types as item.
-                List<ItemStack> itemStacks = Lists.newLinkedList();
-                networkElement.addDrops(itemStacks, true);
-                for (ItemStack itemStack : itemStacks) {
-                    if (player != null) {
-                        if (!player.capabilities.isCreativeMode) {
-                            ItemStackHelpers.spawnItemStackToPlayer(getWorldObj(), pos, itemStack, player);
-                        }
-                    } else {
-                        InventoryHelpers.dropItems(getWorldObj(), itemStack, getPos());
-                    }
-                }
-
-                // Remove the element from the network.
-                getNetwork().removeNetworkElementPost(networkElement);
-                networkElement.onPostRemoved(getNetwork());
-            } else {
-                ItemStackHelpers
-                    .spawnItemStackToPlayer(getWorldObj(), getPos(), new ItemStack(removed.getItem()), player);
-            }
-            // Finally remove the part data from this tile.
-            IPartType ret = partData.remove(side)
-                .getPart();
-            onPartsChanged();
-            return ret;
-        }
-    }
-
-    @Override
-    public void setPartState(ForgeDirection side, IPartState partState) {
-        PartHelpers.PartStateHolder<?, ?> partStateHolder = partData.get(side);
-        if (partStateHolder == null) {
-            throw new IllegalArgumentException(
-                String.format("No part at position %s was found to update the state " + "for.", getPosition()));
-        }
-        partData.put(side, PartHelpers.PartStateHolder.of(partStateHolder.getPart(), partState));
-        onPartsChanged();
-    }
-
-    @Override
-    public IPartState getPartState(ForgeDirection side) {
-        PartHelpers.PartStateHolder<?, ?> partStateHolder = partData.get(side);
-        if (partStateHolder == null) {
-            throw new IllegalArgumentException(
-                String.format("No part at position %s was found to get the state from.", getPosition()));
-        }
-        return partStateHolder.getState();
     }
 
     @Override
@@ -291,7 +161,7 @@ public class TileMultipartTicking extends TileEntityOK implements TileEntityOK.I
     }
 
     public boolean isForceDisconnected(ForgeDirection side) {
-        if (!isRealCable() || hasPart(side)) return true;
+        if (!isRealCable() || partContainer.hasPart(side)) return true;
         if (!forceDisconnected.containsKey(side)) return false;
         return forceDisconnected.get(side);
     }
@@ -304,19 +174,7 @@ public class TileMultipartTicking extends TileEntityOK implements TileEntityOK.I
             updateConnections();
         }
 
-        if (!MinecraftHelpers.isClientSide()) {
-            // Loop over all part states to check their dirtiness
-            for (PartHelpers.PartStateHolder<?, ?> partStateHolder : partData.values()) {
-                if (partStateHolder.getState()
-                    .isDirtyAndReset()) {
-                    markDirty();
-                }
-                if (partStateHolder.getState()
-                    .isUpdateAndReset()) {
-                    sendUpdate();
-                }
-            }
-        }
+        partContainer.update();
     }
 
     protected void updateRedstoneInfo(ForgeDirection side) {
@@ -408,17 +266,6 @@ public class TileMultipartTicking extends TileEntityOK implements TileEntityOK.I
         return 0;
     }
 
-    /**
-     * Get the part container at the given position.
-     *
-     * @param pos The position.
-     * @return The container or null.
-     */
-    public static IPartContainer get(DimPos pos) {
-        IPartContainerFacade partContainerFacade = CableHelpers.getInterface(pos, IPartContainerFacade.class);
-        return partContainerFacade.getPartContainer(pos.getWorld(), pos.getBlockPos());
-    }
-
     @Override
     public void resetCurrentNetwork() {
         if (network != null) setNetwork(null);
@@ -466,23 +313,6 @@ public class TileMultipartTicking extends TileEntityOK implements TileEntityOK.I
     }
 
     /**
-     * @return The raw part data.
-     */
-    public EnumFacingMap<PartHelpers.PartStateHolder<?, ?>> getPartData() {
-        return this.partData;
-    }
-
-    /**
-     * Override the part data.
-     *
-     * @param partData The raw part data.
-     */
-    public void setPartData(EnumFacingMap<PartHelpers.PartStateHolder<?, ?>> partData) {
-        this.partData.clear();
-        this.partData.putAll(partData);
-    }
-
-    /**
      * @return The raw force disconnection data.
      */
     public EnumFacingMap<Boolean> getForceDisconnected() {
@@ -494,14 +324,6 @@ public class TileMultipartTicking extends TileEntityOK implements TileEntityOK.I
         this.forceDisconnected.putAll(forceDisconnected);
     }
 
-    /**
-     * Reset the part data without signaling any neighbours or the network.
-     * Is used in block conversion.
-     */
-    public void silentResetPartData() {
-        this.partData.clear();
-    }
-
     @Override
     public boolean shouldRenderInPass(int pass) {
         return true;
@@ -510,25 +332,6 @@ public class TileMultipartTicking extends TileEntityOK implements TileEntityOK.I
     @Override
     public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> capability,
         @Nullable ForgeDirection facing) {
-        if (facing == null) {
-            for (Map.Entry<ForgeDirection, PartHelpers.PartStateHolder<?, ?>> entry : partData.entrySet()) {
-                IPartState<?> partState = entry.getValue()
-                    .getState();
-                if (partState != null) {
-                    LazyOptional<T> cap = partState.getCapability(capability);
-                    if (cap.isPresent()) {
-                        return cap;
-                    }
-                }
-            }
-        } else {
-            if (hasPart(facing)) {
-                IPartState<?> partState = getPartState(facing);
-                if (partState != null) {
-                    return partState.getCapability(capability);
-                }
-            }
-        }
         return super.getCapability(capability, facing);
     }
 }

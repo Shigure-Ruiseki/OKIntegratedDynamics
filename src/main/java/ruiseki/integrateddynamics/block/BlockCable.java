@@ -54,6 +54,7 @@ import ruiseki.integrateddynamics.block.collidable.CollidableComponentCableCente
 import ruiseki.integrateddynamics.block.collidable.CollidableComponentCableConnections;
 import ruiseki.integrateddynamics.block.collidable.CollidableComponentFacade;
 import ruiseki.integrateddynamics.block.collidable.CollidableComponentParts;
+import ruiseki.integrateddynamics.capability.PartContainerConfig;
 import ruiseki.integrateddynamics.client.model.CableModel;
 import ruiseki.integrateddynamics.core.block.cable.CableNetworkFacadeableComponent;
 import ruiseki.integrateddynamics.core.block.cable.NetworkElementProviderComponent;
@@ -72,6 +73,7 @@ import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
 import ruiseki.okcore.datastructure.EnumFacingMap;
+import ruiseki.okcore.helper.CapabilityHelpers;
 import ruiseki.okcore.helper.ItemStackHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.helper.RenderHelpers;
@@ -161,12 +163,9 @@ public class BlockCable extends ConfigurableBlockContainer
     }
 
     public boolean hasPart(IBlockAccess world, BlockPos pos, ForgeDirection side) {
-        if (world == null) return false;
-        TileEntity tile = world.getTileEntity(pos.getX(), pos.getY(), pos.getZ());
-        if (tile instanceof TileMultipartTicking tileMultipart) {
-            return tileMultipart.hasPart(side);
-        }
-        return false;
+        return CapabilityHelpers.getCapability(world, pos, PartContainerConfig.CAPABILITY, side)
+            .map(container -> container.hasPart(side))
+            .orElse(false);
     }
 
     @Override
@@ -398,7 +397,8 @@ public class BlockCable extends ConfigurableBlockContainer
 
     @Override
     public IPartContainer getPartContainer(IBlockAccess world, BlockPos pos) {
-        return TileHelpers.getSafeTile(world, pos, IPartContainer.class);
+        return TileHelpers.getSafeTile(world, pos, TileMultipartTicking.class)
+            .getPartContainer();
     }
 
     @Nullable
@@ -484,22 +484,18 @@ public class BlockCable extends ConfigurableBlockContainer
     }
 
     protected IPartType.RenderPosition getPartRenderPosition(IBlockAccess world, BlockPos pos, ForgeDirection side) {
-        if (world == null || pos == null || side == null || side == ForgeDirection.UNKNOWN) {
-            return IPartType.RenderPosition.NONE;
-        }
-
-        TileEntity tile = world.getTileEntity(pos.getX(), pos.getY(), pos.getZ());
-        if (tile instanceof TileMultipartTicking tileMultipart) {
-            if (tileMultipart.hasPart(side)) {
-                IPartType part = tileMultipart.getPart(side);
-                if (part != null) {
-                    IPartType.RenderPosition posType = part.getRenderPosition();
-                    return posType != null ? posType : IPartType.RenderPosition.NONE;
+        return CapabilityHelpers.getCapability(world, pos, PartContainerConfig.CAPABILITY, null)
+            .map(container -> {
+                if (container.hasPart(side)) {
+                    IPartType<?, ?> part = container.getPart(side);
+                    if (part != null) {
+                        IPartType.RenderPosition posType = part.getRenderPosition();
+                        return posType != null ? posType : IPartType.RenderPosition.NONE;
+                    }
                 }
-            }
-        }
-
-        return IPartType.RenderPosition.NONE;
+                return IPartType.RenderPosition.NONE;
+            })
+            .orElse(IPartType.RenderPosition.NONE);
     }
 
     public ImmutableAxisAlignedBB getCableBoundingBoxWithPart(World world, BlockPos pos, ForgeDirection side) {
