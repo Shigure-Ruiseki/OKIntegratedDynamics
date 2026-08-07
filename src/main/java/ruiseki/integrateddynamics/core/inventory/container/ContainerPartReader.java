@@ -10,7 +10,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 
-import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IVariable;
