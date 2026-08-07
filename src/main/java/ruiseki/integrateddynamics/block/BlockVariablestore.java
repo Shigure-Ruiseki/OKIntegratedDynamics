@@ -2,10 +2,7 @@ package ruiseki.integrateddynamics.block;
 
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.inventory.Container;
-import net.minecraft.world.World;
 
-import ruiseki.integrateddynamics.api.block.IVariableContainer;
-import ruiseki.integrateddynamics.api.block.IVariableContainerFacade;
 import ruiseki.integrateddynamics.client.gui.GuiVariablestore;
 import ruiseki.integrateddynamics.core.block.BlockContainerGuiCabled;
 import ruiseki.integrateddynamics.inventory.container.ContainerVariablestore;
@@ -13,15 +10,13 @@ import ruiseki.integrateddynamics.tileentity.TileVariablestore;
 import ruiseki.okcore.block.property.BlockProperty;
 import ruiseki.okcore.block.property.DirectionProperty;
 import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
-import ruiseki.okcore.datastructure.BlockPos;
-import ruiseki.okcore.helper.TileHelpers;
 
 /**
  * A block that can hold defined variables so that they can be referred to elsewhere in the network.
  *
  * @author rubensworks
  */
-public class BlockVariablestore extends BlockContainerGuiCabled implements IVariableContainerFacade {
+public class BlockVariablestore extends BlockContainerGuiCabled {
 
     @BlockProperty
     public static final DirectionProperty FACING = DirectionProperty.facing();
@@ -49,11 +44,6 @@ public class BlockVariablestore extends BlockContainerGuiCabled implements IVari
     @Override
     public boolean saveNBTToDroppedItem() {
         return false;
-    }
-
-    @Override
-    public IVariableContainer getVariableContainer(World world, BlockPos pos) {
-        return TileHelpers.getSafeTile(world, pos, IVariableContainer.class);
     }
 
     @Override

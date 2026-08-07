@@ -21,7 +21,7 @@ import ruiseki.integrateddynamics.GeneralConfig;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.block.IEnergyBattery;
 import ruiseki.integrateddynamics.api.block.IEnergyBatteryFacade;
-import ruiseki.integrateddynamics.api.block.IVariableContainerFacade;
+import ruiseki.integrateddynamics.api.block.IVariableContainer;
 import ruiseki.integrateddynamics.api.block.cable.ICable;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IVariable;
@@ -41,12 +41,14 @@ import ruiseki.integrateddynamics.api.part.read.IPartStateReader;
 import ruiseki.integrateddynamics.api.part.read.IPartTypeReader;
 import ruiseki.integrateddynamics.api.path.ICablePathElement;
 import ruiseki.integrateddynamics.capability.PartContainerConfig;
+import ruiseki.integrateddynamics.capability.VariableContainerConfig;
 import ruiseki.integrateddynamics.core.path.Cluster;
 import ruiseki.integrateddynamics.core.path.PathFinder;
 import ruiseki.integrateddynamics.core.persist.world.NetworkWorldStorage;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.CompositeMap;
 import ruiseki.okcore.datastructure.DimPos;
+import ruiseki.okcore.helper.CapabilityHelpers;
 
 /**
  * A network that can hold parts.
@@ -78,7 +80,7 @@ public class PartNetwork extends Network<IPartNetwork> implements IPartNetwork, 
      * elements to the network in that case.
      * Each cable that has an {@link IPartContainer} capability
      * will have the network stored in its part container.
-     * 
+     *
      * @param cables The cables that make up the connections in the network which can potentially provide network
      *               elements.
      */
@@ -168,13 +170,11 @@ public class PartNetwork extends Network<IPartNetwork> implements IPartNetwork, 
             CompositeMap<Integer, IVariableFacade> compositeMap = new CompositeMap<>();
             for (Iterator<DimPos> it = variableContainerPositions.iterator(); it.hasNext();) {
                 DimPos dimPos = it.next();
-                World world = dimPos.getWorld();
-                BlockPos pos = dimPos.getBlockPos();
-                Block block = pos.getBlock(world);
-                if (block instanceof IVariableContainerFacade) {
-                    compositeMap.addElement(
-                        ((IVariableContainerFacade) block).getVariableContainer(world, pos)
-                            .getVariableCache());
+                IVariableContainer variableContainer = CapabilityHelpers
+                    .getCapability(dimPos, VariableContainerConfig.CAPABILITY, null)
+                    .getOrNull();
+                if (variableContainer != null) {
+                    compositeMap.addElement(variableContainer.getVariableCache());
                 } else {
                     IntegratedDynamics
                         .clog(Level.ERROR, "The variable container at " + dimPos + " was invalid, skipping.");

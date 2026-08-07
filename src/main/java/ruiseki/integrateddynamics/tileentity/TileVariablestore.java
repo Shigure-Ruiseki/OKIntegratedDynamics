@@ -18,6 +18,8 @@ import ruiseki.integrateddynamics.api.network.INetworkElement;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.capability.NetworkElementProviderConfig;
 import ruiseki.integrateddynamics.capability.NetworkElementProviderSingleton;
+import ruiseki.integrateddynamics.capability.VariableContainerConfig;
+import ruiseki.integrateddynamics.capability.VariableContainerDefault;
 import ruiseki.integrateddynamics.core.network.event.VariableContentsUpdatedEvent;
 import ruiseki.integrateddynamics.core.tileentity.TileCableConnectableInventory;
 import ruiseki.integrateddynamics.item.ItemVariable;
@@ -33,11 +35,13 @@ import ruiseki.okcore.persist.IDirtyMarkListener;
  *
  * @author rubensworks
  */
-public class TileVariablestore extends TileCableConnectableInventory implements IVariableContainer, IDirtyMarkListener {
+public class TileVariablestore extends TileCableConnectableInventory implements IDirtyMarkListener {
 
     public static final int ROWS = 5;
     public static final int COLS = 9;
     private Map<Integer, IVariableFacade> variableCache = Maps.newHashMap();
+
+    private final IVariableContainer variableContainer;
 
     public TileVariablestore() {
         super(ROWS * COLS, "variables", 1);
@@ -62,6 +66,9 @@ public class TileVariablestore extends TileCableConnectableInventory implements 
                         return new VariablestoreNetworkElement(DimPos.of(world, blockPos));
                     }
                 }));
+        variableContainer = new VariableContainerDefault();
+        this.capabilityCache.addCapabilityResolver(
+            BasicCapabilityResolver.create(VariableContainerConfig.CAPABILITY, () -> variableContainer));
     }
 
     @Override
@@ -88,16 +95,6 @@ public class TileVariablestore extends TileCableConnectableInventory implements 
             network.getEventBus()
                 .post(new VariableContentsUpdatedEvent(network));
         }
-    }
-
-    @Override
-    public DimPos getPosition() {
-        return DimPos.of(this.getWorldObj(), getPos());
-    }
-
-    @Override
-    public Map<Integer, IVariableFacade> getVariableCache() {
-        return variableCache;
     }
 
     @Override

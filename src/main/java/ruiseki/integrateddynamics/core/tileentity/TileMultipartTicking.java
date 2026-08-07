@@ -20,7 +20,7 @@ import ruiseki.integrateddynamics.capability.DynamicLightTileMultipartTicking;
 import ruiseki.integrateddynamics.capability.DynamicRedstoneConfig;
 import ruiseki.integrateddynamics.capability.DynamicRedstoneTileMultipartTicking;
 import ruiseki.integrateddynamics.capability.FacadeableConfig;
-import ruiseki.integrateddynamics.capability.FacadeableMultipartTicking;
+import ruiseki.integrateddynamics.capability.FacadeableTileMultipartTicking;
 import ruiseki.integrateddynamics.capability.NetworkElementProviderConfig;
 import ruiseki.integrateddynamics.capability.NetworkElementProviderPartContainer;
 import ruiseki.integrateddynamics.capability.PartContainerConfig;
@@ -89,7 +89,8 @@ public class TileMultipartTicking extends TileEntityOK
                 NetworkElementProviderConfig.CAPABILITY,
                 () -> new NetworkElementProviderPartContainer(partContainer)));
         this.capabilityCache.addCapabilityResolver(
-            BasicCapabilityResolver.create(FacadeableConfig.CAPABILITY, () -> new FacadeableMultipartTicking(this)));
+            BasicCapabilityResolver
+                .create(FacadeableConfig.CAPABILITY, () -> new FacadeableTileMultipartTicking(this)));
         this.capabilityCache.addCapabilityResolver(
             SidedCapabilityResolver
                 .create(DynamicLightConfig.CAPABILITY, side -> new DynamicLightTileMultipartTicking(this, side)));
