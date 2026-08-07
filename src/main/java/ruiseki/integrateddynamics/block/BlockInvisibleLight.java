@@ -26,11 +26,13 @@ import ruiseki.okcore.helper.BlockStateHelpers;
 public class BlockInvisibleLight extends ConfigurableBlock {
 
     @BlockProperty
-    public static final IntegerProperty LIGHT = IntegerProperty.construct(
-        "light",
-        0,
-        IBlockAccess::getBlockMetadata,
-        (world, x, y, z, value) -> world.setBlockMetadataWithNotify(x, y, z, value, 3));
+    public static final IntegerProperty LIGHT = IntegerProperty
+        .construct("light", 0, IBlockAccess::getBlockMetadata, (world, x, y, z, value) -> {
+            if (world.getBlockMetadata(x, y, z) != value) {
+                world.setBlockMetadataWithNotify(x, y, z, value, 2);
+                world.func_147451_t(x, y, z);
+            }
+        });
 
     private static BlockInvisibleLight _instance = null;
 

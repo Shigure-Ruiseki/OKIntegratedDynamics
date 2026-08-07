@@ -38,7 +38,7 @@ import ruiseki.okcore.helper.MinecraftHelpers;
  *
  * @author rubensworks
  */
-public abstract class DefaultPartContainer implements IPartContainer {
+public abstract class PartContainerDefault implements IPartContainer {
 
     protected final EnumFacingMap<PartHelpers.PartStateHolder<?, ?>> partData = EnumFacingMap.newMap();
 
@@ -200,7 +200,7 @@ public abstract class DefaultPartContainer implements IPartContainer {
                 return partState.getCapability(capability);
             }
         }
-        return null;
+        return LazyOptional.empty();
     }
 
     @Override

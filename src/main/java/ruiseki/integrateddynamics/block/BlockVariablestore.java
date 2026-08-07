@@ -1,27 +1,19 @@
 package ruiseki.integrateddynamics.block;
 
-import java.util.Collection;
-
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.inventory.Container;
 import net.minecraft.world.World;
 
-import com.google.common.collect.Sets;
-
 import ruiseki.integrateddynamics.api.block.IVariableContainer;
 import ruiseki.integrateddynamics.api.block.IVariableContainerFacade;
-import ruiseki.integrateddynamics.api.network.INetworkElement;
-import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.client.gui.GuiVariablestore;
 import ruiseki.integrateddynamics.core.block.BlockContainerGuiCabled;
 import ruiseki.integrateddynamics.inventory.container.ContainerVariablestore;
-import ruiseki.integrateddynamics.network.VariablestoreNetworkElement;
 import ruiseki.integrateddynamics.tileentity.TileVariablestore;
 import ruiseki.okcore.block.property.BlockProperty;
 import ruiseki.okcore.block.property.DirectionProperty;
 import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 import ruiseki.okcore.datastructure.BlockPos;
-import ruiseki.okcore.datastructure.DimPos;
 import ruiseki.okcore.helper.TileHelpers;
 
 /**
@@ -57,12 +49,6 @@ public class BlockVariablestore extends BlockContainerGuiCabled implements IVari
     @Override
     public boolean saveNBTToDroppedItem() {
         return false;
-    }
-
-    @Override
-    public Collection<INetworkElement<IPartNetwork>> createNetworkElements(World world, BlockPos blockPos) {
-        return Sets
-            .<INetworkElement<IPartNetwork>>newHashSet(new VariablestoreNetworkElement(DimPos.of(world, blockPos)));
     }
 
     @Override

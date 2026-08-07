@@ -16,11 +16,14 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Delegate;
 import ruiseki.integrateddynamics.api.block.cable.ICable;
+import ruiseki.integrateddynamics.api.network.INetworkElementProvider;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.tileentity.ITileCableFacadeable;
 import ruiseki.integrateddynamics.api.tileentity.ITileCableNetwork;
+import ruiseki.integrateddynamics.capability.NetworkElementProviderConfig;
+import ruiseki.integrateddynamics.capability.NetworkElementProviderPartContainer;
 import ruiseki.integrateddynamics.capability.PartContainerConfig;
-import ruiseki.integrateddynamics.capability.TileMultipartTickingPartContainer;
+import ruiseki.integrateddynamics.capability.PartContainerTileMultipartTicking;
 import ruiseki.integrateddynamics.core.block.cable.CableNetworkComponent;
 import ruiseki.integrateddynamics.core.helper.PartHelpers;
 import ruiseki.okcore.capabilities.Capability;
@@ -67,12 +70,17 @@ public class TileMultipartTicking extends TileEntityOK implements TileEntityOK.I
     private IPartNetwork network;
 
     @Getter
-    private final TileMultipartTickingPartContainer partContainer;
+    private final PartContainerTileMultipartTicking partContainer;
+
+    private final INetworkElementProvider networkElementProvider;
 
     public TileMultipartTicking() {
-        partContainer = new TileMultipartTickingPartContainer(this);
+        partContainer = new PartContainerTileMultipartTicking(this);
+        this.networkElementProvider = new NetworkElementProviderPartContainer(partContainer);
         this.capabilityCache.addCapabilityResolver(
             BasicCapabilityResolver.create(PartContainerConfig.CAPABILITY, () -> this.partContainer));
+        this.capabilityCache.addCapabilityResolver(
+            BasicCapabilityResolver.create(NetworkElementProviderConfig.CAPABILITY, () -> networkElementProvider));
     }
 
     @Override

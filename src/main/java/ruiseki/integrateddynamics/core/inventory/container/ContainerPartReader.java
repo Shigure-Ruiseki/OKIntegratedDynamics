@@ -10,6 +10,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 
+import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IVariable;
@@ -28,7 +29,7 @@ import ruiseki.okcore.inventory.slot.SlotRemoveOnly;
 
 /**
  * Container for reader parts.
- * 
+ *
  * @author rubensworks
  */
 public class ContainerPartReader<P extends IPartTypeReader<P, S> & IGuiContainerProvider, S extends IPartStateReader<P>>
@@ -46,7 +47,7 @@ public class ContainerPartReader<P extends IPartTypeReader<P, S> & IGuiContainer
 
     /**
      * Make a new instance.
-     * 
+     *
      * @param partTarget    The target.
      * @param player        The player.
      * @param partContainer The part container.
@@ -155,7 +156,6 @@ public class ContainerPartReader<P extends IPartTypeReader<P, S> & IGuiContainer
     @Override
     public void detectAndSendChanges() {
         super.detectAndSendChanges();
-
         if (!MinecraftHelpers.isClientSide()) {
             for (IAspectRead aspectRead : getUnfilteredItems()) {
                 String readValue = "";

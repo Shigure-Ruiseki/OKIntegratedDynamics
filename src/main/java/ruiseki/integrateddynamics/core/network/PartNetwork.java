@@ -29,6 +29,7 @@ import ruiseki.integrateddynamics.api.item.IVariableFacade;
 import ruiseki.integrateddynamics.api.network.IEnergyConsumingNetworkElement;
 import ruiseki.integrateddynamics.api.network.IEnergyNetwork;
 import ruiseki.integrateddynamics.api.network.INetworkElement;
+import ruiseki.integrateddynamics.api.network.INetworkElementProvider;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartState;
@@ -73,12 +74,11 @@ public class PartNetwork extends Network<IPartNetwork> implements IPartNetwork, 
 
     /**
      * Create a new network from a given cluster of cables.
-     * Each cable will be checked if it is an instance of
-     * {@link ruiseki.integrateddynamics.api.network.INetworkElementProvider} and will add all its
+     * Each cable will be checked if it is an instance of {@link INetworkElementProvider} and will add all its
      * elements to the network in that case.
-     * Each cable that is an instance of {@link ruiseki.integrateddynamics.api.part.IPartContainerFacade}
+     * Each cable that has an {@link IPartContainer} capability
      * will have the network stored in its part container.
-     *
+     * 
      * @param cables The cables that make up the connections in the network which can potentially provide network
      *               elements.
      */

@@ -6,6 +6,7 @@ import java.util.Map;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import com.google.common.collect.Lists;
@@ -13,10 +14,17 @@ import com.google.common.collect.Maps;
 
 import ruiseki.integrateddynamics.api.block.IVariableContainer;
 import ruiseki.integrateddynamics.api.item.IVariableFacade;
+import ruiseki.integrateddynamics.api.network.INetworkElement;
+import ruiseki.integrateddynamics.api.network.INetworkElementProvider;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
+import ruiseki.integrateddynamics.capability.NetworkElementProviderConfig;
+import ruiseki.integrateddynamics.capability.NetworkElementProviderSingleton;
 import ruiseki.integrateddynamics.core.network.event.VariableContentsUpdatedEvent;
 import ruiseki.integrateddynamics.core.tileentity.TileCableConnectableInventory;
 import ruiseki.integrateddynamics.item.ItemVariable;
+import ruiseki.integrateddynamics.network.VariablestoreNetworkElement;
+import ruiseki.okcore.capabilities.resolver.BasicCapabilityResolver;
+import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
 import ruiseki.okcore.persist.IDirtyMarkListener;
 
@@ -32,6 +40,14 @@ public class TileVariablestore extends TileCableConnectableInventory implements 
     public static final int COLS = 9;
     private Map<Integer, IVariableFacade> variableCache = Maps.newHashMap();
 
+    private final INetworkElementProvider networkElementProvider = new NetworkElementProviderSingleton<IPartNetwork>() {
+
+        @Override
+        public INetworkElement<IPartNetwork> createNetworkElement(World world, BlockPos blockPos) {
+            return new VariablestoreNetworkElement(DimPos.of(world, blockPos));
+        }
+    };
+
     public TileVariablestore() {
         super(ROWS * COLS, "variables", 1);
         inventory.addDirtyMarkListener(this);
@@ -44,6 +60,9 @@ public class TileVariablestore extends TileCableConnectableInventory implements 
         for (ForgeDirection side : ForgeDirection.VALID_DIRECTIONS) {
             addSlotsToSide(side, slots);
         }
+
+        this.capabilityCache.addCapabilityResolver(
+            BasicCapabilityResolver.create(NetworkElementProviderConfig.CAPABILITY, () -> networkElementProvider));
     }
 
     @Override

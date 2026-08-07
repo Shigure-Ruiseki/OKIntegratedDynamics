@@ -25,6 +25,7 @@ import ruiseki.integrateddynamics.api.network.INetworkEventListener;
 import ruiseki.integrateddynamics.api.network.event.INetworkEvent;
 import ruiseki.integrateddynamics.api.network.event.INetworkEventBus;
 import ruiseki.integrateddynamics.api.path.ICablePathElement;
+import ruiseki.integrateddynamics.capability.NetworkElementProviderConfig;
 import ruiseki.integrateddynamics.core.helper.CableHelpers;
 import ruiseki.integrateddynamics.core.network.diagnostics.NetworkDiagnostics;
 import ruiseki.integrateddynamics.core.network.event.NetworkElementAddEvent;
@@ -33,6 +34,7 @@ import ruiseki.integrateddynamics.core.network.event.NetworkEventBus;
 import ruiseki.integrateddynamics.core.path.Cluster;
 import ruiseki.integrateddynamics.core.persist.world.NetworkWorldStorage;
 import ruiseki.okcore.datastructure.BlockPos;
+import ruiseki.okcore.helper.CapabilityHelpers;
 
 /**
  * A network instance that can hold a set of {@link INetworkElement}s.
@@ -70,7 +72,7 @@ public class Network<N extends INetwork<N>> implements INetwork<N> {
      * elements to the network in that case.
      * Each cable that has an {@link ruiseki.integrateddynamics.api.part.IPartContainer} capability
      * will have the network stored in its part container.
-     * 
+     *
      * @param cables The cables that make up the connections in the network which can potentially provide network
      *               elements.
      */
@@ -95,8 +97,9 @@ public class Network<N extends INetwork<N>> implements INetwork<N> {
                     .getWorld();
                 BlockPos pos = cable.getPosition()
                     .getBlockPos();
-                INetworkElementProvider networkElementProvider = CableHelpers
-                    .getInterface(world, pos, INetworkElementProvider.class);
+                INetworkElementProvider<N> networkElementProvider = (INetworkElementProvider<N>) CapabilityHelpers
+                    .getCapability(cable.getPosition(), NetworkElementProviderConfig.CAPABILITY, null)
+                    .getOrNull();
                 if (networkElementProvider != null) {
                     for (INetworkElement<N> element : ((INetworkElementProvider<N>) networkElementProvider)
                         .createNetworkElements(world, pos)) {
@@ -334,13 +337,15 @@ public class Network<N extends INetwork<N>> implements INetwork<N> {
         if (baseCluster.contains(cablePathElement)) {
             baseCluster.remove(cablePathElement);
 
-            if (cable instanceof INetworkElementProvider) {
-                Collection<INetworkElement<N>> networkElements = ((INetworkElementProvider<N>) cable)
-                    .createNetworkElements(
-                        cablePathElement.getPosition()
-                            .getWorld(),
-                        cablePathElement.getPosition()
-                            .getBlockPos());
+            INetworkElementProvider<N> networkElementProvider = (INetworkElementProvider<N>) CapabilityHelpers
+                .getCapability(cablePathElement.getPosition(), NetworkElementProviderConfig.CAPABILITY, null)
+                .getOrNull();
+            if (networkElementProvider != null) {
+                Collection<INetworkElement<N>> networkElements = networkElementProvider.createNetworkElements(
+                    cablePathElement.getPosition()
+                        .getWorld(),
+                    cablePathElement.getPosition()
+                        .getBlockPos());
 
                 for (INetworkElement<N> networkElement : networkElements) {
                     if (!removeNetworkElementPre(networkElement)) {

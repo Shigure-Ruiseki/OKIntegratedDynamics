@@ -8,6 +8,7 @@ import ruiseki.integrateddynamics.block.BlockMenrilLogConfig;
 import ruiseki.integrateddynamics.block.BlockMenrilPlanksConfig;
 import ruiseki.integrateddynamics.block.BlockMenrilSaplingConfig;
 import ruiseki.integrateddynamics.block.BlockVariablestoreConfig;
+import ruiseki.integrateddynamics.capability.NetworkElementProviderConfig;
 import ruiseki.integrateddynamics.capability.PartContainerConfig;
 import ruiseki.integrateddynamics.item.ItemFacadeConfig;
 import ruiseki.integrateddynamics.item.ItemLabellerConfig;
@@ -24,6 +25,7 @@ public class Configs {
 
         // Capabilities
         configHandler.add(new PartContainerConfig());
+        configHandler.add(new NetworkElementProviderConfig());
 
         // Fluids
         // configHandler.add(new FluidMenrilResinConfig());

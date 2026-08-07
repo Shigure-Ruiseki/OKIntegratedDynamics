@@ -13,7 +13,9 @@ import com.google.common.collect.Lists;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.INetworkElement;
 import ruiseki.integrateddynamics.api.network.INetworkElementProvider;
+import ruiseki.integrateddynamics.capability.NetworkElementProviderConfig;
 import ruiseki.okcore.datastructure.BlockPos;
+import ruiseki.okcore.helper.CapabilityHelpers;
 import ruiseki.okcore.helper.InventoryHelpers;
 
 /**
@@ -23,15 +25,16 @@ import ruiseki.okcore.helper.InventoryHelpers;
  */
 public class NetworkElementProviderComponent<N extends INetwork> {
 
-    private final INetworkElementProvider<N> networkElementProvider;
-
-    public NetworkElementProviderComponent(INetworkElementProvider<N> networkElementProvider) {
-        this.networkElementProvider = networkElementProvider;
+    @SuppressWarnings("unchecked")
+    protected INetworkElementProvider<N> getNetworkElementProvider(World world, BlockPos pos) {
+        return (INetworkElementProvider<N>) CapabilityHelpers
+            .getCapability(world, pos, NetworkElementProviderConfig.CAPABILITY, null)
+            .getOrNull();
     }
 
     /**
      * Called before this block is destroyed.
-     * 
+     *
      * @param network         The network. Null if this element is part of a corrupted network, should not happen
      *                        though.
      * @param world           The world.
@@ -42,6 +45,7 @@ public class NetworkElementProviderComponent<N extends INetwork> {
         // Drop all parts types as item.
         if (!world.isRemote) {
             List<ItemStack> itemStacks = Lists.newLinkedList();
+            INetworkElementProvider<N> networkElementProvider = getNetworkElementProvider(world, pos);
             for (INetworkElement<N> networkElement : networkElementProvider.createNetworkElements(world, pos)) {
                 networkElement.addDrops(itemStacks, dropMainElement);
                 if (network != null) {
@@ -68,6 +72,7 @@ public class NetworkElementProviderComponent<N extends INetwork> {
      */
     public void onBlockNeighborChange(@Nullable N network, World world, BlockPos pos, Block neighborBlock) {
         if (!world.isRemote) {
+            INetworkElementProvider<N> networkElementProvider = getNetworkElementProvider(world, pos);
             for (INetworkElement<N> networkElement : networkElementProvider.createNetworkElements(world, pos)) {
                 networkElement.onNeighborBlockChange(network, world, neighborBlock);
             }

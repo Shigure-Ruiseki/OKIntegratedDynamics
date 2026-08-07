@@ -1,9 +1,6 @@
 package ruiseki.integrateddynamics.block;
 
-import java.util.Collection;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
@@ -24,7 +21,6 @@ import org.apache.logging.log4j.Level;
 import org.jetbrains.annotations.Nullable;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.gtnewhorizon.gtnhlib.api.BlockModelInfo;
 import com.gtnewhorizon.gtnhlib.api.IBlockModelProvider;
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
@@ -42,8 +38,6 @@ import ruiseki.integrateddynamics.api.block.cable.ICable;
 import ruiseki.integrateddynamics.api.block.cable.ICableFacadeable;
 import ruiseki.integrateddynamics.api.block.cable.ICableFakeable;
 import ruiseki.integrateddynamics.api.block.cable.ICableNetwork;
-import ruiseki.integrateddynamics.api.network.INetworkElement;
-import ruiseki.integrateddynamics.api.network.INetworkElementProvider;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartType;
@@ -71,7 +65,6 @@ import ruiseki.okcore.client.icon.Icon;
 import ruiseki.okcore.config.configurable.ConfigurableBlockContainer;
 import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 import ruiseki.okcore.datastructure.BlockPos;
-import ruiseki.okcore.datastructure.DimPos;
 import ruiseki.okcore.datastructure.EnumFacingMap;
 import ruiseki.okcore.helper.CapabilityHelpers;
 import ruiseki.okcore.helper.ItemStackHelpers;
@@ -79,10 +72,9 @@ import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.helper.RenderHelpers;
 import ruiseki.okcore.helper.TileHelpers;
 
-public class BlockCable extends ConfigurableBlockContainer
-    implements ICableNetwork<IPartNetwork, ICablePathElement>, ICableFakeable<ICablePathElement>,
-    ICableFacadeable<ICablePathElement>, INetworkElementProvider, ICollidable<ForgeDirection>, ICollidableParent,
-    IDynamicRedstoneBlock, IDynamicLightBlock, IBlockModelProvider, BlockModelInfo {
+public class BlockCable extends ConfigurableBlockContainer implements ICableNetwork<IPartNetwork, ICablePathElement>,
+    ICableFakeable<ICablePathElement>, ICableFacadeable<ICablePathElement>, ICollidable<ForgeDirection>,
+    ICollidableParent, IDynamicRedstoneBlock, IDynamicLightBlock, IBlockModelProvider, BlockModelInfo {
 
     public static final float BLOCK_HARDNESS = 3.0F;
     public static final Material BLOCK_MATERIAL = Material.glass;
@@ -123,8 +115,7 @@ public class BlockCable extends ConfigurableBlockContainer
     // @Delegate// <- Lombok can't handle delegations with generics, so we'll have to do it manually...
     private CableNetworkFacadeableComponent<BlockCable> cableNetworkComponent = new CableNetworkFacadeableComponent<>(
         this);
-    private NetworkElementProviderComponent<IPartNetwork> networkElementProviderComponent = new NetworkElementProviderComponent<>(
-        this);
+    private NetworkElementProviderComponent<IPartNetwork> networkElementProviderComponent = new NetworkElementProviderComponent<>();
 
     private static BlockCable _instance = null;
 
@@ -379,19 +370,6 @@ public class BlockCable extends ConfigurableBlockContainer
                 .getPickBlock(world, pos, positionHit);
         }
         return new ItemStack(getItem(world, x, y, z), 1, getDamageValue(world, x, y, z));
-    }
-
-    @Override
-    public Collection<INetworkElement> createNetworkElements(World world, BlockPos blockPos) {
-        Set<INetworkElement> sidedElements = Sets.newHashSet();
-        IPartContainer partContainer = getPartContainer(world, blockPos);
-        for (Map.Entry<ForgeDirection, IPartType<?, ?>> entry : partContainer.getParts()
-            .entrySet()) {
-            sidedElements.add(
-                entry.getValue()
-                    .createNetworkElement(partContainer, DimPos.of(world, blockPos), entry.getKey()));
-        }
-        return sidedElements;
     }
 
     public IPartContainer getPartContainer(IBlockAccess world, BlockPos pos) {

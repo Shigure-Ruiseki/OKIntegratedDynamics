@@ -9,7 +9,6 @@ import net.minecraftforge.common.util.ForgeDirection;
 
 import ruiseki.integrateddynamics.api.block.cable.ICable;
 import ruiseki.integrateddynamics.api.block.cable.ICableNetwork;
-import ruiseki.integrateddynamics.api.network.INetworkElementProvider;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.path.ICablePathElement;
 import ruiseki.integrateddynamics.core.block.cable.CableNetworkComponent;
@@ -27,12 +26,11 @@ import ruiseki.okcore.tileentity.TileEntityOK;
  * @author rubensworks
  */
 public abstract class BlockContainerGuiCabled extends ConfigurableBlockContainerGui
-    implements ICableNetwork<IPartNetwork, ICablePathElement>, INetworkElementProvider<IPartNetwork> {
+    implements ICableNetwork<IPartNetwork, ICablePathElement> {
 
     // @Delegate <- Lombok can't handle delegations with generics, so we'll have to do it manually...
     private CableNetworkComponent<BlockContainerGuiCabled> cableNetworkComponent = new CableNetworkComponent<>(this);
-    private NetworkElementProviderComponent<IPartNetwork> networkElementProviderComponent = new NetworkElementProviderComponent<>(
-        this);
+    private NetworkElementProviderComponent<IPartNetwork> networkElementProviderComponent = new NetworkElementProviderComponent<>();
 
     /**
      * Make a new block instance.

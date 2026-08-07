@@ -4,11 +4,14 @@ import net.minecraft.block.Block;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.inventory.Container;
 import net.minecraft.world.IBlockAccess;
+import net.minecraft.world.World;
 
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.part.PartTarget;
+import ruiseki.integrateddynamics.block.BlockInvisibleLight;
 import ruiseki.integrateddynamics.core.part.PartStateEmpty;
 import ruiseki.integrateddynamics.core.part.panel.PartTypePanel;
+import ruiseki.okcore.datastructure.BlockPos;
 
 /**
  * A panel part that simply emits light.
@@ -64,9 +67,17 @@ public class PartTypePanelLightStatic
 
     @Override
     public void onBlockNeighborChange(IPartNetwork network, PartTarget target,
-        PartStateEmpty<PartTypePanelLightStatic> state, IBlockAccess world, Block neighborBlock) {
-        super.onBlockNeighborChange(network, target, state, world, neighborBlock);
-        PartTypePanelLightDynamic.setLightLevel(target, LIGHT_LEVEL);
+        PartStateEmpty<PartTypePanelLightStatic> state, IBlockAccess worldAccess, Block neighborBlock) {
+        super.onBlockNeighborChange(network, target, state, worldAccess, neighborBlock);
+        if (isEnabled(state) && worldAccess instanceof World world) {
+            BlockPos pos = target.getTarget()
+                .getPos()
+                .getBlockPos();
+            Block currentBlock = world.getBlock(pos.getX(), pos.getY(), pos.getZ());
+            if (currentBlock != BlockInvisibleLight.getInstance()) {
+                PartTypePanelLightDynamic.setLightLevel(target, LIGHT_LEVEL);
+            }
+        }
     }
 
     @Override
