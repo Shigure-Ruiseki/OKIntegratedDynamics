@@ -2,7 +2,6 @@ package ruiseki.integrateddynamics.core.helper;
 
 import java.util.List;
 
-import net.minecraft.block.Block;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.IBlockAccess;
 import net.minecraftforge.fluids.FluidStack;
@@ -88,20 +87,8 @@ public final class Helpers {
         return pattern.toString();
     }
 
-    // TODO: only use this stuff for that charset thing
     private static final List<IInterfaceRetriever> INTERFACE_RETRIEVERS = Lists.newArrayList();
     static {
-        addInterfaceRetriever(new IInterfaceRetriever() {
-
-            @Override
-            public <C> C getInterface(IBlockAccess world, BlockPos pos, Class<C> clazz) {
-                Block block = pos.getBlock(world);
-                if (clazz.isInstance(block)) {
-                    return clazz.cast(block);
-                }
-                return null;
-            }
-        });
         addInterfaceRetriever(new IInterfaceRetriever() {
 
             @Override

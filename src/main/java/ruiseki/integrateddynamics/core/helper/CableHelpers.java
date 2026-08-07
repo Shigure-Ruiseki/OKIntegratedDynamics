@@ -11,17 +11,20 @@ import net.minecraftforge.common.util.ForgeDirection;
 import org.jetbrains.annotations.Nullable;
 
 import com.google.common.collect.Lists;
+import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 
+import ruiseki.integrateddynamics.api.block.IFacadeable;
 import ruiseki.integrateddynamics.api.block.cable.ICable;
 import ruiseki.integrateddynamics.api.block.cable.ICableFakeable;
 import ruiseki.integrateddynamics.api.network.INetwork;
+import ruiseki.integrateddynamics.api.network.INetworkCarrier;
 import ruiseki.integrateddynamics.api.network.INetworkElement;
 import ruiseki.integrateddynamics.api.network.INetworkElementProvider;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.path.IPathElement;
-import ruiseki.integrateddynamics.block.BlockCable;
 import ruiseki.integrateddynamics.capability.cable.CableConfig;
 import ruiseki.integrateddynamics.capability.cable.CableFakeableConfig;
+import ruiseki.integrateddynamics.capability.facadeable.FacadeableConfig;
 import ruiseki.integrateddynamics.capability.path.PathElementConfig;
 import ruiseki.integrateddynamics.item.ItemBlockCable;
 import ruiseki.okcore.datastructure.BlockPos;
@@ -31,14 +34,14 @@ import ruiseki.okcore.helper.ItemStackHelpers;
 
 /**
  * Helpers related to cables.
- * 
+ *
  * @author rubensworks
  */
 public class CableHelpers {
 
     /**
      * Get the cable capability at the given position.
-     * 
+     *
      * @param world The world.
      * @param pos   The position.
      * @return The cable capability, or null if not present.
@@ -50,7 +53,7 @@ public class CableHelpers {
 
     /**
      * Get the fakeable cable capability at the given position.
-     * 
+     *
      * @param world The world.
      * @param pos   The position.
      * @return The fakeable cable capability, or null if not present.
@@ -62,7 +65,7 @@ public class CableHelpers {
 
     /**
      * Get the path element capability at the given position.
-     * 
+     *
      * @param world The world.
      * @param pos   The position.
      * @return The path element capability, or null if not present.
@@ -74,7 +77,7 @@ public class CableHelpers {
 
     /**
      * Request to update the cable connections of all neighbours of the given position.
-     * 
+     *
      * @param world The world.
      * @param pos   The center position.
      */
@@ -86,7 +89,7 @@ public class CableHelpers {
 
     /**
      * Request to update the cable connections at the given position.
-     * 
+     *
      * @param world The world.
      * @param pos   The position.
      */
@@ -99,7 +102,7 @@ public class CableHelpers {
 
     /**
      * Check if there is a cable at the given position AND if it is connected for the given side.
-     * 
+     *
      * @param world The world.
      * @param pos   The position.
      * @param side  The side to check a connection for.
@@ -116,7 +119,7 @@ public class CableHelpers {
      * This will check if the origin cable can connect to that side,
      * if there is a cable at the target side and if that cable can connect with this side.
      * This ignores any current cable connections.
-     * 
+     *
      * @param world       The world.
      * @param pos         The center position.
      * @param side        The side from the center position to check.
@@ -134,7 +137,7 @@ public class CableHelpers {
      * Check if the given position is not a fake cable.
      * This can mean that there is no cable at all!
      * But if there is a cable, this method will return true only if it is a real cable.
-     * 
+     *
      * @param world The world.
      * @param pos   The position.
      * @return If there is no fake cable.
@@ -146,7 +149,7 @@ public class CableHelpers {
 
     /**
      * Actions to be performed when a player right clicks on a cable.
-     * 
+     *
      * @param world              The world of the cable.
      * @param pos                The position of the cable.
      * @param player             The player activating the cable.
@@ -206,22 +209,21 @@ public class CableHelpers {
     /**
      * This should be called when a cable is added.
      * This method automatically notifies the neighbours and (re-)initializes the network if this cable carries one.
-     * 
+     *
      * @param world The world.
      * @param pos   The position.
      */
     public static void onCableAdded(World world, BlockPos pos) {
         CableHelpers.updateConnectionsNeighbours(world, pos);
         if (!world.isRemote) {
-            NetworkHelpers.initNetwork(world, pos); // TODO: move me to networkhelpers! because a cable does not REQUIRE
-                                                    // a network, but a network REQUIRES a cable!
+            NetworkHelpers.initNetwork(world, pos);
         }
     }
 
     /**
      * This should be called when a cable is being removed, while the part entity is still present.
      * This method won't do anything when called client-side.
-     * 
+     *
      * @param world           The world.
      * @param pos             The position.
      * @param dropMainElement If the main part element should be dropped.
@@ -229,29 +231,23 @@ public class CableHelpers {
      */
     public static boolean onCableRemoving(World world, BlockPos pos, boolean dropMainElement) {
         if (!world.isRemote && CableHelpers.isNoFakeCable(world, pos)) {
-            INetwork network = NetworkHelpers.getNetwork(world, pos);
+            INetworkCarrier networkCarrier = NetworkHelpers.getNetworkCarrier(world, pos);
 
             // Get all drops from the network elements this cable provides.
             List<ItemStack> itemStacks = Lists.newLinkedList();
             INetworkElementProvider<?> networkElementProvider = NetworkHelpers.getNetworkElementProvider(world, pos);
             for (INetworkElement networkElement : networkElementProvider.createNetworkElements(world, pos)) {
                 networkElement.addDrops(itemStacks, dropMainElement);
-                /*
-                 * if (network != null) {
-                 * networkElement.onPreRemoved(network);
-                 * network.removeNetworkElementPre(networkElement);
-                 * network.removeNetworkElementPost(networkElement);
-                 * networkElement.onPostRemoved(network);
-                 * }
-                 */ // TODO: this *should* not be needed anymore, this is handled in network.removePathElement
             }
             for (ItemStack itemStack : itemStacks) {
                 InventoryHelpers.dropItems(world, itemStack, pos);
             }
 
             // If the cable has a network, remove it from the network.
-            if (network != null) {
+            if (networkCarrier != null && networkCarrier.getNetwork() != null) {
                 IPathElement pathElement = getPathElement(world, pos);
+                INetwork network = networkCarrier.getNetwork();
+                networkCarrier.setNetwork(null);
                 return network.removePathElement(pathElement);
             }
         }
@@ -261,7 +257,7 @@ public class CableHelpers {
     /**
      * This should be called AFTER a cable is removed, at this stage the part entity will not exist anymore.
      * This method won't do anything when called client-side.
-     * 
+     *
      * @param world The world.
      * @param pos   The position.
      * @return If the cable was removed from the network.
@@ -282,36 +278,59 @@ public class CableHelpers {
      * Remove a cable.
      * This will automatically handle sounds, drops,
      * fakeable cables, network element removal and network (re)intialization.
-     * 
+     *
      * @param world  The world.
      * @param pos    The position.
      * @param player The player removing the cable or null.
      */
     public static void removeCable(World world, BlockPos pos, @Nullable EntityPlayer player) {
+        ICable cable = getCable(world, pos);
         ICableFakeable cableFakeable = getCableFakeable(world, pos);
         IPartContainer partContainer = PartHelpers.getPartContainer(world, pos);
+        if (cable == null) return;
 
         CableHelpers.onCableRemoving(world, pos, false);
         // If the cable has no parts or is not fakeable, remove the block,
         // otherwise mark the cable as being fake.
-        // TODO: check if this does not destroy multiparts incorrectly
-        if (partContainer == null || !partContainer.hasParts() || cableFakeable == null) {
-            if (partContainer != null && partContainer.hasParts() && cableFakeable == null) {
-                // TODO: drop all parts?
-            }
-            world.setBlockToAir(pos.getX(), pos.getY(), pos.getZ());
+        if (cableFakeable == null || partContainer == null || !partContainer.hasParts()) {
+            cable.destroy();
         } else {
             cableFakeable.setRealCable(false);
         }
         // TODO: abstract dropped itemstack
         if (player == null) {
-            ItemStackHelpers.spawnItemStack(world, pos, new ItemStack(BlockCable.getInstance()));
+            ItemStackHelpers.spawnItemStack(world, pos, cable.getItemStack());
         } else if (!player.capabilities.isCreativeMode) {
-            ItemStackHelpers.spawnItemStackToPlayer(world, pos, new ItemStack(BlockCable.getInstance()), player);
+            ItemStackHelpers.spawnItemStackToPlayer(world, pos, cable.getItemStack(), player);
         }
         CableHelpers.onCableRemoved(world, pos);
 
         ItemBlockCable.playBreakSound(world, pos);
     }
 
+    /**
+     * Check if the target has a facade.
+     * 
+     * @param world The world.
+     * @param pos   The position.
+     * @return If it has a facade.
+     */
+    public static boolean hasFacade(IBlockAccess world, BlockPos pos) {
+        IFacadeable facadeable = CapabilityHelpers.getCapability(world, pos, FacadeableConfig.CAPABILITY)
+            .getOrNull();
+        return facadeable != null && facadeable.hasFacade();
+    }
+
+    /**
+     * Get the target's facade
+     * 
+     * @param world The world.
+     * @param pos   The position.
+     * @return The facade or null.
+     */
+    public static @Nullable BlockState getFacade(IBlockAccess world, BlockPos pos) {
+        IFacadeable facadeable = CapabilityHelpers.getCapability(world, pos, FacadeableConfig.CAPABILITY)
+            .getOrNull();
+        return facadeable != null ? facadeable.getFacade() : null;
+    }
 }

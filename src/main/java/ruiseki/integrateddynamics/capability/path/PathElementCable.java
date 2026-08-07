@@ -17,7 +17,7 @@ import ruiseki.okcore.helper.CapabilityHelpers;
 
 /**
  * Implementation of {@link IPathElement} for cables.
- * 
+ *
  * @author rubensworks
  */
 public abstract class PathElementCable extends PathElementDefault {
@@ -33,15 +33,18 @@ public abstract class PathElementCable extends PathElementDefault {
             if (getCable().isConnected(side)) {
                 BlockPos posOffset = pos.offset(side);
                 IPathElement pathElement = CapabilityHelpers
-                    .getCapability(world, posOffset, PathElementConfig.CAPABILITY, null)
+                    .getCapability(world, posOffset, PathElementConfig.CAPABILITY)
                     .getOrNull();
                 if (pathElement == null) {
                     IntegratedDynamics.clog(
                         Level.ERROR,
                         String.format(
-                            "The position at %s was incorrectly marked " + "as reachable as path element by %s.",
+                            "The position at %s was incorrectly marked "
+                                + "as reachable as path element by %s at %s side %s.",
+                            posOffset,
+                            getCable(),
                             pos,
-                            getCable()));
+                            side));
                 } else {
                     elements.add(pathElement);
                 }

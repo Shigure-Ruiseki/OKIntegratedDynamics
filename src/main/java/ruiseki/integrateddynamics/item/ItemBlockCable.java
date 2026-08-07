@@ -36,7 +36,15 @@ public class ItemBlockCable extends ItemBlockMetadata {
     }
 
     protected boolean checkCableAt(World world, BlockPos pos) {
-        return CableHelpers.isNoFakeCable(world, pos) && CableHelpers.getCable(world, pos) != null;
+        if (!CableHelpers.isNoFakeCable(world, pos) && CableHelpers.getCable(world, pos) != null) {
+            return true;
+        }
+        for (IUseAction useAction : USE_ACTIONS) {
+            if (useAction.canPlaceAt(world, pos)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
@@ -123,7 +131,7 @@ public class ItemBlockCable extends ItemBlockMetadata {
         BlockPos targetPos = pos.offset(side);
         if (attempItemUseTarget(stack, worldIn, targetPos, blockCable)) {
             // FIX: Pass targetPos instead of pos!
-            afterItemUse(stack, worldIn, targetPos, blockCable, false);
+            afterItemUse(stack, worldIn, pos.offset(side), blockCable, false);
             return true;
         }
 
@@ -136,6 +144,24 @@ public class ItemBlockCable extends ItemBlockMetadata {
 
     public static interface IUseAction {
 
+        /**
+         * Attempt to use the given item.
+         * 
+         * @param itemStack  The item stack that is being used.
+         * @param world      The world.
+         * @param pos        The position.
+         * @param blockCable The cable block instance.
+         * @return If the use action was applied.
+         */
         public boolean attempItemUseTarget(ItemStack itemStack, World world, BlockPos pos, BlockCable blockCable);
+
+        /**
+         * If the block can be placed at the given position.
+         * 
+         * @param world The world.
+         * @param pos   The position.
+         * @return If the block can be placed.
+         */
+        public boolean canPlaceAt(World world, BlockPos pos);
     }
 }

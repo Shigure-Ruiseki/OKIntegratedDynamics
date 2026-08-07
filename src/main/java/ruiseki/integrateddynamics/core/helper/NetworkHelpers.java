@@ -20,7 +20,6 @@ import ruiseki.okcore.helper.CapabilityHelpers;
 
 /**
  * Network helper methods.
- * TODO: move to API package? (together with the other helpers)
  * 
  * @author rubensworks
  */
@@ -28,7 +27,7 @@ public class NetworkHelpers {
 
     /**
      * Get the network carrier capability at the given position.
-     * 
+     *
      * @param world The world.
      * @param pos   The position.
      * @return The network carrier capability, or null if not present.
@@ -41,7 +40,7 @@ public class NetworkHelpers {
 
     /**
      * Get the network element provider capability at the given position.
-     * 
+     *
      * @param world The world.
      * @param pos   The position.
      * @return The network element provider capability, or null if not present.
@@ -54,7 +53,7 @@ public class NetworkHelpers {
 
     /**
      * Get the network at the given position.
-     * 
+     *
      * @param world The world.
      * @param pos   The position.
      * @return The network, or null if no network or network carrier present.
@@ -73,7 +72,7 @@ public class NetworkHelpers {
      * This position should have a {@link IPathElement} capability,
      * otherwise this method will fail silently.
      * This will correctly transfer all passed network elements to this new network.
-     * 
+     *
      * @param world The world.
      * @param pos   The starting position.
      * @return The newly created part network.
@@ -94,7 +93,7 @@ public class NetworkHelpers {
      * This MUST be called by blocks having the {@link INetworkElementProvider} capability in
      * when a neighbouring block is updated, more specifically when
      * {@link net.minecraft.block.Block#onNeighborBlockChange(World, int, int, int, Block)} is called.
-     * 
+     *
      * @param world         The world in which the neighbour was updated.
      * @param pos           The position of the center block.
      * @param neighborBlock The block type of the neighbour that was updated.

@@ -39,7 +39,6 @@ import ruiseki.integrateddynamics.block.collidable.CollidableComponentFacade;
 import ruiseki.integrateddynamics.block.collidable.CollidableComponentParts;
 import ruiseki.integrateddynamics.capability.dynamiclight.DynamicLightConfig;
 import ruiseki.integrateddynamics.capability.dynamicredstone.DynamicRedstoneConfig;
-import ruiseki.integrateddynamics.capability.facadeable.FacadeableConfig;
 import ruiseki.integrateddynamics.client.model.CableModel;
 import ruiseki.integrateddynamics.core.helper.CableHelpers;
 import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
@@ -156,9 +155,10 @@ public class BlockCable extends ConfigurableBlockContainer
     public boolean removedByPlayer(World world, EntityPlayer player, int x, int y, int z, boolean willHarvest) {
         BlockPos pos = new BlockPos(x, y, z);
         RayTraceResult<ForgeDirection> rayTraceResult = doRayTrace(world, pos, player);
-        if (rayTraceResult != null && rayTraceResult.getCollisionType() != null) {
-            return rayTraceResult.getCollisionType()
-                .destroy(world, pos, rayTraceResult.getPositionHit(), player, willHarvest);
+        if (rayTraceResult != null && rayTraceResult.getCollisionType() != null
+            && rayTraceResult.getCollisionType()
+                .destroy(world, pos, rayTraceResult.getPositionHit(), player, willHarvest)) {
+            return true;
         }
         return super.removedByPlayer(world, player, x, y, z, willHarvest);
     }
@@ -272,7 +272,7 @@ public class BlockCable extends ConfigurableBlockContainer
 
     @Override
     public int getLightOpacity(IBlockAccess world, int x, int y, int z) {
-        return FacadeableConfig.hasFacade(world, new BlockPos(x, y, z)) ? 255 : 0;
+        return CableHelpers.hasFacade(world, new BlockPos(x, y, z)) ? 255 : 0;
     }
 
     @Override
@@ -282,8 +282,7 @@ public class BlockCable extends ConfigurableBlockContainer
 
     @Override
     public boolean shouldSideBeRendered(IBlockAccess world, int x, int y, int z, int side) {
-        return super.shouldSideBeRendered(world, x, y, z, side)
-            || FacadeableConfig.hasFacade(world, new BlockPos(x, y, z));
+        return super.shouldSideBeRendered(world, x, y, z, side) || CableHelpers.hasFacade(world, new BlockPos(x, y, z));
     }
 
     @Override
@@ -295,8 +294,8 @@ public class BlockCable extends ConfigurableBlockContainer
     @SideOnly(Side.CLIENT)
     public boolean addHitEffects(World world, MovingObjectPosition target, EffectRenderer effectRenderer) {
         BlockPos blockPos = new BlockPos(target.blockX, target.blockY, target.blockZ);
-        if (FacadeableConfig.hasFacade(world, blockPos)) {
-            BlockState facadeState = FacadeableConfig.getFacade(world, blockPos);
+        if (CableHelpers.hasFacade(world, blockPos)) {
+            BlockState facadeState = CableHelpers.getFacade(world, blockPos);
             RenderHelpers.addBlockHitEffects(
                 world,
                 facadeState.getBlock(),
@@ -314,7 +313,7 @@ public class BlockCable extends ConfigurableBlockContainer
     @Override
     public boolean isSideSolid(IBlockAccess world, int x, int y, int z, ForgeDirection side) {
         BlockPos pos = new BlockPos(x, y, z);
-        if (FacadeableConfig.hasFacade(world, pos)) {
+        if (CableHelpers.hasFacade(world, pos)) {
             return true;
         }
         IPartContainer partContainer = PartHelpers.getPartContainer(world, pos);
@@ -405,7 +404,7 @@ public class BlockCable extends ConfigurableBlockContainer
         int light = 0;
         for (ForgeDirection side : ForgeDirection.VALID_DIRECTIONS) {
             IDynamicLight dynamicLight = CapabilityHelpers
-                .getCapability((World) world, x, y, z, DynamicLightConfig.CAPABILITY, side)
+                .getCapability(world, x, y, z, DynamicLightConfig.CAPABILITY, side)
                 .getOrNull();
             if (dynamicLight != null) {
                 light = Math.max(light, dynamicLight.getLightLevel());

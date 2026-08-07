@@ -17,7 +17,6 @@ import com.google.common.collect.ImmutableMap;
 
 import lombok.Data;
 import ruiseki.integrateddynamics.IntegratedDynamics;
-import ruiseki.integrateddynamics.api.block.cable.ICable;
 import ruiseki.integrateddynamics.api.block.cable.ICableFakeable;
 import ruiseki.integrateddynamics.api.network.INetworkElement;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
@@ -37,14 +36,14 @@ import ruiseki.okcore.helper.MinecraftHelpers;
 
 /**
  * Helpers related to parts.
- * 
+ *
  * @author rubensworks
  */
 public class PartHelpers {
 
     /**
      * Get the part container capability at the given position.
-     * 
+     *
      * @param world The world.
      * @param pos   The position.
      * @return The part container capability, or null if not present.
@@ -56,7 +55,7 @@ public class PartHelpers {
 
     /**
      * Get the part container capability at the given position.
-     * 
+     *
      * @param dimPos The dimensional position.
      * @return The part container capability, or null if not present.
      */
@@ -68,7 +67,7 @@ public class PartHelpers {
     /**
      * Check if the given part type is null and run it through the network even bus in an {@link UnknownPartEvent}
      * to get another type.
-     * 
+     *
      * @param network      The network.
      * @param partTypeName The part name.
      * @param partType     The part type.
@@ -86,7 +85,7 @@ public class PartHelpers {
 
     /**
      * Write the given part type to nbt.
-     * 
+     *
      * @param partTag  The tag to write to.
      * @param side     The side to write.
      * @param partType The part type to write.
@@ -98,7 +97,7 @@ public class PartHelpers {
 
     /**
      * Write the given part data to nbt.
-     * 
+     *
      * @param pos      The position of the part, used for error reporting.
      * @param partTag  The tag to write to.
      * @param partData The part data.
@@ -125,7 +124,7 @@ public class PartHelpers {
 
     /**
      * Write the given parts to nbt.
-     * 
+     *
      * @param pos      The position of the part, used for error reporting.
      * @param tag      The tag to write to.
      * @param partData The part data.
@@ -147,7 +146,7 @@ public class PartHelpers {
 
     /**
      * Read a part from nbt.
-     * 
+     *
      * @param network The network the part will be part of.
      * @param pos     The position of the part, used for error reporting.
      * @param partTag The tag to read from.
@@ -179,7 +178,7 @@ public class PartHelpers {
 
     /**
      * Read part data from nbt.
-     * 
+     *
      * @param network The network the part will be part of.
      * @param pos     The position of the part, used for error reporting.
      * @param partTag The tag to read from.
@@ -200,7 +199,7 @@ public class PartHelpers {
      * Read parts data from nbt.
      * If the world is not null and we are running client-side,
      * a block render update will automatically be triggered if needed.
-     * 
+     *
      * @param network  The network the part will be part of.
      * @param pos      The position of the part, used for error reporting.
      * @param tag      The tag to read from.
@@ -246,7 +245,7 @@ public class PartHelpers {
 
     /**
      * Remove a part from the given side of the given part container.
-     * 
+     *
      * @param world          The world.
      * @param pos            The position of the container.
      * @param side           The side.
@@ -255,12 +254,12 @@ public class PartHelpers {
      * @return If the block was set to air (removed).
      */
     public static boolean removePart(World world, BlockPos pos, ForgeDirection side, @Nullable EntityPlayer player,
-        boolean destroyIfEmpty) {
+        boolean destroyIfEmpty, boolean dropMainElement) {
         IPartContainer partContainer = CapabilityHelpers.getCapability(world, pos, PartContainerConfig.CAPABILITY)
             .getOrNull();
         ICableFakeable cableFakeable = CapabilityHelpers.getCapability(world, pos, CableFakeableConfig.CAPABILITY)
             .getOrNull();
-        partContainer.removePart(side, player);
+        partContainer.removePart(side, player, dropMainElement);
 
         // Remove full cable block if this was the last part and if it was already an unreal cable.
         boolean removeCompletely = destroyIfEmpty && (cableFakeable == null || !cableFakeable.isRealCable())
@@ -271,22 +270,12 @@ public class PartHelpers {
             world.notifyBlocksOfNeighborChange(pos.getX(), pos.getY(), pos.getZ(), pos.getBlock(world));
         }
 
-        // TODO: I've added this snippet here, check if this works
-        BlockPos sidePos = pos.offset(side);
-        ICable sideCable = CableHelpers.getCable(world, sidePos);
-        if (sideCable != null) {
-            sideCable.updateConnections();
-            if (!world.isRemote) {
-                NetworkHelpers.initNetwork(world, sidePos);
-            }
-        }
-
         return !removeCompletely;
     }
 
     /**
      * Set a part at the given side.
-     * 
+     *
      * @param network   The network.
      * @param world     The world.
      * @param pos       The position of the container.
@@ -319,7 +308,7 @@ public class PartHelpers {
 
     /**
      * If the given player can currently interact with the part gui at the given position.
-     * 
+     *
      * @param target                The part target.
      * @param player                The player.
      * @param expectedPartContainer The expected part container.
@@ -342,7 +331,7 @@ public class PartHelpers {
 
     /**
      * Get a part at the given position.
-     * 
+     *
      * @param partPos The part position.
      * @return The part.
      */
@@ -361,7 +350,7 @@ public class PartHelpers {
 
     /**
      * A part and state holder.
-     * 
+     *
      * @param <P> The part type type.
      * @param <S> The part state type.
      */

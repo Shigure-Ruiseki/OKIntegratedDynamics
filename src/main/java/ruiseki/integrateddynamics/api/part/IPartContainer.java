@@ -84,7 +84,7 @@ public interface IPartContainer extends ICapabilitySerializable {
      * @param player The player removing the part.
      * @return The removed part or null.
      */
-    public IPartType removePart(ForgeDirection side, @Nullable EntityPlayer player);
+    public IPartType removePart(ForgeDirection side, @Nullable EntityPlayer player, boolean dropMainElement);
 
     /**
      * dz
@@ -106,7 +106,7 @@ public interface IPartContainer extends ICapabilitySerializable {
     /**
      * Get the part side the player is watching.
      * This is used to determine the part the player is looking at.
-     * 
+     *
      * @param world  The world.
      * @param pos    The block position to perform a ray trace for.
      * @param player The player.

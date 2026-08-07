@@ -58,6 +58,7 @@ public class CableModel implements BakedModel {
         ForgeDirection.class);
     private static final Map<ForgeDirection, List<ModelQuadView>> CACHED_STANDARD_CONNECTIONS = new EnumMap<>(
         ForgeDirection.class);
+    private static List<ModelQuadView> CACHED_CENTER_CORE_QUADS = Collections.emptyList();
 
     private static List<ModelQuadView> CACHED_ITEM_INVENTORY_QUADS = null;
     private static IIcon cachedIcon = null;
@@ -71,15 +72,23 @@ public class CableModel implements BakedModel {
         CACHED_CORE_FACES.clear();
         CACHED_STANDARD_CONNECTIONS.clear();
 
+        Map<ModelQuadFacing, ArrayList<ModelQuadView>> centerStore = QuadBuilderHelpers
+            .buildCuboidStore(MIN, MIN, MIN, MAX, MAX, MAX, icon, null);
+
+        List<ModelQuadView> centerQuads = new ArrayList<>(24);
         for (ForgeDirection side : ForgeDirection.VALID_DIRECTIONS) {
-            CACHED_CORE_FACES.put(side, buildCoreCapFace(side, icon));
+            ModelQuadFacing facing = ModelQuadFacing.fromForgeDir(side);
+            List<ModelQuadView> cap = centerStore.get(facing);
+            if (cap != null) {
+                CACHED_CORE_FACES.put(side, cap);
+                centerQuads.addAll(cap);
+            }
             CACHED_STANDARD_CONNECTIONS.put(side, buildCustomConnectionSegment(side, 1.0f, icon));
         }
+        CACHED_CENTER_CORE_QUADS = Collections.unmodifiableList(centerQuads);
 
         List<ModelQuadView> itemQuads = new ArrayList<>(48);
-        for (List<ModelQuadView> faceQuads : CACHED_CORE_FACES.values()) {
-            itemQuads.addAll(faceQuads);
-        }
+        itemQuads.addAll(CACHED_CENTER_CORE_QUADS);
         itemQuads.addAll(CACHED_STANDARD_CONNECTIONS.get(ForgeDirection.WEST));
         itemQuads.addAll(CACHED_STANDARD_CONNECTIONS.get(ForgeDirection.EAST));
         CACHED_ITEM_INVENTORY_QUADS = Collections.unmodifiableList(itemQuads);
@@ -87,68 +96,69 @@ public class CableModel implements BakedModel {
 
     @Override
     public List<ModelQuadView> getQuads(BakedModelQuadContext context) {
-        IIcon cableIcon = getParticle(context);
-        if (cableIcon == null) {
-            return Collections.emptyList();
-        }
+        try {
+            IIcon cableIcon = getParticle(context);
+            if (cableIcon == null) {
+                return Collections.emptyList();
+            }
 
-        ensureStaticCache(cableIcon);
+            ensureStaticCache(cableIcon);
 
-        if (!(context instanceof BakedModelQuadContext.World worldContext)) {
-            return CACHED_ITEM_INVENTORY_QUADS;
-        }
+            if (!(context instanceof BakedModelQuadContext.World worldContext)) {
+                return CACHED_ITEM_INVENTORY_QUADS;
+            }
 
-        IBlockAccess world = worldContext.getWorld();
-        BlockPos pos = new BlockPos(worldContext.getX(), worldContext.getY(), worldContext.getZ());
+            IBlockAccess world = worldContext.getWorld();
+            BlockPos pos = new BlockPos(worldContext.getX(), worldContext.getY(), worldContext.getZ());
 
-        TileEntity te = worldContext.getWorld()
-            .getTileEntity(worldContext.getX(), worldContext.getY(), worldContext.getZ());
-        if (!(te instanceof TileMultipartTicking cable)) return Collections.emptyList();
+            TileEntity te = world.getTileEntity(worldContext.getX(), worldContext.getY(), worldContext.getZ());
+            if (!(te instanceof TileMultipartTicking cable)) return Collections.emptyList();
 
-        List<ModelQuadView> combinedQuads = new ArrayList<>(48);
-        boolean realCable = CableHelpers.isNoFakeCable(world, pos);
+            List<ModelQuadView> combinedQuads = new ArrayList<>(48);
+            boolean realCable = CableHelpers.isNoFakeCable(world, pos);
 
-        for (ForgeDirection side : ForgeDirection.VALID_DIRECTIONS) {
-            boolean hasPart = cable.getPartContainer()
-                .hasPart(side);
-            boolean isConnected = realCable && CableHelpers.isCableConnected(world, pos, side);
+            if (realCable) {
+                combinedQuads.addAll(CACHED_CENTER_CORE_QUADS);
+            }
 
-            if (hasPart) {
-                IPartType<?, ?> part = cable.getPartContainer()
-                    .getPart(side);
-                if (part != null) {
-                    if (realCable) {
-                        PartRenderPosition renderPos = part.getPartRenderPosition();
-                        float depthFactor = renderPos != null ? renderPos.getDepthFactor() : 0.0f;
-                        float targetDepth = 1.0f - depthFactor;
+            for (ForgeDirection side : ForgeDirection.VALID_DIRECTIONS) {
+                boolean hasPart = cable.getPartContainer()
+                    .hasPart(side);
+                boolean isConnected = realCable && CableHelpers.isCableConnected(world, pos, side);
 
-                        if (targetDepth > MAX) {
-                            combinedQuads.addAll(buildCustomConnectionSegment(side, targetDepth, cableIcon));
+                if (hasPart) {
+                    IPartType<?, ?> part = cable.getPartContainer()
+                        .getPart(side);
+                    if (part != null) {
+                        if (realCable) {
+                            PartRenderPosition renderPos = part.getPartRenderPosition();
+                            float depthFactor = renderPos != null ? renderPos.getDepthFactor() : 0.0f;
+                            float targetDepth = 1.0f - depthFactor;
+
+                            if (targetDepth > MAX) {
+                                combinedQuads.addAll(buildCustomConnectionSegment(side, targetDepth, cableIcon));
+                            }
+                        }
+
+                        String modelPath = part.getBlockModelPath(cable.getPartContainer(), side);
+                        if (modelPath != null && !modelPath.isEmpty()) {
+                            ResourceLoc.ModelLoc partModelLoc = parseModelLocStatic(modelPath);
+                            addPartQuads(combinedQuads, partModelLoc, side, context);
                         }
                     }
-
-                    String modelPath = part.getBlockModelPath(cable.getPartContainer(), side);
-                    if (modelPath != null && !modelPath.isEmpty()) {
-                        ResourceLoc.ModelLoc partModelLoc = parseModelLocStatic(modelPath);
-                        addPartQuads(combinedQuads, partModelLoc, side, context);
+                } else if (isConnected) {
+                    List<ModelQuadView> connQuads = CACHED_STANDARD_CONNECTIONS.get(side);
+                    if (connQuads != null) {
+                        combinedQuads.addAll(connQuads);
                     }
                 }
-            } else if (isConnected) {
-                List<ModelQuadView> connQuads = CACHED_STANDARD_CONNECTIONS.get(side);
-                if (connQuads != null) {
-                    combinedQuads.addAll(connQuads);
-                }
             }
 
-            if (realCable && !isConnected && !hasPart) {
-                List<ModelQuadView> capQuads = CACHED_CORE_FACES.get(side);
-                if (capQuads != null) {
-                    combinedQuads.addAll(capQuads);
-                }
-            }
+            return combinedQuads;
+        } catch (Throwable t) {
+            IntegratedDynamics.clog(Level.ERROR, "Fatal error building quads for CableModel at context", t);
+            return CACHED_CENTER_CORE_QUADS;
         }
-
-        return combinedQuads;
     }
 
     private void addPartQuads(List<ModelQuadView> targetList, ResourceLoc.ModelLoc modelLoc, ForgeDirection side,
@@ -244,27 +254,6 @@ public class CableModel implements BakedModel {
         if (modelPath == null || modelPath.isEmpty()) return null;
         ResourceLoc.ModelLoc modelLoc = parseModelLocStatic(modelPath);
         return BAKED_MODEL_CACHE.get(new PartCacheKey(modelLoc, side));
-    }
-
-    private static List<ModelQuadView> buildCoreCapFace(ForgeDirection side, IIcon icon) {
-        float minX = MIN, minY = MIN, minZ = MIN;
-        float maxX = MAX, maxY = MAX, maxZ = MAX;
-
-        switch (side) {
-            case DOWN -> maxY = MIN;
-            case UP -> minY = MAX;
-            case NORTH -> maxZ = MIN;
-            case SOUTH -> minZ = MAX;
-            case WEST -> maxX = MIN;
-            case EAST -> minX = MAX;
-        }
-
-        Map<ModelQuadFacing, ArrayList<ModelQuadView>> store = QuadBuilderHelpers
-            .buildCuboidStore(minX, minY, minZ, maxX, maxY, maxZ, icon, null);
-
-        ModelQuadFacing facing = ModelQuadFacing.fromForgeDir(side);
-        List<ModelQuadView> quads = store.get(facing);
-        return quads != null ? quads : Collections.emptyList();
     }
 
     public static ArrayList<ModelQuadView> buildCustomConnectionSegment(ForgeDirection side, float targetDepth,

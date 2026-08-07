@@ -16,7 +16,7 @@ import ruiseki.integrateddynamics.api.network.INetworkCarrier;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.capability.cable.CableConfig;
 import ruiseki.integrateddynamics.capability.cable.CableFakeableConfig;
-import ruiseki.integrateddynamics.capability.cable.CableFakeableDefault;
+import ruiseki.integrateddynamics.capability.cable.CableFakeableMultipartTicking;
 import ruiseki.integrateddynamics.capability.cable.CableTileMultipartTicking;
 import ruiseki.integrateddynamics.capability.dynamiclight.DynamicLightConfig;
 import ruiseki.integrateddynamics.capability.dynamiclight.DynamicLightTileMultipartTicking;
@@ -103,7 +103,7 @@ public class TileMultipartTicking extends TileEntityOK
         networkCarrier = new NetworkCarrierDefault<>();
         this.capabilityCache.addCapabilityResolver(
             BasicCapabilityResolver.create(NetworkCarrierConfig.CAPABILITY, () -> networkCarrier));
-        cableFakeable = new CableFakeableDefault();
+        cableFakeable = new CableFakeableMultipartTicking(this);
         this.capabilityCache
             .addCapabilityResolver(BasicCapabilityResolver.create(CableFakeableConfig.CAPABILITY, () -> cableFakeable));
         this.capabilityCache.addCapabilityResolver(
@@ -162,7 +162,9 @@ public class TileMultipartTicking extends TileEntityOK
     @Override
     protected void updateTileEntity() {
         super.updateTileEntity();
-        cable.updateConnections();
+        if (connected.isEmpty()) {
+            cable.updateConnections();
+        }
         partContainer.update();
     }
 

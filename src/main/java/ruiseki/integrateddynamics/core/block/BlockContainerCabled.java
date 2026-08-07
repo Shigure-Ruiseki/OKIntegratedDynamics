@@ -71,8 +71,6 @@ public abstract class BlockContainerCabled extends ConfigurableBlockContainer {
     public void onNeighborBlockChange(World world, int x, int y, int z, Block neighborBlock) {
         super.onNeighborBlockChange(world, x, y, z, neighborBlock);
         BlockPos pos = new BlockPos(x, y, z);
-        CableHelpers.updateConnectionsNeighbours(world, pos); // TODO: do we need this here? I think we only have to
-                                                              // update our own connections...
         NetworkHelpers.onElementProviderBlockNeighborChange(world, pos, neighborBlock);
     }
 }

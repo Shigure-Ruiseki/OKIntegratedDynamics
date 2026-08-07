@@ -19,7 +19,7 @@ import ruiseki.okcore.helper.Helpers;
 import ruiseki.okcore.helper.RenderHelpers;
 
 /**
- * A value type world renderer for items.
+ * A value type world renderer for items (Minecraft 1.7.10 Port).
  *
  * @author rubensworks
  */
@@ -27,21 +27,21 @@ public class ItemValueTypeWorldRenderer implements IValueTypeWorldRenderer {
 
     @Override
     public void renderValue(IPartContainer partContainer, double x, double y, double z, float partialTick,
-        int destroyStage, ForgeDirection direction, IPartType partType, IValue value,
-        TileEntityRendererDispatcher rendererDispatcher, float alpha) {
+                            int destroyStage, ForgeDirection direction, IPartType partType, IValue value,
+                            TileEntityRendererDispatcher rendererDispatcher, float alpha) {
+
         Optional<ItemStack> itemStackOptional = ((ValueObjectTypeItemStack.ValueItemStack) value).getRawValue();
         if (itemStackOptional.isPresent() && itemStackOptional.get() != null) {
             ItemStack itemStack = itemStackOptional.get();
 
-            // Render Item
             renderItemStack(itemStack, alpha);
 
-            // Render Stack size text
             GlStateManager.pushMatrix();
-            GlStateManager.translate(7F, 8.5F, 0.1F);
-            String stackSize = String.valueOf(itemStackOptional.get().stackSize);
-            float scale = 1F / ((float) stackSize.length() + 1F);
-            GlStateManager.scale(scale, scale, 1F);
+            GlStateManager.translate(6.0F, 8.5F, 0.2F);
+            String stackSize = String.valueOf(itemStack.stackSize);
+
+            float scale = 0.5F / Math.max(1.0F, ((float) stackSize.length() * 0.5F));
+            GlStateManager.scale(scale, scale, 1.0F);
 
             FontRenderer fontRenderer = rendererDispatcher != null ? rendererDispatcher.getFontRenderer()
                 : Minecraft.getMinecraft().fontRenderer;
@@ -49,7 +49,9 @@ public class ItemValueTypeWorldRenderer implements IValueTypeWorldRenderer {
                 fontRenderer = Minecraft.getMinecraft().fontRenderer;
             }
 
-            fontRenderer.drawString(stackSize, 0, 0, Helpers.RGBAToInt(200, 200, 200, (int) (alpha * 255F)));
+            if (fontRenderer != null) {
+                fontRenderer.drawString(stackSize, 0, 0, Helpers.RGBAToInt(220, 220, 220, (int) (alpha * 255F)));
+            }
             GlStateManager.popMatrix();
         }
     }
@@ -60,10 +62,10 @@ public class ItemValueTypeWorldRenderer implements IValueTypeWorldRenderer {
         RenderHelper.enableGUIStandardItemLighting();
         GlStateManager.pushMatrix();
 
-        GlStateManager.translate(3F, 3F, 0F);
-        GlStateManager.scale(0.4F, 0.4F, 0.01F);
+        GlStateManager.translate(0.0F, 0.0F, 0.0F);
+        GlStateManager.scale(0.78125F, 0.78125F, 0.01F);
 
-        // Use MC 1.7.10 RenderHelpers.renderItem
+        // Render Item chuẩn theo OKCore / Forge 1.7.10
         RenderHelpers.renderItem(Minecraft.getMinecraft().theWorld, itemStack, 0.0D, 0.0D, 0.0D);
 
         GlStateManager.popMatrix();

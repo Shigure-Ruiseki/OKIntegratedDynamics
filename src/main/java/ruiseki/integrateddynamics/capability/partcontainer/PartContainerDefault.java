@@ -121,7 +121,7 @@ public abstract class PartContainerDefault implements IPartContainer {
     }
 
     @Override
-    public IPartType removePart(ForgeDirection side, EntityPlayer player) {
+    public IPartType removePart(ForgeDirection side, EntityPlayer player, boolean dropMainElement) {
         PartHelpers.PartStateHolder<?, ?> partStateHolder = partData.get(side); // Don't remove the state just yet! We
                                                                                 // might need it in network removal.
         if (partStateHolder == null) {
@@ -138,7 +138,7 @@ public abstract class PartContainerDefault implements IPartContainer {
 
                 // Drop all parts types as item.
                 List<ItemStack> itemStacks = Lists.newLinkedList();
-                networkElement.addDrops(itemStacks, true);
+                networkElement.addDrops(itemStacks, dropMainElement);
                 for (ItemStack itemStack : itemStacks) {
                     if (player != null) {
                         if (!player.capabilities.isCreativeMode) {
@@ -153,7 +153,7 @@ public abstract class PartContainerDefault implements IPartContainer {
                 getNetwork().removeNetworkElementPost(networkElement);
 
                 networkElement.onPostRemoved(getNetwork());
-            } else {
+            } else if (dropMainElement) {
                 ItemStackHelpers.spawnItemStackToPlayer(getWorld(), getPos(), new ItemStack(removed.getItem()), player);
             }
             // Finally remove the part data from this part.

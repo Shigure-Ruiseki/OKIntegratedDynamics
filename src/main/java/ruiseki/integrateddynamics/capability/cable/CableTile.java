@@ -8,7 +8,7 @@ import ruiseki.okcore.tileentity.TileEntityOK;
 
 /**
  * Default implementation of {@link ICable}.
- * 
+ *
  * @author rubensworks
  */
 public abstract class CableTile<T extends TileEntityOK> extends CableDefault {
@@ -37,5 +37,10 @@ public abstract class CableTile<T extends TileEntityOK> extends CableDefault {
     @Override
     protected BlockPos getPos() {
         return tile.getPos();
+    }
+
+    @Override
+    public void destroy() {
+        getWorld().setBlockToAir(getPos().getX(), getPos().getY(), getPos().getZ());
     }
 }

@@ -14,7 +14,7 @@ import ruiseki.integrateddynamics.inventory.container.ContainerPartDisplay;
 
 /**
  * Gui for a writer part.
- * 
+ *
  * @author rubensworks
  */
 public class GuiPartDisplay<P extends PartTypePanelVariableDriven<P, S>, S extends PartTypePanelVariableDriven.State<P, S>>
@@ -27,7 +27,7 @@ public class GuiPartDisplay<P extends PartTypePanelVariableDriven<P, S>, S exten
 
     /**
      * Make a new instance.
-     * 
+     *
      * @param partTarget    The target.
      * @param player        The player.
      * @param partContainer The part container.

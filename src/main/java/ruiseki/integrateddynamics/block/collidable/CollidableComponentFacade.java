@@ -16,6 +16,7 @@ import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 import ruiseki.integrateddynamics.api.block.IFacadeable;
 import ruiseki.integrateddynamics.block.BlockCable;
 import ruiseki.integrateddynamics.capability.facadeable.FacadeableConfig;
+import ruiseki.integrateddynamics.core.helper.CableHelpers;
 import ruiseki.integrateddynamics.item.ItemFacade;
 import ruiseki.okcore.block.collidable.ICollidable;
 import ruiseki.okcore.block.collidable.ImmutableAxisAlignedBB;
@@ -39,7 +40,7 @@ public class CollidableComponentFacade implements ICollidable.IComponent<ForgeDi
 
     @Override
     public boolean isActive(BlockCable cable, World world, BlockPos pos, ForgeDirection direction) {
-        return FacadeableConfig.hasFacade(world, pos);
+        return CableHelpers.hasFacade(world, pos);
     }
 
     @Override
@@ -51,7 +52,7 @@ public class CollidableComponentFacade implements ICollidable.IComponent<ForgeDi
     public ItemStack getPickBlock(World world, BlockPos pos, ForgeDirection direction) {
         ItemStack itemStack = new ItemStack(ItemFacade.getInstance());
         ItemFacade.getInstance()
-            .writeFacadeBlock(itemStack, FacadeableConfig.getFacade(world, pos));
+            .writeFacadeBlock(itemStack, CableHelpers.getFacade(world, pos));
         return itemStack;
     }
 
