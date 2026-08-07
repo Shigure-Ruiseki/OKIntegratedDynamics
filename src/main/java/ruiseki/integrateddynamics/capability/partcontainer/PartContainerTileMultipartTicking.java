@@ -1,4 +1,4 @@
-package ruiseki.integrateddynamics.capability;
+package ruiseki.integrateddynamics.capability.partcontainer;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.world.World;

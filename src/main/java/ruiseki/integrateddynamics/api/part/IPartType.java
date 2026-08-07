@@ -35,14 +35,6 @@ public interface IPartType<P extends IPartType<P, S>, S extends IPartState<P>>
     extends INetworkEventListener<IPartNetwork, IPartNetworkElement<P, S>> {
 
     /**
-     * Get the part type class.
-     * This is used for doing dynamic construction of guis.
-     *
-     * @return The actual class for this part type.
-     */
-    public Class<? super P> getPartTypeClass();
-
-    /**
      * @return The unique name for this part type.
      */
     public String getName();
@@ -53,7 +45,7 @@ public interface IPartType<P extends IPartType<P, S>, S extends IPartState<P>>
     public String getUnlocalizedNameBase();
 
     /**
-     * @return The unlocalized name of this part. (With the .name suffix)
+     * @return The unlocalized base name of this part. (Without the .name suffix)
      */
     public String getUnlocalizedName();
 
@@ -61,11 +53,6 @@ public interface IPartType<P extends IPartType<P, S>, S extends IPartState<P>>
      * @return JSON model path for the block representation of this part.
      */
     public String getBlockModelPath(IPartContainer partContainer, ForgeDirection side);
-
-    /**
-     * @return JSON model path for the item representation of this part.
-     */
-    public String getItemModelPath();
 
     /**
      * @return The item associated with this part type.

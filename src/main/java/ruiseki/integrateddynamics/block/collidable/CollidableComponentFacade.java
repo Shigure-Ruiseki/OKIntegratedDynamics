@@ -15,7 +15,7 @@ import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 
 import ruiseki.integrateddynamics.api.block.IFacadeable;
 import ruiseki.integrateddynamics.block.BlockCable;
-import ruiseki.integrateddynamics.capability.FacadeableConfig;
+import ruiseki.integrateddynamics.capability.facadeable.FacadeableConfig;
 import ruiseki.integrateddynamics.item.ItemFacade;
 import ruiseki.okcore.block.collidable.ICollidable;
 import ruiseki.okcore.block.collidable.ImmutableAxisAlignedBB;

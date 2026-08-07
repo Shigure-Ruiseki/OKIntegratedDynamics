@@ -1,4 +1,4 @@
-package ruiseki.integrateddynamics.capability;
+package ruiseki.integrateddynamics.capability.networkelementprovider;
 
 import ruiseki.commoncapabilities.CommonCapabilities;
 import ruiseki.integrateddynamics.api.network.INetworkElementProvider;

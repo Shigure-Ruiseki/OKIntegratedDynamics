@@ -25,7 +25,7 @@ import ruiseki.integrateddynamics.api.network.INetworkEventListener;
 import ruiseki.integrateddynamics.api.network.event.INetworkEvent;
 import ruiseki.integrateddynamics.api.network.event.INetworkEventBus;
 import ruiseki.integrateddynamics.api.path.ICablePathElement;
-import ruiseki.integrateddynamics.capability.NetworkElementProviderConfig;
+import ruiseki.integrateddynamics.capability.networkelementprovider.NetworkElementProviderConfig;
 import ruiseki.integrateddynamics.core.helper.CableHelpers;
 import ruiseki.integrateddynamics.core.network.diagnostics.NetworkDiagnostics;
 import ruiseki.integrateddynamics.core.network.event.NetworkElementAddEvent;

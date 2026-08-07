@@ -1,4 +1,4 @@
-package ruiseki.integrateddynamics.capability;
+package ruiseki.integrateddynamics.capability.variablecontainer;
 
 import java.util.Map;
 
@@ -9,7 +9,7 @@ import ruiseki.integrateddynamics.api.item.IVariableFacade;
 
 /**
  * Default implementation of {@link IVariableContainer}.
- * 
+ *
  * @author rubensworks
  */
 public class VariableContainerDefault implements IVariableContainer {

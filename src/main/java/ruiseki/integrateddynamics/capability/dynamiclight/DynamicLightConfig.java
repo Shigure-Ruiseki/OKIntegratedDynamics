@@ -1,4 +1,4 @@
-package ruiseki.integrateddynamics.capability;
+package ruiseki.integrateddynamics.capability.dynamiclight;
 
 import ruiseki.commoncapabilities.CommonCapabilities;
 import ruiseki.integrateddynamics.api.block.IDynamicLight;
@@ -8,7 +8,7 @@ import ruiseki.okcore.config.extendedconfig.CapabilityConfig;
 
 /**
  * Config for the dynamic light capability.
- * 
+ *
  * @author rubensworks
  *
  */

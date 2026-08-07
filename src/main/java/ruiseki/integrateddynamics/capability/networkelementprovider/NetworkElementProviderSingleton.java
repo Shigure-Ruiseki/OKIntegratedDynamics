@@ -1,4 +1,4 @@
-package ruiseki.integrateddynamics.capability;
+package ruiseki.integrateddynamics.capability.networkelementprovider;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -11,14 +11,16 @@ import ruiseki.integrateddynamics.api.network.INetworkElementProvider;
 import ruiseki.okcore.datastructure.BlockPos;
 
 /**
- * An dummy network element provider implementation.
- * 
+ * A network element provider for a single element.
+ *
  * @author rubensworks
  */
-public class NetworkElementProviderEmpty<N extends INetwork> implements INetworkElementProvider<N> {
+public abstract class NetworkElementProviderSingleton<N extends INetwork> implements INetworkElementProvider<N> {
 
     @Override
     public Collection<INetworkElement<N>> createNetworkElements(World world, BlockPos blockPos) {
-        return Collections.emptyList();
+        return Collections.singleton(createNetworkElement(world, blockPos));
     }
+
+    public abstract INetworkElement<N> createNetworkElement(World world, BlockPos blockPos);
 }

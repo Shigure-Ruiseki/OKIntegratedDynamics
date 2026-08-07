@@ -1,4 +1,4 @@
-package ruiseki.integrateddynamics.capability;
+package ruiseki.integrateddynamics.capability.facadeable;
 
 import net.minecraft.world.IBlockAccess;
 
@@ -14,7 +14,7 @@ import ruiseki.okcore.helper.CapabilityHelpers;
 
 /**
  * Config for the facadeable capability.
- * 
+ *
  * @author rubensworks
  *
  */

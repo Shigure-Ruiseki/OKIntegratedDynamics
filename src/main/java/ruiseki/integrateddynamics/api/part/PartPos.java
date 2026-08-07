@@ -7,7 +7,7 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.tileentity.ITileCableNetwork;
-import ruiseki.integrateddynamics.capability.PartContainerConfig;
+import ruiseki.integrateddynamics.capability.partcontainer.PartContainerConfig;
 import ruiseki.integrateddynamics.core.helper.CableHelpers;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;

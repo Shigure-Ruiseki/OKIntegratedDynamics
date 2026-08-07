@@ -1,4 +1,4 @@
-package ruiseki.integrateddynamics.capability;
+package ruiseki.integrateddynamics.capability.facadeable;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.Nullable;

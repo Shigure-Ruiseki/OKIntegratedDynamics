@@ -1,4 +1,4 @@
-package ruiseki.integrateddynamics.capability;
+package ruiseki.integrateddynamics.capability.dynamiclight;
 
 import net.minecraftforge.common.util.ForgeDirection;
 
@@ -8,7 +8,7 @@ import ruiseki.okcore.datastructure.EnumFacingMap;
 
 /**
  * Default implementation of {@link IDynamicLight}.
- * 
+ *
  * @author rubensworks
  */
 public class DynamicLightTileMultipartTicking implements IDynamicLight {

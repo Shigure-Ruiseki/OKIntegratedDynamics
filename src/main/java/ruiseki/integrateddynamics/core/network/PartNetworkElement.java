@@ -16,7 +16,7 @@ import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartState;
 import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartTarget;
-import ruiseki.integrateddynamics.capability.PartContainerConfig;
+import ruiseki.integrateddynamics.capability.partcontainer.PartContainerConfig;
 import ruiseki.okcore.datastructure.DimPos;
 
 /**

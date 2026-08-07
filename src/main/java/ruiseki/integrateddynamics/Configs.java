@@ -1,6 +1,7 @@
 package ruiseki.integrateddynamics;
 
 import ruiseki.integrateddynamics.block.BlockCableConfig;
+import ruiseki.integrateddynamics.block.BlockEnergyBatteryConfig;
 import ruiseki.integrateddynamics.block.BlockInvisibleLightConfig;
 import ruiseki.integrateddynamics.block.BlockLogicProgrammerConfig;
 import ruiseki.integrateddynamics.block.BlockMenrilLeavesConfig;
@@ -8,11 +9,13 @@ import ruiseki.integrateddynamics.block.BlockMenrilLogConfig;
 import ruiseki.integrateddynamics.block.BlockMenrilPlanksConfig;
 import ruiseki.integrateddynamics.block.BlockMenrilSaplingConfig;
 import ruiseki.integrateddynamics.block.BlockVariablestoreConfig;
-import ruiseki.integrateddynamics.capability.DynamicLightConfig;
-import ruiseki.integrateddynamics.capability.DynamicRedstoneConfig;
-import ruiseki.integrateddynamics.capability.FacadeableConfig;
-import ruiseki.integrateddynamics.capability.NetworkElementProviderConfig;
-import ruiseki.integrateddynamics.capability.PartContainerConfig;
+import ruiseki.integrateddynamics.capability.dynamiclight.DynamicLightConfig;
+import ruiseki.integrateddynamics.capability.dynamicredstone.DynamicRedstoneConfig;
+import ruiseki.integrateddynamics.capability.energybattery.EnergyBatteryConfig;
+import ruiseki.integrateddynamics.capability.facadeable.FacadeableConfig;
+import ruiseki.integrateddynamics.capability.networkelementprovider.NetworkElementProviderConfig;
+import ruiseki.integrateddynamics.capability.partcontainer.PartContainerConfig;
+import ruiseki.integrateddynamics.capability.variablecontainer.VariableContainerConfig;
 import ruiseki.integrateddynamics.item.ItemFacadeConfig;
 import ruiseki.integrateddynamics.item.ItemLabellerConfig;
 import ruiseki.integrateddynamics.item.ItemMenrilBerriesConfig;
@@ -32,6 +35,8 @@ public class Configs {
         configHandler.add(new DynamicLightConfig());
         configHandler.add(new DynamicRedstoneConfig());
         configHandler.add(new FacadeableConfig());
+        configHandler.add(new VariableContainerConfig());
+        configHandler.add(new EnergyBatteryConfig());
 
         // Fluids
         // configHandler.add(new FluidMenrilResinConfig());
@@ -41,7 +46,7 @@ public class Configs {
         configHandler.add(new BlockVariablestoreConfig());
         configHandler.add(new BlockLogicProgrammerConfig());
         configHandler.add(new BlockInvisibleLightConfig());
-        // configHandler.add(new BlockEnergyBatteryConfig());
+        configHandler.add(new BlockEnergyBatteryConfig());
         // configHandler.add(new BlockCreativeEnergyBatteryConfig());
         // configHandler.add(new BlockCoalGeneratorConfig());
         // configHandler.add(new BlockProxyConfig());

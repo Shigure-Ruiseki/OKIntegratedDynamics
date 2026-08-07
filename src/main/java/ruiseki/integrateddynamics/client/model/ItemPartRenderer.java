@@ -42,7 +42,7 @@ public class ItemPartRenderer implements IItemRenderer {
         if (!(stack.getItem() instanceof ItemPart<?, ?>itemPart)) return;
 
         String modelPath = itemPart.getPart()
-            .getItemModelPath();
+            .getBlockModelPath(null, null);
         if (modelPath == null || modelPath.isEmpty()) return;
 
         BakedModel model = CableModel.getBakedPartModel(modelPath, ForgeDirection.SOUTH);

@@ -1,4 +1,4 @@
-package ruiseki.integrateddynamics.capability;
+package ruiseki.integrateddynamics.capability.partcontainer;
 
 import net.minecraft.world.World;
 
@@ -56,7 +56,7 @@ public class PartContainerConfig extends CapabilityConfig<IPartContainer> {
 
     /**
      * Get the part container at the given position.
-     * 
+     *
      * @param world The world.
      * @param pos   The block position.
      * @return The container or null.

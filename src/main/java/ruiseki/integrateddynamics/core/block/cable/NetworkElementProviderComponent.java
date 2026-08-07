@@ -13,7 +13,7 @@ import com.google.common.collect.Lists;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.INetworkElement;
 import ruiseki.integrateddynamics.api.network.INetworkElementProvider;
-import ruiseki.integrateddynamics.capability.NetworkElementProviderConfig;
+import ruiseki.integrateddynamics.capability.networkelementprovider.NetworkElementProviderConfig;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.helper.CapabilityHelpers;
 import ruiseki.okcore.helper.InventoryHelpers;

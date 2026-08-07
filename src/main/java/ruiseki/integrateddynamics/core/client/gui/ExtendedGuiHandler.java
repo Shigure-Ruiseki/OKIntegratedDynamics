@@ -17,7 +17,8 @@ import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.api.part.aspect.IAspect;
-import ruiseki.integrateddynamics.capability.PartContainerConfig;
+import ruiseki.integrateddynamics.capability.partcontainer.PartContainerConfig;
+import ruiseki.integrateddynamics.core.part.PartTypeBase;
 import ruiseki.okcore.client.gui.GuiHandler;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.helper.MinecraftHelpers;
@@ -46,7 +47,10 @@ public class ExtendedGuiHandler extends GuiHandler {
             public Object getServerGuiElement(int id, EntityPlayer player, World world, int x, int y, int z,
                 Class<? extends Container> containerClass, ForgeDirection side) {
                 try {
-                    Pair<IPartContainer, IPartType> data = getPartConstructionData(world, new BlockPos(x, y, z), side);
+                    Pair<IPartContainer, PartTypeBase> data = getPartConstructionData(
+                        world,
+                        new BlockPos(x, y, z),
+                        side);
                     if (data == null) return null;
                     Constructor<? extends Container> containerConstructor;
                     try {
@@ -83,7 +87,7 @@ public class ExtendedGuiHandler extends GuiHandler {
                 public Object getClientGuiElement(int id, EntityPlayer player, World world, int x, int y, int z,
                     Class<? extends GuiScreen> guiClass, ForgeDirection side) {
                     try {
-                        Pair<IPartContainer, IPartType> data = getPartConstructionData(
+                        Pair<IPartContainer, PartTypeBase> data = getPartConstructionData(
                             world,
                             new BlockPos(x, y, z),
                             side);
@@ -124,7 +128,7 @@ public class ExtendedGuiHandler extends GuiHandler {
                 Class<? extends Container> containerClass, Pair<ForgeDirection, IAspect> dataIn) {
                 try {
                     if (dataIn == null) return null;
-                    Pair<IPartContainer, IPartType> data = getPartConstructionData(
+                    Pair<IPartContainer, PartTypeBase> data = getPartConstructionData(
                         world,
                         new BlockPos(x, y, z),
                         dataIn.getLeft());
@@ -157,7 +161,7 @@ public class ExtendedGuiHandler extends GuiHandler {
                     Class<? extends GuiScreen> guiClass, Pair<ForgeDirection, IAspect> dataIn) {
                     try {
                         if (dataIn == null) return null;
-                        Pair<IPartContainer, IPartType> data = getPartConstructionData(
+                        Pair<IPartContainer, PartTypeBase> data = getPartConstructionData(
                             world,
                             new BlockPos(x, y, z),
                             dataIn.getLeft());
@@ -184,7 +188,7 @@ public class ExtendedGuiHandler extends GuiHandler {
         }
     }
 
-    private static Pair<IPartContainer, IPartType> getPartConstructionData(World world, BlockPos pos,
+    private static Pair<IPartContainer, PartTypeBase> getPartConstructionData(World world, BlockPos pos,
         ForgeDirection side) {
         IPartContainer partContainer = PartContainerConfig.get(world, pos);
         if (partContainer == null) {
@@ -193,14 +197,14 @@ public class ExtendedGuiHandler extends GuiHandler {
         }
 
         IPartType partType = partContainer.getPart(side);
-        if (partType == null) {
+        if (partType == null || !(partType instanceof PartTypeBase)) {
             IntegratedDynamics.clog(
                 Level.WARN,
                 String.format("The part container at %s side %s does not have a valid part.", pos, side));
             return null;
         }
 
-        return Pair.of(partContainer, partType);
+        return Pair.of(partContainer, (PartTypeBase) partType);
     }
 
     public ExtendedGuiHandler(ModBase mod) {

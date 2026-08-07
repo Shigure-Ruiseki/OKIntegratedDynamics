@@ -1,4 +1,4 @@
-package ruiseki.integrateddynamics.capability;
+package ruiseki.integrateddynamics.capability.networkelementprovider;
 
 import java.util.Collection;
 import java.util.Map;
@@ -19,7 +19,7 @@ import ruiseki.okcore.datastructure.DimPos;
 
 /**
  * Network element provider for {@link IPartContainer}.
- * 
+ *
  * @author rubensworks
  */
 public class NetworkElementProviderPartContainer implements INetworkElementProvider<IPartNetwork> {

@@ -13,7 +13,7 @@ import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import ruiseki.integrateddynamics.api.block.IFacadeable;
-import ruiseki.integrateddynamics.capability.FacadeableConfig;
+import ruiseki.integrateddynamics.capability.facadeable.FacadeableConfig;
 import ruiseki.okcore.config.configurable.ConfigurableItem;
 import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 import ruiseki.okcore.datastructure.BlockPos;

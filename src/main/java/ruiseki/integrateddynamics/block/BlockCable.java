@@ -46,9 +46,9 @@ import ruiseki.integrateddynamics.block.collidable.CollidableComponentCableCente
 import ruiseki.integrateddynamics.block.collidable.CollidableComponentCableConnections;
 import ruiseki.integrateddynamics.block.collidable.CollidableComponentFacade;
 import ruiseki.integrateddynamics.block.collidable.CollidableComponentParts;
-import ruiseki.integrateddynamics.capability.DynamicRedstoneConfig;
-import ruiseki.integrateddynamics.capability.FacadeableConfig;
-import ruiseki.integrateddynamics.capability.PartContainerConfig;
+import ruiseki.integrateddynamics.capability.dynamicredstone.DynamicRedstoneConfig;
+import ruiseki.integrateddynamics.capability.facadeable.FacadeableConfig;
+import ruiseki.integrateddynamics.capability.partcontainer.PartContainerConfig;
 import ruiseki.integrateddynamics.client.model.CableModel;
 import ruiseki.integrateddynamics.core.block.cable.CableNetworkComponent;
 import ruiseki.integrateddynamics.core.block.cable.NetworkElementProviderComponent;

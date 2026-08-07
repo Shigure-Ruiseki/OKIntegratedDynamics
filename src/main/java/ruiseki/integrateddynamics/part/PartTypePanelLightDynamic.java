@@ -12,7 +12,7 @@ import ruiseki.integrateddynamics.api.part.IPartState;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.block.BlockInvisibleLight;
 import ruiseki.integrateddynamics.block.BlockInvisibleLightConfig;
-import ruiseki.integrateddynamics.capability.DynamicLightConfig;
+import ruiseki.integrateddynamics.capability.dynamiclight.DynamicLightConfig;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeLightLevels;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.integrateddynamics.core.part.panel.PartTypePanelVariableDriven;

@@ -4,8 +4,8 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
-import net.minecraft.block.Block;
 import net.minecraft.world.World;
 
 import org.apache.logging.log4j.Level;
@@ -16,11 +16,11 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 import ruiseki.integrateddynamics.GeneralConfig;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.block.IEnergyBattery;
-import ruiseki.integrateddynamics.api.block.IEnergyBatteryFacade;
 import ruiseki.integrateddynamics.api.block.IVariableContainer;
 import ruiseki.integrateddynamics.api.block.cable.ICable;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
@@ -40,8 +40,9 @@ import ruiseki.integrateddynamics.api.part.aspect.IAspectRead;
 import ruiseki.integrateddynamics.api.part.read.IPartStateReader;
 import ruiseki.integrateddynamics.api.part.read.IPartTypeReader;
 import ruiseki.integrateddynamics.api.path.ICablePathElement;
-import ruiseki.integrateddynamics.capability.PartContainerConfig;
-import ruiseki.integrateddynamics.capability.VariableContainerConfig;
+import ruiseki.integrateddynamics.capability.energybattery.EnergyBatteryConfig;
+import ruiseki.integrateddynamics.capability.partcontainer.PartContainerConfig;
+import ruiseki.integrateddynamics.capability.variablecontainer.VariableContainerConfig;
 import ruiseki.integrateddynamics.core.path.Cluster;
 import ruiseki.integrateddynamics.core.path.PathFinder;
 import ruiseki.integrateddynamics.core.persist.world.NetworkWorldStorage;
@@ -62,7 +63,7 @@ public class PartNetwork extends Network<IPartNetwork> implements IPartNetwork, 
     private List<DimPos> variableContainerPositions;
     private Map<Integer, IVariableFacade> compositeVariableCache;
     private Map<Integer, IValue> lazyExpressionValueCache;
-    private Map<DimPos, IEnergyBatteryFacade> energyBatteryPositions;
+    private Set<DimPos> energyBatteryPositions;
     private Map<Integer, DimPos> proxyPositions;
 
     private volatile boolean partsChanged = false;
@@ -95,7 +96,7 @@ public class PartNetwork extends Network<IPartNetwork> implements IPartNetwork, 
         variableContainerPositions = Lists.newArrayList();
         compositeVariableCache = null;
         lazyExpressionValueCache = Maps.newHashMap();
-        energyBatteryPositions = Maps.newHashMap();
+        energyBatteryPositions = Sets.newHashSet();
         proxyPositions = Maps.newHashMap();
     }
 
@@ -324,27 +325,20 @@ public class PartNetwork extends Network<IPartNetwork> implements IPartNetwork, 
     }
 
     protected synchronized List<IEnergyBattery> getMaterializedEnergyBatteries() {
-        return ImmutableList.copyOf(
-            Iterables.transform(
-                energyBatteryPositions.entrySet(),
-                new Function<Map.Entry<DimPos, IEnergyBatteryFacade>, IEnergyBattery>() {
+        return ImmutableList.copyOf(Iterables.transform(energyBatteryPositions, new Function<DimPos, IEnergyBattery>() {
 
-                    @Nullable
-                    @Override
-                    public IEnergyBattery apply(Map.Entry<DimPos, IEnergyBatteryFacade> input) {
-                        return input.getValue()
-                            .getEnergyBattery(
-                                input.getKey()
-                                    .getWorld(),
-                                input.getKey()
-                                    .getBlockPos());
-                    }
+            @Nullable
+            @Override
+            public IEnergyBattery apply(DimPos dimPos) {
+                return CapabilityHelpers.getCapability(dimPos, EnergyBatteryConfig.CAPABILITY, null)
+                    .getOrNull();
+            }
 
-                    @Override
-                    public boolean equals(@Nullable Object object) {
-                        return false;
-                    }
-                }));
+            @Override
+            public boolean equals(@Nullable Object object) {
+                return false;
+            }
+        }));
     }
 
     protected int addSafe(int a, int b) {
@@ -398,11 +392,12 @@ public class PartNetwork extends Network<IPartNetwork> implements IPartNetwork, 
 
     @Override
     public boolean addEnergyBattery(DimPos dimPos) {
-        World world = dimPos.getWorld();
-        BlockPos pos = dimPos.getBlockPos();
-        Block block = pos.getBlock(world);
-        if (block instanceof IEnergyBatteryFacade) {
-            return energyBatteryPositions.put(dimPos, (IEnergyBatteryFacade) block) == null;
+        IEnergyBattery energyBattery = CapabilityHelpers.getCapability(dimPos, EnergyBatteryConfig.CAPABILITY, null)
+            .getOrNull();
+        if (energyBattery != null) {
+            boolean contained = energyBatteryPositions.contains(dimPos);
+            energyBatteryPositions.add(dimPos);
+            return !contained;
         }
         return false;
     }
@@ -413,8 +408,8 @@ public class PartNetwork extends Network<IPartNetwork> implements IPartNetwork, 
     }
 
     @Override
-    public Map<DimPos, IEnergyBatteryFacade> getEnergyBatteries() {
-        return Collections.unmodifiableMap(energyBatteryPositions);
+    public Set<DimPos> getEnergyBatteries() {
+        return Collections.unmodifiableSet(energyBatteryPositions);
     }
 
     @Override

@@ -17,14 +17,14 @@ import ruiseki.integrateddynamics.api.block.cable.ICableFakeable;
 import ruiseki.integrateddynamics.block.BlockCable;
 import ruiseki.integrateddynamics.core.helper.CableHelpers;
 import ruiseki.okcore.datastructure.BlockPos;
-import ruiseki.okcore.item.ItemBlockOK;
+import ruiseki.okcore.item.ItemBlockMetadata;
 
 /**
  * The item for the cable.
  *
  * @author rubensworks
  */
-public class ItemBlockCable extends ItemBlockOK {
+public class ItemBlockCable extends ItemBlockMetadata {
 
     private static final List<IUseAction> USE_ACTIONS = Lists.newArrayList();
 

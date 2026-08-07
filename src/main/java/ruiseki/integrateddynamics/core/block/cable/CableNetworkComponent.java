@@ -18,7 +18,7 @@ import ruiseki.integrateddynamics.api.path.ICablePathElement;
 import ruiseki.integrateddynamics.api.tileentity.ITileCable;
 import ruiseki.integrateddynamics.api.tileentity.ITileCableNetwork;
 import ruiseki.integrateddynamics.block.BlockCable;
-import ruiseki.integrateddynamics.capability.PartContainerConfig;
+import ruiseki.integrateddynamics.capability.partcontainer.PartContainerConfig;
 import ruiseki.integrateddynamics.core.helper.CableHelpers;
 import ruiseki.integrateddynamics.core.network.PartNetwork;
 import ruiseki.integrateddynamics.core.path.CablePathElement;

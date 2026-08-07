@@ -1,8 +1,8 @@
 package ruiseki.integrateddynamics.api.network;
 
-import java.util.Map;
+import java.util.Set;
 
-import ruiseki.integrateddynamics.api.block.IEnergyBatteryFacade;
+import ruiseki.integrateddynamics.api.block.IEnergyBattery;
 import ruiseki.okcore.datastructure.DimPos;
 
 /**
@@ -10,39 +10,11 @@ import ruiseki.okcore.datastructure.DimPos;
  * 
  * @author rubensworks
  */
-public interface IEnergyNetwork extends IPartNetwork {
-
-    /**
-     * @return The currently stored energy.
-     */
-    public int getStoredEnergy();
-
-    /**
-     * @return The maximum amount of energy that can be stored.
-     */
-    public int getMaxStoredEnergy();
-
-    /**
-     * Add the given energy amount from the network.
-     * 
-     * @param energy   The energy amount to add.
-     * @param simulate If the addition should be stimulated.
-     * @return The amount of energy that was added.
-     */
-    public int addEnergy(int energy, boolean simulate);
-
-    /**
-     * Remove the given energy amount from the network.
-     * 
-     * @param energy   The energy amount to remove.
-     * @param simulate If the consumption should be stimulated.
-     * @return The amount of energy that was consumed.
-     */
-    public int consume(int energy, boolean simulate);
+public interface IEnergyNetwork extends IEnergyBattery, IPartNetwork {
 
     /**
      * Add the position of a energy storage battery that must be accessible to the network.
-     * 
+     *
      * @param pos The energy battery position.
      * @return If the battery was added to the network.
      */
@@ -50,7 +22,7 @@ public interface IEnergyNetwork extends IPartNetwork {
 
     /**
      * Remove the position of a energy storage battery that was accessible to the network.
-     * 
+     *
      * @param pos The energy battery position.
      */
     public void removeEnergyBattery(DimPos pos);
@@ -58,7 +30,7 @@ public interface IEnergyNetwork extends IPartNetwork {
     /**
      * @return The energy batteries in this network.
      */
-    public Map<DimPos, IEnergyBatteryFacade> getEnergyBatteries();
+    public Set<DimPos> getEnergyBatteries();
 
     /**
      * @return The current network consumption rate.

@@ -192,11 +192,6 @@ public abstract class PartTypePanelVariableDriven<P extends PartTypePanelVariabl
         return super.getBlockModelPath(partContainer, side) + status;
     }
 
-    @Override
-    public String getItemModelPath() {
-        return super.getItemModelPath() + "_inactive";
-    }
-
     protected void onVariableContentsUpdated(IPartNetwork network, PartTarget target, S state) {
         state.onVariableContentsUpdated((P) this, target);
     }

@@ -1,4 +1,4 @@
-package ruiseki.integrateddynamics.capability;
+package ruiseki.integrateddynamics.capability.dynamicredstone;
 
 import ruiseki.commoncapabilities.CommonCapabilities;
 import ruiseki.integrateddynamics.api.block.IDynamicRedstone;
@@ -8,7 +8,7 @@ import ruiseki.okcore.config.extendedconfig.CapabilityConfig;
 
 /**
  * Config for the dynamic redstone capability.
- * 
+ *
  * @author rubensworks
  *
  */

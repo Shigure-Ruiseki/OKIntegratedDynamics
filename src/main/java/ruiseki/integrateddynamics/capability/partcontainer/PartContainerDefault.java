@@ -1,4 +1,4 @@
-package ruiseki.integrateddynamics.capability;
+package ruiseki.integrateddynamics.capability.partcontainer;
 
 import java.util.List;
 import java.util.Map;

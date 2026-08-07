@@ -1,18 +1,11 @@
 package ruiseki.integrateddynamics.api.block;
 
-import ruiseki.okcore.datastructure.DimPos;
-
 /**
- * An interface for containers that can hold energy.
- * 
+ * Capability containers that can hold energy.
+ *
  * @author rubensworks
  */
 public interface IEnergyBattery {
-
-    /**
-     * @return The position this container is at.
-     */
-    public DimPos getPosition();
 
     /**
      * @return The currently stored energy.
@@ -26,7 +19,7 @@ public interface IEnergyBattery {
 
     /**
      * Add the given energy amount to the battery.
-     * 
+     *
      * @param energy   The energy amount to add.
      * @param simulate If the addition should be stimulated.
      * @return The amount of energy that was added.
@@ -35,7 +28,7 @@ public interface IEnergyBattery {
 
     /**
      * Remove the given energy amount from the battery.
-     * 
+     *
      * @param energy   The energy amount to remove.
      * @param simulate If the consumption should be stimulated.
      * @return The amount of energy that was consumed.

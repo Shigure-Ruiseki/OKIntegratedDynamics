@@ -158,11 +158,6 @@ public abstract class PartTypeWriteBase<P extends IPartTypeWriter<P, S>, S exten
     }
 
     @Override
-    public String getItemModelPath() {
-        return super.getItemModelPath() + "_inactive";
-    }
-
-    @Override
     public Class<? extends Container> getContainer() {
         return ContainerPartWriter.class;
     }

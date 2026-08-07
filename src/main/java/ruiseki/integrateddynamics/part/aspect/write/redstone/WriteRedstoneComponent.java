@@ -4,7 +4,7 @@ import net.minecraftforge.common.util.ForgeDirection;
 
 import ruiseki.integrateddynamics.api.block.IDynamicRedstone;
 import ruiseki.integrateddynamics.api.part.PartTarget;
-import ruiseki.integrateddynamics.capability.DynamicRedstoneConfig;
+import ruiseki.integrateddynamics.capability.dynamicredstone.DynamicRedstoneConfig;
 import ruiseki.okcore.datastructure.DimPos;
 import ruiseki.okcore.helper.CapabilityHelpers;
 

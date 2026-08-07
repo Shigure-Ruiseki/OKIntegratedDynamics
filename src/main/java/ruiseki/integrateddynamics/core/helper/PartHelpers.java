@@ -25,7 +25,7 @@ import ruiseki.integrateddynamics.api.part.IPartState;
 import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.integrateddynamics.api.part.PartTarget;
-import ruiseki.integrateddynamics.capability.PartContainerConfig;
+import ruiseki.integrateddynamics.capability.partcontainer.PartContainerConfig;
 import ruiseki.integrateddynamics.core.network.event.UnknownPartEvent;
 import ruiseki.integrateddynamics.core.part.PartTypes;
 import ruiseki.okcore.datastructure.BlockPos;

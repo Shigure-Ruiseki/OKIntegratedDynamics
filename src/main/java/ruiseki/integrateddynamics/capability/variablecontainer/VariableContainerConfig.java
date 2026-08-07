@@ -1,4 +1,4 @@
-package ruiseki.integrateddynamics.capability;
+package ruiseki.integrateddynamics.capability.variablecontainer;
 
 import ruiseki.commoncapabilities.CommonCapabilities;
 import ruiseki.integrateddynamics.api.block.IVariableContainer;
@@ -8,7 +8,7 @@ import ruiseki.okcore.config.extendedconfig.CapabilityConfig;
 
 /**
  * Config for the variable container capability.
- * 
+ *
  * @author rubensworks
  *
  */

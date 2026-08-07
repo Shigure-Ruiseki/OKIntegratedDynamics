@@ -22,7 +22,7 @@ import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartState;
 import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.block.BlockCable;
-import ruiseki.integrateddynamics.capability.PartContainerConfig;
+import ruiseki.integrateddynamics.capability.partcontainer.PartContainerConfig;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.integrateddynamics.item.ItemBlockCable;
 import ruiseki.okcore.config.configurable.ConfigurableItem;

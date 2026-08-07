@@ -1,4 +1,4 @@
-package ruiseki.integrateddynamics.capability;
+package ruiseki.integrateddynamics.capability.dynamicredstone;
 
 import net.minecraftforge.common.util.ForgeDirection;
 
@@ -8,7 +8,7 @@ import ruiseki.okcore.datastructure.EnumFacingMap;
 
 /**
  * Default implementation of {@link IDynamicRedstone}.
- * 
+ *
  * @author rubensworks
  */
 public class DynamicRedstoneTileMultipartTicking implements IDynamicRedstone {
