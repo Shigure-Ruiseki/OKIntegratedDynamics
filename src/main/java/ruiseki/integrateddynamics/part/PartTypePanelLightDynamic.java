@@ -4,7 +4,7 @@ import net.minecraft.block.Block;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 
-import ruiseki.integrateddynamics.api.block.IDynamicLightBlock;
+import ruiseki.integrateddynamics.api.block.IDynamicLight;
 import ruiseki.integrateddynamics.api.evaluate.InvalidValueTypeException;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
@@ -12,12 +12,14 @@ import ruiseki.integrateddynamics.api.part.IPartState;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.block.BlockInvisibleLight;
 import ruiseki.integrateddynamics.block.BlockInvisibleLightConfig;
+import ruiseki.integrateddynamics.capability.DynamicLightConfig;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeLightLevels;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.integrateddynamics.core.part.panel.PartTypePanelVariableDriven;
 import ruiseki.okcore.config.ConfigHandler;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.helper.BlockStateHelpers;
+import ruiseki.okcore.helper.CapabilityHelpers;
 import ruiseki.okcore.helper.LangHelpers;
 
 /**
@@ -127,20 +129,15 @@ public class PartTypePanelLightDynamic
                 }
             }
         } else {
-            IBlockAccess world = target.getCenter()
-                .getPos()
-                .getWorld();
-            BlockPos pos = target.getCenter()
-                .getPos()
-                .getBlockPos();
-            Block block = pos.getBlock(world);
-            if (block instanceof IDynamicLightBlock) {
-                ((IDynamicLightBlock) block).setLightLevel(
-                    world,
-                    pos,
-                    target.getCenter()
-                        .getSide(),
-                    lightLevel);
+            IDynamicLight dynamicLight = CapabilityHelpers.getCapability(
+                target.getCenter()
+                    .getPos(),
+                DynamicLightConfig.CAPABILITY,
+                target.getCenter()
+                    .getSide())
+                .getOrNull();
+            if (dynamicLight != null) {
+                dynamicLight.setLightLevel(lightLevel);
             }
         }
     }

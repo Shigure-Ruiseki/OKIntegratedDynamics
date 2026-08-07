@@ -32,8 +32,7 @@ import cpw.mods.fml.relauncher.SideOnly;
 import lombok.Setter;
 import lombok.experimental.Delegate;
 import ruiseki.integrateddynamics.IntegratedDynamics;
-import ruiseki.integrateddynamics.api.block.IDynamicLightBlock;
-import ruiseki.integrateddynamics.api.block.IDynamicRedstoneBlock;
+import ruiseki.integrateddynamics.api.block.IDynamicRedstone;
 import ruiseki.integrateddynamics.api.block.cable.ICable;
 import ruiseki.integrateddynamics.api.block.cable.ICableFacadeable;
 import ruiseki.integrateddynamics.api.block.cable.ICableFakeable;
@@ -48,6 +47,7 @@ import ruiseki.integrateddynamics.block.collidable.CollidableComponentCableCente
 import ruiseki.integrateddynamics.block.collidable.CollidableComponentCableConnections;
 import ruiseki.integrateddynamics.block.collidable.CollidableComponentFacade;
 import ruiseki.integrateddynamics.block.collidable.CollidableComponentParts;
+import ruiseki.integrateddynamics.capability.DynamicRedstoneConfig;
 import ruiseki.integrateddynamics.capability.PartContainerConfig;
 import ruiseki.integrateddynamics.client.model.CableModel;
 import ruiseki.integrateddynamics.core.block.cable.CableNetworkFacadeableComponent;
@@ -74,7 +74,7 @@ import ruiseki.okcore.helper.TileHelpers;
 
 public class BlockCable extends ConfigurableBlockContainer implements ICableNetwork<IPartNetwork, ICablePathElement>,
     ICableFakeable<ICablePathElement>, ICableFacadeable<ICablePathElement>, ICollidable<ForgeDirection>,
-    ICollidableParent, IDynamicRedstoneBlock, IDynamicLightBlock, IBlockModelProvider, BlockModelInfo {
+    ICollidableParent, IBlockModelProvider, BlockModelInfo {
 
     public static final float BLOCK_HARDNESS = 3.0F;
     public static final Material BLOCK_MATERIAL = Material.glass;
@@ -515,49 +515,7 @@ public class BlockCable extends ConfigurableBlockContainer implements ICableNetw
             : null;
     }
 
-    /* --------------- Start IDynamicRedstoneBlock --------------- */
-
-    @Override
-    public void disableRedstoneAt(IBlockAccess world, BlockPos pos, ForgeDirection side) {
-        TileMultipartTicking tile = TileHelpers.getSafeTile(world, pos, TileMultipartTicking.class);
-        if (tile != null) {
-            tile.disableRedstoneLevel(side);
-        }
-    }
-
-    @Override
-    public void setRedstoneLevel(IBlockAccess world, BlockPos pos, ForgeDirection side, int level) {
-        TileMultipartTicking tile = TileHelpers.getSafeTile(world, pos, TileMultipartTicking.class);
-        if (tile != null) {
-            tile.setRedstoneLevel(side, level);
-        }
-    }
-
-    @Override
-    public int getRedstoneLevel(IBlockAccess world, BlockPos pos, ForgeDirection side) {
-        TileMultipartTicking tile = TileHelpers.getSafeTile(world, pos, TileMultipartTicking.class);
-        if (tile != null) {
-            return tile.getRedstoneLevel(side);
-        }
-        return -1;
-    }
-
-    @Override
-    public void setAllowRedstoneInput(IBlockAccess world, BlockPos pos, ForgeDirection side, boolean allow) {
-        TileMultipartTicking tile = TileHelpers.getSafeTile(world, pos, TileMultipartTicking.class);
-        if (tile != null) {
-            tile.setAllowRedstoneInput(side, allow);
-        }
-    }
-
-    @Override
-    public boolean isAllowRedstoneInput(IBlockAccess world, BlockPos pos, ForgeDirection side) {
-        TileMultipartTicking tile = TileHelpers.getSafeTile(world, pos, TileMultipartTicking.class);
-        if (tile != null) {
-            return tile.isAllowRedstoneInput(side);
-        }
-        return false;
-    }
+    /* --------------- Start IDynamicRedstone --------------- */
 
     @Override
     public boolean canProvidePower() {
@@ -569,13 +527,23 @@ public class BlockCable extends ConfigurableBlockContainer implements ICableNetw
         if (sideInt < 0) return false;
         ForgeDirection side = ForgeDirection.getOrientation(sideInt);
         BlockPos pos = new BlockPos(x, y, z);
-        if (side == ForgeDirection.UNKNOWN) {
-            for (ForgeDirection validSide : ForgeDirection.VALID_DIRECTIONS) {
-                if (isAllowRedstoneInput(world, pos, validSide)) return true;
+        if (side == null) {
+            for (ForgeDirection dummySide : ForgeDirection.VALID_DIRECTIONS) {
+                IDynamicRedstone dynamicRedstone = CapabilityHelpers
+                    .getCapability(world, pos, DynamicRedstoneConfig.CAPABILITY, dummySide)
+                    .getOrNull();
+                if (dynamicRedstone != null
+                    && (dynamicRedstone.getRedstoneLevel() >= 0 || dynamicRedstone.isAllowRedstoneInput())) {
+                    return true;
+                }
             }
             return false;
         }
-        return isAllowRedstoneInput(world, pos, side);
+        IDynamicRedstone dynamicRedstone = CapabilityHelpers
+            .getCapability(world, pos, DynamicRedstoneConfig.CAPABILITY, side.getOpposite())
+            .getOrNull();
+        return dynamicRedstone != null
+            && (dynamicRedstone.getRedstoneLevel() >= 0 || dynamicRedstone.isAllowRedstoneInput());
     }
 
     @Override
@@ -585,40 +553,16 @@ public class BlockCable extends ConfigurableBlockContainer implements ICableNetw
 
     @Override
     public int isProvidingWeakPower(IBlockAccess world, int x, int y, int z, int side) {
-        return getRedstoneLevel(
-            world,
-            new BlockPos(x, y, z),
-            ForgeDirection.getOrientation(side)
-                .getOpposite());
-    }
-
-    /* --------------- Start IDynamicLightBlock --------------- */
-
-    @Override
-    public void setLightLevel(IBlockAccess world, BlockPos pos, ForgeDirection side, int level) {
-        TileMultipartTicking tile = TileHelpers.getSafeTile(world, pos, TileMultipartTicking.class);
-        if (tile != null) {
-            tile.setLightLevel(side, level);
-        }
-    }
-
-    @Override
-    public int getLightLevel(IBlockAccess world, BlockPos pos, ForgeDirection side) {
-        TileMultipartTicking tile = TileHelpers.getSafeTile(world, pos, TileMultipartTicking.class);
-        if (tile != null) {
-            return tile.getLightLevel(side);
-        }
-        return 0;
-    }
-
-    @Override
-    public int getLightValue(IBlockAccess world, int x, int y, int z) {
         BlockPos pos = new BlockPos(x, y, z);
-        int light = 0;
-        for (ForgeDirection side : ForgeDirection.VALID_DIRECTIONS) {
-            light = Math.max(light, getLightLevel(world, pos, side));
-        }
-        return light;
+        IDynamicRedstone dynamicRedstone = CapabilityHelpers
+            .getCapability(
+                world,
+                pos,
+                DynamicRedstoneConfig.CAPABILITY,
+                ForgeDirection.getOrientation(side)
+                    .getOpposite())
+            .getOrNull();
+        return dynamicRedstone != null ? dynamicRedstone.getRedstoneLevel() : 0;
     }
 
     /* --------------- Delegate to ICableNetwork<CablePathElement> --------------- */

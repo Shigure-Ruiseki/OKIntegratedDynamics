@@ -101,8 +101,7 @@ public class Network<N extends INetwork<N>> implements INetwork<N> {
                     .getCapability(cable.getPosition(), NetworkElementProviderConfig.CAPABILITY, null)
                     .getOrNull();
                 if (networkElementProvider != null) {
-                    for (INetworkElement<N> element : ((INetworkElementProvider<N>) networkElementProvider)
-                        .createNetworkElements(world, pos)) {
+                    for (INetworkElement<N> element : networkElementProvider.createNetworkElements(world, pos)) {
                         addNetworkElement(element, true);
                     }
                 }

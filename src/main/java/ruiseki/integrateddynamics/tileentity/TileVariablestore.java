@@ -15,7 +15,6 @@ import com.google.common.collect.Maps;
 import ruiseki.integrateddynamics.api.block.IVariableContainer;
 import ruiseki.integrateddynamics.api.item.IVariableFacade;
 import ruiseki.integrateddynamics.api.network.INetworkElement;
-import ruiseki.integrateddynamics.api.network.INetworkElementProvider;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.capability.NetworkElementProviderConfig;
 import ruiseki.integrateddynamics.capability.NetworkElementProviderSingleton;
@@ -40,14 +39,6 @@ public class TileVariablestore extends TileCableConnectableInventory implements 
     public static final int COLS = 9;
     private Map<Integer, IVariableFacade> variableCache = Maps.newHashMap();
 
-    private final INetworkElementProvider networkElementProvider = new NetworkElementProviderSingleton<IPartNetwork>() {
-
-        @Override
-        public INetworkElement<IPartNetwork> createNetworkElement(World world, BlockPos blockPos) {
-            return new VariablestoreNetworkElement(DimPos.of(world, blockPos));
-        }
-    };
-
     public TileVariablestore() {
         super(ROWS * COLS, "variables", 1);
         inventory.addDirtyMarkListener(this);
@@ -62,7 +53,15 @@ public class TileVariablestore extends TileCableConnectableInventory implements 
         }
 
         this.capabilityCache.addCapabilityResolver(
-            BasicCapabilityResolver.create(NetworkElementProviderConfig.CAPABILITY, () -> networkElementProvider));
+            BasicCapabilityResolver.create(
+                NetworkElementProviderConfig.CAPABILITY,
+                () -> new NetworkElementProviderSingleton<IPartNetwork>() {
+
+                    @Override
+                    public INetworkElement<IPartNetwork> createNetworkElement(World world, BlockPos blockPos) {
+                        return new VariablestoreNetworkElement(DimPos.of(world, blockPos));
+                    }
+                }));
     }
 
     @Override

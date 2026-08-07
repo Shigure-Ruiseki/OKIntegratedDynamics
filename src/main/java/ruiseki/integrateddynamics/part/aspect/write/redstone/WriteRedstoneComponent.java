@@ -1,14 +1,16 @@
 package ruiseki.integrateddynamics.part.aspect.write.redstone;
 
-import net.minecraft.block.Block;
+import net.minecraftforge.common.util.ForgeDirection;
 
-import ruiseki.integrateddynamics.api.block.IDynamicRedstoneBlock;
+import ruiseki.integrateddynamics.api.block.IDynamicRedstone;
 import ruiseki.integrateddynamics.api.part.PartTarget;
+import ruiseki.integrateddynamics.capability.DynamicRedstoneConfig;
 import ruiseki.okcore.datastructure.DimPos;
+import ruiseki.okcore.helper.CapabilityHelpers;
 
 /**
  * Default component for writing redstone levels.
- * 
+ *
  * @author rubensworks
  */
 public class WriteRedstoneComponent implements IWriteRedstoneComponent {
@@ -17,14 +19,12 @@ public class WriteRedstoneComponent implements IWriteRedstoneComponent {
     public void setRedstoneLevel(PartTarget target, int level) {
         DimPos dimPos = target.getCenter()
             .getPos();
-        IDynamicRedstoneBlock block = getDynamicRedstoneBlock(dimPos);
+        IDynamicRedstone block = getDynamicRedstoneBlock(
+            dimPos,
+            target.getCenter()
+                .getSide());
         if (block != null) {
-            block.setRedstoneLevel(
-                dimPos.getWorld(),
-                dimPos.getBlockPos(),
-                target.getCenter()
-                    .getSide(),
-                level);
+            block.setRedstoneLevel(level);
         }
     }
 
@@ -32,23 +32,18 @@ public class WriteRedstoneComponent implements IWriteRedstoneComponent {
     public void deactivate(PartTarget target) {
         DimPos dimPos = target.getCenter()
             .getPos();
-        IDynamicRedstoneBlock block = getDynamicRedstoneBlock(dimPos);
-        if (block != null) {
-            block.disableRedstoneAt(
-                dimPos.getWorld(),
-                dimPos.getBlockPos(),
-                target.getCenter()
-                    .getSide());
+        IDynamicRedstone block = getDynamicRedstoneBlock(
+            dimPos,
+            target.getCenter()
+                .getSide());
+        if (block != null && !dimPos.getWorld().isRemote) {
+            block.setRedstoneLevel(-1);
         }
     }
 
     @Override
-    public IDynamicRedstoneBlock getDynamicRedstoneBlock(DimPos dimPos) {
-        Block block = dimPos.getBlockPos()
-            .getBlock(dimPos.getWorld());
-        if (block instanceof IDynamicRedstoneBlock) {
-            return (IDynamicRedstoneBlock) block;
-        }
-        return null;
+    public IDynamicRedstone getDynamicRedstoneBlock(DimPos dimPos, ForgeDirection side) {
+        return CapabilityHelpers.getCapability(dimPos, DynamicRedstoneConfig.CAPABILITY, side)
+            .getOrNull();
     }
 }

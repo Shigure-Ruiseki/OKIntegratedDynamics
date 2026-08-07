@@ -16,10 +16,13 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Delegate;
 import ruiseki.integrateddynamics.api.block.cable.ICable;
-import ruiseki.integrateddynamics.api.network.INetworkElementProvider;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.tileentity.ITileCableFacadeable;
 import ruiseki.integrateddynamics.api.tileentity.ITileCableNetwork;
+import ruiseki.integrateddynamics.capability.DynamicLightConfig;
+import ruiseki.integrateddynamics.capability.DynamicLightTileMultipartTicking;
+import ruiseki.integrateddynamics.capability.DynamicRedstoneConfig;
+import ruiseki.integrateddynamics.capability.DynamicRedstoneTileMultipartTicking;
 import ruiseki.integrateddynamics.capability.NetworkElementProviderConfig;
 import ruiseki.integrateddynamics.capability.NetworkElementProviderPartContainer;
 import ruiseki.integrateddynamics.capability.PartContainerConfig;
@@ -28,6 +31,7 @@ import ruiseki.integrateddynamics.core.block.cable.CableNetworkComponent;
 import ruiseki.integrateddynamics.core.helper.PartHelpers;
 import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.capabilities.resolver.BasicCapabilityResolver;
+import ruiseki.okcore.capabilities.resolver.SidedCapabilityResolver;
 import ruiseki.okcore.datastructure.EnumFacingMap;
 import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.helper.BlockHelpers;
@@ -53,10 +57,13 @@ public class TileMultipartTicking extends TileEntityOK implements TileEntityOK.I
     private EnumFacingMap<Boolean> connected = EnumFacingMap.newMap();
     @NBTPersist
     private EnumFacingMap<Boolean> forceDisconnected = EnumFacingMap.newMap();
+    @Getter
     @NBTPersist
     private EnumFacingMap<Integer> redstoneLevels = EnumFacingMap.newMap();
+    @Getter
     @NBTPersist
     private EnumFacingMap<Boolean> redstoneInputs = EnumFacingMap.newMap();
+    @Getter
     @NBTPersist
     private EnumFacingMap<Integer> lightLevels = EnumFacingMap.newMap();
     private EnumFacingMap<Integer> previousLightLevels;
@@ -72,15 +79,20 @@ public class TileMultipartTicking extends TileEntityOK implements TileEntityOK.I
     @Getter
     private final PartContainerTileMultipartTicking partContainer;
 
-    private final INetworkElementProvider networkElementProvider;
-
     public TileMultipartTicking() {
         partContainer = new PartContainerTileMultipartTicking(this);
-        this.networkElementProvider = new NetworkElementProviderPartContainer(partContainer);
         this.capabilityCache.addCapabilityResolver(
             BasicCapabilityResolver.create(PartContainerConfig.CAPABILITY, () -> this.partContainer));
         this.capabilityCache.addCapabilityResolver(
-            BasicCapabilityResolver.create(NetworkElementProviderConfig.CAPABILITY, () -> networkElementProvider));
+            BasicCapabilityResolver.create(
+                NetworkElementProviderConfig.CAPABILITY,
+                () -> new NetworkElementProviderPartContainer(partContainer)));
+        this.capabilityCache.addCapabilityResolver(
+            SidedCapabilityResolver
+                .create(DynamicLightConfig.CAPABILITY, side -> new DynamicLightTileMultipartTicking(this, side)));
+        this.capabilityCache.addCapabilityResolver(
+            SidedCapabilityResolver
+                .create(DynamicRedstoneConfig.CAPABILITY, side -> new DynamicRedstoneTileMultipartTicking(this, side)));
     }
 
     @Override
@@ -185,7 +197,7 @@ public class TileMultipartTicking extends TileEntityOK implements TileEntityOK.I
         partContainer.update();
     }
 
-    protected void updateRedstoneInfo(ForgeDirection side) {
+    public void updateRedstoneInfo(ForgeDirection side) {
         sendUpdate();
 
         int x = getPos().getX();
@@ -202,76 +214,8 @@ public class TileMultipartTicking extends TileEntityOK implements TileEntityOK.I
         getWorldObj().notifyBlocksOfNeighborChange(offsetX, offsetY, offsetZ, getBlock());
     }
 
-    public void setRedstoneLevel(ForgeDirection side, int level) {
-        if (!getWorldObj().isRemote) {
-            boolean sendUpdate = false;
-            if (redstoneLevels.containsKey(side)) {
-                if (redstoneLevels.get(side) != level) {
-                    sendUpdate = true;
-                    redstoneLevels.put(side, level);
-                }
-            } else {
-                sendUpdate = true;
-                redstoneLevels.put(side, level);
-            }
-            if (sendUpdate) {
-                updateRedstoneInfo(side);
-            }
-        }
-    }
-
-    public int getRedstoneLevel(ForgeDirection side) {
-        if (redstoneLevels.containsKey(side)) {
-            return redstoneLevels.get(side);
-        }
-        return -1;
-    }
-
-    public void setAllowRedstoneInput(ForgeDirection side, boolean allow) {
-        redstoneInputs.put(side, allow);
-    }
-
-    public boolean isAllowRedstoneInput(ForgeDirection side) {
-        if (redstoneInputs.containsKey(side)) {
-            return redstoneInputs.get(side);
-        }
-        return false;
-    }
-
-    public void disableRedstoneLevel(ForgeDirection side) {
-        if (!getWorldObj().isRemote) {
-            redstoneLevels.remove(side);
-            updateRedstoneInfo(side);
-        }
-    }
-
-    protected void updateLightInfo(ForgeDirection side) {
+    public void updateLightInfo() {
         sendUpdate();
-    }
-
-    public void setLightLevel(ForgeDirection side, int level) {
-        if (!getWorldObj().isRemote) {
-            boolean sendUpdate = false;
-            if (lightLevels.containsKey(side)) {
-                if (lightLevels.get(side) != level) {
-                    sendUpdate = true;
-                    lightLevels.put(side, level);
-                }
-            } else {
-                sendUpdate = true;
-                lightLevels.put(side, level);
-            }
-            if (sendUpdate) {
-                updateLightInfo(side);
-            }
-        }
-    }
-
-    public int getLightLevel(ForgeDirection side) {
-        if (lightLevels.containsKey(side)) {
-            return lightLevels.get(side);
-        }
-        return 0;
     }
 
     @Override
