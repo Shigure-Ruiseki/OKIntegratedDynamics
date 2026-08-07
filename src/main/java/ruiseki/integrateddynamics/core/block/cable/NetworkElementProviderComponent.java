@@ -44,19 +44,21 @@ public class NetworkElementProviderComponent<N extends INetwork> {
     public void onPreBlockDestroyed(@Nullable N network, World world, BlockPos pos, boolean dropMainElement) {
         // Drop all parts types as item.
         if (!world.isRemote) {
-            List<ItemStack> itemStacks = Lists.newLinkedList();
             INetworkElementProvider<N> networkElementProvider = getNetworkElementProvider(world, pos);
-            for (INetworkElement<N> networkElement : networkElementProvider.createNetworkElements(world, pos)) {
-                networkElement.addDrops(itemStacks, dropMainElement);
-                if (network != null) {
-                    networkElement.onPreRemoved(network);
-                    network.removeNetworkElementPre(networkElement);
-                    network.removeNetworkElementPost(networkElement);
-                    networkElement.onPostRemoved(network);
+            if (networkElementProvider != null) {
+                List<ItemStack> itemStacks = Lists.newLinkedList();
+                for (INetworkElement<N> networkElement : networkElementProvider.createNetworkElements(world, pos)) {
+                    networkElement.addDrops(itemStacks, dropMainElement);
+                    if (network != null) {
+                        networkElement.onPreRemoved(network);
+                        network.removeNetworkElementPre(networkElement);
+                        network.removeNetworkElementPost(networkElement);
+                        networkElement.onPostRemoved(network);
+                    }
                 }
-            }
-            for (ItemStack itemStack : itemStacks) {
-                InventoryHelpers.dropItems(world, itemStack, pos);
+                for (ItemStack itemStack : itemStacks) {
+                    InventoryHelpers.dropItems(world, itemStack, pos);
+                }
             }
         }
     }
@@ -73,8 +75,10 @@ public class NetworkElementProviderComponent<N extends INetwork> {
     public void onBlockNeighborChange(@Nullable N network, World world, BlockPos pos, Block neighborBlock) {
         if (!world.isRemote) {
             INetworkElementProvider<N> networkElementProvider = getNetworkElementProvider(world, pos);
-            for (INetworkElement<N> networkElement : networkElementProvider.createNetworkElements(world, pos)) {
-                networkElement.onNeighborBlockChange(network, world, neighborBlock);
+            if (networkElementProvider != null) {
+                for (INetworkElement<N> networkElement : networkElementProvider.createNetworkElements(world, pos)) {
+                    networkElement.onNeighborBlockChange(network, world, neighborBlock);
+                }
             }
         }
     }

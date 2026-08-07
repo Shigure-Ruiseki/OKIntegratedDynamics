@@ -94,13 +94,14 @@ public class ItemBlockCable extends ItemBlockMetadata {
 
     public static void playPlaceSound(World world, BlockPos pos) {
         Block block = BlockCable.getInstance();
+        Block.SoundType stepSound = block.stepSound;
         world.playSoundEffect(
-            (double) ((float) pos.getX() + 0.5F),
-            (double) ((float) pos.getY() + 0.5F),
-            (double) ((float) pos.getZ() + 0.5F),
-            block.stepSound.soundName,
-            (block.stepSound.getVolume() + 1.0F) / 2.0F,
-            block.stepSound.frequency * 0.8F);
+            (double) pos.getX() + 0.5D,
+            (double) pos.getY() + 0.5D,
+            (double) pos.getZ() + 0.5D,
+            stepSound.func_150496_b(),
+            (stepSound.getVolume() + 1.0F) / 2.0F,
+            stepSound.getPitch() * 0.8F);
     }
 
     public static void playBreakSound(World world, BlockPos pos) {
