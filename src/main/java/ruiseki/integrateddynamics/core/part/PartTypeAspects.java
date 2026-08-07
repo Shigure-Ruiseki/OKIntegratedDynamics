@@ -5,6 +5,7 @@ import java.util.Set;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.part.IPartState;
 import ruiseki.integrateddynamics.api.part.IPartType;
+import ruiseki.integrateddynamics.api.part.PartRenderPosition;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.api.part.aspect.IAspect;
 import ruiseki.integrateddynamics.part.aspect.Aspects;
@@ -17,8 +18,8 @@ import ruiseki.integrateddynamics.part.aspect.Aspects;
 public abstract class PartTypeAspects<P extends IPartType<P, S>, S extends IPartState<P>>
     extends PartTypeConfigurable<P, S> {
 
-    public PartTypeAspects(String name, RenderPosition renderPosition) {
-        super(name, renderPosition);
+    public PartTypeAspects(String name, PartRenderPosition partRenderPosition) {
+        super(name, partRenderPosition);
     }
 
     /**

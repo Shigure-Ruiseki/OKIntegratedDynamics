@@ -95,7 +95,7 @@ public class NetworkDiagnosticsPartOverlayRenderer {
                     PartHelpers.PartStateHolder<?, ?> partStateHolder = PartHelpers.getPart(partPos);
                     if (partStateHolder != null) {
                         AxisAlignedBB bb = partStateHolder.getPart()
-                            .getRenderPosition()
+                            .getPartRenderPosition()
                             .getBoundingBox(partPos.getSide())
                             .offset(bPos)
                             .offset(-offsetX, -offsetY, -offsetZ)

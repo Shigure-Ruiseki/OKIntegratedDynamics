@@ -9,6 +9,7 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
+import ruiseki.integrateddynamics.api.part.PartRenderPosition;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.api.part.aspect.IAspectRead;
 import ruiseki.integrateddynamics.api.part.aspect.IAspectVariable;
@@ -28,7 +29,7 @@ public abstract class PartTypeReadBase<P extends IPartTypeReader<P, S>, S extend
     extends PartTypeAspects<P, S> implements IPartTypeReader<P, S> {
 
     public PartTypeReadBase(String name) {
-        super(name, new RenderPosition(0.1875F, 0.3125F, 0.625F, 0.625F));
+        super(name, new PartRenderPosition(0.1875F, 0.3125F, 0.625F, 0.625F));
     }
 
     @Override

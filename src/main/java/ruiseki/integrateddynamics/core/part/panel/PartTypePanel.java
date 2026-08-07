@@ -1,6 +1,7 @@
 package ruiseki.integrateddynamics.core.part.panel;
 
 import ruiseki.integrateddynamics.api.part.IPartState;
+import ruiseki.integrateddynamics.api.part.PartRenderPosition;
 import ruiseki.integrateddynamics.core.part.PartTypeBase;
 
 /**
@@ -11,7 +12,7 @@ import ruiseki.integrateddynamics.core.part.PartTypeBase;
 public abstract class PartTypePanel<P extends PartTypePanel<P, S>, S extends IPartState<P>> extends PartTypeBase<P, S> {
 
     public PartTypePanel(String name) {
-        super(name, new RenderPosition(0.125F, 0.1875F, 0.625F, 0.625F));
+        super(name, new PartRenderPosition(0.125F, 0.1875F, 0.625F, 0.625F));
     }
 
 }

@@ -27,6 +27,7 @@ import ruiseki.integrateddynamics.api.network.event.INetworkEvent;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartState;
 import ruiseki.integrateddynamics.api.part.IPartType;
+import ruiseki.integrateddynamics.api.part.PartRenderPosition;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.client.model.ItemPartRenderer;
 import ruiseki.integrateddynamics.core.client.gui.ExtendedGuiHandler;
@@ -61,10 +62,10 @@ public abstract class PartTypeBase<P extends IPartType<P, S>, S extends IPartSta
     @Getter
     private final String name;
     @Getter
-    private final RenderPosition renderPosition;
+    private final PartRenderPosition partRenderPosition;
     private final Map<Class<? extends INetworkEvent<IPartNetwork>>, IEventAction> networkEventActions;
 
-    public PartTypeBase(String name, RenderPosition renderPosition) {
+    public PartTypeBase(String name, PartRenderPosition partRenderPosition) {
         if (hasGui()) {
             this.guiID = Helpers.getNewId(getMod(), Helpers.IDType.GUI);
             getMod().getGuiHandler()
@@ -74,7 +75,7 @@ public abstract class PartTypeBase<P extends IPartType<P, S>, S extends IPartSta
         }
         this.name = name;
         this.item = registerItem();
-        this.renderPosition = renderPosition;
+        this.partRenderPosition = partRenderPosition;
 
         networkEventActions = constructNetworkEventActions();
     }

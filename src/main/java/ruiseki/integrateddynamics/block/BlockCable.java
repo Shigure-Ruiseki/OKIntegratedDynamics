@@ -47,6 +47,7 @@ import ruiseki.integrateddynamics.api.network.INetworkElementProvider;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartType;
+import ruiseki.integrateddynamics.api.part.PartRenderPosition;
 import ruiseki.integrateddynamics.api.path.ICablePathElement;
 import ruiseki.integrateddynamics.api.tileentity.ITileCableNetwork;
 import ruiseki.integrateddynamics.block.collidable.CollidableComponentCableCenter;
@@ -470,19 +471,19 @@ public class BlockCable extends ConfigurableBlockContainer
         }
     }
 
-    protected IPartType.RenderPosition getPartRenderPosition(IBlockAccess world, BlockPos pos, ForgeDirection side) {
+    protected PartRenderPosition getPartRenderPosition(IBlockAccess world, BlockPos pos, ForgeDirection side) {
         return CapabilityHelpers.getCapability(world, pos, PartContainerConfig.CAPABILITY, null)
             .map(container -> {
                 if (container.hasPart(side)) {
                     IPartType<?, ?> part = container.getPart(side);
                     if (part != null) {
-                        IPartType.RenderPosition posType = part.getRenderPosition();
-                        return posType != null ? posType : IPartType.RenderPosition.NONE;
+                        PartRenderPosition posType = part.getPartRenderPosition();
+                        return posType != null ? posType : PartRenderPosition.NONE;
                     }
                 }
-                return IPartType.RenderPosition.NONE;
+                return PartRenderPosition.NONE;
             })
-            .orElse(IPartType.RenderPosition.NONE);
+            .orElse(PartRenderPosition.NONE);
     }
 
     public ImmutableAxisAlignedBB getCableBoundingBoxWithPart(World world, BlockPos pos, ForgeDirection side) {
@@ -490,7 +491,7 @@ public class BlockCable extends ConfigurableBlockContainer
             return CABLE_CENTER_BOUNDINGBOX;
         }
 
-        IPartType.RenderPosition renderPosition = getPartRenderPosition(world, pos, side);
+        PartRenderPosition renderPosition = getPartRenderPosition(world, pos, side);
         if (renderPosition == null) {
             return getCableBoundingBox(side);
         }
@@ -501,7 +502,7 @@ public class BlockCable extends ConfigurableBlockContainer
     public ImmutableAxisAlignedBB getPartBoundingBox(World world, BlockPos pos, ForgeDirection side) {
         if (side == null) return null;
 
-        IPartType.RenderPosition renderPosition = null;
+        PartRenderPosition renderPosition = null;
         try {
             renderPosition = getPartRenderPosition(world, pos, side);
         } catch (Throwable t) {}

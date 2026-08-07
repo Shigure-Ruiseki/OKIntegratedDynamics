@@ -29,7 +29,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.Reference;
 import ruiseki.integrateddynamics.api.part.IPartType;
-import ruiseki.integrateddynamics.api.part.IPartType.RenderPosition;
+import ruiseki.integrateddynamics.api.part.PartRenderPosition;
 import ruiseki.integrateddynamics.core.tileentity.TileMultipartTicking;
 import ruiseki.okcore.datastructure.ThreadsafeCache;
 import ruiseki.okcore.helper.QuadBuilderHelpers;
@@ -112,7 +112,7 @@ public class CableModel implements BakedModel {
                     .getPart(side);
                 if (part != null) {
                     if (realCable) {
-                        RenderPosition renderPos = part.getRenderPosition();
+                        PartRenderPosition renderPos = part.getPartRenderPosition();
                         float depthFactor = renderPos != null ? renderPos.getDepthFactor() : 0.0f;
                         float targetDepth = 1.0f - depthFactor;
 
