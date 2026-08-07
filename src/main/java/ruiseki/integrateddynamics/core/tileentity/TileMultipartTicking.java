@@ -6,23 +6,21 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Delegate;
 import ruiseki.integrateddynamics.api.block.cable.ICable;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
-import ruiseki.integrateddynamics.api.tileentity.ITileCableFacadeable;
 import ruiseki.integrateddynamics.api.tileentity.ITileCableNetwork;
 import ruiseki.integrateddynamics.capability.DynamicLightConfig;
 import ruiseki.integrateddynamics.capability.DynamicLightTileMultipartTicking;
 import ruiseki.integrateddynamics.capability.DynamicRedstoneConfig;
 import ruiseki.integrateddynamics.capability.DynamicRedstoneTileMultipartTicking;
+import ruiseki.integrateddynamics.capability.FacadeableConfig;
+import ruiseki.integrateddynamics.capability.FacadeableMultipartTicking;
 import ruiseki.integrateddynamics.capability.NetworkElementProviderConfig;
 import ruiseki.integrateddynamics.capability.NetworkElementProviderPartContainer;
 import ruiseki.integrateddynamics.capability.PartContainerConfig;
@@ -34,7 +32,6 @@ import ruiseki.okcore.capabilities.resolver.BasicCapabilityResolver;
 import ruiseki.okcore.capabilities.resolver.SidedCapabilityResolver;
 import ruiseki.okcore.datastructure.EnumFacingMap;
 import ruiseki.okcore.datastructure.LazyOptional;
-import ruiseki.okcore.helper.BlockHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.persist.nbt.NBTPersist;
 import ruiseki.okcore.tileentity.TileEntityOK;
@@ -44,8 +41,8 @@ import ruiseki.okcore.tileentity.TileEntityOK;
  *
  * @author Ruben Taelman
  */
-public class TileMultipartTicking extends TileEntityOK implements TileEntityOK.ITickingTile, ITileCableNetwork,
-    ITileCableFacadeable, PartHelpers.IPartStateHolderCallback {
+public class TileMultipartTicking extends TileEntityOK
+    implements TileEntityOK.ITickingTile, ITileCableNetwork, PartHelpers.IPartStateHolderCallback {
 
     private final EnumFacingMap<PartHelpers.PartStateHolder<?, ?>> partData = EnumFacingMap.newMap();
     @Delegate
@@ -67,8 +64,12 @@ public class TileMultipartTicking extends TileEntityOK implements TileEntityOK.I
     @NBTPersist
     private EnumFacingMap<Integer> lightLevels = EnumFacingMap.newMap();
     private EnumFacingMap<Integer> previousLightLevels;
+    @Getter
+    @Setter
     @NBTPersist
     private String facadeBlockName = null;
+    @Getter
+    @Setter
     @NBTPersist
     private int facadeMeta = 0;
 
@@ -87,6 +88,8 @@ public class TileMultipartTicking extends TileEntityOK implements TileEntityOK.I
             BasicCapabilityResolver.create(
                 NetworkElementProviderConfig.CAPABILITY,
                 () -> new NetworkElementProviderPartContainer(partContainer)));
+        this.capabilityCache.addCapabilityResolver(
+            BasicCapabilityResolver.create(FacadeableConfig.CAPABILITY, () -> new FacadeableMultipartTicking(this)));
         this.capabilityCache.addCapabilityResolver(
             SidedCapabilityResolver
                 .create(DynamicLightConfig.CAPABILITY, side -> new DynamicLightTileMultipartTicking(this, side)));
@@ -142,32 +145,6 @@ public class TileMultipartTicking extends TileEntityOK implements TileEntityOK.I
      */
     public boolean isRealCable() {
         return this.realCable;
-    }
-
-    @Override
-    public boolean hasFacade() {
-        return facadeBlockName != null && !facadeBlockName.isEmpty();
-    }
-
-    @Override
-    public BlockState getFacade() {
-        if (!hasFacade()) {
-            return null;
-        }
-        return BlockHelpers.deserializeBlockState(Pair.of(this.facadeBlockName, this.facadeMeta));
-    }
-
-    @Override
-    public void setFacade(@Nullable BlockState blockState) {
-        if (blockState == null) {
-            this.facadeMeta = 0;
-            this.facadeBlockName = null;
-        } else {
-            Pair<String, Integer> serializedBlockState = BlockHelpers.serializeBlockState(blockState);
-            this.facadeMeta = serializedBlockState.getRight();
-            this.facadeBlockName = serializedBlockState.getLeft();
-        }
-        sendUpdate();
     }
 
     @Override

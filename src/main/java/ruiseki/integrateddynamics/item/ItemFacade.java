@@ -12,14 +12,15 @@ import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import ruiseki.integrateddynamics.api.tileentity.ITileCableFacadeable;
+import ruiseki.integrateddynamics.api.block.IFacadeable;
+import ruiseki.integrateddynamics.capability.FacadeableConfig;
 import ruiseki.okcore.config.configurable.ConfigurableItem;
 import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.helper.BlockHelpers;
+import ruiseki.okcore.helper.CapabilityHelpers;
 import ruiseki.okcore.helper.ItemNBTHelpers;
 import ruiseki.okcore.helper.LangHelpers;
-import ruiseki.okcore.helper.TileHelpers;
 
 /**
  * An item that represents a facade of a certain type.
@@ -90,12 +91,13 @@ public class ItemFacade extends ConfigurableItem {
         float hitX, float hitY, float hitZ) {
         if (!world.isRemote) {
             BlockPos pos = new BlockPos(x, y, z);
-            ITileCableFacadeable facadeContainer = TileHelpers.getSafeTile(world, pos, ITileCableFacadeable.class);
+            IFacadeable facadeable = CapabilityHelpers.getCapability(world, pos, FacadeableConfig.CAPABILITY, null)
+                .getOrNull();
             BlockState blockState = getFacadeBlock(itemStack);
-            if (facadeContainer != null && blockState != null) {
+            if (facadeable != null && blockState != null) {
                 // Add facade to existing cable
-                if (!facadeContainer.hasFacade()) {
-                    facadeContainer.setFacade(blockState);
+                if (!facadeable.hasFacade()) {
+                    facadeable.setFacade(blockState);
                     ItemBlockCable.playPlaceSound(world, pos);
                     itemStack.stackSize--;
                 }

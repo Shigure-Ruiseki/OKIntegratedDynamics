@@ -10,6 +10,7 @@ import ruiseki.integrateddynamics.block.BlockMenrilSaplingConfig;
 import ruiseki.integrateddynamics.block.BlockVariablestoreConfig;
 import ruiseki.integrateddynamics.capability.DynamicLightConfig;
 import ruiseki.integrateddynamics.capability.DynamicRedstoneConfig;
+import ruiseki.integrateddynamics.capability.FacadeableConfig;
 import ruiseki.integrateddynamics.capability.NetworkElementProviderConfig;
 import ruiseki.integrateddynamics.capability.PartContainerConfig;
 import ruiseki.integrateddynamics.item.ItemFacadeConfig;
@@ -30,6 +31,7 @@ public class Configs {
         configHandler.add(new NetworkElementProviderConfig());
         configHandler.add(new DynamicLightConfig());
         configHandler.add(new DynamicRedstoneConfig());
+        configHandler.add(new FacadeableConfig());
 
         // Fluids
         // configHandler.add(new FluidMenrilResinConfig());

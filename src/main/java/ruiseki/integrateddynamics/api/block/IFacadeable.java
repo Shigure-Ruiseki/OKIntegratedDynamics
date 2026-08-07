@@ -1,16 +1,15 @@
-package ruiseki.integrateddynamics.api.tileentity;
+package ruiseki.integrateddynamics.api.block;
 
 import org.jetbrains.annotations.Nullable;
 
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 
 /**
- * Interface for tile entities behind block that are a
- * {@link ruiseki.integrateddynamics.api.block.cable.ICableFacadeable}.
+ * Capability for targets that can hold facades.
  *
  * @author rubensworks
  */
-public interface ITileCableFacadeable extends ITileCable {
+public interface IFacadeable {
 
     /**
      * @return If this container has a facade.

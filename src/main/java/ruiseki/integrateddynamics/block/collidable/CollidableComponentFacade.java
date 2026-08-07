@@ -13,11 +13,14 @@ import net.minecraftforge.common.util.ForgeDirection;
 
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 
+import ruiseki.integrateddynamics.api.block.IFacadeable;
 import ruiseki.integrateddynamics.block.BlockCable;
+import ruiseki.integrateddynamics.capability.FacadeableConfig;
 import ruiseki.integrateddynamics.item.ItemFacade;
 import ruiseki.okcore.block.collidable.ICollidable;
 import ruiseki.okcore.block.collidable.ImmutableAxisAlignedBB;
 import ruiseki.okcore.datastructure.BlockPos;
+import ruiseki.okcore.helper.CapabilityHelpers;
 import ruiseki.okcore.helper.ItemStackHelpers;
 
 public class CollidableComponentFacade implements ICollidable.IComponent<ForgeDirection, BlockCable> {
@@ -36,7 +39,7 @@ public class CollidableComponentFacade implements ICollidable.IComponent<ForgeDi
 
     @Override
     public boolean isActive(BlockCable cable, World world, BlockPos pos, ForgeDirection direction) {
-        return cable.hasFacade(world, pos);
+        return FacadeableConfig.hasFacade(world, pos);
     }
 
     @Override
@@ -48,10 +51,7 @@ public class CollidableComponentFacade implements ICollidable.IComponent<ForgeDi
     public ItemStack getPickBlock(World world, BlockPos blockPos, ForgeDirection direction) {
         ItemStack itemStack = new ItemStack(ItemFacade.getInstance());
         ItemFacade.getInstance()
-            .writeFacadeBlock(
-                itemStack,
-                BlockCable.getInstance()
-                    .getFacade(world, blockPos));
+            .writeFacadeBlock(itemStack, FacadeableConfig.getFacade(world, blockPos));
         return itemStack;
     }
 
@@ -59,12 +59,12 @@ public class CollidableComponentFacade implements ICollidable.IComponent<ForgeDi
     public boolean destroy(World world, BlockPos pos, ForgeDirection direction, EntityPlayer player, boolean b) {
         if (!(pos.getBlock(world) instanceof BlockCable cable)) return false;
         if (!world.isRemote) {
-            BlockState blockState = cable.getFacade(world, pos);
+            IFacadeable facadeable = CapabilityHelpers.getCapability(world, pos, FacadeableConfig.CAPABILITY, null).getOrNull();
+            BlockState blockState = facadeable.getFacade();
             ItemStack itemStack = new ItemStack(ItemFacade.getInstance());
             ItemFacade.getInstance()
                 .writeFacadeBlock(itemStack, blockState);
-            BlockCable.getInstance()
-                .setFacade(world, pos, null);
+            facadeable.setFacade(null);
             if (!player.capabilities.isCreativeMode) {
                 ItemStackHelpers.spawnItemStackToPlayer(world, pos, itemStack, player);
             }

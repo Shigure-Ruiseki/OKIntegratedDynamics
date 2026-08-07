@@ -34,7 +34,6 @@ import lombok.experimental.Delegate;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.block.IDynamicRedstone;
 import ruiseki.integrateddynamics.api.block.cable.ICable;
-import ruiseki.integrateddynamics.api.block.cable.ICableFacadeable;
 import ruiseki.integrateddynamics.api.block.cable.ICableFakeable;
 import ruiseki.integrateddynamics.api.block.cable.ICableNetwork;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
@@ -48,9 +47,10 @@ import ruiseki.integrateddynamics.block.collidable.CollidableComponentCableConne
 import ruiseki.integrateddynamics.block.collidable.CollidableComponentFacade;
 import ruiseki.integrateddynamics.block.collidable.CollidableComponentParts;
 import ruiseki.integrateddynamics.capability.DynamicRedstoneConfig;
+import ruiseki.integrateddynamics.capability.FacadeableConfig;
 import ruiseki.integrateddynamics.capability.PartContainerConfig;
 import ruiseki.integrateddynamics.client.model.CableModel;
-import ruiseki.integrateddynamics.core.block.cable.CableNetworkFacadeableComponent;
+import ruiseki.integrateddynamics.core.block.cable.CableNetworkComponent;
 import ruiseki.integrateddynamics.core.block.cable.NetworkElementProviderComponent;
 import ruiseki.integrateddynamics.core.helper.CableHelpers;
 import ruiseki.integrateddynamics.core.helper.WrenchHelpers;
@@ -72,9 +72,9 @@ import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.helper.RenderHelpers;
 import ruiseki.okcore.helper.TileHelpers;
 
-public class BlockCable extends ConfigurableBlockContainer implements ICableNetwork<IPartNetwork, ICablePathElement>,
-    ICableFakeable<ICablePathElement>, ICableFacadeable<ICablePathElement>, ICollidable<ForgeDirection>,
-    ICollidableParent, IBlockModelProvider, BlockModelInfo {
+public class BlockCable extends ConfigurableBlockContainer
+    implements ICableNetwork<IPartNetwork, ICablePathElement>, ICableFakeable<ICablePathElement>,
+    ICollidable<ForgeDirection>, ICollidableParent, IBlockModelProvider, BlockModelInfo {
 
     public static final float BLOCK_HARDNESS = 3.0F;
     public static final Material BLOCK_MATERIAL = Material.glass;
@@ -113,8 +113,7 @@ public class BlockCable extends ConfigurableBlockContainer implements ICableNetw
     @Delegate
     private ICollidable<ForgeDirection> collidableComponent = new CollidableComponent<>(this, COLLIDABLE_COMPONENTS);
     // @Delegate// <- Lombok can't handle delegations with generics, so we'll have to do it manually...
-    private CableNetworkFacadeableComponent<BlockCable> cableNetworkComponent = new CableNetworkFacadeableComponent<>(
-        this);
+    private CableNetworkComponent<BlockCable> cableNetworkComponent = new CableNetworkComponent<>(this);
     private NetworkElementProviderComponent<IPartNetwork> networkElementProviderComponent = new NetworkElementProviderComponent<>();
 
     private static BlockCable _instance = null;
@@ -381,7 +380,7 @@ public class BlockCable extends ConfigurableBlockContainer implements ICableNetw
 
     @Override
     public int getLightOpacity(IBlockAccess world, int x, int y, int z) {
-        return hasFacade(world, new BlockPos(x, y, z)) ? 255 : 0;
+        return FacadeableConfig.hasFacade(world, new BlockPos(x, y, z)) ? 255 : 0;
     }
 
     @Override
@@ -391,7 +390,8 @@ public class BlockCable extends ConfigurableBlockContainer implements ICableNetw
 
     @Override
     public boolean shouldSideBeRendered(IBlockAccess world, int x, int y, int z, int side) {
-        return super.shouldSideBeRendered(world, x, y, z, side) || hasFacade(world, new BlockPos(x, y, z));
+        return super.shouldSideBeRendered(world, x, y, z, side)
+            || FacadeableConfig.hasFacade(world, new BlockPos(x, y, z));
     }
 
     @Override
@@ -403,11 +403,12 @@ public class BlockCable extends ConfigurableBlockContainer implements ICableNetw
     @SideOnly(Side.CLIENT)
     public boolean addHitEffects(World world, MovingObjectPosition target, EffectRenderer effectRenderer) {
         BlockPos blockPos = new BlockPos(target.blockX, target.blockY, target.blockZ);
-        if (hasFacade(world, blockPos)) {
+        if (FacadeableConfig.hasFacade(world, blockPos)) {
+            BlockState facadeState = FacadeableConfig.getFacade(world, blockPos);
             RenderHelpers.addBlockHitEffects(
                 world,
-                this,
-                blockPos.getBlockMetadata(world),
+                facadeState.getBlock(),
+                facadeState.getBlockMeta(0),
                 blockPos.getX(),
                 blockPos.getY(),
                 blockPos.getZ(),
@@ -421,7 +422,7 @@ public class BlockCable extends ConfigurableBlockContainer implements ICableNetw
     @Override
     public boolean isSideSolid(IBlockAccess world, int x, int y, int z, ForgeDirection side) {
         BlockPos pos = new BlockPos(x, y, z);
-        if (hasFacade(world, pos)) {
+        if (FacadeableConfig.hasFacade(world, pos)) {
             return true;
         }
         if (hasPart(world, pos, side)) {
@@ -615,21 +616,6 @@ public class BlockCable extends ConfigurableBlockContainer implements ICableNetw
         cableNetworkComponent.onPreBlockDestroyed(world, pos);
         // POST
         cableNetworkComponent.remove(world, pos, player);
-    }
-
-    @Override
-    public boolean hasFacade(IBlockAccess world, BlockPos pos) {
-        return cableNetworkComponent.hasFacade(world, pos);
-    }
-
-    @Override
-    public BlockState getFacade(World world, BlockPos pos) {
-        return cableNetworkComponent.getFacade(world, pos);
-    }
-
-    @Override
-    public void setFacade(World world, BlockPos pos, @Nullable BlockState blockState) {
-        cableNetworkComponent.setFacade(world, pos, blockState);
     }
 
     @Override
