@@ -2,6 +2,7 @@ package ruiseki.integrateddynamics.core.item;
 
 import java.util.List;
 
+import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -91,42 +92,36 @@ public class ItemPart<P extends IPartType<P, S>, S extends IPartState<P>> extend
 
                 // Place part at a new position with an unreal cable
                 BlockPos target = pos.offset(side);
-                if (target.getBlock(world)
-                    .isReplaceable(world, target.getX(), target.getY(), target.getZ())) {
+                Block targetBlock = target.getBlock(world);
+
+                if (targetBlock.isReplaceable(world, target.getX(), target.getY(), target.getZ())) {
                     ItemBlockCable itemBlockCable = (ItemBlockCable) Item.getItemFromBlock(BlockCable.getInstance());
-                    if (itemBlockCable.onItemUse(
-                        itemStack,
-                        playerIn,
-                        world,
-                        target.getX(),
-                        target.getY(),
-                        target.getZ(),
-                        sideInt,
-                        hitX,
-                        hitY,
-                        hitZ)) {
-                        IPartContainer partContainer = PartContainerConfig.get(world, pos);
+
+                    if (itemBlockCable.onItemUse(itemStack, playerIn, world, x, y, z, sideInt, hitX, hitY, hitZ)) {
+                        IPartContainer partContainer = PartContainerConfig.get(world, target);
                         if (partContainer != null) {
-                            addPart(world, pos, side.getOpposite(), partContainer, itemStack);
-                            if (target.getBlock(world) instanceof ICableFakeable) {
-                                BlockCable.getInstance()
-                                    .setRealCable(world, target, false);
+                            addPart(world, target, side.getOpposite(), partContainer, itemStack);
+
+                            Block installedBlock = target.getBlock(world);
+                            if (installedBlock instanceof ICableFakeable) {
+                                ((ICableFakeable) installedBlock).setRealCable(world, target, false);
                             } else {
                                 IntegratedDynamics.clog(
                                     Level.WARN,
                                     String.format(
                                         "Tried to set a fake cable at a block that is not fakeable, got %s",
-                                        target.getBlock(world)));
+                                        installedBlock));
                             }
                             return true;
                         }
                     }
                 } else {
-                    IPartContainer partContainer = PartContainerConfig.get(world, pos);
+                    IPartContainer partContainer = PartContainerConfig.get(world, target);
                     if (partContainer != null) {
-                        if (!world.isRemote && addPart(world, pos, side.getOpposite(), partContainer, itemStack)
-                            && !playerIn.capabilities.isCreativeMode) {
-                            itemStack.stackSize--;
+                        if (addPart(world, target, side.getOpposite(), partContainer, itemStack)) {
+                            if (!playerIn.capabilities.isCreativeMode) {
+                                itemStack.stackSize--;
+                            }
                         }
                         return true;
                     }
@@ -162,19 +157,8 @@ public class ItemPart<P extends IPartType<P, S>, S extends IPartState<P>> extend
 
     public static interface IUseAction {
 
-        /**
-         * Attempt to use the given item.
-         *
-         * @param itemPart  The part item instance.
-         * @param itemStack The item stack that is being used.
-         * @param world     The world.
-         * @param pos       The position.
-         * @param sideHit   The side that is being hit.
-         * @return If the use action was applied.
-         */
         public boolean attempItemUseTarget(ItemPart itemPart, ItemStack itemStack, World world, BlockPos pos,
             ForgeDirection sideHit);
 
     }
-
 }
