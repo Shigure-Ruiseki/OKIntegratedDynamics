@@ -9,6 +9,7 @@ import java.util.Map;
 import net.minecraft.client.Minecraft;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.IIcon;
+import net.minecraft.world.IBlockAccess;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import org.apache.logging.log4j.Level;
@@ -30,7 +31,9 @@ import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.Reference;
 import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartRenderPosition;
+import ruiseki.integrateddynamics.core.helper.CableHelpers;
 import ruiseki.integrateddynamics.core.tileentity.TileMultipartTicking;
+import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.ThreadsafeCache;
 import ruiseki.okcore.helper.QuadBuilderHelpers;
 import ruiseki.okcore.mixins.early.gtnhlib.JSONModelAccessor;
@@ -95,17 +98,20 @@ public class CableModel implements BakedModel {
             return CACHED_ITEM_INVENTORY_QUADS;
         }
 
+        IBlockAccess world = worldContext.getWorld();
+        BlockPos pos = new BlockPos(worldContext.getX(), worldContext.getY(), worldContext.getZ());
+
         TileEntity te = worldContext.getWorld()
             .getTileEntity(worldContext.getX(), worldContext.getY(), worldContext.getZ());
         if (!(te instanceof TileMultipartTicking cable)) return Collections.emptyList();
 
         List<ModelQuadView> combinedQuads = new ArrayList<>(48);
-        boolean realCable = cable.isRealCable();
+        boolean realCable = CableHelpers.isNoFakeCable(world, pos);
 
         for (ForgeDirection side : ForgeDirection.VALID_DIRECTIONS) {
             boolean hasPart = cable.getPartContainer()
                 .hasPart(side);
-            boolean isConnected = realCable && cable.isConnected(side);
+            boolean isConnected = realCable && CableHelpers.isCableConnected(world, pos, side);
 
             if (hasPart) {
                 IPartType<?, ?> part = cable.getPartContainer()

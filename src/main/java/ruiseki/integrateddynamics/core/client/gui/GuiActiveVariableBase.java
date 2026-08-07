@@ -9,7 +9,7 @@ import ruiseki.okcore.client.gui.container.GuiContainerConfigurable;
 import ruiseki.okcore.client.renderer.GlStateManager;
 
 /**
- * Base gui for tile entities that can hold variables.
+ * Base gui for part entities that can hold variables.
  *
  * @author rubensworks
  */

@@ -12,7 +12,6 @@ import com.google.common.collect.Lists;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-import ruiseki.integrateddynamics.api.block.cable.ICable;
 import ruiseki.integrateddynamics.api.block.cable.ICableFakeable;
 import ruiseki.integrateddynamics.block.BlockCable;
 import ruiseki.integrateddynamics.core.helper.CableHelpers;
@@ -37,11 +36,7 @@ public class ItemBlockCable extends ItemBlockMetadata {
     }
 
     protected boolean checkCableAt(World world, BlockPos pos) {
-        ICable cable = CableHelpers.getInterface(world, pos, ICable.class);
-        if (cable instanceof ICableFakeable) {
-            return !((ICableFakeable) cable).isRealCable(world, pos);
-        }
-        return cable != null;
+        return CableHelpers.isNoFakeCable(world, pos) && CableHelpers.getCable(world, pos) != null;
     }
 
     @Override
@@ -69,9 +64,10 @@ public class ItemBlockCable extends ItemBlockMetadata {
     protected boolean attempItemUseTarget(ItemStack stack, World world, BlockPos pos, BlockCable blockCable) {
         Block block = pos.getBlock(world);
         if (!block.isAir(world, pos.getX(), pos.getY(), pos.getZ())) {
-            ICableFakeable cable = CableHelpers.getInterface(world, pos, ICableFakeable.class);
-            if (cable != null && !cable.isRealCable(world, pos)) {
-                cable.setRealCable(world, pos, true);
+            ICableFakeable cable = CableHelpers.getCableFakeable(world, pos);
+            if (cable != null && !cable.isRealCable()) {
+                cable.setRealCable(true);
+                CableHelpers.onCableAdded(world, pos);
                 return true;
             }
             for (IUseAction useAction : USE_ACTIONS) {

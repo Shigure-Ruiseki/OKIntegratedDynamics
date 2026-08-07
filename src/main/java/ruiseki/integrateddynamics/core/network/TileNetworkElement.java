@@ -20,7 +20,7 @@ import ruiseki.okcore.helper.TileHelpers;
 import ruiseki.okcore.item.capability.CapabilityItemHandler;
 
 /**
- * Network element for tile entities.
+ * Network element for part entities.
  *
  * @author rubensworks
  */

@@ -48,16 +48,15 @@ public class CollidableComponentFacade implements ICollidable.IComponent<ForgeDi
     }
 
     @Override
-    public ItemStack getPickBlock(World world, BlockPos blockPos, ForgeDirection direction) {
+    public ItemStack getPickBlock(World world, BlockPos pos, ForgeDirection direction) {
         ItemStack itemStack = new ItemStack(ItemFacade.getInstance());
         ItemFacade.getInstance()
-            .writeFacadeBlock(itemStack, FacadeableConfig.getFacade(world, blockPos));
+            .writeFacadeBlock(itemStack, FacadeableConfig.getFacade(world, pos));
         return itemStack;
     }
 
     @Override
     public boolean destroy(World world, BlockPos pos, ForgeDirection direction, EntityPlayer player, boolean b) {
-        if (!(pos.getBlock(world) instanceof BlockCable cable)) return false;
         if (!world.isRemote) {
             IFacadeable facadeable = CapabilityHelpers.getCapability(world, pos, FacadeableConfig.CAPABILITY, null)
                 .getOrNull();
@@ -69,7 +68,6 @@ public class CollidableComponentFacade implements ICollidable.IComponent<ForgeDi
             if (!player.capabilities.isCreativeMode) {
                 ItemStackHelpers.spawnItemStackToPlayer(world, pos, itemStack, player);
             }
-            return true;
         }
         return false;
     }

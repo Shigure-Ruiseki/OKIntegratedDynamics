@@ -20,7 +20,6 @@ import ruiseki.commoncapabilities.api.capability.work.IWorker;
 import ruiseki.commoncapabilities.capability.temperature.TemperatureConfig;
 import ruiseki.commoncapabilities.capability.worker.WorkerConfig;
 import ruiseki.integrateddynamics.api.network.INetwork;
-import ruiseki.integrateddynamics.api.network.INetworkCarrier;
 import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.api.part.aspect.property.IAspectProperties;
@@ -39,6 +38,7 @@ import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeListProxyPosit
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeLong;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeString;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
+import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
 import ruiseki.integrateddynamics.core.part.aspect.build.AspectBuilder;
 import ruiseki.integrateddynamics.core.part.aspect.build.IAspectValuePropagator;
 import ruiseki.integrateddynamics.core.part.aspect.property.AspectProperties;
@@ -507,12 +507,7 @@ public class AspectReadBuilders {
                 DimPos dimPos = input.getLeft()
                     .getTarget()
                     .getPos();
-                net.minecraft.block.Block block = dimPos.getBlockPos()
-                    .getBlock(dimPos.getWorld());
-                if (block instanceof INetworkCarrier) {
-                    return ((INetworkCarrier) block).getNetwork(dimPos.getWorld(), dimPos.getBlockPos());
-                }
-                return null;
+                return NetworkHelpers.getNetwork(dimPos.getWorld(), dimPos.getBlockPos());
             }
         };
 

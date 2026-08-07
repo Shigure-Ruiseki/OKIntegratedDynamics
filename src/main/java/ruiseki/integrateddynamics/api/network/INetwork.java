@@ -2,9 +2,8 @@ package ruiseki.integrateddynamics.api.network;
 
 import java.util.Set;
 
-import ruiseki.integrateddynamics.api.block.cable.ICable;
 import ruiseki.integrateddynamics.api.network.event.INetworkEventBus;
-import ruiseki.integrateddynamics.api.path.ICablePathElement;
+import ruiseki.integrateddynamics.api.path.IPathElement;
 import ruiseki.okcore.persist.nbt.INBTSerializable;
 
 /**
@@ -79,14 +78,13 @@ public interface INetwork<N extends INetwork<N>> extends INBTSerializable {
     public void update();
 
     /**
-     * Remove the given cable from the network.
-     * If the cable had any network elements registered in the network, these will be killed and removed as well.
+     * Remove the given path element from the network.
+     * If the path element had any network elements registered in the network, these will be killed and removed as well.
      *
-     * @param cable            The actual cable instance.
-     * @param cablePathElement The actual cable instance.
-     * @return If the cable was removed.
+     * @param pathElement The path element.
+     * @return If the path element was removed.
      */
-    public boolean removeCable(ICable cable, ICablePathElement cablePathElement);
+    public boolean removePathElement(IPathElement pathElement);
 
     /**
      * Called when the server loaded this network.

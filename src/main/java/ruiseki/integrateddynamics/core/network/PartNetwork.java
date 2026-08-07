@@ -6,8 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import net.minecraft.world.World;
-
 import org.apache.logging.log4j.Level;
 import org.jetbrains.annotations.Nullable;
 
@@ -22,7 +20,6 @@ import ruiseki.integrateddynamics.GeneralConfig;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.block.IEnergyBattery;
 import ruiseki.integrateddynamics.api.block.IVariableContainer;
-import ruiseki.integrateddynamics.api.block.cable.ICable;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IVariable;
 import ruiseki.integrateddynamics.api.item.IVariableFacade;
@@ -39,14 +36,13 @@ import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.api.part.aspect.IAspectRead;
 import ruiseki.integrateddynamics.api.part.read.IPartStateReader;
 import ruiseki.integrateddynamics.api.part.read.IPartTypeReader;
-import ruiseki.integrateddynamics.api.path.ICablePathElement;
+import ruiseki.integrateddynamics.api.path.IPathElement;
 import ruiseki.integrateddynamics.capability.energybattery.EnergyBatteryConfig;
-import ruiseki.integrateddynamics.capability.partcontainer.PartContainerConfig;
 import ruiseki.integrateddynamics.capability.variablecontainer.VariableContainerConfig;
+import ruiseki.integrateddynamics.core.helper.PartHelpers;
 import ruiseki.integrateddynamics.core.path.Cluster;
 import ruiseki.integrateddynamics.core.path.PathFinder;
 import ruiseki.integrateddynamics.core.persist.world.NetworkWorldStorage;
-import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.CompositeMap;
 import ruiseki.okcore.datastructure.DimPos;
 import ruiseki.okcore.helper.CapabilityHelpers;
@@ -76,17 +72,18 @@ public class PartNetwork extends Network<IPartNetwork> implements IPartNetwork, 
     }
 
     /**
-     * Create a new network from a given cluster of cables.
-     * Each cable will be checked if it is an instance of {@link INetworkElementProvider} and will add all its
-     * elements to the network in that case.
-     * Each cable that has an {@link IPartContainer} capability
+     * Create a new network from a given cluster of path elements.
+     * Each path element will be checked if it has a {@link INetworkElementProvider} capability at its position
+     * and will add all its elements to the network in that case.
+     * Each path element that has an {@link IPartContainer} capability
      * will have the network stored in its part container.
-     *
-     * @param cables The cables that make up the connections in the network which can potentially provide network
-     *               elements.
+     * 
+     * @param pathElements The path elements that make up the connections in the network which can potentially provide
+     *                     network
+     *                     elements.
      */
-    public PartNetwork(Cluster<ICablePathElement> cables) {
-        super(cables);
+    public PartNetwork(Cluster pathElements) {
+        super(pathElements);
     }
 
     @Override
@@ -112,14 +109,14 @@ public class PartNetwork extends Network<IPartNetwork> implements IPartNetwork, 
     @Override
     public IPartState getPartState(int partId) {
         PartPos partPos = partPositions.get(partId);
-        return PartContainerConfig.get(partPos.getPos())
+        return PartHelpers.getPartContainer(partPos.getPos())
             .getPartState(partPos.getSide());
     }
 
     @Override
     public IPartType getPartType(int partId) {
         PartPos partPos = partPositions.get(partId);
-        return PartContainerConfig.get(partPos.getPos())
+        return PartHelpers.getPartContainer(partPos.getPos())
             .getPart(partPos.getSide());
     }
 
@@ -134,7 +131,7 @@ public class PartNetwork extends Network<IPartNetwork> implements IPartNetwork, 
             return false;
         }
         PartPos partPos = partPositions.get(partId);
-        IPartContainer partContainer = PartContainerConfig.get(partPos.getPos());
+        IPartContainer partContainer = PartHelpers.getPartContainer(partPos.getPos());
         return partContainer != null && partContainer.hasPart(partPos.getSide());
     }
 
@@ -300,8 +297,8 @@ public class PartNetwork extends Network<IPartNetwork> implements IPartNetwork, 
     }
 
     @Override
-    public boolean removeCable(ICable cable, ICablePathElement cablePathElement) {
-        if (super.removeCable(cable, cablePathElement)) {
+    public boolean removePathElement(IPathElement pathElement) {
+        if (super.removePathElement(pathElement)) {
             notifyPartsChanged();
             return true;
         }
@@ -310,15 +307,12 @@ public class PartNetwork extends Network<IPartNetwork> implements IPartNetwork, 
 
     /**
      * Initiate a full network from the given start position.
-     *
-     * @param connectable The cable to start the network from.
-     * @param world       The world.
-     * @param pos         The position.
+     * 
+     * @param pathElement The path element to start from.
      * @return The newly formed network.
      */
-    public static PartNetwork initiateNetworkSetup(ICable<ICablePathElement> connectable, World world, BlockPos pos) {
-        PartNetwork network = new PartNetwork(
-            PathFinder.getConnectedCluster(connectable.createPathElement(world, pos)));
+    public static PartNetwork initiateNetworkSetup(IPathElement pathElement) {
+        PartNetwork network = new PartNetwork(PathFinder.getConnectedCluster(pathElement));
         NetworkWorldStorage.getInstance(IntegratedDynamics._instance)
             .addNewNetwork(network);
         return network;

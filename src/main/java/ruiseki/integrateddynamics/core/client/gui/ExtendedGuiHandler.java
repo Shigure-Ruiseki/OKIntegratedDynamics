@@ -17,7 +17,7 @@ import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.api.part.aspect.IAspect;
-import ruiseki.integrateddynamics.capability.partcontainer.PartContainerConfig;
+import ruiseki.integrateddynamics.core.helper.PartHelpers;
 import ruiseki.integrateddynamics.core.part.PartTypeBase;
 import ruiseki.okcore.client.gui.GuiHandler;
 import ruiseki.okcore.datastructure.BlockPos;
@@ -190,7 +190,7 @@ public class ExtendedGuiHandler extends GuiHandler {
 
     private static Pair<IPartContainer, PartTypeBase> getPartConstructionData(World world, BlockPos pos,
         ForgeDirection side) {
-        IPartContainer partContainer = PartContainerConfig.get(world, pos);
+        IPartContainer partContainer = PartHelpers.getPartContainer(world, pos);
         if (partContainer == null) {
             IntegratedDynamics.clog(Level.WARN, String.format("The tile at %s is not a valid part container.", pos));
             return null;

@@ -16,7 +16,7 @@ import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartState;
 import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartTarget;
-import ruiseki.integrateddynamics.capability.partcontainer.PartContainerConfig;
+import ruiseki.integrateddynamics.core.helper.PartHelpers;
 import ruiseki.okcore.datastructure.DimPos;
 
 /**
@@ -53,7 +53,7 @@ public class PartNetworkElement<P extends IPartType<P, S>, S extends IPartState<
 
     @Override
     public IPartContainer getPartContainer() {
-        return PartContainerConfig.get(getCenterPos(getTarget()));
+        return PartHelpers.getPartContainer(getCenterPos(getTarget()));
     }
 
     @Override

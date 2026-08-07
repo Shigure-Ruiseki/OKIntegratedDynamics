@@ -11,16 +11,16 @@ import ruiseki.okcore.inventory.slot.SlotSingleItem;
 
 /**
  * Container for the variablestore.
- * 
+ *
  * @author rubensworks
  */
 public class ContainerVariablestore extends TileInventoryContainerConfigurable<TileVariablestore> {
 
     /**
      * Make a new instance.
-     * 
+     *
      * @param inventory The player inventory.
-     * @param tile      The tile.
+     * @param tile      The part.
      */
     public ContainerVariablestore(InventoryPlayer inventory, TileVariablestore tile) {
         super(inventory, tile);

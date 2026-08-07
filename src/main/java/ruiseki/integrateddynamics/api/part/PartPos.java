@@ -5,10 +5,7 @@ import net.minecraftforge.common.util.ForgeDirection;
 
 import org.apache.commons.lang3.tuple.Pair;
 
-import ruiseki.integrateddynamics.api.network.IPartNetwork;
-import ruiseki.integrateddynamics.api.tileentity.ITileCableNetwork;
-import ruiseki.integrateddynamics.capability.partcontainer.PartContainerConfig;
-import ruiseki.integrateddynamics.core.helper.CableHelpers;
+import ruiseki.integrateddynamics.core.helper.PartHelpers;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
 
@@ -74,7 +71,7 @@ public class PartPos {
      * @return A pair of part type and part state or null if not found.
      */
     public static Pair<IPartType, IPartState> getPartData(PartPos pos) {
-        IPartContainer partContainer = PartContainerConfig.get(pos.getPos());
+        IPartContainer partContainer = PartHelpers.getPartContainer(pos.getPos());
         if (partContainer != null) {
             IPartType partType = partContainer.getPart(pos.getSide());
             IPartState partState = partContainer.getPartState(pos.getSide());
@@ -83,17 +80,6 @@ public class PartPos {
             }
         }
         return null;
-    }
-
-    /**
-     * Get the network at the given position.
-     *
-     * @param pos The part position.
-     * @return The network or null if not found.
-     */
-    public static IPartNetwork getNetwork(PartPos pos) {
-        ITileCableNetwork cableNetwork = CableHelpers.getInterface(pos.getPos(), ITileCableNetwork.class);
-        return cableNetwork.getNetwork();
     }
 
 }

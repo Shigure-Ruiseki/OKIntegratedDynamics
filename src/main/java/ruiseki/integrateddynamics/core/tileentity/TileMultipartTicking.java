@@ -3,7 +3,6 @@ package ruiseki.integrateddynamics.core.tileentity;
 import java.util.Objects;
 
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import org.jetbrains.annotations.NotNull;
@@ -12,20 +11,27 @@ import org.jetbrains.annotations.Nullable;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Delegate;
-import ruiseki.integrateddynamics.api.block.cable.ICable;
+import ruiseki.integrateddynamics.api.block.cable.ICableFakeable;
+import ruiseki.integrateddynamics.api.network.INetworkCarrier;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
-import ruiseki.integrateddynamics.api.tileentity.ITileCableNetwork;
+import ruiseki.integrateddynamics.capability.cable.CableConfig;
+import ruiseki.integrateddynamics.capability.cable.CableFakeableConfig;
+import ruiseki.integrateddynamics.capability.cable.CableFakeableDefault;
+import ruiseki.integrateddynamics.capability.cable.CableTileMultipartTicking;
 import ruiseki.integrateddynamics.capability.dynamiclight.DynamicLightConfig;
 import ruiseki.integrateddynamics.capability.dynamiclight.DynamicLightTileMultipartTicking;
 import ruiseki.integrateddynamics.capability.dynamicredstone.DynamicRedstoneConfig;
 import ruiseki.integrateddynamics.capability.dynamicredstone.DynamicRedstoneTileMultipartTicking;
 import ruiseki.integrateddynamics.capability.facadeable.FacadeableConfig;
 import ruiseki.integrateddynamics.capability.facadeable.FacadeableTileMultipartTicking;
+import ruiseki.integrateddynamics.capability.network.NetworkCarrierConfig;
+import ruiseki.integrateddynamics.capability.network.NetworkCarrierDefault;
 import ruiseki.integrateddynamics.capability.networkelementprovider.NetworkElementProviderConfig;
 import ruiseki.integrateddynamics.capability.networkelementprovider.NetworkElementProviderPartContainer;
 import ruiseki.integrateddynamics.capability.partcontainer.PartContainerConfig;
 import ruiseki.integrateddynamics.capability.partcontainer.PartContainerTileMultipartTicking;
-import ruiseki.integrateddynamics.core.block.cable.CableNetworkComponent;
+import ruiseki.integrateddynamics.capability.path.PathElementConfig;
+import ruiseki.integrateddynamics.capability.path.PathElementTile;
 import ruiseki.integrateddynamics.core.helper.PartHelpers;
 import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.capabilities.resolver.BasicCapabilityResolver;
@@ -42,14 +48,13 @@ import ruiseki.okcore.tileentity.TileEntityOK;
  * @author Ruben Taelman
  */
 public class TileMultipartTicking extends TileEntityOK
-    implements TileEntityOK.ITickingTile, ITileCableNetwork, PartHelpers.IPartStateHolderCallback {
+    implements TileEntityOK.ITickingTile, PartHelpers.IPartStateHolderCallback {
 
     private final EnumFacingMap<PartHelpers.PartStateHolder<?, ?>> partData = EnumFacingMap.newMap();
     @Delegate
     protected final ITickingTile tickingTileComponent = new TickingTileComponent(this);
 
-    @NBTPersist
-    private boolean realCable = true;
+    @Getter
     @NBTPersist
     private EnumFacingMap<Boolean> connected = EnumFacingMap.newMap();
     @NBTPersist
@@ -74,11 +79,13 @@ public class TileMultipartTicking extends TileEntityOK
     private int facadeMeta = 0;
 
     @Getter
-    @Setter
-    private IPartNetwork network;
-
-    @Getter
     private final PartContainerTileMultipartTicking partContainer;
+    @Getter
+    private final CableTileMultipartTicking cable;
+    @Getter
+    private final INetworkCarrier<IPartNetwork> networkCarrier;
+    @Getter
+    private final ICableFakeable cableFakeable;
 
     public TileMultipartTicking() {
         partContainer = new PartContainerTileMultipartTicking(this);
@@ -91,6 +98,16 @@ public class TileMultipartTicking extends TileEntityOK
         this.capabilityCache.addCapabilityResolver(
             BasicCapabilityResolver
                 .create(FacadeableConfig.CAPABILITY, () -> new FacadeableTileMultipartTicking(this)));
+        cable = new CableTileMultipartTicking(this);
+        this.capabilityCache.addCapabilityResolver(BasicCapabilityResolver.create(CableConfig.CAPABILITY, () -> cable));
+        networkCarrier = new NetworkCarrierDefault<>();
+        this.capabilityCache.addCapabilityResolver(
+            BasicCapabilityResolver.create(NetworkCarrierConfig.CAPABILITY, () -> networkCarrier));
+        cableFakeable = new CableFakeableDefault();
+        this.capabilityCache
+            .addCapabilityResolver(BasicCapabilityResolver.create(CableFakeableConfig.CAPABILITY, () -> cableFakeable));
+        this.capabilityCache.addCapabilityResolver(
+            BasicCapabilityResolver.create(PathElementConfig.CAPABILITY, () -> new PathElementTile(this, cable)));
         this.capabilityCache.addCapabilityResolver(
             SidedCapabilityResolver
                 .create(DynamicLightConfig.CAPABILITY, side -> new DynamicLightTileMultipartTicking(this, side)));
@@ -103,6 +120,7 @@ public class TileMultipartTicking extends TileEntityOK
     public void writeToNBT(NBTTagCompound tag) {
         super.writeToNBT(tag);
         tag.setTag("partContainer", partContainer.serializeNBT());
+        tag.setBoolean("realCable", cableFakeable.isRealCable());
     }
 
     @Override
@@ -110,7 +128,7 @@ public class TileMultipartTicking extends TileEntityOK
         EnumFacingMap<Boolean> lastConnected = connected;
         String lastFacadeBlockName = facadeBlockName;
         int lastFacadeMeta = facadeMeta;
-        boolean lastRealCable = realCable;
+        boolean lastRealCable = cableFakeable.isRealCable();
         PartHelpers.readPartsFromNBT(getNetwork(), getPos(), tag, this.partData, getWorldObj());
         if (tag.hasKey("parts", MinecraftHelpers.NBTTag_Types.NBTTagList.ordinal())
             && !tag.hasKey("partContainer", MinecraftHelpers.NBTTag_Types.NBTTagCompound.ordinal())) {
@@ -121,31 +139,14 @@ public class TileMultipartTicking extends TileEntityOK
             partContainer.deserializeNBT(tag.getCompoundTag("partContainer"));
         }
         super.readFromNBT(tag);
+        cableFakeable.setRealCable(tag.getBoolean("realCable"));
         if (getWorldObj() != null && (lastConnected == null || connected == null
             || !lastConnected.equals(connected)
             || !Objects.equals(lastFacadeBlockName, facadeBlockName)
             || lastFacadeMeta != facadeMeta
-            || lastRealCable != realCable)) {
+            || lastRealCable != cableFakeable.isRealCable())) {
             getWorldObj().markBlockForUpdate(xCoord, yCoord, zCoord);
         }
-    }
-
-    /**
-     * Indicate that this cable is not a real cable if false and should not allow any connections.
-     * Parts can be added to it though.
-     *
-     * @param realCable If this cable is real and should accept connections.
-     */
-    public void setRealCable(boolean realCable) {
-        this.realCable = realCable;
-        sendUpdate();
-    }
-
-    /**
-     * @return If this cable is real.
-     */
-    public boolean isRealCable() {
-        return this.realCable;
     }
 
     @Override
@@ -158,21 +159,15 @@ public class TileMultipartTicking extends TileEntityOK
 
     }
 
-    public boolean isForceDisconnected(ForgeDirection side) {
-        if (!isRealCable() || partContainer.hasPart(side)) return true;
-        if (!forceDisconnected.containsKey(side)) return false;
-        return forceDisconnected.get(side);
-    }
-
     @Override
     protected void updateTileEntity() {
         super.updateTileEntity();
-        // If the connection data were reset, update the cable connections
-        if (connected.isEmpty()) {
-            updateConnections();
-        }
-
+        cable.updateConnections();
         partContainer.update();
+    }
+
+    public IPartNetwork getNetwork() {
+        return networkCarrier.getNetwork();
     }
 
     public void updateRedstoneInfo(ForgeDirection side) {
@@ -194,47 +189,6 @@ public class TileMultipartTicking extends TileEntityOK
 
     public void updateLightInfo() {
         sendUpdate();
-    }
-
-    @Override
-    public void resetCurrentNetwork() {
-        if (network != null) setNetwork(null);
-    }
-
-    @Override
-    public boolean canConnect(ICable connector, ForgeDirection side) {
-        return !isForceDisconnected(side);
-    }
-
-    @Override
-    public void updateConnections() {
-        World world = getWorldObj();
-        for (ForgeDirection side : ForgeDirection.VALID_DIRECTIONS) {
-            boolean cableConnected = CableNetworkComponent.canSideConnect(world, getPos(), side, (ICable) getBlock());
-            connected.put(side, cableConnected);
-
-            // Remove any already existing force-disconnects for this side.
-            if (!cableConnected) {
-                forceDisconnected.put(side, false);
-            }
-        }
-        markDirty();
-        sendUpdate();
-    }
-
-    @Override
-    public boolean isConnected(ForgeDirection side) {
-        return connected.containsKey(side) && connected.get(side);
-    }
-
-    @Override
-    public void disconnect(ForgeDirection side) {
-        forceDisconnected.put(side, true);
-    }
-
-    @Override
-    public void reconnect(ForgeDirection side) {
-        forceDisconnected.remove(side);
     }
 
     @Override

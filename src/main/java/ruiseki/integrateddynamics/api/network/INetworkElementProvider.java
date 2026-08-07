@@ -8,7 +8,9 @@ import ruiseki.okcore.datastructure.BlockPos;
 
 /**
  * Capability that can create instances of an {@link INetworkElement}.
- *
+ * Blocks that provide this capability MUST properly call
+ * {@link NetworkHelpers#onElementProviderBlockNeighborChange(World, BlockPos, Block)}.
+ * 
  * @author rubensworks
  */
 public interface INetworkElementProvider<N extends INetwork> {

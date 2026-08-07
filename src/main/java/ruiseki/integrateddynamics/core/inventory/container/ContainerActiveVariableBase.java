@@ -12,7 +12,7 @@ import ruiseki.okcore.helper.ValueNotifierHelpers;
 import ruiseki.okcore.inventory.container.TileInventoryContainerConfigurable;
 
 /**
- * Base container for tile entities that can hold variables.
+ * Base container for part entities that can hold variables.
  *
  * @author rubensworks
  */
@@ -26,7 +26,7 @@ public class ContainerActiveVariableBase<T extends TileActiveVariableBase<?>>
      * Make a new instance.
      *
      * @param inventory The player inventory.
-     * @param tile      The tile.
+     * @param tile      The part.
      */
     public ContainerActiveVariableBase(InventoryPlayer inventory, T tile) {
         super(inventory, tile);

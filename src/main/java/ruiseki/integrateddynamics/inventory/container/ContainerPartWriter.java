@@ -13,7 +13,7 @@ import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.api.part.aspect.IAspectWrite;
 import ruiseki.integrateddynamics.api.part.write.IPartStateWriter;
 import ruiseki.integrateddynamics.api.part.write.IPartTypeWriter;
-import ruiseki.integrateddynamics.api.tileentity.ITileCableNetwork;
+import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
 import ruiseki.integrateddynamics.core.inventory.container.ContainerMultipartAspects;
 import ruiseki.integrateddynamics.core.inventory.container.slot.SlotVariable;
 import ruiseki.okcore.helper.Helpers;
@@ -95,8 +95,8 @@ public class ContainerPartWriter<P extends IPartTypeWriter<P, S> & IGuiContainer
         if (!MinecraftHelpers.isClientSide()) {
             String writeValue = "";
             int writeValueColor = 0;
-            if (getPartContainer() instanceof ITileCableNetwork && getPartState().hasVariable()) {
-                IPartNetwork network = ((ITileCableNetwork) getPartContainer()).getNetwork();
+            if (getPartState().hasVariable()) {
+                IPartNetwork network = (IPartNetwork) NetworkHelpers.getNetwork(getWorld(), getPos());
                 if (network != null) {
                     IVariable variable = getPartState().getVariable(network);
                     if (variable != null) {

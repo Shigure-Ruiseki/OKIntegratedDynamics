@@ -15,7 +15,6 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 import ruiseki.integrateddynamics.IntegratedDynamics;
-import ruiseki.integrateddynamics.api.block.cable.ICable;
 import ruiseki.integrateddynamics.api.network.IEventListenableNetworkElement;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.INetworkCarrier;
@@ -24,9 +23,9 @@ import ruiseki.integrateddynamics.api.network.INetworkElementProvider;
 import ruiseki.integrateddynamics.api.network.INetworkEventListener;
 import ruiseki.integrateddynamics.api.network.event.INetworkEvent;
 import ruiseki.integrateddynamics.api.network.event.INetworkEventBus;
-import ruiseki.integrateddynamics.api.path.ICablePathElement;
+import ruiseki.integrateddynamics.api.path.IPathElement;
+import ruiseki.integrateddynamics.capability.network.NetworkCarrierConfig;
 import ruiseki.integrateddynamics.capability.networkelementprovider.NetworkElementProviderConfig;
-import ruiseki.integrateddynamics.core.helper.CableHelpers;
 import ruiseki.integrateddynamics.core.network.diagnostics.NetworkDiagnostics;
 import ruiseki.integrateddynamics.core.network.event.NetworkElementAddEvent;
 import ruiseki.integrateddynamics.core.network.event.NetworkElementRemoveEvent;
@@ -45,7 +44,7 @@ import ruiseki.okcore.helper.CapabilityHelpers;
  */
 public class Network<N extends INetwork<N>> implements INetwork<N> {
 
-    private Cluster<ICablePathElement> baseCluster;
+    private Cluster baseCluster;
 
     private final INetworkEventBus<N> eventBus = new NetworkEventBus<>();
     private final TreeSet<INetworkElement<N>> elements = Sets.newTreeSet();
@@ -62,22 +61,23 @@ public class Network<N extends INetwork<N>> implements INetwork<N> {
      * This constructor should not be called, except for the process of constructing networks from NBT.
      */
     public Network() {
-        this.baseCluster = new Cluster<ICablePathElement>();
+        this.baseCluster = new Cluster();
         onConstruct();
     }
 
     /**
-     * Create a new network from a given cluster of cables.
-     * Each cable will be checked if it is an instance of {@link INetworkElementProvider} and will add all its
-     * elements to the network in that case.
-     * Each cable that has an {@link ruiseki.integrateddynamics.api.part.IPartContainer} capability
+     * Create a new network from a given cluster of path elements.
+     * Each path element will be checked if it has a {@link INetworkElementProvider} capability at its position
+     * and will add all its elements to the network in that case.
+     * Each path element that has an {@link ruiseki.integrateddynamics.api.part.IPartContainer} capability
      * will have the network stored in its part container.
      *
-     * @param cables The cables that make up the connections in the network which can potentially provide network
-     *               elements.
+     * @param pathElements The path elements that make up the connections in the network which can potentially provide
+     *                     network
+     *                     elements.
      */
-    public Network(Cluster<ICablePathElement> cables) {
-        this.baseCluster = cables;
+    public Network(Cluster pathElements) {
+        this.baseCluster = pathElements;
         onConstruct();
         deriveNetworkElements(baseCluster);
     }
@@ -90,31 +90,33 @@ public class Network<N extends INetwork<N>> implements INetwork<N> {
         return (N) this;
     }
 
-    private void deriveNetworkElements(Cluster<ICablePathElement> cables) {
+    private void deriveNetworkElements(Cluster pathElements) {
         if (!killIfEmpty()) {
-            for (ICablePathElement cable : cables) {
-                World world = cable.getPosition()
+            for (IPathElement pathElement : pathElements) {
+                World world = pathElement.getPosition()
                     .getWorld();
-                BlockPos pos = cable.getPosition()
+                BlockPos pos = pathElement.getPosition()
                     .getBlockPos();
                 INetworkElementProvider<N> networkElementProvider = (INetworkElementProvider<N>) CapabilityHelpers
-                    .getCapability(cable.getPosition(), NetworkElementProviderConfig.CAPABILITY, null)
+                    .getCapability(pathElement.getPosition(), NetworkElementProviderConfig.CAPABILITY, null)
                     .getOrNull();
                 if (networkElementProvider != null) {
                     for (INetworkElement<N> element : networkElementProvider.createNetworkElements(world, pos)) {
                         addNetworkElement(element, true);
                     }
                 }
-                INetworkCarrier<N> networkCarrier = CableHelpers.getInterface(world, pos, INetworkCarrier.class);
+                INetworkCarrier<N> networkCarrier = CapabilityHelpers
+                    .getCapability(world, pos, NetworkCarrierConfig.CAPABILITY, null)
+                    .getOrNull();
                 if (networkCarrier != null) {
                     // Correctly remove any previously saved network in this carrier
                     // and set the new network to this.
-                    INetwork<N> network = networkCarrier.getNetwork(world, pos);
+                    INetwork<N> network = networkCarrier.getNetwork();
                     if (network != null) {
-                        network.removeCable((ICable) networkCarrier, cable);
+                        network.removePathElement(pathElement);
                     }
-                    networkCarrier.resetCurrentNetwork(world, pos);
-                    networkCarrier.setNetwork(getMaterializedThis(), world, pos);
+                    networkCarrier.setNetwork(null);
+                    networkCarrier.setNetwork(getMaterializedThis());
                 }
             }
             onNetworkChanged();
@@ -332,35 +334,35 @@ public class Network<N extends INetwork<N>> implements INetwork<N> {
     }
 
     @Override
-    public boolean removeCable(ICable cable, ICablePathElement cablePathElement) {
-        if (baseCluster.contains(cablePathElement)) {
-            baseCluster.remove(cablePathElement);
-
+    public boolean removePathElement(IPathElement pathElement) {
+        if (baseCluster.remove(pathElement)) {
             INetworkElementProvider<N> networkElementProvider = (INetworkElementProvider<N>) CapabilityHelpers
-                .getCapability(cablePathElement.getPosition(), NetworkElementProviderConfig.CAPABILITY, null)
+                .getCapability(pathElement.getPosition(), NetworkElementProviderConfig.CAPABILITY, null)
                 .getOrNull();
             if (networkElementProvider != null) {
                 Collection<INetworkElement<N>> networkElements = networkElementProvider.createNetworkElements(
-                    cablePathElement.getPosition()
+                    pathElement.getPosition()
                         .getWorld(),
-                    cablePathElement.getPosition()
+                    pathElement.getPosition()
                         .getBlockPos());
-
                 for (INetworkElement<N> networkElement : networkElements) {
+                    networkElement.onPreRemoved(getMaterializedThis()); // TODO: Added, check if this works
                     if (!removeNetworkElementPre(networkElement)) {
                         return false;
                     }
                 }
                 for (INetworkElement<N> networkElement : networkElements) {
                     removeNetworkElementPost(networkElement);
+                    networkElement.onPostRemoved(getMaterializedThis()); // TODO: Added, check if this works
                 }
                 onNetworkChanged();
                 return true;
             }
         } else {
-            IntegratedDynamics.clog(
-                Level.DEBUG,
-                "Cable at " + cablePathElement.getPosition() + " was already removed or not present in network.");
+            Thread.dumpStack();
+            IntegratedDynamics.clog(Level.WARN, "Tried to remove a path element from a network it was not present in.");
+            System.out.println("Cluster: " + baseCluster);
+            System.out.println("Tried removing element: " + pathElement);
         }
         return false;
     }

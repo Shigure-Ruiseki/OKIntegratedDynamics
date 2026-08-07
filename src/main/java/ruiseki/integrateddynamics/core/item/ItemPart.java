@@ -23,8 +23,9 @@ import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartState;
 import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.block.BlockCable;
-import ruiseki.integrateddynamics.capability.partcontainer.PartContainerConfig;
+import ruiseki.integrateddynamics.core.helper.CableHelpers;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
+import ruiseki.integrateddynamics.core.helper.PartHelpers;
 import ruiseki.integrateddynamics.item.ItemBlockCable;
 import ruiseki.okcore.config.configurable.ConfigurableItem;
 import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
@@ -75,7 +76,7 @@ public class ItemPart<P extends IPartType<P, S>, S extends IPartState<P>> extend
         if (!world.isRemote) {
             ForgeDirection side = ForgeDirection.getOrientation(sideInt);
             BlockPos pos = new BlockPos(x, y, z);
-            IPartContainer partContainerFirst = PartContainerConfig.get(world, pos);
+            IPartContainer partContainerFirst = PartHelpers.getPartContainer(world, pos);
             if (partContainerFirst != null) {
                 // Add part to existing cable
                 if (addPart(world, pos, side, partContainerFirst, itemStack)) {
@@ -98,25 +99,26 @@ public class ItemPart<P extends IPartType<P, S>, S extends IPartState<P>> extend
                     ItemBlockCable itemBlockCable = (ItemBlockCable) Item.getItemFromBlock(BlockCable.getInstance());
 
                     if (itemBlockCable.onItemUse(itemStack, playerIn, world, x, y, z, sideInt, hitX, hitY, hitZ)) {
-                        IPartContainer partContainer = PartContainerConfig.get(world, target);
+                        IPartContainer partContainer = PartHelpers.getPartContainer(world, target);
                         if (partContainer != null) {
                             addPart(world, target, side.getOpposite(), partContainer, itemStack);
-
-                            Block installedBlock = target.getBlock(world);
-                            if (installedBlock instanceof ICableFakeable) {
-                                ((ICableFakeable) installedBlock).setRealCable(world, target, false);
+                            ICableFakeable cableFakeable = CableHelpers.getCableFakeable(world, target);
+                            if (cableFakeable != null) {
+                                CableHelpers.onCableRemoving(world, pos, false);
+                                cableFakeable.setRealCable(false);
+                                CableHelpers.onCableRemoved(world, pos);
                             } else {
                                 IntegratedDynamics.clog(
                                     Level.WARN,
                                     String.format(
-                                        "Tried to set a fake cable at a block that is not fakeable, got %s",
-                                        installedBlock));
+                                        "Tried to set a fake cable at a block that is not fakeable at %s",
+                                        target));
                             }
                             return true;
                         }
                     }
                 } else {
-                    IPartContainer partContainer = PartContainerConfig.get(world, target);
+                    IPartContainer partContainer = PartHelpers.getPartContainer(world, target);
                     if (partContainer != null) {
                         if (addPart(world, target, side.getOpposite(), partContainer, itemStack)) {
                             if (!playerIn.capabilities.isCreativeMode) {

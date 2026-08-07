@@ -19,6 +19,13 @@ import ruiseki.okcore.datastructure.BlockPos;
 
 public class CollidableComponentParts implements ICollidable.IComponent<ForgeDirection, BlockCable> {
 
+    protected AxisAlignedBB getPartBoundingBox(World world, BlockPos pos, ForgeDirection side) {
+        IPartContainer partContainer = PartHelpers.getPartContainer(world, pos);
+        return partContainer != null ? partContainer.getPart(side)
+            .getPartRenderPosition()
+            .getBoundingBox(side) : null;
+    }
+
     @Override
     public Collection<ForgeDirection> getPossiblePositions() {
         return Arrays.asList(ForgeDirection.VALID_DIRECTIONS);
@@ -30,27 +37,27 @@ public class CollidableComponentParts implements ICollidable.IComponent<ForgeDir
     }
 
     @Override
-    public boolean isActive(BlockCable cable, World world, BlockPos blockPos, ForgeDirection direction) {
-        return cable.hasPart(world, blockPos, direction);
+    public boolean isActive(BlockCable cable, World world, BlockPos pos, ForgeDirection position) {
+        IPartContainer partContainer = PartHelpers.getPartContainer(world, pos);
+        return partContainer.hasPart(position);
     }
 
     @Override
-    public List<AxisAlignedBB> getBounds(BlockCable cable, World world, BlockPos blockPos, ForgeDirection direction) {
-        return Collections.singletonList(cable.getPartBoundingBox(world, blockPos, direction));
+    public List<AxisAlignedBB> getBounds(BlockCable cable, World world, BlockPos pos, ForgeDirection position) {
+        return Collections.singletonList(getPartBoundingBox(world, pos, position));
     }
 
     @Override
     public ItemStack getPickBlock(World world, BlockPos pos, ForgeDirection position) {
-        if (!(pos.getBlock(world) instanceof BlockCable cable)) return null;
-        IPartContainer partContainer = cable.getPartContainer(world, pos);
+        IPartContainer partContainer = PartHelpers.getPartContainer(world, pos);
         return partContainer.getPart(position)
             .getPickBlock(world, pos, partContainer.getPartState(position));
     }
 
     @Override
-    public boolean destroy(World world, BlockPos blockPos, ForgeDirection position, EntityPlayer player, boolean b) {
+    public boolean destroy(World world, BlockPos pos, ForgeDirection position, EntityPlayer player, boolean b) {
         if (!world.isRemote) {
-            return PartHelpers.removePart(world, blockPos, position, player, true);
+            return PartHelpers.removePart(world, pos, position, player, b);
         }
         return false;
     }

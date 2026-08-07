@@ -9,12 +9,16 @@ import ruiseki.integrateddynamics.block.BlockMenrilLogConfig;
 import ruiseki.integrateddynamics.block.BlockMenrilPlanksConfig;
 import ruiseki.integrateddynamics.block.BlockMenrilSaplingConfig;
 import ruiseki.integrateddynamics.block.BlockVariablestoreConfig;
+import ruiseki.integrateddynamics.capability.cable.CableConfig;
+import ruiseki.integrateddynamics.capability.cable.CableFakeableConfig;
 import ruiseki.integrateddynamics.capability.dynamiclight.DynamicLightConfig;
 import ruiseki.integrateddynamics.capability.dynamicredstone.DynamicRedstoneConfig;
 import ruiseki.integrateddynamics.capability.energybattery.EnergyBatteryConfig;
 import ruiseki.integrateddynamics.capability.facadeable.FacadeableConfig;
+import ruiseki.integrateddynamics.capability.network.NetworkCarrierConfig;
 import ruiseki.integrateddynamics.capability.networkelementprovider.NetworkElementProviderConfig;
 import ruiseki.integrateddynamics.capability.partcontainer.PartContainerConfig;
+import ruiseki.integrateddynamics.capability.path.PathElementConfig;
 import ruiseki.integrateddynamics.capability.variablecontainer.VariableContainerConfig;
 import ruiseki.integrateddynamics.item.ItemFacadeConfig;
 import ruiseki.integrateddynamics.item.ItemLabellerConfig;
@@ -37,6 +41,10 @@ public class Configs {
         configHandler.add(new FacadeableConfig());
         configHandler.add(new VariableContainerConfig());
         configHandler.add(new EnergyBatteryConfig());
+        configHandler.add(new CableConfig());
+        configHandler.add(new CableFakeableConfig());
+        configHandler.add(new NetworkCarrierConfig());
+        configHandler.add(new PathElementConfig());
 
         // Fluids
         // configHandler.add(new FluidMenrilResinConfig());

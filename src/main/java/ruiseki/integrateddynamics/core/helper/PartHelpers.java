@@ -5,6 +5,7 @@ import java.util.Map;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
@@ -25,24 +26,49 @@ import ruiseki.integrateddynamics.api.part.IPartState;
 import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.integrateddynamics.api.part.PartTarget;
+import ruiseki.integrateddynamics.capability.cable.CableFakeableConfig;
 import ruiseki.integrateddynamics.capability.partcontainer.PartContainerConfig;
 import ruiseki.integrateddynamics.core.network.event.UnknownPartEvent;
 import ruiseki.integrateddynamics.core.part.PartTypes;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
+import ruiseki.okcore.helper.CapabilityHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
 
 /**
  * Helpers related to parts.
- *
+ * 
  * @author rubensworks
  */
 public class PartHelpers {
 
     /**
+     * Get the part container capability at the given position.
+     * 
+     * @param world The world.
+     * @param pos   The position.
+     * @return The part container capability, or null if not present.
+     */
+    public static @Nullable IPartContainer getPartContainer(IBlockAccess world, BlockPos pos) {
+        return CapabilityHelpers.getCapability(world, pos, PartContainerConfig.CAPABILITY)
+            .getOrNull();
+    }
+
+    /**
+     * Get the part container capability at the given position.
+     * 
+     * @param dimPos The dimensional position.
+     * @return The part container capability, or null if not present.
+     */
+    public static @Nullable IPartContainer getPartContainer(DimPos dimPos) {
+        return CapabilityHelpers.getCapability(dimPos, PartContainerConfig.CAPABILITY)
+            .getOrNull();
+    }
+
+    /**
      * Check if the given part type is null and run it through the network even bus in an {@link UnknownPartEvent}
      * to get another type.
-     *
+     * 
      * @param network      The network.
      * @param partTypeName The part name.
      * @param partType     The part type.
@@ -60,7 +86,7 @@ public class PartHelpers {
 
     /**
      * Write the given part type to nbt.
-     *
+     * 
      * @param partTag  The tag to write to.
      * @param side     The side to write.
      * @param partType The part type to write.
@@ -72,7 +98,7 @@ public class PartHelpers {
 
     /**
      * Write the given part data to nbt.
-     *
+     * 
      * @param pos      The position of the part, used for error reporting.
      * @param partTag  The tag to write to.
      * @param partData The part data.
@@ -99,7 +125,7 @@ public class PartHelpers {
 
     /**
      * Write the given parts to nbt.
-     *
+     * 
      * @param pos      The position of the part, used for error reporting.
      * @param tag      The tag to write to.
      * @param partData The part data.
@@ -121,7 +147,7 @@ public class PartHelpers {
 
     /**
      * Read a part from nbt.
-     *
+     * 
      * @param network The network the part will be part of.
      * @param pos     The position of the part, used for error reporting.
      * @param partTag The tag to read from.
@@ -153,7 +179,7 @@ public class PartHelpers {
 
     /**
      * Read part data from nbt.
-     *
+     * 
      * @param network The network the part will be part of.
      * @param pos     The position of the part, used for error reporting.
      * @param partTag The tag to read from.
@@ -174,7 +200,7 @@ public class PartHelpers {
      * Read parts data from nbt.
      * If the world is not null and we are running client-side,
      * a block render update will automatically be triggered if needed.
-     *
+     * 
      * @param network  The network the part will be part of.
      * @param pos      The position of the part, used for error reporting.
      * @param tag      The tag to read from.
@@ -220,7 +246,7 @@ public class PartHelpers {
 
     /**
      * Remove a part from the given side of the given part container.
-     *
+     * 
      * @param world          The world.
      * @param pos            The position of the container.
      * @param side           The side.
@@ -230,26 +256,37 @@ public class PartHelpers {
      */
     public static boolean removePart(World world, BlockPos pos, ForgeDirection side, @Nullable EntityPlayer player,
         boolean destroyIfEmpty) {
-        int x = pos.getX();
-        int y = pos.getY();
-        int z = pos.getZ();
-
-        IPartContainer partContainer = PartContainerConfig.get(world, pos);
-        ICable cable = CableHelpers.getInterface(world, pos, ICable.class);
+        IPartContainer partContainer = CapabilityHelpers.getCapability(world, pos, PartContainerConfig.CAPABILITY)
+            .getOrNull();
+        ICableFakeable cableFakeable = CapabilityHelpers.getCapability(world, pos, CableFakeableConfig.CAPABILITY)
+            .getOrNull();
         partContainer.removePart(side, player);
-        world.notifyBlocksOfNeighborChange(x, y, z, world.getBlock(x, y, z));
+
         // Remove full cable block if this was the last part and if it was already an unreal cable.
-        if (destroyIfEmpty && (!(cable instanceof ICableFakeable) || !((ICableFakeable) cable).isRealCable(world, pos))
-            && !partContainer.hasParts()) {
-            world.setBlockToAir(x, y, z);
-            return true;
+        boolean removeCompletely = destroyIfEmpty && (cableFakeable == null || !cableFakeable.isRealCable())
+            && !partContainer.hasParts();
+        if (removeCompletely) {
+            world.setBlockToAir(pos.getX(), pos.getY(), pos.getZ());
+        } else {
+            world.notifyBlocksOfNeighborChange(pos.getX(), pos.getY(), pos.getZ(), pos.getBlock(world));
         }
-        return false;
+
+        // TODO: I've added this snippet here, check if this works
+        BlockPos sidePos = pos.offset(side);
+        ICable sideCable = CableHelpers.getCable(world, sidePos);
+        if (sideCable != null) {
+            sideCable.updateConnections();
+            if (!world.isRemote) {
+                NetworkHelpers.initNetwork(world, sidePos);
+            }
+        }
+
+        return !removeCompletely;
     }
 
     /**
      * Set a part at the given side.
-     *
+     * 
      * @param network   The network.
      * @param world     The world.
      * @param pos       The position of the container.
@@ -263,7 +300,7 @@ public class PartHelpers {
         IPartType part, IPartState partState, IPartStateHolderCallback callback) {
         callback.onSet(PartStateHolder.of(part, partState));
         if (network != null) {
-            IPartContainer partContainer = PartContainerConfig.get(world, pos);
+            IPartContainer partContainer = PartHelpers.getPartContainer(world, pos);
             INetworkElement networkElement = part.createNetworkElement(partContainer, DimPos.of(world, pos), side);
             if (!network.addNetworkElement(networkElement, false)) {
                 // In this case, the addition failed because that part id is already present in the network,
@@ -282,7 +319,7 @@ public class PartHelpers {
 
     /**
      * If the given player can currently interact with the part gui at the given position.
-     *
+     * 
      * @param target                The part target.
      * @param player                The player.
      * @param expectedPartContainer The expected part container.
@@ -296,7 +333,7 @@ public class PartHelpers {
         BlockPos blockPos = target.getCenter()
             .getPos()
             .getBlockPos();
-        IPartContainer partContainer = PartContainerConfig.get(world, blockPos);
+        IPartContainer partContainer = PartHelpers.getPartContainer(world, blockPos);
         return partContainer == expectedPartContainer && player.getDistanceSq(
             (double) blockPos.getX() + 0.5D,
             (double) blockPos.getY() + 0.5D,
@@ -305,7 +342,7 @@ public class PartHelpers {
 
     /**
      * Get a part at the given position.
-     *
+     * 
      * @param partPos The part position.
      * @return The part.
      */
@@ -315,7 +352,7 @@ public class PartHelpers {
         BlockPos pos = partPos.getPos()
             .getBlockPos();
         ForgeDirection side = partPos.getSide();
-        IPartContainer partContainer = PartContainerConfig.get(world, pos);
+        IPartContainer partContainer = PartHelpers.getPartContainer(world, pos);
         if (partContainer.hasPart(side)) {
             return PartStateHolder.of(partContainer.getPart(side), partContainer.getPartState(side));
         }
@@ -324,7 +361,7 @@ public class PartHelpers {
 
     /**
      * A part and state holder.
-     *
+     * 
      * @param <P> The part type type.
      * @param <S> The part state type.
      */

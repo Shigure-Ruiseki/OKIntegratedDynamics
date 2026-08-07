@@ -1,43 +1,26 @@
 package ruiseki.integrateddynamics.api.network;
 
-import net.minecraft.world.World;
-
 import org.jetbrains.annotations.Nullable;
 
-import ruiseki.okcore.datastructure.BlockPos;
-
 /**
- * Interface for blocks that are network-aware.
- *
+ * Capability for holding a network.
+ * 
  * @author rubensworks
  */
 public interface INetworkCarrier<N extends INetwork> {
 
     /**
-     * Tell the container it is no longer part of its current network.
-     * Won't do anything if it doesn't have a network.
-     *
-     * @param world The world.
-     * @param pos   The position.
-     */
-    public void resetCurrentNetwork(World world, BlockPos pos);
-
-    /**
      * Tell the container it is part of the given network.
-     *
+     * 
      * @param network The network.
-     * @param world   The world.
-     * @param pos     The position.
      */
-    public void setNetwork(N network, World world, BlockPos pos);
+    public void setNetwork(@Nullable N network);
 
     /**
      * Get the current container network. Can be null.
-     *
-     * @param world The world.
-     * @param pos   The position.
+     * 
      * @return The network.
      */
-    public @Nullable N getNetwork(World world, BlockPos pos);
+    public @Nullable N getNetwork();
 
 }

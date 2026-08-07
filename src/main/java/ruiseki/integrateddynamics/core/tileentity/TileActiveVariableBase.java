@@ -24,7 +24,7 @@ import ruiseki.okcore.persist.IDirtyMarkListener;
 import ruiseki.okcore.persist.nbt.NBTPersist;
 
 /**
- * Base tile entity that can hold variables.
+ * Base part entity that can hold variables.
  *
  * @param <E> The type of event listener
  * @author rubensworks
@@ -49,7 +49,7 @@ public abstract class TileActiveVariableBase<E> extends TileCableConnectableInve
     }
 
     protected void updateReadVariable() {
-        IPartNetwork network = getNetwork();
+        IPartNetwork network = (IPartNetwork) getNetwork();
 
         int lastVariabledId = this.variableStored == null ? -1 : this.variableStored.getId();
         int variableId = -1;

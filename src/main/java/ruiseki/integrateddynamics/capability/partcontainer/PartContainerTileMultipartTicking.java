@@ -14,7 +14,7 @@ import ruiseki.okcore.block.collidable.ICollidable;
 import ruiseki.okcore.datastructure.BlockPos;
 
 /**
- * Implementation of an {@link IPartContainer} for a tile entity.
+ * Implementation of an {@link IPartContainer} for a part entity.
  *
  * @author rubensworks
  */

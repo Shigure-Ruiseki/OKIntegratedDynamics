@@ -8,15 +8,15 @@ import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 
 /**
  * A block that is buildReader up from different parts.
- * This block refers to a ticking tile entity.
- * 
+ * This block refers to a ticking part entity.
+ *
  * @author rubensworks
  */
 public abstract class BlockMultipartTicking extends ConfigurableBlockContainer {
 
     /**
      * Make a new block instance.
-     * 
+     *
      * @param eConfig  Config for this block.
      * @param material The material for this block.
      */

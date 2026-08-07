@@ -13,26 +13,27 @@ import org.apache.logging.log4j.Level;
 
 import com.google.common.collect.Sets;
 
+import cpw.mods.fml.common.FMLCommonHandler;
 import lombok.Data;
 import lombok.experimental.Delegate;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.path.IPathElement;
-import ruiseki.integrateddynamics.api.path.IPathElementProvider;
-import ruiseki.integrateddynamics.core.helper.CableHelpers;
+import ruiseki.integrateddynamics.capability.path.PathElementConfig;
 import ruiseki.okcore.datastructure.BlockPos;
+import ruiseki.okcore.helper.CapabilityHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.persist.nbt.INBTSerializable;
 
 /**
  * A cluster for a collection of path elements.
- * 
+ *
  * @author rubensworks
  */
 @Data
-public class Cluster<E extends IPathElement> implements Collection<E>, INBTSerializable {
+public class Cluster implements Collection<IPathElement>, INBTSerializable {
 
     @Delegate
-    private final Set<E> elements;
+    private final Set<IPathElement> elements;
 
     /**
      * This constructor should not be called, except for the process of constructing networks from NBT.
@@ -41,7 +42,7 @@ public class Cluster<E extends IPathElement> implements Collection<E>, INBTSeria
         this.elements = Sets.newTreeSet();
     }
 
-    public Cluster(TreeSet<E> elements) {
+    public Cluster(TreeSet<IPathElement> elements) {
         this.elements = elements;
     }
 
@@ -84,19 +85,21 @@ public class Cluster<E extends IPathElement> implements Collection<E>, INBTSeria
                         "Skipped loading part from a network at the " + "invalid dimension id %s.",
                         dimensionId));
             } else {
-                World world = MinecraftServer.getServer().worldServers[dimensionId];
-                IPathElementProvider pathElementProvider = CableHelpers
-                    .getInterface(world, pos, IPathElementProvider.class);
-                if (pathElementProvider == null) {
+                World world = FMLCommonHandler.instance()
+                    .getMinecraftServerInstance().worldServers[dimensionId];
+                IPathElement pathElement = CapabilityHelpers
+                    .getCapability(world, pos, PathElementConfig.CAPABILITY, null)
+                    .getOrNull();
+                if (pathElement == null) {
                     IntegratedDynamics.clog(
                         Level.WARN,
                         String.format(
                             "Skipped loading part from a network at "
-                                + "position %s in world %s because it is no valid network element provider block.",
+                                + "position %s in world %s because it has no valid path element.",
                             pos,
                             dimensionId));
                 } else {
-                    elements.add((E) pathElementProvider.createPathElement(world, pos));
+                    elements.add(pathElement);
                 }
             }
         }

@@ -15,8 +15,8 @@ import ruiseki.okcore.datastructure.DimPos;
  */
 public final class PathFinder {
 
-    protected static <E extends IPathElement<E>> TreeSet<E> getConnectedElements(E head, Set<DimPos> visitedPositions) {
-        TreeSet<E> elements = Sets.newTreeSet();
+    protected static TreeSet<IPathElement> getConnectedElements(IPathElement head, Set<DimPos> visitedPositions) {
+        TreeSet<IPathElement> elements = Sets.newTreeSet();
 
         // Make sure to add our head
         if (!visitedPositions.contains(head.getPosition())) {
@@ -25,7 +25,7 @@ public final class PathFinder {
         }
 
         // Add neighbours that haven't been checked yet.
-        for (E neighbour : head.getReachableElements()) {
+        for (IPathElement neighbour : head.getReachableElements()) {
             if (!visitedPositions.contains(neighbour.getPosition())) {
                 elements.add(neighbour);
                 visitedPositions.add(neighbour.getPosition());
@@ -33,8 +33,8 @@ public final class PathFinder {
         }
 
         // Loop over the added neighbours to recursively check their neighbours.
-        Set<E> neighbourElements = Sets.newHashSet();
-        for (E addedElement : elements) {
+        Set<IPathElement> neighbourElements = Sets.newHashSet();
+        for (IPathElement addedElement : elements) {
             neighbourElements.addAll(getConnectedElements(addedElement, visitedPositions));
         }
         elements.addAll(neighbourElements);
@@ -42,8 +42,8 @@ public final class PathFinder {
         return elements;
     }
 
-    public static <E extends IPathElement<E>> Cluster<E> getConnectedCluster(E head) {
-        return new Cluster<E>(getConnectedElements(head, Sets.<DimPos>newTreeSet()));
+    public static Cluster getConnectedCluster(IPathElement head) {
+        return new Cluster(getConnectedElements(head, Sets.<DimPos>newTreeSet()));
     }
 
 }
