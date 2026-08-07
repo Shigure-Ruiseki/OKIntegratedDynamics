@@ -46,7 +46,6 @@ import ruiseki.integrateddynamics.api.network.INetworkElement;
 import ruiseki.integrateddynamics.api.network.INetworkElementProvider;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
-import ruiseki.integrateddynamics.api.part.IPartContainerFacade;
 import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.path.ICablePathElement;
 import ruiseki.integrateddynamics.api.tileentity.ITileCableNetwork;
@@ -81,8 +80,8 @@ import ruiseki.okcore.helper.TileHelpers;
 
 public class BlockCable extends ConfigurableBlockContainer
     implements ICableNetwork<IPartNetwork, ICablePathElement>, ICableFakeable<ICablePathElement>,
-    ICableFacadeable<ICablePathElement>, INetworkElementProvider, IPartContainerFacade, ICollidable<ForgeDirection>,
-    ICollidableParent, IDynamicRedstoneBlock, IDynamicLightBlock, IBlockModelProvider, BlockModelInfo {
+    ICableFacadeable<ICablePathElement>, INetworkElementProvider, ICollidable<ForgeDirection>, ICollidableParent,
+    IDynamicRedstoneBlock, IDynamicLightBlock, IBlockModelProvider, BlockModelInfo {
 
     public static final float BLOCK_HARDNESS = 3.0F;
     public static final Material BLOCK_MATERIAL = Material.glass;
@@ -208,9 +207,9 @@ public class BlockCable extends ConfigurableBlockContainer
     protected void onPostBlockDestroyed(World world, int x, int y, int z) {
         super.onPostBlockDestroyed(world, x, y, z);
         if (!IS_MCMP_CONVERTING) { // Yes, this is a hack, we don't want this to be called after a MCMP block conversion
-            IS_MCMP_CONVERTING = false;
             cableNetworkComponent.onPostBlockDestroyed(world, new BlockPos(x, y, z));
         }
+        IS_MCMP_CONVERTING = false;
     }
 
     @Override
@@ -285,12 +284,10 @@ public class BlockCable extends ConfigurableBlockContainer
     public static boolean onCableActivated(World world, BlockPos pos, EntityPlayer player, ItemStack heldItem,
         ForgeDirection side, ForgeDirection cableConnectionHit) {
         ICableNetwork<?, ?> cable = CableHelpers.getInterface(world, pos, ICableNetwork.class);
+        IPartContainer partContainer = PartContainerConfig.get(world, pos);
         if (WrenchHelpers.isWrench(player, heldItem, world, pos, side)) {
             if (player.isSneaking()) {
-                if (!(cable instanceof IPartContainerFacade)
-                    || !((IPartContainerFacade) cable).getPartContainer(world, pos)
-                        .hasParts()
-                    || !(cable instanceof ICableFakeable)) {
+                if (partContainer == null || !partContainer.hasParts() || !(cable instanceof ICableFakeable)) {
                     // Remove full cable
                     cable.remove(world, pos, player);
                     ItemBlockCable.playBreakSound(world, pos);
@@ -386,29 +383,19 @@ public class BlockCable extends ConfigurableBlockContainer
     @Override
     public Collection<INetworkElement> createNetworkElements(World world, BlockPos blockPos) {
         Set<INetworkElement> sidedElements = Sets.newHashSet();
-        for (Map.Entry<ForgeDirection, IPartType<?, ?>> entry : getPartContainer(world, blockPos).getParts()
+        IPartContainer partContainer = getPartContainer(world, blockPos);
+        for (Map.Entry<ForgeDirection, IPartType<?, ?>> entry : partContainer.getParts()
             .entrySet()) {
             sidedElements.add(
                 entry.getValue()
-                    .createNetworkElement(this, DimPos.of(world, blockPos), entry.getKey()));
+                    .createNetworkElement(partContainer, DimPos.of(world, blockPos), entry.getKey()));
         }
         return sidedElements;
     }
 
-    @Override
     public IPartContainer getPartContainer(IBlockAccess world, BlockPos pos) {
         return TileHelpers.getSafeTile(world, pos, TileMultipartTicking.class)
             .getPartContainer();
-    }
-
-    @Nullable
-    @Override
-    public ForgeDirection getWatchingSide(World world, BlockPos pos, EntityPlayer player) {
-        ICollidable.RayTraceResult<ForgeDirection> rayTraceResult = doRayTrace(world, pos, player);
-        if (rayTraceResult != null) {
-            return rayTraceResult.getPositionHit();
-        }
-        return null;
     }
 
     /* --------------- Start ICollidable and rendering --------------- */

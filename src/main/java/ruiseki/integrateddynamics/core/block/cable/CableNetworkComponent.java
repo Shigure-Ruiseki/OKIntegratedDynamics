@@ -12,12 +12,13 @@ import ruiseki.integrateddynamics.api.block.cable.ICable;
 import ruiseki.integrateddynamics.api.block.cable.ICableNetwork;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.network.IPartNetworkElement;
-import ruiseki.integrateddynamics.api.part.IPartContainerFacade;
+import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.path.ICablePathElement;
 import ruiseki.integrateddynamics.api.tileentity.ITileCable;
 import ruiseki.integrateddynamics.api.tileentity.ITileCableNetwork;
 import ruiseki.integrateddynamics.block.BlockCable;
+import ruiseki.integrateddynamics.capability.PartContainerConfig;
 import ruiseki.integrateddynamics.core.helper.CableHelpers;
 import ruiseki.integrateddynamics.core.network.PartNetwork;
 import ruiseki.integrateddynamics.core.path.CablePathElement;
@@ -243,11 +244,10 @@ public class CableNetworkComponent<C extends ICableNetwork<IPartNetwork, ICableP
         ForgeDirection side, IPartType<?, ?> removed) {
         if (preDestroy) {
             // Remove the cable from this network if it exists
-            IPartContainerFacade partContainerFacade = CableHelpers
-                .getInterface(world, pos, IPartContainerFacade.class);
-            if (partContainerFacade != null && network != null) {
+            IPartContainer partContainer = PartContainerConfig.get(world, pos);
+            if (partContainer != null && network != null) {
                 IPartNetworkElement<?, ?> networkElement = (IPartNetworkElement<?, ?>) removed
-                    .createNetworkElement(partContainerFacade, DimPos.of(world, pos), side);
+                    .createNetworkElement(partContainer, DimPos.of(world, pos), side);
                 networkElement.onPreRemoved(network);
                 if (network.removeNetworkElementPre(networkElement)) {
                     network.removeNetworkElementPost(networkElement);

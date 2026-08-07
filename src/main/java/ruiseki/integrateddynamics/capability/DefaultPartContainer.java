@@ -21,7 +21,6 @@ import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.network.INetworkElement;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
-import ruiseki.integrateddynamics.api.part.IPartContainerFacade;
 import ruiseki.integrateddynamics.api.part.IPartState;
 import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.core.helper.PartHelpers;
@@ -36,7 +35,7 @@ import ruiseki.okcore.helper.MinecraftHelpers;
 
 /**
  * Default implementation of an {@link IPartContainer}.
- * 
+ *
  * @author rubensworks
  */
 public abstract class DefaultPartContainer implements IPartContainer {
@@ -131,8 +130,7 @@ public abstract class DefaultPartContainer implements IPartContainer {
         } else {
             IPartType removed = partStateHolder.getPart();
             if (getNetwork() != null) {
-                INetworkElement networkElement = removed
-                    .createNetworkElement(getPartContainerFacade(), getPosition(), side);
+                INetworkElement networkElement = removed.createNetworkElement(this, getPosition(), side);
                 networkElement.onPreRemoved(getNetwork());
                 if (!getNetwork().removeNetworkElementPre(networkElement)) {
                     return null;
@@ -234,8 +232,6 @@ public abstract class DefaultPartContainer implements IPartContainer {
 
     protected abstract IPartNetwork getNetwork();
 
-    protected abstract IPartContainerFacade getPartContainerFacade();
-
     /**
      * @return The raw part data.
      */
@@ -245,7 +241,7 @@ public abstract class DefaultPartContainer implements IPartContainer {
 
     /**
      * Override the part data.
-     * 
+     *
      * @param partData The raw part data.
      */
     public void setPartData(Map<ForgeDirection, PartHelpers.PartStateHolder<?, ?>> partData) {

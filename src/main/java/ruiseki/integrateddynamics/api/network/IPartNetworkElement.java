@@ -1,6 +1,6 @@
 package ruiseki.integrateddynamics.api.network;
 
-import ruiseki.integrateddynamics.api.part.IPartContainerFacade;
+import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartState;
 import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartTarget;
@@ -26,7 +26,7 @@ public interface IPartNetworkElement<P extends IPartType<P, S>, S extends IPartS
     /**
      * @return The container in which this part resides.
      */
-    public IPartContainerFacade getPartContainerFacade();
+    public IPartContainer getPartContainer();
 
     /**
      * @return The target and position of this part.

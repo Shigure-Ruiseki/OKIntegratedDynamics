@@ -14,11 +14,10 @@ import org.apache.logging.log4j.Level;
 
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
-import ruiseki.integrateddynamics.api.part.IPartContainerFacade;
 import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.api.part.aspect.IAspect;
-import ruiseki.integrateddynamics.core.helper.CableHelpers;
+import ruiseki.integrateddynamics.capability.PartContainerConfig;
 import ruiseki.okcore.client.gui.GuiHandler;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.helper.MinecraftHelpers;
@@ -187,13 +186,9 @@ public class ExtendedGuiHandler extends GuiHandler {
 
     private static Pair<IPartContainer, IPartType> getPartConstructionData(World world, BlockPos pos,
         ForgeDirection side) {
-        IPartContainerFacade partContainerFacade = CableHelpers.getInterface(world, pos, IPartContainerFacade.class);
-        if (partContainerFacade == null) {
-            IntegratedDynamics.clog(Level.WARN, String.format("The tile at %s is not a valid part container.", pos));
-            return null;
-        }
-        IPartContainer partContainer = partContainerFacade.getPartContainer(world, pos);
+        IPartContainer partContainer = PartContainerConfig.get(world, pos);
         if (partContainer == null) {
+            IntegratedDynamics.clog(Level.WARN, String.format("The tile at %s is not a valid part container.", pos));
             return null;
         }
 

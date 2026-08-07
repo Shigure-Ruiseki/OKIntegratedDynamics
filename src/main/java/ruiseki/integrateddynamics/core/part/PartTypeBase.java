@@ -25,7 +25,6 @@ import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.network.IPartNetworkElement;
 import ruiseki.integrateddynamics.api.network.event.INetworkEvent;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
-import ruiseki.integrateddynamics.api.part.IPartContainerFacade;
 import ruiseki.integrateddynamics.api.part.IPartState;
 import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartTarget;
@@ -168,7 +167,7 @@ public abstract class PartTypeBase<P extends IPartType<P, S>, S extends IPartSta
     }
 
     @Override
-    public INetworkElement<IPartNetwork> createNetworkElement(IPartContainerFacade partContainerFacade, DimPos pos,
+    public INetworkElement<IPartNetwork> createNetworkElement(IPartContainer partContainer, DimPos pos,
         ForgeDirection side) {
         return new PartNetworkElement(this, PartTarget.fromCenter(pos, side));
     }

@@ -230,12 +230,12 @@ public interface IPartType<P extends IPartType<P, S>, S extends IPartState<P>>
     /**
      * Create a network element for this part type.
      *
-     * @param partContainerFacade The facade for reaching the container this part is/will be part of.
-     * @param pos                 The position this network element is/will be placed at.
-     * @param side                The side this network element is/will be placed at.
+     * @param partContainer The container this part is/will be part of.
+     * @param pos           The position this network element is/will be placed at.
+     * @param side          The side this network element is/will be placed at.
      * @return A new network element instance.
      */
-    public INetworkElement<IPartNetwork> createNetworkElement(IPartContainerFacade partContainerFacade, DimPos pos,
+    public INetworkElement<IPartNetwork> createNetworkElement(IPartContainer partContainer, DimPos pos,
         ForgeDirection side);
 
     /**
@@ -265,7 +265,7 @@ public interface IPartType<P extends IPartType<P, S>, S extends IPartState<P>>
 
     /**
      * Called after this element has been removed.
-     * 
+     *
      * @param network The network.
      * @param state   The state
      * @param target  The target block.

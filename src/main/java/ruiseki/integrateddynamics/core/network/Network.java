@@ -68,9 +68,9 @@ public class Network<N extends INetwork<N>> implements INetwork<N> {
      * Create a new network from a given cluster of cables.
      * Each cable will be checked if it is an instance of {@link INetworkElementProvider} and will add all its
      * elements to the network in that case.
-     * Each cable that is an instance of {@link ruiseki.integrateddynamics.api.part.IPartContainerFacade}
+     * Each cable that has an {@link ruiseki.integrateddynamics.api.part.IPartContainer} capability
      * will have the network stored in its part container.
-     *
+     * 
      * @param cables The cables that make up the connections in the network which can potentially provide network
      *               elements.
      */

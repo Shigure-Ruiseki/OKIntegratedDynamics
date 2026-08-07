@@ -1,16 +1,21 @@
 package ruiseki.integrateddynamics.capability;
 
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.world.World;
+import net.minecraftforge.common.util.ForgeDirection;
+
+import org.jetbrains.annotations.Nullable;
 
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
-import ruiseki.integrateddynamics.api.part.IPartContainerFacade;
+import ruiseki.integrateddynamics.block.BlockCable;
 import ruiseki.integrateddynamics.core.tileentity.TileMultipartTicking;
+import ruiseki.okcore.block.collidable.ICollidable;
 import ruiseki.okcore.datastructure.BlockPos;
 
 /**
  * Implementation of an {@link IPartContainer} for a tile entity.
- * 
+ *
  * @author rubensworks
  */
 public class TileMultipartTickingPartContainer extends DefaultPartContainer {
@@ -50,8 +55,14 @@ public class TileMultipartTickingPartContainer extends DefaultPartContainer {
         return getTile().getNetwork();
     }
 
+    @Nullable
     @Override
-    protected IPartContainerFacade getPartContainerFacade() {
-        return (IPartContainerFacade) getTile().getBlock();
+    public ForgeDirection getWatchingSide(World world, BlockPos pos, EntityPlayer player) {
+        ICollidable.RayTraceResult<ForgeDirection> rayTraceResult = ((BlockCable) pos.getBlock(world))
+            .doRayTrace(world, pos, player);
+        if (rayTraceResult != null) {
+            return rayTraceResult.getPositionHit();
+        }
+        return null;
     }
 }

@@ -3,11 +3,13 @@ package ruiseki.integrateddynamics.api.part;
 import java.util.Map;
 
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import org.jetbrains.annotations.Nullable;
 
 import ruiseki.okcore.capabilities.ICapabilitySerializable;
+import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
 
 /**
@@ -101,4 +103,14 @@ public interface IPartContainer extends ICapabilitySerializable {
      */
     public IPartState getPartState(ForgeDirection side);
 
+    /**
+     * Get the part side the player is watching.
+     * This is used to determine the part the player is looking at.
+     * 
+     * @param world  The world.
+     * @param pos    The block position to perform a ray trace for.
+     * @param player The player.
+     * @return The side the player is watching or null.
+     */
+    public @Nullable ForgeDirection getWatchingSide(World world, BlockPos pos, EntityPlayer player);
 }

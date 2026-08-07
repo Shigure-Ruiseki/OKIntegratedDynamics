@@ -19,11 +19,10 @@ import lombok.EqualsAndHashCode;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.block.cable.ICableFakeable;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
-import ruiseki.integrateddynamics.api.part.IPartContainerFacade;
 import ruiseki.integrateddynamics.api.part.IPartState;
 import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.block.BlockCable;
-import ruiseki.integrateddynamics.core.helper.CableHelpers;
+import ruiseki.integrateddynamics.capability.PartContainerConfig;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.integrateddynamics.item.ItemBlockCable;
 import ruiseki.okcore.config.configurable.ConfigurableItem;
@@ -75,12 +74,10 @@ public class ItemPart<P extends IPartType<P, S>, S extends IPartState<P>> extend
         if (!world.isRemote) {
             ForgeDirection side = ForgeDirection.getOrientation(sideInt);
             BlockPos pos = new BlockPos(x, y, z);
-            IPartContainerFacade partContainerFacade = CableHelpers
-                .getInterface(world, pos, IPartContainerFacade.class);
-            if (partContainerFacade != null) {
+            IPartContainer partContainerFirst = PartContainerConfig.get(world, pos);
+            if (partContainerFirst != null) {
                 // Add part to existing cable
-                IPartContainer partContainer = partContainerFacade.getPartContainer(world, pos);
-                if (addPart(world, pos, side, partContainer, itemStack) && !playerIn.capabilities.isCreativeMode) {
+                if (addPart(world, pos, side, partContainerFirst, itemStack)) {
                     itemStack.stackSize--;
                 }
                 return true;
@@ -108,9 +105,8 @@ public class ItemPart<P extends IPartType<P, S>, S extends IPartState<P>> extend
                         hitX,
                         hitY,
                         hitZ)) {
-                        partContainerFacade = CableHelpers.getInterface(world, target, IPartContainerFacade.class);
-                        if (partContainerFacade != null) {
-                            IPartContainer partContainer = partContainerFacade.getPartContainer(world, target);
+                        IPartContainer partContainer = PartContainerConfig.get(world, pos);
+                        if (partContainer != null) {
                             addPart(world, pos, side.getOpposite(), partContainer, itemStack);
                             if (target.getBlock(world) instanceof ICableFakeable) {
                                 BlockCable.getInstance()
@@ -126,10 +122,9 @@ public class ItemPart<P extends IPartType<P, S>, S extends IPartState<P>> extend
                         }
                     }
                 } else {
-                    partContainerFacade = CableHelpers.getInterface(world, target, IPartContainerFacade.class);
-                    if (partContainerFacade != null) {
-                        IPartContainer partContainer = partContainerFacade.getPartContainer(world, target);
-                        if (addPart(world, pos, side.getOpposite(), partContainer, itemStack)
+                    IPartContainer partContainer = PartContainerConfig.get(world, pos);
+                    if (partContainer != null) {
+                        if (!world.isRemote && addPart(world, pos, side.getOpposite(), partContainer, itemStack)
                             && !playerIn.capabilities.isCreativeMode) {
                             itemStack.stackSize--;
                         }

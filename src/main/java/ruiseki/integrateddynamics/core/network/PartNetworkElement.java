@@ -13,11 +13,10 @@ import ruiseki.integrateddynamics.api.network.INetworkElement;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.network.IPartNetworkElement;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
-import ruiseki.integrateddynamics.api.part.IPartContainerFacade;
 import ruiseki.integrateddynamics.api.part.IPartState;
 import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartTarget;
-import ruiseki.integrateddynamics.core.helper.CableHelpers;
+import ruiseki.integrateddynamics.capability.PartContainerConfig;
 import ruiseki.okcore.datastructure.DimPos;
 
 /**
@@ -53,29 +52,18 @@ public class PartNetworkElement<P extends IPartType<P, S>, S extends IPartState<
     }
 
     @Override
-    public IPartContainerFacade getPartContainerFacade() {
-        return CableHelpers.getInterface(getCenterPos(getTarget()), IPartContainerFacade.class);
+    public IPartContainer getPartContainer() {
+        return PartContainerConfig.get(getCenterPos(getTarget()));
     }
 
     @Override
     public S getPartState() {
-        IPartContainerFacade partContainerFacade = getPartContainerFacade();
-        DimPos dimPos = getCenterPos(getTarget());
-        if (partContainerFacade != null) {
-            IPartContainer partContainer = partContainerFacade
-                .getPartContainer(getCenterPos(getTarget()).getWorld(), dimPos.getBlockPos());
-            if (partContainer != null) {
-                return (S) partContainer.getPartState(getCenterSide(getTarget()));
-            } else {
-                throw new IllegalStateException(String.format("The part container at %s could not be found.", dimPos));
-            }
+        IPartContainer partContainer = getPartContainer();
+        if (partContainer != null) {
+            return (S) partContainer.getPartState(getCenterSide(getTarget()));
         } else {
             throw new IllegalStateException(
-                String.format(
-                    "The part container facade at %s could not be found, instead %s was found.",
-                    dimPos,
-                    dimPos.getBlockPos()
-                        .getBlock(dimPos.getWorld())));
+                String.format("The part container at %s could not be found.", getCenterSide(getTarget())));
         }
     }
 
