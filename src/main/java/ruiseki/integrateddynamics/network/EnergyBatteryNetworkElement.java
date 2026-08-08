@@ -65,13 +65,13 @@ public class EnergyBatteryNetworkElement extends NetworkElementBase {
     @Override
     public boolean onNetworkAddition(INetwork network) {
         return NetworkHelpers.getEnergyNetwork(network)
-            .addEnergyBattery(PartPos.of(getPos(), null));
+            .addPosition(PartPos.of(getPos(), null), 0);
     }
 
     @Override
     public void onNetworkRemoval(INetwork network) {
         NetworkHelpers.getEnergyNetwork(network)
-            .removeEnergyBattery(PartPos.of(getPos(), null));
+            .removePosition(PartPos.of(getPos(), null));
     }
 
     @Override
@@ -82,6 +82,16 @@ public class EnergyBatteryNetworkElement extends NetworkElementBase {
     @Override
     public void onNeighborBlockChange(INetwork network, IBlockAccess world, Block neighborBlock) {
 
+    }
+
+    @Override
+    public void setPriority(INetwork network, int priority) {
+
+    }
+
+    @Override
+    public int getPriority() {
+        return 0;
     }
 
     @Override

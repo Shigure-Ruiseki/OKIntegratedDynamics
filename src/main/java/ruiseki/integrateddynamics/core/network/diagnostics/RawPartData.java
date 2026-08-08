@@ -16,7 +16,7 @@ public class RawPartData implements IRawData {
     private final BlockPos pos;
     private final ForgeDirection side;
     private final String name;
-    private final long lastTickDuration;
+    private final long last20TicksDurationNs;
 
     @Override
     public String toString() {
@@ -29,7 +29,7 @@ public class RawPartData implements IRawData {
         tag.setLong("pos", pos.toLong());
         tag.setInteger("side", side.ordinal());
         tag.setString("name", name);
-        tag.setLong("lastTickDuration", lastTickDuration);
+        tag.setLong("last20TicksDurationNs", last20TicksDurationNs);
         return tag;
     }
 
@@ -39,7 +39,7 @@ public class RawPartData implements IRawData {
             BlockPos.fromLong(tag.getLong("pos")),
             ForgeDirection.values()[tag.getInteger("side")],
             tag.getString("name"),
-            tag.getLong("lastTickDuration"));
+            tag.getLong("last20TicksDurationNs"));
     }
 
 }

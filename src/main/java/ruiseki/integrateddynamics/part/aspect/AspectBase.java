@@ -97,8 +97,8 @@ public abstract class AspectBase<V extends IValue, T extends IValueType<V>> impl
         IAspectProperties properties = state.getAspectProperties(this);
         if (properties == null) {
             properties = getDefaultProperties().clone();
+            setProperties(partType, target, state, properties);
         }
-        setProperties(partType, target, state, properties);
         return properties;
     }
 

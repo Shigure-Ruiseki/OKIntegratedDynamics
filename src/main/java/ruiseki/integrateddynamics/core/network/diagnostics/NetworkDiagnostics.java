@@ -81,7 +81,7 @@ public class NetworkDiagnostics {
                 IPartNetworkElement partNetworkElement = (IPartNetworkElement) networkElement;
                 PartPos pos = partNetworkElement.getTarget()
                     .getCenter();
-                long lastSecondDuration = network.getLastSecondDuration(networkElement);
+                long lastSecondDurationNs = network.getLastSecondDuration(networkElement);
                 rawParts.add(
                     new RawPartData(
                         pos.getPos()
@@ -92,7 +92,7 @@ public class NetworkDiagnostics {
                         LangHelpers.localize(
                             partNetworkElement.getPart()
                                 .getUnlocalizedName()),
-                        lastSecondDuration / MinecraftHelpers.SECOND_IN_TICKS));
+                        lastSecondDurationNs / MinecraftHelpers.SECOND_IN_TICKS));
             } else {
                 // If needed, we can send the other part types later on as well
             }

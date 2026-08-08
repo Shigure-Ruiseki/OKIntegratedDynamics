@@ -32,6 +32,7 @@ public abstract class PartStateBase<P extends IPartType> implements IPartState<P
     private boolean dirty = false;
     private boolean update = false;
     private int updateInterval = GeneralConfig.defaultPartUpdateFreq;
+    private int priority = 0;
     private int id = -1;
     private Map<IAspect, IAspectProperties> aspectProperties = new IdentityHashMap<>();
     private boolean enabled = true;
@@ -41,6 +42,7 @@ public abstract class PartStateBase<P extends IPartType> implements IPartState<P
     @Override
     public void writeToNBT(NBTTagCompound tag) {
         tag.setInteger("updateInterval", this.updateInterval);
+        tag.setInteger("priority", this.priority);
         tag.setInteger("id", this.id);
         writeAspectProperties("aspectProperties", tag);
         tag.setBoolean("enabled", this.enabled);
@@ -52,6 +54,7 @@ public abstract class PartStateBase<P extends IPartType> implements IPartState<P
     @Override
     public void readFromNBT(NBTTagCompound tag) {
         this.updateInterval = tag.getInteger("updateInterval");
+        this.priority = tag.getInteger("priority");
         this.id = tag.getInteger("id");
         this.aspectProperties.clear();
         readAspectProperties("aspectProperties", tag);
@@ -66,12 +69,12 @@ public abstract class PartStateBase<P extends IPartType> implements IPartState<P
         NBTTagList list = new NBTTagList();
         for (Map.Entry<IAspect, IAspectProperties> entry : aspectProperties.entrySet()) {
             NBTTagCompound entryTag = new NBTTagCompound();
-            tag.setString(
+            entryTag.setString(
                 "key",
                 entry.getKey()
                     .getUnlocalizedName());
             if (entry.getValue() != null) {
-                tag.setTag(
+                entryTag.setTag(
                     "value",
                     entry.getValue()
                         .serializeNBT());
@@ -92,7 +95,7 @@ public abstract class PartStateBase<P extends IPartType> implements IPartState<P
                 IAspectProperties value = null;
                 if (entryTag.hasKey("value")) {
                     value = new AspectProperties();
-                    value.deserializeNBT(tag.getCompoundTag("value"));
+                    value.deserializeNBT(entryTag.getCompoundTag("value"));
                 }
                 if (key != null && value != null) {
                     this.aspectProperties.put(key, value);
@@ -119,6 +122,16 @@ public abstract class PartStateBase<P extends IPartType> implements IPartState<P
     @Override
     public int getUpdateInterval() {
         return updateInterval;
+    }
+
+    @Override
+    public void setPriority(int priority) {
+        this.priority = priority;
+    }
+
+    @Override
+    public int getPriority() {
+        return priority;
     }
 
     @Override

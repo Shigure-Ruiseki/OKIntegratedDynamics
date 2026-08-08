@@ -43,6 +43,7 @@ import ruiseki.integrateddynamics.api.evaluate.operator.IOperatorRegistry;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeListProxy;
+import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeNumber;
 import ruiseki.integrateddynamics.api.evaluate.variable.IVariable;
 import ruiseki.integrateddynamics.api.logicprogrammer.IConfigRenderPattern;
 import ruiseki.integrateddynamics.core.evaluate.IOperatorValuePropagator;
@@ -348,6 +349,9 @@ public final class Operators {
                     IValueType temporarySecondInputType = null;
                     for (int i = 0; i < requiredInputLength; i++) {
                         IValueType inputType = input[i];
+                        if (inputType instanceof IValueTypeNumber) {
+                            inputType = ValueTypes.CATEGORY_NUMBER;
+                        }
                         if (inputType == null) {
                             return new LangHelpers.UnlocalizedString(
                                 L10NValues.OPERATOR_ERROR_NULLTYPE,
@@ -376,15 +380,17 @@ public final class Operators {
      * Relational &gt; operator with two input integers and one output boolean.
      */
     public static final IOperator RELATIONAL_GT = REGISTRY.register(
-        OperatorBuilders.RELATIONAL_2.symbol(">")
+        OperatorBuilders.RELATIONAL_2.inputTypes(2, ValueTypes.CATEGORY_NUMBER)
+            .symbol(">")
             .operatorName("gt")
             .function(new OperatorBase.IFunction() {
 
                 @Override
                 public IValue evaluate(OperatorBase.SafeVariablesGetter variables) throws EvaluationException {
-                    ValueTypeInteger.ValueInteger a = variables.getValue(0);
-                    ValueTypeInteger.ValueInteger b = variables.getValue(1);
-                    return ValueTypeBoolean.ValueBoolean.of(a.getRawValue() > b.getRawValue());
+                    return ValueTypeBoolean.ValueBoolean.of(
+                        ValueTypes.CATEGORY_NUMBER
+                            .greaterThan(variables.getVariables()[0], variables.getVariables()[1]));
+
                 }
             })
             .build());
@@ -393,15 +399,16 @@ public final class Operators {
      * Relational &gt; operator with two input integers and one output boolean.
      */
     public static final IOperator RELATIONAL_LT = REGISTRY.register(
-        OperatorBuilders.RELATIONAL_2.symbol("<")
+        OperatorBuilders.RELATIONAL_2.inputTypes(2, ValueTypes.CATEGORY_NUMBER)
+            .symbol("<")
             .operatorName("lt")
             .function(new OperatorBase.IFunction() {
 
                 @Override
                 public IValue evaluate(OperatorBase.SafeVariablesGetter variables) throws EvaluationException {
-                    ValueTypeInteger.ValueInteger a = variables.getValue(0);
-                    ValueTypeInteger.ValueInteger b = variables.getValue(1);
-                    return ValueTypeBoolean.ValueBoolean.of(a.getRawValue() < b.getRawValue());
+                    return ValueTypeBoolean.ValueBoolean.of(
+                        ValueTypes.CATEGORY_NUMBER.lessThan(variables.getVariables()[0], variables.getVariables()[1]));
+
                 }
             })
             .build());
@@ -1448,7 +1455,8 @@ public final class Operators {
      * Get a list of items that correspond to the given oredict key.
      */
     public static final IOperator OBJECT_ITEMSTACK_OREDICT_STACKS = REGISTRY.register(
-        OperatorBuilders.STRING_1_PREFIX.symbolOperator("oredict")
+        OperatorBuilders.STRING_1_PREFIX.output(ValueTypes.LIST)
+            .symbolOperator("oredict")
             .inputType(ValueTypes.STRING)
             .renderPattern(IConfigRenderPattern.SUFFIX_1_LONG)
             .function(new OperatorBase.IFunction() {

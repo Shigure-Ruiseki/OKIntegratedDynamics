@@ -1,27 +1,17 @@
 package ruiseki.integrateddynamics.core.network;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-
-import org.jetbrains.annotations.Nullable;
-
-import com.google.common.base.Function;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Sets;
-
+import cofh.api.energy.IEnergyStorage;
 import lombok.Getter;
 import lombok.Setter;
 import ruiseki.integrateddynamics.GeneralConfig;
-import ruiseki.integrateddynamics.api.block.IEnergyBattery;
-import ruiseki.integrateddynamics.api.network.FullNetworkListenerAdapter;
 import ruiseki.integrateddynamics.api.network.IEnergyConsumingNetworkElement;
 import ruiseki.integrateddynamics.api.network.IEnergyNetwork;
+import ruiseki.integrateddynamics.api.network.IFullNetworkListener;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.INetworkElement;
 import ruiseki.integrateddynamics.api.part.PartPos;
-import ruiseki.integrateddynamics.capability.energybattery.EnergyBatteryConfig;
+import ruiseki.integrateddynamics.api.path.IPathElement;
+import ruiseki.okcore.energy.capability.CapabilityEnergy;
 import ruiseki.okcore.helper.CapabilityHelpers;
 
 /**
@@ -29,12 +19,51 @@ import ruiseki.okcore.helper.CapabilityHelpers;
  *
  * @author rubensworks
  */
-public class EnergyNetwork extends FullNetworkListenerAdapter implements IEnergyNetwork {
+public class EnergyNetwork extends PositionedAddonsNetwork implements IEnergyNetwork, IFullNetworkListener {
 
     @Getter
     @Setter
     private INetwork network;
-    private Set<PartPos> energyBatteryPositions = Sets.newHashSet();
+
+    @Override
+    public boolean addNetworkElement(INetworkElement element, boolean networkPreinit) {
+        return true;
+    }
+
+    @Override
+    public boolean removeNetworkElementPre(INetworkElement element) {
+        return true;
+    }
+
+    @Override
+    public void removeNetworkElementPost(INetworkElement element) {
+
+    }
+
+    @Override
+    public void kill() {
+
+    }
+
+    @Override
+    public void update() {
+
+    }
+
+    @Override
+    public boolean removePathElement(IPathElement pathElement) {
+        return true;
+    }
+
+    @Override
+    public void afterServerLoad() {
+
+    }
+
+    @Override
+    public void beforeServerStop() {
+
+    }
 
     @Override
     public boolean canUpdate(INetworkElement element) {
@@ -42,7 +71,7 @@ public class EnergyNetwork extends FullNetworkListenerAdapter implements IEnergy
         int multiplier = GeneralConfig.energyConsumptionMultiplier;
         if (multiplier == 0) return true;
         int consumptionRate = ((IEnergyConsumingNetworkElement) element).getConsumptionRate() * multiplier;
-        return consume(consumptionRate, true) == consumptionRate;
+        return extractEnergy(consumptionRate, true) == consumptionRate;
     }
 
     @Override
@@ -58,28 +87,10 @@ public class EnergyNetwork extends FullNetworkListenerAdapter implements IEnergy
             int multiplier = GeneralConfig.energyConsumptionMultiplier;
             if (multiplier > 0) {
                 int consumptionRate = ((IEnergyConsumingNetworkElement) element).getConsumptionRate() * multiplier;
-                consume(consumptionRate, false);
+                extractEnergy(consumptionRate, false);
             }
             ((IEnergyConsumingNetworkElement) element).postUpdate(getNetwork(), true);
         }
-    }
-
-    protected synchronized List<IEnergyBattery> getMaterializedEnergyBatteries() {
-        return ImmutableList
-            .copyOf(Iterables.transform(energyBatteryPositions, new Function<PartPos, IEnergyBattery>() {
-
-                @Nullable
-                @Override
-                public IEnergyBattery apply(PartPos pos) {
-                    return CapabilityHelpers.getCapability(pos.getPos(), EnergyBatteryConfig.CAPABILITY)
-                        .getOrNull();
-                }
-
-                @Override
-                public boolean equals(@Nullable Object object) {
-                    return false;
-                }
-            }));
     }
 
     protected int addSafe(int a, int b) {
@@ -89,68 +100,59 @@ public class EnergyNetwork extends FullNetworkListenerAdapter implements IEnergy
     }
 
     @Override
-    public synchronized int getStoredEnergy() {
+    public int getEnergyStored() {
         int energy = 0;
-        for (IEnergyBattery energyBattery : getMaterializedEnergyBatteries()) {
-            energy = addSafe(energy, energyBattery.getStoredEnergy());
+        for (PrioritizedPartPos partPos : getPositions()) {
+            IEnergyStorage energyStorage = getEnergyStorage(partPos);
+            if (energyStorage != null) {
+                energy = addSafe(energy, energyStorage.getEnergyStored());
+            }
         }
         return energy;
     }
 
     @Override
-    public synchronized int getMaxStoredEnergy() {
+    public int getMaxEnergyStored() {
         int maxEnergy = 0;
-        for (IEnergyBattery energyBattery : getMaterializedEnergyBatteries()) {
-            maxEnergy = addSafe(maxEnergy, energyBattery.getMaxStoredEnergy());
+        for (PrioritizedPartPos partPos : getPositions()) {
+            IEnergyStorage energyStorage = getEnergyStorage(partPos);
+            if (energyStorage != null) {
+                maxEnergy = addSafe(maxEnergy, energyStorage.getMaxEnergyStored());
+            }
         }
         return maxEnergy;
     }
 
     @Override
-    public int addEnergy(int energy, boolean simulate) {
+    public int receiveEnergy(int energy, boolean simulate) {
         int toAdd = energy;
-        for (IEnergyBattery energyBattery : getMaterializedEnergyBatteries()) {
-            int maxAdd = Math.min(energyBattery.getMaxStoredEnergy() - energyBattery.getStoredEnergy(), toAdd);
-            if (maxAdd > 0) {
-                energyBattery.addEnergy(maxAdd, simulate);
+        for (PrioritizedPartPos partPos : getPositions()) {
+            IEnergyStorage energyStorage = getEnergyStorage(partPos);
+            if (energyStorage != null) {
+                toAdd -= energyStorage.receiveEnergy(toAdd, simulate);
             }
-            toAdd -= maxAdd;
         }
         return energy - toAdd;
     }
 
     @Override
-    public synchronized int consume(int energy, boolean simulate) {
+    public int extractEnergy(int energy, boolean simulate) {
         int toConsume = energy;
-        for (IEnergyBattery energyBattery : getMaterializedEnergyBatteries()) {
-            int consume = Math.min(energyBattery.getStoredEnergy(), toConsume);
-            if (consume > 0) {
-                toConsume -= energyBattery.consume(consume, simulate);
+        for (PrioritizedPartPos partPos : getPositions()) {
+            IEnergyStorage energyStorage = getEnergyStorage(partPos);
+            if (energyStorage != null) {
+                toConsume -= energyStorage.extractEnergy(toConsume, simulate);
             }
         }
         return energy - toConsume;
     }
 
     @Override
-    public boolean addEnergyBattery(PartPos pos) {
-        IEnergyBattery energyBattery = CapabilityHelpers.getCapability(pos.getPos(), EnergyBatteryConfig.CAPABILITY)
+    public boolean addPosition(PartPos pos, int priority) {
+        IEnergyStorage energyStorage = CapabilityHelpers
+            .getCapability(pos.getPos(), CapabilityEnergy.ENERGY, pos.getSide())
             .getOrNull();
-        if (energyBattery != null) {
-            boolean contained = energyBatteryPositions.contains(pos);
-            energyBatteryPositions.add(pos);
-            return !contained;
-        }
-        return false;
-    }
-
-    @Override
-    public void removeEnergyBattery(PartPos pos) {
-        energyBatteryPositions.remove(pos);
-    }
-
-    @Override
-    public Set<PartPos> getEnergyBatteries() {
-        return Collections.unmodifiableSet(energyBatteryPositions);
+        return energyStorage != null && super.addPosition(pos, priority);
     }
 
     @Override
@@ -162,5 +164,15 @@ public class EnergyNetwork extends FullNetworkListenerAdapter implements IEnergy
             consumption += ((IEnergyConsumingNetworkElement) element).getConsumptionRate() * multiplier;
         }
         return consumption;
+    }
+
+    protected static IEnergyStorage getEnergyStorage(PrioritizedPartPos pos) {
+        return CapabilityHelpers.getCapability(
+            pos.getPartPos()
+                .getPos(),
+            CapabilityEnergy.ENERGY,
+            pos.getPartPos()
+                .getSide())
+            .getOrNull();
     }
 }

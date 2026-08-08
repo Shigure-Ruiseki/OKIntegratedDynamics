@@ -14,7 +14,7 @@ import ruiseki.okcore.datastructure.DimPos;
 
 /**
  * Network element for coal generators.
- * 
+ *
  * @author rubensworks
  */
 public class ProxyNetworkElement extends TileNetworkElement<TileProxy>
@@ -54,6 +54,16 @@ public class ProxyNetworkElement extends TileNetworkElement<TileProxy>
         if (partNetwork != null) {
             partNetwork.removeProxy(getId());
         }
+    }
+
+    @Override
+    public void setPriority(INetwork network, int priority) {
+
+    }
+
+    @Override
+    public int getPriority() {
+        return 0;
     }
 
     @Override

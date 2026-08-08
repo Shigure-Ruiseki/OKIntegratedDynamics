@@ -156,7 +156,14 @@ public abstract class PartContainerDefault implements IPartContainer {
 
                 networkElement.onPostRemoved(getNetwork());
             } else if (dropMainElement) {
-                ItemStackHelpers.spawnItemStackToPlayer(getWorld(), getPos(), new ItemStack(removed.getItem()), player);
+                if (player != null) {
+                    if (!player.capabilities.isCreativeMode) {
+                        ItemStackHelpers
+                            .spawnItemStackToPlayer(getWorld(), getPos(), new ItemStack(removed.getItem()), player);
+                    }
+                } else {
+                    ItemStackHelpers.spawnItemStack(getWorld(), getPos(), new ItemStack(removed.getItem()));
+                }
             }
             // Finally remove the part data from this part.
             IPartType ret = partData.remove(side)

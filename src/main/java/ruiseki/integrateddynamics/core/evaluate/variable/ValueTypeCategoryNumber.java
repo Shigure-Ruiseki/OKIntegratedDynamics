@@ -18,7 +18,7 @@ import ruiseki.okcore.helper.Helpers;
 
 /**
  * Value type category with values that are numbers.
- * 
+ *
  * @author rubensworks
  */
 public class ValueTypeCategoryNumber extends ValueTypeCategoryBase<IValue> {
@@ -137,6 +137,16 @@ public class ValueTypeCategoryNumber extends ValueTypeCategoryBase<IValue> {
     public IValue min(IVariable a, IVariable b) throws EvaluationException {
         IValueTypeNumber type = getLowestType(getType(a), getType(b));
         return type.min(castValue(type, a.getValue()), castValue(type, b.getValue()));
+    }
+
+    public boolean greaterThan(IVariable a, IVariable b) throws EvaluationException {
+        IValueTypeNumber type = getLowestType(getType(a), getType(b));
+        return type.greaterThan(castValue(type, a.getValue()), castValue(type, b.getValue()));
+    }
+
+    public boolean lessThan(IVariable a, IVariable b) throws EvaluationException {
+        IValueTypeNumber type = getLowestType(getType(a), getType(b));
+        return type.lessThan(castValue(type, a.getValue()), castValue(type, b.getValue()));
     }
 
 }

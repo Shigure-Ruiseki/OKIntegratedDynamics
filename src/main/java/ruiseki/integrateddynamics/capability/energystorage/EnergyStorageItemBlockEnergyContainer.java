@@ -1,9 +1,9 @@
-package ruiseki.integrateddynamics.capability.energybattery;
+package ruiseki.integrateddynamics.capability.energystorage;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 
-import ruiseki.integrateddynamics.api.block.IEnergyBattery;
+import cofh.api.energy.IEnergyStorage;
 import ruiseki.integrateddynamics.block.BlockEnergyBatteryConfig;
 import ruiseki.integrateddynamics.core.item.ItemBlockEnergyContainer;
 import ruiseki.okcore.helper.ItemNBTHelpers;
@@ -13,19 +13,19 @@ import ruiseki.okcore.helper.ItemNBTHelpers;
  * 
  * @author rubensworks
  */
-public class EnergyBatteryItemBlockEnergyContainer implements IEnergyBattery {
+public class EnergyStorageItemBlockEnergyContainer implements IEnergyStorage {
 
     private final ItemBlockEnergyContainer itemBlockEnergyContainer;
     private final ItemStack itemStack;
 
-    public EnergyBatteryItemBlockEnergyContainer(ItemBlockEnergyContainer itemBlockEnergyContainer,
+    public EnergyStorageItemBlockEnergyContainer(ItemBlockEnergyContainer itemBlockEnergyContainer,
         ItemStack itemStack) {
         this.itemBlockEnergyContainer = itemBlockEnergyContainer;
         this.itemStack = itemStack;
     }
 
     @Override
-    public int getStoredEnergy() {
+    public int getEnergyStored() {
         NBTTagCompound tag = ItemNBTHelpers.getNBT(itemStack);
         return tag.getInteger(
             itemBlockEnergyContainer.get()
@@ -33,14 +33,14 @@ public class EnergyBatteryItemBlockEnergyContainer implements IEnergyBattery {
     }
 
     @Override
-    public int getMaxStoredEnergy() {
+    public int getMaxEnergyStored() {
         return BlockEnergyBatteryConfig.capacity;
     }
 
     @Override
-    public int addEnergy(int energy, boolean simulate) {
-        int stored = getStoredEnergy();
-        int newEnergy = Math.min(stored + energy, getMaxStoredEnergy());
+    public int receiveEnergy(int energy, boolean simulate) {
+        int stored = getEnergyStored();
+        int newEnergy = Math.min(stored + energy, getMaxEnergyStored());
         if (!simulate) {
             setEnergy(itemStack, newEnergy);
         }
@@ -48,8 +48,8 @@ public class EnergyBatteryItemBlockEnergyContainer implements IEnergyBattery {
     }
 
     @Override
-    public int consume(int energy, boolean simulate) {
-        int stored = getStoredEnergy();
+    public int extractEnergy(int energy, boolean simulate) {
+        int stored = getEnergyStored();
         int newEnergy = Math.max(stored - energy, 0);
         if (!simulate) {
             setEnergy(itemStack, newEnergy);

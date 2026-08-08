@@ -88,15 +88,15 @@ public class ContainerAspectSettings extends ExtendedInventoryContainer {
 
             @Override
             public void onAction(int buttonId, InventoryContainer container) {
-                IntegratedDynamics._instance.getGuiHandler()
-                    .setTemporaryData(
-                        ExtendedGuiHandler.PART,
-                        getTarget().getCenter()
-                            .getSide());
-                BlockPos pos = getTarget().getCenter()
-                    .getPos()
-                    .getBlockPos();
                 if (!MinecraftHelpers.isClientSide()) {
+                    IntegratedDynamics._instance.getGuiHandler()
+                        .setTemporaryData(
+                            ExtendedGuiHandler.PART,
+                            getTarget().getCenter()
+                                .getSide());
+                    BlockPos pos = getTarget().getCenter()
+                        .getPos()
+                        .getBlockPos();
                     player.openGui(
                         IntegratedDynamics._instance.getModId(),
                         ((IGuiContainerProvider) getPartType()).getGuiID(),

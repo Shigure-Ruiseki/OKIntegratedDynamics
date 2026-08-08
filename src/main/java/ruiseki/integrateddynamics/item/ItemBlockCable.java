@@ -69,7 +69,8 @@ public class ItemBlockCable extends ItemBlockMetadata {
         return blockAtTarget.isReplaceable(world, target.getX(), target.getY(), target.getZ());
     }
 
-    protected boolean attempItemUseTarget(ItemStack stack, World world, BlockPos pos, BlockCable blockCable) {
+    protected boolean attempItemUseTarget(ItemStack stack, World world, BlockPos pos, BlockCable blockCable,
+        boolean offsetAdded) {
         Block block = pos.getBlock(world);
         if (!block.isAir(world, pos.getX(), pos.getY(), pos.getZ())) {
             ICableFakeable cable = CableHelpers.getCableFakeable(world, pos);
@@ -78,9 +79,11 @@ public class ItemBlockCable extends ItemBlockMetadata {
                 CableHelpers.onCableAdded(world, pos);
                 return true;
             }
-            for (IUseAction useAction : USE_ACTIONS) {
-                if (useAction.attempItemUseTarget(stack, world, pos, blockCable)) {
-                    return true;
+            if (!offsetAdded) {
+                for (IUseAction useAction : USE_ACTIONS) {
+                    if (useAction.attempItemUseTarget(stack, world, pos, blockCable)) {
+                        return true;
+                    }
                 }
             }
         }
@@ -122,14 +125,14 @@ public class ItemBlockCable extends ItemBlockMetadata {
         blockCable.setDisableCollisionBox(true);
 
         // 1. Try placing inside fake cable at clicked position
-        if (attempItemUseTarget(stack, worldIn, pos, blockCable)) {
+        if (attempItemUseTarget(stack, worldIn, pos, blockCable, false)) {
             afterItemUse(stack, worldIn, pos, blockCable, false);
             return true;
         }
 
         // 2. Try placing inside fake cable at target offset position
         BlockPos targetPos = pos.offset(side);
-        if (attempItemUseTarget(stack, worldIn, targetPos, blockCable)) {
+        if (attempItemUseTarget(stack, worldIn, targetPos, blockCable, true)) {
             // FIX: Pass targetPos instead of pos!
             afterItemUse(stack, worldIn, pos.offset(side), blockCable, false);
             return true;
@@ -146,7 +149,7 @@ public class ItemBlockCable extends ItemBlockMetadata {
 
         /**
          * Attempt to use the given item.
-         * 
+         *
          * @param itemStack  The item stack that is being used.
          * @param world      The world.
          * @param pos        The position.
@@ -157,7 +160,7 @@ public class ItemBlockCable extends ItemBlockMetadata {
 
         /**
          * If the block can be placed at the given position.
-         * 
+         *
          * @param world The world.
          * @param pos   The position.
          * @return If the block can be placed.

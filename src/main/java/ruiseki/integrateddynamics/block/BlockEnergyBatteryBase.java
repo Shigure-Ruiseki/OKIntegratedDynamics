@@ -4,7 +4,6 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 
-import ruiseki.integrateddynamics.api.block.IEnergyContainerBlock;
 import ruiseki.integrateddynamics.core.block.BlockContainerCabled;
 import ruiseki.integrateddynamics.tileentity.TileEnergyBattery;
 import ruiseki.okcore.config.extendedconfig.ExtendedConfig;

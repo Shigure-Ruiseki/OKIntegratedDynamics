@@ -241,9 +241,6 @@ public abstract class ContainerLogicProgrammerBase extends ScrollingInventoryCon
     protected ItemStack writeElementInfo() {
         ItemStack itemStack = writeSlot.getStackInSlot(0);
         ItemStack result = getActiveElement().writeElement(itemStack.copy());
-        if (!StringUtils.isNullOrEmpty(this.lastLabel)) {
-            labelCurrent();
-        }
         return result;
     }
 
@@ -262,6 +259,9 @@ public abstract class ContainerLogicProgrammerBase extends ScrollingInventoryCon
             ItemStack outputStack = writeElementInfo();
             writeSlot.removeDirtyMarkListener(this);
             writeSlot.setInventorySlotContents(0, outputStack);
+            if (!StringUtils.isNullOrEmpty(this.lastLabel)) {
+                labelCurrent();
+            }
             writeSlot.addDirtyMarkListener(this);
         }
     }

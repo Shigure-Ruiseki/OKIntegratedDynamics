@@ -9,6 +9,7 @@ import net.minecraft.nbt.NBTTagCompound;
 
 import com.google.common.collect.Maps;
 
+import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 import ruiseki.integrateddynamics.api.evaluate.variable.IVariable;
@@ -16,6 +17,7 @@ import ruiseki.integrateddynamics.api.item.IVariableFacade;
 import ruiseki.integrateddynamics.api.item.IVariableFacadeHandler;
 import ruiseki.integrateddynamics.api.item.IVariableFacadeHandlerRegistry;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
+import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeBoolean;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.okcore.helper.ItemNBTHelpers;
@@ -30,7 +32,7 @@ import ruiseki.okcore.helper.MinecraftHelpers;
 public class VariableFacadeHandlerRegistry implements IVariableFacadeHandlerRegistry {
 
     private static VariableFacadeHandlerRegistry INSTANCE = new VariableFacadeHandlerRegistry();
-    private static DummyVariableFacade DUMMY_FACADE = new DummyVariableFacade(L10NValues.VARIABLE_ERROR_INVALIDITEM);
+    public static DummyVariableFacade DUMMY_FACADE = new DummyVariableFacade(L10NValues.VARIABLE_ERROR_INVALIDITEM);
 
     private final Map<String, IVariableFacadeHandler> handlers = Maps.newHashMap();
 
@@ -128,6 +130,19 @@ public class VariableFacadeHandlerRegistry implements IVariableFacadeHandlerRegi
      */
     public static class DummyVariableFacade extends VariableFacadeBase {
 
+        private static final IVariable VARIABLE_TRUE = new IVariable<ValueTypeBoolean.ValueBoolean>() {
+
+            @Override
+            public IValueType<ValueTypeBoolean.ValueBoolean> getType() {
+                return ValueTypes.BOOLEAN;
+            }
+
+            @Override
+            public ValueTypeBoolean.ValueBoolean getValue() throws EvaluationException {
+                return ValueTypeBoolean.ValueBoolean.of(true);
+            }
+        };
+
         private final String unlocalizedError;
 
         public DummyVariableFacade(String unlocalizedError) {
@@ -137,7 +152,7 @@ public class VariableFacadeHandlerRegistry implements IVariableFacadeHandlerRegi
 
         @Override
         public <V extends IValue> IVariable<V> getVariable(IPartNetwork network) {
-            return null;
+            return VARIABLE_TRUE;
         }
 
         @Override
@@ -147,7 +162,9 @@ public class VariableFacadeHandlerRegistry implements IVariableFacadeHandlerRegi
 
         @Override
         public void validate(IPartNetwork network, IValidator validator, IValueType containingValueType) {
-            validator.addError(new LangHelpers.UnlocalizedString(unlocalizedError));
+            if (containingValueType != ValueTypes.BOOLEAN) {
+                validator.addError(new LangHelpers.UnlocalizedString(unlocalizedError));
+            }
         }
 
         @Override

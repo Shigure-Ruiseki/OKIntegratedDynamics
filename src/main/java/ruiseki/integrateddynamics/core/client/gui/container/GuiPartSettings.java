@@ -8,9 +8,11 @@ import org.lwjgl.input.Keyboard;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartTarget;
+import ruiseki.integrateddynamics.core.client.gui.ExtendedGuiHandler;
 import ruiseki.integrateddynamics.core.inventory.container.ContainerPartSettings;
 import ruiseki.okcore.client.gui.component.button.GuiButtonText;
 import ruiseki.okcore.client.gui.component.input.GuiNumberField;
@@ -37,7 +39,8 @@ public class GuiPartSettings extends GuiContainerExtended {
     private final IPartContainer partContainer;
     private final IPartType partType;
 
-    private GuiNumberField numberField = null;
+    private GuiNumberField numberFieldUpdateInterval = null;
+    private GuiNumberField numberFieldPriority = null;
 
     /**
      * Make a new instance.
@@ -57,12 +60,22 @@ public class GuiPartSettings extends GuiContainerExtended {
 
             @Override
             public void onAction(int buttonId, GuiContainerExtended gui, ExtendedInventoryContainer container) {
+                IntegratedDynamics._instance.getGuiHandler()
+                    .setTemporaryData(
+                        ExtendedGuiHandler.PART,
+                        getTarget().getCenter()
+                            .getSide());
                 try {
-                    int updateInterval = numberField.getInt();
+                    int updateInterval = numberFieldUpdateInterval.getInt();
+                    int priority = numberFieldPriority.getInt();
                     ValueNotifierHelpers.setValue(
                         getContainer(),
                         ((ContainerPartSettings) getContainer()).getLastUpdateValueId(),
                         updateInterval);
+                    ValueNotifierHelpers.setValue(
+                        getContainer(),
+                        ((ContainerPartSettings) getContainer()).getLastPriorityValueId(),
+                        priority);
                 } catch (NumberFormatException e) {}
             }
         });
@@ -80,20 +93,36 @@ public class GuiPartSettings extends GuiContainerExtended {
         super.initGui();
         Keyboard.enableRepeatEvents(true);
 
-        numberField = new GuiNumberField(
+        numberFieldUpdateInterval = new GuiNumberField(
             0,
             Minecraft.getMinecraft().fontRenderer,
-            guiLeft + 38,
+            guiLeft + 68,
             guiTop + 9,
-            100,
+            70,
             14,
             true,
             true);
-        numberField.setMaxStringLength(64);
-        numberField.setMaxStringLength(15);
-        numberField.setVisible(true);
-        numberField.setTextColor(16777215);
-        numberField.setCanLoseFocus(true);
+        numberFieldUpdateInterval.setMaxStringLength(64);
+        numberFieldUpdateInterval.setMaxStringLength(15);
+        numberFieldUpdateInterval.setVisible(true);
+        numberFieldUpdateInterval.setTextColor(16777215);
+        numberFieldUpdateInterval.setCanLoseFocus(true);
+
+        numberFieldPriority = new GuiNumberField(
+            0,
+            Minecraft.getMinecraft().fontRenderer,
+            guiLeft + 68,
+            guiTop + 34,
+            70,
+            14,
+            true,
+            true);
+        numberFieldPriority.setPositiveOnly(false);
+        numberFieldPriority.setMaxStringLength(64);
+        numberFieldPriority.setMaxStringLength(15);
+        numberFieldPriority.setVisible(true);
+        numberFieldPriority.setTextColor(16777215);
+        numberFieldPriority.setCanLoseFocus(true);
 
         String save = LangHelpers.localize("gui.integrateddynamics.button.save");
         buttonList.add(
@@ -110,7 +139,8 @@ public class GuiPartSettings extends GuiContainerExtended {
     @Override
     protected void keyTyped(char typedChar, int keyCode) {
         if (!this.checkHotbarKeys(keyCode)) {
-            if (!this.numberField.textboxKeyTyped(typedChar, keyCode)) {
+            if (!this.numberFieldUpdateInterval.textboxKeyTyped(typedChar, keyCode)
+                && !this.numberFieldPriority.textboxKeyTyped(typedChar, keyCode)) {
                 super.keyTyped(typedChar, keyCode);
             }
         }
@@ -118,7 +148,8 @@ public class GuiPartSettings extends GuiContainerExtended {
 
     @Override
     protected void mouseClicked(int mouseX, int mouseY, int mouseButton) {
-        this.numberField.mouseClicked(mouseX, mouseY, mouseButton);
+        this.numberFieldUpdateInterval.mouseClicked(mouseX, mouseY, mouseButton);
+        this.numberFieldPriority.mouseClicked(mouseX, mouseY, mouseButton);
         super.mouseClicked(mouseX, mouseY, mouseButton);
     }
 
@@ -126,17 +157,29 @@ public class GuiPartSettings extends GuiContainerExtended {
     @Override
     protected void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY) {
         super.drawGuiContainerBackgroundLayer(partialTicks, mouseX, mouseY);
-        numberField.drawTextBox(Minecraft.getMinecraft(), mouseX - guiLeft, mouseY - guiTop);
+        numberFieldUpdateInterval.drawTextBox(Minecraft.getMinecraft(), mouseX - guiLeft, mouseY - guiTop);
+        numberFieldPriority.drawTextBox(Minecraft.getMinecraft(), mouseX - guiLeft, mouseY - guiTop);
         fontRendererObj.drawString(
             LangHelpers.localize("gui.integrateddynamics.partsettings.updateInterval"),
             guiLeft + 8,
             guiTop + 12,
             Helpers.RGBToInt(0, 0, 0));
+        fontRendererObj.drawString(
+            LangHelpers.localize("gui.integrateddynamics.partsettings.priority"),
+            guiLeft + 8,
+            guiTop + 37,
+            Helpers.RGBToInt(0, 0, 0));
     }
 
     @Override
     public void onUpdate(int valueId, NBTTagCompound value) {
-        numberField.setText(Integer.toString(((ContainerPartSettings) getContainer()).getLastUpdateValue()));
+        if (valueId == ((ContainerPartSettings) getContainer()).getLastUpdateValueId()) {
+            numberFieldUpdateInterval
+                .setText(Integer.toString(((ContainerPartSettings) getContainer()).getLastUpdateValue()));
+        }
+        if (valueId == ((ContainerPartSettings) getContainer()).getLastPriorityValueId()) {
+            numberFieldPriority
+                .setText(Integer.toString(((ContainerPartSettings) getContainer()).getLastPriorityValue()));
+        }
     }
-
 }

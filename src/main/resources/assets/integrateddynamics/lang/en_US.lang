@@ -7,7 +7,8 @@ general.integrateddynamics.error.noNetwork=No valid network found
 # Gui
 gui.integrateddynamics.button.save=Save
 gui.integrateddynamics.button.rename=Rename
-gui.integrateddynamics.partsettings.updateInterval=Freq.
+gui.integrateddynamics.partsettings.updateInterval=Frequency
+gui.integrateddynamics.partsettings.priority=Priority
 gui.integrateddynamics.part.properties=Properties:
 gui.integrateddynamics.logicprogrammer.filter=Filter
 gui.integrateddynamics.waila.partConfig=Part Information
@@ -32,7 +33,7 @@ key.integrateddynamics.logicProgrammerFocusSearch=Focus Search Logic Programmer
 key.integrateddynamics.logicProgrammerOpenRename=Focus Search Logic Programmer
 
 # Blocks
-tile.blocks.integrateddynamics.cable.name=Cable
+tile.blocks.integrateddynamics.cable.name=Logic Cable
 tile.blocks.integrateddynamics.variablestore.name=Variable Store
 tile.blocks.integrateddynamics.energyBattery.name=Energy Battery
 tile.blocks.integrateddynamics.creativeEnergyBattery.name=Creative Energy Battery
@@ -44,6 +45,7 @@ tile.blocks.integrateddynamics.proxy.info=Expose a variable reference as an aspe
 tile.blocks.integrateddynamics.materializer.name=Materializer
 tile.blocks.integrateddynamics.materializer.info=Materialize the value of a variable in a new variable
 tile.blocks.integrateddynamics.menrilLog.name=Menril Log
+tile.blocks.integrateddynamics.menrilLogFilled.name=Enriched Menril Log
 tile.blocks.integrateddynamics.menrilLeaves.name=Menril Leaves
 tile.blocks.integrateddynamics.menrilSapling.name=Menril Sapling
 tile.blocks.integrateddynamics.menrilPlanks.name=Menril Plank
@@ -53,8 +55,9 @@ tile.blocks.integrateddynamics.blockMenrilResin.name=Menril Resin
 tile.blocks.integrateddynamics.dryingBasin.name=Drying Basin
 tile.blocks.integrateddynamics.dryingBasin.info=For drying items and fluids
 tile.blocks.integrateddynamics.squeezer.name=Squeezer
-tile.blocks.integrateddynamics.squeezer.info=For squeezing, flattening and crushing things
+tile.blocks.integrateddynamics.squeezer.info=Squeezes, flattens and crushes by jumping on it
 tile.blocks.integrateddynamics.menrilTorch.name=Menril Torch
+tile.blocks.integrateddynamics.invisibleLight.name=Invisible Light
 
 # Items
 item.items.integrateddynamics.general.id=§e§lID: §r%s
@@ -69,6 +72,7 @@ item.items.integrateddynamics.facade.name=Facade
 item.items.integrateddynamics.facade.info=Combine with a block in crafting table
 item.items.integrateddynamics.bucketMenrilResin.name=Menril Resin Bucket
 item.items.integrateddynamics.crystalizedMenrilChunk.name=Crystalized Menril Chunk
+item.items.integrateddynamics.variableTransformer.name=Input/Output Variable Transformers
 item.items.integrateddynamics.variableTransformer.output.name=Output Variable Transformer
 item.items.integrateddynamics.variableTransformer.input.name=Input Variable Transformer
 item.items.integrateddynamics.menrilBerries.name=Menril Berries
@@ -383,8 +387,8 @@ aspect.aspects.integrateddynamics.read.boolean.machine.canwork.name=Can Work
 aspect.aspects.integrateddynamics.read.boolean.machine.canwork.info=If the target would be able to start working in its current state
 aspect.aspects.integrateddynamics.read.boolean.machine.isworking.name=Is Working
 aspect.aspects.integrateddynamics.read.boolean.machine.isworking.info=If the target is currently working
-aspect.aspects.integrateddynamics.read.boolean.machine.istemperature.name=Has Temperature
-aspect.aspects.integrateddynamics.read.boolean.machine.istemperature.info=If the target has a certain temperature
+aspect.aspects.integrateddynamics.read.boolean.temperature.istemperature.name=Has Temperature
+aspect.aspects.integrateddynamics.read.boolean.temperature.istemperature.info=If the target has a certain temperature
 aspect.aspects.integrateddynamics.read.double.temperature.temperature.name=Temperature
 aspect.aspects.integrateddynamics.read.double.temperature.temperature.info=The current temperature of the target in degrees Kelvin
 aspect.aspects.integrateddynamics.read.double.temperature.maxtemperature.name=Maximum Temperature
@@ -393,6 +397,28 @@ aspect.aspects.integrateddynamics.read.double.temperature.mintemperature.name=Mi
 aspect.aspects.integrateddynamics.read.double.temperature.mintemperature.info=The minimum temperature of the target in degrees Kelvin
 aspect.aspects.integrateddynamics.read.double.temperature.defaulttemperature.name=Default Temperature
 aspect.aspects.integrateddynamics.read.double.temperature.defaulttemperature.info=The default temperature of the target in degrees Kelvin
+aspect.aspects.integrateddynamics.read.boolean.fe.applicable.name=Is FE Handler
+aspect.aspects.integrateddynamics.read.boolean.fe.applicable.info=If the target in some way handles FE
+aspect.aspects.integrateddynamics.read.boolean.fe.isreceiver.name=Is FE Receiver
+aspect.aspects.integrateddynamics.read.boolean.fe.isreceiver.info=If the target can receive FE
+aspect.aspects.integrateddynamics.read.boolean.fe.isprovider.name=Is FE Provider
+aspect.aspects.integrateddynamics.read.boolean.fe.isprovider.info=If the target can provide FE
+aspect.aspects.integrateddynamics.read.boolean.fe.canextract.name=Can Extract FE
+aspect.aspects.integrateddynamics.read.boolean.fe.canextract.info=If FE can really be extracted from the target, takes into account storage
+aspect.aspects.integrateddynamics.read.boolean.fe.caninsert.name=Can Insert FE
+aspect.aspects.integrateddynamics.read.boolean.fe.caninsert.info=If FE can really be inserted into the target, takes into account storage and capacity
+aspect.aspects.integrateddynamics.read.boolean.fe.isfull.name=Is FE Buffer Full
+aspect.aspects.integrateddynamics.read.boolean.fe.isfull.info=If the target's FE buffer is completely full
+aspect.aspects.integrateddynamics.read.boolean.fe.isempty.name=Is FE Buffer Empty
+aspect.aspects.integrateddynamics.read.boolean.fe.isempty.info=If the target's FE buffer is completely empty
+aspect.aspects.integrateddynamics.read.boolean.fe.isnonempty.name=Is FE Buffer Not Empty
+aspect.aspects.integrateddynamics.read.boolean.fe.isnonempty.info=If the target's FE buffer is not empty
+aspect.aspects.integrateddynamics.read.integer.fe.amount.name=Stored FE
+aspect.aspects.integrateddynamics.read.integer.fe.amount.info=The amount of FE stored in the target
+aspect.aspects.integrateddynamics.read.integer.fe.capacity.name=FE Capacity
+aspect.aspects.integrateddynamics.read.integer.fe.capacity.info=The FE capacity of the target
+aspect.aspects.integrateddynamics.read.double.fe.fillratio.name=FE Fill Ratio
+aspect.aspects.integrateddynamics.read.double.fe.fillratio.info=The amount of FE in the target divided by its capacity
 
 ## Network aspects
 aspect.aspects.integrateddynamics.read.boolean.network.applicable.name=Is Network
@@ -470,6 +496,9 @@ aspect.aspects.integrateddynamics.read.long.world.totaltime.info=The world time 
 
 aspect.aspects.integrateddynamics.read.string.world.worldname.name=World Name
 aspect.aspects.integrateddynamics.read.string.world.worldname.info=The target world name
+
+aspect.aspects.integrateddynamics.read.list.world.players.name=Players
+aspect.aspects.integrateddynamics.read.list.world.players.info=The players that are in this world
 
 # Aspect property types
 aspect.aspecttypes.integrateddynamics.integer.tankid.name=Tank ID
@@ -565,6 +594,7 @@ operator.operators.integrateddynamics.string.name.name=Name
 operator.operators.integrateddynamics.string.name.info=Get the name of a named object or converts it to a string
 
 operator.operators.integrateddynamics.double.name=Double
+operator.operators.integrateddynamics.double.basename=Double %s
 operator.operators.integrateddynamics.double.round.name=Round
 operator.operators.integrateddynamics.double.round.info=Round to the nearest Integer
 operator.operators.integrateddynamics.double.ceil.name=Ceil
@@ -689,10 +719,12 @@ operator.operators.integrateddynamics.entity.targetblock.name=Target Block
 operator.operators.integrateddynamics.entity.targetblock.info=The block the given entity is currently looking at.
 operator.operators.integrateddynamics.entity.targetentity.name=Target Entity
 operator.operators.integrateddynamics.entity.targetentity.info=The entity the given entity is currently looking at.
-operator.operators.integrateddynamics.entity.helditem.name=Held Item
-operator.operators.integrateddynamics.entity.helditem.info=The item the given entity is currently holding.
-operator.operators.integrateddynamics.entity.mounted.name=Mounted Entity
-operator.operators.integrateddynamics.entity.mounted.info=The entity that is currently mounted on the given entity.
+operator.operators.integrateddynamics.entity.helditem.name=Held Item Mainhand
+operator.operators.integrateddynamics.entity.helditem.info=The item the given entity is currently holding in its main hand.
+operator.operators.integrateddynamics.entity.helditemoffhand.name=Held Item Offhand
+operator.operators.integrateddynamics.entity.helditemoffhand.info=The item the given entity is currently holding in its off hand.
+operator.operators.integrateddynamics.entity.mounted.name=Mounted Entities
+operator.operators.integrateddynamics.entity.mounted.info=The entities that are currently mounted on the given entity.
 operator.operators.integrateddynamics.entity.itemframecontents.name=Item Frame Contents
 operator.operators.integrateddynamics.entity.itemframecontents.info=The contents from the given Item Frame.
 operator.operators.integrateddynamics.entity.itemframerotation.name=Item Frame Rotation
@@ -701,6 +733,13 @@ operator.operators.integrateddynamics.entity.hurtsound.name=Entity Hurt Sound
 operator.operators.integrateddynamics.entity.hurtsound.info=The hurt sound of the given entity.
 operator.operators.integrateddynamics.entity.deathsound.name=Entity Death Sound
 operator.operators.integrateddynamics.entity.deathsound.info=The death sound of the given entity.
+
+operator.operators.integrateddynamics.itemstack.isfecontainer.name=Is FE Container
+operator.operators.integrateddynamics.itemstack.isfecontainer.info=If the given item can hold FE
+operator.operators.integrateddynamics.itemstack.storedfe.name=FE Stored
+operator.operators.integrateddynamics.itemstack.storedfe.info=The amount of FE stored in this item
+operator.operators.integrateddynamics.itemstack.fecapacity.name=FE Capacity
+operator.operators.integrateddynamics.itemstack.fecapacity.info=The maximum amount of FE that can be stored in this item
 
 operator.operators.integrateddynamics.fluidstack.name=Fluid
 operator.operators.integrateddynamics.fluidstack.basename=Fluid %s
@@ -741,6 +780,7 @@ operator.operators.integrateddynamics.operator.pipe.name=Pipe
 operator.operators.integrateddynamics.operator.pipe.info=Create a new operator that pipes the output from the first operator to the second operator.
 operator.operators.integrateddynamics.operator.flip.name=Flip
 operator.operators.integrateddynamics.operator.flip.info=Flip the input parameters of an operator with two inputs.
+operator.operators.integrateddynamics.operator.reduce.name=Reduce
 operator.operators.integrateddynamics.operator.reduce.info=Apply the given operator on all elements of a list to reduce the list to one value.
 
 operator.operators.integrateddynamics.general.name=General
@@ -769,6 +809,81 @@ operator.operators.integrateddynamics.cast.name=Cast
 operator.operators.integrateddynamics.cast.basename=Cast
 operator.operators.integrateddynamics.cast.tooltip=Cast %s to %s
 
+## Config categories
+config.integrateddynamics.item=Item settings
+config.integrateddynamics.block=Block settings
+config.integrateddynamics.fluid=Fluid settings
+config.integrateddynamics.entity=Entity settings
+config.integrateddynamics.general=General settings
+config.integrateddynamics.worldgeneration=World generation settings
+config.integrateddynamics.enchantment=Enchantment settings
+config.integrateddynamics.mob=Mob settings
+config.integrateddynamics.biome=Biome generation settings
+config.integrateddynamics.machine=Machine settings
+config.integrateddynamics.potion=Potion settings
+config.integrateddynamics.core=Core settings
+config.integrateddynamics.modcompat=Mod compatibility settings
+config.integrateddynamics.capability=Capability settings
+
+# Configuration
+config.integrateddynamics=%s configuration
+
+## Biome settings
+config.integrateddynamics.biomeMeneglin=Meneglin biome
+config.integrateddynamics.biomeMeneglin.spawnWeight=Meneglin biome Spawn Weight
+
+## Block settings
+config.integrateddynamics.menrilLeaves.berriesDropChance=Berries drop chance
+
+## Capability settings
+capability.integrateddynamics.cableFakeable=Fake cables
+capability.integrateddynamics.dynamicLight=Dynamic lighting
+capability.integrateddynamics.dynamicRedstone=Dynamic redstone
+capability.integrateddynamics.energyNetwork=Energy network
+capability.integrateddynamics.facadeable=Facades
+capability.integrateddynamics.networkCarrier=Network carrier
+capability.integrateddynamics.networkElementProvider=Network element provider
+capability.integrateddynamics.partContainer=Part containers
+capability.integrateddynamics.partNetwork=Part network
+capability.integrateddynamics.pathElementProvider=Path element provider
+capability.integrateddynamics.variableContainer=Variable container
+capability.integrateddynamics.variableFacadeHolder=Variable facade holder
+
+## Core settings
+config.integrateddynamics.general.analytics=Send anonymous analytics
+config.integrateddynamics.general.cacheCableModels=Cache cable models
+config.integrateddynamics.general.versionChecker=Version check
+
+## General settings
+config.integrateddynamics.general.energyConsumptionMultiplier=Energy consumption multiplier
+config.integrateddynamics.general.partOverlayRenderdistance=Part overlay render distance
+
+## Item settings
+config.integrateddynamics.variable=Variable Card
+config.integrateddynamics.variableTransformer=Variable Transformer
+config.integrateddynamics.menrilBerries.nightVision=Menril Berry night vision
+
+## Machine settings
+config.integrateddynamics.energyBattery.capacity=Battery Capacity
+config.integrateddynamics.energyBattery.energyPerTick=Energy per Tick
+config.integrateddynamics.general.defaultPartUpdateFreq=Part update frequency
+
+## Mod compatibility settings
+config.integrateddynamics.CharsetPipes=Charset Pipes
+config.integrateddynamics.CoFHAPI=RF API
+config.integrateddynamics.JEI=JEI
+config.integrateddynamics.forestry=Forestry recipes
+config.integrateddynamics.mcmultipart=MCMultiPart support
+config.integrateddynamics.refinedstorage=Refined Storage
+config.integrateddynamics.tconstruct=Tinkers' Construct
+config.integrateddynamics.tesla=Tesla
+config.integrateddynamics.theoneprobe=The One Probe
+config.integrateddynamics.Waila=Waila
+
+## World generation settings
+config.integrateddynamics.general.wildMenrilTreeChance=Wild Menril tree spawn chance
+config.integrateddynamics.menrilLogFilled.filledMenrilLogChance=Enriched Menril Log spawn chance
+
 ### ----- Mod Compats ----- ###
 
 ## ----- Charset ----- ##
@@ -783,10 +898,18 @@ aspect.aspects.integrateddynamics.read.boolean.charsetpipe.applicable.info=If th
 
 aspect.aspects.integrateddynamics.write.boolean.charsetpipe.shifter.name=Pipe Shift
 aspect.aspects.integrateddynamics.write.boolean.charsetpipe.shifter.info=Enable pipe item shifting
-aspect.aspects.integrateddynamics.write.itemstack.charsetpipe.shifter.name=Single Filtered Pipe Shift
+aspect.aspects.integrateddynamics.write.itemstack.charsetpipe.shifter.name=Single Filtered Item Pipe Shift
 aspect.aspects.integrateddynamics.write.itemstack.charsetpipe.shifter.info=Enable pipe item shifting for the given item
-aspect.aspects.integrateddynamics.write.list.charsetpipe.shifter.name=Filtered Pipe Shift
+aspect.aspects.integrateddynamics.write.fluidstack.charsetpipe.shifterfluid.name=Single Filtered Fluid Pipe Shift
+aspect.aspects.integrateddynamics.write.fluidstack.charsetpipe.shifterfluid.info=Enable pipe fluid shifting for the given fluid
+aspect.aspects.integrateddynamics.write.list.charsetpipe.shifter.name=Filtered Pipe Item Shift
 aspect.aspects.integrateddynamics.write.list.charsetpipe.shifter.info=Enable pipe item shifting for the given items
+aspect.aspects.integrateddynamics.write.list.charsetpipe.shifterfluid.name=Filtered Pipe Fluid Shift
+aspect.aspects.integrateddynamics.write.list.charsetpipe.shifterfluid.info=Enable pipe fluid shifting for the given items
+aspect.aspects.integrateddynamics.write.operator.charsetpipe.shifter.name=Predicate Item Pipe Shift
+aspect.aspects.integrateddynamics.write.operator.charsetpipe.shifter.info=Enable pipe item shifting for all items that match the given predicate
+aspect.aspects.integrateddynamics.write.operator.charsetpipe.shifterfluid.name=Predicate Fluid Pipe Shift
+aspect.aspects.integrateddynamics.write.operator.charsetpipe.shifterfluid.info=Enable pipe fluid shifting for all fluids that match the given predicate
 
 ## ----- Thaumcraft ----- ##
 
@@ -850,3 +973,114 @@ operator.operators.integrateddynamics.itemstack.storedrf.name=RF Stored
 operator.operators.integrateddynamics.itemstack.storedrf.info=The amount of RF stored in this item
 operator.operators.integrateddynamics.itemstack.rfcapacity.name=RF Capacity
 operator.operators.integrateddynamics.itemstack.rfcapacity.info=The maximum amount of RF that can be stored in this item
+
+## ----- Tesla ----- ##
+
+## Aspects
+aspect.aspects.integrateddynamics.read.boolean.tesla.applicable.name=Is Tesla Handler
+aspect.aspects.integrateddynamics.read.boolean.tesla.applicable.info=If the target in some way handles Tesla
+aspect.aspects.integrateddynamics.read.boolean.tesla.isreceiver.name=Is Tesla Receiver
+aspect.aspects.integrateddynamics.read.boolean.tesla.isreceiver.info=If the target can receive Tesla
+aspect.aspects.integrateddynamics.read.boolean.tesla.isprovider.name=Is Tesla Provider
+aspect.aspects.integrateddynamics.read.boolean.tesla.isprovider.info=If the target can provide Tesla
+aspect.aspects.integrateddynamics.read.boolean.tesla.canextract.name=Can Extract Tesla
+aspect.aspects.integrateddynamics.read.boolean.tesla.canextract.info=If Tesla can really be extracted from the target, takes into account storage
+aspect.aspects.integrateddynamics.read.boolean.tesla.caninsert.name=Can Insert Tesla
+aspect.aspects.integrateddynamics.read.boolean.tesla.caninsert.info=If Tesla can really be inserted into the target, takes into account storage and capacity
+aspect.aspects.integrateddynamics.read.boolean.tesla.isfull.name=Is Tesla Buffer Full
+aspect.aspects.integrateddynamics.read.boolean.tesla.isfull.info=If the target's Tesla buffer is completely full
+aspect.aspects.integrateddynamics.read.boolean.tesla.isempty.name=Is Tesla Buffer Empty
+aspect.aspects.integrateddynamics.read.boolean.tesla.isempty.info=If the target's Tesla buffer is completely empty
+aspect.aspects.integrateddynamics.read.boolean.tesla.isnonempty.name=Is Tesla Buffer Not Empty
+aspect.aspects.integrateddynamics.read.boolean.tesla.isnonempty.info=If the target's Tesla buffer is not empty
+aspect.aspects.integrateddynamics.read.long.tesla.amount.name=Stored Tesla
+aspect.aspects.integrateddynamics.read.long.tesla.amount.info=The amount of Tesla stored in the target
+aspect.aspects.integrateddynamics.read.long.tesla.capacity.name=Tesla Capacity
+aspect.aspects.integrateddynamics.read.long.tesla.capacity.info=The Tesla capacity of the target
+aspect.aspects.integrateddynamics.read.double.tesla.fillratio.name=Tesla Fill Ratio
+aspect.aspects.integrateddynamics.read.double.tesla.fillratio.info=The amount of Tesla in the target divided by its capacity
+aspect.aspects.integrateddynamics.read.string.tesla.amount.name=Stored Tesla
+aspect.aspects.integrateddynamics.read.string.tesla.amount.info=The formatted amount of Tesla stored in the target
+aspect.aspects.integrateddynamics.read.string.tesla.capacity.name=Tesla Capacity
+aspect.aspects.integrateddynamics.read.string.tesla.capacity.info=The formatted Tesla capacity of the target
+
+## Operators
+operator.operators.integrateddynamics.itemstack.isteslacontainer.name=Is Tesla Container
+operator.operators.integrateddynamics.itemstack.isteslacontainer.info=If the given item can hold Tesla
+operator.operators.integrateddynamics.itemstack.teslastored.name=Tesla Stored
+operator.operators.integrateddynamics.itemstack.teslastored.info=The amount of Tesla stored in this item
+operator.operators.integrateddynamics.itemstack.teslacapacity.name=Tesla Capacity
+operator.operators.integrateddynamics.itemstack.teslacapacity.info=The maximum amount of Tesla that can be stored in this item
+operator.operators.integrateddynamics.itemstack.isteslareceiver.name=Is Tesla Receiver
+operator.operators.integrateddynamics.itemstack.isteslareceiver.info=If the given item can receiver Tesla
+operator.operators.integrateddynamics.itemstack.isteslaprovider.name=Is Tesla Provider
+operator.operators.integrateddynamics.itemstack.isteslaprovider.info=If the given item can provide Tesla
+operator.operators.integrateddynamics.itemstack.isteslafull.name=Is Tesla Buffer Full
+operator.operators.integrateddynamics.itemstack.isteslafull.info=If the given item is full of Tesla energy
+operator.operators.integrateddynamics.itemstack.isteslaempty.name=Is Tesla Buffer Empty
+operator.operators.integrateddynamics.itemstack.isteslaempty.info=If the given item has no Tesla energy
+operator.operators.integrateddynamics.itemstack.isteslanonempty.name=Is Tesla Buffer Not Empty
+operator.operators.integrateddynamics.itemstack.isteslanonempty.info=If the given item has Tesla energy
+operator.operators.integrateddynamics.itemstack.teslafillratio.name=Tesla Fill Ratio
+operator.operators.integrateddynamics.itemstack.teslafillratio.info=The amount of Tesla in the item divided by its capacity
+
+## ----- IC2 ----- ##
+
+## Aspects
+aspect.aspects.integrateddynamics.read.boolean.ic2.eu.applicable.name=Is EU Handler
+aspect.aspects.integrateddynamics.read.boolean.ic2.eu.applicable.info=If the target in some way handles EU
+aspect.aspects.integrateddynamics.read.boolean.ic2.eu.canextract.name=Can Extract EU
+aspect.aspects.integrateddynamics.read.boolean.ic2.eu.canextract.info=If EU can really be extracted from the target, takes into account storage
+aspect.aspects.integrateddynamics.read.boolean.ic2.eu.caninsert.name=Can Insert EU
+aspect.aspects.integrateddynamics.read.boolean.ic2.eu.caninsert.info=If EU can really be inserted into the target, takes into account storage and capacity
+aspect.aspects.integrateddynamics.read.boolean.ic2.eu.isfull.name=Is EU Buffer Full
+aspect.aspects.integrateddynamics.read.boolean.ic2.eu.isfull.info=If the target's EU buffer is completely full
+aspect.aspects.integrateddynamics.read.boolean.ic2.eu.isempty.name=Is EU Buffer Empty
+aspect.aspects.integrateddynamics.read.boolean.ic2.eu.isempty.info=If the target's EU buffer is completely empty
+aspect.aspects.integrateddynamics.read.boolean.ic2.eu.isnonempty.name=Is EU Buffer Not Empty
+aspect.aspects.integrateddynamics.read.boolean.ic2.eu.isnonempty.info=If the target's EU buffer is not empty
+aspect.aspects.integrateddynamics.read.integer.ic2.eu.amount.name=Stored EU
+aspect.aspects.integrateddynamics.read.integer.ic2.eu.amount.info=The amount of EU stored in the target
+aspect.aspects.integrateddynamics.read.integer.ic2.eu.capacity.name=EU Capacity
+aspect.aspects.integrateddynamics.read.integer.ic2.eu.capacity.info=The EU capacity of the target
+aspect.aspects.integrateddynamics.read.double.ic2.eu.fillratio.name=EU Fill Ratio
+aspect.aspects.integrateddynamics.read.double.ic2.eu.fillratio.info=The amount of EU in the target divided by its capacity
+
+## Operators
+operator.operators.integrateddynamics.itemstack.isic2eucontainer.name=Is EU Container
+operator.operators.integrateddynamics.itemstack.isic2eucontainer.info=If the given item can hold EU
+operator.operators.integrateddynamics.itemstack.storedic2eu.name=EU Stored
+operator.operators.integrateddynamics.itemstack.storedic2eu.info=The amount of EU stored in this item
+operator.operators.integrateddynamics.itemstack.ic2eucapacity.name=EU Capacity
+operator.operators.integrateddynamics.itemstack.ic2eucapacity.info=The maximum amount of EU that can be stored in this item
+
+## ----- Refined Storage ----- ##
+
+# Aspect property types
+aspect.aspecttypes.integrateddynamics.boolean.refinedstorage.skipcrafting.name=Skip If Crafting
+aspect.aspecttypes.integrateddynamics.boolean.refinedstorage.skipstorage.name=Skip If In Storage
+
+## Aspects
+aspect.aspects.integrateddynamics.read.boolean.refinedstorage.network.applicable.name=Is RS Network
+aspect.aspects.integrateddynamics.read.boolean.refinedstorage.network.applicable.info=If the target has a Refined Storage network.
+aspect.aspects.integrateddynamics.read.list.refinedstorage.inventory.itemstacks.name=RS network items
+aspect.aspects.integrateddynamics.read.list.refinedstorage.inventory.itemstacks.info=A list of all the items in the RS network.
+aspect.aspects.integrateddynamics.read.list.refinedstorage.inventory.craftableitems.name=RS craftable items
+aspect.aspects.integrateddynamics.read.list.refinedstorage.inventory.craftableitems.info=A list of all the craftable items in the RS network.
+aspect.aspects.integrateddynamics.read.list.refinedstorage.inventory.craftingitems.name=RS crafting items
+aspect.aspects.integrateddynamics.read.list.refinedstorage.inventory.craftingitems.info=A list of all the items that are currently being crafted in the RS network.
+aspect.aspects.integrateddynamics.read.list.refinedstorage.inventory.missingcraftingitems.name=RS missing crafting items
+aspect.aspects.integrateddynamics.read.list.refinedstorage.inventory.missingcraftingitems.info=A list of all the missing items in the current crafting jobs for the RS network.
+aspect.aspects.integrateddynamics.read.list.refinedstorage.fluid.fluidstacks.name=RS network fluids
+aspect.aspects.integrateddynamics.read.list.refinedstorage.fluid.fluidstacks.info=A list of all the fluids in the RS network.
+
+aspect.aspects.integrateddynamics.write.itemstack.refinedstorage.craft.name=RS craft item
+aspect.aspects.integrateddynamics.write.itemstack.refinedstorage.craft.info=Trigger a crafting job for the given item.
+aspect.aspects.integrateddynamics.write.list.refinedstorage.craft.name=RS craft items
+aspect.aspects.integrateddynamics.write.list.refinedstorage.craft.info=Trigger a crafting job for all the items in the given list.
+aspect.aspects.integrateddynamics.write.boolean.refinedstorage.cancelcraft.name=RS cancel all crafting jobs
+aspect.aspects.integrateddynamics.write.boolean.refinedstorage.cancelcraft.info=Cancel all running crafting jobs in the RS network.
+aspect.aspects.integrateddynamics.write.itemstack.refinedstorage.cancelcraft.name=RS cancel crafting jobs
+aspect.aspects.integrateddynamics.write.itemstack.refinedstorage.cancelcraft.info=Cancel all running crafting jobs for the given item in the RS network.
+aspect.aspects.integrateddynamics.write.list.refinedstorage.cancelcraft.name=RS cancel crafting jobs
+aspect.aspects.integrateddynamics.write.list.refinedstorage.cancelcraft.info=Cancel all running crafting jobs for the given items in the RS network.

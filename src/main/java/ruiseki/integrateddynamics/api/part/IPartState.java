@@ -2,6 +2,7 @@ package ruiseki.integrateddynamics.api.part;
 
 import net.minecraft.nbt.NBTTagCompound;
 
+import ruiseki.integrateddynamics.api.network.INetworkElement;
 import ruiseki.integrateddynamics.api.part.aspect.IAspect;
 import ruiseki.integrateddynamics.api.part.aspect.property.IAspectProperties;
 import ruiseki.okcore.capabilities.Capability;
@@ -57,6 +58,21 @@ public interface IPartState<P extends IPartType> {
      * @return The tick interval to update this element.
      */
     public int getUpdateInterval();
+
+    /**
+     * Set the priority of this part in the network.
+     * 
+     * @deprecated Should only be called from
+     *             {@link ruiseki.integrateddynamics.api.network.INetwork#setPriority(INetworkElement, int)}}!
+     * @param priority The new priority
+     */
+    @Deprecated
+    public void setPriority(int priority);
+
+    /**
+     * @return The priority of this part in the network.
+     */
+    public int getPriority();
 
     /**
      * Check if dirty and reset the dirty state.

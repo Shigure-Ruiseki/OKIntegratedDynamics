@@ -6,10 +6,10 @@ import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 
-import ruiseki.integrateddynamics.capability.energybattery.EnergyBatteryConfig;
 import ruiseki.okcore.block.property.BlockProperty;
 import ruiseki.okcore.block.property.IntegerProperty;
 import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
+import ruiseki.okcore.energy.capability.CapabilityEnergy;
 import ruiseki.okcore.helper.CapabilityHelpers;
 
 /**
@@ -48,9 +48,9 @@ public class BlockEnergyBattery extends BlockEnergyBatteryBase {
     @Override
     public void getSubBlocks(Item itemIn, CreativeTabs tab, List<ItemStack> list) {
         ItemStack full = new ItemStack(this);
-        CapabilityHelpers.getCapability(full, EnergyBatteryConfig.CAPABILITY)
+        CapabilityHelpers.getCapability(full, CapabilityEnergy.ENERGY)
             .ifPresent(handler -> {
-                handler.addEnergy(handler.getMaxStoredEnergy(), false);
+                handler.receiveEnergy(handler.getMaxEnergyStored(), false);
                 list.add(full);
             });
     }

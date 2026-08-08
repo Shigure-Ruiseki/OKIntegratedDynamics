@@ -11,6 +11,7 @@ import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.core.client.gui.container.GuiMultipart;
 import ruiseki.integrateddynamics.core.part.panel.PartTypePanelVariableDriven;
 import ruiseki.integrateddynamics.inventory.container.ContainerPartDisplay;
+import ruiseki.okcore.helper.RenderHelpers;
 
 /**
  * Gui for a writer part.
@@ -54,7 +55,13 @@ public class GuiPartDisplay<P extends PartTypePanelVariableDriven<P, S>, S exten
         if (readValue != null) {
             ok = true;
             FontRenderer fontRenderer = fontRendererObj;
-            fontRenderer.drawString(readValue, getGuiLeftTotal() + 53, getGuiTopTotal() + 34, readValueColor);
+            RenderHelpers.drawScaledCenteredString(
+                fontRenderer,
+                readValue,
+                getGuiLeftTotal() + 53,
+                getGuiTopTotal() + 38,
+                70,
+                readValueColor);
         }
 
         GlStateManager.color(1, 1, 1, 1);

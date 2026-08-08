@@ -14,6 +14,7 @@ import ruiseki.integrateddynamics.core.client.gui.container.GuiMultipartAspects;
 import ruiseki.integrateddynamics.core.inventory.container.ContainerMultipartAspects;
 import ruiseki.integrateddynamics.inventory.container.ContainerPartWriter;
 import ruiseki.integrateddynamics.item.ItemVariable;
+import ruiseki.okcore.helper.RenderHelpers;
 import ruiseki.okcore.inventory.IGuiContainerProvider;
 
 /**
@@ -88,10 +89,12 @@ public class GuiPartWriter<P extends IPartTypeWriter<P, S> & IGuiContainerProvid
     protected void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY) {
         super.drawGuiContainerBackgroundLayer(partialTicks, mouseX, mouseY);
         ContainerPartWriter container = (ContainerPartWriter) getContainer();
-        fontRendererObj.drawString(
+        RenderHelpers.drawScaledCenteredString(
+            fontRendererObj,
             container.getWriteValue(),
             this.guiLeft + offsetX + 53,
-            this.guiTop + offsetY + 128,
+            this.guiTop + offsetY + 132,
+            70,
             container.getWriteValueColor());
     }
 

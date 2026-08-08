@@ -25,4 +25,7 @@ public interface IValueTypeNumber<V extends IValue> extends IValueType<V>, IValu
 
     public V min(V a, V b);
 
+    public boolean greaterThan(V a, V b);
+
+    public boolean lessThan(V a, V b);
 }

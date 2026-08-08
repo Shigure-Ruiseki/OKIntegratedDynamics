@@ -36,6 +36,7 @@ import ruiseki.integrateddynamics.network.packet.PlayerTeleportPacket;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
 import ruiseki.okcore.helper.LangHelpers;
+import ruiseki.okcore.helper.MinecraftHelpers;
 
 /**
  * Network diagnostics gui.
@@ -76,7 +77,7 @@ public class GuiNetworkDiagnostics extends JFrame {
                         rawPartData.getPos(),
                         rawPartData.getSide(),
                         rawPartData.getName(),
-                        rawPartData.getLastTickDuration());
+                        rawPartData.getLast20TicksDurationNs());
                     parts.add(partData);
 
                     // Remove this position from the previously rendered list
@@ -154,7 +155,12 @@ public class GuiNetworkDiagnostics extends JFrame {
                             row.add(observablePartData.getNetworkId());
                             row.add(observablePartData.getNetworkCables());
                             row.add(observablePartData.getName());
-                            row.add(observablePartData.getLastTickDuration());
+                            row.add(
+                                String.format(
+                                    "%.6f",
+                                    ((double) observablePartData.getLast20TicksDurationNs())
+                                        / MinecraftHelpers.SECOND_IN_TICKS
+                                        / 1000000));
                             row.add(observablePartData.getDimension());
                             BlockPos pos = observablePartData.getPos();
                             row.add(String.format("%s / %s / %s", pos.getX(), pos.getY(), pos.getZ()));
@@ -316,7 +322,7 @@ public class GuiNetworkDiagnostics extends JFrame {
         private final BlockPos pos;
         private final ForgeDirection side;
         private final String name;
-        private final long lastTickDuration;
+        private final long last20TicksDurationNs;
 
         public PartPos toPartPos() {
             World world = Minecraft.getMinecraft().theWorld;

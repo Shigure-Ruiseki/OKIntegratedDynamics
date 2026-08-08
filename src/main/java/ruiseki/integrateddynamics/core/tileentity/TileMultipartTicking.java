@@ -184,9 +184,9 @@ public class TileMultipartTicking extends TileEntityOK
         int offsetY = y + opposite.offsetY;
         int offsetZ = z + opposite.offsetZ;
 
-        getWorldObj().notifyBlocksOfNeighborChange(x, y, z, getBlock());
+        getWorldObj().notifyBlocksOfNeighborChange(x, y, z, getBlockType());
 
-        getWorldObj().notifyBlocksOfNeighborChange(offsetX, offsetY, offsetZ, getBlock());
+        getWorldObj().notifyBlocksOfNeighborChange(offsetX, offsetY, offsetZ, getBlockType());
     }
 
     public void updateLightInfo() {

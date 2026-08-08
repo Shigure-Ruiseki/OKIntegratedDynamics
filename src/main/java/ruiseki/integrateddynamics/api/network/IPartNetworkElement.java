@@ -34,5 +34,4 @@ public interface IPartNetworkElement<P extends IPartType<P, S>, S extends IPartS
      * @return The target and position of this part.
      */
     public PartTarget getTarget();
-
 }

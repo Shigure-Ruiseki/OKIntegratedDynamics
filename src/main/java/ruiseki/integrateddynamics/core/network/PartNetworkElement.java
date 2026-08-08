@@ -7,6 +7,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.world.IBlockAccess;
 import net.minecraftforge.common.util.ForgeDirection;
 
+import org.jetbrains.annotations.Nullable;
+
 import lombok.Data;
 import ruiseki.integrateddynamics.api.network.IEnergyConsumingNetworkElement;
 import ruiseki.integrateddynamics.api.network.INetwork;
@@ -56,6 +58,22 @@ public class PartNetworkElement<P extends IPartType<P, S>, S extends IPartState<
     @Override
     public IPartContainer getPartContainer() {
         return PartHelpers.getPartContainer(getCenterPos(getTarget()));
+    }
+
+    @Override
+    public void setPriority(INetwork network, int priority) {
+        // noinspection deprecation
+        part.setPriority(network, NetworkHelpers.getPartNetwork(network), getTarget(), getPartState(), priority);
+    }
+
+    @Override
+    public int getPriority() {
+        return hasPartState() ? part.getPriority(getPartState()) : 0;
+    }
+
+    public boolean hasPartState() {
+        IPartContainer partContainer = getPartContainer();
+        return partContainer != null && partContainer.hasPart(getCenterSide(getTarget()));
     }
 
     @Override
@@ -142,7 +160,7 @@ public class PartNetworkElement<P extends IPartType<P, S>, S extends IPartState<
     }
 
     @Override
-    public void onNeighborBlockChange(INetwork network, IBlockAccess world, Block neighborBlock) {
+    public void onNeighborBlockChange(@Nullable INetwork network, IBlockAccess world, Block neighborBlock) {
         part.onBlockNeighborChange(
             network,
             NetworkHelpers.getPartNetwork(network),
@@ -165,6 +183,7 @@ public class PartNetworkElement<P extends IPartType<P, S>, S extends IPartState<
     public int hashCode() {
         int result = part.hashCode();
         result = 31 * result + target.hashCode();
+        result = 31 * result + getPriority();
         return result;
     }
 
@@ -172,18 +191,35 @@ public class PartNetworkElement<P extends IPartType<P, S>, S extends IPartState<
     public int compareTo(INetworkElement o) {
         if (o instanceof IPartNetworkElement) {
             IPartNetworkElement p = (IPartNetworkElement) o;
-            int compPart = Integer.compare(
-                part.hashCode(),
+            int compClass = Integer.compare(
+                this.getPart()
+                    .getClass()
+                    .hashCode(),
                 p.getPart()
+                    .getClass()
                     .hashCode());
-            if (compPart == 0) {
-                int compPos = getCenterPos(getTarget()).compareTo(getCenterPos(p.getTarget()));
-                if (compPos == 0) {
-                    return getCenterSide(getTarget()).compareTo(getCenterSide(p.getTarget()));
+            if (compClass == 0) {
+                int compPriority = -Integer.compare(this.getPriority(), p.getPriority());
+                if (compPriority == 0) {
+                    int compPart = Integer.compare(
+                        part.hashCode(),
+                        p.getPart()
+                            .hashCode());
+                    if (compPart == 0) {
+                        int compPos = getCenterPos(getTarget()).compareTo(getCenterPos(p.getTarget()));
+                        if (compPos == 0) {
+                            return getCenterSide(getTarget()).compareTo(getCenterSide(p.getTarget()));
+                        }
+                        return compPos;
+                    }
+                    return compPart;
+                } else {
+                    return compPriority;
                 }
-                return compPos;
+
+            } else {
+                return compClass;
             }
-            return compPart;
         }
         return Integer.compare(hashCode(), o.hashCode());
     }

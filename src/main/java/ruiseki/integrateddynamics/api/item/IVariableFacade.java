@@ -4,6 +4,8 @@ import java.util.List;
 
 import net.minecraft.entity.player.EntityPlayer;
 
+import org.jetbrains.annotations.Nullable;
+
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
@@ -25,9 +27,9 @@ public interface IVariableFacade {
     public int getId();
 
     /**
-     * @return The optional onLabelPacket for this facade.
+     * @return The optional label for this facade.
      */
-    public String getLabel();
+    public @Nullable String getLabel();
 
     /**
      * Get the variable.

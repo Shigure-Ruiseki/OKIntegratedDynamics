@@ -91,7 +91,7 @@ public class ValueObjectTypeBlock extends ValueObjectTypeBase<ValueObjectTypeBlo
 
         @Override
         protected boolean isEqual(BlockState a, BlockState b) {
-            return a.getBlock() == b.getBlock() && a.getPropertyValue("meta") == b.getPropertyValue("meta");
+            return a.getBlock() == b.getBlock() && a.getBlockMeta(0) == b.getBlockMeta(0);
         }
     }
 

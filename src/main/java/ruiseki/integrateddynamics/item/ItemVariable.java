@@ -5,6 +5,7 @@ import java.util.List;
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IIcon;
 
@@ -13,13 +14,19 @@ import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.client.model.IVariableModelProviderRegistry;
 import ruiseki.integrateddynamics.api.item.IVariableFacade;
-import ruiseki.integrateddynamics.api.item.IVariableFacadeHandlerRegistry;
+import ruiseki.integrateddynamics.api.item.IVariableFacadeHolder;
+import ruiseki.integrateddynamics.capability.variablefacade.VariableFacadeHolderConfig;
+import ruiseki.integrateddynamics.capability.variablefacade.VariableFacadeHolderDefault;
 import ruiseki.integrateddynamics.core.client.model.VariableModelProviders;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeVariableFacade;
 import ruiseki.integrateddynamics.core.item.AspectVariableFacade;
 import ruiseki.integrateddynamics.core.item.ProxyVariableFacade;
+import ruiseki.integrateddynamics.core.item.VariableFacadeHandlerRegistry;
+import ruiseki.okcore.capabilities.ICapabilityProvider;
 import ruiseki.okcore.config.configurable.ConfigurableItem;
 import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
+import ruiseki.okcore.helper.CapabilityHelpers;
+import ruiseki.okcore.modcompat.capabilities.DefaultCapabilityProvider;
 
 public class ItemVariable extends ConfigurableItem {
 
@@ -93,10 +100,17 @@ public class ItemVariable extends ConfigurableItem {
         return super.getItemStackDisplayName(itemStack);
     }
 
+    @Override
+    public ICapabilityProvider initCapabilities(ItemStack stack, NBTTagCompound nbt) {
+        return new DefaultCapabilityProvider<>(
+            () -> VariableFacadeHolderConfig.CAPABILITY,
+            new VariableFacadeHolderDefault(stack));
+    }
+
     public IVariableFacade getVariableFacade(ItemStack itemStack) {
-        return IntegratedDynamics._instance.getRegistryManager()
-            .getRegistry(IVariableFacadeHandlerRegistry.class)
-            .handle(itemStack);
+        return CapabilityHelpers.getCapability(itemStack, VariableFacadeHolderConfig.CAPABILITY)
+            .map(IVariableFacadeHolder::getVariableFacade)
+            .orElse(VariableFacadeHandlerRegistry.DUMMY_FACADE);
     }
 
     @Override

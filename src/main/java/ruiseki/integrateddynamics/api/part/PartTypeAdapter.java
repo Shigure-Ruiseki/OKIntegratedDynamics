@@ -67,6 +67,17 @@ public abstract class PartTypeAdapter<P extends IPartType<P, S>, S extends IPart
     }
 
     @Override
+    public void setPriority(INetwork network, IPartNetwork partNetwork, PartTarget target, S state, int priority) {
+        // noinspection deprecation
+        state.setPriority(priority);
+    }
+
+    @Override
+    public int getPriority(S state) {
+        return state.getPriority();
+    }
+
+    @Override
     public boolean isUpdate(S state) {
         return false;
     }

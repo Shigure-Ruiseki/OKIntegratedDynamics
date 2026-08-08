@@ -263,6 +263,26 @@ public class Network implements INetwork {
     }
 
     @Override
+    public void setPriority(INetworkElement element, int priority) {
+        elements.remove(element);
+        Integer oldTickValue = null;
+        if (element.isUpdate()) {
+            updateableElements.remove(element);
+            oldTickValue = updateableElementsTicks.remove(element);
+        }
+
+        // noinspection deprecation
+        element.setPriority(this, priority);
+        elements.add(element);
+        if (element.isUpdate()) {
+            updateableElements.add(element);
+            if (oldTickValue != null) {
+                updateableElementsTicks.put(element, oldTickValue);
+            }
+        }
+    }
+
+    @Override
     public void removeNetworkElementPost(INetworkElement element) {
         for (IFullNetworkListener fullNetworkListener : this.fullNetworkListeners) {
             fullNetworkListener.removeNetworkElementPost(element);
@@ -386,7 +406,6 @@ public class Network implements INetwork {
                 }
                 if (isBeingDiagnozed) {
                     long duration = System.nanoTime() - startTime;
-                    duration /= 1000;
                     Long lastDuration = lastSecondDurations.get(element);
                     if (lastDuration != null) {
                         duration = duration + lastDuration;

@@ -117,6 +117,25 @@ public interface IPartType<P extends IPartType<P, S>, S extends IPartState<P>>
     public int getUpdateInterval(S state);
 
     /**
+     * Set the priority of this part in the network.
+     *
+     * @deprecated Should only be called from {@link INetwork#setPriority(INetworkElement, int)}!
+     * @param network     The network to update in.
+     * @param partNetwork The part network to update in.
+     * @param target      The target block.
+     * @param state       The state
+     * @param priority    The new priority
+     */
+    @Deprecated
+    public void setPriority(INetwork network, IPartNetwork partNetwork, PartTarget target, S state, int priority);
+
+    /**
+     * @param state The state
+     * @return The priority of this part in the network.
+     */
+    public int getPriority(S state);
+
+    /**
      * @param state The state
      * @return If this element should be updated. This method is only called once during network initialization.
      */
@@ -278,8 +297,8 @@ public interface IPartType<P extends IPartType<P, S>, S extends IPartState<P>>
      * @param world         The world in which the neighbour was updated.
      * @param neighborBlock The block type of the neighbour that was updated.
      */
-    public void onBlockNeighborChange(INetwork network, IPartNetwork partNetwork, PartTarget target, S state,
-        IBlockAccess world, Block neighborBlock);
+    public void onBlockNeighborChange(@Nullable INetwork network, @Nullable IPartNetwork partNetwork, PartTarget target,
+        S state, IBlockAccess world, Block neighborBlock);
 
     /**
      * @param state The state

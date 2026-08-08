@@ -8,14 +8,18 @@ import net.minecraft.world.World;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import ruiseki.integrateddynamics.IntegratedDynamics;
+import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartState;
 import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.core.client.gui.ExtendedGuiHandler;
 import ruiseki.integrateddynamics.core.client.gui.container.GuiPartSettings;
+import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
 import ruiseki.integrateddynamics.core.helper.PartHelpers;
+import ruiseki.integrateddynamics.core.network.PartNetworkElement;
 import ruiseki.okcore.datastructure.BlockPos;
+import ruiseki.okcore.datastructure.DimPos;
 import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.helper.ValueNotifierHelpers;
 import ruiseki.okcore.inventory.IGuiContainerProvider;
@@ -42,6 +46,7 @@ public class ContainerPartSettings extends ExtendedInventoryContainer {
     private final BlockPos pos;
 
     private final int lastUpdateValueId;
+    private final int lastPriorityValueId;
 
     /**
      * Make a new instance.
@@ -61,30 +66,37 @@ public class ContainerPartSettings extends ExtendedInventoryContainer {
         ChunkCoordinates coordinates = player.getPlayerCoordinates();
         this.pos = new BlockPos(coordinates.posX, coordinates.posY, coordinates.posZ);
 
-        addPlayerInventory(player.inventory, 8, 31);
+        addPlayerInventory(player.inventory, 8, 57);
 
         lastUpdateValueId = getNextValueId();
+        lastPriorityValueId = getNextValueId();
 
         putButtonAction(GuiPartSettings.BUTTON_SAVE, new IButtonActionServer<InventoryContainer>() {
 
             @Override
             public void onAction(int buttonId, InventoryContainer container) {
-                IntegratedDynamics._instance.getGuiHandler()
-                    .setTemporaryData(
-                        ExtendedGuiHandler.PART,
-                        getTarget().getCenter()
-                            .getSide());
-                BlockPos pos = getTarget().getCenter()
-                    .getPos()
-                    .getBlockPos();
-                if (!MinecraftHelpers.isClientSide()) {
-                    player.openGui(
-                        IntegratedDynamics._instance.getModId(),
-                        ((IGuiContainerProvider) getPartType()).getGuiID(),
-                        world,
-                        pos.getX(),
-                        pos.getY(),
-                        pos.getZ());
+                if (!(getPartType() instanceof IGuiContainerProvider)
+                    || ((IGuiContainerProvider) getPartType()).getContainer()
+                        != ContainerPartSettings.this.getClass()) {
+                    if (!MinecraftHelpers.isClientSide()) {
+                        IntegratedDynamics._instance.getGuiHandler()
+                            .setTemporaryData(
+                                ExtendedGuiHandler.PART,
+                                getTarget().getCenter()
+                                    .getSide());
+                        BlockPos pos = getTarget().getCenter()
+                            .getPos()
+                            .getBlockPos();
+                        player.openGui(
+                            IntegratedDynamics._instance.getModId(),
+                            ((IGuiContainerProvider) getPartType()).getGuiID(),
+                            world,
+                            pos.getX(),
+                            pos.getY(),
+                            pos.getZ());
+                    }
+                } else {
+                    player.closeScreen();
                 }
             }
         });
@@ -97,10 +109,15 @@ public class ContainerPartSettings extends ExtendedInventoryContainer {
     @Override
     protected void initializeValues() {
         ValueNotifierHelpers.setValue(this, lastUpdateValueId, getPartType().getUpdateInterval(getPartState()));
+        ValueNotifierHelpers.setValue(this, lastPriorityValueId, getPartType().getPriority(getPartState()));
     }
 
     public int getLastUpdateValue() {
         return ValueNotifierHelpers.getValueInt(this, lastUpdateValueId);
+    }
+
+    public int getLastPriorityValue() {
+        return ValueNotifierHelpers.getValueInt(this, lastPriorityValueId);
     }
 
     @SuppressWarnings("unchecked")
@@ -125,6 +142,11 @@ public class ContainerPartSettings extends ExtendedInventoryContainer {
         super.onUpdate(valueId, value);
         if (!MinecraftHelpers.isClientSide()) {
             getPartType().setUpdateInterval(getPartState(), getLastUpdateValue());
+            DimPos dimPos = getTarget().getCenter()
+                .getPos();
+            INetwork network = NetworkHelpers.getNetwork(dimPos.getWorld(), dimPos.getBlockPos());
+            PartNetworkElement networkElement = new PartNetworkElement(getPartType(), getTarget());
+            network.setPriority(networkElement, getLastPriorityValue());
         }
     }
 }

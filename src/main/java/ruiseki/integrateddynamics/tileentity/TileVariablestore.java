@@ -20,6 +20,7 @@ import ruiseki.integrateddynamics.capability.networkelementprovider.NetworkEleme
 import ruiseki.integrateddynamics.capability.networkelementprovider.NetworkElementProviderSingleton;
 import ruiseki.integrateddynamics.capability.variablecontainer.VariableContainerConfig;
 import ruiseki.integrateddynamics.capability.variablecontainer.VariableContainerDefault;
+import ruiseki.integrateddynamics.capability.variablefacade.VariableFacadeHolderConfig;
 import ruiseki.integrateddynamics.core.network.event.VariableContentsUpdatedEvent;
 import ruiseki.integrateddynamics.core.tileentity.TileCableConnectableInventory;
 import ruiseki.integrateddynamics.item.ItemVariable;
@@ -27,6 +28,7 @@ import ruiseki.integrateddynamics.network.VariablestoreNetworkElement;
 import ruiseki.okcore.capabilities.resolver.BasicCapabilityResolver;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
+import ruiseki.okcore.helper.CapabilityHelpers;
 import ruiseki.okcore.persist.IDirtyMarkListener;
 
 /**
@@ -71,8 +73,15 @@ public class TileVariablestore extends TileCableConnectableInventory implements 
     }
 
     @Override
-    public void readCommon(NBTTagCompound tag) {
-        super.readCommon(tag);
+    public boolean isItemValidForSlot(int index, ItemStack stack) {
+        return super.isItemValidForSlot(index, stack)
+            && (stack == null || CapabilityHelpers.getCapability(stack, VariableFacadeHolderConfig.CAPABILITY)
+                .isPresent());
+    }
+
+    @Override
+    public void readFromNBT(NBTTagCompound tag) {
+        super.readFromNBT(tag);
         refreshVariables(inventory);
     }
 
@@ -83,7 +92,7 @@ public class TileVariablestore extends TileCableConnectableInventory implements 
             if (itemStack != null) {
                 IVariableFacade variableFacade = ItemVariable.getInstance()
                     .getVariableFacade(itemStack);
-                if (variableFacade.isValid()) {
+                if (variableFacade != null && variableFacade.isValid()) {
                     variableCache.put(variableFacade.getId(), variableFacade);
                 }
             }

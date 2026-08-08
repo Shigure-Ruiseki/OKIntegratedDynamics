@@ -34,10 +34,7 @@ public class BlockMenrilLeavesConfig extends BlockConfig {
     /**
      * A 1/x chance menril berries will be dropped when breaking a leaves block.
      */
-    @ConfigurableProperty(
-        category = ConfigurableTypeCategory.BLOCK,
-        comment = "A 1/x chance menril berries will be dropped when breaking a leaves block.",
-        isCommandable = true)
+    @ConfigurableProperty(category = ConfigurableTypeCategory.BLOCK, comment = "A 1/x chance menril berries will be dropped when breaking a leaves block.", isCommandable = true, minimalValue = 0)
     public static int berriesDropChance = 4;
 
     /**
@@ -59,12 +56,17 @@ public class BlockMenrilLeavesConfig extends BlockConfig {
             @Override
             public ArrayList<ItemStack> getDrops(World world, int x, int y, int z, int metadata, int fortune) {
                 ArrayList<ItemStack> drops = super.getDrops(world, x, y, z, metadata, fortune);
-                if (world instanceof World && !((World) world).isRemote) {
-                    if (((World) world).rand.nextInt(berriesDropChance) == 0) {
+                if (!world.isRemote) {
+                    if (world.rand.nextInt(berriesDropChance) == 0) {
                         drops.add(new ItemStack(ItemMenrilBerriesConfig._instance.getItemInstance()));
                     }
                 }
                 return drops;
+            }
+
+            @Override
+            protected ItemStack createStackedBlock(int meta) {
+                return new ItemStack(this);
             }
         }.setHardness(0.2F)
             .setLightLevel(0.65F)

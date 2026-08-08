@@ -26,10 +26,10 @@ import com.google.common.math.DoubleMath;
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 import com.gtnewhorizon.gtnhlib.blockstate.registry.BlockPropertyRegistry;
 
+import cofh.api.energy.IEnergyStorage;
 import ruiseki.commoncapabilities.api.capability.temperature.ITemperature;
 import ruiseki.commoncapabilities.api.capability.work.IWorker;
 import ruiseki.integrateddynamics.IntegratedDynamics;
-import ruiseki.integrateddynamics.api.block.IEnergyBattery;
 import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.part.PartPos;
@@ -780,7 +780,7 @@ public class Aspects {
                         }
                         return network.getCapability(EnergyNetworkConfig.CAPABILITY)
                             .map(
-                                handler -> handler.getEnergyBatteries()
+                                handler -> handler.getPositions()
                                     .size())
                             .orElse(0);
                     }
@@ -797,7 +797,7 @@ public class Aspects {
                             return 0;
                         }
                         return network.getCapability(EnergyNetworkConfig.CAPABILITY)
-                            .map(IEnergyBattery::getStoredEnergy)
+                            .map(IEnergyStorage::getEnergyStored)
                             .orElse(0);
                     }
                 })
@@ -813,7 +813,7 @@ public class Aspects {
                             return 0;
                         }
                         return network.getCapability(EnergyNetworkConfig.CAPABILITY)
-                            .map(IEnergyBattery::getMaxStoredEnergy)
+                            .map(IEnergyStorage::getMaxEnergyStored)
                             .orElse(0);
                     }
                 })

@@ -11,6 +11,7 @@ import com.google.common.collect.Lists;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.client.gui.subgui.IGuiInputElement;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.logicprogrammer.IConfigRenderPattern;
@@ -19,6 +20,7 @@ import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.api.part.aspect.IAspect;
 import ruiseki.integrateddynamics.api.part.aspect.property.IAspectPropertyTypeInstance;
+import ruiseki.integrateddynamics.core.client.gui.ExtendedGuiHandler;
 import ruiseki.integrateddynamics.core.client.gui.subgui.SubGuiHolder;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeGuiElement;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeSubGuiRenderPattern;
@@ -122,6 +124,17 @@ public class GuiAspectSettings extends GuiContainerExtended {
                     setActiveProperty(getActivePropertyIndex() + 1);
                     refreshButtonEnabled();
                 }
+            }
+        });
+        putButtonAction(BUTTON_EXIT, new IButtonActionClient<GuiContainerExtended, ExtendedInventoryContainer>() {
+
+            @Override
+            public void onAction(int buttonId, GuiContainerExtended gui, ExtendedInventoryContainer container) {
+                IntegratedDynamics._instance.getGuiHandler()
+                    .setTemporaryData(
+                        ExtendedGuiHandler.PART,
+                        getTarget().getCenter()
+                            .getSide());
             }
         });
     }

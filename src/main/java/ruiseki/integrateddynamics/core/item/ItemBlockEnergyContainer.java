@@ -8,14 +8,14 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 
 import cofh.api.energy.IEnergyContainerItem;
+import cofh.api.energy.IEnergyStorage;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-import ruiseki.integrateddynamics.api.block.IEnergyBattery;
-import ruiseki.integrateddynamics.api.block.IEnergyContainerBlock;
-import ruiseki.integrateddynamics.capability.energybattery.EnergyBatteryConfig;
-import ruiseki.integrateddynamics.capability.energybattery.EnergyBatteryItemBlockEnergyContainer;
+import ruiseki.integrateddynamics.block.IEnergyContainerBlock;
+import ruiseki.integrateddynamics.capability.energystorage.EnergyStorageItemBlockEnergyContainer;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.okcore.capabilities.ICapabilityProvider;
+import ruiseki.okcore.energy.capability.CapabilityEnergy;
 import ruiseki.okcore.helper.CapabilityHelpers;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.item.IInformationProvider;
@@ -45,8 +45,8 @@ public class ItemBlockEnergyContainer extends ItemBlockNBT implements IEnergyCon
         return block;
     }
 
-    protected IEnergyBattery getEnergyBattery(ItemStack itemStack) {
-        return CapabilityHelpers.getCapability(itemStack, EnergyBatteryConfig.CAPABILITY)
+    protected IEnergyStorage getEnergyBattery(ItemStack itemStack) {
+        return CapabilityHelpers.getCapability(itemStack, CapabilityEnergy.ENERGY)
             .getOrNull();
     }
 
@@ -55,9 +55,9 @@ public class ItemBlockEnergyContainer extends ItemBlockNBT implements IEnergyCon
     @Override
     public void addInformation(ItemStack itemStack, EntityPlayer entityPlayer, List list, boolean par4) {
         super.addInformation(itemStack, entityPlayer, list, par4);
-        IEnergyBattery energyBattery = getEnergyBattery(itemStack);
-        int amount = energyBattery.getStoredEnergy();
-        int capacity = energyBattery.getMaxStoredEnergy();
+        IEnergyStorage energyStorage = getEnergyBattery(itemStack);
+        int amount = energyStorage.getEnergyStored();
+        int capacity = energyStorage.getMaxEnergyStored();
         String line = String.format("%,d", amount) + " / "
             + String.format("%,d", capacity)
             + " "
@@ -72,40 +72,39 @@ public class ItemBlockEnergyContainer extends ItemBlockNBT implements IEnergyCon
 
     @Override
     public double getDurabilityForDisplay(ItemStack itemStack) {
-        IEnergyBattery energyBattery = getEnergyBattery(itemStack);
-        double amount = energyBattery.getStoredEnergy();
-        double capacity = energyBattery.getMaxStoredEnergy();
+        IEnergyStorage energyStorage = getEnergyBattery(itemStack);
+        double amount = energyStorage.getEnergyStored();
+        double capacity = energyStorage.getMaxEnergyStored();
         return (capacity - amount) / capacity;
     }
 
     @Override
     public ICapabilityProvider initCapabilities(ItemStack stack, NBTTagCompound nbt) {
         return new DefaultCapabilityProvider<>(
-            () -> EnergyBatteryConfig.CAPABILITY,
-            new EnergyBatteryItemBlockEnergyContainer(this, stack));
+            () -> CapabilityEnergy.ENERGY,
+            new EnergyStorageItemBlockEnergyContainer(this, stack));
     }
 
     /*
      * ------------------ RF API ------------------
      */
-
     @Override
     public int receiveEnergy(ItemStack container, int maxReceive, boolean simulate) {
-        return getEnergyBattery(container).addEnergy(maxReceive, simulate);
+        return getEnergyBattery(container).receiveEnergy(maxReceive, simulate);
     }
 
     @Override
     public int extractEnergy(ItemStack container, int maxExtract, boolean simulate) {
-        return getEnergyBattery(container).consume(maxExtract, simulate);
+        return getEnergyBattery(container).extractEnergy(maxExtract, simulate);
     }
 
     @Override
     public int getEnergyStored(ItemStack container) {
-        return getEnergyBattery(container).getStoredEnergy();
+        return getEnergyBattery(container).getEnergyStored();
     }
 
     @Override
     public int getMaxEnergyStored(ItemStack container) {
-        return getEnergyBattery(container).getMaxStoredEnergy();
+        return getEnergyBattery(container).getMaxEnergyStored();
     }
 }

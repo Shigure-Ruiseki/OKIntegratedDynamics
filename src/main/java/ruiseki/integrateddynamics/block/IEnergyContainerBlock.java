@@ -1,8 +1,8 @@
-package ruiseki.integrateddynamics.api.block;
+package ruiseki.integrateddynamics.block;
 
 /**
  * An interface for blocks that can hold energy.
- * 
+ *
  * @author rubensworks
  */
 public interface IEnergyContainerBlock {

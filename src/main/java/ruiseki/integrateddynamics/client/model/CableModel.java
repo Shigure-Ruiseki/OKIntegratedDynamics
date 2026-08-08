@@ -25,8 +25,6 @@ import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuad;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing;
 
-import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.Reference;
 import ruiseki.integrateddynamics.api.part.IPartType;
@@ -36,7 +34,6 @@ import ruiseki.integrateddynamics.core.tileentity.TileMultipartTicking;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.ThreadsafeCache;
 import ruiseki.okcore.helper.QuadBuilderHelpers;
-import ruiseki.okcore.mixins.early.gtnhlib.JSONModelAccessor;
 
 public class CableModel implements BakedModel {
 
@@ -179,25 +176,8 @@ public class CableModel implements BakedModel {
 
     private static BakedModel bakePartModel(ResourceLoc.ModelLoc modelLoc, ForgeDirection side) {
         JSONModel baseModel = ModelRegistry.getJSONModel(modelLoc);
-        if (baseModel == null) return null;
-
-        Object2ObjectMap<String, String> mergedTextures = new Object2ObjectOpenHashMap<>();
-        if (baseModel.getTextures() != null) {
-            mergedTextures.putAll(baseModel.getTextures());
-        }
-
-        JSONModelAccessor accessor = (JSONModelAccessor) baseModel;
-
-        JSONModel finalModelToBake = new JSONModel(
-            accessor.getParentId(),
-            accessor.isUseAO(),
-            accessor.getDisplay(),
-            mergedTextures,
-            accessor.getElements());
-
         JSONVariant variant = createVariantForPart(modelLoc, side);
-
-        return finalModelToBake.bake(variant);
+        return baseModel.bake(variant);
     }
 
     private static ResourceLoc.ModelLoc parseModelLocStatic(String modelPath) {

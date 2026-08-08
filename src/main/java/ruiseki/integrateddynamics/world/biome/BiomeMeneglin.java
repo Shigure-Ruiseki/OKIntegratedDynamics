@@ -86,7 +86,8 @@ public class BiomeMeneglin extends ConfigurableBiome {
     @SubscribeEvent
     public void onDecorate(DecorateBiomeEvent.Decorate decorateBiomeEvent) {
         if (decorateBiomeEvent.type == DecorateBiomeEvent.Decorate.EventType.TREE) {
-            if (decorateBiomeEvent.rand.nextInt(GeneralConfig.wildMenrilTreeChance) == 0) {
+            if (GeneralConfig.wildMenrilTreeChance > 0
+                && decorateBiomeEvent.rand.nextInt(GeneralConfig.wildMenrilTreeChance) == 0) {
                 int x = decorateBiomeEvent.chunkX + decorateBiomeEvent.rand.nextInt(16) + 8;
                 int z = decorateBiomeEvent.chunkZ + decorateBiomeEvent.rand.nextInt(16) + 8;
                 int y = decorateBiomeEvent.world.getHeightValue(x, z);

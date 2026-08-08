@@ -1,5 +1,6 @@
 package ruiseki.integrateddynamics.block;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import net.minecraft.block.Block;
@@ -31,6 +32,8 @@ import lombok.Setter;
 import lombok.experimental.Delegate;
 import ruiseki.integrateddynamics.api.block.IDynamicLight;
 import ruiseki.integrateddynamics.api.block.IDynamicRedstone;
+import ruiseki.integrateddynamics.api.block.cable.ICable;
+import ruiseki.integrateddynamics.api.block.cable.ICableFakeable;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.block.collidable.CollidableComponentCableCenter;
@@ -152,6 +155,18 @@ public class BlockCable extends ConfigurableBlockContainer
     }
 
     @Override
+    public ArrayList<ItemStack> getDrops(World world, int x, int y, int z, int meta, int fortune) {
+        BlockPos pos = new BlockPos(x, y, z);
+        ICable cable = CableHelpers.getCable(world, pos);
+        ICableFakeable cableFakeable = CableHelpers.getCableFakeable(world, pos);
+        IPartContainer partContainer = PartHelpers.getPartContainer(world, pos);
+        if (cable == null || cableFakeable == null || partContainer == null || !partContainer.hasParts()) {
+            return Lists.newArrayList();
+        }
+        return super.getDrops(world, x, y, z, meta, fortune);
+    }
+
+    @Override
     public boolean removedByPlayer(World world, EntityPlayer player, int x, int y, int z, boolean willHarvest) {
         BlockPos pos = new BlockPos(x, y, z);
         RayTraceResult<ForgeDirection> rayTraceResult = doRayTrace(world, pos, player);
@@ -160,7 +175,7 @@ public class BlockCable extends ConfigurableBlockContainer
                 .destroy(world, pos, rayTraceResult.getPositionHit(), player, willHarvest)) {
             return true;
         }
-        return super.removedByPlayer(world, player, x, y, z, willHarvest);
+        return rayTraceResult != null && super.removedByPlayer(world, player, x, y, z, willHarvest);
     }
 
     @Override
@@ -282,7 +297,11 @@ public class BlockCable extends ConfigurableBlockContainer
 
     @Override
     public boolean shouldSideBeRendered(IBlockAccess world, int x, int y, int z, int side) {
-        return super.shouldSideBeRendered(world, x, y, z, side) || CableHelpers.hasFacade(world, new BlockPos(x, y, z));
+        BlockPos pos = new BlockPos(x, y, z);
+        return super.shouldSideBeRendered(world, x, y, z, side)
+            || (CableHelpers.hasFacade(world, pos) && CableHelpers.getFacade(world, pos)
+                .getBlock()
+                .isOpaqueCube());
     }
 
     @Override
