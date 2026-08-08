@@ -3,9 +3,13 @@ package ruiseki.integrateddynamics.core.item;
 import java.util.List;
 import java.util.Map;
 
+import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraftforge.common.MinecraftForge;
+
+import org.jetbrains.annotations.Nullable;
 
 import com.google.common.collect.Maps;
 
@@ -20,6 +24,7 @@ import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeBoolean;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
+import ruiseki.integrateddynamics.core.logicprogrammer.event.LogicProgrammerVariableFacadeCreatedEvent;
 import ruiseki.okcore.helper.ItemNBTHelpers;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
@@ -87,14 +92,30 @@ public class VariableFacadeHandlerRegistry implements IVariableFacadeHandlerRegi
     }
 
     @Override
+    public <F extends IVariableFacade> ItemStack writeVariableFacadeItem(ItemStack itemStack, F variableFacade,
+        IVariableFacadeHandler<F> variableFacadeHandler) {
+        if (itemStack == null) {
+            return null;
+        }
+        itemStack = itemStack.copy();
+        NBTTagCompound tag = ItemNBTHelpers.getNBT(itemStack);
+        this.write(tag, variableFacade, variableFacadeHandler);
+        return itemStack;
+    }
+
+    @Override
     public <F extends IVariableFacade> ItemStack writeVariableFacadeItem(boolean generateId, ItemStack itemStack,
-        IVariableFacadeHandler<F> variableFacadeHandler, IVariableFacadeFactory<F> variableFacadeFactory) {
+        IVariableFacadeHandler<F> variableFacadeHandler, IVariableFacadeFactory<F> variableFacadeFactory,
+        @Nullable EntityPlayer player, @Nullable Block block) {
         if (itemStack == null) {
             return null;
         }
         itemStack = itemStack.copy();
         NBTTagCompound tag = ItemNBTHelpers.getNBT(itemStack);
         F variableFacade = writeVariableFacade(generateId, itemStack, variableFacadeHandler, variableFacadeFactory);
+        if (player != null) {
+            MinecraftForge.EVENT_BUS.post(new LogicProgrammerVariableFacadeCreatedEvent(player, variableFacade, block));
+        }
         this.write(tag, variableFacade, variableFacadeHandler);
         return itemStack;
     }

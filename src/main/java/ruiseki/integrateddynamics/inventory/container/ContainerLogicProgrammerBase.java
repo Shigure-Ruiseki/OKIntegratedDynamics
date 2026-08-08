@@ -240,7 +240,7 @@ public abstract class ContainerLogicProgrammerBase extends ScrollingInventoryCon
 
     protected ItemStack writeElementInfo() {
         ItemStack itemStack = writeSlot.getStackInSlot(0);
-        ItemStack result = getActiveElement().writeElement(itemStack.copy());
+        ItemStack result = getActiveElement().writeElement(player, itemStack.copy());
         return result;
     }
 

@@ -235,14 +235,20 @@ public class TileMultipartTicking extends TileEntityOK
     @Override
     public void onChunkUnload() {
         super.onChunkUnload();
-        INetwork network = getNetwork();
-        if (network != null) {
-            for (Map.Entry<ForgeDirection, PartHelpers.PartStateHolder<?, ?>> entry : partContainer.getPartData()
-                .entrySet()) {
-                INetworkElement element = entry.getValue()
-                    .getPart()
-                    .createNetworkElement(getPartContainer(), DimPos.of(getWorldObj(), getPos()), entry.getKey());
-                element.invalidate(network);
+        invalidateParts();
+    }
+
+    protected void invalidateParts() {
+        if (getWorldObj() != null && !getWorldObj().isRemote) {
+            INetwork network = getNetwork();
+            if (network != null) {
+                for (Map.Entry<ForgeDirection, PartHelpers.PartStateHolder<?, ?>> entry : partContainer.getPartData()
+                    .entrySet()) {
+                    INetworkElement element = entry.getValue()
+                        .getPart()
+                        .createNetworkElement(getPartContainer(), DimPos.of(getWorldObj(), getPos()), entry.getKey());
+                    element.invalidate(network);
+                }
             }
         }
     }

@@ -6,8 +6,8 @@ import java.util.TreeSet;
 
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.World;
+import net.minecraftforge.common.DimensionManager;
 
 import org.apache.logging.log4j.Level;
 
@@ -78,7 +78,7 @@ public class Cluster implements Collection<IPathElement>, INBTSerializable {
             int dimensionId = elementTag.getInteger("dimension");
             BlockPos pos = BlockPos.fromLong(elementTag.getLong("pos"));
 
-            if (dimensionId < 0 || dimensionId >= MinecraftServer.getServer().worldServers.length) {
+            if (!DimensionManager.isDimensionRegistered(dimensionId)) {
                 IntegratedDynamics.clog(
                     Level.WARN,
                     String.format(
@@ -86,7 +86,8 @@ public class Cluster implements Collection<IPathElement>, INBTSerializable {
                         dimensionId));
             } else {
                 World world = FMLCommonHandler.instance()
-                    .getMinecraftServerInstance().worldServers[dimensionId];
+                    .getMinecraftServerInstance()
+                    .worldServerForDimension(dimensionId);
                 IPathElement pathElement = CapabilityHelpers
                     .getCapability(world, pos, PathElementConfig.CAPABILITY, null)
                     .getOrNull();

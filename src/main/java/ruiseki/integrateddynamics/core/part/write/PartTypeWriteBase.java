@@ -6,9 +6,11 @@ import java.util.Map;
 import javax.annotation.Nullable;
 
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumChatFormatting;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import cpw.mods.fml.relauncher.Side;
@@ -31,6 +33,7 @@ import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
 import ruiseki.integrateddynamics.core.network.event.NetworkElementAddEvent;
 import ruiseki.integrateddynamics.core.network.event.VariableContentsUpdatedEvent;
 import ruiseki.integrateddynamics.core.part.PartTypeAspects;
+import ruiseki.integrateddynamics.core.part.event.PartWriterAspectEvent;
 import ruiseki.integrateddynamics.inventory.container.ContainerPartWriter;
 import ruiseki.integrateddynamics.part.aspect.Aspects;
 import ruiseki.okcore.helper.LangHelpers;
@@ -114,7 +117,7 @@ public abstract class PartTypeWriteBase<P extends IPartTypeWriter<P, S>, S exten
     @Override
     public void afterNetworkAlive(INetwork network, IPartNetwork partNetwork, PartTarget target, S state) {
         super.afterNetworkAlive(network, partNetwork, target, state);
-        updateActivation(target, state);
+        updateActivation(target, state, null);
     }
 
     @Override
@@ -137,7 +140,7 @@ public abstract class PartTypeWriteBase<P extends IPartTypeWriter<P, S>, S exten
     }
 
     @Override
-    public void updateActivation(PartTarget target, S partState) {
+    public void updateActivation(PartTarget target, S partState, @Nullable EntityPlayer player) {
         // Check inside the inventory for a variable item and determine everything with that.
         int activeIndex = -1;
         for (int i = 0; i < partState.getInventory()
@@ -150,6 +153,28 @@ public abstract class PartTypeWriteBase<P extends IPartTypeWriter<P, S>, S exten
         }
         IAspectWrite aspect = activeIndex == -1 ? null : getWriteAspects().get(activeIndex);
         partState.triggerAspectInfoUpdate((P) this, target, aspect);
+
+        if (aspect != null) {
+            INetwork network = NetworkHelpers.getNetwork(
+                target.getCenter()
+                    .getPos()
+                    .getWorld(),
+                target.getCenter()
+                    .getPos()
+                    .getBlockPos());
+            IPartNetwork partNetwork = NetworkHelpers.getPartNetwork(network);
+            MinecraftForge.EVENT_BUS.post(
+                new PartWriterAspectEvent<>(
+                    network,
+                    partNetwork,
+                    target,
+                    (P) this,
+                    partState,
+                    player,
+                    aspect,
+                    partState.getInventory()
+                        .getStackInSlot(activeIndex)));
+        }
     }
 
     protected void onVariableContentsUpdated(IPartNetwork network, PartTarget target, S state) {

@@ -2,6 +2,7 @@ package ruiseki.integrateddynamics.core.logicprogrammer;
 
 import java.util.List;
 
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 
 import cpw.mods.fml.relauncher.Side;
@@ -16,6 +17,7 @@ import ruiseki.integrateddynamics.api.item.IVariableFacadeHandlerRegistry;
 import ruiseki.integrateddynamics.api.logicprogrammer.IConfigRenderPattern;
 import ruiseki.integrateddynamics.api.logicprogrammer.ILogicProgrammerElement;
 import ruiseki.integrateddynamics.api.logicprogrammer.ILogicProgrammerElementType;
+import ruiseki.integrateddynamics.block.BlockLogicProgrammer;
 import ruiseki.integrateddynamics.client.gui.GuiLogicProgrammerBase;
 import ruiseki.integrateddynamics.core.evaluate.operator.Operators;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueHelpers;
@@ -106,7 +108,7 @@ public class OperatorElement implements
     }
 
     @Override
-    public ItemStack writeElement(ItemStack itemStack) {
+    public ItemStack writeElement(EntityPlayer player, ItemStack itemStack) {
         IVariableFacadeHandlerRegistry registry = IntegratedDynamics._instance.getRegistryManager()
             .getRegistry(IVariableFacadeHandlerRegistry.class);
         int[] variableIds = getVariableIds(inputVariables);
@@ -114,7 +116,9 @@ public class OperatorElement implements
             !MinecraftHelpers.isClientSide(),
             itemStack,
             Operators.REGISTRY,
-            new OperatorVariableFacadeFactory(operator, variableIds));
+            new OperatorVariableFacadeFactory(operator, variableIds),
+            player,
+            BlockLogicProgrammer.getInstance());
     }
 
     @Override

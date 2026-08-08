@@ -8,6 +8,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 
 import com.google.common.collect.Lists;
@@ -22,6 +23,7 @@ import ruiseki.integrateddynamics.api.item.IValueTypeVariableFacade;
 import ruiseki.integrateddynamics.api.item.IVariableFacadeHandlerRegistry;
 import ruiseki.integrateddynamics.api.logicprogrammer.IConfigRenderPattern;
 import ruiseki.integrateddynamics.api.logicprogrammer.ILogicProgrammerElementType;
+import ruiseki.integrateddynamics.block.BlockLogicProgrammer;
 import ruiseki.integrateddynamics.client.gui.GuiLogicProgrammer;
 import ruiseki.integrateddynamics.client.gui.GuiLogicProgrammerBase;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeList;
@@ -97,7 +99,7 @@ public class ValueTypeListElement extends ValueTypeElement {
     }
 
     @Override
-    public ItemStack writeElement(ItemStack itemStack) {
+    public ItemStack writeElement(EntityPlayer player, ItemStack itemStack) {
         IVariableFacadeHandlerRegistry registry = IntegratedDynamics._instance.getRegistryManager()
             .getRegistry(IVariableFacadeHandlerRegistry.class);
         ValueTypeVariableFacadeFactory factory;
@@ -106,8 +108,13 @@ public class ValueTypeListElement extends ValueTypeElement {
         } else {
             factory = new ValueTypeVariableFacadeFactory(serverValue);
         }
-        return registry
-            .writeVariableFacadeItem(!MinecraftHelpers.isClientSide(), itemStack, ValueTypes.REGISTRY, factory);
+        return registry.writeVariableFacadeItem(
+            !MinecraftHelpers.isClientSide(),
+            itemStack,
+            ValueTypes.REGISTRY,
+            factory,
+            player,
+            BlockLogicProgrammer.getInstance());
     }
 
     public void setListValueType(IValueType listValueType) {

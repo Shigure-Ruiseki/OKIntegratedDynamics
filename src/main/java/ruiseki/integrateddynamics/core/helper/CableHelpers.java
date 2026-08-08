@@ -3,10 +3,12 @@ package ruiseki.integrateddynamics.core.helper;
 import java.util.List;
 import java.util.Map;
 
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import org.jetbrains.annotations.Nullable;
@@ -28,6 +30,7 @@ import ruiseki.integrateddynamics.capability.cable.CableConfig;
 import ruiseki.integrateddynamics.capability.cable.CableFakeableConfig;
 import ruiseki.integrateddynamics.capability.facadeable.FacadeableConfig;
 import ruiseki.integrateddynamics.capability.path.PathElementConfig;
+import ruiseki.integrateddynamics.core.network.event.NetworkInitializedEvent;
 import ruiseki.integrateddynamics.item.ItemBlockCable;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.helper.CapabilityHelpers;
@@ -215,10 +218,11 @@ public class CableHelpers {
      * @param world The world.
      * @param pos   The position.
      */
-    public static void onCableAdded(World world, BlockPos pos) {
+    public static void onCableAdded(World world, BlockPos pos, @Nullable EntityLivingBase placer) {
         CableHelpers.updateConnectionsNeighbours(world, pos);
         if (!world.isRemote) {
-            NetworkHelpers.initNetwork(world, pos);
+            INetwork network = NetworkHelpers.initNetwork(world, pos);
+            MinecraftForge.EVENT_BUS.post(new NetworkInitializedEvent(network, world, pos, placer));
         }
     }
 

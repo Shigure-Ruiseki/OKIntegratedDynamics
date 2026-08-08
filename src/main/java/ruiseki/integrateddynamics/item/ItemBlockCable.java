@@ -3,6 +3,7 @@ package ruiseki.integrateddynamics.item;
 import java.util.List;
 
 import net.minecraft.block.Block;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
@@ -70,14 +71,14 @@ public class ItemBlockCable extends ItemBlockMetadata {
     }
 
     protected boolean attempItemUseTarget(ItemStack stack, World world, BlockPos pos, BlockCable blockCable,
-        boolean offsetAdded) {
+        EntityLivingBase placer, boolean offsetAdded) {
         Block block = pos.getBlock(world);
         if (!block.isAir(world, pos.getX(), pos.getY(), pos.getZ())) {
             ICableFakeable cable = CableHelpers.getCableFakeable(world, pos);
             if (cable != null && !cable.isRealCable()) {
                 cable.setRealCable(true);
                 CableHelpers.updateConnections(world, pos);
-                CableHelpers.onCableAdded(world, pos);
+                CableHelpers.onCableAdded(world, pos, placer);
                 return true;
             }
             if (!offsetAdded) {
@@ -126,14 +127,14 @@ public class ItemBlockCable extends ItemBlockMetadata {
         blockCable.setDisableCollisionBox(true);
 
         // 1. Try placing inside fake cable at clicked position
-        if (attempItemUseTarget(stack, worldIn, pos, blockCable, false)) {
+        if (attempItemUseTarget(stack, worldIn, pos, blockCable, playerIn, false)) {
             afterItemUse(stack, worldIn, pos, blockCable, false);
             return true;
         }
 
         // 2. Try placing inside fake cable at target offset position
         BlockPos targetPos = pos.offset(side);
-        if (attempItemUseTarget(stack, worldIn, targetPos, blockCable, true)) {
+        if (attempItemUseTarget(stack, worldIn, targetPos, blockCable, playerIn, true)) {
             // FIX: Pass targetPos instead of pos!
             afterItemUse(stack, worldIn, pos.offset(side), blockCable, false);
             return true;

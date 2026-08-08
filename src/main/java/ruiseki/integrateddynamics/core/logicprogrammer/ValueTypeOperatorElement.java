@@ -6,6 +6,7 @@ import java.util.Set;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
 
@@ -21,6 +22,7 @@ import ruiseki.integrateddynamics.api.item.IValueTypeVariableFacade;
 import ruiseki.integrateddynamics.api.item.IVariableFacadeHandlerRegistry;
 import ruiseki.integrateddynamics.api.logicprogrammer.IConfigRenderPattern;
 import ruiseki.integrateddynamics.api.logicprogrammer.ILogicProgrammerElementType;
+import ruiseki.integrateddynamics.block.BlockLogicProgrammer;
 import ruiseki.integrateddynamics.client.gui.GuiLogicProgrammerBase;
 import ruiseki.integrateddynamics.core.client.gui.IDropdownEntry;
 import ruiseki.integrateddynamics.core.client.gui.IDropdownEntryListener;
@@ -81,14 +83,16 @@ public class ValueTypeOperatorElement extends ValueTypeElement implements IDropd
     }
 
     @Override
-    public ItemStack writeElement(ItemStack itemStack) {
+    public ItemStack writeElement(EntityPlayer player, ItemStack itemStack) {
         IVariableFacadeHandlerRegistry registry = IntegratedDynamics._instance.getRegistryManager()
             .getRegistry(IVariableFacadeHandlerRegistry.class);
         return registry.writeVariableFacadeItem(
             !MinecraftHelpers.isClientSide(),
             itemStack,
             ValueTypes.REGISTRY,
-            new ValueTypeVariableFacadeFactory(ValueTypeOperator.ValueOperator.of(selectedOperator)));
+            new ValueTypeVariableFacadeFactory(ValueTypeOperator.ValueOperator.of(selectedOperator)),
+            player,
+            BlockLogicProgrammer.getInstance());
     }
 
     @Override

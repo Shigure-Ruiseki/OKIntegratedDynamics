@@ -71,4 +71,11 @@ public class LazyExpression<V extends IValue> implements IExpression<V> {
         }
     }
 
+    public IOperator getOperator() {
+        return op;
+    }
+
+    public IVariable[] getInput() {
+        return input;
+    }
 }

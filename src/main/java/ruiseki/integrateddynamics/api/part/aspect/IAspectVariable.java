@@ -27,4 +27,8 @@ public interface IAspectVariable<V extends IValue> extends IVariable<V> {
      */
     public void update();
 
+    /**
+     * @return The referenced aspect.
+     */
+    public IAspectRead<V, ?> getAspect();
 }

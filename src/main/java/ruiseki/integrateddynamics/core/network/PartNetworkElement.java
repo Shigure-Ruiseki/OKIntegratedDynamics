@@ -82,9 +82,17 @@ public class PartNetworkElement<P extends IPartType<P, S>, S extends IPartState<
         revalidatePositioned(network, getCenterPos(getTarget()));
     }
 
+    @Override
+    public boolean isLoaded() {
+        return getCenterPos(getTarget()).isLoaded();
+    }
+
     public boolean hasPartState() {
-        IPartContainer partContainer = getPartContainer();
-        return partContainer != null && partContainer.hasPart(getCenterSide(getTarget()));
+        if (isLoaded()) {
+            IPartContainer partContainer = getPartContainer();
+            return partContainer != null && partContainer.hasPart(getCenterSide(getTarget()));
+        }
+        return false;
     }
 
     @Override
@@ -120,12 +128,7 @@ public class PartNetworkElement<P extends IPartType<P, S>, S extends IPartState<
 
     @Override
     public void update(INetwork network) {
-        DimPos dimPos = getTarget().getCenter()
-            .getPos();
-        if (dimPos.getBlockPos()
-            .getTileEntity(dimPos.getWorld()) != null) {
-            part.update(network, NetworkHelpers.getPartNetwork(network), getTarget(), getPartState());
-        }
+        part.update(network, NetworkHelpers.getPartNetwork(network), getTarget(), getPartState());
     }
 
     @Override
@@ -215,7 +218,10 @@ public class PartNetworkElement<P extends IPartType<P, S>, S extends IPartState<
                     .getClass()
                     .hashCode());
             if (compClass == 0) {
-                int compPriority = -Integer.compare(this.getPriority(), p.getPriority());
+                // If this or the other part is not loaded, we IGNORE the priority,
+                // because that depends on tile entity data, which requires loading the part/chunk.
+                int compPriority = !isLoaded() || !p.isLoaded() ? 0
+                    : -Integer.compare(this.getPriority(), p.getPriority());
                 if (compPriority == 0) {
                     int compPart = Integer.compare(
                         part.hashCode(),

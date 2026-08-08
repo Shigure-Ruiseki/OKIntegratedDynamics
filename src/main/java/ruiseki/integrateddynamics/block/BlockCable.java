@@ -229,9 +229,9 @@ public class BlockCable extends ConfigurableBlockContainer
     }
 
     @Override
-    public void onBlockPlacedBy(World world, int x, int y, int z, EntityLivingBase entity, ItemStack stack) {
-        super.onBlockPlacedBy(world, x, y, z, entity, stack);
-        CableHelpers.onCableAdded(world, new BlockPos(x, y, z));
+    public void onBlockPlacedBy(World world, int x, int y, int z, EntityLivingBase placer, ItemStack stack) {
+        super.onBlockPlacedBy(world, x, y, z, placer, stack);
+        CableHelpers.onCableAdded(world, new BlockPos(x, y, z), placer);
     }
 
     @Override

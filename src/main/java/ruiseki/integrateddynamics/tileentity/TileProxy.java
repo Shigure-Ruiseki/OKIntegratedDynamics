@@ -1,5 +1,6 @@
 package ruiseki.integrateddynamics.tileentity;
 
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
@@ -7,6 +8,7 @@ import net.minecraftforge.common.util.ForgeDirection;
 import com.google.common.collect.Sets;
 
 import lombok.Getter;
+import lombok.Setter;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.item.IProxyVariableFacade;
 import ruiseki.integrateddynamics.api.item.IVariableFacade;
@@ -42,6 +44,9 @@ public class TileProxy extends TileActiveVariableBase<ProxyNetworkElement> {
     @NBTPersist
     @Getter
     private int proxyId = -1;
+
+    @Setter
+    private EntityPlayer lastPlayer = null;
 
     public TileProxy() {
         super(3, "proxy");
@@ -123,7 +128,9 @@ public class TileProxy extends TileActiveVariableBase<ProxyNetworkElement> {
                 public IProxyVariableFacade create(int id) {
                     return new ProxyVariableFacade(id, proxyId);
                 }
-            });
+            },
+            lastPlayer,
+            getBlock());
     }
 
     @Override
