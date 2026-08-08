@@ -6,7 +6,7 @@ import ruiseki.okcore.helper.MinecraftHelpers;
 
 /**
  * Collection of light level calculators for value types..
- * 
+ *
  * @author rubensworks
  */
 public class ValueTypeListProxyFactories {
@@ -29,6 +29,7 @@ public class ValueTypeListProxyFactories {
     public static ValueTypeListProxyNBTFactory<ValueObjectTypeItemStack, ValueObjectTypeItemStack.ValueItemStack, ValueTypeListProxyEntityInventory> ENTITY_INVENTORY;
     public static ValueTypeListProxyNBTFactory<ValueObjectTypeFluidStack, ValueObjectTypeFluidStack.ValueFluidStack, ValueTypeListProxyPositionedTankFluidStacks> POSITIONED_TANK_FLUIDSTACKS;
     public static ValueTypeListProxyNBTFactory<ValueTypeInteger, ValueTypeInteger.ValueInteger, ValueTypeListProxyPositionedTankCapacities> POSITIONED_TANK_CAPACITIES;
+    public static ValueTypeListProxyAppend.Factory APPEND;
     public static ValueTypeListProxyLazyBuilt.Factory LAZY_BUILT;
 
     public static void load() {
@@ -50,6 +51,7 @@ public class ValueTypeListProxyFactories {
                 new ValueTypeListProxyNBTFactory<>(
                     "positionedTankCapacities",
                     ValueTypeListProxyPositionedTankCapacities.class));
+            APPEND = REGISTRY.register(new ValueTypeListProxyAppend.Factory());
             LAZY_BUILT = REGISTRY.register(new ValueTypeListProxyLazyBuilt.Factory());
         }
     }
