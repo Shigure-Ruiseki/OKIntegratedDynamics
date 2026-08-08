@@ -16,6 +16,7 @@ import ruiseki.integrateddynamics.api.part.write.IPartStateWriter;
 import ruiseki.integrateddynamics.api.part.write.IPartTypeWriter;
 import ruiseki.integrateddynamics.core.part.PartStateActiveVariableBase;
 import ruiseki.integrateddynamics.part.aspect.Aspects;
+import ruiseki.okcore.datastructure.SingleCache;
 import ruiseki.okcore.helper.CollectionHelpers;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.persist.nbt.NBTPersist;
@@ -23,7 +24,7 @@ import ruiseki.okcore.persist.nbt.NBTPersist;
 /**
  * A default implementation of the {@link IPartTypeWriter} with auto-persistence
  * of fields annotated with {@link NBTPersist}.
- * 
+ *
  * @author rubensworks
  */
 public class PartStateWriterBase<P extends IPartTypeWriter> extends PartStateActiveVariableBase<P>
@@ -34,9 +35,23 @@ public class PartStateWriterBase<P extends IPartTypeWriter> extends PartStateAct
     @NBTPersist
     private Map<String, List<LangHelpers.UnlocalizedString>> errorMessages = Maps.newHashMap();
     private boolean firstTick = true;
+    private final SingleCache<String, IAspect> aspectCache;
 
     public PartStateWriterBase(int inventorySize) {
         super(inventorySize);
+        aspectCache = new SingleCache<>(new SingleCache.ICacheUpdater<String, IAspect>() {
+
+            @Override
+            public IAspect getNewValue(String key) {
+                return Aspects.REGISTRY.getAspect(key);
+            }
+
+            @Override
+            public boolean isKeyEqual(String cacheKey, String newKey) {
+                // noinspection StringEquality
+                return cacheKey == newKey; // Yes, we want pure equality
+            }
+        });
     }
 
     @Override
@@ -89,7 +104,7 @@ public class PartStateWriterBase<P extends IPartTypeWriter> extends PartStateAct
         if (this.activeAspectName == null) {
             return null;
         }
-        IAspect aspect = Aspects.REGISTRY.getAspect(this.activeAspectName);
+        IAspect aspect = aspectCache.get(this.activeAspectName);
         if (!(aspect instanceof IAspectWrite)) {
             return null;
         }
@@ -137,7 +152,7 @@ public class PartStateWriterBase<P extends IPartTypeWriter> extends PartStateAct
 
         /**
          * Make a new instance
-         * 
+         *
          * @param state  The part state.
          * @param aspect The aspect to set the error for.
          */

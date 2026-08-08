@@ -6,21 +6,25 @@ import net.minecraft.world.World;
 
 import org.jetbrains.annotations.Nullable;
 
+import ruiseki.integrateddynamics.api.network.IEnergyNetwork;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.INetworkCarrier;
 import ruiseki.integrateddynamics.api.network.INetworkElement;
 import ruiseki.integrateddynamics.api.network.INetworkElementProvider;
+import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.path.IPathElement;
+import ruiseki.integrateddynamics.capability.network.EnergyNetworkConfig;
 import ruiseki.integrateddynamics.capability.network.NetworkCarrierConfig;
+import ruiseki.integrateddynamics.capability.network.PartNetworkConfig;
 import ruiseki.integrateddynamics.capability.networkelementprovider.NetworkElementProviderConfig;
 import ruiseki.integrateddynamics.capability.path.PathElementConfig;
-import ruiseki.integrateddynamics.core.network.PartNetwork;
+import ruiseki.integrateddynamics.core.network.Network;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.helper.CapabilityHelpers;
 
 /**
  * Network helper methods.
- * 
+ *
  * @author rubensworks
  */
 public class NetworkHelpers {
@@ -32,7 +36,6 @@ public class NetworkHelpers {
      * @param pos   The position.
      * @return The network carrier capability, or null if not present.
      */
-    @SuppressWarnings("unchecked")
     public static INetworkCarrier getNetworkCarrier(IBlockAccess world, BlockPos pos) {
         return CapabilityHelpers.getCapability(world, pos, NetworkCarrierConfig.CAPABILITY)
             .getOrNull();
@@ -45,7 +48,6 @@ public class NetworkHelpers {
      * @param pos   The position.
      * @return The network element provider capability, or null if not present.
      */
-    @SuppressWarnings("unchecked")
     public static INetworkElementProvider getNetworkElementProvider(IBlockAccess world, BlockPos pos) {
         return CapabilityHelpers.getCapability(world, pos, NetworkElementProviderConfig.CAPABILITY)
             .getOrNull();
@@ -58,13 +60,36 @@ public class NetworkHelpers {
      * @param pos   The position.
      * @return The network, or null if no network or network carrier present.
      */
-    @SuppressWarnings("unchecked")
     public static INetwork getNetwork(IBlockAccess world, BlockPos pos) {
         INetworkCarrier networkCarrier = getNetworkCarrier(world, pos);
         if (networkCarrier != null) {
             return networkCarrier.getNetwork();
         }
         return null;
+    }
+
+    /**
+     * Get the part network capability of a network.
+     *
+     * @param network The network.
+     * @return The part network.
+     */
+    public static IPartNetwork getPartNetwork(@Nullable INetwork network) {
+        if (network == null) return null;
+        return network.getCapability(PartNetworkConfig.CAPABILITY)
+            .getOrNull();
+    }
+
+    /**
+     * Get the part network capability of a network.
+     *
+     * @param network The network.
+     * @return The part network.
+     */
+    public static IEnergyNetwork getEnergyNetwork(@Nullable INetwork network) {
+        if (network == null) return null;
+        return network.getCapability(EnergyNetworkConfig.CAPABILITY)
+            .getOrNull();
     }
 
     /**
@@ -78,13 +103,13 @@ public class NetworkHelpers {
      * @return The newly created part network.
      *         Can be null if the starting position did not have a {@link IPathElement} capability.
      */
-    public static @Nullable PartNetwork initNetwork(World world, BlockPos pos) {
-        IPathElement pathElement = CapabilityHelpers.getCapability(world, pos, PathElementConfig.CAPABILITY, null)
+    public static @Nullable INetwork initNetwork(World world, BlockPos pos) {
+        IPathElement pathElement = CapabilityHelpers.getCapability(world, pos, PathElementConfig.CAPABILITY)
             .getOrNull();
         if (pathElement != null) {
-            PartNetwork partNetwork = PartNetwork.initiateNetworkSetup(pathElement);
-            partNetwork.initialize();
-            return partNetwork;
+            Network network = Network.initiateNetworkSetup(pathElement);
+            network.initialize();
+            return network;
         }
         return null;
     }
@@ -101,7 +126,7 @@ public class NetworkHelpers {
     public static void onElementProviderBlockNeighborChange(World world, BlockPos pos, Block neighborBlock) {
         if (!world.isRemote) {
             INetwork network = getNetwork(world, pos);
-            INetworkElementProvider<?> networkElementProvider = getNetworkElementProvider(world, pos);
+            INetworkElementProvider networkElementProvider = getNetworkElementProvider(world, pos);
             for (INetworkElement networkElement : networkElementProvider.createNetworkElements(world, pos)) {
                 networkElement.onNeighborBlockChange(network, world, neighborBlock);
             }

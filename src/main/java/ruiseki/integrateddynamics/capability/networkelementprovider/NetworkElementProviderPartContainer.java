@@ -11,7 +11,6 @@ import com.google.common.collect.Sets;
 
 import ruiseki.integrateddynamics.api.network.INetworkElement;
 import ruiseki.integrateddynamics.api.network.INetworkElementProvider;
-import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.okcore.datastructure.BlockPos;
@@ -22,7 +21,7 @@ import ruiseki.okcore.datastructure.DimPos;
  *
  * @author rubensworks
  */
-public class NetworkElementProviderPartContainer implements INetworkElementProvider<IPartNetwork> {
+public class NetworkElementProviderPartContainer implements INetworkElementProvider {
 
     private final IPartContainer partContainer;
 
@@ -31,8 +30,8 @@ public class NetworkElementProviderPartContainer implements INetworkElementProvi
     }
 
     @Override
-    public Collection<INetworkElement<IPartNetwork>> createNetworkElements(World world, BlockPos blockPos) {
-        Set<INetworkElement<IPartNetwork>> sidedElements = Sets.newHashSet();
+    public Collection<INetworkElement> createNetworkElements(World world, BlockPos blockPos) {
+        Set<INetworkElement> sidedElements = Sets.newHashSet();
         for (Map.Entry<ForgeDirection, IPartType<?, ?>> entry : partContainer.getParts()
             .entrySet()) {
             sidedElements.add(

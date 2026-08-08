@@ -3,6 +3,7 @@ package ruiseki.integrateddynamics.core.helper;
 import java.util.Map;
 
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.world.IBlockAccess;
@@ -18,14 +19,13 @@ import com.google.common.collect.ImmutableMap;
 import lombok.Data;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.block.cable.ICableFakeable;
+import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.INetworkElement;
-import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartState;
 import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.integrateddynamics.api.part.PartTarget;
-import ruiseki.integrateddynamics.capability.cable.CableFakeableConfig;
 import ruiseki.integrateddynamics.capability.partcontainer.PartContainerConfig;
 import ruiseki.integrateddynamics.core.network.event.UnknownPartEvent;
 import ruiseki.integrateddynamics.core.part.PartTypes;
@@ -73,7 +73,7 @@ public class PartHelpers {
      * @param partType     The part type.
      * @return A possibly non-null part type.
      */
-    public static IPartType validatePartType(IPartNetwork network, String partTypeName, @Nullable IPartType partType) {
+    public static IPartType validatePartType(INetwork network, String partTypeName, @Nullable IPartType partType) {
         if (network != null && partType == null) {
             UnknownPartEvent event = new UnknownPartEvent(network, partTypeName);
             network.getEventBus()
@@ -152,7 +152,7 @@ public class PartHelpers {
      * @param partTag The tag to read from.
      * @return The part data.
      */
-    public static Pair<ForgeDirection, IPartType> readPartTypeFromNBT(@Nullable IPartNetwork network, BlockPos pos,
+    public static Pair<ForgeDirection, IPartType> readPartTypeFromNBT(@Nullable INetwork network, BlockPos pos,
         NBTTagCompound partTag) {
         String partTypeName = partTag.getString("__partType");
         IPartType partType = validatePartType(network, partTypeName, PartTypes.REGISTRY.getPartType(partTypeName));
@@ -184,7 +184,7 @@ public class PartHelpers {
      * @param partTag The tag to read from.
      * @return The part data.
      */
-    public static Pair<ForgeDirection, ? extends PartStateHolder<?, ?>> readPartFromNBT(@Nullable IPartNetwork network,
+    public static Pair<ForgeDirection, ? extends PartStateHolder<?, ?>> readPartFromNBT(@Nullable INetwork network,
         BlockPos pos, NBTTagCompound partTag) {
         Pair<ForgeDirection, IPartType> partData = readPartTypeFromNBT(network, pos, partTag);
         if (partData != null) {
@@ -206,7 +206,7 @@ public class PartHelpers {
      * @param partData The map of part data to write to.
      * @param world    The world.
      */
-    public static void readPartsFromNBT(@Nullable IPartNetwork network, BlockPos pos, NBTTagCompound tag,
+    public static void readPartsFromNBT(@Nullable INetwork network, BlockPos pos, NBTTagCompound tag,
         Map<ForgeDirection, PartStateHolder<?, ?>> partData, @Nullable World world) {
         Map<ForgeDirection, PartStateHolder<?, ?>> oldPartData = ImmutableMap.copyOf(partData);
         partData.clear();
@@ -255,10 +255,8 @@ public class PartHelpers {
      */
     public static boolean removePart(World world, BlockPos pos, ForgeDirection side, @Nullable EntityPlayer player,
         boolean destroyIfEmpty, boolean dropMainElement) {
-        IPartContainer partContainer = CapabilityHelpers.getCapability(world, pos, PartContainerConfig.CAPABILITY)
-            .getOrNull();
-        ICableFakeable cableFakeable = CapabilityHelpers.getCapability(world, pos, CableFakeableConfig.CAPABILITY)
-            .getOrNull();
+        IPartContainer partContainer = getPartContainer(world, pos);
+        ICableFakeable cableFakeable = CableHelpers.getCableFakeable(world, pos);
         partContainer.removePart(side, player, dropMainElement);
 
         // Remove full cable block if this was the last part and if it was already an unreal cable.
@@ -268,13 +266,63 @@ public class PartHelpers {
             world.setBlockToAir(pos.getX(), pos.getY(), pos.getZ());
         } else {
             world.notifyBlocksOfNeighborChange(pos.getX(), pos.getY(), pos.getZ(), pos.getBlock(world));
+            // If there is a cable in the direction of the removed part, try connecting with it.
+            if (CableHelpers.getCable(world, pos.offset(side)) != null) {
+                CableHelpers.updateConnections(world, pos);
+                CableHelpers.updateConnections(world, pos.offset(side));
+                NetworkHelpers.initNetwork(world, pos);
+            }
         }
 
         return !removeCompletely;
     }
 
     /**
-     * Set a part at the given side.
+     * Add a part to the given side with the part state in the given item.
+     *
+     * @param world     The world.
+     * @param pos       The position of the container.
+     * @param side      The side.
+     * @param partType  The part type.
+     * @param itemStack The item holding the part state.
+     * @return If the part was added.
+     */
+    public static boolean addPart(World world, BlockPos pos, ForgeDirection side, IPartType partType,
+        ItemStack itemStack) {
+        IPartContainer partContainer = getPartContainer(world, pos);
+        if (partContainer.canAddPart(side, partType)) {
+            if (!world.isRemote) {
+                partContainer.setPart(side, partType, partType.getState(itemStack));
+            }
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Add a part to the given side with the part state.
+     *
+     * @param world     The world.
+     * @param pos       The position of the container.
+     * @param side      The side.
+     * @param partType  The part type.
+     * @param partState The part state.
+     * @return If the part was added.
+     */
+    public static boolean addPart(World world, BlockPos pos, ForgeDirection side, IPartType partType,
+        IPartState partState) {
+        IPartContainer partContainer = getPartContainer(world, pos);
+        if (partContainer.canAddPart(side, partType)) {
+            if (!world.isRemote) {
+                partContainer.setPart(side, partType, partState);
+            }
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Forcefully set a part at the given side.
      *
      * @param network   The network.
      * @param world     The world.
@@ -285,7 +333,7 @@ public class PartHelpers {
      * @param callback  The callback for the part state holder.
      * @return If the part could be placed.
      */
-    public static boolean setPart(@Nullable IPartNetwork network, World world, BlockPos pos, ForgeDirection side,
+    public static boolean setPart(@Nullable INetwork network, World world, BlockPos pos, ForgeDirection side,
         IPartType part, IPartState partState, IPartStateHolderCallback callback) {
         callback.onSet(PartStateHolder.of(part, partState));
         if (network != null) {

@@ -1,15 +1,15 @@
 package ruiseki.integrateddynamics.core.network.event;
 
-import ruiseki.integrateddynamics.api.network.IPartNetwork;
+import ruiseki.integrateddynamics.api.network.INetwork;
 
 /**
  * An event used to signal network elements of updated variables inside the network.
- * 
+ *
  * @author rubensworks
  */
-public class VariableContentsUpdatedEvent extends NetworkEvent<IPartNetwork> {
+public class VariableContentsUpdatedEvent extends NetworkEvent {
 
-    public VariableContentsUpdatedEvent(IPartNetwork network) {
+    public VariableContentsUpdatedEvent(INetwork network) {
         super(network);
     }
 

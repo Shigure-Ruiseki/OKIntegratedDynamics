@@ -15,6 +15,7 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IVariable;
+import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.network.event.INetworkEvent;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
@@ -25,6 +26,7 @@ import ruiseki.integrateddynamics.api.part.write.IPartStateWriter;
 import ruiseki.integrateddynamics.api.part.write.IPartTypeWriter;
 import ruiseki.integrateddynamics.client.gui.GuiPartWriter;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
+import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
 import ruiseki.integrateddynamics.core.network.event.VariableContentsUpdatedEvent;
 import ruiseki.integrateddynamics.core.part.PartTypeAspects;
 import ruiseki.integrateddynamics.inventory.container.ContainerPartWriter;
@@ -44,13 +46,14 @@ public abstract class PartTypeWriteBase<P extends IPartTypeWriter<P, S>, S exten
     }
 
     @Override
-    protected Map<Class<? extends INetworkEvent<IPartNetwork>>, IEventAction> constructNetworkEventActions() {
-        Map<Class<? extends INetworkEvent<IPartNetwork>>, IEventAction> actions = super.constructNetworkEventActions();
+    protected Map<Class<? extends INetworkEvent>, IEventAction> constructNetworkEventActions() {
+        Map<Class<? extends INetworkEvent>, IEventAction> actions = super.constructNetworkEventActions();
         actions.put(VariableContentsUpdatedEvent.class, new IEventAction<P, S, VariableContentsUpdatedEvent>() {
 
             @Override
-            public void onAction(IPartNetwork network, PartTarget target, S state, VariableContentsUpdatedEvent event) {
-                onVariableContentsUpdated(event.getNetwork(), target, state);
+            public void onAction(INetwork network, PartTarget target, S state, VariableContentsUpdatedEvent event) {
+                IPartNetwork partNetwork = NetworkHelpers.getPartNetwork(network);
+                onVariableContentsUpdated(partNetwork, target, state);
             }
         });
         return actions;

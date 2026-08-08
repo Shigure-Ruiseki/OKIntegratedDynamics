@@ -16,11 +16,11 @@ import ruiseki.integrateddynamics.api.item.IVariableFacadeHandlerRegistry;
 import ruiseki.integrateddynamics.api.logicprogrammer.IConfigRenderPattern;
 import ruiseki.integrateddynamics.api.logicprogrammer.ILogicProgrammerElement;
 import ruiseki.integrateddynamics.api.logicprogrammer.ILogicProgrammerElementType;
-import ruiseki.integrateddynamics.client.gui.GuiLogicProgrammer;
+import ruiseki.integrateddynamics.client.gui.GuiLogicProgrammerBase;
 import ruiseki.integrateddynamics.core.evaluate.operator.Operators;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueHelpers;
 import ruiseki.integrateddynamics.core.item.OperatorVariableFacade;
-import ruiseki.integrateddynamics.inventory.container.ContainerLogicProgrammer;
+import ruiseki.integrateddynamics.inventory.container.ContainerLogicProgrammerBase;
 import ruiseki.integrateddynamics.item.ItemVariable;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
@@ -31,8 +31,8 @@ import ruiseki.okcore.helper.MinecraftHelpers;
  * @author rubensworks
  */
 @Data
-public class OperatorElement
-    implements ILogicProgrammerElement<SubGuiConfigRenderPattern, GuiLogicProgrammer, ContainerLogicProgrammer> {
+public class OperatorElement implements
+    ILogicProgrammerElement<SubGuiConfigRenderPattern, GuiLogicProgrammerBase, ContainerLogicProgrammerBase> {
 
     private final IOperator operator;
     private IVariableFacade[] inputVariables;
@@ -177,7 +177,7 @@ public class OperatorElement
     @Override
     @SideOnly(Side.CLIENT)
     public SubGuiConfigRenderPattern createSubGui(int baseX, int baseY, int maxWidth, int maxHeight,
-        GuiLogicProgrammer gui, ContainerLogicProgrammer container) {
+        GuiLogicProgrammerBase gui, ContainerLogicProgrammerBase container) {
         return new OperatorElementSubGuiRenderPattern(this, baseX, baseY, maxWidth, maxHeight, gui, container);
     }
 

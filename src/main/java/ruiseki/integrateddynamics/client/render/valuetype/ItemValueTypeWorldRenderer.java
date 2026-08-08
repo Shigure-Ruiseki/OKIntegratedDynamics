@@ -27,8 +27,8 @@ public class ItemValueTypeWorldRenderer implements IValueTypeWorldRenderer {
 
     @Override
     public void renderValue(IPartContainer partContainer, double x, double y, double z, float partialTick,
-                            int destroyStage, ForgeDirection direction, IPartType partType, IValue value,
-                            TileEntityRendererDispatcher rendererDispatcher, float alpha) {
+        int destroyStage, ForgeDirection direction, IPartType partType, IValue value,
+        TileEntityRendererDispatcher rendererDispatcher, float alpha) {
 
         Optional<ItemStack> itemStackOptional = ((ValueObjectTypeItemStack.ValueItemStack) value).getRawValue();
         if (itemStackOptional.isPresent() && itemStackOptional.get() != null) {

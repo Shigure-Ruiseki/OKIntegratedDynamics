@@ -14,16 +14,17 @@ import ruiseki.integrateddynamics.api.item.IVariableFacadeHandlerRegistry;
 import ruiseki.integrateddynamics.api.logicprogrammer.IConfigRenderPattern;
 import ruiseki.integrateddynamics.api.logicprogrammer.ILogicProgrammerElementType;
 import ruiseki.integrateddynamics.client.gui.GuiLogicProgrammer;
+import ruiseki.integrateddynamics.client.gui.GuiLogicProgrammerBase;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeVariableFacade;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
-import ruiseki.integrateddynamics.inventory.container.ContainerLogicProgrammer;
+import ruiseki.integrateddynamics.inventory.container.ContainerLogicProgrammerBase;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
 
 /**
  * Element for a value type that can be derived from an {@link ItemStack}.
- * 
+ *
  * @author rubensworks
  */
 public class ValueTypeItemStackElement<V extends IValue> extends ValueTypeElement {
@@ -98,16 +99,16 @@ public class ValueTypeItemStackElement<V extends IValue> extends ValueTypeElemen
     @Override
     @SideOnly(Side.CLIENT)
     public SubGuiConfigRenderPattern createSubGui(int baseX, int baseY, int maxWidth, int maxHeight,
-        GuiLogicProgrammer gui, ContainerLogicProgrammer container) {
+        GuiLogicProgrammerBase gui, ContainerLogicProgrammerBase container) {
         return new SubGuiRenderPattern(this, baseX, baseY, maxWidth, maxHeight, gui, container);
     }
 
     @SideOnly(Side.CLIENT)
-    protected static class SubGuiRenderPattern
-        extends SubGuiConfigRenderPattern<ValueTypeItemStackElement, GuiLogicProgrammer, ContainerLogicProgrammer> {
+    protected static class SubGuiRenderPattern extends
+        SubGuiConfigRenderPattern<ValueTypeItemStackElement, GuiLogicProgrammerBase, ContainerLogicProgrammerBase> {
 
         public SubGuiRenderPattern(ValueTypeItemStackElement element, int baseX, int baseY, int maxWidth, int maxHeight,
-            GuiLogicProgrammer gui, ContainerLogicProgrammer container) {
+            GuiLogicProgrammerBase gui, ContainerLogicProgrammerBase container) {
             super(element, baseX, baseY, maxWidth, maxHeight, gui, container);
         }
 
@@ -121,8 +122,8 @@ public class ValueTypeItemStackElement<V extends IValue> extends ValueTypeElemen
             // Output type tooltip
             if (!container.hasWriteItemInSlot()) {
                 if (gui.func_146978_c(
-                    ContainerLogicProgrammer.OUTPUT_X,
-                    ContainerLogicProgrammer.OUTPUT_Y,
+                    ContainerLogicProgrammerBase.OUTPUT_X,
+                    ContainerLogicProgrammerBase.OUTPUT_Y,
                     GuiLogicProgrammer.BOX_HEIGHT,
                     GuiLogicProgrammer.BOX_HEIGHT,
                     mouseX,

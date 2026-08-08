@@ -32,7 +32,7 @@ import ruiseki.okcore.init.IInitListener;
  * @author rubensworks
  */
 public interface IPartType<P extends IPartType<P, S>, S extends IPartState<P>>
-    extends INetworkEventListener<IPartNetwork, IPartNetworkElement<P, S>> {
+    extends INetworkEventListener<IPartNetworkElement<P, S>> {
 
     /**
      * @return The unique name for this part type.
@@ -217,8 +217,7 @@ public interface IPartType<P extends IPartType<P, S>, S extends IPartState<P>>
      * @param side          The side this network element is/will be placed at.
      * @return A new network element instance.
      */
-    public INetworkElement<IPartNetwork> createNetworkElement(IPartContainer partContainer, DimPos pos,
-        ForgeDirection side);
+    public INetworkElement createNetworkElement(IPartContainer partContainer, DimPos pos, ForgeDirection side);
 
     /**
      * Called when a part is right-clicked.

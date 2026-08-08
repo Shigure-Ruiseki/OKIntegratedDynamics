@@ -1,32 +1,23 @@
 package ruiseki.integrateddynamics.core.network;
 
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.logging.log4j.Level;
-import org.jetbrains.annotations.Nullable;
 
-import com.google.common.base.Function;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 
-import ruiseki.integrateddynamics.GeneralConfig;
+import lombok.Getter;
+import lombok.Setter;
 import ruiseki.integrateddynamics.IntegratedDynamics;
-import ruiseki.integrateddynamics.api.block.IEnergyBattery;
 import ruiseki.integrateddynamics.api.block.IVariableContainer;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IVariable;
 import ruiseki.integrateddynamics.api.item.IVariableFacade;
-import ruiseki.integrateddynamics.api.network.IEnergyConsumingNetworkElement;
-import ruiseki.integrateddynamics.api.network.IEnergyNetwork;
-import ruiseki.integrateddynamics.api.network.INetworkElement;
-import ruiseki.integrateddynamics.api.network.INetworkElementProvider;
+import ruiseki.integrateddynamics.api.network.FullNetworkListenerAdapter;
+import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartState;
@@ -37,12 +28,8 @@ import ruiseki.integrateddynamics.api.part.aspect.IAspectRead;
 import ruiseki.integrateddynamics.api.part.read.IPartStateReader;
 import ruiseki.integrateddynamics.api.part.read.IPartTypeReader;
 import ruiseki.integrateddynamics.api.path.IPathElement;
-import ruiseki.integrateddynamics.capability.energybattery.EnergyBatteryConfig;
 import ruiseki.integrateddynamics.capability.variablecontainer.VariableContainerConfig;
 import ruiseki.integrateddynamics.core.helper.PartHelpers;
-import ruiseki.integrateddynamics.core.path.Cluster;
-import ruiseki.integrateddynamics.core.path.PathFinder;
-import ruiseki.integrateddynamics.core.persist.world.NetworkWorldStorage;
 import ruiseki.okcore.datastructure.CompositeMap;
 import ruiseki.okcore.datastructure.DimPos;
 import ruiseki.okcore.helper.CapabilityHelpers;
@@ -50,52 +37,21 @@ import ruiseki.okcore.helper.CapabilityHelpers;
 /**
  * A network that can hold parts.
  * Note that this network only contains references to the relevant data, it does not contain the actual information.
- *
+ * 
  * @author rubensworks
  */
-public class PartNetwork extends Network<IPartNetwork> implements IPartNetwork, IEnergyNetwork {
+public class PartNetwork extends FullNetworkListenerAdapter implements IPartNetwork {
 
-    private Map<Integer, PartPos> partPositions;
-    private List<DimPos> variableContainerPositions;
-    private Map<Integer, IVariableFacade> compositeVariableCache;
-    private Map<Integer, IValue> lazyExpressionValueCache;
-    private Set<DimPos> energyBatteryPositions;
-    private Map<Integer, DimPos> proxyPositions;
+    @Getter
+    @Setter
+    private INetwork network;
+    private Map<Integer, PartPos> partPositions = Maps.newHashMap();
+    private List<DimPos> variableContainerPositions = Lists.newArrayList();
+    private Map<Integer, IVariableFacade> compositeVariableCache = null;
+    private Map<Integer, IValue> lazyExpressionValueCache = Maps.newHashMap();
+    private Map<Integer, DimPos> proxyPositions = Maps.newHashMap();
 
     private volatile boolean partsChanged = false;
-
-    /**
-     * This constructor should not be called, except for the process of constructing networks from NBT.
-     */
-    public PartNetwork() {
-        super();
-    }
-
-    /**
-     * Create a new network from a given cluster of path elements.
-     * Each path element will be checked if it has a {@link INetworkElementProvider} capability at its position
-     * and will add all its elements to the network in that case.
-     * Each path element that has an {@link IPartContainer} capability
-     * will have the network stored in its part container.
-     * 
-     * @param pathElements The path elements that make up the connections in the network which can potentially provide
-     *                     network
-     *                     elements.
-     */
-    public PartNetwork(Cluster pathElements) {
-        super(pathElements);
-    }
-
-    @Override
-    protected void onConstruct() {
-        super.onConstruct();
-        partPositions = Maps.newHashMap();
-        variableContainerPositions = Lists.newArrayList();
-        compositeVariableCache = null;
-        lazyExpressionValueCache = Maps.newHashMap();
-        energyBatteryPositions = Sets.newHashSet();
-        proxyPositions = Maps.newHashMap();
-    }
 
     @Override
     public boolean addPart(int partId, PartPos partPos) {
@@ -141,7 +97,7 @@ public class PartNetwork extends Network<IPartNetwork> implements IPartNetwork, 
             return false;
         }
         IPartState partState = getPartState(partId);
-        if (!(partState instanceof IPartStateReader<?>)) {
+        if (!(partState instanceof IPartStateReader)) {
             return false;
         }
         IPartType partType = getPartType(partId);
@@ -169,7 +125,7 @@ public class PartNetwork extends Network<IPartNetwork> implements IPartNetwork, 
             for (Iterator<DimPos> it = variableContainerPositions.iterator(); it.hasNext();) {
                 DimPos dimPos = it.next();
                 IVariableContainer variableContainer = CapabilityHelpers
-                    .getCapability(dimPos, VariableContainerConfig.CAPABILITY, null)
+                    .getCapability(dimPos, VariableContainerConfig.CAPABILITY)
                     .getOrNull();
                 if (variableContainer != null) {
                     compositeMap.addElement(variableContainer.getVariableCache());
@@ -210,11 +166,6 @@ public class PartNetwork extends Network<IPartNetwork> implements IPartNetwork, 
     }
 
     @Override
-    public boolean equals(Object object) {
-        return object instanceof PartNetwork && areNetworksEqual(this, (PartNetwork) object);
-    }
-
-    @Override
     public boolean addVariableContainer(DimPos dimPos) {
         compositeVariableCache = null;
         return variableContainerPositions.add(dimPos);
@@ -250,42 +201,12 @@ public class PartNetwork extends Network<IPartNetwork> implements IPartNetwork, 
         this.partsChanged = true;
     }
 
-    private void onPartsChanged() {}
+    private void onPartsChanged() {
 
-    @Override
-    protected boolean canUpdate(INetworkElement<IPartNetwork> element) {
-        if (!super.canUpdate(element)) return false;
-        if (!(element instanceof IEnergyConsumingNetworkElement)) return true;
-        int multiplier = GeneralConfig.energyConsumptionMultiplier;
-        if (multiplier == 0) return true;
-        int consumptionRate = ((IEnergyConsumingNetworkElement) element).getConsumptionRate() * multiplier;
-        return consume(consumptionRate, true) == consumptionRate;
     }
 
     @Override
-    protected void onSkipUpdate(INetworkElement<IPartNetwork> element) {
-        super.onSkipUpdate(element);
-        if (element instanceof IEnergyConsumingNetworkElement) {
-            ((IEnergyConsumingNetworkElement) element).postUpdate(this, false);
-        }
-    }
-
-    @Override
-    protected void postUpdate(INetworkElement<IPartNetwork> element) {
-        super.postUpdate(element);
-        if (element instanceof IEnergyConsumingNetworkElement) {
-            int multiplier = GeneralConfig.energyConsumptionMultiplier;
-            if (multiplier > 0) {
-                int consumptionRate = ((IEnergyConsumingNetworkElement) element).getConsumptionRate() * multiplier;
-                consume(consumptionRate, false);
-            }
-            ((IEnergyConsumingNetworkElement) element).postUpdate(this, true);
-        }
-    }
-
-    @Override
-    protected void onUpdate() {
-        super.onUpdate();
+    public void update() {
         // Reset lazy variable cache
         lazyExpressionValueCache.clear();
 
@@ -298,122 +219,7 @@ public class PartNetwork extends Network<IPartNetwork> implements IPartNetwork, 
 
     @Override
     public boolean removePathElement(IPathElement pathElement) {
-        if (super.removePathElement(pathElement)) {
-            notifyPartsChanged();
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * Initiate a full network from the given start position.
-     * 
-     * @param pathElement The path element to start from.
-     * @return The newly formed network.
-     */
-    public static PartNetwork initiateNetworkSetup(IPathElement pathElement) {
-        PartNetwork network = new PartNetwork(PathFinder.getConnectedCluster(pathElement));
-        NetworkWorldStorage.getInstance(IntegratedDynamics._instance)
-            .addNewNetwork(network);
-        return network;
-    }
-
-    protected synchronized List<IEnergyBattery> getMaterializedEnergyBatteries() {
-        return ImmutableList.copyOf(Iterables.transform(energyBatteryPositions, new Function<DimPos, IEnergyBattery>() {
-
-            @Nullable
-            @Override
-            public IEnergyBattery apply(DimPos dimPos) {
-                return CapabilityHelpers.getCapability(dimPos, EnergyBatteryConfig.CAPABILITY, null)
-                    .getOrNull();
-            }
-
-            @Override
-            public boolean equals(@Nullable Object object) {
-                return false;
-            }
-        }));
-    }
-
-    protected int addSafe(int a, int b) {
-        int add = a + b;
-        if (add < a || add < b) return Integer.MAX_VALUE;
-        return add;
-    }
-
-    @Override
-    public synchronized int getStoredEnergy() {
-        int energy = 0;
-        for (IEnergyBattery energyBattery : getMaterializedEnergyBatteries()) {
-            energy = addSafe(energy, energyBattery.getStoredEnergy());
-        }
-        return energy;
-    }
-
-    @Override
-    public synchronized int getMaxStoredEnergy() {
-        int maxEnergy = 0;
-        for (IEnergyBattery energyBattery : getMaterializedEnergyBatteries()) {
-            maxEnergy = addSafe(maxEnergy, energyBattery.getMaxStoredEnergy());
-        }
-        return maxEnergy;
-    }
-
-    @Override
-    public int addEnergy(int energy, boolean simulate) {
-        int toAdd = energy;
-        for (IEnergyBattery energyBattery : getMaterializedEnergyBatteries()) {
-            int maxAdd = Math.min(energyBattery.getMaxStoredEnergy() - energyBattery.getStoredEnergy(), toAdd);
-            if (maxAdd > 0) {
-                energyBattery.addEnergy(maxAdd, simulate);
-            }
-            toAdd -= maxAdd;
-        }
-        return energy - toAdd;
-    }
-
-    @Override
-    public synchronized int consume(int energy, boolean simulate) {
-        int toConsume = energy;
-        for (IEnergyBattery energyBattery : getMaterializedEnergyBatteries()) {
-            int consume = Math.min(energyBattery.getStoredEnergy(), toConsume);
-            if (consume > 0) {
-                toConsume -= energyBattery.consume(consume, simulate);
-            }
-        }
-        return energy - toConsume;
-    }
-
-    @Override
-    public boolean addEnergyBattery(DimPos dimPos) {
-        IEnergyBattery energyBattery = CapabilityHelpers.getCapability(dimPos, EnergyBatteryConfig.CAPABILITY, null)
-            .getOrNull();
-        if (energyBattery != null) {
-            boolean contained = energyBatteryPositions.contains(dimPos);
-            energyBatteryPositions.add(dimPos);
-            return !contained;
-        }
-        return false;
-    }
-
-    @Override
-    public void removeEnergyBattery(DimPos pos) {
-        energyBatteryPositions.remove(pos);
-    }
-
-    @Override
-    public Set<DimPos> getEnergyBatteries() {
-        return Collections.unmodifiableSet(energyBatteryPositions);
-    }
-
-    @Override
-    public int getConsumptionRate() {
-        int multiplier = GeneralConfig.energyConsumptionMultiplier;
-        if (multiplier == 0) return 0;
-        int consumption = 0;
-        for (INetworkElement element : getElements()) {
-            consumption += ((IEnergyConsumingNetworkElement) element).getConsumptionRate() * multiplier;
-        }
-        return consumption;
+        notifyPartsChanged();
+        return true;
     }
 }

@@ -15,8 +15,8 @@ import com.google.common.collect.Maps;
 
 import lombok.Getter;
 import ruiseki.integrateddynamics.IntegratedDynamics;
+import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.INetworkElement;
-import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.network.IPartNetworkElement;
 import ruiseki.integrateddynamics.api.network.event.INetworkEvent;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
@@ -44,7 +44,7 @@ import ruiseki.okcore.inventory.IGuiContainerProvider;
 /**
  * An abstract {@link IPartType} with a default implementation for creating
  * network elements.
- * 
+ *
  * @author rubensworks
  */
 public abstract class PartTypeBase<P extends IPartType<P, S>, S extends IPartState<P>> extends PartTypeAdapter<P, S>
@@ -59,7 +59,7 @@ public abstract class PartTypeBase<P extends IPartType<P, S>, S extends IPartSta
     private final String name;
     @Getter
     private final PartRenderPosition partRenderPosition;
-    private final Map<Class<? extends INetworkEvent<IPartNetwork>>, IEventAction> networkEventActions;
+    private final Map<Class<? extends INetworkEvent>, IEventAction> networkEventActions;
 
     public PartTypeBase(String name, PartRenderPosition partRenderPosition) {
         if (hasGui()) {
@@ -79,14 +79,14 @@ public abstract class PartTypeBase<P extends IPartType<P, S>, S extends IPartSta
     /**
      * Get the part type class.
      * This is used for doing dynamic construction of guis.
-     * 
+     *
      * @return The actual class for this part type.
      */
     public abstract Class<? super P> getPartTypeClass();
 
     /**
      * Factory method for creating a item instance.
-     * 
+     *
      * @param itemConfig The config to register the item for.
      * @return The item instance.
      */
@@ -131,8 +131,7 @@ public abstract class PartTypeBase<P extends IPartType<P, S>, S extends IPartSta
     }
 
     @Override
-    public INetworkElement<IPartNetwork> createNetworkElement(IPartContainer partContainer, DimPos pos,
-        ForgeDirection side) {
+    public INetworkElement createNetworkElement(IPartContainer partContainer, DimPos pos, ForgeDirection side) {
         return new PartNetworkElement(this, PartTarget.fromCenter(pos, side));
     }
 
@@ -174,10 +173,10 @@ public abstract class PartTypeBase<P extends IPartType<P, S>, S extends IPartSta
 
     /**
      * Override this to register your network event actions.
-     * 
+     *
      * @return The event actions.
      */
-    protected Map<Class<? extends INetworkEvent<IPartNetwork>>, IEventAction> constructNetworkEventActions() {
+    protected Map<Class<? extends INetworkEvent>, IEventAction> constructNetworkEventActions() {
         return Maps.newHashMap();
     }
 
@@ -187,20 +186,20 @@ public abstract class PartTypeBase<P extends IPartType<P, S>, S extends IPartSta
     }
 
     @Override
-    public final Set<Class<? extends INetworkEvent<IPartNetwork>>> getSubscribedEvents() {
+    public final Set<Class<? extends INetworkEvent>> getSubscribedEvents() {
         return networkEventActions.keySet();
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public final void onEvent(INetworkEvent<IPartNetwork> event, IPartNetworkElement<P, S> networkElement) {
+    public final void onEvent(INetworkEvent event, IPartNetworkElement<P, S> networkElement) {
         networkEventActions.get(event.getClass())
             .onAction(event.getNetwork(), networkElement.getTarget(), networkElement.getPartState(), event);
     }
 
     public interface IEventAction<P extends IPartType<P, S>, S extends IPartState<P>, E extends INetworkEvent> {
 
-        public void onAction(IPartNetwork network, PartTarget target, S state, E event);
+        public void onAction(INetwork network, PartTarget target, S state, E event);
 
     }
 

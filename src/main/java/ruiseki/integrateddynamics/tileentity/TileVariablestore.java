@@ -14,8 +14,8 @@ import com.google.common.collect.Maps;
 
 import ruiseki.integrateddynamics.api.block.IVariableContainer;
 import ruiseki.integrateddynamics.api.item.IVariableFacade;
+import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.INetworkElement;
-import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.capability.networkelementprovider.NetworkElementProviderConfig;
 import ruiseki.integrateddynamics.capability.networkelementprovider.NetworkElementProviderSingleton;
 import ruiseki.integrateddynamics.capability.variablecontainer.VariableContainerConfig;
@@ -57,12 +57,11 @@ public class TileVariablestore extends TileCableConnectableInventory implements 
         }
 
         this.capabilityCache.addCapabilityResolver(
-            BasicCapabilityResolver.create(
-                NetworkElementProviderConfig.CAPABILITY,
-                () -> new NetworkElementProviderSingleton<IPartNetwork>() {
+            BasicCapabilityResolver
+                .create(NetworkElementProviderConfig.CAPABILITY, () -> new NetworkElementProviderSingleton() {
 
                     @Override
-                    public INetworkElement<IPartNetwork> createNetworkElement(World world, BlockPos blockPos) {
+                    public INetworkElement createNetworkElement(World world, BlockPos blockPos) {
                         return new VariablestoreNetworkElement(DimPos.of(world, blockPos));
                     }
                 }));
@@ -90,7 +89,7 @@ public class TileVariablestore extends TileCableConnectableInventory implements 
             }
         }
 
-        IPartNetwork network = getNetwork();
+        INetwork network = getNetwork();
         if (network != null) {
             network.getEventBus()
                 .post(new VariableContentsUpdatedEvent(network));

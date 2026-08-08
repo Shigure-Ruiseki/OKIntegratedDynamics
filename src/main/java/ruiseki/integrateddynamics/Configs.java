@@ -15,7 +15,9 @@ import ruiseki.integrateddynamics.capability.dynamiclight.DynamicLightConfig;
 import ruiseki.integrateddynamics.capability.dynamicredstone.DynamicRedstoneConfig;
 import ruiseki.integrateddynamics.capability.energybattery.EnergyBatteryConfig;
 import ruiseki.integrateddynamics.capability.facadeable.FacadeableConfig;
+import ruiseki.integrateddynamics.capability.network.EnergyNetworkConfig;
 import ruiseki.integrateddynamics.capability.network.NetworkCarrierConfig;
+import ruiseki.integrateddynamics.capability.network.PartNetworkConfig;
 import ruiseki.integrateddynamics.capability.networkelementprovider.NetworkElementProviderConfig;
 import ruiseki.integrateddynamics.capability.partcontainer.PartContainerConfig;
 import ruiseki.integrateddynamics.capability.path.PathElementConfig;
@@ -23,6 +25,7 @@ import ruiseki.integrateddynamics.capability.variablecontainer.VariableContainer
 import ruiseki.integrateddynamics.item.ItemFacadeConfig;
 import ruiseki.integrateddynamics.item.ItemLabellerConfig;
 import ruiseki.integrateddynamics.item.ItemMenrilBerriesConfig;
+import ruiseki.integrateddynamics.item.ItemPortableLogicProgrammerConfig;
 import ruiseki.integrateddynamics.item.ItemVariableConfig;
 import ruiseki.integrateddynamics.item.ItemVariableTransformerConfig;
 import ruiseki.integrateddynamics.item.ItemWrenchConfig;
@@ -45,6 +48,8 @@ public class Configs {
         configHandler.add(new CableFakeableConfig());
         configHandler.add(new NetworkCarrierConfig());
         configHandler.add(new PathElementConfig());
+        configHandler.add(new PartNetworkConfig());
+        configHandler.add(new EnergyNetworkConfig());
 
         // Fluids
         // configHandler.add(new FluidMenrilResinConfig());
@@ -79,6 +84,7 @@ public class Configs {
         // configHandler.add(new ItemCrystalizedMenrilChunkConfig());
         configHandler.add(new ItemVariableTransformerConfig());
         configHandler.add(new ItemMenrilBerriesConfig());
+        configHandler.add(new ItemPortableLogicProgrammerConfig());
 
         // Biomes
         configHandler.add(new BiomeMeneglinConfig());

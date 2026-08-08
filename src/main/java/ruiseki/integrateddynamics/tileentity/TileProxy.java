@@ -1,6 +1,7 @@
 package ruiseki.integrateddynamics.tileentity;
 
 import net.minecraft.item.ItemStack;
+import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import com.google.common.collect.Sets;
@@ -10,11 +11,17 @@ import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.item.IProxyVariableFacade;
 import ruiseki.integrateddynamics.api.item.IVariableFacade;
 import ruiseki.integrateddynamics.api.item.IVariableFacadeHandlerRegistry;
+import ruiseki.integrateddynamics.api.network.INetworkElement;
+import ruiseki.integrateddynamics.capability.networkelementprovider.NetworkElementProviderConfig;
+import ruiseki.integrateddynamics.capability.networkelementprovider.NetworkElementProviderSingleton;
 import ruiseki.integrateddynamics.core.evaluate.ProxyVariableFacadeHandler;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.integrateddynamics.core.item.ProxyVariableFacade;
 import ruiseki.integrateddynamics.core.tileentity.TileActiveVariableBase;
 import ruiseki.integrateddynamics.network.ProxyNetworkElement;
+import ruiseki.okcore.capabilities.resolver.BasicCapabilityResolver;
+import ruiseki.okcore.datastructure.BlockPos;
+import ruiseki.okcore.datastructure.DimPos;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.persist.nbt.NBTPersist;
@@ -44,6 +51,16 @@ public class TileProxy extends TileActiveVariableBase<ProxyNetworkElement> {
         addSlotsToSide(ForgeDirection.SOUTH, Sets.newHashSet(SLOT_READ));
         addSlotsToSide(ForgeDirection.WEST, Sets.newHashSet(SLOT_WRITE_OUT));
         addSlotsToSide(ForgeDirection.EAST, Sets.newHashSet(SLOT_WRITE_IN));
+
+        this.capabilityCache.addCapabilityResolver(
+            BasicCapabilityResolver
+                .create(NetworkElementProviderConfig.CAPABILITY, () -> new NetworkElementProviderSingleton() {
+
+                    @Override
+                    public INetworkElement createNetworkElement(World world, BlockPos blockPos) {
+                        return new ProxyNetworkElement(DimPos.of(world, blockPos));
+                    }
+                }));
     }
 
     @Override

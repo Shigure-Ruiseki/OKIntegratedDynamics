@@ -3,8 +3,8 @@ package ruiseki.integrateddynamics.core.tileentity;
 import lombok.Getter;
 import lombok.experimental.Delegate;
 import ruiseki.integrateddynamics.api.block.cable.ICable;
+import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.INetworkCarrier;
-import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.capability.cable.CableConfig;
 import ruiseki.integrateddynamics.capability.cable.CableTile;
 import ruiseki.integrateddynamics.capability.network.NetworkCarrierConfig;
@@ -64,7 +64,10 @@ public class TileCableConnectableInventory extends InventoryTileEntity implement
     @Override
     protected void updateTileEntity() {
         super.updateTileEntity();
-        cable.updateConnections();
+        super.updateTileEntity();
+        if (connected.isEmpty()) {
+            cable.updateConnections();
+        }
     }
 
     /**
@@ -74,8 +77,8 @@ public class TileCableConnectableInventory extends InventoryTileEntity implement
 
     }
 
-    public IPartNetwork getNetwork() {
-        return (IPartNetwork) this.networkCarrier.getNetwork();
+    public INetwork getNetwork() {
+        return this.networkCarrier.getNetwork();
     }
 
 }

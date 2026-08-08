@@ -9,7 +9,7 @@ import ruiseki.integrateddynamics.api.network.event.INetworkEvent;
  * 
  * @author rubensworks
  */
-public interface INetworkEventListener<N extends INetwork<N>, E> {
+public interface INetworkEventListener<E> {
 
     /**
      * @return If this should be registered to the network event bus for listening to network events.
@@ -19,7 +19,7 @@ public interface INetworkEventListener<N extends INetwork<N>, E> {
     /**
      * @return The static set of events this listener should be subscribed to.
      */
-    public Set<Class<? extends INetworkEvent<N>>> getSubscribedEvents();
+    public Set<Class<? extends INetworkEvent>> getSubscribedEvents();
 
     /**
      * Can be called at any time by the {@link ruiseki.integrateddynamics.api.network.event.INetworkEventBus}.
@@ -28,6 +28,6 @@ public interface INetworkEventListener<N extends INetwork<N>, E> {
      * @param event          The received event.
      * @param networkElement The network element.
      */
-    public void onEvent(INetworkEvent<N> event, E networkElement);
+    public void onEvent(INetworkEvent event, E networkElement);
 
 }

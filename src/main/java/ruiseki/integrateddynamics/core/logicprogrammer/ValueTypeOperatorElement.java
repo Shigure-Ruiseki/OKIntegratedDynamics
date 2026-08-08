@@ -21,14 +21,14 @@ import ruiseki.integrateddynamics.api.item.IValueTypeVariableFacade;
 import ruiseki.integrateddynamics.api.item.IVariableFacadeHandlerRegistry;
 import ruiseki.integrateddynamics.api.logicprogrammer.IConfigRenderPattern;
 import ruiseki.integrateddynamics.api.logicprogrammer.ILogicProgrammerElementType;
-import ruiseki.integrateddynamics.client.gui.GuiLogicProgrammer;
+import ruiseki.integrateddynamics.client.gui.GuiLogicProgrammerBase;
 import ruiseki.integrateddynamics.core.client.gui.IDropdownEntry;
 import ruiseki.integrateddynamics.core.client.gui.IDropdownEntryListener;
 import ruiseki.integrateddynamics.core.evaluate.operator.Operators;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeOperator;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeVariableFacade;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
-import ruiseki.integrateddynamics.inventory.container.ContainerLogicProgrammer;
+import ruiseki.integrateddynamics.inventory.container.ContainerLogicProgrammerBase;
 import ruiseki.integrateddynamics.network.packet.LogicProgrammerValueTypeOperatorValueChangedPacket;
 import ruiseki.okcore.helper.Helpers;
 import ruiseki.okcore.helper.LangHelpers;
@@ -106,7 +106,7 @@ public class ValueTypeOperatorElement extends ValueTypeElement implements IDropd
     @Override
     @SideOnly(Side.CLIENT)
     public SubGuiConfigRenderPattern createSubGui(int baseX, int baseY, int maxWidth, int maxHeight,
-        GuiLogicProgrammer gui, ContainerLogicProgrammer container) {
+        GuiLogicProgrammerBase gui, ContainerLogicProgrammerBase container) {
         return new SubGuiRenderPattern(this, baseX, baseY, maxWidth, maxHeight, gui, container);
     }
 
@@ -116,7 +116,7 @@ public class ValueTypeOperatorElement extends ValueTypeElement implements IDropd
         private final ValueTypeOperatorElement element;
 
         public SubGuiRenderPattern(ValueTypeOperatorElement element, int baseX, int baseY, int maxWidth, int maxHeight,
-            GuiLogicProgrammer gui, ContainerLogicProgrammer container) {
+            GuiLogicProgrammerBase gui, ContainerLogicProgrammerBase container) {
             super(element, baseX, baseY, maxWidth, maxHeight, gui, container);
             this.element = element;
         }

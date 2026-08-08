@@ -9,8 +9,8 @@ import net.minecraftforge.common.util.ForgeDirection;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.INetworkElement;
-import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.core.tileentity.TileCableConnectableInventory;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
@@ -26,8 +26,7 @@ import ruiseki.okcore.item.capability.CapabilityItemHandler;
  */
 @EqualsAndHashCode(callSuper = false)
 @Data
-public abstract class TileNetworkElement<T extends TileCableConnectableInventory>
-    extends ConsumingNetworkElementBase<IPartNetwork> {
+public abstract class TileNetworkElement<T extends TileCableConnectableInventory> extends ConsumingNetworkElementBase {
 
     private final DimPos pos;
 
@@ -59,7 +58,7 @@ public abstract class TileNetworkElement<T extends TileCableConnectableInventory
     }
 
     @Override
-    public void afterNetworkReAlive(IPartNetwork network) {
+    public void afterNetworkReAlive(INetwork network) {
         super.afterNetworkReAlive(network);
         getTile().afterNetworkReAlive();
     }

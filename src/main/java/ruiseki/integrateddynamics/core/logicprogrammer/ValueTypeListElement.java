@@ -23,12 +23,14 @@ import ruiseki.integrateddynamics.api.item.IVariableFacadeHandlerRegistry;
 import ruiseki.integrateddynamics.api.logicprogrammer.IConfigRenderPattern;
 import ruiseki.integrateddynamics.api.logicprogrammer.ILogicProgrammerElementType;
 import ruiseki.integrateddynamics.client.gui.GuiLogicProgrammer;
+import ruiseki.integrateddynamics.client.gui.GuiLogicProgrammerBase;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeList;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeSubGuiRenderPattern;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeVariableFacade;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.integrateddynamics.inventory.container.ContainerLogicProgrammer;
+import ruiseki.integrateddynamics.inventory.container.ContainerLogicProgrammerBase;
 import ruiseki.integrateddynamics.network.packet.LogicProgrammerValueTypeListValueChangedPacket;
 import ruiseki.okcore.client.gui.component.button.GuiButtonArrow;
 import ruiseki.okcore.client.gui.component.button.GuiButtonText;
@@ -188,7 +190,7 @@ public class ValueTypeListElement extends ValueTypeElement {
     @Override
     @SideOnly(Side.CLIENT)
     public SubGuiConfigRenderPattern createSubGui(int baseX, int baseY, int maxWidth, int maxHeight,
-        GuiLogicProgrammer gui, ContainerLogicProgrammer container) {
+        GuiLogicProgrammerBase gui, ContainerLogicProgrammerBase container) {
         return masterGui = new MasterSubGuiRenderPattern(this, baseX, baseY, maxWidth, maxHeight, gui, container);
     }
 
@@ -197,21 +199,21 @@ public class ValueTypeListElement extends ValueTypeElement {
      */
     @SideOnly(Side.CLIENT)
     protected static class MasterSubGuiRenderPattern
-        extends SubGuiConfigRenderPattern<ValueTypeListElement, GuiLogicProgrammer, ContainerLogicProgrammer> {
+        extends SubGuiConfigRenderPattern<ValueTypeListElement, GuiLogicProgrammerBase, ContainerLogicProgrammerBase> {
 
         private final int baseX;
         private final int baseY;
         private final int maxWidth;
         private final int maxHeight;
-        private final GuiLogicProgrammer gui;
-        private final ContainerLogicProgrammer container;
+        private final GuiLogicProgrammerBase gui;
+        private final ContainerLogicProgrammerBase container;
 
         protected ListElementSubGui elementSubGui = null;
         protected int lastGuiLeft;
         protected int lastGuiTop;
 
         public MasterSubGuiRenderPattern(ValueTypeListElement element, int baseX, int baseY, int maxWidth,
-            int maxHeight, GuiLogicProgrammer gui, ContainerLogicProgrammer container) {
+            int maxHeight, GuiLogicProgrammerBase gui, ContainerLogicProgrammerBase container) {
             super(element, baseX, baseY, maxWidth, maxHeight, gui, container);
             subGuiHolder.addSubGui(new SelectionSubGui(element, baseX, baseY, maxWidth, maxHeight, gui, container));
             this.baseX = baseX;
@@ -274,14 +276,14 @@ public class ValueTypeListElement extends ValueTypeElement {
      */
     @SideOnly(Side.CLIENT)
     protected static class SelectionSubGui
-        extends SubGuiConfigRenderPattern<ValueTypeListElement, GuiLogicProgrammer, ContainerLogicProgrammer>
+        extends SubGuiConfigRenderPattern<ValueTypeListElement, GuiLogicProgrammerBase, ContainerLogicProgrammerBase>
         implements IInputListener {
 
         private GuiArrowedListField<IValueType> valueTypeSelector = null;
         private GuiButton arrowAdd;
 
         public SelectionSubGui(ValueTypeListElement element, int baseX, int baseY, int maxWidth, int maxHeight,
-            GuiLogicProgrammer gui, ContainerLogicProgrammer container) {
+            GuiLogicProgrammerBase gui, ContainerLogicProgrammerBase container) {
             super(element, baseX, baseY, maxWidth, maxHeight, gui, container);
         }
 
@@ -354,14 +356,14 @@ public class ValueTypeListElement extends ValueTypeElement {
      */
     @SideOnly(Side.CLIENT)
     protected static class ListElementSubGui
-        extends SubGuiConfigRenderPattern<ValueTypeListElement, GuiLogicProgrammer, ContainerLogicProgrammer> {
+        extends SubGuiConfigRenderPattern<ValueTypeListElement, GuiLogicProgrammerBase, ContainerLogicProgrammerBase> {
 
         private GuiButtonArrow arrowLeft;
         private GuiButtonArrow arrowRight;
         private GuiButton arrowRemove;
 
         public ListElementSubGui(ValueTypeListElement element, int baseX, int baseY, int maxWidth, int maxHeight,
-            GuiLogicProgrammer gui, ContainerLogicProgrammer container) {
+            GuiLogicProgrammerBase gui, ContainerLogicProgrammerBase container) {
             super(element, baseX, baseY, maxWidth, maxHeight, gui, container);
             ValueTypeSubGuiRenderPattern subGui = element.subElementGuis.get(element.activeElement);
             if (subGui == null) {

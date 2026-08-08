@@ -18,11 +18,13 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import ruiseki.integrateddynamics.IntegratedDynamics;
+import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.INetworkElement;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartState;
 import ruiseki.integrateddynamics.api.part.IPartType;
+import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
 import ruiseki.integrateddynamics.core.helper.PartHelpers;
 import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.datastructure.BlockPos;
@@ -230,7 +232,11 @@ public abstract class PartContainerDefault implements IPartContainer {
 
     protected abstract BlockPos getPos();
 
-    protected abstract IPartNetwork getNetwork();
+    protected abstract INetwork getNetwork();
+
+    protected IPartNetwork getPartNetwork() {
+        return NetworkHelpers.getPartNetwork(getNetwork());
+    }
 
     /**
      * @return The raw part data.

@@ -23,7 +23,7 @@ import ruiseki.okcore.helper.TileHelpers;
 
 /**
  * Variable facade for variables determined by proxies.
- * 
+ *
  * @author rubensworks
  */
 @EqualsAndHashCode(callSuper = true)

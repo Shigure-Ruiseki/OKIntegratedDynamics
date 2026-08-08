@@ -6,11 +6,11 @@ import ruiseki.integrateddynamics.api.block.IEnergyBattery;
 import ruiseki.okcore.datastructure.DimPos;
 
 /**
- * A network that accepts energy.
- * 
+ * A network capability that holds energy.
+ *
  * @author rubensworks
  */
-public interface IEnergyNetwork extends IEnergyBattery, IPartNetwork {
+public interface IEnergyNetwork extends IEnergyBattery {
 
     /**
      * Add the position of a energy storage battery that must be accessible to the network.

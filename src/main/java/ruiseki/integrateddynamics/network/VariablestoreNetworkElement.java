@@ -1,13 +1,14 @@
 package ruiseki.integrateddynamics.network;
 
-import ruiseki.integrateddynamics.api.network.IPartNetwork;
+import ruiseki.integrateddynamics.api.network.INetwork;
+import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
 import ruiseki.integrateddynamics.core.network.TileNetworkElement;
 import ruiseki.integrateddynamics.tileentity.TileVariablestore;
 import ruiseki.okcore.datastructure.DimPos;
 
 /**
  * Network element for variable stores.
- * 
+ *
  * @author rubensworks
  */
 public class VariablestoreNetworkElement extends TileNetworkElement<TileVariablestore> {
@@ -17,13 +18,15 @@ public class VariablestoreNetworkElement extends TileNetworkElement<TileVariable
     }
 
     @Override
-    public boolean onNetworkAddition(IPartNetwork network) {
-        return network.addVariableContainer(getPos());
+    public boolean onNetworkAddition(INetwork network) {
+        return NetworkHelpers.getPartNetwork(network)
+            .addVariableContainer(getPos());
     }
 
     @Override
-    public void onNetworkRemoval(IPartNetwork network) {
-        network.removeVariableContainer(getPos());
+    public void onNetworkRemoval(INetwork network) {
+        NetworkHelpers.getPartNetwork(network)
+            .removeVariableContainer(getPos());
     }
 
     @Override

@@ -12,8 +12,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Delegate;
 import ruiseki.integrateddynamics.api.block.cable.ICableFakeable;
+import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.INetworkCarrier;
-import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.capability.cable.CableConfig;
 import ruiseki.integrateddynamics.capability.cable.CableFakeableConfig;
 import ruiseki.integrateddynamics.capability.cable.CableFakeableMultipartTicking;
@@ -83,7 +83,7 @@ public class TileMultipartTicking extends TileEntityOK
     @Getter
     private final CableTileMultipartTicking cable;
     @Getter
-    private final INetworkCarrier<IPartNetwork> networkCarrier;
+    private final INetworkCarrier networkCarrier;
     @Getter
     private final ICableFakeable cableFakeable;
 
@@ -100,7 +100,7 @@ public class TileMultipartTicking extends TileEntityOK
                 .create(FacadeableConfig.CAPABILITY, () -> new FacadeableTileMultipartTicking(this)));
         cable = new CableTileMultipartTicking(this);
         this.capabilityCache.addCapabilityResolver(BasicCapabilityResolver.create(CableConfig.CAPABILITY, () -> cable));
-        networkCarrier = new NetworkCarrierDefault<>();
+        networkCarrier = new NetworkCarrierDefault();
         this.capabilityCache.addCapabilityResolver(
             BasicCapabilityResolver.create(NetworkCarrierConfig.CAPABILITY, () -> networkCarrier));
         cableFakeable = new CableFakeableMultipartTicking(this);
@@ -168,7 +168,7 @@ public class TileMultipartTicking extends TileEntityOK
         partContainer.update();
     }
 
-    public IPartNetwork getNetwork() {
+    public INetwork getNetwork() {
         return networkCarrier.getNetwork();
     }
 

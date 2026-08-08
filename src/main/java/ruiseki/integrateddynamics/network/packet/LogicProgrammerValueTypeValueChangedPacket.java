@@ -7,15 +7,14 @@ import net.minecraft.world.World;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.integrateddynamics.api.logicprogrammer.ILogicProgrammerElement;
-import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeGuiElement;
 import ruiseki.integrateddynamics.core.logicprogrammer.ValueTypeElement;
-import ruiseki.integrateddynamics.inventory.container.ContainerLogicProgrammer;
+import ruiseki.integrateddynamics.inventory.container.ContainerLogicProgrammerBase;
 import ruiseki.okcore.network.CodecField;
 import ruiseki.okcore.network.PacketCodec;
 
 /**
  * Packet for sending a button packet for the exalted crafting.
- * 
+ *
  * @author rubensworks
  *
  */
@@ -45,12 +44,12 @@ public class LogicProgrammerValueTypeValueChangedPacket extends PacketCodec {
 
     @Override
     public void actionServer(World world, EntityPlayerMP player) {
-        if (player.openContainer instanceof ContainerLogicProgrammer) {
-            ILogicProgrammerElement element = ((ContainerLogicProgrammer) player.openContainer).getActiveElement();
-            if (element instanceof ValueTypeGuiElement<?, ?>) {
-                ((ValueTypeElement) element).getInnerGuiElement()
+        if (player.openContainer instanceof ContainerLogicProgrammerBase container) {
+            ILogicProgrammerElement element = container.getActiveElement();
+            if (element instanceof ValueTypeElement valueTypeElement) {
+                valueTypeElement.getInnerGuiElement()
                     .setInputString(value);
-                ((ContainerLogicProgrammer) player.openContainer).onDirty();
+                container.onDirty();
             }
         }
     }

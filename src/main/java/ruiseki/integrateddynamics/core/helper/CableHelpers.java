@@ -235,12 +235,14 @@ public class CableHelpers {
 
             // Get all drops from the network elements this cable provides.
             List<ItemStack> itemStacks = Lists.newLinkedList();
-            INetworkElementProvider<?> networkElementProvider = NetworkHelpers.getNetworkElementProvider(world, pos);
-            for (INetworkElement networkElement : networkElementProvider.createNetworkElements(world, pos)) {
-                networkElement.addDrops(itemStacks, dropMainElement);
-            }
-            for (ItemStack itemStack : itemStacks) {
-                InventoryHelpers.dropItems(world, itemStack, pos);
+            INetworkElementProvider networkElementProvider = NetworkHelpers.getNetworkElementProvider(world, pos);
+            if (networkElementProvider != null) {
+                for (INetworkElement networkElement : networkElementProvider.createNetworkElements(world, pos)) {
+                    networkElement.addDrops(itemStacks, dropMainElement);
+                }
+                for (ItemStack itemStack : itemStacks) {
+                    InventoryHelpers.dropItems(world, itemStack, pos);
+                }
             }
 
             // If the cable has a network, remove it from the network.
@@ -310,7 +312,7 @@ public class CableHelpers {
 
     /**
      * Check if the target has a facade.
-     * 
+     *
      * @param world The world.
      * @param pos   The position.
      * @return If it has a facade.
@@ -323,7 +325,7 @@ public class CableHelpers {
 
     /**
      * Get the target's facade
-     * 
+     *
      * @param world The world.
      * @param pos   The position.
      * @return The facade or null.

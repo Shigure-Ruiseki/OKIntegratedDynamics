@@ -6,10 +6,11 @@ import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 
-import ruiseki.integrateddynamics.core.item.ItemBlockEnergyContainer;
+import ruiseki.integrateddynamics.capability.energybattery.EnergyBatteryConfig;
 import ruiseki.okcore.block.property.BlockProperty;
 import ruiseki.okcore.block.property.IntegerProperty;
 import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
+import ruiseki.okcore.helper.CapabilityHelpers;
 
 /**
  * A block that can hold defined variables so that they can be referred to elsewhere in the network.
@@ -46,12 +47,12 @@ public class BlockEnergyBattery extends BlockEnergyBatteryBase {
 
     @Override
     public void getSubBlocks(Item itemIn, CreativeTabs tab, List<ItemStack> list) {
-        ItemStack empty = new ItemStack(this);
         ItemStack full = new ItemStack(this);
-        ItemBlockEnergyContainer container = ((ItemBlockEnergyContainer) full.getItem());
-        container.addEnergy(full, container.getMaxStoredEnergy(full), false);
-        list.add(empty);
-        list.add(full);
+        CapabilityHelpers.getCapability(full, EnergyBatteryConfig.CAPABILITY)
+            .ifPresent(handler -> {
+                handler.addEnergy(handler.getMaxStoredEnergy(), false);
+                list.add(full);
+            });
     }
 
     @Override

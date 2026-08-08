@@ -11,18 +11,19 @@ import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.integrateddynamics.api.evaluate.operator.IOperator;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 import ruiseki.integrateddynamics.api.logicprogrammer.IConfigRenderPattern;
-import ruiseki.integrateddynamics.client.gui.GuiLogicProgrammer;
+import ruiseki.integrateddynamics.client.gui.GuiLogicProgrammerBase;
 import ruiseki.integrateddynamics.inventory.container.ContainerLogicProgrammer;
+import ruiseki.integrateddynamics.inventory.container.ContainerLogicProgrammerBase;
 
 /**
  * @author rubensworks
  */
 @SideOnly(Side.CLIENT)
-class OperatorElementSubGuiRenderPattern
-    extends SubGuiConfigRenderPattern<OperatorElement, GuiLogicProgrammer, ContainerLogicProgrammer> {
+public class OperatorElementSubGuiRenderPattern
+    extends SubGuiConfigRenderPattern<OperatorElement, GuiLogicProgrammerBase, ContainerLogicProgrammerBase> {
 
     public OperatorElementSubGuiRenderPattern(OperatorElement element, int baseX, int baseY, int maxWidth,
-        int maxHeight, GuiLogicProgrammer gui, ContainerLogicProgrammer container) {
+        int maxHeight, GuiLogicProgrammerBase gui, ContainerLogicProgrammerBase container) {
         super(element, baseX, baseY, maxWidth, maxHeight, gui, container);
     }
 
@@ -43,8 +44,8 @@ class OperatorElementSubGuiRenderPattern
                 if (gui.func_146978_c(
                     getX() + slotPosition.getLeft(),
                     getY() + slotPosition.getRight(),
-                    GuiLogicProgrammer.BOX_HEIGHT,
-                    GuiLogicProgrammer.BOX_HEIGHT,
+                    GuiLogicProgrammerBase.BOX_HEIGHT,
+                    GuiLogicProgrammerBase.BOX_HEIGHT,
                     mouseX,
                     mouseY)) {
                     gui.drawTooltip(getValueTypeTooltip(valueType), mouseX - guiLeft, mouseY - guiTop);
@@ -58,8 +59,8 @@ class OperatorElementSubGuiRenderPattern
             if (gui.func_146978_c(
                 ContainerLogicProgrammer.OUTPUT_X,
                 ContainerLogicProgrammer.OUTPUT_Y,
-                GuiLogicProgrammer.BOX_HEIGHT,
-                GuiLogicProgrammer.BOX_HEIGHT,
+                GuiLogicProgrammerBase.BOX_HEIGHT,
+                GuiLogicProgrammerBase.BOX_HEIGHT,
                 mouseX,
                 mouseY)) {
                 gui.drawTooltip(getValueTypeTooltip(outputType), mouseX - guiLeft, mouseY - guiTop);

@@ -6,7 +6,7 @@ import net.minecraftforge.common.util.ForgeDirection;
 
 import org.jetbrains.annotations.Nullable;
 
-import ruiseki.integrateddynamics.api.network.IPartNetwork;
+import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.block.BlockCable;
 import ruiseki.integrateddynamics.core.tileentity.TileMultipartTicking;
@@ -51,7 +51,7 @@ public class PartContainerTileMultipartTicking extends PartContainerDefault {
     }
 
     @Override
-    protected IPartNetwork getNetwork() {
+    protected INetwork getNetwork() {
         return getTile().getNetwork();
     }
 

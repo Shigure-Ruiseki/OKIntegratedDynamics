@@ -2,68 +2,39 @@ package ruiseki.integrateddynamics.api.network;
 
 import java.util.Set;
 
+import org.jetbrains.annotations.NotNull;
+
 import ruiseki.integrateddynamics.api.network.event.INetworkEventBus;
-import ruiseki.integrateddynamics.api.path.IPathElement;
+import ruiseki.okcore.capabilities.Capability;
+import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.persist.nbt.INBTSerializable;
 
 /**
  * A network can hold a set of {@link INetworkElement}s.
  * Note that this network only contains references to the relevant data, it does not contain the actual information.
  *
- * @param <N> The network type.
  * @author rubensworks
  */
-public interface INetwork<N extends INetwork<N>> extends INBTSerializable {
+public interface INetwork extends IFullNetworkListener, INBTSerializable {
 
     /**
      * @return The event bus for this network.
      */
-    public INetworkEventBus<N> getEventBus();
-
-    /**
-     * Add a given network element to the network
-     * Also checks if it can tick and will handle it accordingly.
-     *
-     * @param element        The network element.
-     * @param networkPreinit If the network is still in the process of being initialized.
-     * @return If the addition succeeded.
-     */
-    public boolean addNetworkElement(INetworkElement<N> element, boolean networkPreinit);
+    public INetworkEventBus getEventBus();
 
     /**
      * Add a given network element to the tickable elements set.
      *
      * @param element The network element.
      */
-    public void addNetworkElementUpdateable(INetworkElement<N> element);
-
-    /**
-     * Checks if the given network element can be removed from the network
-     *
-     * @param element The network element.
-     * @return If the element was can be removed from the network.
-     */
-    public boolean removeNetworkElementPre(INetworkElement<N> element);
-
-    /**
-     * Remove a given network element from the network.
-     * Also removed its tickable instance.
-     *
-     * @param element The network element.
-     */
-    public void removeNetworkElementPost(INetworkElement<N> element);
+    public void addNetworkElementUpdateable(INetworkElement element);
 
     /**
      * Remove given network element from the tickable elements set.
      *
      * @param element The network element.
      */
-    public void removeNetworkElementUpdateable(INetworkElement<N> element);
-
-    /**
-     * Terminate the network elements for this network.
-     */
-    public void kill();
+    public void removeNetworkElementUpdateable(INetworkElement element);
 
     /**
      * Kills the network is it had no more network elements.
@@ -73,35 +44,9 @@ public interface INetwork<N extends INetwork<N>> extends INBTSerializable {
     public boolean killIfEmpty();
 
     /**
-     * This network updating should be called each tick.
-     */
-    public void update();
-
-    /**
-     * Remove the given path element from the network.
-     * If the path element had any network elements registered in the network, these will be killed and removed as well.
-     *
-     * @param pathElement The path element.
-     * @return If the path element was removed.
-     */
-    public boolean removePathElement(IPathElement pathElement);
-
-    /**
-     * Called when the server loaded this network.
-     * This is the time to notify all network elements of this network.
-     */
-    public void afterServerLoad();
-
-    /**
-     * Called when the server will save this network before stopping.
-     * This is the time to notify all network elements of this network.
-     */
-    public void beforeServerStop();
-
-    /**
      * @return The network elements.
      */
-    public Set<INetworkElement<N>> getElements();
+    public Set<INetworkElement> getElements();
 
     /**
      * @return If this network has been killed.
@@ -124,7 +69,7 @@ public interface INetwork<N extends INetwork<N>> extends INBTSerializable {
      * @param networkElement The networkelement
      * @return Duration in nanoseconds
      */
-    public long getLastSecondDuration(INetworkElement<N> networkElement);
+    public long getLastSecondDuration(INetworkElement networkElement);
 
     /**
      * Reset the last second duration counts.
@@ -140,4 +85,15 @@ public interface INetwork<N extends INetwork<N>> extends INBTSerializable {
      * @param crashed The new crashed field.
      */
     public void setCrashed(boolean crashed);
+
+    /**
+     * Get the given capability.
+     *
+     * @param capability The capability to get.
+     * @param <T>        The capability type.
+     * @return The capability instance.
+     */
+    @NotNull
+    public <T> LazyOptional<T> getCapability(@NotNull Capability<T> capability);
+
 }

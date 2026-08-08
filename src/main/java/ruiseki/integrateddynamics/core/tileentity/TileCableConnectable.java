@@ -61,6 +61,8 @@ public class TileCableConnectable extends TileEntityOK implements TileEntityOK.I
     @Override
     protected void updateTileEntity() {
         super.updateTileEntity();
-        cable.updateConnections();
+        if (connected.isEmpty()) {
+            cable.updateConnections();
+        }
     }
 }

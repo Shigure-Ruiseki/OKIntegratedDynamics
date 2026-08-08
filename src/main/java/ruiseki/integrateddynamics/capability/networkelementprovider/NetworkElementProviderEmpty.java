@@ -5,7 +5,6 @@ import java.util.Collections;
 
 import net.minecraft.world.World;
 
-import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.INetworkElement;
 import ruiseki.integrateddynamics.api.network.INetworkElementProvider;
 import ruiseki.okcore.datastructure.BlockPos;
@@ -15,10 +14,10 @@ import ruiseki.okcore.datastructure.BlockPos;
  *
  * @author rubensworks
  */
-public class NetworkElementProviderEmpty<N extends INetwork> implements INetworkElementProvider<N> {
+public class NetworkElementProviderEmpty implements INetworkElementProvider {
 
     @Override
-    public Collection<INetworkElement<N>> createNetworkElements(World world, BlockPos blockPos) {
+    public Collection<INetworkElement> createNetworkElements(World world, BlockPos blockPos) {
         return Collections.emptyList();
     }
 }

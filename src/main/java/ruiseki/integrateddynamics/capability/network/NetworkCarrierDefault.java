@@ -7,21 +7,21 @@ import ruiseki.integrateddynamics.api.network.INetworkCarrier;
 
 /**
  * Default implementation of {@link INetworkCarrier}.
- * 
+ *
  * @author rubensworks
  */
-public class NetworkCarrierDefault<N extends INetwork> implements INetworkCarrier<N> {
+public class NetworkCarrierDefault implements INetworkCarrier {
 
-    private N network;
+    private INetwork network;
 
     @Override
-    public void setNetwork(@Nullable N network) {
+    public void setNetwork(@Nullable INetwork network) {
         this.network = network;
     }
 
     @Nullable
     @Override
-    public N getNetwork() {
+    public INetwork getNetwork() {
         return network;
     }
 }

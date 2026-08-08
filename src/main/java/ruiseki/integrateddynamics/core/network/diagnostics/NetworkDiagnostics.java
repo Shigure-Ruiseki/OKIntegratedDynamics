@@ -17,6 +17,7 @@ import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.integrateddynamics.core.persist.world.NetworkWorldStorage;
 import ruiseki.integrateddynamics.network.packet.NetworkDiagnosticsNetworkPacket;
 import ruiseki.okcore.helper.LangHelpers;
+import ruiseki.okcore.helper.MinecraftHelpers;
 
 /**
  * @author rubensworks
@@ -62,7 +63,7 @@ public class NetworkDiagnostics {
     public synchronized void registerPlayer(EntityPlayerMP player) {
         if (!players.contains(player.getPersistentID())) {
             players.add(player.getPersistentID());
-            for (INetwork<?> network : NetworkWorldStorage.getInstance(IntegratedDynamics._instance)
+            for (INetwork network : NetworkWorldStorage.getInstance(IntegratedDynamics._instance)
                 .getNetworks()) {
                 sendNetworkUpdateToPlayer(player, network);
             }
@@ -73,7 +74,7 @@ public class NetworkDiagnostics {
         players.remove(player.getPersistentID());
     }
 
-    public void sendNetworkUpdateToPlayer(EntityPlayerMP player, INetwork<?> network) {
+    public void sendNetworkUpdateToPlayer(EntityPlayerMP player, INetwork network) {
         List<RawPartData> rawParts = Lists.newArrayList();
         for (INetworkElement networkElement : network.getElements()) {
             if (networkElement instanceof IPartNetworkElement) {
@@ -91,7 +92,7 @@ public class NetworkDiagnostics {
                         LangHelpers.localize(
                             partNetworkElement.getPart()
                                 .getUnlocalizedName()),
-                        lastSecondDuration));
+                        lastSecondDuration / MinecraftHelpers.SECOND_IN_TICKS));
             } else {
                 // If needed, we can send the other part types later on as well
             }

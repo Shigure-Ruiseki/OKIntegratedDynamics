@@ -22,7 +22,7 @@ import ruiseki.okcore.init.IInitListener;
 
 /**
  * Default implementation of {@link IPartType}.
- * 
+ *
  * @author rubensworks
  */
 public abstract class PartTypeAdapter<P extends IPartType<P, S>, S extends IPartState<P>> implements IPartType<P, S> {
@@ -204,12 +204,12 @@ public abstract class PartTypeAdapter<P extends IPartType<P, S>, S extends IPart
     }
 
     @Override
-    public Set<Class<? extends INetworkEvent<IPartNetwork>>> getSubscribedEvents() {
+    public Set<Class<? extends INetworkEvent>> getSubscribedEvents() {
         return Collections.emptySet();
     }
 
     @Override
-    public void onEvent(INetworkEvent<IPartNetwork> event, IPartNetworkElement<P, S> networkElement) {
+    public void onEvent(INetworkEvent event, IPartNetworkElement<P, S> networkElement) {
 
     }
 }

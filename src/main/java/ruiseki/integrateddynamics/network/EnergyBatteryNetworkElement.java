@@ -8,8 +8,9 @@ import net.minecraft.world.IBlockAccess;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import ruiseki.integrateddynamics.api.network.IEnergyNetwork;
+import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.INetworkElement;
+import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
 import ruiseki.integrateddynamics.core.network.NetworkElementBase;
 import ruiseki.integrateddynamics.tileentity.TileEnergyBattery;
 import ruiseki.okcore.datastructure.DimPos;
@@ -17,12 +18,12 @@ import ruiseki.okcore.helper.TileHelpers;
 
 /**
  * Network element for variable stores.
- * 
+ *
  * @author rubensworks
  */
 @EqualsAndHashCode(callSuper = false)
 @Data
-public class EnergyBatteryNetworkElement extends NetworkElementBase<IEnergyNetwork> {
+public class EnergyBatteryNetworkElement extends NetworkElementBase {
 
     private final DimPos pos;
 
@@ -41,17 +42,17 @@ public class EnergyBatteryNetworkElement extends NetworkElementBase<IEnergyNetwo
     }
 
     @Override
-    public void update(IEnergyNetwork network) {
+    public void update(INetwork network) {
 
     }
 
     @Override
-    public void beforeNetworkKill(IEnergyNetwork network) {
+    public void beforeNetworkKill(INetwork network) {
 
     }
 
     @Override
-    public void afterNetworkAlive(IEnergyNetwork network) {
+    public void afterNetworkAlive(INetwork network) {
 
     }
 
@@ -61,22 +62,24 @@ public class EnergyBatteryNetworkElement extends NetworkElementBase<IEnergyNetwo
     }
 
     @Override
-    public boolean onNetworkAddition(IEnergyNetwork network) {
-        return network.addEnergyBattery(getPos());
+    public boolean onNetworkAddition(INetwork network) {
+        return NetworkHelpers.getEnergyNetwork(network)
+            .addEnergyBattery(getPos());
     }
 
     @Override
-    public void onNetworkRemoval(IEnergyNetwork network) {
-        network.removeEnergyBattery(getPos());
+    public void onNetworkRemoval(INetwork network) {
+        NetworkHelpers.getEnergyNetwork(network)
+            .removeEnergyBattery(getPos());
     }
 
     @Override
-    public void onPreRemoved(IEnergyNetwork network) {
+    public void onPreRemoved(INetwork network) {
 
     }
 
     @Override
-    public void onNeighborBlockChange(IEnergyNetwork network, IBlockAccess world, Block neighborBlock) {
+    public void onNeighborBlockChange(INetwork network, IBlockAccess world, Block neighborBlock) {
 
     }
 

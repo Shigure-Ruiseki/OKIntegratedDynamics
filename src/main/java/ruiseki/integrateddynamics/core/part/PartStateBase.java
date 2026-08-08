@@ -26,7 +26,7 @@ import ruiseki.okcore.persist.nbt.NBTProviderComponent;
 /**
  * A default implementation of the {@link IPartState} with auto-persistence
  * of fields annotated with {@link NBTPersist}.
- * 
+ *
  * @author rubensworks
  */
 public abstract class PartStateBase<P extends IPartType> implements IPartState<P>, INBTProvider, IDirtyMarkListener {
@@ -45,17 +45,22 @@ public abstract class PartStateBase<P extends IPartType> implements IPartState<P
     private boolean enabled = true;
     private CapabilityDispatcher capabilities = null;
 
-    // Đã chuyển value sang LazyOptional<?>
     private Map<Capability<?>, LazyOptional<?>> volatileCapabilities = Maps.newHashMap();
 
     @Override
     public void writeToNBT(NBTTagCompound tag) {
         writeGeneratedFieldsToNBT(tag);
+        if (this.capabilities != null) {
+            tag.setTag("OKCaps", this.capabilities.serializeNBT());
+        }
     }
 
     @Override
     public void readFromNBT(NBTTagCompound tag) {
         readGeneratedFieldsFromNBT(tag);
+        if (this.capabilities != null && tag.hasKey("OKCaps")) {
+            this.capabilities.deserializeNBT(tag.getCompoundTag("OKCaps"));
+        }
     }
 
     @Override

@@ -79,7 +79,7 @@ public class ItemPart<P extends IPartType<P, S>, S extends IPartState<P>> extend
             IPartContainer partContainerFirst = PartHelpers.getPartContainer(world, pos);
             if (partContainerFirst != null) {
                 // Add part to existing cable
-                if (addPart(world, pos, side, partContainerFirst, itemStack)) {
+                if (PartHelpers.addPart(world, pos, side, getPart(), itemStack)) {
                     itemStack.stackSize--;
                 }
                 return true;
@@ -95,7 +95,7 @@ public class ItemPart<P extends IPartType<P, S>, S extends IPartState<P>> extend
                     if (itemBlockCable.onItemUse(itemStack, playerIn, world, x, y, z, sideInt, hitX, hitY, hitZ)) {
                         IPartContainer partContainer = PartHelpers.getPartContainer(world, target);
                         if (partContainer != null) {
-                            addPart(world, target, side.getOpposite(), partContainer, itemStack);
+                            PartHelpers.addPart(world, target, side.getOpposite(), getPart(), itemStack);
                             ICableFakeable cableFakeable = CableHelpers.getCableFakeable(world, target);
                             if (cableFakeable != null) {
                                 CableHelpers.onCableRemoving(world, target, false);
@@ -115,7 +115,7 @@ public class ItemPart<P extends IPartType<P, S>, S extends IPartState<P>> extend
                     IPartContainer partContainer = PartHelpers.getPartContainer(world, target);
                     if (partContainer != null) {
                         // Add part to existing cable
-                        if (addPart(world, target, side.getOpposite(), partContainer, itemStack)) {
+                        if (PartHelpers.addPart(world, target, side.getOpposite(), getPart(), itemStack)) {
                             if (world.isRemote) {
                                 ItemBlockCable.playPlaceSound(world, target);
                             }
@@ -136,17 +136,6 @@ public class ItemPart<P extends IPartType<P, S>, S extends IPartState<P>> extend
             }
         }
         return super.onItemUse(itemStack, playerIn, world, x, y, z, sideInt, hitX, hitY, hitZ);
-    }
-
-    protected boolean addPart(World world, BlockPos pos, ForgeDirection side, IPartContainer partContainer,
-        ItemStack itemStack) {
-        IPartType partType = getPart();
-        if (partContainer.canAddPart(side, partType)) {
-            partContainer.setPart(side, getPart(), partType.getState(itemStack));
-            ItemBlockCable.playPlaceSound(world, pos);
-            return true;
-        }
-        return false;
     }
 
     @SuppressWarnings("rawtypes")

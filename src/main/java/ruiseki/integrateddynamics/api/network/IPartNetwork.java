@@ -16,7 +16,7 @@ import ruiseki.okcore.datastructure.DimPos;
  *
  * @author rubensworks
  */
-public interface IPartNetwork extends INetwork<IPartNetwork>, ILazyExpressionValueCache {
+public interface IPartNetwork extends ILazyExpressionValueCache {
 
     /**
      * Add the given part state to the network.

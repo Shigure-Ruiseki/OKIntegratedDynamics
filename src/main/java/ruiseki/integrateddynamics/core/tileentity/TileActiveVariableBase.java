@@ -13,11 +13,13 @@ import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.evaluate.variable.IVariable;
 import ruiseki.integrateddynamics.api.item.IVariableFacade;
 import ruiseki.integrateddynamics.api.item.IVariableFacadeHandlerRegistry;
+import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.INetworkEventListener;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.network.event.INetworkEvent;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
+import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
 import ruiseki.integrateddynamics.core.network.event.VariableContentsUpdatedEvent;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.persist.IDirtyMarkListener;
@@ -30,7 +32,7 @@ import ruiseki.okcore.persist.nbt.NBTPersist;
  * @author rubensworks
  */
 public abstract class TileActiveVariableBase<E> extends TileCableConnectableInventory
-    implements IDirtyMarkListener, IVariableFacade.IValidator, INetworkEventListener<IPartNetwork, E> {
+    implements IDirtyMarkListener, IVariableFacade.IValidator, INetworkEventListener<E> {
 
     protected IVariableFacade variableStored = null;
     @NBTPersist
@@ -49,7 +51,8 @@ public abstract class TileActiveVariableBase<E> extends TileCableConnectableInve
     }
 
     protected void updateReadVariable() {
-        IPartNetwork network = (IPartNetwork) getNetwork();
+        INetwork network = getNetwork();
+        IPartNetwork partNetwork = NetworkHelpers.getPartNetwork(network);
 
         int lastVariabledId = this.variableStored == null ? -1 : this.variableStored.getId();
         int variableId = -1;
@@ -67,17 +70,17 @@ public abstract class TileActiveVariableBase<E> extends TileCableConnectableInve
         }
 
         this.errors.clear();
-        if (network == null) {
+        if (partNetwork == null) {
             addError(new LangHelpers.UnlocalizedString(L10NValues.GENERAL_ERROR_NONETWORK));
         } else if (this.variableStored != null) {
             preValidate(variableStored);
             try {
-                variableStored.validate(network, this, ValueTypes.CATEGORY_ANY);
+                variableStored.validate(partNetwork, this, ValueTypes.CATEGORY_ANY);
             } catch (IllegalArgumentException e) {
                 addError(new LangHelpers.UnlocalizedString(e.getMessage()));
             }
         }
-        if (network != null && lastVariabledId != variableId) {
+        if (partNetwork != null && lastVariabledId != variableId) {
             network.getEventBus()
                 .post(new VariableContentsUpdatedEvent(network));
         }
@@ -116,12 +119,12 @@ public abstract class TileActiveVariableBase<E> extends TileCableConnectableInve
     }
 
     @Override
-    public Set<Class<? extends INetworkEvent<IPartNetwork>>> getSubscribedEvents() {
-        return Sets.<Class<? extends INetworkEvent<IPartNetwork>>>newHashSet(VariableContentsUpdatedEvent.class);
+    public Set<Class<? extends INetworkEvent>> getSubscribedEvents() {
+        return Sets.<Class<? extends INetworkEvent>>newHashSet(VariableContentsUpdatedEvent.class);
     }
 
     @Override
-    public void onEvent(INetworkEvent<IPartNetwork> event, E networkElement) {
+    public void onEvent(INetworkEvent event, E networkElement) {
         if (event instanceof VariableContentsUpdatedEvent) {
             updateReadVariable();
         }

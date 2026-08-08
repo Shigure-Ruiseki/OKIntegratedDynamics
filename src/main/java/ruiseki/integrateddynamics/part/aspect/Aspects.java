@@ -29,8 +29,8 @@ import com.gtnewhorizon.gtnhlib.blockstate.registry.BlockPropertyRegistry;
 import ruiseki.commoncapabilities.api.capability.temperature.ITemperature;
 import ruiseki.commoncapabilities.api.capability.work.IWorker;
 import ruiseki.integrateddynamics.IntegratedDynamics;
+import ruiseki.integrateddynamics.api.block.IEnergyBattery;
 import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
-import ruiseki.integrateddynamics.api.network.IEnergyNetwork;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.integrateddynamics.api.part.PartTarget;
@@ -38,6 +38,7 @@ import ruiseki.integrateddynamics.api.part.aspect.IAspectRead;
 import ruiseki.integrateddynamics.api.part.aspect.IAspectRegistry;
 import ruiseki.integrateddynamics.api.part.aspect.IAspectWrite;
 import ruiseki.integrateddynamics.api.part.aspect.property.IAspectProperties;
+import ruiseki.integrateddynamics.capability.network.EnergyNetworkConfig;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueObjectTypeBlock;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueObjectTypeEntity;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueObjectTypeFluidStack;
@@ -774,10 +775,14 @@ public class Aspects {
 
                     @Override
                     public Integer getOutput(INetwork network) {
-                        return network != null
-                            ? (network instanceof IEnergyNetwork ? ((IEnergyNetwork) network).getEnergyBatteries()
-                                .size() : 0)
-                            : 0;
+                        if (network == null) {
+                            return 0;
+                        }
+                        return network.getCapability(EnergyNetworkConfig.CAPABILITY)
+                            .map(
+                                handler -> handler.getEnergyBatteries()
+                                    .size())
+                            .orElse(0);
                     }
                 })
                 .handle(AspectReadBuilders.PROP_GET_INTEGER, "energy")
@@ -788,9 +793,12 @@ public class Aspects {
 
                     @Override
                     public Integer getOutput(INetwork network) {
-                        return network != null
-                            ? (network instanceof IEnergyNetwork ? ((IEnergyNetwork) network).getStoredEnergy() : 0)
-                            : 0;
+                        if (network == null) {
+                            return 0;
+                        }
+                        return network.getCapability(EnergyNetworkConfig.CAPABILITY)
+                            .map(IEnergyBattery::getStoredEnergy)
+                            .orElse(0);
                     }
                 })
                 .handle(AspectReadBuilders.PROP_GET_INTEGER, "energy")
@@ -801,9 +809,12 @@ public class Aspects {
 
                     @Override
                     public Integer getOutput(INetwork network) {
-                        return network != null
-                            ? (network instanceof IEnergyNetwork ? ((IEnergyNetwork) network).getMaxStoredEnergy() : 0)
-                            : 0;
+                        if (network == null) {
+                            return 0;
+                        }
+                        return network.getCapability(EnergyNetworkConfig.CAPABILITY)
+                            .map(IEnergyBattery::getMaxStoredEnergy)
+                            .orElse(0);
                     }
                 })
                 .handle(AspectReadBuilders.PROP_GET_INTEGER, "energy")

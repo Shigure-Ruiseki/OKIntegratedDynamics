@@ -16,13 +16,13 @@ import ruiseki.integrateddynamics.api.item.IVariableFacadeHandlerRegistry;
 import ruiseki.integrateddynamics.api.logicprogrammer.IConfigRenderPattern;
 import ruiseki.integrateddynamics.api.logicprogrammer.ILogicProgrammerElement;
 import ruiseki.integrateddynamics.api.logicprogrammer.ILogicProgrammerElementType;
-import ruiseki.integrateddynamics.client.gui.GuiLogicProgrammer;
+import ruiseki.integrateddynamics.client.gui.GuiLogicProgrammerBase;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueHelpers;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeGuiElement;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeSubGuiRenderPattern;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeVariableFacade;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
-import ruiseki.integrateddynamics.inventory.container.ContainerLogicProgrammer;
+import ruiseki.integrateddynamics.inventory.container.ContainerLogicProgrammerBase;
 import ruiseki.integrateddynamics.item.ItemVariable;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
@@ -32,11 +32,11 @@ import ruiseki.okcore.helper.MinecraftHelpers;
  *
  * @author rubensworks
  */
-public class ValueTypeElement
-    implements ILogicProgrammerElement<SubGuiConfigRenderPattern, GuiLogicProgrammer, ContainerLogicProgrammer> {
+public class ValueTypeElement implements
+    ILogicProgrammerElement<SubGuiConfigRenderPattern, GuiLogicProgrammerBase, ContainerLogicProgrammerBase> {
 
     @Getter
-    private ValueTypeGuiElement<GuiLogicProgrammer, ContainerLogicProgrammer> innerGuiElement;
+    private ValueTypeGuiElement<GuiLogicProgrammerBase, ContainerLogicProgrammerBase> innerGuiElement;
 
     public ValueTypeElement(IValueType valueType) {
         innerGuiElement = new ValueTypeGuiElement<>(valueType, getRenderPattern());
@@ -175,7 +175,7 @@ public class ValueTypeElement
     @Override
     @SideOnly(Side.CLIENT)
     public SubGuiConfigRenderPattern createSubGui(int baseX, int baseY, int maxWidth, int maxHeight,
-        GuiLogicProgrammer gui, ContainerLogicProgrammer container) {
+        GuiLogicProgrammerBase gui, ContainerLogicProgrammerBase container) {
         return new ValueTypeElementSubGuiRenderPattern(this, baseX, baseY, maxWidth, maxHeight, gui, container);
     }
 

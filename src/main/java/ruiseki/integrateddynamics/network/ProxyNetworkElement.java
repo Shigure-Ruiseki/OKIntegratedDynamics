@@ -5,18 +5,20 @@ import org.jetbrains.annotations.Nullable;
 
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.network.IEventListenableNetworkElement;
+import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
+import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
 import ruiseki.integrateddynamics.core.network.TileNetworkElement;
 import ruiseki.integrateddynamics.tileentity.TileProxy;
 import ruiseki.okcore.datastructure.DimPos;
 
 /**
  * Network element for coal generators.
- *
+ * 
  * @author rubensworks
  */
 public class ProxyNetworkElement extends TileNetworkElement<TileProxy>
-    implements IEventListenableNetworkElement<IPartNetwork, TileProxy> {
+    implements IEventListenableNetworkElement<TileProxy> {
 
     public ProxyNetworkElement(DimPos pos) {
         super(pos);
@@ -27,14 +29,18 @@ public class ProxyNetworkElement extends TileNetworkElement<TileProxy>
     }
 
     @Override
-    public boolean onNetworkAddition(IPartNetwork network) {
+    public boolean onNetworkAddition(INetwork network) {
         if (super.onNetworkAddition(network)) {
-            if (!network.addProxy(getId(), getPos())) {
+            IPartNetwork partNetwork = NetworkHelpers.getPartNetwork(network);
+            if (partNetwork == null) {
+                return false;
+            }
+            if (!partNetwork.addProxy(getId(), getPos())) {
                 IntegratedDynamics.clog(
                     Level.WARN,
                     "A proxy already existed in the network, this is possibly a " + "result from item duplication.");
                 getTile().generateNewProxyId();
-                return network.addProxy(getId(), getPos());
+                return partNetwork.addProxy(getId(), getPos());
             }
             return true;
         }
@@ -42,9 +48,12 @@ public class ProxyNetworkElement extends TileNetworkElement<TileProxy>
     }
 
     @Override
-    public void onNetworkRemoval(IPartNetwork network) {
+    public void onNetworkRemoval(INetwork network) {
         super.onNetworkRemoval(network);
-        network.removeProxy(getId());
+        IPartNetwork partNetwork = NetworkHelpers.getPartNetwork(network);
+        if (partNetwork != null) {
+            partNetwork.removeProxy(getId());
+        }
     }
 
     @Override

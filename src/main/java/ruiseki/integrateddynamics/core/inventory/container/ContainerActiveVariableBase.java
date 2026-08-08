@@ -5,6 +5,7 @@ import net.minecraft.entity.player.InventoryPlayer;
 import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IVariable;
+import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
 import ruiseki.integrateddynamics.core.tileentity.TileActiveVariableBase;
 import ruiseki.okcore.helper.Helpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
@@ -41,7 +42,7 @@ public class ContainerActiveVariableBase<T extends TileActiveVariableBase<?>>
         if (!MinecraftHelpers.isClientSide()) {
             String readValue = "";
             int readValueColor = 0;
-            IVariable variable = getTile().getVariable(getTile().getNetwork());
+            IVariable variable = getTile().getVariable(NetworkHelpers.getPartNetwork(getTile().getNetwork()));
             if (variable != null) {
                 try {
                     IValue value = variable.getValue();

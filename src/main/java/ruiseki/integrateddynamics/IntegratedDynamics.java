@@ -32,6 +32,7 @@ import ruiseki.integrateddynamics.api.item.IVariableFacadeHandlerRegistry;
 import ruiseki.integrateddynamics.api.logicprogrammer.ILogicProgrammerElementTypeRegistry;
 import ruiseki.integrateddynamics.api.part.IPartTypeRegistry;
 import ruiseki.integrateddynamics.api.part.aspect.IAspectRegistry;
+import ruiseki.integrateddynamics.capability.network.NetworkCapabilityConstructors;
 import ruiseki.integrateddynamics.client.render.part.PartOverlayRendererRegistry;
 import ruiseki.integrateddynamics.client.render.part.PartOverlayRenderers;
 import ruiseki.integrateddynamics.client.render.valuetype.ValueTypeWorldRendererRegistry;
@@ -179,6 +180,7 @@ public class IntegratedDynamics extends ModBaseVersionable {
             .bus()
             .register(TickHandler.getInstance());
         MinecraftForge.EVENT_BUS.register(NoteBlockEventReceiver.getInstance());
+        MinecraftForge.EVENT_BUS.register(new NetworkCapabilityConstructors());
     }
 
     @Override
