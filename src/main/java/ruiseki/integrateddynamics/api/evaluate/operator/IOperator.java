@@ -11,7 +11,7 @@ import ruiseki.okcore.helper.LangHelpers;
 
 /**
  * Relation on value types.
- * 
+ *
  * @author rubensworks
  */
 public interface IOperator {
@@ -43,7 +43,7 @@ public interface IOperator {
 
     /**
      * Add tooltip lines for this aspect when hovered in a gui.
-     * 
+     *
      * @param lines              The list to add lines to.
      * @param appendOptionalInfo If shift-to-show info should be added.
      */
@@ -61,7 +61,7 @@ public interface IOperator {
 
     /**
      * Get the output value type depending on the active input of the operator.
-     * 
+     *
      * @param input The input that would be given during evaluation.
      * @return The type of value that is achieved when this operator is executed.
      */
@@ -69,7 +69,7 @@ public interface IOperator {
 
     /**
      * Evaluate the given input values for this operator.
-     * 
+     *
      * @param input The ordered input values.
      * @return The output value.
      * @throws EvaluationException When something went wrong while evaluating.
@@ -83,7 +83,7 @@ public interface IOperator {
 
     /**
      * Check the given input value types for this operator.
-     * 
+     *
      * @param input The ordered input value types.
      * @return An error or null if valid.
      */
@@ -94,4 +94,11 @@ public interface IOperator {
      */
     public IConfigRenderPattern getRenderPattern();
 
+    /**
+     * Materialize this operator so that it can exist without any external references.
+     * 
+     * @return The materialized operator.
+     * @throws EvaluationException if materialization fails because of a variable evaluation.
+     */
+    public IOperator materialize() throws EvaluationException;
 }

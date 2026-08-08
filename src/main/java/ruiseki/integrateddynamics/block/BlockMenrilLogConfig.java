@@ -20,7 +20,10 @@ public class BlockMenrilLogConfig extends BlockConfig {
      * The 1/x chance at which a Menril Log will be filled with Menril Resin when generated.
      * TODO Add filledMenrilLogChance
      */
-    @ConfigurableProperty(category = ConfigurableTypeCategory.BIOME, comment = "The weight of spawning.", minimalValue = 0)
+    @ConfigurableProperty(
+        category = ConfigurableTypeCategory.BIOME,
+        comment = "The weight of spawning.",
+        minimalValue = 0)
     public static int spawnWeight = 5;
 
     /**

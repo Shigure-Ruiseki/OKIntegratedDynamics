@@ -146,14 +146,6 @@ public class Network implements INetwork {
                     .getWorld();
                 BlockPos pos = pathElement.getPosition()
                     .getBlockPos();
-                INetworkElementProvider networkElementProvider = CapabilityHelpers
-                    .getCapability(pathElement.getPosition(), NetworkElementProviderConfig.CAPABILITY)
-                    .getOrNull();
-                if (networkElementProvider != null) {
-                    for (INetworkElement element : networkElementProvider.createNetworkElements(world, pos)) {
-                        addNetworkElement(element, true);
-                    }
-                }
                 INetworkCarrier networkCarrier = CapabilityHelpers
                     .getCapability(world, pos, NetworkCarrierConfig.CAPABILITY)
                     .getOrNull();
@@ -166,6 +158,14 @@ public class Network implements INetwork {
                     }
                     networkCarrier.setNetwork(null);
                     networkCarrier.setNetwork(this);
+                }
+                INetworkElementProvider networkElementProvider = CapabilityHelpers
+                    .getCapability(pathElement.getPosition(), NetworkElementProviderConfig.CAPABILITY)
+                    .getOrNull();
+                if (networkElementProvider != null) {
+                    for (INetworkElement element : networkElementProvider.createNetworkElements(world, pos)) {
+                        addNetworkElement(element, true);
+                    }
                 }
             }
             onNetworkChanged();

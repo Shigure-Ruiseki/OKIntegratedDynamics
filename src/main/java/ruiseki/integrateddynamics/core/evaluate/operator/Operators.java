@@ -14,6 +14,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.crafting.FurnaceRecipes;
 import net.minecraft.tileentity.TileEntityFurnace;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.MovingObjectPosition;
@@ -58,8 +59,10 @@ import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeBoolean;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeDouble;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeInteger;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeList;
+import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeListProxyAppend;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeListProxyEntityArmorInventory;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeListProxyEntityInventory;
+import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeListProxyLazyBuilt;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeListProxyOperatorMapped;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeOperator;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeString;
@@ -153,6 +156,20 @@ public final class Operators {
                 }
             })
             .build());
+
+    /**
+     * Short-circuit logical NAND operator with two input booleans and one output boolean.
+     */
+    public static final IOperator LOGICAL_NAND = REGISTRY.register(
+        new CompositionalOperator.AppliedOperatorBuilder(LOGICAL_NOT).apply(LOGICAL_AND)
+            .build("!&&", "nand", IConfigRenderPattern.INFIX, "logical"));
+
+    /**
+     * Short-circuit logical NAND operator with two input booleans and one output boolean.
+     */
+    public static final IOperator LOGICAL_NOR = REGISTRY.register(
+        new CompositionalOperator.AppliedOperatorBuilder(LOGICAL_NOT).apply(LOGICAL_OR)
+            .build("!||", "nor", IConfigRenderPattern.INFIX, "logical"));
 
     /**
      * ----------------------------------- ARITHMETIC OPERATORS -----------------------------------
@@ -809,13 +826,12 @@ public final class Operators {
             .build());
 
     /**
-     * List contains operator that takes a list, a predicate that maps two list elements to a boolean, a list element
-     * and returns a boolean.
+     * List contains operator that takes a list, a predicate that maps a list element to a boolean, a list element and
+     * returns a boolean.
      */
     public static final IOperator LIST_CONTAINS_PREDICATE = REGISTRY.register(
-        OperatorBuilders.LIST
-            .inputTypes(new IValueType[] { ValueTypes.LIST, ValueTypes.OPERATOR, ValueTypes.CATEGORY_ANY })
-            .renderPattern(IConfigRenderPattern.PREFIX_3_LONG)
+        OperatorBuilders.LIST.inputTypes(new IValueType[] { ValueTypes.LIST, ValueTypes.OPERATOR })
+            .renderPattern(IConfigRenderPattern.INFIX)
             .output(ValueTypes.BOOLEAN)
             .symbolOperator("contains_p")
             .function(new OperatorBase.IFunction() {
@@ -826,15 +842,116 @@ public final class Operators {
                         .getValue(0)).getRawValue();
                     IOperator operator = OperatorBuilders
                         .getSafePredictate((ValueTypeOperator.ValueOperator) variables.getValue(1));
-                    IVariable container = variables.getVariables()[2];
+
                     for (IValue value : list) {
-                        IValue result = operator
-                            .evaluate(new IVariable[] { container, new Variable<>(value.getType(), value) });
+                        IValue result = operator.evaluate(new IVariable[] { new Variable<>(value.getType(), value) });
                         if (((ValueTypeBoolean.ValueBoolean) result).getRawValue()) {
                             return ValueTypeBoolean.ValueBoolean.of(true);
                         }
                     }
                     return ValueTypeBoolean.ValueBoolean.of(false);
+                }
+            })
+            .build());
+
+    /**
+     * List operator with one input list, and element and one output integer
+     */
+    public static final IOperator LIST_COUNT = REGISTRY.register(
+        OperatorBuilders.LIST.inputTypes(new IValueType[] { ValueTypes.LIST, ValueTypes.CATEGORY_ANY })
+            .renderPattern(IConfigRenderPattern.INFIX)
+            .output(ValueTypes.INTEGER)
+            .symbolOperator("count")
+            .function(new OperatorBase.IFunction() {
+
+                @Override
+                public IValue evaluate(OperatorBase.SafeVariablesGetter variables) throws EvaluationException {
+                    IValueTypeListProxy<IValueType<IValue>, IValue> list = ((ValueTypeList.ValueList) variables
+                        .getValue(0)).getRawValue();
+                    IValue value = variables.getValue(1);
+                    int count = 0;
+                    for (IValue listValue : list) {
+                        if (listValue.equals(value)) {
+                            count++;
+                        }
+                    }
+                    return ValueTypeInteger.ValueInteger.of(count);
+                }
+            })
+            .build());
+
+    /**
+     * List operator with one input list, a predicate and one output integer
+     */
+    public static final IOperator LIST_COUNT_PREDICATE = REGISTRY.register(
+        OperatorBuilders.LIST.inputTypes(new IValueType[] { ValueTypes.LIST, ValueTypes.OPERATOR })
+            .renderPattern(IConfigRenderPattern.INFIX)
+            .output(ValueTypes.INTEGER)
+            .symbolOperator("count_p")
+            .function(new OperatorBase.IFunction() {
+
+                @Override
+                public IValue evaluate(OperatorBase.SafeVariablesGetter variables) throws EvaluationException {
+                    IValueTypeListProxy<IValueType<IValue>, IValue> list = ((ValueTypeList.ValueList) variables
+                        .getValue(0)).getRawValue();
+                    IOperator operator = OperatorBuilders
+                        .getSafePredictate((ValueTypeOperator.ValueOperator) variables.getValue(1));
+                    int count = 0;
+                    for (IValue listValue : list) {
+                        IValue result = operator
+                            .evaluate(new IVariable[] { new Variable<>(listValue.getType(), listValue) });
+                        if (((ValueTypeBoolean.ValueBoolean) result).getRawValue()) {
+                            count++;
+                        }
+                    }
+                    return ValueTypeInteger.ValueInteger.of(count);
+                }
+            })
+            .build());
+
+    /**
+     * Append an element to the given list
+     */
+    public static final IOperator LIST_APPEND = REGISTRY.register(
+        OperatorBuilders.LIST.inputTypes(new IValueType[] { ValueTypes.LIST, ValueTypes.CATEGORY_ANY })
+            .renderPattern(IConfigRenderPattern.INFIX)
+            .output(ValueTypes.LIST)
+            .symbolOperator("append")
+            .function(new OperatorBase.IFunction() {
+
+                @Override
+                public IValue evaluate(OperatorBase.SafeVariablesGetter variables) throws EvaluationException {
+                    IValueTypeListProxy a = ((ValueTypeList.ValueList) variables.getValue(0)).getRawValue();
+                    IValue value = variables.getValue(1);
+                    if (!ValueHelpers.correspondsTo(a.getValueType(), value.getType())) {
+                        LangHelpers.UnlocalizedString error = new LangHelpers.UnlocalizedString(
+                            L10NValues.VALUETYPE_ERROR_INVALIDLISTVALUETYPE,
+                            a.getValueType(),
+                            value.getType());
+                        throw new EvaluationException(error.localize());
+                    }
+                    return ValueTypeList.ValueList.ofFactory(new ValueTypeListProxyAppend(a, value));
+                }
+            })
+            .build());
+
+    /**
+     * Build a list lazily using a start value and an operator that is applied to the previous element to get a next
+     * element.
+     */
+    public static final IOperator LIST_LAZYBUILT = REGISTRY.register(
+        OperatorBuilders.LIST.inputTypes(new IValueType[] { ValueTypes.CATEGORY_ANY, ValueTypes.OPERATOR })
+            .renderPattern(IConfigRenderPattern.INFIX)
+            .output(ValueTypes.LIST)
+            .symbolOperator("lazybuilt")
+            .function(new OperatorBase.IFunction() {
+
+                @Override
+                public IValue evaluate(OperatorBase.SafeVariablesGetter variables) throws EvaluationException {
+                    IValue a = variables.getValue(0);
+                    IOperator operator = OperatorBuilders
+                        .getSafeOperator((ValueTypeOperator.ValueOperator) variables.getValue(1), a.getType());
+                    return ValueTypeList.ValueList.ofFactory(new ValueTypeListProxyLazyBuilt<>(a, operator));
                 }
             })
             .build());
@@ -1424,6 +1541,41 @@ public final class Operators {
                         return itemStack != null ? TileEntityFurnace.getItemBurnTime(itemStack) : 0;
                     }
                 }))
+            .build());
+
+    /**
+     * If the given item can be used as fuel
+     */
+    public static final IOperator OBJECT_ITEMSTACK_CANBURN = REGISTRY.register(
+        OperatorBuilders.ITEMSTACK_1_SUFFIX_LONG.output(ValueTypes.BOOLEAN)
+            .symbolOperator("canburn")
+            .function(
+                OperatorBuilders.FUNCTION_ITEMSTACK_TO_BOOLEAN
+                    .build(new IOperatorValuePropagator<ItemStack, Boolean>() {
+
+                        @Override
+                        public Boolean getOutput(ItemStack itemStack) throws EvaluationException {
+                            return itemStack != null && TileEntityFurnace.getItemBurnTime(itemStack) > 0;
+                        }
+                    }))
+            .build());
+
+    /**
+     * If the given item can be smelted
+     */
+    public static final IOperator OBJECT_ITEMSTACK_CANSMELT = REGISTRY.register(
+        OperatorBuilders.ITEMSTACK_1_SUFFIX_LONG.output(ValueTypes.BOOLEAN)
+            .symbolOperator("cansmelt")
+            .function(
+                OperatorBuilders.FUNCTION_ITEMSTACK_TO_BOOLEAN
+                    .build(new IOperatorValuePropagator<ItemStack, Boolean>() {
+
+                        @Override
+                        public Boolean getOutput(ItemStack itemStack) throws EvaluationException {
+                            return itemStack != null && FurnaceRecipes.smelting()
+                                .getSmeltingResult(itemStack) != null;
+                        }
+                    }))
             .build());
 
     /**
@@ -2266,6 +2418,9 @@ public final class Operators {
                         }
                     }))
             .build());
+    static {
+        REGISTRY.registerSerializer(new CurriedOperator.Serializer());
+    }
 
     /**
      * Apply the given operator on all elements of a list, resulting in a new list of mapped values.
@@ -2341,14 +2496,14 @@ public final class Operators {
 
                         @Override
                         public IValue getOutput(Pair<IOperator, IOperator> input) throws EvaluationException {
-                            CombinedOperator.Conjunction conjunction = new CombinedOperator.Conjunction(
-                                input.getLeft(),
-                                input.getRight());
                             return ValueTypeOperator.ValueOperator
-                                .of(new CombinedOperator(":&&:", "p_conjunction", conjunction, ValueTypes.BOOLEAN));
+                                .of(CombinedOperator.Conjunction.asOperator(input.getLeft(), input.getRight()));
                         }
                     }))
             .build());
+    static {
+        REGISTRY.registerSerializer(new CombinedOperator.Conjunction.Serializer());
+    }
 
     /**
      * Takes the disjunction of two predicates.
@@ -2364,14 +2519,14 @@ public final class Operators {
 
                         @Override
                         public IValue getOutput(Pair<IOperator, IOperator> input) throws EvaluationException {
-                            CombinedOperator.Disjunction disjunction = new CombinedOperator.Disjunction(
-                                input.getLeft(),
-                                input.getRight());
                             return ValueTypeOperator.ValueOperator
-                                .of(new CombinedOperator(":||:", "p_disjunction", disjunction, ValueTypes.BOOLEAN));
+                                .of(CombinedOperator.Disjunction.asOperator(input.getLeft(), input.getRight()));
                         }
                     }))
             .build());
+    static {
+        REGISTRY.registerSerializer(new CombinedOperator.Disjunction.Serializer());
+    }
 
     /**
      * Takes the negation of a predicate.
@@ -2385,12 +2540,13 @@ public final class Operators {
 
                 @Override
                 public IValue getOutput(IOperator input) throws EvaluationException {
-                    CombinedOperator.Negation negation = new CombinedOperator.Negation(input);
-                    return ValueTypeOperator.ValueOperator
-                        .of(new CombinedOperator("!:", "p_negation", negation, ValueTypes.BOOLEAN));
+                    return ValueTypeOperator.ValueOperator.of(CombinedOperator.Negation.asOperator(input));
                 }
             }))
             .build());
+    static {
+        REGISTRY.registerSerializer(new CombinedOperator.Negation.Serializer());
+    }
 
     /**
      * Create a new operator that pipes the output from the first operator to the second operator.
@@ -2406,17 +2562,14 @@ public final class Operators {
 
                         @Override
                         public IValue getOutput(Pair<IOperator, IOperator> input) throws EvaluationException {
-                            CombinedOperator.Pipe pipe = new CombinedOperator.Pipe(input.getLeft(), input.getRight());
-                            return ValueTypeOperator.ValueOperator.of(
-                                new CombinedOperator(
-                                    ":.:",
-                                    "piped",
-                                    pipe,
-                                    input.getRight()
-                                        .getOutputType()));
+                            return ValueTypeOperator.ValueOperator
+                                .of(CombinedOperator.Pipe.asOperator(input.getLeft(), input.getRight()));
                         }
                     }))
             .build());
+    static {
+        REGISTRY.registerSerializer(new CombinedOperator.Pipe.Serializer());
+    }
 
     /**
      * Flip the input parameters of an operator with two inputs.
@@ -2429,23 +2582,13 @@ public final class Operators {
 
                 @Override
                 public IValue getOutput(IOperator input) throws EvaluationException {
-                    CombinedOperator.Flip flip = new CombinedOperator.Flip(input);
-                    IValueType[] originalInputTypes = input.getInputTypes();
-                    IValueType[] flippedInputTypes = new IValueType[originalInputTypes.length];
-                    for (int i = 0; i < flippedInputTypes.length; i++) {
-                        flippedInputTypes[flippedInputTypes.length - i - 1] = originalInputTypes[i];
-                    }
-                    return ValueTypeOperator.ValueOperator.of(
-                        new CombinedOperator(
-                            ":flip:",
-                            "flipped",
-                            flip,
-                            flippedInputTypes,
-                            input.getOutputType(),
-                            IConfigRenderPattern.INFIX));
+                    return ValueTypeOperator.ValueOperator.of(CombinedOperator.Flip.asOperator(input));
                 }
             }))
             .build());
+    static {
+        REGISTRY.registerSerializer(new CombinedOperator.Flip.Serializer());
+    }
 
     /**
      * Apply the given operator on all elements of a list to reduce the list to one value.

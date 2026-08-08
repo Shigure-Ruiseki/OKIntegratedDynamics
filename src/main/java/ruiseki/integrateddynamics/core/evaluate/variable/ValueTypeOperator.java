@@ -11,6 +11,7 @@ import org.apache.commons.lang3.StringUtils;
 import com.google.common.collect.Lists;
 
 import lombok.ToString;
+import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.evaluate.operator.IOperator;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 import ruiseki.integrateddynamics.core.evaluate.operator.Operators;
@@ -44,13 +45,17 @@ public class ValueTypeOperator extends ValueTypeBase<ValueTypeOperator.ValueOper
 
     @Override
     public String serialize(ValueOperator value) {
-        return value.getRawValue()
-            .getUniqueName();
+        return Operators.REGISTRY.serialize(value.getRawValue());
     }
 
     @Override
     public ValueOperator deserialize(String value) {
-        IOperator operator = Operators.REGISTRY.getOperator(value);
+        IOperator operator;
+        try {
+            operator = Operators.REGISTRY.deserialize(value);
+        } catch (EvaluationException e) {
+            throw new IllegalArgumentException(e.getMessage());
+        }
         if (operator != null) {
             return ValueOperator.of(operator);
         }
@@ -72,9 +77,16 @@ public class ValueTypeOperator extends ValueTypeBase<ValueTypeOperator.ValueOper
         return false;
     }
 
+    @Override
+    public ValueOperator materialize(ValueOperator value) throws EvaluationException {
+        return ValueOperator.of(
+            value.getRawValue()
+                .materialize());
+    }
+
     /**
      * Pretty formatted signature of an operator.
-     * 
+     *
      * @param operator The operator.
      * @return The signature.
      */
@@ -84,7 +96,7 @@ public class ValueTypeOperator extends ValueTypeBase<ValueTypeOperator.ValueOper
 
     /**
      * Pretty formatted signature of an operator.
-     * 
+     *
      * @param inputTypes The input types.
      * @param outputType The output types.
      * @return The signature.
@@ -100,7 +112,7 @@ public class ValueTypeOperator extends ValueTypeBase<ValueTypeOperator.ValueOper
 
     /**
      * Pretty formatted signature of an operator.
-     * 
+     *
      * @param inputTypes The input types.
      * @param outputType The output types.
      * @param indent     If the lines should be indented.

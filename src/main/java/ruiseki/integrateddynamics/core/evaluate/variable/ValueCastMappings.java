@@ -1,9 +1,7 @@
 package ruiseki.integrateddynamics.core.evaluate.variable;
 
 import ruiseki.integrateddynamics.IntegratedDynamics;
-import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueCastRegistry;
-import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 import ruiseki.okcore.helper.MinecraftHelpers;
 
 /**
@@ -86,16 +84,6 @@ public class ValueCastMappings {
                     return ValueTypeDouble.ValueDouble.of((double) value.getRawValue());
                 }
             });
-        for (IValueType<?> valueType : ValueTypes.CATEGORY_NUMBER.getElements()) {
-            REGISTRY.register(valueType, ValueTypes.CATEGORY_NUMBER, new IValueCastRegistry.IMapping() {
-
-                @Override
-                public IValue cast(IValue value) {
-                    return value;
-                }
-            });
-        }
-
     }
 
 }

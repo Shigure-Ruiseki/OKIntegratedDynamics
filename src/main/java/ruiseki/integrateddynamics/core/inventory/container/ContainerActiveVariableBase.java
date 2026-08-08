@@ -48,7 +48,7 @@ public class ContainerActiveVariableBase<T extends TileActiveVariableBase<?>>
                     IValue value = variable.getValue();
                     readValue = value.getType()
                         .toCompactString(value);
-                    readValueColor = variable.getType()
+                    readValueColor = value.getType()
                         .getDisplayColor();
                 } catch (EvaluationException | NullPointerException e) {
                     readValue = "ERROR";

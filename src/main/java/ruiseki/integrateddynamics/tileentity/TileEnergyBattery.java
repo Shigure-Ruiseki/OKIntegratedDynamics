@@ -69,6 +69,7 @@ public class TileEnergyBattery extends TileCableConnectable
                     ((float) energy * (BlockEnergyBattery.FILL.getAllowedValues() - 1)) / (float) getMaxEnergyStored());
                 if (blockState.getPropertyValue(BlockEnergyBattery.FILL) != fill) {
                     BlockStateHelpers.set(worldObj, pos, BlockEnergyBattery.FILL, fill);
+                    sendUpdate();
                 }
             }
         }
@@ -80,7 +81,7 @@ public class TileEnergyBattery extends TileCableConnectable
             if (lastEnergy != energy) {
                 this.energy = energy;
                 updateBlockState();
-                sendUpdate();
+                markDirty();
             }
         }
     }
@@ -126,7 +127,6 @@ public class TileEnergyBattery extends TileCableConnectable
         super.updateTileEntity();
         if (getEnergyStored() > 0 && getWorldObj().isBlockIndirectlyGettingPowered(xCoord, yCoord, zCoord)) {
             addEnergy(Math.min(BlockEnergyBatteryConfig.energyPerTick, getEnergyStored()));
-            sendUpdate();
         }
     }
 

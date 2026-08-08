@@ -5,6 +5,7 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueHelpers;
 import ruiseki.okcore.helper.LangHelpers;
 
@@ -105,8 +106,9 @@ public interface IValueType<V extends IValue> {
      *
      * @param value The value to materialize.
      * @return The materialized value.
+     * @throws EvaluationException if materialization fails because of a variable evaluation.
      */
-    public V materialize(V value);
+    public V materialize(V value) throws EvaluationException;
 
     /**
      * @return If a default logic programmer element has to be generated.

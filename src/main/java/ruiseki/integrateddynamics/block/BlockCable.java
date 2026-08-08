@@ -32,8 +32,6 @@ import lombok.Setter;
 import lombok.experimental.Delegate;
 import ruiseki.integrateddynamics.api.block.IDynamicLight;
 import ruiseki.integrateddynamics.api.block.IDynamicRedstone;
-import ruiseki.integrateddynamics.api.block.cable.ICable;
-import ruiseki.integrateddynamics.api.block.cable.ICableFakeable;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.block.collidable.CollidableComponentCableCenter;
@@ -156,14 +154,7 @@ public class BlockCable extends ConfigurableBlockContainer
 
     @Override
     public ArrayList<ItemStack> getDrops(World world, int x, int y, int z, int meta, int fortune) {
-        BlockPos pos = new BlockPos(x, y, z);
-        ICable cable = CableHelpers.getCable(world, pos);
-        ICableFakeable cableFakeable = CableHelpers.getCableFakeable(world, pos);
-        IPartContainer partContainer = PartHelpers.getPartContainer(world, pos);
-        if (cable == null || cableFakeable == null || partContainer == null || !partContainer.hasParts()) {
-            return Lists.newArrayList();
-        }
-        return super.getDrops(world, x, y, z, meta, fortune);
+        return Lists.newArrayList();
     }
 
     @Override

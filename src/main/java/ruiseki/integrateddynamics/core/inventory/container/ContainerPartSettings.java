@@ -20,7 +20,6 @@ import ruiseki.integrateddynamics.core.helper.PartHelpers;
 import ruiseki.integrateddynamics.core.network.PartNetworkElement;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
-import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.helper.ValueNotifierHelpers;
 import ruiseki.okcore.inventory.IGuiContainerProvider;
 import ruiseki.okcore.inventory.container.ExtendedInventoryContainer;
@@ -78,7 +77,7 @@ public class ContainerPartSettings extends ExtendedInventoryContainer {
                 if (!(getPartType() instanceof IGuiContainerProvider)
                     || ((IGuiContainerProvider) getPartType()).getContainer()
                         != ContainerPartSettings.this.getClass()) {
-                    if (!MinecraftHelpers.isClientSide()) {
+                    if (!world.isRemote) {
                         IntegratedDynamics._instance.getGuiHandler()
                             .setTemporaryData(
                                 ExtendedGuiHandler.PART,
@@ -140,7 +139,7 @@ public class ContainerPartSettings extends ExtendedInventoryContainer {
     @Override
     public void onUpdate(int valueId, NBTTagCompound value) {
         super.onUpdate(valueId, value);
-        if (!MinecraftHelpers.isClientSide()) {
+        if (!world.isRemote) {
             getPartType().setUpdateInterval(getPartState(), getLastUpdateValue());
             DimPos dimPos = getTarget().getCenter()
                 .getPos();

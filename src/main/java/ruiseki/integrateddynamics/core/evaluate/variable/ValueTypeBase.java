@@ -7,6 +7,7 @@ import javax.annotation.Nullable;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.integrateddynamics.Reference;
+import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
@@ -105,7 +106,7 @@ public abstract class ValueTypeBase<V extends IValue> implements IValueType<V> {
     }
 
     @Override
-    public V materialize(V value) {
+    public V materialize(V value) throws EvaluationException {
         return value;
     }
 

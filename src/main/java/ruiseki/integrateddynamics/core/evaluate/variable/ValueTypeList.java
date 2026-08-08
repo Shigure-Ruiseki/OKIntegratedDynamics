@@ -20,7 +20,7 @@ import ruiseki.okcore.helper.LangHelpers;
 
 /**
  * Value type with values that are strings.
- * 
+ *
  * @author rubensworks
  */
 public class ValueTypeList extends ValueObjectTypeBase<ValueTypeList.ValueList> {
@@ -74,8 +74,11 @@ public class ValueTypeList extends ValueObjectTypeBase<ValueTypeList.ValueList> 
     }
 
     @Override
-    public ValueList materialize(ValueList value) {
+    public ValueList materialize(ValueList value) throws EvaluationException {
         IValueTypeListProxy<IValueType<IValue>, IValue> list = value.getRawValue();
+        if (list.isInfinite()) {
+            return ValueList.ofList(list.getValueType(), Lists.newArrayList(list.get(0)));
+        }
         List<IValue> values = ImmutableList.copyOf(list);
         return ValueList.ofList(list.getValueType(), values);
     }

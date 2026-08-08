@@ -3,6 +3,7 @@ package ruiseki.integrateddynamics.part.aspect.read;
 import java.util.List;
 
 import net.minecraft.entity.item.EntityItemFrame;
+import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.common.util.ForgeDirection;
@@ -543,18 +544,25 @@ public class AspectReadBuilders {
                 DimPos dimPos = input.getLeft()
                     .getTarget()
                     .getPos();
-                return dimPos.getWorld()
-                    .getIndirectPowerLevelTo(
-                        dimPos.getBlockPos()
-                            .getX(),
-                        dimPos.getBlockPos()
-                            .getY(),
-                        dimPos.getBlockPos()
-                            .getZ(),
-                        input.getLeft()
-                            .getCenter()
-                            .getSide()
-                            .ordinal());
+
+                net.minecraft.world.World world = dimPos.getWorld();
+                int x = dimPos.getX();
+                int y = dimPos.getY();
+                int z = dimPos.getZ();
+                ForgeDirection side = input.getLeft()
+                    .getCenter()
+                    .getSide();
+
+                int power = world.getIndirectPowerLevelTo(x, y, z, side.ordinal());
+
+                if (power == 0) {
+                    net.minecraft.block.Block block = world.getBlock(x, y, z);
+                    if (block == Blocks.redstone_wire) {
+                        power = world.getBlockMetadata(x, y, z);
+                    }
+                }
+
+                return power;
             }
         };
         public static final IAspectValuePropagator<Pair<PartTarget, IAspectProperties>, Integer> PROP_GET_COMPARATOR = new IAspectValuePropagator<Pair<PartTarget, IAspectProperties>, Integer>() {

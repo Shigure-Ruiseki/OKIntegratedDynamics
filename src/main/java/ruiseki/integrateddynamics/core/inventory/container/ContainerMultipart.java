@@ -20,7 +20,6 @@ import ruiseki.integrateddynamics.core.client.gui.container.GuiMultipart;
 import ruiseki.integrateddynamics.core.helper.PartHelpers;
 import ruiseki.integrateddynamics.core.part.PartTypeConfigurable;
 import ruiseki.okcore.datastructure.BlockPos;
-import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.inventory.IGuiContainerProvider;
 import ruiseki.okcore.inventory.container.ExtendedInventoryContainer;
 import ruiseki.okcore.inventory.container.InventoryContainer;
@@ -80,7 +79,7 @@ public abstract class ContainerMultipart<P extends IPartType<P, S> & IGuiContain
 
             @Override
             public void onAction(int buttonId, InventoryContainer container) {
-                if (!MinecraftHelpers.isClientSide()) {
+                if (!world.isRemote) {
                     IGuiContainerProvider gui = ((PartTypeConfigurable<?, ?>) getPartType()).getSettingsGuiProvider();
                     IntegratedDynamics._instance.getGuiHandler()
                         .setTemporaryData(

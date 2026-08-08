@@ -55,11 +55,11 @@ public class ItemWrench extends ConfigurableItem {
     public boolean onItemUseFirst(ItemStack stack, EntityPlayer player, World world, int x, int y, int z, int side,
         float hitX, float hitY, float hitZ) {
         Block block = world.getBlock(x, y, z);
-        if (block == null || player.isSneaking()) {
+        if (!world.isRemote || player.isSneaking()) {
             return false;
         } else if (block.rotateBlock(world, x, y, z, ForgeDirection.getOrientation(side))) {
             player.swingItem();
-            return !world.isRemote;
+            return true;
         }
         return true;
     }

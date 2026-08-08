@@ -2,13 +2,21 @@ package ruiseki.integrateddynamics.core.evaluate.operator;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
+
+import net.minecraft.nbt.JsonToNBT;
+import net.minecraft.nbt.NBTException;
+import net.minecraft.nbt.NBTTagCompound;
 
 import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.evaluate.operator.IOperator;
+import ruiseki.integrateddynamics.api.evaluate.operator.IOperatorSerializer;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 import ruiseki.integrateddynamics.api.evaluate.variable.IVariable;
 import ruiseki.integrateddynamics.api.logicprogrammer.IConfigRenderPattern;
+import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
+import ruiseki.integrateddynamics.core.evaluate.variable.Variable;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.okcore.helper.LangHelpers;
 
@@ -44,12 +52,7 @@ public class CurriedOperator implements IOperator {
 
     @Override
     public String getUniqueName() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(baseOperator.getUniqueName());
-        sb.append("[");
-        sb.append(getAppliedSymbol());
-        sb.append("]");
-        return sb.toString();
+        return "curriedOperator";
     }
 
     @Override
@@ -125,5 +128,56 @@ public class CurriedOperator implements IOperator {
     @Override
     public IConfigRenderPattern getRenderPattern() {
         return IConfigRenderPattern.NONE;
+    }
+
+    @Override
+    public IOperator materialize() throws EvaluationException {
+        return new CurriedOperator(baseOperator, new Variable(appliedVariable.getType(), appliedVariable.getValue()));
+    }
+
+    public static class Serializer implements IOperatorSerializer<CurriedOperator> {
+
+        @Override
+        public boolean canHandle(IOperator operator) {
+            return operator instanceof CurriedOperator;
+        }
+
+        @Override
+        public String getUniqueName() {
+            return "curry";
+        }
+
+        @Override
+        public String serialize(CurriedOperator operator) {
+            IValue value;
+            try {
+                value = operator.appliedVariable.getValue();
+            } catch (EvaluationException e) {
+                value = operator.appliedVariable.getType()
+                    .getDefault();
+            }
+            IValueType valueType = value.getType();
+            NBTTagCompound tag = new NBTTagCompound();
+            tag.setString("valueType", valueType.getUnlocalizedName());
+            tag.setString("value", valueType.serialize(value));
+            tag.setString("baseOperator", Operators.REGISTRY.serialize(operator.baseOperator));
+            return tag.toString();
+        }
+
+        @Override
+        public CurriedOperator deserialize(String valueOperator) throws EvaluationException {
+            NBTTagCompound tag;
+            try {
+                tag = (NBTTagCompound) JsonToNBT.func_150315_a(valueOperator);
+            } catch (NBTException e) {
+                e.printStackTrace();
+                throw new EvaluationException(e.getMessage());
+            }
+            IValueType valueType = ValueTypes.REGISTRY.getValueType(tag.getString("valueType"));
+            IValue value = valueType.deserialize(tag.getString("value"));
+            IOperator baseOperator = Objects
+                .requireNonNull(Operators.REGISTRY.deserialize(tag.getString("baseOperator")));
+            return new CurriedOperator(baseOperator, new Variable(valueType, value));
+        }
     }
 }

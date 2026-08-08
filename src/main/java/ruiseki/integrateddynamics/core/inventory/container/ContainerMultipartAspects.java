@@ -34,7 +34,6 @@ import ruiseki.integrateddynamics.core.part.PartTypeConfigurable;
 import ruiseki.integrateddynamics.part.aspect.Aspects;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.helper.LangHelpers;
-import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.inventory.IGuiContainerProvider;
 import ruiseki.okcore.inventory.SimpleInventory;
 import ruiseki.okcore.inventory.container.InventoryContainer;
@@ -109,7 +108,7 @@ public abstract class ContainerMultipartAspects<P extends IPartType<P, S> & IGui
 
             @Override
             public void onAction(int buttonId, InventoryContainer container) {
-                if (!MinecraftHelpers.isClientSide()) {
+                if (!world.isRemote) {
                     IGuiContainerProvider gui = ((PartTypeConfigurable) getPartType()).getSettingsGuiProvider();
                     IntegratedDynamics._instance.getGuiHandler()
                         .setTemporaryData(
@@ -140,7 +139,7 @@ public abstract class ContainerMultipartAspects<P extends IPartType<P, S> & IGui
                         IntegratedDynamics._instance.getGuiHandler()
                             .setTemporaryData(ExtendedGuiHandler.ASPECT, Pair.of(side, aspect));
 
-                        if (!MinecraftHelpers.isClientSide()) {
+                        if (!world.isRemote) {
                             BlockPos cPos = getTarget().getCenter()
                                 .getPos()
                                 .getBlockPos();

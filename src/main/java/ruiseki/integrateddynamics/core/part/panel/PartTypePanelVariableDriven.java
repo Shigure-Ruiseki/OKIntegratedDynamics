@@ -153,9 +153,18 @@ public abstract class PartTypePanelVariableDriven<P extends PartTypePanelVariabl
     }
 
     protected void onValueChanged(IPartNetwork network, PartTarget target, S state, IValue lastValue, IValue newValue) {
-        state.setDisplayValue(
-            newValue != null ? newValue.getType()
-                .materialize(newValue) : null);
+        if (newValue == null) {
+            state.setDisplayValue(null);
+        } else {
+            IValue materializedValue = null;
+            try {
+                materializedValue = newValue.getType()
+                    .materialize(newValue);
+            } catch (EvaluationException e) {
+                state.addGlobalError(new LangHelpers.UnlocalizedString(e.getLocalizedMessage()));
+            }
+            state.setDisplayValue(materializedValue);
+        }
     }
 
     @Override

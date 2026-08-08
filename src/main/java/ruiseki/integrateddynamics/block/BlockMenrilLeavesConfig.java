@@ -34,7 +34,11 @@ public class BlockMenrilLeavesConfig extends BlockConfig {
     /**
      * A 1/x chance menril berries will be dropped when breaking a leaves block.
      */
-    @ConfigurableProperty(category = ConfigurableTypeCategory.BLOCK, comment = "A 1/x chance menril berries will be dropped when breaking a leaves block.", isCommandable = true, minimalValue = 0)
+    @ConfigurableProperty(
+        category = ConfigurableTypeCategory.BLOCK,
+        comment = "A 1/x chance menril berries will be dropped when breaking a leaves block.",
+        isCommandable = true,
+        minimalValue = 0)
     public static int berriesDropChance = 4;
 
     /**

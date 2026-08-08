@@ -22,7 +22,6 @@ import ruiseki.integrateddynamics.api.part.aspect.property.IAspectPropertyTypeIn
 import ruiseki.integrateddynamics.core.client.gui.ExtendedGuiHandler;
 import ruiseki.integrateddynamics.core.client.gui.container.GuiAspectSettings;
 import ruiseki.okcore.datastructure.BlockPos;
-import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.helper.ValueNotifierHelpers;
 import ruiseki.okcore.inventory.IGuiContainerProvider;
 import ruiseki.okcore.inventory.container.ExtendedInventoryContainer;
@@ -88,7 +87,7 @@ public class ContainerAspectSettings extends ExtendedInventoryContainer {
 
             @Override
             public void onAction(int buttonId, InventoryContainer container) {
-                if (!MinecraftHelpers.isClientSide()) {
+                if (!world.isRemote) {
                     IntegratedDynamics._instance.getGuiHandler()
                         .setTemporaryData(
                             ExtendedGuiHandler.PART,
@@ -161,7 +160,7 @@ public class ContainerAspectSettings extends ExtendedInventoryContainer {
     @Override
     public void onUpdate(int valueId, NBTTagCompound value) {
         super.onUpdate(valueId, value);
-        if (!MinecraftHelpers.isClientSide()) {
+        if (!world.isRemote) {
             IAspectPropertyTypeInstance property = propertyIds.get(valueId);
             if (property != null) {
                 IAspectProperties aspectProperties = getAspect()
