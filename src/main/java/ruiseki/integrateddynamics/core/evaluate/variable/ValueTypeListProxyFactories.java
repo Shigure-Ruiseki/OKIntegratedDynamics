@@ -31,6 +31,7 @@ public class ValueTypeListProxyFactories {
     public static ValueTypeListProxyNBTFactory<ValueTypeInteger, ValueTypeInteger.ValueInteger, ValueTypeListProxyPositionedTankCapacities> POSITIONED_TANK_CAPACITIES;
     public static ValueTypeListProxyAppend.Factory APPEND;
     public static ValueTypeListProxyLazyBuilt.Factory LAZY_BUILT;
+    public static ValueTypeListProxyTail.Factory TAIL;
 
     public static void load() {
         if (MATERIALIZED == null) {
@@ -53,6 +54,7 @@ public class ValueTypeListProxyFactories {
                     ValueTypeListProxyPositionedTankCapacities.class));
             APPEND = REGISTRY.register(new ValueTypeListProxyAppend.Factory());
             LAZY_BUILT = REGISTRY.register(new ValueTypeListProxyLazyBuilt.Factory());
+            TAIL = REGISTRY.register(new ValueTypeListProxyTail.Factory());
         }
     }
 

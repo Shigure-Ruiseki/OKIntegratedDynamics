@@ -29,7 +29,7 @@ import ruiseki.okcore.datastructure.DimPos;
  * @author rubensworks
  */
 @Data
-public class PartNetworkElement<P extends IPartType<P, S>, S extends IPartState<P>>
+public class PartNetworkElement<P extends IPartType<P, S>, S extends IPartState<P>> extends NetworkElementBase
     implements IPartNetworkElement<P, S>, IEnergyConsumingNetworkElement {
 
     private final P part;
@@ -71,6 +71,17 @@ public class PartNetworkElement<P extends IPartType<P, S>, S extends IPartState<
         return hasPartState() ? part.getPriority(getPartState()) : 0;
     }
 
+    @Override
+    public boolean canRevalidate(INetwork network) {
+        return canRevalidatePositioned(network, getCenterPos(getTarget()));
+    }
+
+    @Override
+    public void revalidate(INetwork network) {
+        super.revalidate(network);
+        revalidatePositioned(network, getCenterPos(getTarget()));
+    }
+
     public boolean hasPartState() {
         IPartContainer partContainer = getPartContainer();
         return partContainer != null && partContainer.hasPart(getCenterSide(getTarget()));
@@ -109,7 +120,12 @@ public class PartNetworkElement<P extends IPartType<P, S>, S extends IPartState<
 
     @Override
     public void update(INetwork network) {
-        part.update(network, NetworkHelpers.getPartNetwork(network), getTarget(), getPartState());
+        DimPos dimPos = getTarget().getCenter()
+            .getPos();
+        if (dimPos.getBlockPos()
+            .getTileEntity(dimPos.getWorld()) != null) {
+            part.update(network, NetworkHelpers.getPartNetwork(network), getTarget(), getPartState());
+        }
     }
 
     @Override

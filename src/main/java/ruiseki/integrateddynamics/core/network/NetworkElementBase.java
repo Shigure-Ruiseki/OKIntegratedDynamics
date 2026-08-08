@@ -11,6 +11,8 @@ import org.jetbrains.annotations.Nullable;
 import lombok.Data;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.INetworkElement;
+import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
+import ruiseki.okcore.datastructure.DimPos;
 
 /**
  * Base implementation for a network element.
@@ -78,5 +80,25 @@ public abstract class NetworkElementBase implements INetworkElement {
     @Override
     public void onNeighborBlockChange(@Nullable INetwork network, IBlockAccess world, Block neighborBlock) {
 
+    }
+
+    @Override
+    public void invalidate(INetwork network) {
+        network.invalidateElement(this);
+    }
+
+    @Override
+    public void revalidate(INetwork network) {
+        network.revalidateElement(this);
+    }
+
+    protected boolean canRevalidatePositioned(INetwork network, DimPos dimPos) {
+        return dimPos.getBlockPos()
+            .isLoaded(dimPos.getWorld());
+    }
+
+    protected void revalidatePositioned(INetwork network, DimPos dimPos) {
+        NetworkHelpers.getNetworkCarrier(dimPos.getWorld(), dimPos.getBlockPos())
+            .setNetwork(network);
     }
 }

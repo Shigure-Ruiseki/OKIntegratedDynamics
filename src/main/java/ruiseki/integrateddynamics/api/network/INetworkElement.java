@@ -120,4 +120,26 @@ public interface INetworkElement extends Comparable<INetworkElement> {
      * @return The priority of this element in the network.
      */
     public int getPriority();
+
+    /**
+     * Invalidate this network element.
+     * 
+     * @param network The network.
+     */
+    public void invalidate(INetwork network);
+
+    /**
+     * Check if this element can be revalidated if it has been invalidated.
+     * 
+     * @param network The network.
+     * @return If it can be revalidated.
+     */
+    public boolean canRevalidate(INetwork network);
+
+    /**
+     * Revalidate this network element after it has been invalidated.
+     * 
+     * @param network The network.
+     */
+    public void revalidate(INetwork network);
 }

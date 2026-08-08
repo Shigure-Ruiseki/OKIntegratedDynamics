@@ -38,7 +38,7 @@ public interface INetwork extends IFullNetworkListener, INBTSerializable {
 
     /**
      * Set the priority of the given network element.
-     * 
+     *
      * @param element  The network element.
      * @param priority The new priority
      */
@@ -104,4 +104,19 @@ public interface INetwork extends IFullNetworkListener, INBTSerializable {
     @NotNull
     public <T> LazyOptional<T> getCapability(@NotNull Capability<T> capability);
 
+    /**
+     * Invalidate the given element.
+     * This should be called when the element's chunk is being unloaded.
+     * 
+     * @param element The network element to invalidate.
+     */
+    public void invalidateElement(INetworkElement element);
+
+    /**
+     * Revalidate the given element.
+     * This should be called when the element's chunk is being reloaded.
+     * 
+     * @param element The network element to invalidate.
+     */
+    public void revalidateElement(INetworkElement element);
 }

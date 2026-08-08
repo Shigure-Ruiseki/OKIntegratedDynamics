@@ -1,5 +1,6 @@
 package ruiseki.integrateddynamics.core.tileentity;
 
+import java.util.Map;
 import java.util.Objects;
 
 import net.minecraft.nbt.NBTTagCompound;
@@ -14,6 +15,7 @@ import lombok.experimental.Delegate;
 import ruiseki.integrateddynamics.api.block.cable.ICableFakeable;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.INetworkCarrier;
+import ruiseki.integrateddynamics.api.network.INetworkElement;
 import ruiseki.integrateddynamics.capability.cable.CableConfig;
 import ruiseki.integrateddynamics.capability.cable.CableFakeableConfig;
 import ruiseki.integrateddynamics.capability.cable.CableFakeableMultipartTicking;
@@ -36,6 +38,7 @@ import ruiseki.integrateddynamics.core.helper.PartHelpers;
 import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.capabilities.resolver.BasicCapabilityResolver;
 import ruiseki.okcore.capabilities.resolver.SidedCapabilityResolver;
+import ruiseki.okcore.datastructure.DimPos;
 import ruiseki.okcore.datastructure.EnumFacingMap;
 import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.helper.MinecraftHelpers;
@@ -219,5 +222,20 @@ public class TileMultipartTicking extends TileEntityOK
     public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> capability,
         @Nullable ForgeDirection facing) {
         return super.getCapability(capability, facing);
+    }
+
+    @Override
+    public void onChunkUnload() {
+        super.onChunkUnload();
+        INetwork network = getNetwork();
+        if (network != null) {
+            for (Map.Entry<ForgeDirection, PartHelpers.PartStateHolder<?, ?>> entry : partContainer.getPartData()
+                .entrySet()) {
+                INetworkElement element = entry.getValue()
+                    .getPart()
+                    .createNetworkElement(getPartContainer(), DimPos.of(getWorldObj(), getPos()), entry.getKey());
+                element.invalidate(network);
+            }
+        }
     }
 }

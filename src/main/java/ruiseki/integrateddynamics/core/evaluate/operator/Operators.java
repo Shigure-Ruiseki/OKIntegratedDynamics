@@ -64,6 +64,7 @@ import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeListProxyEntit
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeListProxyEntityInventory;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeListProxyLazyBuilt;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeListProxyOperatorMapped;
+import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeListProxyTail;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeOperator;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeString;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
@@ -952,6 +953,59 @@ public final class Operators {
                     IOperator operator = OperatorBuilders
                         .getSafeOperator((ValueTypeOperator.ValueOperator) variables.getValue(1), a.getType());
                     return ValueTypeList.ValueList.ofFactory(new ValueTypeListProxyLazyBuilt<>(a, operator));
+                }
+            })
+            .build());
+
+    /**
+     * Get the first element of the given list.
+     */
+    public static final IOperator LIST_HEAD = REGISTRY.register(
+        OperatorBuilders.LIST_1_PREFIX.inputTypes(new IValueType[] { ValueTypes.LIST })
+            .output(ValueTypes.CATEGORY_ANY)
+            .renderPattern(IConfigRenderPattern.PREFIX_1_LONG)
+            .symbolOperator("head")
+            .function(new OperatorBase.IFunction() {
+
+                @Override
+                public IValue evaluate(OperatorBase.SafeVariablesGetter variables) throws EvaluationException {
+                    IValueTypeListProxy a = ((ValueTypeList.ValueList) variables.getValue(0)).getRawValue();
+                    if (a.getLength() > 0) {
+                        return a.get(0);
+                    } else {
+                        return a.getValueType()
+                            .getDefault();
+                    }
+                }
+            })
+            .conditionalOutputTypeDeriver(new OperatorBuilder.IConditionalOutputTypeDeriver() {
+
+                @Override
+                public IValueType getConditionalOutputType(OperatorBase operator, IVariable[] input) {
+                    try {
+                        IValueTypeListProxy a = ((ValueTypeList.ValueList) input[0].getValue()).getRawValue();
+                        return a.getValueType();
+                    } catch (EvaluationException e) {
+                        return operator.getConditionalOutputType(input);
+                    }
+                }
+            })
+            .build());
+
+    /**
+     * Append an element to the given list.
+     */
+    public static final IOperator LIST_TAIL = REGISTRY.register(
+        OperatorBuilders.LIST.inputTypes(new IValueType[] { ValueTypes.LIST })
+            .renderPattern(IConfigRenderPattern.PREFIX_1_LONG)
+            .output(ValueTypes.LIST)
+            .symbolOperator("tail")
+            .function(new OperatorBase.IFunction() {
+
+                @Override
+                public IValue evaluate(OperatorBase.SafeVariablesGetter variables) throws EvaluationException {
+                    IValueTypeListProxy a = ((ValueTypeList.ValueList) variables.getValue(0)).getRawValue();
+                    return ValueTypeList.ValueList.ofFactory(new ValueTypeListProxyTail(a));
                 }
             })
             .build());
@@ -2036,6 +2090,22 @@ public final class Operators {
                 }
             })
             .build());
+
+    /**
+     * If the given player has an external gui open.
+     */
+    public static final IOperator OBJECT_PLAYER_HASGUIOPEN = REGISTRY.register(OperatorBuilders.ENTITY_1_SUFFIX_LONG.output(ValueTypes.BOOLEAN).symbolOperator("hasguiopen")
+        .function(new OperatorBase.IFunction() {
+            @Override
+            public IValue evaluate(OperatorBase.SafeVariablesGetter variables) throws EvaluationException {
+                ValueObjectTypeEntity.ValueEntity a = variables.getValue(0);
+                if(a.getRawValue().isPresent() && a.getRawValue().get() instanceof EntityPlayer) {
+                    EntityPlayer entity = (EntityPlayer) a.getRawValue().get();
+                    return ValueTypeBoolean.ValueBoolean.of(entity.openContainer != entity.inventoryContainer);
+                }
+                return ValueTypeBoolean.ValueBoolean.of(false);
+            }
+        }).build());
 
     /**
      * The currently held item of the entity.
