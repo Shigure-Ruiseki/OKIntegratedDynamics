@@ -7,8 +7,9 @@ import java.util.Map;
 import org.apache.logging.log4j.Level;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 
+import gnu.trove.map.TIntObjectMap;
+import gnu.trove.map.hash.TIntObjectHashMap;
 import lombok.Getter;
 import lombok.Setter;
 import ruiseki.integrateddynamics.IntegratedDynamics;
@@ -37,7 +38,7 @@ import ruiseki.okcore.helper.CapabilityHelpers;
 /**
  * A network that can hold parts.
  * Note that this network only contains references to the relevant data, it does not contain the actual information.
- * 
+ *
  * @author rubensworks
  */
 public class PartNetwork extends FullNetworkListenerAdapter implements IPartNetwork {
@@ -45,11 +46,11 @@ public class PartNetwork extends FullNetworkListenerAdapter implements IPartNetw
     @Getter
     @Setter
     private INetwork network;
-    private Map<Integer, PartPos> partPositions = Maps.newHashMap();
+    private TIntObjectMap<PartPos> partPositions = new TIntObjectHashMap<>();
     private List<DimPos> variableContainerPositions = Lists.newArrayList();
     private Map<Integer, IVariableFacade> compositeVariableCache = null;
-    private Map<Integer, IValue> lazyExpressionValueCache = Maps.newHashMap();
-    private Map<Integer, DimPos> proxyPositions = Maps.newHashMap();
+    private TIntObjectMap<IValue> lazyExpressionValueCache = new TIntObjectHashMap<>();
+    private TIntObjectMap<DimPos> proxyPositions = new TIntObjectHashMap<>();
 
     private volatile boolean partsChanged = false;
 

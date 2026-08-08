@@ -12,11 +12,10 @@ import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeListProxy;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeListProxyFactoryTypeRegistry;
 import ruiseki.okcore.persist.nbt.INBTProvider;
-import ruiseki.okcore.persist.nbt.NBTProviderComponent;
 
 /**
  * Factory for list proxies that implement {@link ruiseki.okcore.persist.nbt.INBTProvider}.
- * 
+ *
  * @author rubensworks
  */
 public class ValueTypeListProxyNBTFactory<T extends IValueType<V>, V extends IValue, P extends IValueTypeListProxy<T, V> & INBTProvider>
@@ -41,9 +40,8 @@ public class ValueTypeListProxyNBTFactory<T extends IValueType<V>, V extends IVa
 
     @Override
     public String serialize(P values) throws IValueTypeListProxyFactoryTypeRegistry.SerializationException {
-        INBTProvider provider = new NBTProviderComponent(values);
         NBTTagCompound tag = new NBTTagCompound();
-        provider.writeGeneratedFieldsToNBT(tag);
+        values.writeGeneratedFieldsToNBT(tag);
         return tag.toString();
     }
 
@@ -52,9 +50,8 @@ public class ValueTypeListProxyNBTFactory<T extends IValueType<V>, V extends IVa
         try {
             Constructor<P> constructor = getProxyClass().getConstructor();
             P proxy = constructor.newInstance();
-            INBTProvider provider = new NBTProviderComponent(proxy);
             NBTTagCompound tag = (NBTTagCompound) JsonToNBT.func_150315_a(value);
-            provider.readGeneratedFieldsFromNBT(tag);
+            proxy.readGeneratedFieldsFromNBT(tag);
             return proxy;
         } catch (NoSuchMethodException | InvocationTargetException | InstantiationException | NBTException
             | IllegalAccessException e) {

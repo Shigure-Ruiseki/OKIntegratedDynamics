@@ -1,6 +1,6 @@
 package ruiseki.integrateddynamics.part;
 
-import com.google.common.collect.Sets;
+import com.google.common.collect.Lists;
 
 import ruiseki.integrateddynamics.api.part.aspect.IAspect;
 import ruiseki.integrateddynamics.core.part.aspect.AspectRegistry;
@@ -10,7 +10,7 @@ import ruiseki.integrateddynamics.part.aspect.Aspects;
 
 /**
  * An world reader part.
- * 
+ *
  * @author rubensworks
  */
 public class PartTypeWorldReader
@@ -21,7 +21,7 @@ public class PartTypeWorldReader
         AspectRegistry.getInstance()
             .register(
                 this,
-                Sets.<IAspect>newHashSet(
+                Lists.<IAspect>newArrayList(
                     Aspects.Read.World.BOOLEAN_WEATHER_CLEAR,
                     Aspects.Read.World.BOOLEAN_WEATHER_RAINING,
                     Aspects.Read.World.BOOLEAN_WEATHER_THUNDER,

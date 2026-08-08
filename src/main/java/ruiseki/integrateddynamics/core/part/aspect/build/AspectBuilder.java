@@ -2,12 +2,14 @@ package ruiseki.integrateddynamics.core.part.aspect.build;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 
 import com.google.common.collect.ImmutableList;
 
+import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
@@ -21,6 +23,7 @@ import ruiseki.integrateddynamics.api.part.write.IPartTypeWriter;
 import ruiseki.integrateddynamics.core.helper.Helpers;
 import ruiseki.integrateddynamics.part.aspect.read.AspectReadBase;
 import ruiseki.integrateddynamics.part.aspect.write.AspectWriteBase;
+import ruiseki.okcore.init.ModBase;
 
 /**
  * Immutable builder for aspects.
@@ -39,11 +42,14 @@ public class AspectBuilder<V extends IValue, T extends IValueType<V>, O> {
     private final List<IAspectValuePropagator> valuePropagators;
     private final List<IAspectWriteActivator> writeActivators;
     private final List<IAspectWriteDeactivator> writeDeactivators;
-    private final String customIconPath; // Trường lưu custom icon path
+    private final ModBase mod;
+    private final ModBase modGui;
+
+    private final String customIconPath;
 
     private AspectBuilder(boolean read, T valueType, List<String> kinds, IAspectProperties defaultAspectProperties,
         List<IAspectValuePropagator> valuePropagators, List<IAspectWriteActivator> writeActivators,
-        List<IAspectWriteDeactivator> writeDeactivators, String customIconPath) {
+        List<IAspectWriteDeactivator> writeDeactivators, ModBase mod, ModBase modGui, String customIconPath) {
         this.read = read;
         this.valueType = valueType;
         this.kinds = kinds;
@@ -51,6 +57,8 @@ public class AspectBuilder<V extends IValue, T extends IValueType<V>, O> {
         this.valuePropagators = valuePropagators;
         this.writeActivators = writeActivators;
         this.writeDeactivators = writeDeactivators;
+        this.mod = Objects.requireNonNull(mod);
+        this.modGui = Objects.requireNonNull(modGui);
         this.customIconPath = customIconPath;
     }
 
@@ -69,6 +77,8 @@ public class AspectBuilder<V extends IValue, T extends IValueType<V>, O> {
             Helpers.joinList(this.valuePropagators, null),
             Helpers.joinList(this.writeActivators, null),
             Helpers.joinList(this.writeDeactivators, null),
+            mod,
+            modGui,
             customIconPath);
     }
 
@@ -91,6 +101,8 @@ public class AspectBuilder<V extends IValue, T extends IValueType<V>, O> {
             Helpers.joinList(this.valuePropagators, valuePropagator),
             Helpers.joinList(writeActivators, null),
             Helpers.joinList(writeDeactivators, null),
+            mod,
+            modGui,
             this.customIconPath);
     }
 
@@ -106,6 +118,8 @@ public class AspectBuilder<V extends IValue, T extends IValueType<V>, O> {
             Helpers.joinList(this.valuePropagators, null),
             Helpers.joinList(writeActivators, null),
             Helpers.joinList(writeDeactivators, null),
+            mod,
+            modGui,
             this.customIconPath);
     }
 
@@ -121,6 +135,8 @@ public class AspectBuilder<V extends IValue, T extends IValueType<V>, O> {
             Helpers.joinList(this.valuePropagators, null),
             Helpers.joinList(writeActivators, null),
             Helpers.joinList(writeDeactivators, null),
+            mod,
+            modGui,
             this.customIconPath);
     }
 
@@ -139,6 +155,8 @@ public class AspectBuilder<V extends IValue, T extends IValueType<V>, O> {
             Helpers.joinList(this.valuePropagators, null),
             Helpers.joinList(writeActivators, activator),
             Helpers.joinList(writeDeactivators, null),
+            mod,
+            modGui,
             this.customIconPath);
     }
 
@@ -157,6 +175,48 @@ public class AspectBuilder<V extends IValue, T extends IValueType<V>, O> {
             Helpers.joinList(this.valuePropagators, null),
             Helpers.joinList(writeActivators, null),
             Helpers.joinList(writeDeactivators, deactivator),
+            mod,
+            modGui,
+            this.customIconPath);
+    }
+
+    /**
+     * Set the mod that provides the aspect.
+     *
+     * @param mod The mod.
+     * @return The new builder instance.
+     */
+    public AspectBuilder<V, T, O> byMod(ModBase mod) {
+        return new AspectBuilder<>(
+            this.read,
+            this.valueType,
+            Helpers.joinList(this.kinds, null),
+            this.defaultAspectProperties,
+            Helpers.joinList(this.valuePropagators, null),
+            Helpers.joinList(writeActivators, null),
+            Helpers.joinList(writeDeactivators, null),
+            mod,
+            modGui,
+            this.customIconPath);
+    }
+
+    /**
+     * Set the gui mod that provides the aspect.
+     *
+     * @param modGui The gui mod.
+     * @return The new builder instance.
+     */
+    public AspectBuilder<V, T, O> byModGui(ModBase modGui) {
+        return new AspectBuilder<>(
+            this.read,
+            this.valueType,
+            Helpers.joinList(this.kinds, null),
+            this.defaultAspectProperties,
+            Helpers.joinList(this.valuePropagators, null),
+            Helpers.joinList(writeActivators, null),
+            Helpers.joinList(writeDeactivators, null),
+            mod,
+            modGui,
             this.customIconPath);
     }
 
@@ -195,6 +255,8 @@ public class AspectBuilder<V extends IValue, T extends IValueType<V>, O> {
             Collections.<IAspectValuePropagator>emptyList(),
             Collections.<IAspectWriteActivator>emptyList(),
             Collections.<IAspectWriteDeactivator>emptyList(),
+            IntegratedDynamics._instance,
+            IntegratedDynamics._instance,
             null);
     }
 
@@ -211,6 +273,8 @@ public class AspectBuilder<V extends IValue, T extends IValueType<V>, O> {
             Collections.<IAspectValuePropagator>emptyList(),
             Collections.<IAspectWriteActivator>emptyList(),
             Collections.<IAspectWriteDeactivator>emptyList(),
+            IntegratedDynamics._instance,
+            IntegratedDynamics._instance,
             null);
     }
 
@@ -221,6 +285,8 @@ public class AspectBuilder<V extends IValue, T extends IValueType<V>, O> {
 
         public BuiltReader(AspectBuilder<V, T, V> aspectBuilder) {
             super(
+                aspectBuilder.mod,
+                aspectBuilder.modGui,
                 deriveUnlocalizedType(aspectBuilder),
                 aspectBuilder.defaultAspectProperties,
                 deriveCustomIconPath(aspectBuilder));
@@ -277,6 +343,8 @@ public class AspectBuilder<V extends IValue, T extends IValueType<V>, O> {
 
         public BuiltWriter(AspectBuilder<V, T, V> aspectBuilder) {
             super(
+                aspectBuilder.mod,
+                aspectBuilder.modGui,
                 deriveUnlocalizedType(aspectBuilder),
                 aspectBuilder.defaultAspectProperties,
                 deriveCustomIconPath(aspectBuilder));

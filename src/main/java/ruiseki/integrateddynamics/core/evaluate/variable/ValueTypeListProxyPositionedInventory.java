@@ -1,56 +1,40 @@
 package ruiseki.integrateddynamics.core.evaluate.variable;
 
-import net.minecraft.inventory.IInventory;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraftforge.common.util.ForgeDirection;
 
 import ruiseki.okcore.datastructure.DimPos;
-import ruiseki.okcore.helper.TileHelpers;
+import ruiseki.okcore.helper.CapabilityHelpers;
+import ruiseki.okcore.item.capability.CapabilityItemHandler;
+import ruiseki.okcore.item.handler.IItemHandler;
 import ruiseki.okcore.persist.nbt.INBTProvider;
-import ruiseki.okcore.persist.nbt.NBTPersist;
 
 /**
  * A list proxy for an inventory at a certain position.
  */
-public class ValueTypeListProxyPositionedInventory extends
-    ValueTypeListProxyBase<ValueObjectTypeItemStack, ValueObjectTypeItemStack.ValueItemStack> implements INBTProvider {
+public class ValueTypeListProxyPositionedInventory
+    extends ValueTypeListProxyPositioned<ValueObjectTypeItemStack, ValueObjectTypeItemStack.ValueItemStack>
+    implements INBTProvider {
 
-    @NBTPersist
-    private DimPos pos;
-
-    public ValueTypeListProxyPositionedInventory() {
-        this(null);
+    public ValueTypeListProxyPositionedInventory(DimPos pos, ForgeDirection side) {
+        super(ValueTypeListProxyFactories.POSITIONED_INVENTORY.getName(), ValueTypes.OBJECT_ITEMSTACK, pos, side);
     }
 
-    public ValueTypeListProxyPositionedInventory(DimPos pos) {
-        super(ValueTypeListProxyFactories.POSITIONED_INVENTORY.getName(), ValueTypes.OBJECT_ITEMSTACK);
-        this.pos = pos;
-    }
-
-    protected IInventory getInventory() {
-        return TileHelpers.getSafeTile(pos.getWorld(), pos.getBlockPos(), IInventory.class);
+    protected IItemHandler getInventory() {
+        return CapabilityHelpers.getCapability(getPos(), CapabilityItemHandler.ITEM_HANDLER, getSide())
+            .getOrNull();
     }
 
     @Override
     public int getLength() {
-        IInventory inventory = getInventory();
+        IItemHandler inventory = getInventory();
         if (inventory == null) {
             return 0;
         }
-        return inventory.getSizeInventory();
+        return inventory.getSlots();
     }
 
     @Override
     public ValueObjectTypeItemStack.ValueItemStack get(int index) {
         return ValueObjectTypeItemStack.ValueItemStack.of(getInventory().getStackInSlot(index));
-    }
-
-    @Override
-    public void writeGeneratedFieldsToNBT(NBTTagCompound tag) {
-
-    }
-
-    @Override
-    public void readGeneratedFieldsFromNBT(NBTTagCompound tag) {
-
     }
 }

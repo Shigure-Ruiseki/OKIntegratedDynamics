@@ -42,7 +42,7 @@ public abstract class GuiActiveVariableBase<C extends ContainerActiveVariableBas
             .hasVariable() && readValue != null) {
             ok = true;
             FontRenderer fontRenderer = fontRendererObj;
-            fontRenderer.drawString(readValue, getGuiLeft() + 53, getGuiTop() + 53, readValueColor);
+            fontRenderer.drawString(readValue, getGuiLeftTotal() + 53, getGuiTopTotal() + 53, readValueColor);
         }
 
         GlStateManager.color(1f, 1f, 1f, 1f);

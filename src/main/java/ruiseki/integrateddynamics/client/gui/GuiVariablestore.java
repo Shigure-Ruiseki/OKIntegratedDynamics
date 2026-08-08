@@ -61,5 +61,4 @@ public class GuiVariablestore extends GuiContainerConfigurable<ContainerVariable
             this.xSize,
             96);
     }
-
 }

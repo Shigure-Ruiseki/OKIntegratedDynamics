@@ -44,7 +44,7 @@ public interface IValueType<V extends IValue> {
 
     /**
      * Add tooltip lines for this aspect when hovered in a gui.
-     * 
+     *
      * @param lines              The list to add lines to.
      * @param appendOptionalInfo If shift-to-show info should be added.
      * @param value              The value to show the tooltip for.
@@ -131,8 +131,7 @@ public interface IValueType<V extends IValue> {
 
         @Override
         public int compare(IValueType o1, IValueType o2) {
-            return o1.getUnlocalizedName()
-                .compareTo(o2.getUnlocalizedName());
+            return Integer.compare(o1.hashCode(), o2.hashCode());
         }
     }
 

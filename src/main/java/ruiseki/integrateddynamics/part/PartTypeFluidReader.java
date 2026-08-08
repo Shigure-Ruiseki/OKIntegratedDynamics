@@ -1,6 +1,6 @@
 package ruiseki.integrateddynamics.part;
 
-import com.google.common.collect.Sets;
+import com.google.common.collect.Lists;
 
 import ruiseki.integrateddynamics.api.part.aspect.IAspect;
 import ruiseki.integrateddynamics.core.part.aspect.AspectRegistry;
@@ -10,7 +10,7 @@ import ruiseki.integrateddynamics.part.aspect.Aspects;
 
 /**
  * An fluid reader part.
- * 
+ *
  * @author rubensworks
  */
 public class PartTypeFluidReader
@@ -21,7 +21,7 @@ public class PartTypeFluidReader
         AspectRegistry.getInstance()
             .register(
                 this,
-                Sets.<IAspect>newHashSet(
+                Lists.<IAspect>newArrayList(
                     Aspects.Read.Fluid.BOOLEAN_FULL,
                     Aspects.Read.Fluid.BOOLEAN_EMPTY,
                     Aspects.Read.Fluid.BOOLEAN_NONEMPTY,

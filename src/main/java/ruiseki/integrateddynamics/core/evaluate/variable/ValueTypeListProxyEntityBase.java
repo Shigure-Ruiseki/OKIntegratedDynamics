@@ -9,7 +9,6 @@ import net.minecraft.world.WorldServer;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 import ruiseki.okcore.persist.nbt.INBTProvider;
-import ruiseki.okcore.persist.nbt.NBTPersist;
 
 /**
  * A list proxy for the something of an entity.
@@ -17,14 +16,8 @@ import ruiseki.okcore.persist.nbt.NBTPersist;
 public abstract class ValueTypeListProxyEntityBase<T extends IValueType<V>, V extends IValue>
     extends ValueTypeListProxyBase<T, V> implements INBTProvider {
 
-    @NBTPersist
     private int world;
-    @NBTPersist
     private int entity;
-
-    public ValueTypeListProxyEntityBase(String name, T valueType) {
-        this(name, valueType, null, null);
-    }
 
     public ValueTypeListProxyEntityBase(String name, T valueType, World world, Entity entity) {
         super(name, valueType);
@@ -43,11 +36,13 @@ public abstract class ValueTypeListProxyEntityBase<T extends IValueType<V>, V ex
 
     @Override
     public void writeGeneratedFieldsToNBT(NBTTagCompound tag) {
-
+        tag.setInteger("world", world);
+        tag.setInteger("entity", entity);
     }
 
     @Override
     public void readGeneratedFieldsFromNBT(NBTTagCompound tag) {
-
+        this.world = tag.getInteger("world");
+        this.entity = tag.getInteger("entity");
     }
 }

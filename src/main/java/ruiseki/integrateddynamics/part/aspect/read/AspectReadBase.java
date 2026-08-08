@@ -17,6 +17,7 @@ import ruiseki.integrateddynamics.core.part.aspect.LazyAspectVariable;
 import ruiseki.integrateddynamics.part.aspect.AspectBase;
 import ruiseki.integrateddynamics.part.aspect.Aspects;
 import ruiseki.okcore.helper.MinecraftHelpers;
+import ruiseki.okcore.init.ModBase;
 
 /**
  * Base class for read aspects.
@@ -29,16 +30,9 @@ public abstract class AspectReadBase<V extends IValue, T extends IValueType<V>> 
     private final String unlocalizedTypeSuffix;
     private final String customIconPath;
 
-    @Deprecated
-    public AspectReadBase() {
-        this(null, null, "");
-    }
-
-    public AspectReadBase(String unlocalizedTypeSuffix, IAspectProperties defaultProperties, String customIconPath) {
-        super(defaultProperties);
-        if (unlocalizedTypeSuffix == null) {
-            unlocalizedTypeSuffix = "";
-        }
+    public AspectReadBase(ModBase mod, ModBase modGui, String unlocalizedTypeSuffix,
+        IAspectProperties defaultProperties, String customIconPath) {
+        super(mod, modGui, defaultProperties);
         this.unlocalizedTypeSuffix = unlocalizedTypeSuffix;
         this.customIconPath = customIconPath;
         if (MinecraftHelpers.isClientSide()) {
@@ -50,11 +44,9 @@ public abstract class AspectReadBase<V extends IValue, T extends IValueType<V>> 
     @Override
     public <P extends IPartType<P, S>, S extends IPartState<P>> void update(IPartNetwork network, P partType,
         PartTarget target, S state) {
-        if (partType instanceof IPartTypeReader && state instanceof IPartStateReader<?>) {
-            IAspectVariable variable = ((IPartTypeReader) partType).getVariable(target, (IPartStateReader) state, this);
-            if (variable.requiresUpdate()) {
-                variable.update();
-            }
+        IAspectVariable variable = ((IPartTypeReader) partType).getVariable(target, (IPartStateReader) state, this);
+        if (variable.requiresUpdate()) {
+            variable.update();
         }
     }
 

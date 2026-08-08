@@ -55,7 +55,9 @@ public class PartPos {
     @Override
     public int hashCode() {
         int result = pos.hashCode();
-        result = 31 * result + side.hashCode();
+        if (side != null) {
+            result = 31 * result + side.hashCode();
+        }
         return result;
     }
 

@@ -23,7 +23,7 @@ import ruiseki.okcore.inventory.IGuiContainerProvider;
 
 /**
  * Gui for parts.
- * 
+ *
  * @author rubensworks
  */
 @EqualsAndHashCode(callSuper = false)
@@ -40,7 +40,7 @@ public abstract class GuiMultipart<P extends IPartType<P, S> & IGuiContainerProv
 
     /**
      * Make a new instance.
-     * 
+     *
      * @param container The container to make the GUI for.
      */
     public GuiMultipart(ContainerMultipart<P, S> container) {
@@ -79,7 +79,7 @@ public abstract class GuiMultipart<P extends IPartType<P, S> & IGuiContainerProv
     @Override
     public String getGuiTexture() {
         return getContainer().getGuiProvider()
-            .getMod()
+            .getModGui()
             .getReferenceValue(ModBase.REFKEY_TEXTURE_PATH_GUI) + getNameId() + ".png";
     }
 

@@ -54,7 +54,7 @@ public class GuiPartDisplay<P extends PartTypePanelVariableDriven<P, S>, S exten
         if (readValue != null) {
             ok = true;
             FontRenderer fontRenderer = fontRendererObj;
-            fontRenderer.drawString(readValue, getGuiLeft() + 53, getGuiTop() + 34, readValueColor);
+            fontRenderer.drawString(readValue, getGuiLeftTotal() + 53, getGuiTopTotal() + 34, readValueColor);
         }
 
         GlStateManager.color(1, 1, 1, 1);

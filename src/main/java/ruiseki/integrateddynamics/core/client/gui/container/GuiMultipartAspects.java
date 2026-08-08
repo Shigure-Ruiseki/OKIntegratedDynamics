@@ -102,7 +102,7 @@ public abstract class GuiMultipartAspects<P extends IPartType<P, S> & IGuiContai
     @Override
     public String getGuiTexture() {
         return getContainer().getGuiProvider()
-            .getMod()
+            .getModGui()
             .getReferenceValue(ModBase.REFKEY_TEXTURE_PATH_GUI) + getNameId() + ".png";
     }
 

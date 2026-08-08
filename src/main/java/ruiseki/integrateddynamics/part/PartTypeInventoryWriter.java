@@ -1,6 +1,6 @@
 package ruiseki.integrateddynamics.part;
 
-import com.google.common.collect.Sets;
+import com.google.common.collect.Lists;
 
 import ruiseki.integrateddynamics.api.part.aspect.IAspect;
 import ruiseki.integrateddynamics.core.part.aspect.AspectRegistry;
@@ -10,7 +10,7 @@ import ruiseki.integrateddynamics.part.aspect.Aspects;
 
 /**
  * An inventory writer part.
- * 
+ *
  * @author rubensworks
  */
 public class PartTypeInventoryWriter
@@ -19,7 +19,7 @@ public class PartTypeInventoryWriter
     public PartTypeInventoryWriter(String name) {
         super(name);
         AspectRegistry.getInstance()
-            .register(this, Sets.<IAspect>newHashSet(
+            .register(this, Lists.<IAspect>newArrayList(
 
             ));
     }

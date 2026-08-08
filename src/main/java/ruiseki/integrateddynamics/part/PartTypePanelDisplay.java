@@ -1,6 +1,5 @@
 package ruiseki.integrateddynamics.part;
 
-import ruiseki.integrateddynamics.api.part.IPartState;
 import ruiseki.integrateddynamics.core.part.panel.PartTypePanelVariableDriven;
 
 /**
@@ -32,11 +31,6 @@ public class PartTypePanelDisplay
 
     public static class State
         extends PartTypePanelVariableDriven.State<PartTypePanelDisplay, PartTypePanelDisplay.State> {
-
-        @Override
-        public Class<? extends IPartState> getPartStateClass() {
-            return PartTypePanelDisplay.State.class;
-        }
 
     }
 

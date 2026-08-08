@@ -16,12 +16,12 @@ import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IVariable;
 import ruiseki.integrateddynamics.api.item.IVariableFacade;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
-import ruiseki.integrateddynamics.api.part.IPartState;
 import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.item.ItemVariable;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.inventory.SimpleInventory;
+import ruiseki.okcore.persist.nbt.NBTClassType;
 import ruiseki.okcore.persist.nbt.NBTPersist;
 
 /**
@@ -136,19 +136,17 @@ public abstract class PartStateActiveVariableBase<P extends IPartType> extends P
     }
 
     @Override
-    public Class<? extends IPartState> getPartStateClass() {
-        return IPartState.class;
-    }
-
-    @Override
     public void writeToNBT(NBTTagCompound tag) {
         super.writeToNBT(tag);
+        NBTClassType.writeNbt(List.class, "globalErrorMessages", globalErrorMessages, tag);
         inventory.writeToNBT(tag);
     }
 
     @Override
     public void readFromNBT(NBTTagCompound tag) {
         super.readFromNBT(tag);
+        // noinspection unchecked
+        this.globalErrorMessages = NBTClassType.readNbt(List.class, "globalErrorMessages", tag);
         inventory.readFromNBT(tag);
     }
 

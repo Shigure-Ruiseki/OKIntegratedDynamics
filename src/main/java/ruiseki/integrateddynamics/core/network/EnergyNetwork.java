@@ -20,13 +20,13 @@ import ruiseki.integrateddynamics.api.network.IEnergyConsumingNetworkElement;
 import ruiseki.integrateddynamics.api.network.IEnergyNetwork;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.INetworkElement;
+import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.integrateddynamics.capability.energybattery.EnergyBatteryConfig;
-import ruiseki.okcore.datastructure.DimPos;
 import ruiseki.okcore.helper.CapabilityHelpers;
 
 /**
  * A network that can hold energy.
- * 
+ *
  * @author rubensworks
  */
 public class EnergyNetwork extends FullNetworkListenerAdapter implements IEnergyNetwork {
@@ -34,7 +34,7 @@ public class EnergyNetwork extends FullNetworkListenerAdapter implements IEnergy
     @Getter
     @Setter
     private INetwork network;
-    private Set<DimPos> energyBatteryPositions = Sets.newHashSet();
+    private Set<PartPos> energyBatteryPositions = Sets.newHashSet();
 
     @Override
     public boolean canUpdate(INetworkElement element) {
@@ -65,20 +65,21 @@ public class EnergyNetwork extends FullNetworkListenerAdapter implements IEnergy
     }
 
     protected synchronized List<IEnergyBattery> getMaterializedEnergyBatteries() {
-        return ImmutableList.copyOf(Iterables.transform(energyBatteryPositions, new Function<DimPos, IEnergyBattery>() {
+        return ImmutableList
+            .copyOf(Iterables.transform(energyBatteryPositions, new Function<PartPos, IEnergyBattery>() {
 
-            @Nullable
-            @Override
-            public IEnergyBattery apply(DimPos dimPos) {
-                return CapabilityHelpers.getCapability(dimPos, EnergyBatteryConfig.CAPABILITY)
-                    .getOrNull();
-            }
+                @Nullable
+                @Override
+                public IEnergyBattery apply(PartPos pos) {
+                    return CapabilityHelpers.getCapability(pos.getPos(), EnergyBatteryConfig.CAPABILITY)
+                        .getOrNull();
+                }
 
-            @Override
-            public boolean equals(@Nullable Object object) {
-                return false;
-            }
-        }));
+                @Override
+                public boolean equals(@Nullable Object object) {
+                    return false;
+                }
+            }));
     }
 
     protected int addSafe(int a, int b) {
@@ -131,24 +132,24 @@ public class EnergyNetwork extends FullNetworkListenerAdapter implements IEnergy
     }
 
     @Override
-    public boolean addEnergyBattery(DimPos dimPos) {
-        IEnergyBattery energyBattery = CapabilityHelpers.getCapability(dimPos, EnergyBatteryConfig.CAPABILITY)
+    public boolean addEnergyBattery(PartPos pos) {
+        IEnergyBattery energyBattery = CapabilityHelpers.getCapability(pos.getPos(), EnergyBatteryConfig.CAPABILITY)
             .getOrNull();
         if (energyBattery != null) {
-            boolean contained = energyBatteryPositions.contains(dimPos);
-            energyBatteryPositions.add(dimPos);
+            boolean contained = energyBatteryPositions.contains(pos);
+            energyBatteryPositions.add(pos);
             return !contained;
         }
         return false;
     }
 
     @Override
-    public void removeEnergyBattery(DimPos pos) {
+    public void removeEnergyBattery(PartPos pos) {
         energyBatteryPositions.remove(pos);
     }
 
     @Override
-    public Set<DimPos> getEnergyBatteries() {
+    public Set<PartPos> getEnergyBatteries() {
         return Collections.unmodifiableSet(energyBatteryPositions);
     }
 

@@ -1,6 +1,6 @@
 package ruiseki.integrateddynamics.part;
 
-import com.google.common.collect.Sets;
+import com.google.common.collect.Lists;
 
 import ruiseki.integrateddynamics.api.part.aspect.IAspect;
 import ruiseki.integrateddynamics.core.part.aspect.AspectRegistry;
@@ -10,7 +10,7 @@ import ruiseki.integrateddynamics.part.aspect.Aspects;
 
 /**
  * A machine reader part.
- * 
+ *
  * @author rubensworks
  */
 public class PartTypeMachineReader
@@ -21,7 +21,7 @@ public class PartTypeMachineReader
         AspectRegistry.getInstance()
             .register(
                 this,
-                Sets.<IAspect>newHashSet(
+                Lists.<IAspect>newArrayList(
                     Aspects.Read.Machine.BOOLEAN_ISWORKER,
                     Aspects.Read.Machine.BOOLEAN_HASWORK,
                     Aspects.Read.Machine.BOOLEAN_CANWORK,

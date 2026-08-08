@@ -109,7 +109,7 @@ public class GuiLogicProgrammerBase extends ScrollingGuiContainer {
     @Override
     public String getGuiTexture() {
         return getContainer().getGuiProvider()
-            .getMod()
+            .getModGui()
             .getReferenceValue(ModBase.REFKEY_TEXTURE_PATH_GUI) + BlockLogicProgrammerConfig._instance.getNamedId()
             + ".png";
     }

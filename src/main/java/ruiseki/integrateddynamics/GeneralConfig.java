@@ -7,7 +7,7 @@ import ruiseki.okcore.tracking.Versions;
 
 /**
  * A config with general options for this mod.
- * 
+ *
  * @author rubensworks
  *
  */

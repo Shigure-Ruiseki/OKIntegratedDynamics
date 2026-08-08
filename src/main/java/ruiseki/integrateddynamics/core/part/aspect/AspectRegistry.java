@@ -2,6 +2,7 @@ package ruiseki.integrateddynamics.core.part.aspect;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -36,14 +37,14 @@ public final class AspectRegistry implements IAspectRegistry {
     private static AspectRegistry INSTANCE = new AspectRegistry();
     private static final IAspectVariableFacade INVALID_FACADE = new AspectVariableFacade(false, -1, null);
 
-    private Map<IPartType, Set<IAspect>> partAspects = Maps.newHashMap();
-    private Map<IPartType, Set<IAspectRead>> partReadAspects = Maps.newHashMap();
-    private Map<IPartType, Set<IAspectWrite>> partWriteAspects = Maps.newHashMap();
-    private Map<IPartType, List<IAspectRead>> partReadAspectsListTransform = Maps.newHashMap();
-    private Map<IPartType, List<IAspectWrite>> partWriteAspectsListTransform = Maps.newHashMap();
-    private Map<String, IAspect> unlocalizedAspects = Maps.newHashMap();
-    private Map<String, IAspectRead> unlocalizedReadAspects = Maps.newHashMap();
-    private Map<String, IAspectWrite> unlocalizedWriteAspects = Maps.newHashMap();
+    private final Map<IPartType, Set<IAspect>> partAspects = new IdentityHashMap<>();
+    private final Map<IPartType, Set<IAspectRead>> partReadAspects = new IdentityHashMap<>();
+    private final Map<IPartType, Set<IAspectWrite>> partWriteAspects = new IdentityHashMap<>();
+    private final Map<IPartType, List<IAspectRead>> partReadAspectsListTransform = new IdentityHashMap<>();
+    private final Map<IPartType, List<IAspectWrite>> partWriteAspectsListTransform = new IdentityHashMap<>();
+    private final Map<String, IAspect> unlocalizedAspects = Maps.newHashMap();
+    private final Map<String, IAspectRead> unlocalizedReadAspects = Maps.newHashMap();
+    private final Map<String, IAspectWrite> unlocalizedWriteAspects = Maps.newHashMap();
 
     @SideOnly(Side.CLIENT)
     private Map<IAspect, String> aspectIconPaths;
@@ -53,7 +54,7 @@ public final class AspectRegistry implements IAspectRegistry {
             .getRegistry(IVariableFacadeHandlerRegistry.class)
             .registerHandler(this);
         if (MinecraftHelpers.isClientSide()) {
-            aspectIconPaths = Maps.newHashMap();
+            aspectIconPaths = new IdentityHashMap<>();
         }
     }
 
@@ -82,7 +83,7 @@ public final class AspectRegistry implements IAspectRegistry {
         Map<IPartType, Set<T>> partAspects, Map<String, T> unlocalizedAspects) {
         Set<T> aspects = partAspects.get(partType);
         if (aspects == null) {
-            aspects = Sets.newTreeSet(IAspect.AspectComparator.getInstance());
+            aspects = Sets.newLinkedHashSet();
             partAspects.put(partType, aspects);
         }
         aspects.add(aspect);
@@ -90,7 +91,7 @@ public final class AspectRegistry implements IAspectRegistry {
     }
 
     @Override
-    public void register(IPartType partType, Set<IAspect> aspects) {
+    public void register(IPartType partType, Collection<IAspect> aspects) {
         for (IAspect aspect : aspects) {
             register(partType, aspect);
         }
@@ -98,10 +99,11 @@ public final class AspectRegistry implements IAspectRegistry {
 
     @Override
     public Set<IAspect> getAspects(IPartType partType) {
-        if (!partAspects.containsKey(partType)) {
+        Set<IAspect> aspects = partAspects.get(partType);
+        if (aspects == null) {
             return Collections.unmodifiableSet(Collections.<IAspect>emptySet());
         }
-        return Collections.unmodifiableSet(partAspects.get(partType));
+        return Collections.unmodifiableSet(aspects);
     }
 
     @Override

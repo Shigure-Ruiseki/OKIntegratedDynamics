@@ -1,7 +1,8 @@
 package ruiseki.integrateddynamics.part;
 
-import com.google.common.collect.Sets;
+import com.google.common.collect.Lists;
 
+import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.api.part.aspect.IAspect;
@@ -14,7 +15,7 @@ import ruiseki.integrateddynamics.part.aspect.read.redstone.ReadRedstoneComponen
 
 /**
  * A redstone reader part.
- * 
+ *
  * @author rubensworks
  */
 public class PartTypeRedstoneReader
@@ -27,7 +28,7 @@ public class PartTypeRedstoneReader
         AspectRegistry.getInstance()
             .register(
                 this,
-                Sets.<IAspect>newHashSet(
+                Lists.<IAspect>newArrayList(
                     Aspects.Read.Redstone.BOOLEAN_LOW,
                     Aspects.Read.Redstone.BOOLEAN_NONLOW,
                     Aspects.Read.Redstone.BOOLEAN_HIGH,
@@ -42,16 +43,16 @@ public class PartTypeRedstoneReader
     }
 
     @Override
-    public void onNetworkAddition(IPartNetwork network, PartTarget target,
+    public void onNetworkAddition(INetwork network, IPartNetwork partNetwork, PartTarget target,
         PartStateReaderBase<PartTypeRedstoneReader> state) {
-        super.onNetworkAddition(network, target, state);
+        super.onNetworkAddition(network, partNetwork, target, state);
         READ_REDSTONE_COMPONENT.setAllowRedstoneInput(target, true);
     }
 
     @Override
-    public void onNetworkRemoval(IPartNetwork network, PartTarget target,
+    public void onNetworkRemoval(INetwork network, IPartNetwork partNetwork, PartTarget target,
         PartStateReaderBase<PartTypeRedstoneReader> state) {
-        super.onNetworkRemoval(network, target, state);
+        super.onNetworkRemoval(network, partNetwork, target, state);
         READ_REDSTONE_COMPONENT.setAllowRedstoneInput(target, false);
     }
 

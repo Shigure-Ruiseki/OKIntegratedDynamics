@@ -7,8 +7,8 @@ import net.minecraft.world.World;
 import ruiseki.integrateddynamics.api.block.IDynamicLight;
 import ruiseki.integrateddynamics.api.evaluate.InvalidValueTypeException;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
+import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
-import ruiseki.integrateddynamics.api.part.IPartState;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.block.BlockInvisibleLight;
 import ruiseki.integrateddynamics.block.BlockInvisibleLightConfig;
@@ -72,28 +72,29 @@ public class PartTypePanelLightDynamic
     }
 
     @Override
-    public void onNetworkRemoval(IPartNetwork network, PartTarget target, State state) {
-        super.onNetworkRemoval(network, target, state);
+    public void onNetworkRemoval(INetwork network, IPartNetwork partNetwork, PartTarget target, State state) {
+        super.onNetworkRemoval(network, partNetwork, target, state);
         PartTypePanelLightDynamic.setLightLevel(target, 0);
     }
 
     @Override
-    public void onPostRemoved(IPartNetwork network, PartTarget target, State state) {
-        super.onPostRemoved(network, target, state);
+    public void onPostRemoved(INetwork network, IPartNetwork partNetwork, PartTarget target, State state) {
+        super.onPostRemoved(network, partNetwork, target, state);
         setLightLevel(target, 0);
     }
 
     @Override
-    public void onBlockNeighborChange(IPartNetwork network, PartTarget target, State state, IBlockAccess world,
-        Block neighborBlock) {
-        super.onBlockNeighborChange(network, target, state, world, neighborBlock);
+    public void onBlockNeighborChange(INetwork network, IPartNetwork partNetwork, PartTarget target, State state,
+        IBlockAccess world, Block neighborBlock) {
+        super.onBlockNeighborChange(network, partNetwork, target, state, world, neighborBlock);
         setLightLevel(target, state.getDisplayValue() == null ? 0 : getLightLevel(state, state.getDisplayValue()));
     }
 
     @Override
-    public void postUpdate(IPartNetwork network, PartTarget target, State state, boolean updated) {
+    public void postUpdate(INetwork network, IPartNetwork partNetwork, PartTarget target, State state,
+        boolean updated) {
         boolean wasEnabled = isEnabled(state);
-        super.postUpdate(network, target, state, updated);
+        super.postUpdate(network, partNetwork, target, state, updated);
         boolean isEnabled = isEnabled(state);
         if (wasEnabled != isEnabled) {
             setLightLevel(target, isEnabled ? getLightLevel(state, state.getDisplayValue()) : 0);
@@ -144,11 +145,6 @@ public class PartTypePanelLightDynamic
 
     public static class State
         extends PartTypePanelVariableDriven.State<PartTypePanelLightDynamic, PartTypePanelLightDynamic.State> {
-
-        @Override
-        public Class<? extends IPartState> getPartStateClass() {
-            return PartTypePanelLightDynamic.State.class;
-        }
 
     }
 

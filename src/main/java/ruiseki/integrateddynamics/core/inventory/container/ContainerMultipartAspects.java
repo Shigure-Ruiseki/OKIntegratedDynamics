@@ -121,7 +121,7 @@ public abstract class ContainerMultipartAspects<P extends IPartType<P, S> & IGui
                         .getPos()
                         .getBlockPos();
                     ContainerMultipartAspects.this.player
-                        .openGui(gui.getMod(), gui.getGuiID(), world, cPos.getX(), cPos.getY(), cPos.getZ());
+                        .openGui(gui.getModGui(), gui.getGuiID(), world, cPos.getX(), cPos.getY(), cPos.getZ());
                 }
             }
         });
@@ -146,7 +146,7 @@ public abstract class ContainerMultipartAspects<P extends IPartType<P, S> & IGui
                                 .getPos()
                                 .getBlockPos();
                             ContainerMultipartAspects.this.player
-                                .openGui(gui.getMod(), gui.getGuiID(), world, cPos.getX(), cPos.getY(), cPos.getZ());
+                                .openGui(gui.getModGui(), gui.getGuiID(), world, cPos.getX(), cPos.getY(), cPos.getZ());
                         }
                     }
                 });

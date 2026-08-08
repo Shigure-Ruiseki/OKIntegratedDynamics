@@ -76,15 +76,19 @@ public class TileEnergyBattery extends TileCableConnectable
 
     protected void setEnergy(int energy) {
         if (!isCreative()) {
-            this.energy = energy;
-            updateBlockState();
-            sendUpdate();
+            int lastEnergy = this.energy;
+            if (lastEnergy != energy) {
+                this.energy = energy;
+                updateBlockState();
+                sendUpdate();
+            }
         }
     }
 
     @Override
     public int receiveEnergy(int energy, boolean simulate) {
         if (!isCreative()) {
+            energy = Math.min(energy, BlockEnergyBatteryConfig.energyPerTick);
             int stored = getEnergyStored();
             int newEnergy = Math.min(stored + energy, getMaxEnergyStored());
             if (!simulate) {
@@ -98,6 +102,7 @@ public class TileEnergyBattery extends TileCableConnectable
     @Override
     public int extractEnergy(int energy, boolean simulate) {
         if (isCreative()) return energy;
+        energy = Math.min(energy, BlockEnergyBatteryConfig.energyPerTick);
         int stored = getEnergyStored();
         int newEnergy = Math.max(stored - energy, 0);
         if (!simulate) {

@@ -1,8 +1,7 @@
 package ruiseki.integrateddynamics.client.render.valuetype;
 
+import java.util.IdentityHashMap;
 import java.util.Map;
-
-import com.google.common.collect.Maps;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -12,7 +11,7 @@ import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 
 /**
  * Registry for {@link IValueTypeWorldRenderer}.
- * 
+ *
  * @author rubensworks
  */
 @SideOnly(Side.CLIENT)
@@ -20,7 +19,7 @@ public final class ValueTypeWorldRendererRegistry implements IValueTypeWorldRend
 
     private static ValueTypeWorldRendererRegistry INSTANCE = new ValueTypeWorldRendererRegistry();
 
-    private final Map<IValueType<?>, IValueTypeWorldRenderer> renderers = Maps.newHashMap();
+    private final Map<IValueType<?>, IValueTypeWorldRenderer> renderers = new IdentityHashMap<>();
 
     private ValueTypeWorldRendererRegistry() {
 

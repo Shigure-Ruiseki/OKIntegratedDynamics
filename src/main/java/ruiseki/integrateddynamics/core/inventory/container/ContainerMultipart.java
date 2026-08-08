@@ -90,7 +90,7 @@ public abstract class ContainerMultipart<P extends IPartType<P, S> & IGuiContain
                         .getPos()
                         .getBlockPos();
                     ContainerMultipart.this.player
-                        .openGui(gui.getMod(), gui.getGuiID(), world, cPos.getX(), cPos.getY(), cPos.getZ());
+                        .openGui(gui.getModGui(), gui.getGuiID(), world, cPos.getX(), cPos.getY(), cPos.getZ());
                 }
             }
         });

@@ -10,6 +10,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.INetworkElement;
+import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
 import ruiseki.integrateddynamics.core.network.NetworkElementBase;
 import ruiseki.integrateddynamics.tileentity.TileEnergyBattery;
@@ -64,13 +65,13 @@ public class EnergyBatteryNetworkElement extends NetworkElementBase {
     @Override
     public boolean onNetworkAddition(INetwork network) {
         return NetworkHelpers.getEnergyNetwork(network)
-            .addEnergyBattery(getPos());
+            .addEnergyBattery(PartPos.of(getPos(), null));
     }
 
     @Override
     public void onNetworkRemoval(INetwork network) {
         NetworkHelpers.getEnergyNetwork(network)
-            .removeEnergyBattery(getPos());
+            .removeEnergyBattery(PartPos.of(getPos(), null));
     }
 
     @Override

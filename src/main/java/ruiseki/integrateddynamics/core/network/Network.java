@@ -48,7 +48,7 @@ import ruiseki.okcore.helper.CapabilityHelpers;
 /**
  * A network instance that can hold a set of {@link INetworkElement}s.
  * Note that this network only contains references to the relevant data, it does not contain the actual information.
- * 
+ *
  * @author rubensworks
  */
 public class Network implements INetwork {
@@ -71,7 +71,7 @@ public class Network implements INetwork {
 
     /**
      * Initiate a full network from the given start position.
-     * 
+     *
      * @param pathElement The path element to start from.
      * @return The newly formed network.
      */
@@ -84,7 +84,7 @@ public class Network implements INetwork {
 
     /**
      * Check if two networks are equal.
-     * 
+     *
      * @param networkA A network.
      * @param networkB Another network.
      * @return If they are equal.
@@ -108,7 +108,7 @@ public class Network implements INetwork {
      * and will add all its elements to the network in that case.
      * Each path element that has an {@link ruiseki.integrateddynamics.api.part.IPartContainer} capability
      * will have the network stored in its part container.
-     * 
+     *
      * @param pathElements The path elements that make up the connections in the network which can potentially provide
      *                     network
      *                     elements.
@@ -290,7 +290,7 @@ public class Network implements INetwork {
 
     /**
      * Called when a network is server-loaded or newly created.
-     * 
+     *
      * @param silent If the element should not be notified for the network becoming alive.
      */
     protected void initialize(boolean silent) {
@@ -371,16 +371,19 @@ public class Network implements INetwork {
                 if (isBeingDiagnozed) {
                     startTime = System.nanoTime();
                 }
+                int lastElementTick = updateableElementsTicks.get(element);
                 if (canUpdate(element)) {
-                    if (updateableElementsTicks.get(element) <= 0) {
-                        updateableElementsTicks.put(element, element.getUpdateInterval());
+                    if (lastElementTick <= 0) {
+                        updateableElementsTicks.put(element, element.getUpdateInterval() - 1);
                         element.update(this);
                         postUpdate(element);
+                    } else {
+                        updateableElementsTicks.put(element, lastElementTick - 1);
                     }
                 } else {
                     onSkipUpdate(element);
+                    updateableElementsTicks.put(element, lastElementTick - 1);
                 }
-                updateableElementsTicks.put(element, updateableElementsTicks.get(element) - 1);
                 if (isBeingDiagnozed) {
                     long duration = System.nanoTime() - startTime;
                     duration /= 1000;

@@ -1,13 +1,12 @@
 package ruiseki.integrateddynamics.core.part;
 
+import java.util.IdentityHashMap;
 import java.util.Map;
 
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
 import net.minecraftforge.common.MinecraftForge;
 
-import com.google.common.collect.Maps;
-
-import lombok.experimental.Delegate;
 import ruiseki.integrateddynamics.GeneralConfig;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.part.AttachCapabilitiesEventPart;
@@ -15,41 +14,36 @@ import ruiseki.integrateddynamics.api.part.IPartState;
 import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.aspect.IAspect;
 import ruiseki.integrateddynamics.api.part.aspect.property.IAspectProperties;
+import ruiseki.integrateddynamics.core.part.aspect.property.AspectProperties;
+import ruiseki.integrateddynamics.part.aspect.Aspects;
 import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.capabilities.CapabilityDispatcher;
 import ruiseki.okcore.datastructure.LazyOptional;
+import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.persist.IDirtyMarkListener;
-import ruiseki.okcore.persist.nbt.INBTProvider;
-import ruiseki.okcore.persist.nbt.NBTPersist;
-import ruiseki.okcore.persist.nbt.NBTProviderComponent;
 
 /**
- * A default implementation of the {@link IPartState} with auto-persistence
- * of fields annotated with {@link NBTPersist}.
+ * A default implementation of the {@link IPartState}.
  *
  * @author rubensworks
  */
-public abstract class PartStateBase<P extends IPartType> implements IPartState<P>, INBTProvider, IDirtyMarkListener {
+public abstract class PartStateBase<P extends IPartType> implements IPartState<P>, IDirtyMarkListener {
 
     private boolean dirty = false;
     private boolean update = false;
-    @Delegate
-    private INBTProvider nbtProviderComponent = new NBTProviderComponent(this);
-    @NBTPersist
     private int updateInterval = GeneralConfig.defaultPartUpdateFreq;
-    @NBTPersist
     private int id = -1;
-    @NBTPersist
-    private Map<String, IAspectProperties> aspectProperties = Maps.newHashMap();
-    @NBTPersist
+    private Map<IAspect, IAspectProperties> aspectProperties = new IdentityHashMap<>();
     private boolean enabled = true;
     private CapabilityDispatcher capabilities = null;
-
-    private Map<Capability<?>, LazyOptional<?>> volatileCapabilities = Maps.newHashMap();
+    private IdentityHashMap<Capability<?>, LazyOptional<?>> volatileCapabilities = new IdentityHashMap<>();
 
     @Override
     public void writeToNBT(NBTTagCompound tag) {
-        writeGeneratedFieldsToNBT(tag);
+        tag.setInteger("updateInterval", this.updateInterval);
+        tag.setInteger("id", this.id);
+        writeAspectProperties("aspectProperties", tag);
+        tag.setBoolean("enabled", this.enabled);
         if (this.capabilities != null) {
             tag.setTag("OKCaps", this.capabilities.serializeNBT());
         }
@@ -57,9 +51,53 @@ public abstract class PartStateBase<P extends IPartType> implements IPartState<P
 
     @Override
     public void readFromNBT(NBTTagCompound tag) {
-        readGeneratedFieldsFromNBT(tag);
+        this.updateInterval = tag.getInteger("updateInterval");
+        this.id = tag.getInteger("id");
+        this.aspectProperties.clear();
+        readAspectProperties("aspectProperties", tag);
+        this.enabled = tag.getBoolean("enabled");
         if (this.capabilities != null && tag.hasKey("OKCaps")) {
             this.capabilities.deserializeNBT(tag.getCompoundTag("OKCaps"));
+        }
+    }
+
+    protected void writeAspectProperties(String name, NBTTagCompound tag) {
+        NBTTagCompound mapTag = new NBTTagCompound();
+        NBTTagList list = new NBTTagList();
+        for (Map.Entry<IAspect, IAspectProperties> entry : aspectProperties.entrySet()) {
+            NBTTagCompound entryTag = new NBTTagCompound();
+            tag.setString(
+                "key",
+                entry.getKey()
+                    .getUnlocalizedName());
+            if (entry.getValue() != null) {
+                tag.setTag(
+                    "value",
+                    entry.getValue()
+                        .serializeNBT());
+            }
+            list.appendTag(entryTag);
+        }
+        mapTag.setTag("map", list);
+        tag.setTag(name, mapTag);
+    }
+
+    public void readAspectProperties(String name, NBTTagCompound tag) {
+        NBTTagCompound mapTag = tag.getCompoundTag(name);
+        NBTTagList list = mapTag.getTagList("map", MinecraftHelpers.NBTTag_Types.NBTTagCompound.ordinal());
+        if (list.tagCount() > 0) {
+            for (int i = 0; i < list.tagCount(); i++) {
+                NBTTagCompound entryTag = list.getCompoundTagAt(i);
+                IAspect key = Aspects.REGISTRY.getAspect(entryTag.getString("key"));
+                IAspectProperties value = null;
+                if (entryTag.hasKey("value")) {
+                    value = new AspectProperties();
+                    value.deserializeNBT(tag.getCompoundTag("value"));
+                }
+                if (key != null && value != null) {
+                    this.aspectProperties.put(key, value);
+                }
+            }
         }
     }
 
@@ -111,12 +149,12 @@ public abstract class PartStateBase<P extends IPartType> implements IPartState<P
 
     @Override
     public IAspectProperties getAspectProperties(IAspect aspect) {
-        return aspectProperties.get(aspect.getUnlocalizedName());
+        return aspectProperties.get(aspect);
     }
 
     @Override
     public void setAspectProperties(IAspect aspect, IAspectProperties properties) {
-        aspectProperties.put(aspect.getUnlocalizedName(), properties);
+        aspectProperties.put(aspect, properties);
         sendUpdate();
     }
 

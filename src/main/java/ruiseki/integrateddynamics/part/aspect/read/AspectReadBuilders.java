@@ -433,7 +433,10 @@ public class AspectReadBuilders {
                     new ValueTypeListProxyPositionedInventory(
                         input.getLeft()
                             .getTarget()
-                            .getPos()));
+                            .getPos(),
+                        input.getLeft()
+                            .getTarget()
+                            .getSide()));
             }
         };
 

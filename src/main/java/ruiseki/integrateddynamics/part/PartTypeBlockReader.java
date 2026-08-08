@@ -1,6 +1,6 @@
 package ruiseki.integrateddynamics.part;
 
-import com.google.common.collect.Sets;
+import com.google.common.collect.Lists;
 
 import ruiseki.integrateddynamics.api.part.aspect.IAspect;
 import ruiseki.integrateddynamics.core.part.aspect.AspectRegistry;
@@ -10,7 +10,7 @@ import ruiseki.integrateddynamics.part.aspect.Aspects;
 
 /**
  * An block reader part.
- * 
+ *
  * @author rubensworks
  */
 public class PartTypeBlockReader
@@ -21,7 +21,7 @@ public class PartTypeBlockReader
         AspectRegistry.getInstance()
             .register(
                 this,
-                Sets.<IAspect>newHashSet(
+                Lists.<IAspect>newArrayList(
                     Aspects.Read.Block.BOOLEAN_BLOCK,
                     Aspects.Read.Block.INTEGER_DIMENSION,
                     Aspects.Read.Block.INTEGER_POSX,

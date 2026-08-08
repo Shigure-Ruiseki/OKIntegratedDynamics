@@ -1,12 +1,10 @@
 package ruiseki.integrateddynamics.core.part.read;
 
+import java.util.IdentityHashMap;
 import java.util.Map;
-
-import com.google.common.collect.Maps;
 
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
-import ruiseki.integrateddynamics.api.part.IPartState;
 import ruiseki.integrateddynamics.api.part.aspect.IAspect;
 import ruiseki.integrateddynamics.api.part.aspect.IAspectRead;
 import ruiseki.integrateddynamics.api.part.aspect.IAspectVariable;
@@ -15,14 +13,13 @@ import ruiseki.integrateddynamics.api.part.read.IPartTypeReader;
 import ruiseki.integrateddynamics.core.part.PartStateBase;
 
 /**
- * A default implementation of the {@link IPartStateReader} with auto-persistence
- * of fields annotated with {@link ruiseki.okcore.persist.nbt.NBTPersist}.
- * 
+ * A default implementation of the {@link IPartStateReader}.
+ *
  * @author rubensworks
  */
 public class PartStateReaderBase<P extends IPartTypeReader> extends PartStateBase<P> implements IPartStateReader<P> {
 
-    private final Map<IAspect, IAspectVariable> aspectVariables = Maps.newHashMap();
+    private final Map<IAspect, IAspectVariable> aspectVariables = new IdentityHashMap<>();
 
     @SuppressWarnings("unchecked")
     @Override
@@ -34,10 +31,4 @@ public class PartStateReaderBase<P extends IPartTypeReader> extends PartStateBas
     public void setVariable(IAspect aspect, IAspectVariable variable) {
         aspectVariables.put(aspect, variable);
     }
-
-    @Override
-    public Class<? extends IPartState> getPartStateClass() {
-        return IPartStateReader.class;
-    }
-
 }

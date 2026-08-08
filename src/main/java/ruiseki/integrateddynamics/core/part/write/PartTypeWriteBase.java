@@ -21,12 +21,14 @@ import ruiseki.integrateddynamics.api.network.event.INetworkEvent;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.PartRenderPosition;
 import ruiseki.integrateddynamics.api.part.PartTarget;
+import ruiseki.integrateddynamics.api.part.aspect.IAspect;
 import ruiseki.integrateddynamics.api.part.aspect.IAspectWrite;
 import ruiseki.integrateddynamics.api.part.write.IPartStateWriter;
 import ruiseki.integrateddynamics.api.part.write.IPartTypeWriter;
 import ruiseki.integrateddynamics.client.gui.GuiPartWriter;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
+import ruiseki.integrateddynamics.core.network.event.NetworkElementAddEvent;
 import ruiseki.integrateddynamics.core.network.event.VariableContentsUpdatedEvent;
 import ruiseki.integrateddynamics.core.part.PartTypeAspects;
 import ruiseki.integrateddynamics.inventory.container.ContainerPartWriter;
@@ -41,8 +43,14 @@ import ruiseki.okcore.helper.LangHelpers;
 public abstract class PartTypeWriteBase<P extends IPartTypeWriter<P, S>, S extends IPartStateWriter<P>>
     extends PartTypeAspects<P, S> implements IPartTypeWriter<P, S> {
 
+    private List<IAspectWrite> aspectsWrite = null;
+
     public PartTypeWriteBase(String name) {
-        super(name, new PartRenderPosition(0.3125F, 0.3125F, 0.25F, 0.25F));
+        this(name, new PartRenderPosition(0.3125F, 0.3125F, 0.25F, 0.25F));
+    }
+
+    public PartTypeWriteBase(String name, PartRenderPosition partRenderPosition) {
+        super(name, partRenderPosition);
     }
 
     @Override
@@ -56,12 +64,29 @@ public abstract class PartTypeWriteBase<P extends IPartTypeWriter<P, S>, S exten
                 onVariableContentsUpdated(partNetwork, target, state);
             }
         });
+        actions.put(NetworkElementAddEvent.Post.class, new IEventAction<P, S, NetworkElementAddEvent.Post>() {
+
+            @Override
+            public void onAction(INetwork network, PartTarget target, S state, NetworkElementAddEvent.Post event) {
+                IPartNetwork partNetwork = NetworkHelpers.getPartNetwork(network);
+                onVariableContentsUpdated(partNetwork, target, state);
+            }
+        });
         return actions;
     }
 
     @Override
     public Class<? super P> getPartTypeClass() {
         return IPartTypeWriter.class;
+    }
+
+    @Override
+    public void update(INetwork network, IPartNetwork partNetwork, PartTarget target, S state) {
+        super.update(network, partNetwork, target, state);
+        IAspect aspect = getActiveAspect(target, state);
+        if (aspect != null) {
+            aspect.update(partNetwork, this, target, state);
+        }
     }
 
     @Override
@@ -81,20 +106,23 @@ public abstract class PartTypeWriteBase<P extends IPartTypeWriter<P, S>, S exten
     }
 
     @Override
-    public void beforeNetworkKill(IPartNetwork network, PartTarget target, S state) {
-        super.beforeNetworkKill(network, target, state);
+    public void beforeNetworkKill(INetwork network, IPartNetwork partNetwork, PartTarget target, S state) {
+        super.beforeNetworkKill(network, partNetwork, target, state);
         state.triggerAspectInfoUpdate((P) this, target, null);
     }
 
     @Override
-    public void afterNetworkAlive(IPartNetwork network, PartTarget target, S state) {
-        super.afterNetworkAlive(network, target, state);
+    public void afterNetworkAlive(INetwork network, IPartNetwork partNetwork, PartTarget target, S state) {
+        super.afterNetworkAlive(network, partNetwork, target, state);
         updateActivation(target, state);
     }
 
     @Override
     public List<IAspectWrite> getWriteAspects() {
-        return Aspects.REGISTRY.getWriteAspects(this);
+        if (aspectsWrite == null) {
+            aspectsWrite = Aspects.REGISTRY.getWriteAspects(this);
+        }
+        return aspectsWrite;
     }
 
     @SuppressWarnings("unchecked")

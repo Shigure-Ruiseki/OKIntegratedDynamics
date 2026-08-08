@@ -1,6 +1,6 @@
 package ruiseki.integrateddynamics.part;
 
-import com.google.common.collect.Sets;
+import com.google.common.collect.Lists;
 
 import ruiseki.integrateddynamics.api.part.aspect.IAspect;
 import ruiseki.integrateddynamics.core.part.aspect.AspectRegistry;
@@ -10,7 +10,7 @@ import ruiseki.integrateddynamics.part.aspect.Aspects;
 
 /**
  * A redstone writer part.
- * 
+ *
  * @author rubensworks
  */
 public class PartTypeRedstoneWriter
@@ -19,7 +19,9 @@ public class PartTypeRedstoneWriter
     public PartTypeRedstoneWriter(String name) {
         super(name);
         AspectRegistry.getInstance()
-            .register(this, Sets.<IAspect>newHashSet(Aspects.Write.Redstone.BOOLEAN, Aspects.Write.Redstone.INTEGER));
+            .register(
+                this,
+                Lists.<IAspect>newArrayList(Aspects.Write.Redstone.BOOLEAN, Aspects.Write.Redstone.INTEGER));
     }
 
     @Override

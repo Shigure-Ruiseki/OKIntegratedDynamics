@@ -4,14 +4,12 @@ import net.minecraft.block.Block;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.inventory.Container;
 import net.minecraft.world.IBlockAccess;
-import net.minecraft.world.World;
 
+import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.part.PartTarget;
-import ruiseki.integrateddynamics.block.BlockInvisibleLight;
 import ruiseki.integrateddynamics.core.part.PartStateEmpty;
 import ruiseki.integrateddynamics.core.part.panel.PartTypePanel;
-import ruiseki.okcore.datastructure.BlockPos;
 
 /**
  * A panel part that simply emits light.
@@ -53,45 +51,38 @@ public class PartTypePanelLightStatic
     }
 
     @Override
-    public void onNetworkAddition(IPartNetwork network, PartTarget target,
+    public void onNetworkAddition(INetwork network, IPartNetwork partNetwork, PartTarget target,
         PartStateEmpty<PartTypePanelLightStatic> state) {
-        super.onNetworkAddition(network, target, state);
+        super.onNetworkAddition(network, partNetwork, target, state);
         PartTypePanelLightDynamic.setLightLevel(target, LIGHT_LEVEL);
     }
 
     @Override
-    public void onPostRemoved(IPartNetwork network, PartTarget target, PartStateEmpty<PartTypePanelLightStatic> state) {
-        super.onPostRemoved(network, target, state);
-        PartTypePanelLightDynamic.setLightLevel(target, 0);
+    public void onBlockNeighborChange(INetwork network, IPartNetwork partNetwork, PartTarget target,
+        PartStateEmpty<PartTypePanelLightStatic> state, IBlockAccess world, Block neighborBlock) {
+        super.onBlockNeighborChange(network, partNetwork, target, state, world, neighborBlock);
+        PartTypePanelLightDynamic.setLightLevel(target, LIGHT_LEVEL);
     }
 
     @Override
-    public void onBlockNeighborChange(IPartNetwork network, PartTarget target,
-        PartStateEmpty<PartTypePanelLightStatic> state, IBlockAccess worldAccess, Block neighborBlock) {
-        super.onBlockNeighborChange(network, target, state, worldAccess, neighborBlock);
-        if (isEnabled(state) && worldAccess instanceof World world) {
-            BlockPos pos = target.getTarget()
-                .getPos()
-                .getBlockPos();
-            Block currentBlock = world.getBlock(pos.getX(), pos.getY(), pos.getZ());
-            if (currentBlock != BlockInvisibleLight.getInstance()) {
-                PartTypePanelLightDynamic.setLightLevel(target, LIGHT_LEVEL);
-            }
-        }
-    }
-
-    @Override
-    public void onNetworkRemoval(IPartNetwork network, PartTarget target,
+    public void onNetworkRemoval(INetwork network, IPartNetwork partNetwork, PartTarget target,
         PartStateEmpty<PartTypePanelLightStatic> state) {
-        super.onNetworkRemoval(network, target, state);
+        super.onNetworkRemoval(network, partNetwork, target, state);
         PartTypePanelLightDynamic.setLightLevel(target, 0);
     }
 
     @Override
-    public void postUpdate(IPartNetwork network, PartTarget target, PartStateEmpty<PartTypePanelLightStatic> state,
-        boolean updated) {
+    public void onPostRemoved(INetwork network, IPartNetwork partNetwork, PartTarget target,
+        PartStateEmpty<PartTypePanelLightStatic> state) {
+        super.onPostRemoved(network, partNetwork, target, state);
+        PartTypePanelLightDynamic.setLightLevel(target, 0);
+    }
+
+    @Override
+    public void postUpdate(INetwork network, IPartNetwork partNetwork, PartTarget target,
+        PartStateEmpty<PartTypePanelLightStatic> state, boolean updated) {
         boolean wasEnabled = isEnabled(state);
-        super.postUpdate(network, target, state, updated);
+        super.postUpdate(network, partNetwork, target, state, updated);
         boolean isEnabled = isEnabled(state);
         if (wasEnabled != isEnabled) {
             PartTypePanelLightDynamic.setLightLevel(target, isEnabled ? LIGHT_LEVEL : 0);

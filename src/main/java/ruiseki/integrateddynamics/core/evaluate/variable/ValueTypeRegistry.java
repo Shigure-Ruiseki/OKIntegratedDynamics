@@ -2,6 +2,7 @@ package ruiseki.integrateddynamics.core.evaluate.variable;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.Map;
 
 import net.minecraft.nbt.NBTTagCompound;
@@ -38,7 +39,7 @@ public final class ValueTypeRegistry implements IValueTypeRegistry {
 
     private ValueTypeRegistry() {
         if (MinecraftHelpers.isClientSide()) {
-            valueTypeIconPaths = Maps.newHashMap();
+            valueTypeIconPaths = new IdentityHashMap<>();
         }
         if (MinecraftHelpers.isModdedEnvironment()) {
             IntegratedDynamics._instance.getRegistryManager()

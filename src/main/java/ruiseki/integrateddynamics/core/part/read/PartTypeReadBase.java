@@ -9,8 +9,11 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
+import ruiseki.integrateddynamics.api.network.INetwork;
+import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.part.PartRenderPosition;
 import ruiseki.integrateddynamics.api.part.PartTarget;
+import ruiseki.integrateddynamics.api.part.aspect.IAspect;
 import ruiseki.integrateddynamics.api.part.aspect.IAspectRead;
 import ruiseki.integrateddynamics.api.part.aspect.IAspectVariable;
 import ruiseki.integrateddynamics.api.part.read.IPartStateReader;
@@ -28,8 +31,14 @@ import ruiseki.integrateddynamics.part.aspect.Aspects;
 public abstract class PartTypeReadBase<P extends IPartTypeReader<P, S>, S extends IPartStateReader<P>>
     extends PartTypeAspects<P, S> implements IPartTypeReader<P, S> {
 
+    private List<IAspectRead> aspectsRead = null;
+
     public PartTypeReadBase(String name) {
         super(name, new PartRenderPosition(0.1875F, 0.3125F, 0.625F, 0.625F));
+    }
+
+    public PartTypeReadBase(String name, PartRenderPosition partRenderPosition) {
+        super(name, partRenderPosition);
     }
 
     @Override
@@ -43,22 +52,33 @@ public abstract class PartTypeReadBase<P extends IPartTypeReader<P, S>, S extend
     }
 
     @Override
+    public void update(INetwork network, IPartNetwork partNetwork, PartTarget target, S state) {
+        super.update(network, partNetwork, target, state);
+        for (IAspect aspect : getAspects()) {
+            aspect.update(partNetwork, this, target, state);
+        }
+    }
+
+    @Override
     public List<IAspectRead> getReadAspects() {
-        return Aspects.REGISTRY.getReadAspects(this);
+        if (aspectsRead == null) {
+            aspectsRead = Aspects.REGISTRY.getReadAspects(this);
+        }
+        return aspectsRead;
     }
 
     @Override
     public <V extends IValue, T extends IValueType<V>> IAspectVariable<V> getVariable(PartTarget target, S partState,
         IAspectRead<V, T> aspect) {
-        if (!getAspects().contains(aspect)) {
-            throw new IllegalArgumentException(
-                String.format(
-                    "Tried to get the variable for the aspect %s that did not exist within the " + "part type %s.",
-                    aspect.getUnlocalizedName(),
-                    this));
-        }
         IAspectVariable<V> variable = partState.getVariable(aspect);
         if (variable == null) {
+            if (!getAspects().contains(aspect)) {
+                throw new IllegalArgumentException(
+                    String.format(
+                        "Tried to get the variable for the aspect %s that did not exist within the " + "part type %s.",
+                        aspect.getUnlocalizedName(),
+                        this));
+            }
             variable = aspect.createNewVariable(target);
             partState.setVariable(aspect, variable);
         }

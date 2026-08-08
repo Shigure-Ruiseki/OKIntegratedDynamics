@@ -1,5 +1,6 @@
 package ruiseki.integrateddynamics.core.part;
 
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -10,8 +11,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 import net.minecraftforge.client.MinecraftForgeClient;
 import net.minecraftforge.common.util.ForgeDirection;
-
-import com.google.common.collect.Maps;
 
 import lombok.Getter;
 import ruiseki.integrateddynamics.IntegratedDynamics;
@@ -63,8 +62,8 @@ public abstract class PartTypeBase<P extends IPartType<P, S>, S extends IPartSta
 
     public PartTypeBase(String name, PartRenderPosition partRenderPosition) {
         if (hasGui()) {
-            this.guiID = Helpers.getNewId(getMod(), Helpers.IDType.GUI);
-            getMod().getGuiHandler()
+            this.guiID = Helpers.getNewId(getModGui(), Helpers.IDType.GUI);
+            getModGui().getGuiHandler()
                 .registerGUI(this, ExtendedGuiHandler.PART);
         } else {
             this.guiID = -1;
@@ -74,6 +73,10 @@ public abstract class PartTypeBase<P extends IPartType<P, S>, S extends IPartSta
         this.partRenderPosition = partRenderPosition;
 
         networkEventActions = constructNetworkEventActions();
+    }
+
+    protected ModBase getMod() {
+        return IntegratedDynamics._instance;
     }
 
     /**
@@ -140,8 +143,8 @@ public abstract class PartTypeBase<P extends IPartType<P, S>, S extends IPartSta
     }
 
     @Override
-    public ModBase getMod() {
-        return IntegratedDynamics._instance;
+    public ModBase getModGui() {
+        return getMod();
     }
 
     @Override
@@ -153,10 +156,10 @@ public abstract class PartTypeBase<P extends IPartType<P, S>, S extends IPartSta
         }
 
         if (hasGui()) {
-            getMod().getGuiHandler()
+            getModGui().getGuiHandler()
                 .setTemporaryData(ExtendedGuiHandler.PART, side); // Pass the side as extra data to the gui
             if (!world.isRemote && hasGui()) {
-                player.openGui(getMod().getModId(), getGuiID(), world, pos.getX(), pos.getY(), pos.getZ());
+                player.openGui(getModGui().getModId(), getGuiID(), world, pos.getX(), pos.getY(), pos.getZ());
             }
             return true;
         }
@@ -177,7 +180,7 @@ public abstract class PartTypeBase<P extends IPartType<P, S>, S extends IPartSta
      * @return The event actions.
      */
     protected Map<Class<? extends INetworkEvent>, IEventAction> constructNetworkEventActions() {
-        return Maps.newHashMap();
+        return new IdentityHashMap<>();
     }
 
     @Override

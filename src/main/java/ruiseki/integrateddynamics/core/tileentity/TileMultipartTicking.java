@@ -125,7 +125,7 @@ public class TileMultipartTicking extends TileEntityOK
 
     @Override
     public void readFromNBT(NBTTagCompound tag) {
-        EnumFacingMap<Boolean> lastConnected = connected;
+        EnumFacingMap<Boolean> lastConnected = EnumFacingMap.newMap(connected);
         String lastFacadeBlockName = facadeBlockName;
         int lastFacadeMeta = facadeMeta;
         boolean lastRealCable = cableFakeable.isRealCable();
