@@ -1,6 +1,7 @@
 package ruiseki.integrateddynamics.core.helper;
 
 import java.util.List;
+import java.util.Map;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -21,6 +22,7 @@ import ruiseki.integrateddynamics.api.network.INetworkCarrier;
 import ruiseki.integrateddynamics.api.network.INetworkElement;
 import ruiseki.integrateddynamics.api.network.INetworkElementProvider;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
+import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.path.IPathElement;
 import ruiseki.integrateddynamics.capability.cable.CableConfig;
 import ruiseki.integrateddynamics.capability.cable.CableFakeableConfig;
@@ -334,5 +336,19 @@ public class CableHelpers {
         IFacadeable facadeable = CapabilityHelpers.getCapability(world, pos, FacadeableConfig.CAPABILITY)
             .getOrNull();
         return facadeable != null ? facadeable.getFacade() : null;
+    }
+
+    public static boolean isLightTransparent(IBlockAccess world, BlockPos pos) {
+        IPartContainer partContainer = PartHelpers.getPartContainer(world, pos);
+        if (partContainer != null) {
+            for (Map.Entry<ForgeDirection, IPartType<?, ?>> entry : partContainer.getParts()
+                .entrySet()) {
+                IPartType part = entry.getValue();
+                if (part.forceLightTransparency(partContainer.getPartState(entry.getKey()))) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

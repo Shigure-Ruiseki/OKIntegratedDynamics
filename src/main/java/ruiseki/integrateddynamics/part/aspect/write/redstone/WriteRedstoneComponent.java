@@ -16,7 +16,7 @@ import ruiseki.okcore.helper.CapabilityHelpers;
 public class WriteRedstoneComponent implements IWriteRedstoneComponent {
 
     @Override
-    public void setRedstoneLevel(PartTarget target, int level) {
+    public void setRedstoneLevel(PartTarget target, int level, boolean strongPower) {
         DimPos dimPos = target.getCenter()
             .getPos();
         IDynamicRedstone block = getDynamicRedstoneBlock(
@@ -24,7 +24,7 @@ public class WriteRedstoneComponent implements IWriteRedstoneComponent {
             target.getCenter()
                 .getSide());
         if (block != null) {
-            block.setRedstoneLevel(level);
+            block.setRedstoneLevel(level, strongPower);
         }
     }
 
@@ -37,7 +37,7 @@ public class WriteRedstoneComponent implements IWriteRedstoneComponent {
             target.getCenter()
                 .getSide());
         if (block != null && !dimPos.getWorld().isRemote) {
-            block.setRedstoneLevel(-1);
+            block.setRedstoneLevel(-1, false);
         }
     }
 

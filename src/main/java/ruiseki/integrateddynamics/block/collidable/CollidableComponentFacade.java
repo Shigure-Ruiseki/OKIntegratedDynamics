@@ -69,6 +69,7 @@ public class CollidableComponentFacade implements ICollidable.IComponent<ForgeDi
             if (!player.capabilities.isCreativeMode) {
                 ItemStackHelpers.spawnItemStackToPlayer(world, pos, itemStack, player);
             }
+            return true;
         }
         return false;
     }

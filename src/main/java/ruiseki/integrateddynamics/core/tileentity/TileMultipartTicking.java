@@ -34,6 +34,7 @@ import ruiseki.integrateddynamics.capability.partcontainer.PartContainerConfig;
 import ruiseki.integrateddynamics.capability.partcontainer.PartContainerTileMultipartTicking;
 import ruiseki.integrateddynamics.capability.path.PathElementConfig;
 import ruiseki.integrateddynamics.capability.path.PathElementTile;
+import ruiseki.integrateddynamics.core.helper.CableHelpers;
 import ruiseki.integrateddynamics.core.helper.PartHelpers;
 import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.capabilities.resolver.BasicCapabilityResolver;
@@ -68,6 +69,9 @@ public class TileMultipartTicking extends TileEntityOK
     @Getter
     @NBTPersist
     private EnumFacingMap<Boolean> redstoneInputs = EnumFacingMap.newMap();
+    @Getter
+    @NBTPersist
+    private EnumFacingMap<Boolean> redstoneStrong = EnumFacingMap.newMap();
     @Getter
     @NBTPersist
     private EnumFacingMap<Integer> lightLevels = EnumFacingMap.newMap();
@@ -141,13 +145,17 @@ public class TileMultipartTicking extends TileEntityOK
         } else {
             partContainer.deserializeNBT(tag.getCompoundTag("partContainer"));
         }
+        boolean wasLightTransparent = getWorldObj() != null && CableHelpers.isLightTransparent(getWorldObj(), getPos());
+
         super.readFromNBT(tag);
         cableFakeable.setRealCable(tag.getBoolean("realCable"));
+        boolean isLightTransparent = getWorldObj() != null && CableHelpers.isLightTransparent(getWorldObj(), getPos());
         if (getWorldObj() != null && (lastConnected == null || connected == null
             || !lastConnected.equals(connected)
             || !Objects.equals(lastFacadeBlockName, facadeBlockName)
             || lastFacadeMeta != facadeMeta
-            || lastRealCable != cableFakeable.isRealCable())) {
+            || lastRealCable != cableFakeable.isRealCable()
+            || wasLightTransparent != isLightTransparent)) {
             getWorldObj().markBlockForUpdate(xCoord, yCoord, zCoord);
         }
     }

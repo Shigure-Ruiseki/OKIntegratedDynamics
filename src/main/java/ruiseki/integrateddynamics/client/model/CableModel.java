@@ -7,13 +7,13 @@ import java.util.List;
 import java.util.Map;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.IIcon;
 import net.minecraft.world.IBlockAccess;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import org.apache.logging.log4j.Level;
 
+import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 import com.gtnewhorizon.gtnhlib.client.model.BakedModelQuadContext;
 import com.gtnewhorizon.gtnhlib.client.model.JSONVariant;
 import com.gtnewhorizon.gtnhlib.client.model.baked.BakedModel;
@@ -27,10 +27,11 @@ import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQ
 
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.Reference;
+import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartRenderPosition;
 import ruiseki.integrateddynamics.core.helper.CableHelpers;
-import ruiseki.integrateddynamics.core.tileentity.TileMultipartTicking;
+import ruiseki.integrateddynamics.core.helper.PartHelpers;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.ThreadsafeCache;
 import ruiseki.okcore.helper.QuadBuilderHelpers;
@@ -43,6 +44,12 @@ public class CableModel implements BakedModel {
     private static final int LENGTH_CONNECTION = (TEXTURE_SIZE - RADIUS) / 2;
     public static final float MIN = (float) LENGTH_CONNECTION / (float) TEXTURE_SIZE; // 0.375F
     public static final float MAX = 1.0F - MIN; // 0.625F
+
+    private static final PartRenderPosition CABLE_RENDERPOSITION = new PartRenderPosition(
+        -1,
+        (((float) TEXTURE_SIZE - (float) RADIUS) / 2 / (float) TEXTURE_SIZE),
+        (float) RADIUS / (float) TEXTURE_SIZE,
+        (float) RADIUS / (float) TEXTURE_SIZE);
 
     private record PartCacheKey(ResourceLoc.ModelLoc modelLoc, ForgeDirection side) {}
 
@@ -108,24 +115,20 @@ public class CableModel implements BakedModel {
             IBlockAccess world = worldContext.getWorld();
             BlockPos pos = new BlockPos(worldContext.getX(), worldContext.getY(), worldContext.getZ());
 
-            TileEntity te = world.getTileEntity(worldContext.getX(), worldContext.getY(), worldContext.getZ());
-            if (!(te instanceof TileMultipartTicking cable)) return Collections.emptyList();
-
             List<ModelQuadView> combinedQuads = new ArrayList<>(48);
             boolean realCable = CableHelpers.isNoFakeCable(world, pos);
+            IPartContainer partContainer = PartHelpers.getPartContainer(world, pos);
 
             if (realCable) {
                 combinedQuads.addAll(CACHED_CENTER_CORE_QUADS);
             }
 
             for (ForgeDirection side : ForgeDirection.VALID_DIRECTIONS) {
-                boolean hasPart = cable.getPartContainer()
-                    .hasPart(side);
+                boolean hasPart = partContainer != null && partContainer.hasPart(side);
                 boolean isConnected = realCable && CableHelpers.isCableConnected(world, pos, side);
 
                 if (hasPart) {
-                    IPartType<?, ?> part = cable.getPartContainer()
-                        .getPart(side);
+                    IPartType<?, ?> part = partContainer.getPart(side);
                     if (part != null) {
                         if (realCable) {
                             PartRenderPosition renderPos = part.getPartRenderPosition();
@@ -137,7 +140,7 @@ public class CableModel implements BakedModel {
                             }
                         }
 
-                        String modelPath = part.getBlockModelPath(cable.getPartContainer(), side);
+                        String modelPath = part.getBlockModelPath(partContainer, side);
                         if (modelPath != null && !modelPath.isEmpty()) {
                             ResourceLoc.ModelLoc partModelLoc = parseModelLocStatic(modelPath);
                             addPartQuads(combinedQuads, partModelLoc, side, context);
@@ -151,11 +154,126 @@ public class CableModel implements BakedModel {
                 }
             }
 
+            BlockState facade = CableHelpers.getFacade(world, pos);
+            if (facade != null) {
+                IIcon facadeIcon = facade.getBlock()
+                    .getIcon(0, facade.getBlockMeta(0));
+                if (facadeIcon == null) {
+                    facadeIcon = facade.getBlock()
+                        .getBlockTextureFromSide(0);
+                }
+
+                if (facadeIcon != null) {
+                    for (ForgeDirection side : ForgeDirection.VALID_DIRECTIONS) {
+                        boolean isConnected = CableHelpers.isCableConnected(world, pos, side);
+                        boolean hasPart = partContainer != null && partContainer.hasPart(side);
+
+                        PartRenderPosition partRenderPosition = PartRenderPosition.NONE;
+                        if (hasPart) {
+                            IPartType<?, ?> part = partContainer.getPart(side);
+                            if (part != null) {
+                                partRenderPosition = part.getPartRenderPosition();
+                            }
+                        } else if (isConnected) {
+                            partRenderPosition = CABLE_RENDERPOSITION;
+                        }
+
+                        combinedQuads.addAll(getFacadeQuads(facadeIcon, side, partRenderPosition));
+                    }
+                }
+            }
+
             return combinedQuads;
         } catch (Throwable t) {
             IntegratedDynamics.clog(Level.ERROR, "Fatal error building quads for CableModel at context", t);
             return CACHED_CENTER_CORE_QUADS;
         }
+    }
+
+    public static List<ModelQuadView> getFacadeQuads(IIcon texture, ForgeDirection side,
+        PartRenderPosition partRenderPosition) {
+        List<ModelQuadView> ret = new ArrayList<>(8);
+        if (partRenderPosition == null || partRenderPosition == PartRenderPosition.NONE) {
+            addBakedQuad(ret, 0F, 1F, 0F, 1F, 1F, texture, side);
+        } else {
+            float w = partRenderPosition.getWidthFactorSide();
+            float h = partRenderPosition.getHeightFactorSide();
+
+            float x0 = 0F;
+            float x1 = (1F - w) / 2F;
+            float x2 = x1 + w;
+            float x3 = 1F;
+
+            float z0 = 0F;
+            float z1 = (1F - h) / 2F;
+            float z2 = z1 + h;
+            float z3 = 1F;
+
+            /*
+             * -------
+             * |1|2|3|
+             * -------
+             * |4|P|5|
+             * -------
+             * |6|7|8|
+             * -------
+             */
+            addBakedQuad(ret, x0, x1, z0, z1, 1F, texture, side); // 1
+            addBakedQuad(ret, x1, x2, z0, z1, 1F, texture, side); // 2
+            addBakedQuad(ret, x2, x3, z0, z1, 1F, texture, side); // 3
+
+            addBakedQuad(ret, x0, x1, z1, z2, 1F, texture, side); // 4
+            // P (Bỏ qua Part)
+            addBakedQuad(ret, x2, x3, z1, z2, 1F, texture, side); // 5
+
+            addBakedQuad(ret, x0, x1, z2, z3, 1F, texture, side); // 6
+            addBakedQuad(ret, x1, x2, z2, z3, 1F, texture, side); // 7
+            addBakedQuad(ret, x2, x3, z2, z3, 1F, texture, side); // 8
+        }
+        return ret;
+    }
+
+    private static void addBakedQuad(List<ModelQuadView> quads, float x0, float x1, float z0, float z1, float depth,
+        IIcon icon, ForgeDirection side) {
+        float minX = x0, minY = 0F, minZ = z0;
+        float maxX = x1, maxY = depth, maxZ = z1;
+
+        switch (side) {
+            case DOWN -> {
+                minY = 1.0F - depth;
+                maxY = 1.0F;
+            }
+            case UP -> {
+                minY = 0.0F;
+                maxY = depth;
+            }
+            case NORTH -> {
+                minZ = 1.0F - depth;
+                maxZ = 1.0F;
+            }
+            case SOUTH -> {
+                minZ = 0.0F;
+                maxZ = depth;
+            }
+            case WEST -> {
+                minX = 1.0F - depth;
+                maxX = 1.0F;
+            }
+            case EAST -> {
+                minX = 0.0F;
+                maxX = depth;
+            }
+            default -> {}
+        }
+
+        float u0 = x0 * 16.0f;
+        float v0 = z0 * 16.0f;
+        float u1 = x1 * 16.0f;
+        float v1 = z1 * 16.0f;
+
+        ModelQuad quad = QuadBuilderHelpers
+            .buildFaceQuad(side, minX, minY, minZ, maxX, maxY, maxZ, icon, u0, v0, u1, v1);
+        quads.add(quad);
     }
 
     private void addPartQuads(List<ModelQuadView> targetList, ResourceLoc.ModelLoc modelLoc, ForgeDirection side,

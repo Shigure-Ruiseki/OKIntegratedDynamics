@@ -278,7 +278,8 @@ public class BlockCable extends ConfigurableBlockContainer
 
     @Override
     public int getLightOpacity(IBlockAccess world, int x, int y, int z) {
-        return CableHelpers.hasFacade(world, new BlockPos(x, y, z)) ? 255 : 0;
+        BlockPos pos = new BlockPos(x, y, z);
+        return CableHelpers.hasFacade(world, pos) && !CableHelpers.isLightTransparent(world, pos) ? 255 : 0;
     }
 
     @Override

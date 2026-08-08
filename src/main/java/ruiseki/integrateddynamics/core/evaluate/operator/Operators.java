@@ -2094,18 +2094,26 @@ public final class Operators {
     /**
      * If the given player has an external gui open.
      */
-    public static final IOperator OBJECT_PLAYER_HASGUIOPEN = REGISTRY.register(OperatorBuilders.ENTITY_1_SUFFIX_LONG.output(ValueTypes.BOOLEAN).symbolOperator("hasguiopen")
-        .function(new OperatorBase.IFunction() {
-            @Override
-            public IValue evaluate(OperatorBase.SafeVariablesGetter variables) throws EvaluationException {
-                ValueObjectTypeEntity.ValueEntity a = variables.getValue(0);
-                if(a.getRawValue().isPresent() && a.getRawValue().get() instanceof EntityPlayer) {
-                    EntityPlayer entity = (EntityPlayer) a.getRawValue().get();
-                    return ValueTypeBoolean.ValueBoolean.of(entity.openContainer != entity.inventoryContainer);
+    public static final IOperator OBJECT_PLAYER_HASGUIOPEN = REGISTRY.register(
+        OperatorBuilders.ENTITY_1_SUFFIX_LONG.output(ValueTypes.BOOLEAN)
+            .symbolOperator("hasguiopen")
+            .function(new OperatorBase.IFunction() {
+
+                @Override
+                public IValue evaluate(OperatorBase.SafeVariablesGetter variables) throws EvaluationException {
+                    ValueObjectTypeEntity.ValueEntity a = variables.getValue(0);
+                    if (a.getRawValue()
+                        .isPresent()
+                        && a.getRawValue()
+                            .get() instanceof EntityPlayer) {
+                        EntityPlayer entity = (EntityPlayer) a.getRawValue()
+                            .get();
+                        return ValueTypeBoolean.ValueBoolean.of(entity.openContainer != entity.inventoryContainer);
+                    }
+                    return ValueTypeBoolean.ValueBoolean.of(false);
                 }
-                return ValueTypeBoolean.ValueBoolean.of(false);
-            }
-        }).build());
+            })
+            .build());
 
     /**
      * The currently held item of the entity.
