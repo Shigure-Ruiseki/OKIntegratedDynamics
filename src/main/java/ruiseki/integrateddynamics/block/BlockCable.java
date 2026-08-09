@@ -2,6 +2,8 @@ package ruiseki.integrateddynamics.block;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Random;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
@@ -33,6 +35,7 @@ import lombok.experimental.Delegate;
 import ruiseki.integrateddynamics.api.block.IDynamicLight;
 import ruiseki.integrateddynamics.api.block.IDynamicRedstone;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
+import ruiseki.integrateddynamics.api.part.IPartState;
 import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.block.collidable.CollidableComponentCableCenter;
 import ruiseki.integrateddynamics.block.collidable.CollidableComponentCableConnections;
@@ -272,6 +275,31 @@ public class BlockCable extends ConfigurableBlockContainer
         CableHelpers.updateConnectionsNeighbours(world, pos); // TODO: do we need this here? I think we only have to
                                                               // update our own connections...
         NetworkHelpers.onElementProviderBlockNeighborChange(world, pos, neighborBlock);
+    }
+
+    @Override
+    public void updateTick(World world, int x, int y, int z, Random random) {
+        super.updateTick(world, x, y, z, random);
+        BlockPos pos = new BlockPos(x, y, z);
+        TileMultipartTicking tile = TileHelpers.getSafeTile(world, pos, TileMultipartTicking.class);
+        if (tile != null) {
+            for (Map.Entry<ForgeDirection, PartHelpers.PartStateHolder<?, ?>> entry : tile.getPartContainer()
+                .getPartData()
+                .entrySet()) {
+                updateTickPart(
+                    entry.getValue()
+                        .getPart(),
+                    world,
+                    pos,
+                    entry.getValue()
+                        .getState(),
+                    random);
+            }
+        }
+    }
+
+    protected void updateTickPart(IPartType partType, World world, BlockPos pos, IPartState partState, Random random) {
+        partType.updateTick(world, pos, partState, random);
     }
 
     /* --------------- Start ICollidable and rendering --------------- */

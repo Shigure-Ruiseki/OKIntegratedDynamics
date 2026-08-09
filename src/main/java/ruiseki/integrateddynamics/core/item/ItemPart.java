@@ -31,6 +31,7 @@ import ruiseki.okcore.config.configurable.ConfigurableItem;
 import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.helper.LangHelpers;
+import ruiseki.okcore.helper.MinecraftHelpers;
 
 /**
  * An item that can place parts.
@@ -142,11 +143,13 @@ public class ItemPart<P extends IPartType<P, S>, S extends IPartState<P>> extend
     @SideOnly(Side.CLIENT)
     @Override
     public void addInformation(ItemStack itemStack, EntityPlayer entityPlayer, List list, boolean par4) {
-        if (itemStack.getTagCompound() != null) {
+        if (itemStack.getTagCompound() != null && itemStack.getTagCompound()
+            .hasKey("id", MinecraftHelpers.NBTTag_Types.NBTTagInt.ordinal())) {
             int id = itemStack.getTagCompound()
                 .getInteger("id");
             list.add(LangHelpers.localize(L10NValues.GENERAL_ITEM_ID, id));
         }
+        getPart().loadTooltip(itemStack, list);
         LangHelpers.addOptionalInfo(list, getPart().getUnlocalizedNameBase());
         super.addInformation(itemStack, entityPlayer, list, par4);
     }

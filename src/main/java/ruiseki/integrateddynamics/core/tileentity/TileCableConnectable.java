@@ -55,7 +55,7 @@ public class TileCableConnectable extends TileEntityOK implements TileEntityOK.I
         this.capabilityCache.addCapabilityResolver(
             BasicCapabilityResolver.create(NetworkCarrierConfig.CAPABILITY, () -> networkCarrier));
         this.capabilityCache.addCapabilityResolver(
-            BasicCapabilityResolver.create(PathElementConfig.CAPABILITY, () -> new PathElementTile(this, cable)));
+            BasicCapabilityResolver.create(PathElementConfig.CAPABILITY, () -> new PathElementTile<>(this, cable)));
     }
 
     @Override

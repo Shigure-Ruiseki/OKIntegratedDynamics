@@ -14,7 +14,7 @@ import ruiseki.okcore.datastructure.DimPos;
  *
  * @author rubensworks
  */
-public class PartPos {
+public class PartPos implements Comparable<PartPos> {
 
     private final DimPos pos;
     private final ForgeDirection side;
@@ -80,4 +80,14 @@ public class PartPos {
         return null;
     }
 
+    @Override
+    public int compareTo(PartPos o) {
+        int pos = this.getPos()
+            .compareTo(o.getPos());
+        if (pos == 0) {
+            return this.getSide()
+                .compareTo(o.getSide());
+        }
+        return pos;
+    }
 }

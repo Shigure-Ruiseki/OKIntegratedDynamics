@@ -33,7 +33,7 @@ import ruiseki.integrateddynamics.capability.networkelementprovider.NetworkEleme
 import ruiseki.integrateddynamics.capability.partcontainer.PartContainerConfig;
 import ruiseki.integrateddynamics.capability.partcontainer.PartContainerTileMultipartTicking;
 import ruiseki.integrateddynamics.capability.path.PathElementConfig;
-import ruiseki.integrateddynamics.capability.path.PathElementTile;
+import ruiseki.integrateddynamics.capability.path.PathElementTileMultipartTicking;
 import ruiseki.integrateddynamics.core.helper.CableHelpers;
 import ruiseki.integrateddynamics.core.helper.PartHelpers;
 import ruiseki.okcore.capabilities.Capability;
@@ -114,7 +114,8 @@ public class TileMultipartTicking extends TileEntityOK
         this.capabilityCache
             .addCapabilityResolver(BasicCapabilityResolver.create(CableFakeableConfig.CAPABILITY, () -> cableFakeable));
         this.capabilityCache.addCapabilityResolver(
-            BasicCapabilityResolver.create(PathElementConfig.CAPABILITY, () -> new PathElementTile(this, cable)));
+            BasicCapabilityResolver
+                .create(PathElementConfig.CAPABILITY, () -> new PathElementTileMultipartTicking(this, cable)));
         this.capabilityCache.addCapabilityResolver(
             SidedCapabilityResolver
                 .create(DynamicLightConfig.CAPABILITY, side -> new DynamicLightTileMultipartTicking(this, side)));

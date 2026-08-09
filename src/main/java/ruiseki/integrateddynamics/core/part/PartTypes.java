@@ -5,6 +5,8 @@ import ruiseki.integrateddynamics.api.part.IPartTypeRegistry;
 import ruiseki.integrateddynamics.part.PartTypeAudioReader;
 import ruiseki.integrateddynamics.part.PartTypeAudioWriter;
 import ruiseki.integrateddynamics.part.PartTypeBlockReader;
+import ruiseki.integrateddynamics.part.PartTypeConnectorMonoDirectional;
+import ruiseki.integrateddynamics.part.PartTypeConnectorOmniDirectional;
 import ruiseki.integrateddynamics.part.PartTypeEffectWriter;
 import ruiseki.integrateddynamics.part.PartTypeEntityReader;
 import ruiseki.integrateddynamics.part.PartTypeExtraDimensionalReader;
@@ -67,4 +69,9 @@ public final class PartTypes {
     public static final PartTypePanelDisplay DISPLAY_PANEL = REGISTRY
         .register(new PartTypePanelDisplay("display_panel"));
 
+    // Connectors
+    public static final PartTypeConnectorMonoDirectional CONNECTOR_MONO = REGISTRY
+        .register(new PartTypeConnectorMonoDirectional("connector_mono_directional"));
+    public static final PartTypeConnectorOmniDirectional CONNECTOR_OMNI = REGISTRY
+        .register(new PartTypeConnectorOmniDirectional("connector_omni_directional"));
 }

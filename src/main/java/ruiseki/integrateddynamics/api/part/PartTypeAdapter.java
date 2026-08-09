@@ -2,6 +2,7 @@ package ruiseki.integrateddynamics.api.part;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 
 import net.minecraft.block.Block;
@@ -19,6 +20,7 @@ import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.network.IPartNetworkElement;
 import ruiseki.integrateddynamics.api.network.event.INetworkEvent;
 import ruiseki.okcore.datastructure.BlockPos;
+import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.init.IInitListener;
 
 /**
@@ -121,7 +123,9 @@ public abstract class PartTypeAdapter<P extends IPartType<P, S>, S extends IPart
     @Override
     public S getState(ItemStack itemStack) {
         S partState = null;
-        if (itemStack != null && itemStack.getTagCompound() != null) {
+        if (itemStack != null && itemStack.getTagCompound() != null
+            && itemStack.getTagCompound()
+                .hasKey("id", MinecraftHelpers.NBTTag_Types.NBTTagInt.ordinal())) {
             partState = fromNBT(itemStack.getTagCompound());
         }
         if (partState == null) {
@@ -167,6 +171,11 @@ public abstract class PartTypeAdapter<P extends IPartType<P, S>, S extends IPart
     }
 
     @Override
+    public void updateTick(World world, BlockPos pos, S partState, Random random) {
+
+    }
+
+    @Override
     public void onPreRemoved(INetwork network, IPartNetwork partNetwork, PartTarget target, S state) {
 
     }
@@ -204,6 +213,11 @@ public abstract class PartTypeAdapter<P extends IPartType<P, S>, S extends IPart
 
     @Override
     public void loadTooltip(S state, List<String> lines) {
+
+    }
+
+    @Override
+    public void loadTooltip(ItemStack itemStack, List<String> lines) {
 
     }
 

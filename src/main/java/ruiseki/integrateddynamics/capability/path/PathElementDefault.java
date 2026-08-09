@@ -7,7 +7,7 @@ import ruiseki.integrateddynamics.api.path.IPathElement;
 
 /**
  * Default implementation of {@link IPathElement}.
- * 
+ *
  * @author rubensworks
  */
 public abstract class PathElementDefault implements IPathElement {
@@ -19,7 +19,7 @@ public abstract class PathElementDefault implements IPathElement {
 
     @Override
     public boolean equals(Object o) {
-        return o instanceof PathElementDefault && compareTo(o) == 0;
+        return o instanceof IPathElement && compareTo(o) == 0;
     }
 
     @Override

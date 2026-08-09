@@ -15,7 +15,7 @@ import ruiseki.okcore.helper.ValueNotifierHelpers;
 
 /**
  * Gui for the delay.
- * 
+ *
  * @author rubensworks
  */
 public class GuiDelay extends GuiActiveVariableBase<ContainerDelay, TileDelay> {
@@ -28,7 +28,7 @@ public class GuiDelay extends GuiActiveVariableBase<ContainerDelay, TileDelay> {
 
     /**
      * Make a new instance.
-     * 
+     *
      * @param inventory The player inventory.
      * @param tile      The part.
      */
@@ -129,7 +129,7 @@ public class GuiDelay extends GuiActiveVariableBase<ContainerDelay, TileDelay> {
         numberFieldUpdateInterval.drawTextBox(Minecraft.getMinecraft(), mouseX - guiLeft, mouseY - guiTop);
         numberFieldCapacity.drawTextBox(Minecraft.getMinecraft(), mouseX - guiLeft, mouseY - guiTop);
         fontRendererObj.drawString(
-            LangHelpers.localize("gui.integrateddynamics.partsettings.updateInterval"),
+            LangHelpers.localize("gui.integrateddynamics.partsettings.update_interval"),
             guiLeft + 8,
             guiTop + 104,
             Helpers.RGBToInt(0, 0, 0));

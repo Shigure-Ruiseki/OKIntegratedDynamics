@@ -64,6 +64,7 @@ import ruiseki.integrateddynamics.core.part.PartTypes;
 import ruiseki.integrateddynamics.core.part.aspect.AspectRegistry;
 import ruiseki.integrateddynamics.core.persist.world.LabelsWorldStorage;
 import ruiseki.integrateddynamics.core.persist.world.NetworkWorldStorage;
+import ruiseki.integrateddynamics.part.PartTypeConnectorOmniDirectional;
 import ruiseki.integrateddynamics.part.aspect.Aspects;
 import ruiseki.okcore.client.gui.GuiHandler;
 import ruiseki.okcore.config.ConfigHandler;
@@ -208,6 +209,7 @@ public class IntegratedDynamics extends ModBaseVersionable {
     @Mod.EventHandler
     public void onServerStarted(FMLServerStartedEvent event) {
         super.onServerStarted(event);
+        PartTypeConnectorOmniDirectional.LOADED_GROUPS.onStartedEvent(event);
     }
 
     @Override

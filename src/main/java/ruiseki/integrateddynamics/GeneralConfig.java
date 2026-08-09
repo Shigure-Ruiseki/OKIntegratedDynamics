@@ -87,6 +87,15 @@ public class GeneralConfig extends DummyConfig {
     public static int energyRateLimit = Integer.MAX_VALUE;
 
     /**
+     * The maximum offset in blocks a directional connector can look for its target.
+     */
+    @ConfigurableProperty(
+        category = ConfigurableTypeCategory.MACHINE,
+        comment = "The maximum offset in blocks a directional connector can look for its target.",
+        minimalValue = 1)
+    public static int maxDirectionalConnectorOffset = 512;
+
+    /**
      * Create a new instance.
      */
     public GeneralConfig() {

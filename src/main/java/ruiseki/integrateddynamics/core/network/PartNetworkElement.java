@@ -1,6 +1,7 @@
 package ruiseki.integrateddynamics.core.network;
 
 import java.util.List;
+import java.util.Objects;
 
 import net.minecraft.block.Block;
 import net.minecraft.item.ItemStack;
@@ -35,6 +36,8 @@ public class PartNetworkElement<P extends IPartType<P, S>, S extends IPartState<
 
     private final P part;
     private final PartTarget target;
+
+    private S tempState = null;
 
     protected static DimPos getCenterPos(PartTarget target) {
         return target.getCenter()
@@ -173,12 +176,13 @@ public class PartNetworkElement<P extends IPartType<P, S>, S extends IPartState<
 
     @Override
     public void onPreRemoved(INetwork network) {
-        part.onPreRemoved(network, NetworkHelpers.getPartNetwork(network), target, getPartState());
+        part.onPreRemoved(network, NetworkHelpers.getPartNetwork(network), target, (tempState = getPartState()));
     }
 
     @Override
     public void onPostRemoved(INetwork network) {
-        part.onPostRemoved(network, NetworkHelpers.getPartNetwork(network), target, getPartState());
+        part.onPostRemoved(network, NetworkHelpers.getPartNetwork(network), target, Objects.requireNonNull(tempState));
+        tempState = null;
     }
 
     @Override

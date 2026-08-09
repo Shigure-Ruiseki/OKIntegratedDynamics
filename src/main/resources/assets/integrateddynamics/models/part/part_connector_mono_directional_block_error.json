@@ -1,0 +1,7 @@
+{
+  "parent": "integrateddynamics:block/connector_mono_directional",
+  "textures": {
+    "back": "integrateddynamics:blocks/parts/connector_mono_directional_back",
+    "front": "integrateddynamics:blocks/parts/connector_mono_directional_front"
+  }
+}

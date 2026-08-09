@@ -4,7 +4,7 @@ import ruiseki.integrateddynamics.api.APIReference;
 
 /**
  * Collection of generic L10N entries.
- * 
+ *
  * @author rubensworks
  */
 public class L10NValues {

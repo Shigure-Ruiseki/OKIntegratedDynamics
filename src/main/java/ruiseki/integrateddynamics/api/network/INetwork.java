@@ -18,6 +18,11 @@ import ruiseki.okcore.persist.nbt.INBTSerializable;
 public interface INetwork extends IFullNetworkListener, INBTSerializable {
 
     /**
+     * @return If this network and its elements have been fully initialized.
+     */
+    public boolean isInitialized();
+
+    /**
      * @return The event bus for this network.
      */
     public INetworkEventBus getEventBus();
@@ -107,7 +112,7 @@ public interface INetwork extends IFullNetworkListener, INBTSerializable {
     /**
      * Invalidate the given element.
      * This should be called when the element's chunk is being unloaded.
-     * 
+     *
      * @param element The network element to invalidate.
      */
     public void invalidateElement(INetworkElement element);
@@ -115,7 +120,7 @@ public interface INetwork extends IFullNetworkListener, INBTSerializable {
     /**
      * Revalidate the given element.
      * This should be called when the element's chunk is being reloaded.
-     * 
+     *
      * @param element The network element to invalidate.
      */
     public void revalidateElement(INetworkElement element);

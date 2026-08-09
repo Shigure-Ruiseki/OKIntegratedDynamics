@@ -58,7 +58,7 @@ public class TileCableConnectableInventory extends InventoryTileEntity implement
         this.capabilityCache.addCapabilityResolver(
             BasicCapabilityResolver.create(NetworkCarrierConfig.CAPABILITY, () -> networkCarrier));
         this.capabilityCache.addCapabilityResolver(
-            BasicCapabilityResolver.create(PathElementConfig.CAPABILITY, () -> new PathElementTile(this, cable)));
+            BasicCapabilityResolver.create(PathElementConfig.CAPABILITY, () -> new PathElementTile<>(this, cable)));
     }
 
     @Override

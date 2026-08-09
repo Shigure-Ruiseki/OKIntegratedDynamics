@@ -1,6 +1,7 @@
 package ruiseki.integrateddynamics.api.part;
 
 import java.util.List;
+import java.util.Random;
 
 import javax.annotation.Nullable;
 
@@ -268,6 +269,16 @@ public interface IPartType<P extends IPartType<P, S>, S extends IPartState<P>>
         ForgeDirection side, float hitX, float hitY, float hitZ);
 
     /**
+     * Called when a block update occurs
+     *
+     * @param world     The world.
+     * @param pos       The position.
+     * @param partState The part state.
+     * @param random    A random instance.
+     */
+    public void updateTick(World world, BlockPos pos, S partState, Random random);
+
+    /**
      * Called when this element is about to be removed.
      *
      * @param network The network.
@@ -341,6 +352,14 @@ public interface IPartType<P extends IPartType<P, S>, S extends IPartState<P>>
      * @param lines The list to add lines to.
      */
     public void loadTooltip(S state, List<String> lines);
+
+    /**
+     * Add tooltip lines for this aspect when this part's item is being hovered.
+     * 
+     * @param itemStack The itemstack.
+     * @param lines     The list to add lines to.
+     */
+    public void loadTooltip(ItemStack itemStack, List<String> lines);
 
     /**
      * Check if the given state change should trigger a block render update.
