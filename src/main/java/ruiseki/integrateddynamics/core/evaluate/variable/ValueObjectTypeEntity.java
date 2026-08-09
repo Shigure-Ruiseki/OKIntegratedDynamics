@@ -11,11 +11,12 @@ import com.google.common.base.Optional;
 import lombok.ToString;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeNamed;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeNullable;
+import ruiseki.integrateddynamics.core.logicprogrammer.ValueTypeLPElementBase;
 import ruiseki.okcore.helper.MinecraftHelpers;
 
 /**
  * Value type with values that are itemstacks.
- * 
+ *
  * @author rubensworks
  */
 public class ValueObjectTypeEntity extends ValueObjectTypeBase<ValueObjectTypeEntity.ValueEntity> implements
@@ -89,6 +90,11 @@ public class ValueObjectTypeEntity extends ValueObjectTypeBase<ValueObjectTypeEn
     public boolean isNull(ValueEntity a) {
         return !a.getRawValue()
             .isPresent();
+    }
+
+    @Override
+    public ValueTypeLPElementBase createLogicProgrammerElement() {
+        return null;
     }
 
     @ToString

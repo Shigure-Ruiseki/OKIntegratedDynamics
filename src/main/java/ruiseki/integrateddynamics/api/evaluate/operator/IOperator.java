@@ -74,7 +74,7 @@ public interface IOperator {
      * @return The output value.
      * @throws EvaluationException When something went wrong while evaluating.
      */
-    public IValue evaluate(IVariable[] input) throws EvaluationException;
+    public IValue evaluate(IVariable... input) throws EvaluationException;
 
     /**
      * @return The required input length.
@@ -96,7 +96,7 @@ public interface IOperator {
 
     /**
      * Materialize this operator so that it can exist without any external references.
-     * 
+     *
      * @return The materialized operator.
      * @throws EvaluationException if materialization fails because of a variable evaluation.
      */

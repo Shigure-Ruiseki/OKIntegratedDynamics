@@ -29,7 +29,7 @@ import ruiseki.okcore.helper.RenderHelpers;
  * @author rubensworks
  */
 @SideOnly(Side.CLIENT)
-public class SubGuiConfigRenderPattern<E extends IGuiInputElement, G extends Gui, C extends Container> extends SubGuiBox
+public class RenderPattern<E extends IGuiInputElement, G extends Gui, C extends Container> extends SubGuiBox
     implements ISubGuiBox {
 
     @Getter
@@ -38,7 +38,7 @@ public class SubGuiConfigRenderPattern<E extends IGuiInputElement, G extends Gui
     protected final G gui;
     protected final C container;
 
-    public SubGuiConfigRenderPattern(E element, int baseX, int baseY, int maxWidth, int maxHeight, G gui, C container) {
+    public RenderPattern(E element, int baseX, int baseY, int maxWidth, int maxHeight, G gui, C container) {
         super(SubGuiBox.Box.LIGHT);
         this.element = element;
         IConfigRenderPattern configRenderPattern = element.getRenderPattern();

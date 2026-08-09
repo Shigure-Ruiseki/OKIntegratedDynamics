@@ -9,19 +9,19 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import lombok.Getter;
 import ruiseki.integrateddynamics.IntegratedDynamics;
+import ruiseki.integrateddynamics.api.client.gui.subgui.ISubGuiBox;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 import ruiseki.integrateddynamics.api.item.IValueTypeVariableFacade;
 import ruiseki.integrateddynamics.api.item.IVariableFacade;
 import ruiseki.integrateddynamics.api.item.IVariableFacadeHandlerRegistry;
 import ruiseki.integrateddynamics.api.logicprogrammer.IConfigRenderPattern;
-import ruiseki.integrateddynamics.api.logicprogrammer.ILogicProgrammerElement;
 import ruiseki.integrateddynamics.api.logicprogrammer.ILogicProgrammerElementType;
+import ruiseki.integrateddynamics.api.logicprogrammer.IValueTypeLogicProgrammerElement;
 import ruiseki.integrateddynamics.block.BlockLogicProgrammer;
 import ruiseki.integrateddynamics.client.gui.GuiLogicProgrammerBase;
+import ruiseki.integrateddynamics.core.evaluate.variable.GuiElementValueTypeString;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueHelpers;
-import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeGuiElement;
-import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeSubGuiRenderPattern;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeVariableFacade;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
 import ruiseki.integrateddynamics.inventory.container.ContainerLogicProgrammerBase;
@@ -32,16 +32,25 @@ import ruiseki.okcore.helper.MinecraftHelpers;
 /**
  * Element for value type.
  *
+ * @param <S> The gui type for rendering the element for showing the value.
  * @author rubensworks
  */
-public class ValueTypeElement implements
-    ILogicProgrammerElement<SubGuiConfigRenderPattern, GuiLogicProgrammerBase, ContainerLogicProgrammerBase> {
+public abstract class ValueTypeLPElementBase
+    implements IValueTypeLogicProgrammerElement<ISubGuiBox, GuiLogicProgrammerBase, ContainerLogicProgrammerBase> {
 
     @Getter
-    private ValueTypeGuiElement<GuiLogicProgrammerBase, ContainerLogicProgrammerBase> innerGuiElement;
+    private final IValueType valueType;
+    @Getter
+    private GuiElementValueTypeString<GuiLogicProgrammerBase, ContainerLogicProgrammerBase> innerGuiElement;
 
-    public ValueTypeElement(IValueType valueType) {
-        innerGuiElement = new ValueTypeGuiElement<>(valueType, getRenderPattern());
+    public ValueTypeLPElementBase(IValueType valueType) {
+        this.valueType = valueType;
+        this.innerGuiElement = new GuiElementValueTypeString<>(this.valueType, getRenderPattern());
+    }
+
+    @Override
+    public void loadTooltip(List<String> lines) {
+        getInnerGuiElement().loadTooltip(lines);
     }
 
     @Override
@@ -61,19 +70,12 @@ public class ValueTypeElement implements
 
     @Override
     public boolean matchesOutput(IValueType valueType) {
-        return ValueHelpers.correspondsTo(getInnerGuiElement().getValueType(), valueType);
+        return ValueHelpers.correspondsTo(valueType, valueType);
     }
 
     @Override
     public String getLocalizedNameFull() {
-        return LangHelpers.localize(
-            getInnerGuiElement().getValueType()
-                .getUnlocalizedName());
-    }
-
-    @Override
-    public void loadTooltip(List<String> lines) {
-        getInnerGuiElement().loadTooltip(lines);
+        return LangHelpers.localize(valueType.getUnlocalizedName());
     }
 
     @Override
@@ -87,8 +89,19 @@ public class ValueTypeElement implements
     }
 
     @Override
+    public boolean isFor(IVariableFacade variableFacade) {
+        if (variableFacade instanceof IValueTypeVariableFacade) {
+            IValueTypeVariableFacade valueTypeFacade = (IValueTypeVariableFacade) variableFacade;
+            if (valueTypeFacade.isValid()) {
+                return getValueType() == valueTypeFacade.getValueType();
+            }
+        }
+        return false;
+    }
+
+    @Override
     public boolean canWriteElementPre() {
-        return getInnerGuiElement().getInputString() != null;
+        return true;
     }
 
     @Override
@@ -99,57 +112,34 @@ public class ValueTypeElement implements
             !MinecraftHelpers.isClientSide(),
             itemStack,
             ValueTypes.REGISTRY,
-            new ValueTypeVariableFacadeFactory(innerGuiElement.getValueType(), innerGuiElement.getInputString()),
+            new ValueTypeVariableFacadeFactory(getValueType(), getValue()),
             player,
             BlockLogicProgrammer.getInstance());
     }
 
     @Override
     public boolean canCurrentlyReadFromOtherItem() {
-        return this.getInnerGuiElement()
-            .getInputString() == null || this.getInnerGuiElement()
-                .getInputString()
-                .equals(getInnerGuiElement().getDefaultInputString());
+        return true;
     }
 
     @Override
     public void activate() {
-        getInnerGuiElement().setInputString(new String(innerGuiElement.getDefaultInputString()));
+
     }
 
     @Override
     public void deactivate() {
-        getInnerGuiElement().setInputString(null);
-    }
 
-    @Override
-    public LangHelpers.UnlocalizedString validate() {
-        return getInnerGuiElement().getValueType()
-            .canDeserialize(getInnerGuiElement().getInputString());
     }
 
     @Override
     public int getColor() {
-        return getInnerGuiElement().getValueType()
-            .getDisplayColor();
+        return valueType.getDisplayColor();
     }
 
     @Override
     public String getSymbol() {
-        return LangHelpers.localize(
-            getInnerGuiElement().getValueType()
-                .getUnlocalizedName());
-    }
-
-    @Override
-    public boolean isFor(IVariableFacade variableFacade) {
-        if (variableFacade instanceof IValueTypeVariableFacade<?>) {
-            IValueTypeVariableFacade valueTypeFacade = (IValueTypeVariableFacade) variableFacade;
-            if (valueTypeFacade.isValid()) {
-                return getInnerGuiElement().getValueType() == valueTypeFacade.getValueType();
-            }
-        }
-        return false;
+        return LangHelpers.localize(valueType.getUnlocalizedName());
     }
 
     @Override
@@ -159,9 +149,9 @@ public class ValueTypeElement implements
 
     @Override
     @SideOnly(Side.CLIENT)
-    public boolean isFocused(SubGuiConfigRenderPattern subGui) {
-        if (subGui instanceof ValueTypeSubGuiRenderPattern) {
-            return ((ValueTypeSubGuiRenderPattern) subGui).getSearchField()
+    public boolean isFocused(ISubGuiBox subGui) {
+        if (subGui instanceof ValueTypeLPElementRenderPattern) {
+            return ((ValueTypeLPElementRenderPattern) subGui).getSearchField()
                 .isFocused();
         }
         return false;
@@ -169,50 +159,37 @@ public class ValueTypeElement implements
 
     @Override
     @SideOnly(Side.CLIENT)
-    public void setFocused(SubGuiConfigRenderPattern subGui, boolean focused) {
-        if (subGui instanceof ValueTypeSubGuiRenderPattern) {
-            ((ValueTypeSubGuiRenderPattern) subGui).getSearchField()
+    public void setFocused(ISubGuiBox subGui, boolean focused) {
+        if (subGui instanceof ValueTypeLPElementRenderPattern) {
+            ((ValueTypeLPElementRenderPattern) subGui).getSearchField()
                 .setFocused(focused);
         }
     }
 
     @Override
     @SideOnly(Side.CLIENT)
-    public SubGuiConfigRenderPattern createSubGui(int baseX, int baseY, int maxWidth, int maxHeight,
-        GuiLogicProgrammerBase gui, ContainerLogicProgrammerBase container) {
-        return new ValueTypeElementSubGuiRenderPattern(this, baseX, baseY, maxWidth, maxHeight, gui, container);
-    }
+    public abstract ISubGuiBox createSubGui(int baseX, int baseY, int maxWidth, int maxHeight,
+        GuiLogicProgrammerBase gui, ContainerLogicProgrammerBase container);
 
-    /**
-     * Set the value.
-     *
-     * @param value               The value.
-     * @param activeElementSubGui The sub gui that is displaying the value
-     */
-    public void setValue(IValue value, ValueTypeSubGuiRenderPattern activeElementSubGui) {
-        getInnerGuiElement().setInputString(
-            getInnerGuiElement().getValueType()
-                .serialize(value),
-            activeElementSubGui);
-    }
+    @Override
+    @SideOnly(Side.CLIENT)
+    public void setValueInGui(ISubGuiBox subGui) {
 
-    /**
-     * @return The current value.
-     */
-    public IValue getValue() {
-        return getInnerGuiElement().getValueType()
-            .deserialize(getInnerGuiElement().getInputString());
     }
 
     protected static class ValueTypeVariableFacadeFactory
         implements IVariableFacadeHandlerRegistry.IVariableFacadeFactory<IValueTypeVariableFacade> {
 
         private final IValueType valueType;
-        private final String value;
+        private final IValue value;
 
-        public ValueTypeVariableFacadeFactory(IValueType valueType, String value) {
+        public ValueTypeVariableFacadeFactory(IValueType valueType, IValue value) {
             this.valueType = valueType;
             this.value = value;
+        }
+
+        public ValueTypeVariableFacadeFactory(IValue value) {
+            this(value.getType(), value);
         }
 
         @Override

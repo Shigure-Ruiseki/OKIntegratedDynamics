@@ -24,10 +24,10 @@ import ruiseki.integrateddynamics.api.logicprogrammer.ILogicProgrammerElement;
 import ruiseki.integrateddynamics.api.logicprogrammer.ILogicProgrammerElementType;
 import ruiseki.integrateddynamics.block.BlockLogicProgrammerConfig;
 import ruiseki.integrateddynamics.core.client.gui.subgui.SubGuiHolder;
-import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeGuiElement;
+import ruiseki.integrateddynamics.core.evaluate.variable.GuiElementValueTypeString;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.integrateddynamics.core.logicprogrammer.LogicProgrammerElementTypes;
-import ruiseki.integrateddynamics.core.logicprogrammer.SubGuiConfigRenderPattern;
+import ruiseki.integrateddynamics.core.logicprogrammer.RenderPattern;
 import ruiseki.integrateddynamics.inventory.container.ContainerLogicProgrammerBase;
 import ruiseki.integrateddynamics.item.ItemLabeller;
 import ruiseki.integrateddynamics.network.packet.LogicProgrammerActivateElementPacket;
@@ -53,7 +53,7 @@ public class GuiLogicProgrammerBase extends ScrollingGuiContainer {
 
     protected final SubGuiHolder subGuiHolder = new SubGuiHolder();
     private final boolean hasLabeller;
-    protected SubGuiConfigRenderPattern operatorConfigPattern = null;
+    protected RenderPattern operatorConfigPattern = null;
     protected SubGuiOperatorInfo operatorInfoPattern = null;
     protected boolean firstInit = true;
     protected int relativeStep = -1;
@@ -63,6 +63,11 @@ public class GuiLogicProgrammerBase extends ScrollingGuiContainer {
         container.setGui(this);
 
         this.hasLabeller = inventoryPlayer.hasItemStack(new ItemStack(ItemLabeller.getInstance()));
+    }
+
+    @Override
+    public ContainerLogicProgrammerBase getContainer() {
+        return (ContainerLogicProgrammerBase) super.getContainer();
     }
 
     @Override
@@ -227,7 +232,7 @@ public class GuiLogicProgrammerBase extends ScrollingGuiContainer {
     }
 
     protected void onActivateElement(
-        ILogicProgrammerElement<SubGuiConfigRenderPattern, GuiLogicProgrammerBase, ContainerLogicProgrammerBase> element) {
+        ILogicProgrammerElement<RenderPattern, GuiLogicProgrammerBase, ContainerLogicProgrammerBase> element) {
         subGuiHolder.addSubGui(
             operatorConfigPattern = element
                 .createSubGui(88, 18, 160, 87, this, (ContainerLogicProgrammerBase) getContainer()));
@@ -400,7 +405,7 @@ public class GuiLogicProgrammerBase extends ScrollingGuiContainer {
     }
 
     public class SubGuiOperatorInfo extends
-        ValueTypeGuiElement.SubGuiValueTypeInfo<SubGuiConfigRenderPattern, GuiLogicProgrammerBase, ContainerLogicProgrammerBase> {
+        GuiElementValueTypeString.SubGuiValueTypeInfo<RenderPattern, GuiLogicProgrammerBase, ContainerLogicProgrammerBase> {
 
         public static final int BUTTON_EDIT = 1;
 
@@ -408,7 +413,7 @@ public class GuiLogicProgrammerBase extends ScrollingGuiContainer {
         private GuiButtonText button = null;
 
         public SubGuiOperatorInfo(
-            IGuiInputElement<SubGuiConfigRenderPattern, GuiLogicProgrammerBase, ContainerLogicProgrammerBase> element) {
+            IGuiInputElement<RenderPattern, GuiLogicProgrammerBase, ContainerLogicProgrammerBase> element) {
             super(
                 GuiLogicProgrammerBase.this,
                 (ContainerLogicProgrammerBase) GuiLogicProgrammerBase.this.container,

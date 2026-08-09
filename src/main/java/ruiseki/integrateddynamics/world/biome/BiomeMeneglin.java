@@ -7,12 +7,9 @@ import net.minecraft.init.Blocks;
 import net.minecraft.world.biome.BiomeDecorator;
 import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.terraingen.DecorateBiomeEvent;
 
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-import ruiseki.integrateddynamics.GeneralConfig;
 import ruiseki.okcore.config.configurable.ConfigurableBiome;
 import ruiseki.okcore.config.extendedconfig.BiomeConfig;
 import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
@@ -83,18 +80,4 @@ public class BiomeMeneglin extends ConfigurableBiome {
         }
     }
 
-    @SubscribeEvent
-    public void onDecorate(DecorateBiomeEvent.Decorate decorateBiomeEvent) {
-        if (decorateBiomeEvent.type == DecorateBiomeEvent.Decorate.EventType.TREE) {
-            if (GeneralConfig.wildMenrilTreeChance > 0
-                && decorateBiomeEvent.rand.nextInt(GeneralConfig.wildMenrilTreeChance) == 0) {
-                int x = decorateBiomeEvent.chunkX + decorateBiomeEvent.rand.nextInt(16) + 8;
-                int z = decorateBiomeEvent.chunkZ + decorateBiomeEvent.rand.nextInt(16) + 8;
-                int y = decorateBiomeEvent.world.getHeightValue(x, z);
-
-                MeneglinBiomeDecorator.MENRIL_TREE_GEN
-                    .growTree(decorateBiomeEvent.world, decorateBiomeEvent.rand, x, y, z);
-            }
-        }
-    }
 }

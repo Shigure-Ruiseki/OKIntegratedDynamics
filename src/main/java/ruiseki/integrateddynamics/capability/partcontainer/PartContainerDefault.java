@@ -177,8 +177,7 @@ public abstract class PartContainerDefault implements IPartContainer {
     @Override
     public void setPartState(ForgeDirection side, IPartState partState) throws PartStateException {
         if (!hasPart(side)) {
-            throw new IllegalArgumentException(
-                String.format("No part at position %s was found to update the state " + "for.", getPosition()));
+            throw new PartStateException(getPosition());
         }
         partData.put(side, PartHelpers.PartStateHolder.of(getPart(side), partState));
         onPartsChanged();
@@ -189,8 +188,7 @@ public abstract class PartContainerDefault implements IPartContainer {
         synchronized (partData) {
             PartHelpers.PartStateHolder<?, ?> partStateHolder = partData.get(side);
             if (partStateHolder == null) {
-                throw new IllegalArgumentException(
-                    String.format("No part at position %s was found to get the state from.", getPosition()));
+                throw new PartStateException(getPosition());
             }
             return partStateHolder.getState();
         }

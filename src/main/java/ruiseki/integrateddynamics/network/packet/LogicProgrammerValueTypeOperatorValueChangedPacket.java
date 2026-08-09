@@ -10,7 +10,7 @@ import ruiseki.integrateddynamics.api.evaluate.operator.IOperator;
 import ruiseki.integrateddynamics.api.logicprogrammer.ILogicProgrammerElement;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeOperator;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
-import ruiseki.integrateddynamics.core.logicprogrammer.ValueTypeOperatorElement;
+import ruiseki.integrateddynamics.core.logicprogrammer.ValueTypeOperatorLPElement;
 import ruiseki.integrateddynamics.inventory.container.ContainerLogicProgrammerBase;
 import ruiseki.okcore.network.CodecField;
 import ruiseki.okcore.network.PacketCodec;
@@ -54,7 +54,7 @@ public class LogicProgrammerValueTypeOperatorValueChangedPacket extends PacketCo
     public void actionServer(World world, EntityPlayerMP player) {
         if (player.openContainer instanceof ContainerLogicProgrammerBase) {
             ILogicProgrammerElement element = ((ContainerLogicProgrammerBase) player.openContainer).getActiveElement();
-            if (element instanceof ValueTypeOperatorElement) {
+            if (element instanceof ValueTypeOperatorLPElement) {
                 IOperator operator;
                 try {
                     operator = ValueTypes.OPERATOR.deserialize(operatorValue)
@@ -62,7 +62,7 @@ public class LogicProgrammerValueTypeOperatorValueChangedPacket extends PacketCo
                 } catch (IllegalArgumentException e) {
                     operator = null;
                 }
-                ((ValueTypeOperatorElement) element).setSelectedOperator(operator);
+                ((ValueTypeOperatorLPElement) element).setSelectedOperator(operator);
                 ((ContainerLogicProgrammerBase) player.openContainer).onDirty();
             }
         }

@@ -1,19 +1,28 @@
 package ruiseki.integrateddynamics.core.evaluate.variable;
 
-import lombok.Data;
+import lombok.ToString;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueCastRegistry;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 
 /**
  * Base implementation of a variable.
- * 
+ *
  * @author rubensworks
  */
-@Data
+@ToString
 public abstract class ValueBase implements IValue {
 
     private final IValueType type;
+
+    protected ValueBase(IValueType type) {
+        this.type = type;
+    }
+
+    @Override
+    public IValueType getType() {
+        return type;
+    }
 
     protected IValueCastRegistry getValueCastRegistry() {
         return ValueCastMappings.REGISTRY;

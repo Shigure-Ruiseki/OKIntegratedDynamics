@@ -20,8 +20,7 @@ public class ValueTypeListProxyPositionedTankCapacities
     }
 
     protected IFluidHandler getTank() {
-        return CapabilityHelpers
-            .getCapability(getPos().getWorld(), getPos().getBlockPos(), CapabilityFluidHandler.FLUID_HANDLER, getSide())
+        return CapabilityHelpers.getCapability(getPos(), CapabilityFluidHandler.FLUID_HANDLER, getSide())
             .getOrNull();
     }
 

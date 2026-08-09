@@ -22,10 +22,10 @@ import ruiseki.integrateddynamics.api.part.aspect.IAspect;
 import ruiseki.integrateddynamics.api.part.aspect.property.IAspectPropertyTypeInstance;
 import ruiseki.integrateddynamics.core.client.gui.ExtendedGuiHandler;
 import ruiseki.integrateddynamics.core.client.gui.subgui.SubGuiHolder;
-import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeGuiElement;
-import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeSubGuiRenderPattern;
+import ruiseki.integrateddynamics.core.evaluate.variable.GuiElementValueTypeString;
+import ruiseki.integrateddynamics.core.evaluate.variable.GuiElementValueTypeStringRenderPattern;
 import ruiseki.integrateddynamics.core.inventory.container.ContainerAspectSettings;
-import ruiseki.integrateddynamics.core.logicprogrammer.SubGuiConfigRenderPattern;
+import ruiseki.integrateddynamics.core.logicprogrammer.RenderPattern;
 import ruiseki.okcore.client.gui.component.button.GuiButtonText;
 import ruiseki.okcore.client.gui.container.GuiContainerExtended;
 import ruiseki.okcore.helper.Helpers;
@@ -61,9 +61,9 @@ public class GuiAspectSettings extends GuiContainerExtended {
 
     private final List<IAspectPropertyTypeInstance> propertyTypes;
     protected final SubGuiHolder subGuiHolder = new SubGuiHolder();
-    protected ValueTypeGuiElement<GuiAspectSettings, ContainerAspectSettings> guiElement = null;
+    protected GuiElementValueTypeString<GuiAspectSettings, ContainerAspectSettings> guiElement = null;
     protected int activePropertyIndex = 0;
-    protected ValueTypeSubGuiRenderPattern propertyConfigPattern = null;
+    protected GuiElementValueTypeStringRenderPattern propertyConfigPattern = null;
     protected SubGuiValueTypeInfo propertyInfo = null;
     private GuiButtonText buttonLeft = null;
     private GuiButtonText buttonRight = null;
@@ -247,7 +247,7 @@ public class GuiAspectSettings extends GuiContainerExtended {
             subGuiHolder.removeSubGui(propertyConfigPattern);
             subGuiHolder.removeSubGui(propertyInfo);
         }
-        guiElement = new ValueTypeGuiElement<>(property.getType(), IConfigRenderPattern.NONE);
+        guiElement = new GuiElementValueTypeString<>(property.getType(), IConfigRenderPattern.NONE);
         guiElement.setValidator(property.getValidator());
         subGuiHolder.addSubGui(
             propertyConfigPattern = guiElement
@@ -281,10 +281,10 @@ public class GuiAspectSettings extends GuiContainerExtended {
     }
 
     public class SubGuiValueTypeInfo extends
-        ValueTypeGuiElement.SubGuiValueTypeInfo<SubGuiConfigRenderPattern, GuiAspectSettings, ContainerAspectSettings> {
+        GuiElementValueTypeString.SubGuiValueTypeInfo<RenderPattern, GuiAspectSettings, ContainerAspectSettings> {
 
         public SubGuiValueTypeInfo(
-            IGuiInputElement<SubGuiConfigRenderPattern, GuiAspectSettings, ContainerAspectSettings> element) {
+            IGuiInputElement<RenderPattern, GuiAspectSettings, ContainerAspectSettings> element) {
             super(
                 GuiAspectSettings.this,
                 (ContainerAspectSettings) GuiAspectSettings.this.container,

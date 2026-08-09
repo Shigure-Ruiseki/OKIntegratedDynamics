@@ -33,8 +33,8 @@ import ruiseki.okcore.helper.MinecraftHelpers;
  * @author rubensworks
  */
 @Data
-public class OperatorElement implements
-    ILogicProgrammerElement<SubGuiConfigRenderPattern, GuiLogicProgrammerBase, ContainerLogicProgrammerBase> {
+public class OperatorLPElement
+    implements ILogicProgrammerElement<RenderPattern, GuiLogicProgrammerBase, ContainerLogicProgrammerBase> {
 
     private final IOperator operator;
     private IVariableFacade[] inputVariables;
@@ -169,20 +169,20 @@ public class OperatorElement implements
     }
 
     @Override
-    public boolean isFocused(SubGuiConfigRenderPattern subGui) {
+    public boolean isFocused(RenderPattern subGui) {
         return focused;
     }
 
     @Override
-    public void setFocused(SubGuiConfigRenderPattern subGui, boolean focused) {
+    public void setFocused(RenderPattern subGui, boolean focused) {
         this.focused = focused;
     }
 
     @Override
     @SideOnly(Side.CLIENT)
-    public SubGuiConfigRenderPattern createSubGui(int baseX, int baseY, int maxWidth, int maxHeight,
-        GuiLogicProgrammerBase gui, ContainerLogicProgrammerBase container) {
-        return new OperatorElementSubGuiRenderPattern(this, baseX, baseY, maxWidth, maxHeight, gui, container);
+    public RenderPattern createSubGui(int baseX, int baseY, int maxWidth, int maxHeight, GuiLogicProgrammerBase gui,
+        ContainerLogicProgrammerBase container) {
+        return new OperatorLPElementRenderPattern(this, baseX, baseY, maxWidth, maxHeight, gui, container);
     }
 
     protected static class OperatorVariableFacadeFactory

@@ -10,7 +10,10 @@ import com.google.common.base.Optional;
 import lombok.ToString;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeNamed;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeNullable;
+import ruiseki.integrateddynamics.core.logicprogrammer.ValueTypeItemStackLPElement;
+import ruiseki.integrateddynamics.core.logicprogrammer.ValueTypeLPElementBase;
 import ruiseki.okcore.helper.ItemStackHelpers;
+import ruiseki.okcore.helper.LangHelpers;
 
 /**
  * Value type with values that are itemstacks.
@@ -72,6 +75,29 @@ public class ValueObjectTypeItemStack extends ValueObjectTypeBase<ValueObjectTyp
     public boolean isNull(ValueItemStack a) {
         return !a.getRawValue()
             .isPresent();
+    }
+
+    @Override
+    public ValueTypeLPElementBase createLogicProgrammerElement() {
+        return new ValueTypeItemStackLPElement<>(
+            this,
+            new ValueTypeItemStackLPElement.IItemStackToValue<ValueObjectTypeItemStack.ValueItemStack>() {
+
+                @Override
+                public boolean isNullable() {
+                    return true;
+                }
+
+                @Override
+                public LangHelpers.UnlocalizedString validate(ItemStack itemStack) {
+                    return null;
+                }
+
+                @Override
+                public ValueObjectTypeItemStack.ValueItemStack getValue(ItemStack itemStack) {
+                    return ValueObjectTypeItemStack.ValueItemStack.of(itemStack);
+                }
+            });
     }
 
     @ToString

@@ -25,6 +25,10 @@ public class Variable<V extends IValue> implements IVariable<V> {
         return type;
     }
 
+    public Variable(V value) {
+        this(value.getType(), value);
+    }
+
     @Override
     public V getValue() throws EvaluationException {
         return value;

@@ -1,7 +1,9 @@
 package ruiseki.integrateddynamics.core.evaluate.operator;
 
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
@@ -34,6 +36,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 import com.gtnewhorizon.gtnhlib.blockstate.registry.BlockPropertyRegistry;
 
@@ -41,6 +44,7 @@ import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.ModContainer;
 import cpw.mods.fml.common.registry.EntityRegistry;
 import cpw.mods.fml.common.registry.GameData;
+import lombok.SneakyThrows;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.evaluate.operator.IOperator;
@@ -68,6 +72,7 @@ import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeListProxyEntit
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeListProxyEntityInventory;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeListProxyLazyBuilt;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeListProxyOperatorMapped;
+import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeListProxySlice;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeListProxyTail;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeOperator;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeString;
@@ -1011,6 +1016,100 @@ public final class Operators {
                 public IValue evaluate(OperatorBase.SafeVariablesGetter variables) throws EvaluationException {
                     IValueTypeListProxy a = ((ValueTypeList.ValueList) variables.getValue(0)).getRawValue();
                     return ValueTypeList.ValueList.ofFactory(new ValueTypeListProxyTail(a));
+                }
+            })
+            .build());
+
+    /**
+     * Deduplicate the given list elements based on the given predicate.
+     */
+    public static final IOperator LIST_UNIQ_PREDICATE = REGISTRY.register(
+        OperatorBuilders.LIST.inputTypes(new IValueType[] { ValueTypes.LIST, ValueTypes.OPERATOR })
+            .renderPattern(IConfigRenderPattern.INFIX)
+            .output(ValueTypes.LIST)
+            .symbolOperator("uniq_p")
+            .function(new OperatorBase.IFunction() {
+
+                @Override
+                public IValue evaluate(OperatorBase.SafeVariablesGetter variables) throws EvaluationException {
+                    IValueTypeListProxy<IValueType<IValue>, IValue> list = ((ValueTypeList.ValueList) variables
+                        .getValue(0)).getRawValue();
+                    final IOperator operator = OperatorBuilders
+                        .getSafePredictate((ValueTypeOperator.ValueOperator) variables.getValue(1));
+                    Set<IValue> values = Sets.newTreeSet(new Comparator<IValue>() {
+
+                        @Override
+                        @SneakyThrows
+                        public int compare(IValue o1, IValue o2) {
+                            ValueTypeBoolean.ValueBoolean value = (ValueTypeBoolean.ValueBoolean) operator
+                                .evaluate(new Variable(o1), new Variable(o2));
+                            return value.getRawValue() ? 0 : o1.hashCode() - o2.hashCode();
+                        }
+                    });
+                    for (IValue value : list) {
+                        values.add(value);
+                    }
+                    return ValueTypeList.ValueList.ofList(list.getValueType(), Lists.newArrayList(values));
+                }
+            })
+            .build());
+
+    /**
+     * Deduplicate the given list elements.
+     */
+    public static final IOperator LIST_UNIQ = REGISTRY.register(
+        OperatorBuilders.LIST.inputType(ValueTypes.LIST)
+            .renderPattern(IConfigRenderPattern.PREFIX_1_LONG)
+            .output(ValueTypes.LIST)
+            .symbolOperator("uniq")
+            .function(new OperatorBase.IFunction() {
+
+                @Override
+                public IValue evaluate(OperatorBase.SafeVariablesGetter variables) throws EvaluationException {
+                    IValueTypeListProxy<IValueType<IValue>, IValue> list = ((ValueTypeList.ValueList) variables
+                        .getValue(0)).getRawValue();
+                    Set<IValue> values = Sets.newTreeSet(new Comparator<IValue>() {
+
+                        @Override
+                        @SneakyThrows
+                        public int compare(IValue o1, IValue o2) {
+                            return o1.equals(o2) ? 0 : o1.hashCode() - o2.hashCode();
+                        }
+                    });
+                    for (IValue value : list) {
+                        values.add(value);
+                    }
+                    return ValueTypeList.ValueList.ofList(list.getValueType(), Lists.newArrayList(values));
+                }
+            })
+            .build());
+
+    /**
+     * Take a subset of the given list from the given index (inclusive) to the given index (exclusive).
+     */
+    public static final IOperator LIST_SLICE = REGISTRY.register(
+        OperatorBuilders.LIST.inputTypes(ValueTypes.LIST, ValueTypes.INTEGER, ValueTypes.INTEGER)
+            .renderPattern(IConfigRenderPattern.PREFIX_3_LONG)
+            .output(ValueTypes.LIST)
+            .symbolOperator("slice")
+            .function(new OperatorBase.IFunction() {
+
+                @Override
+                public IValue evaluate(OperatorBase.SafeVariablesGetter variables) throws EvaluationException {
+                    IValueTypeListProxy<IValueType<IValue>, IValue> list = ((ValueTypeList.ValueList) variables
+                        .getValue(0)).getRawValue();
+                    ValueTypeInteger.ValueInteger from = variables.getValue(1);
+                    ValueTypeInteger.ValueInteger to = variables.getValue(2);
+                    if (from.getRawValue() >= to.getRawValue()) {
+                        throw new EvaluationException(
+                            "The 'from' value must be stricly smaller than the 'to' value in the slice operator.");
+                    }
+                    if (from.getRawValue() < 0 || to.getRawValue() < 0) {
+                        throw new EvaluationException(
+                            "The 'from' and 'to' values in the slice operator must not be negative.");
+                    }
+                    return ValueTypeList.ValueList
+                        .ofFactory(new ValueTypeListProxySlice<>(list, from.getRawValue(), to.getRawValue()));
                 }
             })
             .build());
@@ -2901,7 +3000,7 @@ public final class Operators {
                                 IValue result = ValueHelpers.evaluateOperator(innerOperator, value);
                                 if (result.getType() != ValueTypes.BOOLEAN) {
                                     LangHelpers.UnlocalizedString error = new LangHelpers.UnlocalizedString(
-                                        L10NValues.VALUETYPE_ERROR_WRONGPREDICATE,
+                                        L10NValues.OPERATOR_ERROR_WRONGPREDICATE,
                                         OPERATOR_FILTER.getLocalizedNameFull(),
                                         result.getType(),
                                         ValueTypes.BOOLEAN);

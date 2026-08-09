@@ -8,7 +8,7 @@ import ruiseki.okcore.datastructure.DimPos;
 
 /**
  * Object holder to refer to another block side and its origin.
- * 
+ *
  * @author rubensworks
  */
 public class PartTarget {
@@ -28,7 +28,7 @@ public class PartTarget {
             PartPos.of(pos, side),
             PartPos.of(
                 DimPos.of(
-                    pos.getWorld(),
+                    pos.getDimensionId(),
                     pos.getBlockPos()
                         .offset(side)),
                 side.getOpposite()));
@@ -36,7 +36,7 @@ public class PartTarget {
 
     /**
      * Get the target from a center block that is targeted at another block.
-     * 
+     *
      * @param pos The central position that is referring to the target.
      * @return The target referral.
      */
@@ -46,7 +46,7 @@ public class PartTarget {
 
     /**
      * Get the target from a center block that is targeted at another block.
-     * 
+     *
      * @param world The world.
      * @param pos   The central position that is referring to the target.
      * @param side  The side on the central position that points to the target.
@@ -58,7 +58,7 @@ public class PartTarget {
 
     /**
      * Create a new instance.
-     * 
+     *
      * @param center The center position.
      * @param target The target position.
      * @return The target.

@@ -2,7 +2,6 @@ package ruiseki.integrateddynamics.capability.path;
 
 import java.util.Set;
 
-import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import org.apache.logging.log4j.Level;
@@ -27,13 +26,12 @@ public abstract class PathElementCable extends PathElementDefault {
     @Override
     public Set<IPathElement> getReachableElements() {
         Set<IPathElement> elements = Sets.newHashSet();
-        World world = getPosition().getWorld();
         BlockPos pos = getPosition().getBlockPos();
         for (ForgeDirection side : ForgeDirection.VALID_DIRECTIONS) {
             if (getCable().isConnected(side)) {
                 BlockPos posOffset = pos.offset(side);
                 IPathElement pathElement = CapabilityHelpers
-                    .getCapability(world, posOffset, PathElementConfig.CAPABILITY)
+                    .getCapability(getPosition().getWorld(), posOffset, PathElementConfig.CAPABILITY)
                     .getOrNull();
                 if (pathElement == null) {
                     IntegratedDynamics.clog(

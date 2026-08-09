@@ -19,11 +19,11 @@ import ruiseki.integrateddynamics.inventory.container.ContainerLogicProgrammerBa
  * @author rubensworks
  */
 @SideOnly(Side.CLIENT)
-public class OperatorElementSubGuiRenderPattern
-    extends SubGuiConfigRenderPattern<OperatorElement, GuiLogicProgrammerBase, ContainerLogicProgrammerBase> {
+public class OperatorLPElementRenderPattern
+    extends RenderPattern<OperatorLPElement, GuiLogicProgrammerBase, ContainerLogicProgrammerBase> {
 
-    public OperatorElementSubGuiRenderPattern(OperatorElement element, int baseX, int baseY, int maxWidth,
-        int maxHeight, GuiLogicProgrammerBase gui, ContainerLogicProgrammerBase container) {
+    public OperatorLPElementRenderPattern(OperatorLPElement element, int baseX, int baseY, int maxWidth, int maxHeight,
+        GuiLogicProgrammerBase gui, ContainerLogicProgrammerBase container) {
         super(element, baseX, baseY, maxWidth, maxHeight, gui, container);
     }
 

@@ -78,8 +78,8 @@ public class NetworkDiagnosticsPartOverlayRenderer {
             List<PartPos> partList = Lists.newArrayList(partPositions);
             for (Iterator<PartPos> it = partList.iterator(); it.hasNext();) {
                 PartPos partPos = it.next();
-                if (partPos.getPos() != null && partPos.getPos()
-                    .getWorld() == player.worldObj
+                if (partPos.getPos()
+                    .getDimensionId() == player.worldObj.provider.dimensionId
                     && player.getDistanceSq(
                         partPos.getPos()
                             .getBlockPos()

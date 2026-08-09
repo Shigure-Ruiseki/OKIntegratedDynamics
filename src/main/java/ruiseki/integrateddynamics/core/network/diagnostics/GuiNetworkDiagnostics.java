@@ -262,7 +262,7 @@ public class GuiNetworkDiagnostics extends JFrame {
                                                     .sendToServer(
                                                         new PlayerTeleportPacket(
                                                             pos.getPos()
-                                                                .getWorld().provider.dimensionId,
+                                                                .getDimensionId(),
                                                             blockPos.getX(),
                                                             blockPos.getY() - 1,
                                                             blockPos.getZ(),

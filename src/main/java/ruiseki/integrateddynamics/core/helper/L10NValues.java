@@ -4,7 +4,7 @@ import ruiseki.integrateddynamics.api.APIReference;
 
 /**
  * Collection of generic L10N entries.
- *
+ * 
  * @author rubensworks
  */
 public class L10NValues {
@@ -28,8 +28,8 @@ public class L10NValues {
 
     public static final String GUI_RENAME = "gui." + NS + ".button.rename";
     public static final String GUI_LOGICPROGRAMMER_FILTER = "gui." + NS + ".logicprogrammer.filter";
-    public static final String GUI_INPUT = "gui." + NS + ".aspect.input";
-    public static final String GUI_OUTPUT = "gui." + NS + ".aspect.output";
+    public static final String GUI_INPUT = "gui." + NS + ".input";
+    public static final String GUI_OUTPUT = "gui." + NS + ".output";
 
     public static final String VALUE_ERROR = "valuetype." + NS + ".error.value";
     public static final String VALUETYPE_VALUETYPE = "valuetype." + NS + ".valueType";
@@ -45,10 +45,6 @@ public class L10NValues {
         + ".error.invalidOperatorOperator";
     public static final String VALUETYPE_ERROR_INVALIDOPERATORSIGNATURE = "valuetype." + NS
         + ".error.invalidOperatorSignature";
-    // 0: operator, 1: given-output, 2: expected-output
-    public static final String VALUETYPE_ERROR_WRONGPREDICATE = "valuetype." + NS + ".error.wrongPredicate";
-    // 0: expected-output, 1:given-output, 2:given-operator
-    public static final String VALUETYPE_ERROR_ILLEGALPROPERY = "valuetype." + NS + ".error.illegalProperty";
     public static final String VALUETYPE_OBJECT_BLOCK_ERROR_NOBLOCK = "valuetype." + NS + ".error.block.noBlock";
     public static final String VALUETYPE_OBJECT_FLUID_ERROR_NOFLUID = "valuetype." + NS + ".error.fluid.noFluid";
     public static final String VALUETYPE_OBJECT_THAUMCRAFTASPECT_ERROR_NOASPECT = "valuetype." + NS
@@ -87,6 +83,10 @@ public class L10NValues {
     public static final String OPERATOR_ERROR_WRONGINPUTLENGTH = "operator." + NS + ".error.wrongInputLength";
     public static final String OPERATOR_ERROR_NULLTYPE = "operator." + NS + ".error.nullType";
     public static final String OPERATOR_ERROR_WRONGTYPE = "operator." + NS + ".error.wrongType";
-    public static final String OPERATOR_ERROR_WRONGCURRYINGTYPE = "operator." + NS + ".error.wrongCurringType";
+    public static final String OPERATOR_ERROR_WRONGCURRYINGTYPE = "operator." + NS + ".error.wrongCurryingType";
+    // 0: operator, 1: given-output, 2: expected-output
+    public static final String OPERATOR_ERROR_WRONGPREDICATE = "operator." + NS + ".error.wrongPredicate";
+    // 0: expected-output, 1:given-output, 2:given-operator
+    public static final String OPERATOR_ERROR_ILLEGALPROPERY = "operator." + NS + ".error.illegalProperty";
 
 }

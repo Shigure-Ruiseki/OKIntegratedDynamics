@@ -17,24 +17,24 @@ import ruiseki.integrateddynamics.api.client.gui.subgui.ISubGuiBox;
 import ruiseki.integrateddynamics.core.client.gui.GuiTextFieldDropdown;
 import ruiseki.integrateddynamics.core.client.gui.IDropdownEntry;
 import ruiseki.integrateddynamics.core.client.gui.IDropdownEntryListener;
-import ruiseki.integrateddynamics.core.logicprogrammer.SubGuiConfigRenderPattern;
-import ruiseki.integrateddynamics.network.packet.LogicProgrammerValueTypeValueChangedPacket;
+import ruiseki.integrateddynamics.core.logicprogrammer.RenderPattern;
+import ruiseki.integrateddynamics.network.packet.LogicProgrammerValueTypeStringValueChangedPacket;
 import ruiseki.okcore.persist.IDirtyMarkListener;
 
 /**
  * @author rubensworks
  */
 @SideOnly(Side.CLIENT)
-public class ValueTypeSubGuiRenderPattern<S extends ISubGuiBox, G extends Gui, C extends Container>
-    extends SubGuiConfigRenderPattern<ValueTypeGuiElement<G, C>, G, C> implements IDropdownEntryListener {
+public class GuiElementValueTypeStringRenderPattern<S extends ISubGuiBox, G extends Gui, C extends Container>
+    extends RenderPattern<GuiElementValueTypeString<G, C>, G, C> implements IDropdownEntryListener {
 
     @Getter
-    protected final ValueTypeGuiElement<G, C> element;
+    protected final GuiElementValueTypeString<G, C> element;
     @Getter
     private GuiTextFieldDropdown searchField = null;
 
-    public ValueTypeSubGuiRenderPattern(ValueTypeGuiElement<G, C> element, int baseX, int baseY, int maxWidth,
-        int maxHeight, G gui, C container) {
+    public GuiElementValueTypeStringRenderPattern(GuiElementValueTypeString<G, C> element, int baseX, int baseY,
+        int maxWidth, int maxHeight, G gui, C container) {
         super(element, baseX, baseY, maxWidth, maxHeight, gui, container);
         this.element = element;
     }
@@ -100,7 +100,7 @@ public class ValueTypeSubGuiRenderPattern<S extends ISubGuiBox, G extends Gui, C
                     ((IDirtyMarkListener) container).onDirty();
                 }
                 IntegratedDynamics._instance.getPacketHandler()
-                    .sendToServer(new LogicProgrammerValueTypeValueChangedPacket(element.getInputString()));
+                    .sendToServer(new LogicProgrammerValueTypeStringValueChangedPacket(element.getInputString()));
                 return true;
             }
         }

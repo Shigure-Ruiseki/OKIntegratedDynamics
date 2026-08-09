@@ -26,6 +26,7 @@ public class ItemBlockDelay extends ItemBlockNBT {
      */
     public ItemBlockDelay(Block block) {
         super(block);
+        this.setMaxStackSize(64);
     }
 
     @SuppressWarnings("rawtypes")

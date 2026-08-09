@@ -7,6 +7,7 @@ import ruiseki.integrateddynamics.Reference;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeCategory;
+import ruiseki.integrateddynamics.core.logicprogrammer.ValueTypeLPElementBase;
 
 /**
  * Base implementation of a value type category.
@@ -88,7 +89,7 @@ public abstract class ValueTypeCategoryBase<V extends IValue> extends ValueTypeB
     }
 
     @Override
-    public boolean hasDefaultLogicProgrammerElement() {
-        return false;
+    public ValueTypeLPElementBase createLogicProgrammerElement() {
+        return null;
     }
 }

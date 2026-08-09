@@ -2,8 +2,6 @@ package ruiseki.integrateddynamics.core.evaluate.variable;
 
 import java.util.concurrent.TimeUnit;
 
-import net.minecraft.nbt.JsonToNBT;
-import net.minecraft.nbt.NBTException;
 import net.minecraft.nbt.NBTTagCompound;
 
 import com.google.common.cache.Cache;
@@ -19,7 +17,7 @@ import ruiseki.integrateddynamics.core.evaluate.operator.Operators;
 
 /**
  * A list that is built lazily from a start value and an operator.
- * 
+ *
  * @param <T> The value type type.
  * @param <V> The value type.
  */
@@ -65,8 +63,8 @@ public class ValueTypeListProxyLazyBuilt<T extends IValueType<V>, V extends IVal
         return true;
     }
 
-    public static class Factory implements
-        IValueTypeListProxyFactoryTypeRegistry.IProxyFactory<IValueType<IValue>, IValue, ValueTypeListProxyLazyBuilt<IValueType<IValue>, IValue>> {
+    public static class Factory extends
+        ValueTypeListProxyNBTFactorySimple<IValueType<IValue>, IValue, ValueTypeListProxyLazyBuilt<IValueType<IValue>, IValue>> {
 
         @Override
         public String getName() {
@@ -74,34 +72,26 @@ public class ValueTypeListProxyLazyBuilt<T extends IValueType<V>, V extends IVal
         }
 
         @Override
-        public String serialize(ValueTypeListProxyLazyBuilt<IValueType<IValue>, IValue> values)
+        protected void serializeNbt(ValueTypeListProxyLazyBuilt<IValueType<IValue>, IValue> value, NBTTagCompound tag)
             throws IValueTypeListProxyFactoryTypeRegistry.SerializationException {
-            NBTTagCompound tag = new NBTTagCompound();
             tag.setString(
                 "valueType",
-                values.value.getType()
+                value.value.getType()
                     .getUnlocalizedName());
             tag.setString(
                 "value",
-                values.value.getType()
-                    .serialize(values.value));
-            tag.setString("operator", Operators.REGISTRY.serialize(values.operator));
-            return tag.toString();
+                value.value.getType()
+                    .serialize(value.value));
+            tag.setString("operator", Operators.REGISTRY.serialize(value.operator));
         }
 
         @Override
-        public ValueTypeListProxyLazyBuilt<IValueType<IValue>, IValue> deserialize(String data)
-            throws IValueTypeListProxyFactoryTypeRegistry.SerializationException {
-            try {
-                NBTTagCompound tag = (NBTTagCompound) JsonToNBT.func_150315_a(data);
-                IValueType valueType = ValueTypes.REGISTRY.getValueType(tag.getString("valueType"));
-                IValue value = valueType.deserialize(tag.getString("value"));
-                IOperator operator = Operators.REGISTRY.deserialize(tag.getString("operator"));
-                return new ValueTypeListProxyLazyBuilt<>(value, operator);
-            } catch (NBTException | EvaluationException e) {
-                e.printStackTrace();
-                throw new IValueTypeListProxyFactoryTypeRegistry.SerializationException(e.getMessage());
-            }
+        protected ValueTypeListProxyLazyBuilt<IValueType<IValue>, IValue> deserializeNbt(NBTTagCompound tag)
+            throws IValueTypeListProxyFactoryTypeRegistry.SerializationException, EvaluationException {
+            IValueType valueType = ValueTypes.REGISTRY.getValueType(tag.getString("valueType"));
+            IValue value = valueType.deserialize(tag.getString("value"));
+            IOperator operator = Operators.REGISTRY.deserialize(tag.getString("operator"));
+            return new ValueTypeListProxyLazyBuilt<>(value, operator);
         }
     }
 }

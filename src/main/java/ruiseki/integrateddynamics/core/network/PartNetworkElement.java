@@ -10,6 +10,7 @@ import net.minecraftforge.common.util.ForgeDirection;
 import org.jetbrains.annotations.Nullable;
 
 import lombok.Data;
+import ruiseki.integrateddynamics.api.PartStateException;
 import ruiseki.integrateddynamics.api.network.IEnergyConsumingNetworkElement;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.INetworkElement;
@@ -96,13 +97,12 @@ public class PartNetworkElement<P extends IPartType<P, S>, S extends IPartState<
     }
 
     @Override
-    public S getPartState() {
+    public S getPartState() throws PartStateException {
         IPartContainer partContainer = getPartContainer();
         if (partContainer != null) {
             return (S) partContainer.getPartState(getCenterSide(getTarget()));
         } else {
-            throw new IllegalStateException(
-                String.format("The part container at %s could not be found.", getCenterSide(getTarget())));
+            throw new PartStateException(getCenterPos(getTarget()));
         }
     }
 

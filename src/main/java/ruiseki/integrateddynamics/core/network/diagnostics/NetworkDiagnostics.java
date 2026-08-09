@@ -85,7 +85,7 @@ public class NetworkDiagnostics {
                 rawParts.add(
                     new RawPartData(
                         pos.getPos()
-                            .getWorld().provider.dimensionId,
+                            .getDimensionId(),
                         pos.getPos()
                             .getBlockPos(),
                         pos.getSide(),

@@ -1,5 +1,6 @@
 package ruiseki.integrateddynamics.core.evaluate.variable;
 
+import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 
 import org.apache.commons.lang3.tuple.Pair;
@@ -10,7 +11,11 @@ import joptsimple.internal.Strings;
 import lombok.ToString;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeNamed;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeNullable;
+import ruiseki.integrateddynamics.core.helper.L10NValues;
+import ruiseki.integrateddynamics.core.logicprogrammer.ValueTypeItemStackLPElement;
+import ruiseki.integrateddynamics.core.logicprogrammer.ValueTypeLPElementBase;
 import ruiseki.okcore.helper.BlockHelpers;
+import ruiseki.okcore.helper.LangHelpers;
 
 /**
  * Value type with values that are blocks (these are internally stored as blockstates).
@@ -76,6 +81,33 @@ public class ValueObjectTypeBlock extends ValueObjectTypeBase<ValueObjectTypeBlo
     public boolean isNull(ValueBlock a) {
         return !a.getRawValue()
             .isPresent();
+    }
+
+    @Override
+    public ValueTypeLPElementBase createLogicProgrammerElement() {
+        return new ValueTypeItemStackLPElement<>(
+            this,
+            new ValueTypeItemStackLPElement.IItemStackToValue<ValueObjectTypeBlock.ValueBlock>() {
+
+                @Override
+                public boolean isNullable() {
+                    return true;
+                }
+
+                @Override
+                public LangHelpers.UnlocalizedString validate(ItemStack itemStack) {
+                    if (itemStack != null && !(itemStack.getItem() instanceof ItemBlock)) {
+                        return new LangHelpers.UnlocalizedString(L10NValues.VALUETYPE_OBJECT_BLOCK_ERROR_NOBLOCK);
+                    }
+                    return null;
+                }
+
+                @Override
+                public ValueObjectTypeBlock.ValueBlock getValue(ItemStack itemStack) {
+                    return ValueObjectTypeBlock.ValueBlock
+                        .of(itemStack == null ? null : BlockHelpers.getBlockStateFromItemStack(itemStack));
+                }
+            });
     }
 
     @ToString

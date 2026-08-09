@@ -8,17 +8,17 @@ import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 import ruiseki.integrateddynamics.client.gui.GuiLogicProgrammer;
 import ruiseki.integrateddynamics.client.gui.GuiLogicProgrammerBase;
-import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeSubGuiRenderPattern;
+import ruiseki.integrateddynamics.core.evaluate.variable.GuiElementValueTypeStringRenderPattern;
 import ruiseki.integrateddynamics.inventory.container.ContainerLogicProgrammerBase;
 
 /**
  * @author rubensworks
  */
 @SideOnly(Side.CLIENT)
-public class ValueTypeElementSubGuiRenderPattern extends
-    ValueTypeSubGuiRenderPattern<SubGuiConfigRenderPattern, GuiLogicProgrammerBase, ContainerLogicProgrammerBase> {
+public class ValueTypeLPElementRenderPattern extends
+    GuiElementValueTypeStringRenderPattern<RenderPattern, GuiLogicProgrammerBase, ContainerLogicProgrammerBase> {
 
-    public ValueTypeElementSubGuiRenderPattern(ValueTypeElement element, int baseX, int baseY, int maxWidth,
+    public ValueTypeLPElementRenderPattern(ValueTypeLPElementBase element, int baseX, int baseY, int maxWidth,
         int maxHeight, GuiLogicProgrammerBase gui, ContainerLogicProgrammerBase container) {
         super(element.getInnerGuiElement(), baseX, baseY, maxWidth, maxHeight, gui, container);
     }

@@ -6,34 +6,25 @@ import com.google.common.collect.ImmutableList;
 
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 import ruiseki.integrateddynamics.api.logicprogrammer.ILogicProgrammerElementType;
+import ruiseki.integrateddynamics.api.logicprogrammer.IValueTypeLogicProgrammerElement;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
 
 /**
  * Value type element type.
- *
+ * 
  * @author rubensworks
  */
-public class ValueTypeElementType implements ILogicProgrammerElementType<ValueTypeElement> {
+public class ValueTypeLPElementType implements ILogicProgrammerElementType<IValueTypeLogicProgrammerElement> {
 
     @Override
-    public ValueTypeElement getByName(String name) {
-        return getByValueType(ValueTypes.REGISTRY.getValueType(name));
-    }
-
-    /**
-     * Get the element by value type.
-     *
-     * @param valueType The value type.
-     * @return The corresponding element.
-     */
-    public ValueTypeElement getByValueType(IValueType valueType) {
-        return new ValueTypeElement(valueType);
+    public IValueTypeLogicProgrammerElement getByName(String name) {
+        return ValueTypes.REGISTRY.getValueType(name)
+            .createLogicProgrammerElement();
     }
 
     @Override
-    public String getName(ValueTypeElement element) {
-        return element.getInnerGuiElement()
-            .getValueType()
+    public String getName(IValueTypeLogicProgrammerElement element) {
+        return element.getValueType()
             .getUnlocalizedName();
     }
 
@@ -43,11 +34,12 @@ public class ValueTypeElementType implements ILogicProgrammerElementType<ValueTy
     }
 
     @Override
-    public List<ValueTypeElement> createElements() {
-        ImmutableList.Builder<ValueTypeElement> builder = ImmutableList.builder();
+    public List<IValueTypeLogicProgrammerElement> createElements() {
+        ImmutableList.Builder<IValueTypeLogicProgrammerElement> builder = ImmutableList.builder();
         for (IValueType valueType : ValueTypes.REGISTRY.getValueTypes()) {
-            if (valueType.hasDefaultLogicProgrammerElement()) {
-                builder.add(new ValueTypeElement(valueType));
+            IValueTypeLogicProgrammerElement valueTypeLPElement = valueType.createLogicProgrammerElement();
+            if (valueTypeLPElement != null) {
+                builder.add(valueTypeLPElement);
             }
         }
         return builder.build();
@@ -59,7 +51,7 @@ public class ValueTypeElementType implements ILogicProgrammerElementType<ValueTy
     public List<IValueType> getValueTypes() {
         ImmutableList.Builder<IValueType> builder = ImmutableList.builder();
         for (IValueType valueType : ValueTypes.REGISTRY.getValueTypes()) {
-            if (!valueType.isCategory() && !valueType.isObject()) {
+            if (!valueType.isCategory() && valueType.createLogicProgrammerElement() != null) {
                 builder.add(valueType);
             }
         }

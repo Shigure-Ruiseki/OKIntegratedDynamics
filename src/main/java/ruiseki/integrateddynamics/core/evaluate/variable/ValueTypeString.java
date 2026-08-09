@@ -7,7 +7,7 @@ import ruiseki.okcore.helper.Helpers;
 
 /**
  * Value type with values that are strings.
- * 
+ *
  * @author rubensworks
  */
 public class ValueTypeString extends ValueTypeBase<ValueTypeString.ValueString> {
@@ -57,6 +57,11 @@ public class ValueTypeString extends ValueTypeBase<ValueTypeString.ValueString> 
         @Override
         public boolean equals(Object o) {
             return o instanceof ValueString && ((ValueString) o).value.equals(this.value);
+        }
+
+        @Override
+        public int hashCode() {
+            return getType().hashCode() + value.hashCode();
         }
     }
 

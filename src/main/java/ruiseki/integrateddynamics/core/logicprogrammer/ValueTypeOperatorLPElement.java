@@ -6,9 +6,7 @@ import java.util.Set;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.renderer.texture.TextureManager;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
-import net.minecraft.item.ItemStack;
 
 import com.google.common.collect.Sets;
 
@@ -18,17 +16,14 @@ import lombok.Setter;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.client.gui.subgui.ISubGuiBox;
 import ruiseki.integrateddynamics.api.evaluate.operator.IOperator;
-import ruiseki.integrateddynamics.api.item.IValueTypeVariableFacade;
-import ruiseki.integrateddynamics.api.item.IVariableFacadeHandlerRegistry;
+import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.logicprogrammer.IConfigRenderPattern;
 import ruiseki.integrateddynamics.api.logicprogrammer.ILogicProgrammerElementType;
-import ruiseki.integrateddynamics.block.BlockLogicProgrammer;
 import ruiseki.integrateddynamics.client.gui.GuiLogicProgrammerBase;
 import ruiseki.integrateddynamics.core.client.gui.IDropdownEntry;
 import ruiseki.integrateddynamics.core.client.gui.IDropdownEntryListener;
 import ruiseki.integrateddynamics.core.evaluate.operator.Operators;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeOperator;
-import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeVariableFacade;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
 import ruiseki.integrateddynamics.inventory.container.ContainerLogicProgrammerBase;
 import ruiseki.integrateddynamics.network.packet.LogicProgrammerValueTypeOperatorValueChangedPacket;
@@ -41,12 +36,12 @@ import ruiseki.okcore.helper.MinecraftHelpers;
  *
  * @author rubensworks
  */
-public class ValueTypeOperatorElement extends ValueTypeElement implements IDropdownEntryListener {
+public class ValueTypeOperatorLPElement extends ValueTypeLPElementBase implements IDropdownEntryListener {
 
     @Setter
     private IOperator selectedOperator = null;
 
-    public ValueTypeOperatorElement() {
+    public ValueTypeOperatorLPElement() {
         super(ValueTypes.OPERATOR);
         Set<IDropdownEntry<?>> operatorEntries = Sets.newLinkedHashSet();
         for (IOperator operator : Operators.REGISTRY.getOperators()) {
@@ -59,12 +54,12 @@ public class ValueTypeOperatorElement extends ValueTypeElement implements IDropd
 
     @Override
     public ILogicProgrammerElementType getType() {
-        return LogicProgrammerElementTypes.OPERATOR_ELEMENT_TYPE;
+        return LogicProgrammerElementTypes.VALUETYPE;
     }
 
     @Override
     public LangHelpers.UnlocalizedString validate() {
-        return selectedOperator != null ? null : super.validate();
+        return selectedOperator != null ? null : getValueType().canDeserialize(getInnerGuiElement().getInputString());
     }
 
     @Override
@@ -78,21 +73,13 @@ public class ValueTypeOperatorElement extends ValueTypeElement implements IDropd
     }
 
     @Override
-    public void activate() {
-
+    public IValue getValue() {
+        return ValueTypeOperator.ValueOperator.of(selectedOperator);
     }
 
     @Override
-    public ItemStack writeElement(EntityPlayer player, ItemStack itemStack) {
-        IVariableFacadeHandlerRegistry registry = IntegratedDynamics._instance.getRegistryManager()
-            .getRegistry(IVariableFacadeHandlerRegistry.class);
-        return registry.writeVariableFacadeItem(
-            !MinecraftHelpers.isClientSide(),
-            itemStack,
-            ValueTypes.REGISTRY,
-            new ValueTypeVariableFacadeFactory(ValueTypeOperator.ValueOperator.of(selectedOperator)),
-            player,
-            BlockLogicProgrammer.getInstance());
+    public void activate() {
+
     }
 
     @Override
@@ -109,17 +96,17 @@ public class ValueTypeOperatorElement extends ValueTypeElement implements IDropd
 
     @Override
     @SideOnly(Side.CLIENT)
-    public SubGuiConfigRenderPattern createSubGui(int baseX, int baseY, int maxWidth, int maxHeight,
-        GuiLogicProgrammerBase gui, ContainerLogicProgrammerBase container) {
-        return new SubGuiRenderPattern(this, baseX, baseY, maxWidth, maxHeight, gui, container);
+    public ISubGuiBox createSubGui(int baseX, int baseY, int maxWidth, int maxHeight, GuiLogicProgrammerBase gui,
+        ContainerLogicProgrammerBase container) {
+        return new RenderPattern(this, baseX, baseY, maxWidth, maxHeight, gui, container);
     }
 
-    public static class SubGuiRenderPattern<S extends ISubGuiBox, G extends Gui, C extends Container>
-        extends ValueTypeElementSubGuiRenderPattern {
+    public static class RenderPattern<S extends ISubGuiBox, G extends Gui, C extends Container>
+        extends ValueTypeLPElementRenderPattern {
 
-        private final ValueTypeOperatorElement element;
+        private final ValueTypeOperatorLPElement element;
 
-        public SubGuiRenderPattern(ValueTypeOperatorElement element, int baseX, int baseY, int maxWidth, int maxHeight,
+        public RenderPattern(ValueTypeOperatorLPElement element, int baseX, int baseY, int maxWidth, int maxHeight,
             GuiLogicProgrammerBase gui, ContainerLogicProgrammerBase container) {
             super(element, baseX, baseY, maxWidth, maxHeight, gui, container);
             this.element = element;
@@ -148,26 +135,6 @@ public class ValueTypeOperatorElement extends ValueTypeElement implements IDropd
                     offsetY += fontRenderer.FONT_HEIGHT;
                 }
             }
-        }
-    }
-
-    protected static class ValueTypeVariableFacadeFactory
-        implements IVariableFacadeHandlerRegistry.IVariableFacadeFactory<IValueTypeVariableFacade> {
-
-        private final ValueTypeOperator.ValueOperator value;
-
-        public ValueTypeVariableFacadeFactory(ValueTypeOperator.ValueOperator value) {
-            this.value = value;
-        }
-
-        @Override
-        public IValueTypeVariableFacade create(boolean generateId) {
-            return new ValueTypeVariableFacade<>(generateId, ValueTypes.OPERATOR, value);
-        }
-
-        @Override
-        public IValueTypeVariableFacade create(int id) {
-            return new ValueTypeVariableFacade<>(id, ValueTypes.OPERATOR, value);
         }
     }
 

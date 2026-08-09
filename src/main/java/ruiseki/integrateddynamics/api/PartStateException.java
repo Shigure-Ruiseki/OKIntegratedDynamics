@@ -1,7 +1,6 @@
 package ruiseki.integrateddynamics.api;
 
 import net.minecraftforge.common.DimensionManager;
-import net.minecraftforge.common.util.ForgeDirection;
 
 import ruiseki.integrateddynamics.core.helper.PartHelpers;
 import ruiseki.okcore.datastructure.DimPos;
@@ -13,13 +12,12 @@ import ruiseki.okcore.datastructure.DimPos;
  */
 public class PartStateException extends IllegalArgumentException {
 
-    public PartStateException(DimPos dimPos, ForgeDirection side) {
+    public PartStateException(DimPos dimPos) {
         super(
             String.format(
-                "No part state for part at position %s side %s was found."
+                "No part state for part at position %s was found."
                     + "\nWorld loaded: %s\nChunk loaded: %s\nPart container: %s\nParts: %s",
                 dimPos,
-                side,
                 DimensionManager.getWorld(dimPos.getDimensionId()) != null,
                 dimPos.isLoaded(),
                 dimPos.isLoaded() ? PartHelpers.getPartContainer(dimPos) : null,

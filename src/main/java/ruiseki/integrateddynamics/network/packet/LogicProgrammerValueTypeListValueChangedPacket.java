@@ -9,7 +9,7 @@ import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.integrateddynamics.api.logicprogrammer.ILogicProgrammerElement;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeList;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
-import ruiseki.integrateddynamics.core.logicprogrammer.ValueTypeListElement;
+import ruiseki.integrateddynamics.core.logicprogrammer.ValueTypeListLPElement;
 import ruiseki.integrateddynamics.inventory.container.ContainerLogicProgrammerBase;
 import ruiseki.okcore.network.CodecField;
 import ruiseki.okcore.network.PacketCodec;
@@ -53,8 +53,8 @@ public class LogicProgrammerValueTypeListValueChangedPacket extends PacketCodec 
     public void actionServer(World world, EntityPlayerMP player) {
         if (player.openContainer instanceof ContainerLogicProgrammerBase) {
             ILogicProgrammerElement element = ((ContainerLogicProgrammerBase) player.openContainer).getActiveElement();
-            if (element instanceof ValueTypeListElement) {
-                ((ValueTypeListElement) element).setServerValue(getListValue());
+            if (element instanceof ValueTypeListLPElement) {
+                ((ValueTypeListLPElement) element).setServerValue(getListValue());
                 ((ContainerLogicProgrammerBase) player.openContainer).onDirty();
             }
         }

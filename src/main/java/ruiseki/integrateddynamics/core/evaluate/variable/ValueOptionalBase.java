@@ -6,7 +6,7 @@ import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 
 /**
  * Base value implementation for nullable values.
- * 
+ *
  * @author rubensworks
  */
 public abstract class ValueOptionalBase<T> extends ValueBase {
@@ -45,4 +45,9 @@ public abstract class ValueOptionalBase<T> extends ValueBase {
 
     protected abstract boolean isEqual(T a, T b);
 
+    @Override
+    public int hashCode() {
+        return getType().hashCode() + (getRawValue().isPresent() ? getRawValue().get()
+            .hashCode() : 0);
+    }
 }

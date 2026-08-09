@@ -6,6 +6,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
+import ruiseki.integrateddynamics.api.logicprogrammer.IValueTypeLogicProgrammerElement;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueHelpers;
 import ruiseki.okcore.helper.LangHelpers;
 
@@ -111,9 +112,9 @@ public interface IValueType<V extends IValue> {
     public V materialize(V value) throws EvaluationException;
 
     /**
-     * @return If a default logic programmer element has to be generated.
+     * @return A new logic programmer element for this value type.
      */
-    public boolean hasDefaultLogicProgrammerElement();
+    public IValueTypeLogicProgrammerElement createLogicProgrammerElement();
 
     /**
      * Use this comparator for any comparisons with value types.

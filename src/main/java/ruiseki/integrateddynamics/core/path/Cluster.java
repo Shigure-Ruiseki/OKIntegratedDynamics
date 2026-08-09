@@ -56,7 +56,7 @@ public class Cluster implements Collection<IPathElement>, INBTSerializable {
             elementTag.setInteger(
                 "dimension",
                 e.getPosition()
-                    .getWorld().provider.dimensionId);
+                    .getDimensionId());
             elementTag.setLong(
                 "pos",
                 e.getPosition()

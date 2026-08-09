@@ -1,5 +1,6 @@
 package ruiseki.integrateddynamics.core.evaluate.variable;
 
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.JsonToNBT;
 import net.minecraft.nbt.NBTException;
 import net.minecraft.nbt.NBTTagCompound;
@@ -10,10 +11,15 @@ import com.google.common.base.Optional;
 import lombok.ToString;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeNamed;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeNullable;
+import ruiseki.integrateddynamics.core.helper.Helpers;
+import ruiseki.integrateddynamics.core.helper.L10NValues;
+import ruiseki.integrateddynamics.core.logicprogrammer.ValueTypeItemStackLPElement;
+import ruiseki.integrateddynamics.core.logicprogrammer.ValueTypeLPElementBase;
+import ruiseki.okcore.helper.LangHelpers;
 
 /**
  * Value type with values that are fluidstacks.
- * 
+ *
  * @author rubensworks
  */
 public class ValueObjectTypeFluidStack extends ValueObjectTypeBase<ValueObjectTypeFluidStack.ValueFluidStack>
@@ -68,6 +74,30 @@ public class ValueObjectTypeFluidStack extends ValueObjectTypeBase<ValueObjectTy
     public boolean isNull(ValueFluidStack a) {
         return !a.getRawValue()
             .isPresent();
+    }
+
+    @Override
+    public ValueTypeLPElementBase createLogicProgrammerElement() {
+        return new ValueTypeItemStackLPElement<>(
+            this,
+            new ValueTypeItemStackLPElement.IItemStackToValue<ValueObjectTypeFluidStack.ValueFluidStack>() {
+
+                @Override
+                public boolean isNullable() {
+                    return true;
+                }
+
+                @Override
+                public LangHelpers.UnlocalizedString validate(ItemStack itemStack) {
+                    return Helpers.getFluidStack(itemStack) != null ? null
+                        : new LangHelpers.UnlocalizedString(L10NValues.VALUETYPE_OBJECT_FLUID_ERROR_NOFLUID);
+                }
+
+                @Override
+                public ValueObjectTypeFluidStack.ValueFluidStack getValue(ItemStack itemStack) {
+                    return ValueObjectTypeFluidStack.ValueFluidStack.of(Helpers.getFluidStack(itemStack));
+                }
+            });
     }
 
     @ToString

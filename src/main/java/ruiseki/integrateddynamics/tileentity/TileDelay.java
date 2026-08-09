@@ -40,8 +40,7 @@ public class TileDelay extends TileProxy {
     @Getter
     private int capacity = 5;
 
-    // Initialize with default capacity to prevent NPE on placement/first tick
-    protected Queue<IValue> values = Queues.newArrayBlockingQueue(this.capacity);
+    protected Queue<IValue> values = null;
 
     @NBTPersist
     @Getter
@@ -110,14 +109,19 @@ public class TileDelay extends TileProxy {
         this.values = newValues;
     }
 
+    public Queue<IValue> getValues() {
+        if (values == null) {
+            values = Queues.newArrayBlockingQueue(this.capacity);
+        }
+        return values;
+    }
+
     @Override
     public void writeToNBT(NBTTagCompound tag) {
         super.writeToNBT(tag);
         NBTTagList valueList = new NBTTagList();
-        if (values != null) {
-            for (IValue value : values) {
-                valueList.appendTag(ValueHelpers.serialize(value));
-            }
+        for (IValue value : getValues()) {
+            valueList.appendTag(ValueHelpers.serialize(value));
         }
         tag.setTag("values", valueList);
     }
@@ -140,14 +144,9 @@ public class TileDelay extends TileProxy {
     protected void updateTileEntity() {
         super.updateTileEntity();
         if (!getWorldObj().isRemote && updateInterval > 0 && getWorldObj().getTotalWorldTime() % updateInterval == 0) {
-            // Guard against null queue
-            if (values == null) {
-                values = Queues.newArrayBlockingQueue(this.capacity);
-            }
-
             // Remove oldest elements from the queue until we have room for a new one.
-            while (values.size() >= this.capacity) {
-                values.poll();
+            while (getValues().size() >= this.capacity) {
+                getValues().poll();
             }
 
             // Add new value to the queue
@@ -160,13 +159,21 @@ public class TileDelay extends TileProxy {
                     addError(new LangHelpers.UnlocalizedString(e.toString()));
                 }
                 if (value != null) {
-                    values.add(value);
+                    try {
+                        if (this.list.getRawValue()
+                            .getLength() > 0
+                            && this.list.getRawValue()
+                                .getValueType() != value.getType()) {
+                            getValues().clear();
+                        }
+                    } catch (EvaluationException e) {}
+                    getValues().add(value);
 
                     // Update variable with as value the materialized queue list
                     this.list = ValueTypeList.ValueList.ofList(value.getType(), Lists.newArrayList(values));
                 }
             } else {
-                values.clear();
+                getValues().clear();
                 this.list = ValueTypes.LIST.getDefault();
             }
         }

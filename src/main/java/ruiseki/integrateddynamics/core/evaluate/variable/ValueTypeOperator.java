@@ -16,6 +16,8 @@ import ruiseki.integrateddynamics.api.evaluate.operator.IOperator;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 import ruiseki.integrateddynamics.core.evaluate.operator.Operators;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
+import ruiseki.integrateddynamics.core.logicprogrammer.ValueTypeLPElementBase;
+import ruiseki.integrateddynamics.core.logicprogrammer.ValueTypeOperatorLPElement;
 import ruiseki.okcore.helper.Helpers;
 import ruiseki.okcore.helper.LangHelpers;
 
@@ -73,8 +75,8 @@ public class ValueTypeOperator extends ValueTypeBase<ValueTypeOperator.ValueOper
     }
 
     @Override
-    public boolean hasDefaultLogicProgrammerElement() {
-        return false;
+    public ValueTypeLPElementBase createLogicProgrammerElement() {
+        return new ValueTypeOperatorLPElement();
     }
 
     @Override

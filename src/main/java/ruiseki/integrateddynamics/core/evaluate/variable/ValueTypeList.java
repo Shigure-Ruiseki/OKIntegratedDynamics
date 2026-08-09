@@ -15,6 +15,8 @@ import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeListProxy;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeListProxyFactoryTypeRegistry;
+import ruiseki.integrateddynamics.core.logicprogrammer.ValueTypeLPElementBase;
+import ruiseki.integrateddynamics.core.logicprogrammer.ValueTypeListLPElement;
 import ruiseki.okcore.helper.Helpers;
 import ruiseki.okcore.helper.LangHelpers;
 
@@ -74,6 +76,11 @@ public class ValueTypeList extends ValueObjectTypeBase<ValueTypeList.ValueList> 
     }
 
     @Override
+    public ValueTypeLPElementBase createLogicProgrammerElement() {
+        return new ValueTypeListLPElement();
+    }
+
+    @Override
     public ValueList materialize(ValueList value) throws EvaluationException {
         IValueTypeListProxy<IValueType<IValue>, IValue> list = value.getRawValue();
         if (list.isInfinite()) {
@@ -115,6 +122,10 @@ public class ValueTypeList extends ValueObjectTypeBase<ValueTypeList.ValueList> 
             return o instanceof ValueList && ((ValueList) o).value.equals(this.value);
         }
 
+        @Override
+        public int hashCode() {
+            return value.hashCode();
+        }
     }
 
     public static class ListFactoryIterator<T extends IValueType<V>, V extends IValue> implements Iterator<V> {

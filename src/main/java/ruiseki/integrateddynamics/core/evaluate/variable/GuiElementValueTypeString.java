@@ -27,7 +27,7 @@ import ruiseki.integrateddynamics.core.client.gui.IDropdownEntry;
 import ruiseki.integrateddynamics.core.client.gui.IDropdownEntryListener;
 import ruiseki.integrateddynamics.core.client.gui.subgui.SubGuiBox;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
-import ruiseki.integrateddynamics.core.logicprogrammer.SubGuiConfigRenderPattern;
+import ruiseki.integrateddynamics.core.logicprogrammer.RenderPattern;
 import ruiseki.okcore.client.gui.container.GuiContainerExtended;
 import ruiseki.okcore.client.gui.image.Images;
 import ruiseki.okcore.helper.Helpers;
@@ -40,8 +40,8 @@ import ruiseki.okcore.helper.StringHelpers;
  * @author rubensworks
  */
 @Data
-public class ValueTypeGuiElement<G extends Gui, C extends Container>
-    implements IGuiInputElement<SubGuiConfigRenderPattern, G, C>, IDropdownEntryListener {
+public class GuiElementValueTypeString<G extends Gui, C extends Container>
+    implements IGuiInputElement<RenderPattern, G, C>, IDropdownEntryListener {
 
     private final IValueType valueType;
     private Predicate<IValue> validator;
@@ -51,14 +51,14 @@ public class ValueTypeGuiElement<G extends Gui, C extends Container>
     private Set<IDropdownEntry<?>> dropdownPossibilities = Collections.emptySet();
     private IDropdownEntryListener dropdownEntryListener = null;
 
-    public ValueTypeGuiElement(IValueType valueType, IConfigRenderPattern renderPattern) {
+    public GuiElementValueTypeString(IValueType valueType, IConfigRenderPattern renderPattern) {
         this.valueType = valueType;
         this.validator = Predicates.alwaysTrue();
         this.renderPattern = renderPattern;
         defaultInputString = getValueType().toCompactString(getValueType().getDefault());
     }
 
-    public void setInputString(String inputString, ValueTypeSubGuiRenderPattern subGui) {
+    public void setInputString(String inputString, GuiElementValueTypeStringRenderPattern subGui) {
         this.inputString = inputString;
         if (subGui != null) {
             subGui.getSearchField()
@@ -123,9 +123,9 @@ public class ValueTypeGuiElement<G extends Gui, C extends Container>
 
     @Override
     @SideOnly(Side.CLIENT)
-    public ValueTypeSubGuiRenderPattern createSubGui(int baseX, int baseY, int maxWidth, int maxHeight, G gui,
+    public GuiElementValueTypeStringRenderPattern createSubGui(int baseX, int baseY, int maxWidth, int maxHeight, G gui,
         C container) {
-        return new ValueTypeSubGuiRenderPattern<ValueTypeSubGuiRenderPattern, G, C>(
+        return new GuiElementValueTypeStringRenderPattern<GuiElementValueTypeStringRenderPattern, G, C>(
             this,
             baseX,
             baseY,

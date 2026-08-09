@@ -7,7 +7,7 @@ import net.minecraft.world.World;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.integrateddynamics.api.logicprogrammer.ILogicProgrammerElement;
-import ruiseki.integrateddynamics.core.logicprogrammer.ValueTypeElement;
+import ruiseki.integrateddynamics.core.logicprogrammer.ValueTypeStringLPElement;
 import ruiseki.integrateddynamics.inventory.container.ContainerLogicProgrammerBase;
 import ruiseki.okcore.network.CodecField;
 import ruiseki.okcore.network.PacketCodec;
@@ -18,16 +18,16 @@ import ruiseki.okcore.network.PacketCodec;
  * @author rubensworks
  *
  */
-public class LogicProgrammerValueTypeValueChangedPacket extends PacketCodec {
+public class LogicProgrammerValueTypeStringValueChangedPacket extends PacketCodec {
 
     @CodecField
     private String value;
 
-    public LogicProgrammerValueTypeValueChangedPacket() {
+    public LogicProgrammerValueTypeStringValueChangedPacket() {
 
     }
 
-    public LogicProgrammerValueTypeValueChangedPacket(String value) {
+    public LogicProgrammerValueTypeStringValueChangedPacket(String value) {
         this.value = value;
     }
 
@@ -46,7 +46,7 @@ public class LogicProgrammerValueTypeValueChangedPacket extends PacketCodec {
     public void actionServer(World world, EntityPlayerMP player) {
         if (player.openContainer instanceof ContainerLogicProgrammerBase container) {
             ILogicProgrammerElement element = container.getActiveElement();
-            if (element instanceof ValueTypeElement valueTypeElement) {
+            if (element instanceof ValueTypeStringLPElement valueTypeElement) {
                 valueTypeElement.getInnerGuiElement()
                     .setInputString(value);
                 container.onDirty();

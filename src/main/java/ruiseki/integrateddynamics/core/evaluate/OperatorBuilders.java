@@ -464,7 +464,7 @@ public class OperatorBuilders {
         IOperator operator = value.getRawValue();
         if (!ValueHelpers.correspondsTo(operator.getOutputType(), expectedOutput)) {
             LangHelpers.UnlocalizedString error = new LangHelpers.UnlocalizedString(
-                L10NValues.VALUETYPE_ERROR_ILLEGALPROPERY,
+                L10NValues.OPERATOR_ERROR_ILLEGALPROPERY,
                 expectedOutput,
                 operator.getOutputType(),
                 operator.getLocalizedNameFull());

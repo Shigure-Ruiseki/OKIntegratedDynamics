@@ -32,6 +32,7 @@ public class ValueTypeListProxyFactories {
     public static ValueTypeListProxyAppend.Factory APPEND;
     public static ValueTypeListProxyLazyBuilt.Factory LAZY_BUILT;
     public static ValueTypeListProxyTail.Factory TAIL;
+    public static ValueTypeListProxySlice.Factory SLICE;
 
     public static void load() {
         if (MATERIALIZED == null) {
@@ -55,6 +56,7 @@ public class ValueTypeListProxyFactories {
             APPEND = REGISTRY.register(new ValueTypeListProxyAppend.Factory());
             LAZY_BUILT = REGISTRY.register(new ValueTypeListProxyLazyBuilt.Factory());
             TAIL = REGISTRY.register(new ValueTypeListProxyTail.Factory());
+            SLICE = REGISTRY.register(new ValueTypeListProxySlice.Factory());
         }
     }
 
