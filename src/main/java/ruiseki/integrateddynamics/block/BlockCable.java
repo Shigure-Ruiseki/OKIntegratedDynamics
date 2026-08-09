@@ -138,8 +138,14 @@ public class BlockCable extends ConfigurableBlockContainer
     }
 
     @Override
-    protected void onPreBlockDestroyed(World world, int x, int y, int z) {
+    protected void onPreBlockDestroyed(World world, int x, int y, int z, EntityPlayer player) {
         CableHelpers.onCableRemoving(world, new BlockPos(x, y, z), true);
+        super.onPreBlockDestroyed(world, x, y, z);
+    }
+
+    @Override
+    protected void onPreBlockDestroyed(World world, int x, int y, int z) {
+        CableHelpers.onCableRemoving(world, new BlockPos(x, y, z), false);
         super.onPreBlockDestroyed(world, x, y, z);
     }
 
@@ -181,19 +187,21 @@ public class BlockCable extends ConfigurableBlockContainer
             if (rayTraceResult != null) {
                 ForgeDirection positionHit = rayTraceResult.getPositionHit();
                 if (rayTraceResult.getCollisionType() == FACADE_COMPONENT) {
-                    if (!world.isRemote && WrenchHelpers.isWrench(player, heldItem, world, pos, side)
-                        && player.isSneaking()) {
-                        FACADE_COMPONENT.destroy(world, pos, side, player, true);
-                        world.notifyBlocksOfNeighborChange(x, y, z, this);
+                    if (WrenchHelpers.isWrench(player, heldItem, world, pos, side) && player.isSneaking()) {
+                        if (!world.isRemote) {
+                            FACADE_COMPONENT.destroy(world, pos, side, player, true);
+                            world.notifyBlocksOfNeighborChange(x, y, z, this);
+                        }
                         return true;
                     }
                     return false;
                 } else if (rayTraceResult.getCollisionType() == PARTS_COMPONENT) {
-                    if (!world.isRemote && WrenchHelpers.isWrench(player, heldItem, world, pos, side)
-                        && player.isSneaking()) {
+                    if (WrenchHelpers.isWrench(player, heldItem, world, pos, side) && player.isSneaking()) {
                         // Remove part from cable
-                        PARTS_COMPONENT.destroy(world, pos, rayTraceResult.getPositionHit(), player, true);
-                        ItemBlockCable.playBreakSound(world, pos);
+                        if (!world.isRemote) {
+                            PARTS_COMPONENT.destroy(world, pos, rayTraceResult.getPositionHit(), player, true);
+                            ItemBlockCable.playBreakSound(world, pos);
+                        }
                         return true;
                     } else if (CableHelpers.isNoFakeCable(world, pos)) {
                         // Delegate activated call to part
@@ -210,7 +218,7 @@ public class BlockCable extends ConfigurableBlockContainer
                                 hitY,
                                 hitZ);
                     }
-                } else if (!world.isRemote && (rayTraceResult.getCollisionType() == CABLECONNECTIONS_COMPONENT
+                } else if ((rayTraceResult.getCollisionType() == CABLECONNECTIONS_COMPONENT
                     || rayTraceResult.getCollisionType() == CABLECENTER_COMPONENT)) {
                         if (CableHelpers.onCableActivated(
                             world,

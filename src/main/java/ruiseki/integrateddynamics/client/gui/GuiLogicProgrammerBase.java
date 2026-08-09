@@ -186,7 +186,7 @@ public class GuiLogicProgrammerBase extends ScrollingGuiContainer {
                 GlStateManager.color(1, 1, 1, 1);
 
                 // Operator info
-                String aspectName = LangHelpers.localize(element.getSymbol());
+                String aspectName = element.getSymbol();
                 RenderHelpers.drawScaledCenteredString(
                     fontRenderer,
                     aspectName,

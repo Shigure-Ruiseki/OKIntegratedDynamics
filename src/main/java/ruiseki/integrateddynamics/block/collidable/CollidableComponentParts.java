@@ -39,7 +39,7 @@ public class CollidableComponentParts implements ICollidable.IComponent<ForgeDir
     @Override
     public boolean isActive(BlockCable cable, World world, BlockPos pos, ForgeDirection position) {
         IPartContainer partContainer = PartHelpers.getPartContainer(world, pos);
-        return partContainer.hasPart(position);
+        return partContainer != null && partContainer.hasPart(position);
     }
 
     @Override

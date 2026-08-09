@@ -164,9 +164,10 @@ public abstract class PartStateActiveVariableBase<P extends IPartType> extends P
             super(size, "stateInventory", 1);
         }
 
-        protected boolean canInsert() {
+        protected boolean canInsert(int slot) {
             for (int i = 0; i < getSizeInventory(); i++) {
-                if (getStackInSlot(i) != null) {
+                // Only allow insertion if the target slot is the same as the non-empty slot
+                if (i != slot && getStackInSlot(i) != null) {
                     return false;
                 }
             }
@@ -175,7 +176,7 @@ public abstract class PartStateActiveVariableBase<P extends IPartType> extends P
 
         @Override
         public boolean isItemValidForSlot(int i, ItemStack itemstack) {
-            return canInsert() && super.isItemValidForSlot(i, itemstack);
+            return canInsert(i) && super.isItemValidForSlot(i, itemstack);
         }
 
     }

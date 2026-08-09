@@ -30,6 +30,7 @@ public class ValueTypeListProxyFactories {
     public static ValueTypeListProxyNBTFactory<ValueObjectTypeFluidStack, ValueObjectTypeFluidStack.ValueFluidStack, ValueTypeListProxyPositionedTankFluidStacks> POSITIONED_TANK_FLUIDSTACKS;
     public static ValueTypeListProxyNBTFactory<ValueTypeInteger, ValueTypeInteger.ValueInteger, ValueTypeListProxyPositionedTankCapacities> POSITIONED_TANK_CAPACITIES;
     public static ValueTypeListProxyAppend.Factory APPEND;
+    public static ValueTypeListProxyConcat.Factory CONCAT;
     public static ValueTypeListProxyLazyBuilt.Factory LAZY_BUILT;
     public static ValueTypeListProxyTail.Factory TAIL;
     public static ValueTypeListProxySlice.Factory SLICE;
@@ -54,6 +55,7 @@ public class ValueTypeListProxyFactories {
                     "positionedTankCapacities",
                     ValueTypeListProxyPositionedTankCapacities.class));
             APPEND = REGISTRY.register(new ValueTypeListProxyAppend.Factory());
+            CONCAT = REGISTRY.register(new ValueTypeListProxyConcat.Factory());
             LAZY_BUILT = REGISTRY.register(new ValueTypeListProxyLazyBuilt.Factory());
             TAIL = REGISTRY.register(new ValueTypeListProxyTail.Factory());
             SLICE = REGISTRY.register(new ValueTypeListProxySlice.Factory());

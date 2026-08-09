@@ -100,7 +100,7 @@ public class ValueObjectTypeEntity extends ValueObjectTypeBase<ValueObjectTypeEn
     @ToString
     public static class ValueEntity extends ValueOptionalBase<Entity> {
 
-        private ValueEntity(Entity entity) {
+        protected ValueEntity(Entity entity) {
             super(ValueTypes.OBJECT_ENTITY, entity);
         }
 

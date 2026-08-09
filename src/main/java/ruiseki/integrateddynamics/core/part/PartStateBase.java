@@ -173,7 +173,11 @@ public abstract class PartStateBase<P extends IPartType> implements IPartState<P
 
     @Override
     public void setEnabled(boolean enabled) {
+        boolean wasEnabled = this.enabled;
         this.enabled = enabled;
+        if (this.enabled != wasEnabled) {
+            sendUpdate();
+        }
     }
 
     @Override

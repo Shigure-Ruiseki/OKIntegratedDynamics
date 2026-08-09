@@ -16,6 +16,7 @@ import net.minecraft.entity.passive.EntityAnimal;
 import net.minecraft.entity.passive.IAnimals;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.FurnaceRecipes;
@@ -68,6 +69,7 @@ import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeDouble;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeInteger;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeList;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeListProxyAppend;
+import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeListProxyConcat;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeListProxyEntityArmorInventory;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeListProxyEntityInventory;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeListProxyLazyBuilt;
@@ -389,7 +391,7 @@ public final class Operators {
                         if (i == 0) {
                             temporarySecondInputType = inputType;
                         } else if (i == 1) {
-                            if (temporarySecondInputType != inputType) {
+                            if (!ValueHelpers.correspondsTo(temporarySecondInputType, inputType)) {
                                 return new LangHelpers.UnlocalizedString(
                                     L10NValues.OPERATOR_ERROR_WRONGTYPE,
                                     operator.getOperatorName(),
@@ -789,11 +791,58 @@ public final class Operators {
                 public IValue evaluate(OperatorBase.SafeVariablesGetter variables) throws EvaluationException {
                     IValueTypeListProxy a = ((ValueTypeList.ValueList) variables.getValue(0)).getRawValue();
                     ValueTypeInteger.ValueInteger b = variables.getValue(1);
-                    if (b.getRawValue() < a.getLength()) {
+                    if (b.getRawValue() < a.getLength() && b.getRawValue() >= 0) {
                         return a.get(b.getRawValue());
                     } else {
-                        return a.getValueType()
-                            .getDefault();
+                        throw new EvaluationException(
+                            "Index out of bounds. Tried to get element " + b.getRawValue()
+                                + " of a list of length "
+                                + a.getLength()
+                                + ". Use the getOrDefault operator to provide a default when an index is out of bounds.");
+                    }
+                }
+            })
+            .conditionalOutputTypeDeriver(new OperatorBuilder.IConditionalOutputTypeDeriver() {
+
+                @Override
+                public IValueType getConditionalOutputType(OperatorBase operator, IVariable[] input) {
+                    try {
+                        IValueTypeListProxy a = ((ValueTypeList.ValueList) input[0].getValue()).getRawValue();
+                        return a.getValueType();
+                    } catch (EvaluationException e) {
+                        return operator.getConditionalOutputType(input);
+                    }
+                }
+            })
+            .build());
+
+    /**
+     * List operator with one input list, one output integer, and one default value
+     */
+    public static final IOperator LIST_ELEMENT_DEFAULT = REGISTRY.register(
+        OperatorBuilders.LIST_1_PREFIX
+            .inputTypes(new IValueType[] { ValueTypes.LIST, ValueTypes.INTEGER, ValueTypes.CATEGORY_ANY })
+            .output(ValueTypes.CATEGORY_ANY)
+            .renderPattern(IConfigRenderPattern.INFIX_2)
+            .symbol("getOrDefault")
+            .operatorName("get_or_default")
+            .function(new OperatorBase.IFunction() {
+
+                @Override
+                public IValue evaluate(OperatorBase.SafeVariablesGetter variables) throws EvaluationException {
+                    IValueTypeListProxy a = ((ValueTypeList.ValueList) variables.getValue(0)).getRawValue();
+                    ValueTypeInteger.ValueInteger b = variables.getValue(1);
+                    if (b.getRawValue() < a.getLength() && b.getRawValue() >= 0) {
+                        return a.get(b.getRawValue());
+                    } else {
+                        if (!ValueHelpers.correspondsTo(a.getValueType(), variables.getVariables()[2].getType())) {
+                            LangHelpers.UnlocalizedString error = new LangHelpers.UnlocalizedString(
+                                L10NValues.VALUETYPE_ERROR_INVALIDLISTVALUETYPE,
+                                a.getValueType(),
+                                variables.getVariables()[2].getType());
+                            throw new EvaluationException(error.localize());
+                        }
+                        return variables.getValue(2);
                     }
                 }
             })
@@ -942,6 +991,32 @@ public final class Operators {
                         throw new EvaluationException(error.localize());
                     }
                     return ValueTypeList.ValueList.ofFactory(new ValueTypeListProxyAppend(a, value));
+                }
+            })
+            .build());
+
+    /**
+     * Concatenate two lists
+     */
+    public static final IOperator LIST_CONCAT = REGISTRY.register(
+        OperatorBuilders.LIST.inputTypes(new IValueType[] { ValueTypes.LIST, ValueTypes.LIST })
+            .renderPattern(IConfigRenderPattern.INFIX)
+            .output(ValueTypes.LIST)
+            .symbolOperator("concat")
+            .function(new OperatorBase.IFunction() {
+
+                @Override
+                public IValue evaluate(OperatorBase.SafeVariablesGetter variables) throws EvaluationException {
+                    IValueTypeListProxy a = ((ValueTypeList.ValueList) variables.getValue(0)).getRawValue();
+                    IValueTypeListProxy b = ((ValueTypeList.ValueList) variables.getValue(1)).getRawValue();
+                    if (!ValueHelpers.correspondsTo(a.getValueType(), b.getValueType())) {
+                        LangHelpers.UnlocalizedString error = new LangHelpers.UnlocalizedString(
+                            L10NValues.VALUETYPE_ERROR_INVALIDLISTVALUETYPE,
+                            a.getValueType(),
+                            b.getValueType());
+                        throw new EvaluationException(error.localize());
+                    }
+                    return ValueTypeList.ValueList.ofFactory(new ValueTypeListProxyConcat(a, b));
                 }
             })
             .build());
@@ -1384,6 +1459,30 @@ public final class Operators {
                     return ValueTypeInteger.ValueInteger.of(age);
                 }
             })
+            .build());
+
+    /**
+     * Get a block by name.
+     */
+    public static final IOperator OBJECT_BLOCK_BY_NAME = REGISTRY.register(
+        OperatorBuilders.BLOCK_1_SUFFIX_LONG.inputType(ValueTypes.STRING)
+            .output(ValueTypes.OBJECT_BLOCK)
+            .symbolOperator("blockbyname")
+            .function(
+                OperatorBuilders.FUNCTION_STRING_TO_RESOURCE_LOCATION
+                    .build(new IOperatorValuePropagator<Pair<ResourceLocation, Integer>, IValue>() {
+
+                        @Override
+                        public IValue getOutput(Pair<ResourceLocation, Integer> input) throws EvaluationException {
+                            Block block = (Block) GameData.getBlockRegistry()
+                                .getObject(input.getLeft());
+                            BlockState blockState = null;
+                            if (block != null) {
+                                blockState = BlockStateHelpers.getState(block, input.getRight());
+                            }
+                            return ValueObjectTypeBlock.ValueBlock.of(blockState);
+                        }
+                    }))
             .build());
 
     /**
@@ -1904,7 +2003,13 @@ public final class Operators {
                     ImmutableList.Builder<ValueObjectTypeItemStack.ValueItemStack> builder = ImmutableList.builder();
                     if (!StringUtils.isNullOrEmpty(a.getRawValue())) {
                         for (ItemStack itemStack : OreDictionary.getOres(a.getRawValue())) {
-                            builder.add(ValueObjectTypeItemStack.ValueItemStack.of(itemStack));
+                            if (itemStack.getItemDamage() == OreDictionary.WILDCARD_VALUE) {
+                                ItemStack itemStackCopy = itemStack.copy();
+                                itemStackCopy.setItemDamage(0);
+                                builder.add(ValueObjectTypeItemStack.ValueItemStack.of(itemStackCopy));
+                            } else {
+                                builder.add(ValueObjectTypeItemStack.ValueItemStack.of(itemStack));
+                            }
                         }
                     }
                     return ValueTypeList.ValueList.ofList(ValueTypes.OBJECT_ITEMSTACK, builder.build());
@@ -2009,6 +2114,84 @@ public final class Operators {
                             0);
                     }
                     return ValueObjectTypeBlock.ValueBlock.of(plant);
+                }
+            })
+            .build());
+
+    /**
+     * Get an item by name.
+     */
+    public static final IOperator OBJECT_ITEMSTACK_BY_NAME = REGISTRY.register(
+        OperatorBuilders.ITEMSTACK_1_SUFFIX_LONG.inputType(ValueTypes.STRING)
+            .output(ValueTypes.OBJECT_ITEMSTACK)
+            .symbolOperator("itembyname")
+            .function(
+                OperatorBuilders.FUNCTION_STRING_TO_RESOURCE_LOCATION
+                    .build(new IOperatorValuePropagator<Pair<ResourceLocation, Integer>, IValue>() {
+
+                        @Override
+                        public IValue getOutput(Pair<ResourceLocation, Integer> input) throws EvaluationException {
+                            Item item = (Item) GameData.getItemRegistry()
+                                .getObject(input.getLeft());
+                            ItemStack itemStack = null;
+                            if (item != null) {
+                                itemStack = new ItemStack(item, 1, input.getRight());
+                            }
+                            return ValueObjectTypeItemStack.ValueItemStack.of(itemStack);
+                        }
+                    }))
+            .build());
+
+    /**
+     * Get the total item count of the given item in a list.
+     */
+    public static final IOperator OBJECT_ITEMSTACK_LIST_COUNT = REGISTRY.register(
+        OperatorBuilders.ITEMSTACK_2.inputTypes(ValueTypes.LIST, ValueTypes.OBJECT_ITEMSTACK)
+            .output(ValueTypes.INTEGER)
+            .symbolOperator("itemlistcount")
+            .function(new OperatorBase.IFunction() {
+
+                @Override
+                public IValue evaluate(OperatorBase.SafeVariablesGetter variables) throws EvaluationException {
+                    ValueTypeList.ValueList a = variables.getValue(0);
+                    ValueObjectTypeItemStack.ValueItemStack b = variables.getValue(1);
+                    if (!ValueHelpers.correspondsTo(
+                        a.getRawValue()
+                            .getValueType(),
+                        ValueTypes.OBJECT_ITEMSTACK)) {
+                        LangHelpers.UnlocalizedString error = new LangHelpers.UnlocalizedString(
+                            L10NValues.VALUETYPE_ERROR_INVALIDLISTVALUETYPE,
+                            a.getRawValue()
+                                .getValueType(),
+                            ValueTypes.OBJECT_ITEMSTACK);
+                        throw new EvaluationException(error.localize());
+                    }
+
+                    ItemStack itemStack = b.getRawValue()
+                        .isPresent()
+                            ? b.getRawValue()
+                                .get()
+                            : null;
+                    int count = 0;
+                    for (ValueObjectTypeItemStack.ValueItemStack listValue : (IValueTypeListProxy<ValueObjectTypeItemStack, ValueObjectTypeItemStack.ValueItemStack>) a
+                        .getRawValue()) {
+                        if (listValue.getRawValue()
+                            .isPresent()) {
+                            ItemStack listItem = listValue.getRawValue()
+                                .get();
+                            if (itemStack != null) {
+                                if (itemStack.isItemEqual(listItem)
+                                    && ItemStack.areItemStackTagsEqual(itemStack, listItem)) {
+                                    count += listItem.stackSize;
+                                }
+
+                            } else {
+                                count += listItem.stackSize;
+                            }
+                        }
+                    }
+
+                    return ValueTypeInteger.ValueInteger.of(count);
                 }
             })
             .build());
@@ -2930,7 +3113,7 @@ public final class Operators {
      */
     public static final IOperator OPERATOR_APPLY = REGISTRY.register(
         OperatorBuilders.OPERATOR_2_INFIX_LONG
-            .conditionalOutputTypeDeriver(OperatorBuilders.OPERATOR_CONDITIONAL_OUTPUT_DERIVER)
+            .conditionalOutputTypeDeriver(OperatorBuilders.newOperatorConditionalOutputDeriver(1))
             .output(ValueTypes.CATEGORY_ANY)
             .symbolOperator("apply")
             .typeValidator(OperatorBuilders.createOperatorTypeValidator(ValueTypes.LIST))
@@ -2944,11 +3127,7 @@ public final class Operators {
                             IOperator innerOperator = input.getLeft();
                             OperatorBase.SafeVariablesGetter variables = input.getRight();
                             IVariable variable = variables.getVariables()[0];
-                            if (innerOperator.getRequiredInputLength() == 1) {
-                                return innerOperator.evaluate(new IVariable[] { variable });
-                            } else {
-                                return ValueTypeOperator.ValueOperator.of(new CurriedOperator(innerOperator, variable));
-                            }
+                            return ValueHelpers.evaluateOperator(innerOperator, variable);
                         }
                     }))
             .build());
@@ -2956,6 +3135,59 @@ public final class Operators {
         REGISTRY.registerSerializer(new CurriedOperator.Serializer());
     }
 
+    /**
+     * Apply for a given operator the given 2 values.
+     */
+    public static final IOperator OPERATOR_APPLY_2 = REGISTRY.register(
+        OperatorBuilders.OPERATOR.renderPattern(IConfigRenderPattern.INFIX_2)
+            .conditionalOutputTypeDeriver(OperatorBuilders.newOperatorConditionalOutputDeriver(2))
+            .inputTypes(ValueTypes.OPERATOR, ValueTypes.CATEGORY_ANY, ValueTypes.CATEGORY_ANY)
+            .output(ValueTypes.CATEGORY_ANY)
+            .symbolOperator("apply2")
+            .typeValidator(OperatorBuilders.createOperatorTypeValidator(ValueTypes.LIST, ValueTypes.LIST))
+            .function(
+                OperatorBuilders.FUNCTION_OPERATOR_TAKE_OPERATOR
+                    .build(new IOperatorValuePropagator<Pair<IOperator, OperatorBase.SafeVariablesGetter>, IValue>() {
+
+                        @Override
+                        public IValue getOutput(Pair<IOperator, OperatorBase.SafeVariablesGetter> input)
+                            throws EvaluationException {
+                            IOperator innerOperator = input.getLeft();
+                            OperatorBase.SafeVariablesGetter variables = input.getRight();
+                            IVariable variable0 = variables.getVariables()[0];
+                            IVariable variable1 = variables.getVariables()[1];
+                            return ValueHelpers.evaluateOperator(innerOperator, variable0, variable1);
+                        }
+                    }))
+            .build());
+
+    /**
+     * Apply for a given operator the given 3 values.
+     */
+    public static final IOperator OPERATOR_APPLY_3 = REGISTRY.register(
+        OperatorBuilders.OPERATOR_2_INFIX_LONG.renderPattern(IConfigRenderPattern.INFIX_3)
+            .conditionalOutputTypeDeriver(OperatorBuilders.newOperatorConditionalOutputDeriver(3))
+            .inputTypes(ValueTypes.OPERATOR, ValueTypes.CATEGORY_ANY, ValueTypes.CATEGORY_ANY, ValueTypes.CATEGORY_ANY)
+            .output(ValueTypes.CATEGORY_ANY)
+            .symbolOperator("apply3")
+            .typeValidator(
+                OperatorBuilders.createOperatorTypeValidator(ValueTypes.LIST, ValueTypes.LIST, ValueTypes.LIST))
+            .function(
+                OperatorBuilders.FUNCTION_OPERATOR_TAKE_OPERATOR
+                    .build(new IOperatorValuePropagator<Pair<IOperator, OperatorBase.SafeVariablesGetter>, IValue>() {
+
+                        @Override
+                        public IValue getOutput(Pair<IOperator, OperatorBase.SafeVariablesGetter> input)
+                            throws EvaluationException {
+                            IOperator innerOperator = input.getLeft();
+                            OperatorBase.SafeVariablesGetter variables = input.getRight();
+                            IVariable variable0 = variables.getVariables()[0];
+                            IVariable variable1 = variables.getVariables()[1];
+                            IVariable variable2 = variables.getVariables()[2];
+                            return ValueHelpers.evaluateOperator(innerOperator, variable0, variable1, variable2);
+                        }
+                    }))
+            .build());
     /**
      * Apply the given operator on all elements of a list, resulting in a new list of mapped values.
      */

@@ -29,6 +29,7 @@ import ruiseki.okcore.capabilities.resolver.BasicCapabilityResolver;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
 import ruiseki.okcore.helper.CapabilityHelpers;
+import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.persist.IDirtyMarkListener;
 
 /**
@@ -44,6 +45,8 @@ public class TileVariablestore extends TileCableConnectableInventory implements 
     private Map<Integer, IVariableFacade> variableCache = Maps.newHashMap();
 
     private final IVariableContainer variableContainer;
+
+    private boolean shouldSendUpdateEvent = false;
 
     public TileVariablestore() {
         super(ROWS * COLS, "variables", 1);
@@ -108,6 +111,26 @@ public class TileVariablestore extends TileCableConnectableInventory implements 
     @Override
     public void onDirty() {
         if (!getWorldObj().isRemote) {
+            refreshVariables(inventory);
+        }
+    }
+
+    // Make sure that when this TE is loaded, and after the network has been set,
+    // that we trigger a variable update event in the network.
+
+    @Override
+    public void onLoad() {
+        super.onLoad();
+        if (!MinecraftHelpers.isClientSide()) {
+            shouldSendUpdateEvent = true;
+        }
+    }
+
+    @Override
+    protected void updateTileEntity() {
+        super.updateTileEntity();
+        if (shouldSendUpdateEvent && getNetwork() != null) {
+            shouldSendUpdateEvent = false;
             refreshVariables(inventory);
         }
     }

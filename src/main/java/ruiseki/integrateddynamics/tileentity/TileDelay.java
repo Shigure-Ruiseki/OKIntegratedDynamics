@@ -97,6 +97,7 @@ public class TileDelay extends TileProxy {
     }
 
     public void setCapacity(int capacity) {
+        this.capacity = Math.max(1, capacity);
         this.capacity = capacity;
 
         // Preserve existing elements when capacity changes if queue exists
@@ -129,6 +130,7 @@ public class TileDelay extends TileProxy {
     @Override
     public void readFromNBT(NBTTagCompound tag) {
         super.readFromNBT(tag);
+        if (this.capacity <= 0) this.capacity = 1;
         values = Queues.newArrayBlockingQueue(this.capacity);
 
         NBTTagList valueList = tag.getTagList("values", MinecraftHelpers.NBTTag_Types.NBTTagCompound.ordinal());

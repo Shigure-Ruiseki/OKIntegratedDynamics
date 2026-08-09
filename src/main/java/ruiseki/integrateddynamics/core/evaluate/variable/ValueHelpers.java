@@ -10,6 +10,7 @@ import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 import ruiseki.integrateddynamics.api.evaluate.variable.IVariable;
 import ruiseki.integrateddynamics.api.item.IVariableFacade;
+import ruiseki.integrateddynamics.core.evaluate.operator.CurriedOperator;
 import ruiseki.okcore.helper.LangHelpers;
 
 /**
@@ -103,12 +104,28 @@ public class ValueHelpers {
             IValue value = values[i];
             variables[i] = new Variable<>(value.getType(), value);
         }
-        return operator.evaluate(variables);
+        return ValueHelpers.evaluateOperator(operator, variables);
+    }
+
+    /**
+     * Evaluate an operator for the given variables.
+     * 
+     * @param operator  The operator.
+     * @param variables The variables.
+     * @return The resulting value.
+     * @throws EvaluationException If something went wrong during operator evaluation.
+     */
+    public static IValue evaluateOperator(IOperator operator, IVariable... variables) throws EvaluationException {
+        if (operator.getRequiredInputLength() == variables.length) {
+            return operator.evaluate(variables);
+        } else {
+            return ValueTypeOperator.ValueOperator.of(new CurriedOperator(operator, variables));
+        }
     }
 
     /**
      * Serialize the given value to NBT.
-     * 
+     *
      * @param value The value.
      * @return The NBT tag.
      */
@@ -127,7 +144,7 @@ public class ValueHelpers {
 
     /**
      * Deserialize the given NBT tag to a value.
-     * 
+     *
      * @param tag The NBT tag containing a value.
      * @return The value.
      */

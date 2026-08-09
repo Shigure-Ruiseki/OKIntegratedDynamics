@@ -184,19 +184,12 @@ public class TileMultipartTicking extends TileEntityOK
     }
 
     public void updateRedstoneInfo(ForgeDirection side) {
-        sendUpdate();
-
-        int x = getPos().getX();
-        int y = getPos().getY();
-        int z = getPos().getZ();
-
-        int offsetX = x + side.offsetX;
-        int offsetY = y + side.offsetY;
-        int offsetZ = z + side.offsetZ;
-
-        getWorldObj().notifyBlocksOfNeighborChange(x, y, z, getBlockType());
-
-        getWorldObj().notifyBlocksOfNeighborChange(offsetX, offsetY, offsetZ, getBlockType());
+        int targetX = xCoord + side.offsetX;
+        int targetY = yCoord + side.offsetY;
+        int targetZ = zCoord + side.offsetZ;
+        if (this.worldObj != null && this.worldObj.blockExists(targetX, targetY, targetZ)) {
+            this.worldObj.notifyBlockOfNeighborChange(targetX, targetY, targetZ, getBlockType());
+        }
     }
 
     public void updateLightInfo() {

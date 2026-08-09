@@ -83,6 +83,11 @@ public interface IConfigRenderPattern {
         22,
         new Pair[] { Pair.of(20, 2) },
         Pair.of(6, 2));
+    public static final IConfigRenderPattern INFIX_2 = new IConfigRenderPattern.Base(
+        120,
+        22,
+        new Pair[] { Pair.of(2, 2), Pair.of(80, 2), Pair.of(100, 2) },
+        Pair.of(22, 2));
     public static final IConfigRenderPattern PREFIX_2 = new IConfigRenderPattern.Base(
         80,
         22,
@@ -93,6 +98,11 @@ public interface IConfigRenderPattern {
         22,
         new Pair[] { Pair.of(60, 2), Pair.of(80, 2) },
         Pair.of(6, 2));
+    public static final IConfigRenderPattern INFIX_3 = new IConfigRenderPattern.Base(
+        100,
+        22,
+        new Pair[] { Pair.of(2, 2), Pair.of(80, 2), Pair.of(100, 2), Pair.of(120, 2) },
+        Pair.of(45, 2));
     public static final IConfigRenderPattern PREFIX_3_LONG = new IConfigRenderPattern.Base(
         120,
         22,

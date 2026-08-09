@@ -2,7 +2,6 @@ package ruiseki.integrateddynamics.core.evaluate.variable;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 
@@ -26,10 +25,9 @@ public abstract class ValueTypeListProxyEntityBase<T extends IValueType<V>, V ex
     }
 
     protected Entity getEntity() {
-        WorldServer[] servers = MinecraftServer.getServer().worldServers;
-        if (world < servers.length) {
-            Entity e = servers[world].getEntityByID(entity);
-            return e;
+        WorldServer worldServer = net.minecraftforge.common.DimensionManager.getWorld(world);
+        if (worldServer != null) {
+            return worldServer.getEntityByID(entity);
         }
         return null;
     }

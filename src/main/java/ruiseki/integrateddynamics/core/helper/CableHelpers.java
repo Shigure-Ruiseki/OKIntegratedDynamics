@@ -168,6 +168,9 @@ public class CableHelpers {
         ForgeDirection side, @Nullable ForgeDirection cableConnectionHit) {
         ICable cable = CableHelpers.getCable(world, pos);
         if (WrenchHelpers.isWrench(player, heldItem, world, pos, side)) {
+            if (world.isRemote) {
+                return true; // Don't do anything client-side
+            }
             if (player.isSneaking()) {
                 removeCable(world, pos, player);
             } else if (cableConnectionHit != null) {
