@@ -1,5 +1,7 @@
 package ruiseki.integrateddynamics.block;
 
+import net.minecraft.item.Item;
+
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.okcore.config.extendedconfig.BlockConfig;
 
@@ -22,4 +24,8 @@ public class BlockInvisibleLightConfig extends BlockConfig {
         super(IntegratedDynamics._instance, true, "invisible_light", null, BlockInvisibleLight.class);
     }
 
+    @Override
+    public Class<? extends Item> getItemBlockClass() {
+        return null;
+    }
 }

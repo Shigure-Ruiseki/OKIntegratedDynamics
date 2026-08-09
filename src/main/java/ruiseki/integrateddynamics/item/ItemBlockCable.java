@@ -67,7 +67,9 @@ public class ItemBlockCable extends ItemBlockMetadata {
         }
 
         Block blockAtTarget = target.getBlock(world);
-        return blockAtTarget.isReplaceable(world, target.getX(), target.getY(), target.getZ());
+        return blockAtTarget.isReplaceable(world, target.getX(), target.getY(), target.getZ())
+            || blockAtTarget.getMaterial()
+                .isLiquid();
     }
 
     protected boolean attempItemUseTarget(ItemStack stack, World world, BlockPos pos, BlockCable blockCable,
@@ -79,7 +81,8 @@ public class ItemBlockCable extends ItemBlockMetadata {
                 if (!world.isRemote) {
                     cable.setRealCable(true);
                     CableHelpers.updateConnections(world, pos);
-                    CableHelpers.onCableAdded(world, pos, placer);
+                    CableHelpers.onCableAdded(world, pos);
+                    CableHelpers.onCableAddedByPlayer(world, pos, placer);
                 }
                 return true;
             }

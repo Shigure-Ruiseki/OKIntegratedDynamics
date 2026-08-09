@@ -50,10 +50,18 @@ public abstract class BlockContainerCabled extends ConfigurableBlockContainer {
     }
 
     @Override
+    public void onBlockAdded(World world, int x, int y, int z) {
+        super.onBlockAdded(world, x, y, z);
+        if (!world.isRemote) {
+            CableHelpers.onCableAdded(world, new BlockPos(x, y, z));
+        }
+    }
+
+    @Override
     public void onBlockPlacedBy(World world, int x, int y, int z, EntityLivingBase placer, ItemStack stack) {
         super.onBlockPlacedBy(world, x, y, z, placer, stack);
         if (!world.isRemote) {
-            CableHelpers.onCableAdded(world, new BlockPos(x, y, z), placer);
+            CableHelpers.onCableAddedByPlayer(world, new BlockPos(x, y, z), placer);
         }
     }
 

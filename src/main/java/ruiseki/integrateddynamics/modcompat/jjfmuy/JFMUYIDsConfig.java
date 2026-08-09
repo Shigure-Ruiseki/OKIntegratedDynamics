@@ -2,6 +2,7 @@ package ruiseki.integrateddynamics.modcompat.jjfmuy;
 
 import net.minecraft.block.Block;
 import net.minecraft.item.ItemStack;
+
 import ruiseki.integrateddynamics.core.block.IgnoredBlock;
 import ruiseki.jfmuy.api.IModPlugin;
 import ruiseki.jfmuy.api.IModRegistry;
@@ -13,7 +14,8 @@ public class JFMUYIDsConfig implements IModPlugin {
 
     @Override
     public void register(IModRegistry registry) {
-        IIngredientBlacklist blacklist = registry.getJFMUYHelpers().getIngredientBlacklist();
+        IIngredientBlacklist blacklist = registry.getJFMUYHelpers()
+            .getIngredientBlacklist();
 
         for (Object blockObj : Block.blockRegistry) {
             Block block = (Block) blockObj;

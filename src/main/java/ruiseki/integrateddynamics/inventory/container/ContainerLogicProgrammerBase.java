@@ -81,7 +81,8 @@ public abstract class ContainerLogicProgrammerBase extends ScrollingInventoryCon
         this.writeSlot.addDirtyMarkListener(this);
         this.writeSlot.addDirtyMarkListener(loadConfigListener = new LoadConfigListener());
         this.temporaryInputSlots = new SimpleInventory(0, "temporaryInput", 1);
-        initializeSlots();
+        initializeSlotsPre();
+        initializeSlotsPost();
     }
 
     protected static List<ILogicProgrammerElement> getElements() {
@@ -102,7 +103,7 @@ public abstract class ContainerLogicProgrammerBase extends ScrollingInventoryCon
         return this.gui;
     }
 
-    protected void initializeSlots() {
+    protected void initializeSlotsPre() {
         addSlotToContainer(new SlotSingleItem(writeSlot, 0, OUTPUT_X, OUTPUT_Y, ItemVariable.getInstance()));
         SlotSingleItem filterSlotIn1 = new SlotSingleItem(filterSlots, 0, 6, 218, ItemVariable.getInstance());
         SlotSingleItem filterSlotIn2 = new SlotSingleItem(filterSlots, 1, 24, 218, ItemVariable.getInstance());
@@ -113,6 +114,9 @@ public abstract class ContainerLogicProgrammerBase extends ScrollingInventoryCon
         addSlotToContainer(filterSlotIn1);
         addSlotToContainer(filterSlotIn2);
         addSlotToContainer(filterSlotOut);
+    }
+
+    protected void initializeSlotsPost() {
         addPlayerInventory((InventoryPlayer) getPlayerIInventory(), 88, 131);
     }
 
@@ -164,7 +168,7 @@ public abstract class ContainerLogicProgrammerBase extends ScrollingInventoryCon
 
     /**
      * Set the new active element.
-     * 
+     *
      * @param element The new element.
      * @param baseX   The slots X coordinate
      * @param baseY   The slots Y coordinate
@@ -175,7 +179,7 @@ public abstract class ContainerLogicProgrammerBase extends ScrollingInventoryCon
         // (We can do this because they are all ghost slots)
         inventoryItemStacks = Lists.newArrayList();
         inventorySlots = Lists.newArrayList();
-        initializeSlots();
+        initializeSlotsPre();
         this.temporaryInputSlots.removeDirtyMarkListener(this);
         this.temporaryInputSlots = new SimpleInventory(
             element == null ? 0
@@ -205,6 +209,7 @@ public abstract class ContainerLogicProgrammerBase extends ScrollingInventoryCon
                 addSlotToContainer(slot);
             }
         }
+        initializeSlotsPost();
         this.lastLabel = "";
     }
 

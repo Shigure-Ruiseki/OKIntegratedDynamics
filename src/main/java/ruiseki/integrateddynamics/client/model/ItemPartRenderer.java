@@ -44,7 +44,7 @@ public class ItemPartRenderer implements IItemRenderer {
         if (!(stack.getItem() instanceof ItemPart<?, ?>itemPart)) return;
 
         BlockState state = itemPart.getPart()
-            .getBlockState(null, ForgeDirection.WEST);
+            .getBlockState(null, ForgeDirection.EAST);
         BakedModel model = ModelRegistry.getBakedModel(state);
         if (model == null) return;
 
