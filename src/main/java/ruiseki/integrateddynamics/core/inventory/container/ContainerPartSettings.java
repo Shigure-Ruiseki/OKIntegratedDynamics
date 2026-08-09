@@ -8,6 +8,7 @@ import net.minecraft.world.World;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import ruiseki.integrateddynamics.IntegratedDynamics;
+import ruiseki.integrateddynamics.api.PartStateException;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartState;
@@ -139,13 +140,17 @@ public class ContainerPartSettings extends ExtendedInventoryContainer {
     @Override
     public void onUpdate(int valueId, NBTTagCompound value) {
         super.onUpdate(valueId, value);
-        if (!world.isRemote) {
-            getPartType().setUpdateInterval(getPartState(), getLastUpdateValue());
-            DimPos dimPos = getTarget().getCenter()
-                .getPos();
-            INetwork network = NetworkHelpers.getNetwork(dimPos.getWorld(), dimPos.getBlockPos());
-            PartNetworkElement networkElement = new PartNetworkElement(getPartType(), getTarget());
-            network.setPriority(networkElement, getLastPriorityValue());
+        try {
+            if (!world.isRemote) {
+                getPartType().setUpdateInterval(getPartState(), getLastUpdateValue());
+                DimPos dimPos = getTarget().getCenter()
+                    .getPos();
+                INetwork network = NetworkHelpers.getNetwork(dimPos.getWorld(), dimPos.getBlockPos());
+                PartNetworkElement networkElement = new PartNetworkElement(getPartType(), getTarget());
+                network.setPriority(networkElement, getLastPriorityValue());
+            }
+        } catch (PartStateException e) {
+            player.closeScreen();
         }
     }
 }

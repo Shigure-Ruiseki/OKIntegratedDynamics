@@ -50,6 +50,8 @@ import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeList;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeLong;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeString;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
+import ruiseki.integrateddynamics.core.helper.EnergyHelpers;
+import ruiseki.integrateddynamics.core.part.aspect.build.AspectBuilder;
 import ruiseki.integrateddynamics.core.part.aspect.build.IAspectValuePropagator;
 import ruiseki.integrateddynamics.part.aspect.read.AspectReadBuilders;
 import ruiseki.integrateddynamics.part.aspect.write.AspectWriteBuilders;
@@ -744,6 +746,122 @@ public class Aspects {
                 .handle(AspectReadBuilders.PROP_GET_DOUBLE, "defaulttemperature")
                 .buildRead();
 
+            public static final IAspectValuePropagator<Pair<PartTarget, IAspectProperties>, IEnergyStorage> PROP_GET = new IAspectValuePropagator<Pair<PartTarget, IAspectProperties>, IEnergyStorage>() {
+
+                @Override
+                public IEnergyStorage getOutput(Pair<PartTarget, IAspectProperties> input) {
+                    return EnergyHelpers.getEnergyStorage(
+                        input.getLeft()
+                            .getTarget());
+                }
+            };
+
+            public static final AspectBuilder<ValueTypeBoolean.ValueBoolean, ValueTypeBoolean, IEnergyStorage> BUILDER_BOOLEAN = AspectReadBuilders.BUILDER_BOOLEAN
+                .handle(PROP_GET, "fe");
+            public static final AspectBuilder<ValueTypeInteger.ValueInteger, ValueTypeInteger, IEnergyStorage> BUILDER_INTEGER = AspectReadBuilders.BUILDER_INTEGER
+                .handle(PROP_GET, "fe");
+            public static final AspectBuilder<ValueTypeDouble.ValueDouble, ValueTypeDouble, IEnergyStorage> BUILDER_DOUBLE = AspectReadBuilders.BUILDER_DOUBLE
+                .handle(PROP_GET, "fe");
+
+            public static final IAspectRead<ValueTypeBoolean.ValueBoolean, ValueTypeBoolean> BOOLEAN_ISENERGY = BUILDER_BOOLEAN
+                .handle(new IAspectValuePropagator<IEnergyStorage, Boolean>() {
+
+                    @Override
+                    public Boolean getOutput(IEnergyStorage data) {
+                        return data != null;
+                    }
+                })
+                .handle(AspectReadBuilders.PROP_GET_BOOLEAN, "applicable")
+                .buildRead();
+            public static final IAspectRead<ValueTypeBoolean.ValueBoolean, ValueTypeBoolean> BOOLEAN_CANEXTRACTENERGY = BUILDER_BOOLEAN
+                .handle(new IAspectValuePropagator<IEnergyStorage, Boolean>() {
+
+                    @Override
+                    public Boolean getOutput(IEnergyStorage data) {
+                        return data != null && data.extractEnergy(1, true) == 1;
+                    }
+                })
+                .handle(AspectReadBuilders.PROP_GET_BOOLEAN, "canextract")
+                .buildRead();
+            public static final IAspectRead<ValueTypeBoolean.ValueBoolean, ValueTypeBoolean> BOOLEAN_CANINSERTENERGY = BUILDER_BOOLEAN
+                .handle(new IAspectValuePropagator<IEnergyStorage, Boolean>() {
+
+                    @Override
+                    public Boolean getOutput(IEnergyStorage data) {
+                        return data != null && data.receiveEnergy(1, true) == 1;
+                    }
+                })
+                .handle(AspectReadBuilders.PROP_GET_BOOLEAN, "caninsert")
+                .buildRead();
+            public static final IAspectRead<ValueTypeBoolean.ValueBoolean, ValueTypeBoolean> BOOLEAN_ISENERGYFULL = BUILDER_BOOLEAN
+                .handle(new IAspectValuePropagator<IEnergyStorage, Boolean>() {
+
+                    @Override
+                    public Boolean getOutput(IEnergyStorage data) {
+                        return data != null && data.getEnergyStored() == data.getMaxEnergyStored();
+                    }
+                })
+                .handle(AspectReadBuilders.PROP_GET_BOOLEAN, "isfull")
+                .buildRead();
+            public static final IAspectRead<ValueTypeBoolean.ValueBoolean, ValueTypeBoolean> BOOLEAN_ISENERGYEMPTY = BUILDER_BOOLEAN
+                .handle(new IAspectValuePropagator<IEnergyStorage, Boolean>() {
+
+                    @Override
+                    public Boolean getOutput(IEnergyStorage data) {
+                        return data != null && data.getEnergyStored() == 0;
+                    }
+                })
+                .handle(AspectReadBuilders.PROP_GET_BOOLEAN, "isempty")
+                .buildRead();
+            public static final IAspectRead<ValueTypeBoolean.ValueBoolean, ValueTypeBoolean> BOOLEAN_ISENERGYNONEMPTY = BUILDER_BOOLEAN
+                .handle(new IAspectValuePropagator<IEnergyStorage, Boolean>() {
+
+                    @Override
+                    public Boolean getOutput(IEnergyStorage data) {
+                        return data != null && data.getEnergyStored() != 0;
+                    }
+                })
+                .handle(AspectReadBuilders.PROP_GET_BOOLEAN, "isnonempty")
+                .buildRead();
+
+            public static final IAspectRead<ValueTypeInteger.ValueInteger, ValueTypeInteger> INTEGER_ENERGYSTORED = BUILDER_INTEGER
+                .handle(new IAspectValuePropagator<IEnergyStorage, Integer>() {
+
+                    @Override
+                    public Integer getOutput(IEnergyStorage data) {
+                        return data != null ? data.getEnergyStored() : 0;
+                    }
+                })
+                .handle(AspectReadBuilders.PROP_GET_INTEGER, "amount")
+                .buildRead();
+            public static final IAspectRead<ValueTypeInteger.ValueInteger, ValueTypeInteger> INTEGER_ENERGYCAPACITY = BUILDER_INTEGER
+                .handle(new IAspectValuePropagator<IEnergyStorage, Integer>() {
+
+                    @Override
+                    public Integer getOutput(IEnergyStorage data) {
+                        return data != null ? data.getMaxEnergyStored() : 0;
+                    }
+                })
+                .handle(AspectReadBuilders.PROP_GET_INTEGER, "capacity")
+                .buildRead();
+
+            public static final IAspectRead<ValueTypeDouble.ValueDouble, ValueTypeDouble> DOUBLE_ENERGYFILLRATIO = BUILDER_DOUBLE
+                .handle(new IAspectValuePropagator<IEnergyStorage, Double>() {
+
+                    @Override
+                    public Double getOutput(IEnergyStorage data) {
+                        if (data != null) {
+                            double capacity = (double) data.getMaxEnergyStored();
+                            if (capacity == 0.0D) {
+                                return 0.0D;
+                            }
+                            return ((double) data.getEnergyStored()) / capacity;
+                        }
+                        return 0.0D;
+                    }
+                })
+                .handle(AspectReadBuilders.PROP_GET_DOUBLE, "fillratio")
+                .buildRead();
         }
 
         public static final class Network {

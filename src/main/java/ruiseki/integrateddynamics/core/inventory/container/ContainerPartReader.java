@@ -11,6 +11,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 
+import ruiseki.integrateddynamics.api.PartStateException;
 import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IVariable;
@@ -159,28 +160,34 @@ public class ContainerPartReader<P extends IPartTypeReader<P, S> & IGuiContainer
     }
 
     @Override
+
     public void detectAndSendChanges() {
         super.detectAndSendChanges();
-        if (!MinecraftHelpers.isClientSide()) {
-            for (IAspectRead aspectRead : getUnfilteredItems()) {
-                String readValue = "";
-                int readValueColor = 0;
-                IVariable variable = getPartType().getVariable(getTarget(), getPartState(), aspectRead);
-                if (variable != null) {
-                    try {
-                        IValue value = variable.getValue();
-                        readValue = value.getType()
-                            .toCompactString(value);
-                        readValueColor = variable.getType()
-                            .getDisplayColor();
-                    } catch (EvaluationException | NullPointerException e) {
-                        readValue = "ERROR";
-                        readValueColor = Helpers.RGBToInt(255, 0, 0);
-                    }
-                }
 
-                setReadValue(aspectRead, Pair.of(readValue, readValueColor));
+        try {
+            if (!MinecraftHelpers.isClientSide()) {
+                for (IAspectRead aspectRead : getUnfilteredItems()) {
+                    String readValue = "";
+                    int readValueColor = 0;
+                    IVariable variable = getPartType().getVariable(getTarget(), getPartState(), aspectRead);
+                    if (variable != null) {
+                        try {
+                            IValue value = variable.getValue();
+                            readValue = value.getType()
+                                .toCompactString(value);
+                            readValueColor = variable.getType()
+                                .getDisplayColor();
+                        } catch (EvaluationException | NullPointerException e) {
+                            readValue = "ERROR";
+                            readValueColor = Helpers.RGBToInt(255, 0, 0);
+                        }
+                    }
+
+                    setReadValue(aspectRead, Pair.of(readValue, readValueColor));
+                }
             }
+        } catch (PartStateException e) {
+            getPlayer().closeScreen();
         }
     }
 

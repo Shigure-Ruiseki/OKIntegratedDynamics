@@ -30,7 +30,16 @@ public class PartTypeMachineReader
                     Aspects.Read.Machine.DOUBLE_TEMPERATURE,
                     Aspects.Read.Machine.DOUBLE_MAXTEMPERATURE,
                     Aspects.Read.Machine.DOUBLE_MINTEMPERATURE,
-                    Aspects.Read.Machine.DOUBLE_DEFAULTTEMPERATURE));
+                    Aspects.Read.Machine.DOUBLE_DEFAULTTEMPERATURE,
+                    Aspects.Read.Machine.BOOLEAN_ISENERGY,
+                    Aspects.Read.Machine.BOOLEAN_CANEXTRACTENERGY,
+                    Aspects.Read.Machine.BOOLEAN_CANINSERTENERGY,
+                    Aspects.Read.Machine.BOOLEAN_ISENERGYFULL,
+                    Aspects.Read.Machine.BOOLEAN_ISENERGYEMPTY,
+                    Aspects.Read.Machine.BOOLEAN_ISENERGYNONEMPTY,
+                    Aspects.Read.Machine.INTEGER_ENERGYSTORED,
+                    Aspects.Read.Machine.INTEGER_ENERGYCAPACITY,
+                    Aspects.Read.Machine.DOUBLE_ENERGYFILLRATIO));
     }
 
     @Override

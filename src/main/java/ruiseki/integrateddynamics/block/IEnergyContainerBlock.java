@@ -9,4 +9,5 @@ public interface IEnergyContainerBlock {
 
     public String getEneryContainerNBTName();
 
+    public String getEneryContainerCapacityNBTName();
 }

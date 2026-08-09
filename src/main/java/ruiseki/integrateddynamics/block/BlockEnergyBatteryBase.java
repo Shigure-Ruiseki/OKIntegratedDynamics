@@ -37,5 +37,10 @@ public abstract class BlockEnergyBatteryBase extends BlockContainerCabled implem
         return "energy";
     }
 
+    @Override
+    public String getEneryContainerCapacityNBTName() {
+        return "capacity";
+    }
+
     public abstract boolean isCreative();
 }

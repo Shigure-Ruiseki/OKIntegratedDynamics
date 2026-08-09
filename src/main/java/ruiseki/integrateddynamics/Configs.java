@@ -1,6 +1,7 @@
 package ruiseki.integrateddynamics;
 
 import ruiseki.integrateddynamics.block.BlockCableConfig;
+import ruiseki.integrateddynamics.block.BlockDelayConfig;
 import ruiseki.integrateddynamics.block.BlockEnergyBatteryConfig;
 import ruiseki.integrateddynamics.block.BlockInvisibleLightConfig;
 import ruiseki.integrateddynamics.block.BlockLogicProgrammerConfig;
@@ -8,6 +9,7 @@ import ruiseki.integrateddynamics.block.BlockMenrilLeavesConfig;
 import ruiseki.integrateddynamics.block.BlockMenrilLogConfig;
 import ruiseki.integrateddynamics.block.BlockMenrilPlanksConfig;
 import ruiseki.integrateddynamics.block.BlockMenrilSaplingConfig;
+import ruiseki.integrateddynamics.block.BlockProxyConfig;
 import ruiseki.integrateddynamics.block.BlockVariablestoreConfig;
 import ruiseki.integrateddynamics.capability.cable.CableConfig;
 import ruiseki.integrateddynamics.capability.cable.CableFakeableConfig;
@@ -62,7 +64,7 @@ public class Configs {
         configHandler.add(new BlockEnergyBatteryConfig());
         // configHandler.add(new BlockCreativeEnergyBatteryConfig());
         // configHandler.add(new BlockCoalGeneratorConfig());
-        // configHandler.add(new BlockProxyConfig());
+        configHandler.add(new BlockProxyConfig());
         // configHandler.add(new BlockMaterializerConfig());
         configHandler.add(new BlockMenrilLogConfig());
         configHandler.add(new BlockMenrilLeavesConfig());
@@ -74,6 +76,7 @@ public class Configs {
         // configHandler.add(new BlockDryingBasinConfig());
         // configHandler.add(new BlockSqueezerConfig());
         // configHandler.add(new BlockMenrilTorchConfig());
+        configHandler.add(new BlockDelayConfig());
 
         // Items
         configHandler.add(new ItemWrenchConfig());

@@ -18,6 +18,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import ruiseki.integrateddynamics.IntegratedDynamics;
+import ruiseki.integrateddynamics.api.PartStateException;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.INetworkElement;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
@@ -174,7 +175,7 @@ public abstract class PartContainerDefault implements IPartContainer {
     }
 
     @Override
-    public void setPartState(ForgeDirection side, IPartState partState) {
+    public void setPartState(ForgeDirection side, IPartState partState) throws PartStateException {
         if (!hasPart(side)) {
             throw new IllegalArgumentException(
                 String.format("No part at position %s was found to update the state " + "for.", getPosition()));
@@ -184,7 +185,7 @@ public abstract class PartContainerDefault implements IPartContainer {
     }
 
     @Override
-    public IPartState getPartState(ForgeDirection side) {
+    public IPartState getPartState(ForgeDirection side) throws PartStateException {
         synchronized (partData) {
             PartHelpers.PartStateHolder<?, ?> partStateHolder = partData.get(side);
             if (partStateHolder == null) {

@@ -3,17 +3,16 @@ package ruiseki.integrateddynamics.capability.energystorage;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 
-import cofh.api.energy.IEnergyStorage;
 import ruiseki.integrateddynamics.block.BlockEnergyBatteryConfig;
 import ruiseki.integrateddynamics.core.item.ItemBlockEnergyContainer;
 import ruiseki.okcore.helper.ItemNBTHelpers;
 
 /**
  * Energy Battery implementation for ItemBlock's.
- * 
+ *
  * @author rubensworks
  */
-public class EnergyStorageItemBlockEnergyContainer implements IEnergyStorage {
+public class EnergyStorageItemBlockEnergyContainer implements IEnergyStorageCapacity {
 
     private final ItemBlockEnergyContainer itemBlockEnergyContainer;
     private final ItemStack itemStack;
@@ -34,7 +33,15 @@ public class EnergyStorageItemBlockEnergyContainer implements IEnergyStorage {
 
     @Override
     public int getMaxEnergyStored() {
-        return BlockEnergyBatteryConfig.capacity;
+        NBTTagCompound tag = ItemNBTHelpers.getNBT(itemStack);
+        if (!tag.hasKey(
+            itemBlockEnergyContainer.get()
+                .getEneryContainerCapacityNBTName())) {
+            return BlockEnergyBatteryConfig.capacity;
+        }
+        return tag.getInteger(
+            itemBlockEnergyContainer.get()
+                .getEneryContainerCapacityNBTName());
     }
 
     @Override
@@ -63,5 +70,14 @@ public class EnergyStorageItemBlockEnergyContainer implements IEnergyStorage {
             itemBlockEnergyContainer.get()
                 .getEneryContainerNBTName(),
             energy);
+    }
+
+    @Override
+    public void setCapacity(int capacity) {
+        NBTTagCompound tag = ItemNBTHelpers.getNBT(itemStack);
+        tag.setInteger(
+            itemBlockEnergyContainer.get()
+                .getEneryContainerCapacityNBTName(),
+            capacity);
     }
 }

@@ -54,15 +54,23 @@ public interface IOperatorRegistry extends IRegistry, IVariableFacadeHandler<IOp
     public Collection<IOperator> getOperatorsWithOutputType(IValueType valueType);
 
     /**
-     * Register an operator serializer.
+     * Get the operators in the given category.
      * 
+     * @param categoryName The name of the operator category.
+     * @return The corresponding operators.
+     */
+    public Collection<IOperator> getOperatorsInCategory(String categoryName);
+
+    /**
+     * Register an operator serializer.
+     *
      * @param serializer The operator serializer.
      */
     public void registerSerializer(IOperatorSerializer serializer);
 
     /**
      * Serialize the given operator.
-     * 
+     *
      * @param value The operator to serialize.
      * @return The serialized operator value.
      */
@@ -70,7 +78,7 @@ public interface IOperatorRegistry extends IRegistry, IVariableFacadeHandler<IOp
 
     /**
      * Deserialize the given operator value.
-     * 
+     *
      * @param value The operator value to deserialize.
      * @return The deserialized operator.
      * @throws EvaluationException If an error occurs while deserializing.

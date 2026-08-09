@@ -44,6 +44,7 @@ import ruiseki.integrateddynamics.core.TickHandler;
 import ruiseki.integrateddynamics.core.client.gui.ExtendedGuiHandler;
 import ruiseki.integrateddynamics.core.client.model.VariableModelProviderRegistry;
 import ruiseki.integrateddynamics.core.client.model.VariableModelProviders;
+import ruiseki.integrateddynamics.core.evaluate.DelayVariableFacadeHandler;
 import ruiseki.integrateddynamics.core.evaluate.ProxyVariableFacadeHandler;
 import ruiseki.integrateddynamics.core.evaluate.operator.OperatorRegistry;
 import ruiseki.integrateddynamics.core.evaluate.operator.Operators;
@@ -151,6 +152,8 @@ public class IntegratedDynamics extends ModBaseVersionable {
                 .addRegistry(IValueTypeWorldRendererRegistry.class, ValueTypeWorldRendererRegistry.getInstance());
             getRegistryManager()
                 .addRegistry(IVariableModelProviderRegistry.class, VariableModelProviderRegistry.getInstance());
+            getRegistryManager().getRegistry(IVariableFacadeHandlerRegistry.class)
+                .registerHandler(DelayVariableFacadeHandler.getInstance());
         }
         getRegistryManager().getRegistry(IVariableFacadeHandlerRegistry.class)
             .registerHandler(ProxyVariableFacadeHandler.getInstance());

@@ -190,10 +190,9 @@ public class TileMultipartTicking extends TileEntityOK
         int y = getPos().getY();
         int z = getPos().getZ();
 
-        ForgeDirection opposite = side.getOpposite();
-        int offsetX = x + opposite.offsetX;
-        int offsetY = y + opposite.offsetY;
-        int offsetZ = z + opposite.offsetZ;
+        int offsetX = x + side.offsetX;
+        int offsetY = y + side.offsetY;
+        int offsetZ = z + side.offsetZ;
 
         getWorldObj().notifyBlocksOfNeighborChange(x, y, z, getBlockType());
 

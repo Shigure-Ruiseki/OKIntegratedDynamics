@@ -6,6 +6,7 @@ import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 
+import ruiseki.integrateddynamics.capability.energystorage.IEnergyStorageCapacity;
 import ruiseki.okcore.block.property.BlockProperty;
 import ruiseki.okcore.block.property.IntegerProperty;
 import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
@@ -46,13 +47,24 @@ public class BlockEnergyBattery extends BlockEnergyBatteryBase {
     }
 
     @Override
-    public void getSubBlocks(Item itemIn, CreativeTabs tab, List<ItemStack> list) {
-        ItemStack full = new ItemStack(this);
-        CapabilityHelpers.getCapability(full, CapabilityEnergy.ENERGY)
-            .ifPresent(handler -> {
-                handler.receiveEnergy(handler.getMaxEnergyStored(), false);
-                list.add(full);
-            });
+    public void getSubBlocks(Item item, CreativeTabs tab, List<ItemStack> list) {
+        ItemStack itemStack = new ItemStack(item);
+
+        int capacityOriginal = BlockEnergyBatteryConfig.capacity;
+        int capacity = capacityOriginal;
+        int lastCapacity;
+        do {
+            ItemStack currentStack = itemStack.copy();
+            IEnergyStorageCapacity energyStorage = (IEnergyStorageCapacity) CapabilityHelpers
+                .getCapability(itemStack, CapabilityEnergy.ENERGY);
+            energyStorage.setCapacity(capacity);
+            list.add(currentStack.copy());
+            energyStorage.receiveEnergy(capacity, false);
+            list.add(currentStack.copy());
+            lastCapacity = capacity;
+            capacity = capacity << 2;
+        } while (capacity < Math.min(BlockEnergyBatteryConfig.maxCreativeCapacity, BlockEnergyBatteryConfig.maxCapacity)
+            && capacity > lastCapacity);
     }
 
     @Override

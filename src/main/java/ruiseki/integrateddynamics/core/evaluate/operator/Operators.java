@@ -5,10 +5,12 @@ import java.util.List;
 
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityAgeable;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.item.EntityItemFrame;
 import net.minecraft.entity.monster.IMob;
+import net.minecraft.entity.passive.EntityAnimal;
 import net.minecraft.entity.passive.IAnimals;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -21,6 +23,8 @@ import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.StringUtils;
 import net.minecraft.util.Vec3;
+import net.minecraftforge.common.IPlantable;
+import net.minecraftforge.common.IShearable;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.oredict.OreDictionary;
@@ -73,6 +77,7 @@ import ruiseki.integrateddynamics.core.helper.Helpers;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.integrateddynamics.core.helper.obfuscation.ObfuscationHelpers;
 import ruiseki.okcore.helper.BlockHelpers;
+import ruiseki.okcore.helper.BlockStateHelpers;
 import ruiseki.okcore.helper.ItemStackHelpers;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
@@ -1156,6 +1161,133 @@ public final class Operators {
             .build());
 
     /**
+     * If the block is shearable
+     */
+    public static final IOperator OBJECT_BLOCK_ISSHEARABLE = REGISTRY.register(
+        OperatorBuilders.BLOCK_1_SUFFIX_LONG.output(ValueTypes.BOOLEAN)
+            .symbolOperator("isshearable")
+            .function(new OperatorBase.IFunction() {
+
+                @Override
+                public IValue evaluate(OperatorBase.SafeVariablesGetter variables) throws EvaluationException {
+                    ValueObjectTypeBlock.ValueBlock a = variables.getValue(0);
+                    return ValueTypeBoolean.ValueBoolean.of(
+                        a.getRawValue()
+                            .isPresent()
+                            && a.getRawValue()
+                                .get()
+                                .getBlock() instanceof IShearable
+                            && ((IShearable) a.getRawValue()
+                                .get()
+                                .getBlock()).isShearable(null, null, 0, 0, 0));
+                }
+            })
+            .build());
+
+    /**
+     * If the block is plantable
+     */
+    public static final IOperator OBJECT_BLOCK_ISPLANTABLE = REGISTRY.register(
+        OperatorBuilders.BLOCK_1_SUFFIX_LONG.output(ValueTypes.BOOLEAN)
+            .symbolOperator("isplantable")
+            .function(new OperatorBase.IFunction() {
+
+                @Override
+                public IValue evaluate(OperatorBase.SafeVariablesGetter variables) throws EvaluationException {
+                    ValueObjectTypeBlock.ValueBlock a = variables.getValue(0);
+                    return ValueTypeBoolean.ValueBoolean.of(
+                        a.getRawValue()
+                            .isPresent()
+                            && a.getRawValue()
+                                .get()
+                                .getBlock() instanceof IPlantable);
+                }
+            })
+            .build());
+
+    /**
+     * The block plant type
+     */
+    public static final IOperator OBJECT_BLOCK_PLANTTYPE = REGISTRY.register(
+        OperatorBuilders.BLOCK_1_SUFFIX_LONG.output(ValueTypes.STRING)
+            .symbolOperator("planttype")
+            .function(new OperatorBase.IFunction() {
+
+                @Override
+                public IValue evaluate(OperatorBase.SafeVariablesGetter variables) throws EvaluationException {
+                    ValueObjectTypeBlock.ValueBlock a = variables.getValue(0);
+                    String type = "None";
+                    if (a.getRawValue()
+                        .isPresent()
+                        && a.getRawValue()
+                            .get()
+                            .getBlock() instanceof IPlantable) {
+                        type = ((IPlantable) a.getRawValue()
+                            .get()
+                            .getBlock()).getPlantType(null, 0, 0, 0)
+                                .name();
+                    }
+                    return ValueTypeString.ValueString.of(type);
+                }
+            })
+            .build());
+
+    /**
+     * The block when this block is planted
+     */
+    public static final IOperator OBJECT_BLOCK_PLANT = REGISTRY.register(
+        OperatorBuilders.BLOCK_1_SUFFIX_LONG.output(ValueTypes.OBJECT_BLOCK)
+            .symbolOperator("plant")
+            .function(new OperatorBase.IFunction() {
+
+                @Override
+                public IValue evaluate(OperatorBase.SafeVariablesGetter variables) throws EvaluationException {
+                    ValueObjectTypeBlock.ValueBlock a = variables.getValue(0);
+                    BlockState plant = null;
+                    if (a.getRawValue()
+                        .isPresent()
+                        && a.getRawValue()
+                            .get()
+                            .getBlock() instanceof IPlantable) {
+                        plant = BlockStateHelpers.getState(
+                            ((IPlantable) a.getRawValue()
+                                .get()
+                                .getBlock()).getPlant(null, 0, 0, 0),
+                            0);
+                    }
+                    return ValueObjectTypeBlock.ValueBlock.of(plant);
+                }
+            })
+            .build());
+
+    /**
+     * The block age (metadata) when this block is planted
+     */
+    public static final IOperator OBJECT_BLOCK_PLANTAGE = REGISTRY.register(
+        OperatorBuilders.BLOCK_1_SUFFIX_LONG.output(ValueTypes.INTEGER)
+            .symbolOperator("plantage")
+            .function(new OperatorBase.IFunction() {
+
+                @Override
+                public IValue evaluate(OperatorBase.SafeVariablesGetter variables) throws EvaluationException {
+                    ValueObjectTypeBlock.ValueBlock a = variables.getValue(0);
+                    int age = 0;
+                    if (a.getRawValue()
+                        .isPresent()
+                        && a.getRawValue()
+                            .get()
+                            .getBlock() instanceof IPlantable) {
+                        IPlantable plantable = (IPlantable) a.getRawValue()
+                            .get()
+                            .getBlock();
+                        age = plantable.getPlantMetadata(null, 0, 0, 0);
+                    }
+                    return ValueTypeInteger.ValueInteger.of(age);
+                }
+            })
+            .build());
+
+    /**
      * ----------------------------------- ITEM STACK OBJECT OPERATORS -----------------------------------
      */
 
@@ -1702,6 +1834,82 @@ public final class Operators {
                         return ValueObjectTypeItemStack.ValueItemStack.of(itemStack);
                     }
                     return a;
+                }
+            })
+            .build());
+
+    /**
+     * If the item is plantable
+     */
+    public static final IOperator OBJECT_ITEMSTACK_ISPLANTABLE = REGISTRY.register(
+        OperatorBuilders.ITEMSTACK_1_SUFFIX_LONG.output(ValueTypes.BOOLEAN)
+            .symbolOperator("isplantable")
+            .function(new OperatorBase.IFunction() {
+
+                @Override
+                public IValue evaluate(OperatorBase.SafeVariablesGetter variables) throws EvaluationException {
+                    ValueObjectTypeItemStack.ValueItemStack a = variables.getValue(0);
+                    return ValueTypeBoolean.ValueBoolean.of(
+                        a.getRawValue()
+                            .isPresent()
+                            && a.getRawValue()
+                                .get()
+                                .getItem() instanceof IPlantable);
+                }
+            })
+            .build());
+
+    /**
+     * The item plant type
+     */
+    public static final IOperator OBJECT_ITEMSTACK_PLANTTYPE = REGISTRY.register(
+        OperatorBuilders.ITEMSTACK_1_SUFFIX_LONG.output(ValueTypes.STRING)
+            .symbolOperator("planttype")
+            .function(new OperatorBase.IFunction() {
+
+                @Override
+                public IValue evaluate(OperatorBase.SafeVariablesGetter variables) throws EvaluationException {
+                    ValueObjectTypeItemStack.ValueItemStack a = variables.getValue(0);
+                    String type = "None";
+                    if (a.getRawValue()
+                        .isPresent()
+                        && a.getRawValue()
+                            .get()
+                            .getItem() instanceof IPlantable) {
+                        type = ((IPlantable) a.getRawValue()
+                            .get()
+                            .getItem()).getPlantType(null, 0, 0, 0)
+                                .name();
+                    }
+                    return ValueTypeString.ValueString.of(type);
+                }
+            })
+            .build());
+
+    /**
+     * The item when this item is planted
+     */
+    public static final IOperator OBJECT_ITEMSTACK_PLANT = REGISTRY.register(
+        OperatorBuilders.ITEMSTACK_1_SUFFIX_LONG.output(ValueTypes.OBJECT_BLOCK)
+            .symbolOperator("plant")
+            .function(new OperatorBase.IFunction() {
+
+                @Override
+                public IValue evaluate(OperatorBase.SafeVariablesGetter variables) throws EvaluationException {
+                    ValueObjectTypeItemStack.ValueItemStack a = variables.getValue(0);
+                    BlockState plant = null;
+                    if (a.getRawValue()
+                        .isPresent()
+                        && a.getRawValue()
+                            .get()
+                            .getItem() instanceof IPlantable) {
+                        plant = BlockStateHelpers.getState(
+                            ((IPlantable) a.getRawValue()
+                                .get()
+                                .getItem()).getPlant(null, 0, 0, 0),
+                            0);
+                    }
+                    return ValueObjectTypeBlock.ValueBlock.of(plant);
                 }
             })
             .build());
@@ -2261,6 +2469,155 @@ public final class Operators {
                         }
                     }
                     return ValueTypeString.ValueString.of(hurtSound);
+                }
+            })
+            .build());
+
+    /**
+     * The age of this entity.
+     */
+    public static final IOperator OBJECT_ENTITY_AGE = REGISTRY.register(
+        OperatorBuilders.ENTITY_1_SUFFIX_LONG.output(ValueTypes.INTEGER)
+            .symbolOperator("age")
+            .function(new OperatorBase.IFunction() {
+
+                @Override
+                public IValue evaluate(OperatorBase.SafeVariablesGetter variables) throws EvaluationException {
+                    ValueObjectTypeEntity.ValueEntity a = variables.getValue(0);
+                    int age = 0;
+                    if (a.getRawValue()
+                        .isPresent()
+                        && a.getRawValue()
+                            .get() instanceof EntityLivingBase) {
+                        age = ((EntityLivingBase) a.getRawValue()
+                            .get()).getAge();
+                    }
+                    return ValueTypeInteger.ValueInteger.of(age);
+                }
+            })
+            .build());
+
+    /**
+     * If the entity is a child.
+     */
+    public static final IOperator OBJECT_ENTITY_ISCHILD = REGISTRY.register(
+        OperatorBuilders.ENTITY_1_SUFFIX_LONG.output(ValueTypes.BOOLEAN)
+            .symbolOperator("ischild")
+            .function(new OperatorBase.IFunction() {
+
+                @Override
+                public IValue evaluate(OperatorBase.SafeVariablesGetter variables) throws EvaluationException {
+                    ValueObjectTypeEntity.ValueEntity a = variables.getValue(0);
+                    boolean child = false;
+                    if (a.getRawValue()
+                        .isPresent()
+                        && a.getRawValue()
+                            .get() instanceof EntityLivingBase) {
+                        child = ((EntityLivingBase) a.getRawValue()
+                            .get()).isChild();
+                    }
+                    return ValueTypeBoolean.ValueBoolean.of(child);
+                }
+            })
+            .build());
+
+    /**
+     * If the entity can be bred.
+     */
+    public static final IOperator OBJECT_ENTITY_CANBREED = REGISTRY.register(
+        OperatorBuilders.ENTITY_1_SUFFIX_LONG.output(ValueTypes.BOOLEAN)
+            .symbolOperator("canbreed")
+            .function(new OperatorBase.IFunction() {
+
+                @Override
+                public IValue evaluate(OperatorBase.SafeVariablesGetter variables) throws EvaluationException {
+                    ValueObjectTypeEntity.ValueEntity a = variables.getValue(0);
+                    boolean canBreed = false;
+                    if (a.getRawValue()
+                        .isPresent()
+                        && a.getRawValue()
+                            .get() instanceof EntityAgeable) {
+                        canBreed = ((EntityAgeable) a.getRawValue()
+                            .get()).getGrowingAge() == 0;
+                    }
+                    return ValueTypeBoolean.ValueBoolean.of(canBreed);
+                }
+            })
+            .build());
+
+    /**
+     * If the entity is in love.
+     */
+    public static final IOperator OBJECT_ENTITY_ISINLOVE = REGISTRY.register(
+        OperatorBuilders.ENTITY_1_SUFFIX_LONG.output(ValueTypes.BOOLEAN)
+            .symbolOperator("isinlove")
+            .function(new OperatorBase.IFunction() {
+
+                @Override
+                public IValue evaluate(OperatorBase.SafeVariablesGetter variables) throws EvaluationException {
+                    ValueObjectTypeEntity.ValueEntity a = variables.getValue(0);
+                    boolean inLove = false;
+                    if (a.getRawValue()
+                        .isPresent()
+                        && a.getRawValue()
+                            .get() instanceof EntityAnimal) {
+                        inLove = ((EntityAnimal) a.getRawValue()
+                            .get()).isInLove();
+                    }
+                    return ValueTypeBoolean.ValueBoolean.of(inLove);
+                }
+            })
+            .build());
+
+    /**
+     * If the entity can be bred with the given item.
+     */
+    public static final IOperator OBJECT_ENTITY_CANBREEDWITH = REGISTRY.register(
+        OperatorBuilders.ENTITY_1_SUFFIX_LONG.inputTypes(ValueTypes.OBJECT_ENTITY, ValueTypes.OBJECT_ITEMSTACK)
+            .output(ValueTypes.BOOLEAN)
+            .symbolOperator("canbreedwith")
+            .renderPattern(IConfigRenderPattern.INFIX)
+            .function(new OperatorBase.IFunction() {
+
+                @Override
+                public IValue evaluate(OperatorBase.SafeVariablesGetter variables) throws EvaluationException {
+                    ValueObjectTypeEntity.ValueEntity a = variables.getValue(0);
+                    ValueObjectTypeItemStack.ValueItemStack b = variables.getValue(1);
+                    boolean canBreedWith = false;
+                    if (a.getRawValue()
+                        .isPresent()
+                        && b.getRawValue()
+                            .isPresent()
+                        && a.getRawValue()
+                            .get() instanceof EntityAnimal) {
+                        canBreedWith = ((EntityAnimal) a.getRawValue()
+                            .get()).isBreedingItem(
+                                b.getRawValue()
+                                    .get());
+                    }
+                    return ValueTypeBoolean.ValueBoolean.of(canBreedWith);
+                }
+            })
+            .build());
+
+    /**
+     * If the entity is shearable.
+     */
+    public static final IOperator OBJECT_ENTITY_ISSHEARABLE = REGISTRY.register(
+        OperatorBuilders.ENTITY_1_SUFFIX_LONG.output(ValueTypes.BOOLEAN)
+            .symbolOperator("isshearable")
+            .function(new OperatorBase.IFunction() {
+
+                @Override
+                public IValue evaluate(OperatorBase.SafeVariablesGetter variables) throws EvaluationException {
+                    ValueObjectTypeEntity.ValueEntity a = variables.getValue(0);
+                    return ValueTypeBoolean.ValueBoolean.of(
+                        a.getRawValue()
+                            .isPresent()
+                            && a.getRawValue()
+                                .get() instanceof IShearable
+                            && ((IShearable) a.getRawValue()
+                                .get()).isShearable(null, null, 0, 0, 0));
                 }
             })
             .build());

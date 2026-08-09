@@ -11,13 +11,15 @@ import org.jetbrains.annotations.Nullable;
 import com.google.common.collect.Lists;
 
 import cofh.api.energy.IEnergyStorage;
+import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.okcore.datastructure.BlockPos;
+import ruiseki.okcore.datastructure.DimPos;
 import ruiseki.okcore.energy.capability.CapabilityEnergy;
 import ruiseki.okcore.helper.CapabilityHelpers;
 
 /**
  * Helpers related to energy.
- * 
+ *
  * @author rubensworks
  */
 public class EnergyHelpers {
@@ -26,6 +28,14 @@ public class EnergyHelpers {
 
     public static void addEnergyStorageProxy(IEnergyStorageProxy energyStorageProxy) {
         ENERGY_STORAGE_PROXIES.add(energyStorageProxy);
+    }
+
+    public static IEnergyStorage getEnergyStorage(PartPos pos) {
+        return getEnergyStorage(pos.getPos(), pos.getSide());
+    }
+
+    public static IEnergyStorage getEnergyStorage(DimPos pos, ForgeDirection facing) {
+        return getEnergyStorage(pos.getWorld(), pos.getBlockPos(), facing);
     }
 
     public static IEnergyStorage getEnergyStorage(IBlockAccess world, BlockPos pos, ForgeDirection facing) {
@@ -45,7 +55,7 @@ public class EnergyHelpers {
 
     /**
      * Attempty to fill the neighbouring tiles with energy.
-     * 
+     *
      * @param world    The world.
      * @param pos      The filler's position.
      * @param energy   The energy to add.

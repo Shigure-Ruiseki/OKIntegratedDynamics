@@ -1,8 +1,8 @@
 package ruiseki.integrateddynamics.api.item;
 
 /**
- * Variable facade for variables determined by part aspects.
- * 
+ * Variable facade for variables that are proxied.
+ *
  * @author rubensworks
  */
 public interface IProxyVariableFacade extends IVariableFacade {

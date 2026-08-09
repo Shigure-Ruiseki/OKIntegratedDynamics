@@ -1,5 +1,7 @@
 package ruiseki.integrateddynamics.core.evaluate.variable;
 
+import net.minecraft.nbt.NBTTagCompound;
+
 import org.jetbrains.annotations.Nullable;
 
 import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
@@ -104,4 +106,36 @@ public class ValueHelpers {
         return operator.evaluate(variables);
     }
 
+    /**
+     * Serialize the given value to NBT.
+     * 
+     * @param value The value.
+     * @return The NBT tag.
+     */
+    public static NBTTagCompound serialize(IValue value) {
+        NBTTagCompound tag = new NBTTagCompound();
+        tag.setString(
+            "valueType",
+            value.getType()
+                .getUnlocalizedName());
+        tag.setString(
+            "value",
+            value.getType()
+                .serialize(value));
+        return tag;
+    }
+
+    /**
+     * Deserialize the given NBT tag to a value.
+     * 
+     * @param tag The NBT tag containing a value.
+     * @return The value.
+     */
+    public static IValue deserialize(NBTTagCompound tag) {
+        IValueType valueType = ValueTypes.REGISTRY.getValueType(tag.getString("valueType"));
+        if (valueType == null) {
+            return null;
+        }
+        return valueType.deserialize(tag.getString("value"));
+    }
 }

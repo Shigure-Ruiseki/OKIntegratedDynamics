@@ -11,8 +11,7 @@ import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.INetworkElement;
 import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.integrateddynamics.api.path.IPathElement;
-import ruiseki.okcore.energy.capability.CapabilityEnergy;
-import ruiseki.okcore.helper.CapabilityHelpers;
+import ruiseki.integrateddynamics.core.helper.EnergyHelpers;
 
 /**
  * A network that can hold energy.
@@ -149,9 +148,7 @@ public class EnergyNetwork extends PositionedAddonsNetwork implements IEnergyNet
 
     @Override
     public boolean addPosition(PartPos pos, int priority) {
-        IEnergyStorage energyStorage = CapabilityHelpers
-            .getCapability(pos.getPos(), CapabilityEnergy.ENERGY, pos.getSide())
-            .getOrNull();
+        IEnergyStorage energyStorage = EnergyHelpers.getEnergyStorage(pos);
         return energyStorage != null && super.addPosition(pos, priority);
     }
 
@@ -167,12 +164,6 @@ public class EnergyNetwork extends PositionedAddonsNetwork implements IEnergyNet
     }
 
     protected static IEnergyStorage getEnergyStorage(PrioritizedPartPos pos) {
-        return CapabilityHelpers.getCapability(
-            pos.getPartPos()
-                .getPos(),
-            CapabilityEnergy.ENERGY,
-            pos.getPartPos()
-                .getSide())
-            .getOrNull();
+        return EnergyHelpers.getEnergyStorage(pos.getPartPos());
     }
 }

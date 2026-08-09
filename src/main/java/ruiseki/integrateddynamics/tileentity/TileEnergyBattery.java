@@ -7,11 +7,11 @@ import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 
 import cofh.api.energy.IEnergyProvider;
 import cofh.api.energy.IEnergyReceiver;
-import cofh.api.energy.IEnergyStorage;
 import ruiseki.integrateddynamics.api.network.INetworkElement;
 import ruiseki.integrateddynamics.block.BlockEnergyBattery;
 import ruiseki.integrateddynamics.block.BlockEnergyBatteryBase;
 import ruiseki.integrateddynamics.block.BlockEnergyBatteryConfig;
+import ruiseki.integrateddynamics.capability.energystorage.IEnergyStorageCapacity;
 import ruiseki.integrateddynamics.capability.networkelementprovider.NetworkElementProviderConfig;
 import ruiseki.integrateddynamics.capability.networkelementprovider.NetworkElementProviderSingleton;
 import ruiseki.integrateddynamics.core.helper.EnergyHelpers;
@@ -25,10 +25,12 @@ import ruiseki.okcore.helper.BlockStateHelpers;
 import ruiseki.okcore.persist.nbt.NBTPersist;
 
 public class TileEnergyBattery extends TileCableConnectable
-    implements IEnergyStorage, IEnergyProvider, IEnergyReceiver {
+    implements IEnergyStorageCapacity, IEnergyProvider, IEnergyReceiver {
 
     @NBTPersist
     private int energy;
+    @NBTPersist(useDefaultValue = false)
+    private int capacity = BlockEnergyBatteryConfig.capacity;
 
     public TileEnergyBattery() {
         this.capabilityCache.addCapabilityResolver(
@@ -58,15 +60,18 @@ public class TileEnergyBattery extends TileCableConnectable
     @Override
     public int getMaxEnergyStored() {
         if (isCreative()) return Integer.MAX_VALUE;
-        return BlockEnergyBatteryConfig.capacity;
+        return capacity;
     }
 
     public void updateBlockState() {
         if (!isCreative()) {
             BlockState blockState = BlockStateHelpers.getState(worldObj, pos);
             if (blockState.getBlock() == BlockEnergyBattery.getInstance()) {
-                int fill = (int) Math.floor(
-                    ((float) energy * (BlockEnergyBattery.FILL.getAllowedValues() - 1)) / (float) getMaxEnergyStored());
+                int fill = Math.max(
+                    0,
+                    (int) Math.floor(
+                        ((float) energy * (BlockEnergyBattery.FILL.getAllowedValues() - 1))
+                            / (float) getMaxEnergyStored()));
                 if (blockState.getPropertyValue(BlockEnergyBattery.FILL) != fill) {
                     BlockStateHelpers.set(worldObj, pos, BlockEnergyBattery.FILL, fill);
                     sendUpdate();
@@ -89,7 +94,7 @@ public class TileEnergyBattery extends TileCableConnectable
     @Override
     public int receiveEnergy(int energy, boolean simulate) {
         if (!isCreative()) {
-            energy = Math.min(energy, BlockEnergyBatteryConfig.energyPerTick);
+            energy = Math.max(0, Math.min(energy, BlockEnergyBatteryConfig.energyPerTick));
             int stored = getEnergyStored();
             int newEnergy = Math.min(stored + energy, getMaxEnergyStored());
             if (!simulate) {
@@ -103,7 +108,7 @@ public class TileEnergyBattery extends TileCableConnectable
     @Override
     public int extractEnergy(int energy, boolean simulate) {
         if (isCreative()) return energy;
-        energy = Math.min(energy, BlockEnergyBatteryConfig.energyPerTick);
+        energy = Math.max(0, Math.min(energy, BlockEnergyBatteryConfig.energyPerTick));
         int stored = getEnergyStored();
         int newEnergy = Math.max(stored - energy, 0);
         if (!simulate) {
@@ -156,4 +161,8 @@ public class TileEnergyBattery extends TileCableConnectable
         return receiveEnergy(maxReceive, simulate);
     }
 
+    @Override
+    public void setCapacity(int capacity) {
+        this.capacity = capacity;
+    }
 }

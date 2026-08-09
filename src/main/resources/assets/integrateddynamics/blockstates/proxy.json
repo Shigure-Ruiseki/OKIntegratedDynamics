@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=south": { "model": "integrateddynamics:block/proxy" },
+    "facing=west" : { "model": "integrateddynamics:block/proxy", "y": 90 },
+    "facing=north": { "model": "integrateddynamics:block/proxy", "y": 180 },
+    "facing=east" : { "model": "integrateddynamics:block/proxy", "y": 270 }
+  }
+}

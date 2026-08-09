@@ -8,6 +8,7 @@ import net.minecraftforge.common.util.ForgeDirection;
 
 import org.jetbrains.annotations.Nullable;
 
+import ruiseki.integrateddynamics.api.PartStateException;
 import ruiseki.okcore.capabilities.ICapabilitySerializable;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
@@ -92,16 +93,18 @@ public interface IPartContainer extends ICapabilitySerializable {
      *
      * @param side      The side.
      * @param partState The part state.
+     * @throws PartStateException If no part at the given position is available.
      */
-    public void setPartState(ForgeDirection side, IPartState partState);
+    public void setPartState(ForgeDirection side, IPartState partState) throws PartStateException;
 
     /**
      * Get the state of a part.
      *
      * @param side The side.
      * @return The part state.
+     * @throws PartStateException If no part at the given position is available.
      */
-    public IPartState getPartState(ForgeDirection side);
+    public IPartState getPartState(ForgeDirection side) throws PartStateException;
 
     /**
      * Get the part side the player is watching.

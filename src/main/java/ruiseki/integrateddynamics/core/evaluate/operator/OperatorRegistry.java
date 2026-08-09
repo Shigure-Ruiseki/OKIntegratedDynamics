@@ -41,6 +41,7 @@ public class OperatorRegistry implements IOperatorRegistry {
     private final Map<String, IOperator> namedOperators = Maps.newHashMap();
     private final Multimap<List<IValueType>, IOperator> inputTypedOperators = HashMultimap.create();
     private final Multimap<IValueType, IOperator> outputTypedOperators = HashMultimap.create();
+    private final Multimap<String, IOperator> categoryOperators = HashMultimap.create();
     private final List<IOperatorSerializer> serializers = Lists.newArrayList();
     private final Map<String, IOperatorSerializer> namedSerializers = Maps.newHashMap();
     private final IOperatorSerializer DEFAULT_SERIALIZER = new OperatorSerializerDefault();
@@ -87,6 +88,11 @@ public class OperatorRegistry implements IOperatorRegistry {
     @Override
     public Collection<IOperator> getOperatorsWithOutputType(IValueType valueType) {
         return outputTypedOperators.get(valueType);
+    }
+
+    @Override
+    public Collection<IOperator> getOperatorsInCategory(String categoryName) {
+        return categoryOperators.get(categoryName);
     }
 
     @Override

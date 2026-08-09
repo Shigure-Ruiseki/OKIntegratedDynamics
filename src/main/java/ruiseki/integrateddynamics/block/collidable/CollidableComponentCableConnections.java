@@ -35,9 +35,9 @@ public class CollidableComponentCableConnections extends CollidableComponentCabl
 
     @Override
     public boolean isActive(BlockCable block, World world, BlockPos pos, ForgeDirection position) {
-        return super.isActive(block, world, pos, position)
-            && (CableHelpers.isCableConnected(world, pos, position) || PartHelpers.getPartContainer(world, pos)
-                .hasPart(position));
+        IPartContainer partContainer;
+        return super.isActive(block, world, pos, position) && (CableHelpers.isCableConnected(world, pos, position)
+            || (partContainer = PartHelpers.getPartContainer(world, pos)) != null && partContainer.hasPart(position));
     }
 
     @Override

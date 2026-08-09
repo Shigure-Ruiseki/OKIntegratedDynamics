@@ -1,12 +1,11 @@
 package ruiseki.integrateddynamics.core.client.gui;
 
-import net.minecraft.client.gui.FontRenderer;
-
 import ruiseki.integrateddynamics.core.client.gui.container.DisplayErrorsComponent;
 import ruiseki.integrateddynamics.core.inventory.container.ContainerActiveVariableBase;
 import ruiseki.integrateddynamics.core.tileentity.TileActiveVariableBase;
 import ruiseki.okcore.client.gui.container.GuiContainerConfigurable;
 import ruiseki.okcore.client.renderer.GlStateManager;
+import ruiseki.okcore.helper.RenderHelpers;
 
 /**
  * Base gui for part entities that can hold variables.
@@ -41,8 +40,13 @@ public abstract class GuiActiveVariableBase<C extends ContainerActiveVariableBas
         if (getContainer().getTile()
             .hasVariable() && readValue != null) {
             ok = true;
-            FontRenderer fontRenderer = fontRendererObj;
-            fontRenderer.drawString(readValue, getGuiLeftTotal() + 53, getGuiTopTotal() + 53, readValueColor);
+            RenderHelpers.drawScaledCenteredString(
+                fontRendererObj,
+                readValue,
+                getGuiLeftTotal() + 54,
+                getGuiTopTotal() + 57,
+                70,
+                readValueColor);
         }
 
         GlStateManager.color(1f, 1f, 1f, 1f);
