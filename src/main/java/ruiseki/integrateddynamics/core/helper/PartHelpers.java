@@ -220,7 +220,7 @@ public class PartHelpers {
         }
 
         // Trigger block render update if at least one of the parts requires it.
-        if (world != null && MinecraftHelpers.isClientSide()) {
+        if (world != null && world.isRemote) {
             boolean triggerBlockRenderUpdate = false;
             for (ForgeDirection side : ForgeDirection.VALID_DIRECTIONS) {
                 PartStateHolder<?, ?> oldData = oldPartData.get(side);

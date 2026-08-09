@@ -25,7 +25,6 @@ import ruiseki.okcore.capabilities.resolver.BasicCapabilityResolver;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
 import ruiseki.okcore.helper.LangHelpers;
-import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.persist.nbt.NBTPersist;
 
 /**
@@ -85,7 +84,7 @@ public class TileProxy extends TileActiveVariableBase<ProxyNetworkElement> {
     @Override
     public void onLoad() {
         super.onLoad();
-        if (!MinecraftHelpers.isClientSide() && this.proxyId == -1) {
+        if (!worldObj.isRemote && this.proxyId == -1) {
             generateNewProxyId();
         }
     }

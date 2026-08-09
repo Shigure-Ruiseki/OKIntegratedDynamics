@@ -101,7 +101,9 @@ public class ItemPart<P extends IPartType<P, S>, S extends IPartState<P>> extend
                     target.getX(),
                     target.getY(),
                     target.getZ(),
-                    sideInt,
+                    ForgeDirection.getOrientation(sideInt)
+                        .getOpposite()
+                        .ordinal(),
                     hitX,
                     hitY,
                     hitZ)) {

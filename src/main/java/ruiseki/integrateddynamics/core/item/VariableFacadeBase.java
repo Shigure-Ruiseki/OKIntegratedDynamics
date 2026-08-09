@@ -6,6 +6,8 @@ import net.minecraft.entity.player.EntityPlayer;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import lombok.Data;
+import lombok.RequiredArgsConstructor;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.item.IVariableFacade;
 import ruiseki.integrateddynamics.core.persist.world.LabelsWorldStorage;
@@ -16,6 +18,8 @@ import ruiseki.okcore.helper.LangHelpers;
  *
  * @author rubensworks
  */
+@RequiredArgsConstructor
+@Data
 public abstract class VariableFacadeBase implements IVariableFacade {
 
     private final int id;
@@ -24,20 +28,11 @@ public abstract class VariableFacadeBase implements IVariableFacade {
         this.id = generateId ? generateId() : -1;
     }
 
-    public VariableFacadeBase(int id) {
-        this.id = id;
-    }
-
     /**
      * @return A unique new variable id.
      */
     public static int generateId() {
         return IntegratedDynamics.globalCounters.getNext("variable");
-    }
-
-    @Override
-    public final int getId() {
-        return this.id;
     }
 
     @Override

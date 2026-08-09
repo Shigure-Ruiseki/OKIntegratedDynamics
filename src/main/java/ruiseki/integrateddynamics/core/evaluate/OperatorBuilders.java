@@ -15,6 +15,7 @@ import org.apache.commons.lang3.tuple.Triple;
 
 import com.google.common.base.Optional;
 
+import cofh.api.energy.IEnergyStorage;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.ModContainer;
 import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
@@ -43,6 +44,8 @@ import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeString;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
 import ruiseki.integrateddynamics.core.helper.Helpers;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
+import ruiseki.okcore.energy.capability.CapabilityEnergy;
+import ruiseki.okcore.helper.CapabilityHelpers;
 import ruiseki.okcore.helper.LangHelpers;
 
 /**
@@ -264,7 +267,33 @@ public class OperatorBuilders {
         .appendPost(PROPAGATOR_INTEGER_VALUE);
     public static final IterativeFunction.PrePostBuilder<ItemStack, Boolean> FUNCTION_ITEMSTACK_TO_BOOLEAN = FUNCTION_ITEMSTACK
         .appendPost(PROPAGATOR_BOOLEAN_VALUE);
+    public static final IterativeFunction.PrePostBuilder<IEnergyStorage, IValue> FUNCTION_ENERGYSTORAGEITEM = IterativeFunction.PrePostBuilder
+        .begin()
+        .appendPre(new IOperatorValuePropagator<OperatorBase.SafeVariablesGetter, IEnergyStorage>() {
 
+            @Override
+            public IEnergyStorage getOutput(OperatorBase.SafeVariablesGetter input) throws EvaluationException {
+                ValueObjectTypeItemStack.ValueItemStack a = input.getValue(0);
+                if (a.getRawValue()
+                    .isPresent()
+                    && CapabilityHelpers.getCapability(
+                        a.getRawValue()
+                            .get(),
+                        CapabilityEnergy.ENERGY)
+                        .isPresent()) {
+                    return CapabilityHelpers.getCapability(
+                        a.getRawValue()
+                            .get(),
+                        CapabilityEnergy.ENERGY)
+                        .getOrNull();
+                }
+                return null;
+            }
+        });
+    public static final IterativeFunction.PrePostBuilder<IEnergyStorage, Integer> FUNCTION_CONTAINERITEM_TO_INT = FUNCTION_ENERGYSTORAGEITEM
+        .appendPost(OperatorBuilders.PROPAGATOR_INTEGER_VALUE);
+    public static final IterativeFunction.PrePostBuilder<IEnergyStorage, Boolean> FUNCTION_CONTAINERITEM_TO_BOOLEAN = FUNCTION_ENERGYSTORAGEITEM
+        .appendPost(OperatorBuilders.PROPAGATOR_BOOLEAN_VALUE);
     // --------------- Entity builders ---------------
     public static final OperatorBuilder<OperatorBase.SafeVariablesGetter> ENTITY = OperatorBuilder
         .forType(ValueTypes.OBJECT_ENTITY)

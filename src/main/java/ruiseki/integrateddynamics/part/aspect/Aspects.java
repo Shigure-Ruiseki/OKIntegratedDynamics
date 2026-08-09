@@ -117,19 +117,19 @@ public class Aspects {
 
             public static final IAspectRead<ValueTypeInteger.ValueInteger, ValueTypeInteger> INTEGER_POSX = AspectReadBuilders.Block.BUILDER_INTEGER
                 .handle(AspectReadBuilders.World.PROP_GET_POS)
-                .handle((pos) -> pos.getX())
+                .handle(BlockPos::getX)
                 .handle(AspectReadBuilders.PROP_GET_INTEGER, "posx")
                 .buildRead();
 
             public static final IAspectRead<ValueTypeInteger.ValueInteger, ValueTypeInteger> INTEGER_POSY = AspectReadBuilders.Block.BUILDER_INTEGER
                 .handle(AspectReadBuilders.World.PROP_GET_POS)
-                .handle((pos) -> pos.getY())
+                .handle(BlockPos::getY)
                 .handle(AspectReadBuilders.PROP_GET_INTEGER, "posy")
                 .buildRead();
 
             public static final IAspectRead<ValueTypeInteger.ValueInteger, ValueTypeInteger> INTEGER_POSZ = AspectReadBuilders.Block.BUILDER_INTEGER
                 .handle(AspectReadBuilders.World.PROP_GET_POS)
-                .handle((pos) -> pos.getZ())
+                .handle(BlockPos::getZ)
                 .handle(AspectReadBuilders.PROP_GET_INTEGER, "posz")
                 .buildRead();
 

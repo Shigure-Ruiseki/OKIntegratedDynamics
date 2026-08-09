@@ -27,11 +27,10 @@ import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
 import ruiseki.integrateddynamics.inventory.container.ContainerLogicProgrammerBase;
 import ruiseki.integrateddynamics.item.ItemVariable;
 import ruiseki.okcore.helper.LangHelpers;
-import ruiseki.okcore.helper.MinecraftHelpers;
 
 /**
  * Element for value type.
- * 
+ *
  * @author rubensworks
  */
 public abstract class ValueTypeLPElementBase
@@ -108,7 +107,7 @@ public abstract class ValueTypeLPElementBase
         IVariableFacadeHandlerRegistry registry = IntegratedDynamics._instance.getRegistryManager()
             .getRegistry(IVariableFacadeHandlerRegistry.class);
         return registry.writeVariableFacadeItem(
-            !MinecraftHelpers.isClientSide(),
+            !player.worldObj.isRemote,
             itemStack,
             ValueTypes.REGISTRY,
             new ValueTypeVariableFacadeFactory(getValueType(), getValue()),

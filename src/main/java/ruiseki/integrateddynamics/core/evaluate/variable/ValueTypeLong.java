@@ -89,6 +89,21 @@ public class ValueTypeLong extends ValueTypeBase<ValueTypeLong.ValueLong>
     }
 
     @Override
+    public ValueTypeInteger.ValueInteger round(ValueLong a) {
+        return ValueTypeInteger.ValueInteger.of((int) a.getRawValue());
+    }
+
+    @Override
+    public ValueTypeInteger.ValueInteger ceil(ValueLong a) {
+        return ValueTypeInteger.ValueInteger.of((int) a.getRawValue());
+    }
+
+    @Override
+    public ValueTypeInteger.ValueInteger floor(ValueLong a) {
+        return ValueTypeInteger.ValueInteger.of((int) a.getRawValue());
+    }
+
+    @Override
     public String getName(ValueLong a) {
         return toCompactString(a);
     }

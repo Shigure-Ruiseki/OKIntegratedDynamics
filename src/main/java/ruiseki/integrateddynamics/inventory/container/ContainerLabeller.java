@@ -14,7 +14,6 @@ import ruiseki.integrateddynamics.api.item.IVariableFacadeHandlerRegistry;
 import ruiseki.integrateddynamics.client.gui.GuiLabeller;
 import ruiseki.integrateddynamics.core.persist.world.LabelsWorldStorage;
 import ruiseki.integrateddynamics.item.ItemLabeller;
-import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.inventory.SimpleInventory;
 import ruiseki.okcore.inventory.container.ItemInventoryContainer;
 import ruiseki.okcore.inventory.slot.SlotExtended;
@@ -44,7 +43,7 @@ public class ContainerLabeller extends ItemInventoryContainer<ItemLabeller> {
         addSlotToContainer(new SlotExtended(temporaryInputSlots, 0, 8, 8));
         this.addPlayerInventory(player.inventory, 8, 31);
 
-        if (MinecraftHelpers.isClientSide()) {
+        if (player.worldObj.isRemote) {
             temporaryInputSlots.addDirtyMarkListener(new IDirtyMarkListener() {
 
                 @Override

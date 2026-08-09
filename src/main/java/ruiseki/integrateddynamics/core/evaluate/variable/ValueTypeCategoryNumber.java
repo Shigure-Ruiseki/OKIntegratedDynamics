@@ -157,4 +157,18 @@ public class ValueTypeCategoryNumber extends ValueTypeCategoryBase<IValue> {
         return type.lessThan(castValue(type, a.getValue()), castValue(type, b.getValue()));
     }
 
+    public ValueTypeInteger.ValueInteger round(IVariable a) throws EvaluationException {
+        IValueTypeNumber type = getType(a);
+        return type.round(castValue(type, a.getValue()));
+    }
+
+    public ValueTypeInteger.ValueInteger ceil(IVariable a) throws EvaluationException {
+        IValueTypeNumber type = getType(a);
+        return type.ceil(castValue(type, a.getValue()));
+    }
+
+    public ValueTypeInteger.ValueInteger floor(IVariable a) throws EvaluationException {
+        IValueTypeNumber type = getType(a);
+        return type.floor(castValue(type, a.getValue()));
+    }
 }
