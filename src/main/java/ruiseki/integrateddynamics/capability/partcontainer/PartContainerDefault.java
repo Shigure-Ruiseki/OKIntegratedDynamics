@@ -34,6 +34,7 @@ import ruiseki.okcore.datastructure.EnumFacingMap;
 import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.helper.InventoryHelpers;
 import ruiseki.okcore.helper.ItemStackHelpers;
+import ruiseki.okcore.helper.MinecraftHelpers;
 
 /**
  * Default implementation of an {@link IPartContainer}.
@@ -46,7 +47,7 @@ public abstract class PartContainerDefault implements IPartContainer {
 
     @Override
     public void update() {
-        if (!getWorld().isRemote) {
+        if (!MinecraftHelpers.isClientSide()) {
             // Loop over all part states to check their dirtiness
             for (PartHelpers.PartStateHolder<?, ?> partStateHolder : partData.values()) {
                 if (partStateHolder.getState()

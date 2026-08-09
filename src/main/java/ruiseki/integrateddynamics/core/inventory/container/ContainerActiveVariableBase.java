@@ -8,6 +8,7 @@ import ruiseki.integrateddynamics.api.evaluate.variable.IVariable;
 import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
 import ruiseki.integrateddynamics.core.tileentity.TileActiveVariableBase;
 import ruiseki.okcore.helper.Helpers;
+import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.helper.ValueNotifierHelpers;
 import ruiseki.okcore.inventory.container.TileInventoryContainerConfigurable;
 
@@ -38,7 +39,7 @@ public class ContainerActiveVariableBase<T extends TileActiveVariableBase<?>>
     public void detectAndSendChanges() {
         super.detectAndSendChanges();
 
-        if (!tile.getWorldObj().isRemote) {
+        if (!MinecraftHelpers.isClientSide()) {
             String readValue = "";
             int readValueColor = 0;
             IVariable variable = getTile().getVariable(NetworkHelpers.getPartNetwork(getTile().getNetwork()));

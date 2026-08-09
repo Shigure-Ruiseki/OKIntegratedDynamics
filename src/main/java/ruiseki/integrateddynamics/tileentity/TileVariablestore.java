@@ -29,6 +29,7 @@ import ruiseki.okcore.capabilities.resolver.BasicCapabilityResolver;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
 import ruiseki.okcore.helper.CapabilityHelpers;
+import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.persist.IDirtyMarkListener;
 
 /**
@@ -120,7 +121,7 @@ public class TileVariablestore extends TileCableConnectableInventory implements 
     @Override
     public void onLoad() {
         super.onLoad();
-        if (!worldObj.isRemote) {
+        if (!MinecraftHelpers.isClientSide()) {
             shouldSendUpdateEvent = true;
         }
     }

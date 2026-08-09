@@ -25,6 +25,7 @@ import ruiseki.integrateddynamics.core.item.OperatorVariableFacade;
 import ruiseki.integrateddynamics.inventory.container.ContainerLogicProgrammerBase;
 import ruiseki.integrateddynamics.item.ItemVariable;
 import ruiseki.okcore.helper.LangHelpers;
+import ruiseki.okcore.helper.MinecraftHelpers;
 
 /**
  * Element for operator.
@@ -112,7 +113,7 @@ public class OperatorLPElement
             .getRegistry(IVariableFacadeHandlerRegistry.class);
         int[] variableIds = getVariableIds(inputVariables);
         return registry.writeVariableFacadeItem(
-            !player.worldObj.isRemote,
+            !MinecraftHelpers.isClientSide(),
             itemStack,
             Operators.REGISTRY,
             new OperatorVariableFacadeFactory(operator, variableIds),

@@ -163,7 +163,7 @@ public class PartTypeConnectorOmniDirectional
                 groupId = -1; // If we're resetting a connector, give it a new ID
             }
 
-            if (!event.player.worldObj.isRemote) {
+            if (!MinecraftHelpers.isClientSide()) {
                 if (groupId < 0) {
                     groupId = generateGroupId();
                 }
