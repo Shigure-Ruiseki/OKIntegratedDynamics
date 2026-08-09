@@ -31,19 +31,18 @@ import ruiseki.okcore.helper.MinecraftHelpers;
 
 /**
  * Element for value type.
- *
- * @param <S> The gui type for rendering the element for showing the value.
+ * 
  * @author rubensworks
  */
 public abstract class ValueTypeLPElementBase
     implements IValueTypeLogicProgrammerElement<ISubGuiBox, GuiLogicProgrammerBase, ContainerLogicProgrammerBase> {
 
     @Getter
-    private final IValueType valueType;
+    private final IValueType<?> valueType;
     @Getter
     private GuiElementValueTypeString<GuiLogicProgrammerBase, ContainerLogicProgrammerBase> innerGuiElement;
 
-    public ValueTypeLPElementBase(IValueType valueType) {
+    public ValueTypeLPElementBase(IValueType<?> valueType) {
         this.valueType = valueType;
         this.innerGuiElement = new GuiElementValueTypeString<>(this.valueType, getRenderPattern());
     }
@@ -64,12 +63,12 @@ public abstract class ValueTypeLPElementBase
     }
 
     @Override
-    public boolean matchesInput(IValueType valueType) {
+    public boolean matchesInput(IValueType<?> valueType) {
         return false;
     }
 
     @Override
-    public boolean matchesOutput(IValueType valueType) {
+    public boolean matchesOutput(IValueType<?> valueType) {
         return ValueHelpers.correspondsTo(valueType, valueType);
     }
 

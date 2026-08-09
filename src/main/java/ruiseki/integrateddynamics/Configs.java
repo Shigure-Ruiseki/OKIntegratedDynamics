@@ -26,6 +26,7 @@ import ruiseki.integrateddynamics.capability.variablecontainer.VariableContainer
 import ruiseki.integrateddynamics.capability.variablefacade.VariableFacadeHolderConfig;
 import ruiseki.integrateddynamics.item.ItemFacadeConfig;
 import ruiseki.integrateddynamics.item.ItemLabellerConfig;
+import ruiseki.integrateddynamics.item.ItemLogicDirectorConfig;
 import ruiseki.integrateddynamics.item.ItemMenrilBerriesConfig;
 import ruiseki.integrateddynamics.item.ItemPortableLogicProgrammerConfig;
 import ruiseki.integrateddynamics.item.ItemVariableConfig;
@@ -88,6 +89,7 @@ public class Configs {
         configHandler.add(new ItemVariableTransformerConfig());
         configHandler.add(new ItemMenrilBerriesConfig());
         configHandler.add(new ItemPortableLogicProgrammerConfig());
+        configHandler.add(new ItemLogicDirectorConfig());
 
         // Biomes
         configHandler.add(new BiomeMeneglinConfig());

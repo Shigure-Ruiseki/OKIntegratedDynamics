@@ -13,7 +13,7 @@ import ruiseki.okcore.datastructure.DimPos;
  *
  * @author rubensworks
  */
-public interface IPathElement extends Comparable {
+public interface IPathElement extends Comparable<IPathElement> {
 
     /**
      * @return The position of this element.

@@ -11,7 +11,7 @@ import ruiseki.okcore.helper.Helpers;
 
 /**
  * Value type category with values that have a name.
- * 
+ *
  * @author rubensworks
  */
 public class ValueTypeCategoryNamed extends ValueTypeCategoryBase<IValue> {
@@ -25,7 +25,7 @@ public class ValueTypeCategoryNamed extends ValueTypeCategoryBase<IValue> {
     }
 
     @Override
-    public boolean correspondsTo(IValueType valueType) {
+    public boolean correspondsTo(IValueType<?> valueType) {
         return super.correspondsTo(valueType) && valueType instanceof IValueTypeNamed;
     }
 }

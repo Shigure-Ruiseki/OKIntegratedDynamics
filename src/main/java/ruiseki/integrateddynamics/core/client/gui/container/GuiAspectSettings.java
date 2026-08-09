@@ -5,7 +5,9 @@ import java.util.List;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.StatCollector;
 
 import com.google.common.collect.Lists;
 
@@ -205,6 +207,16 @@ public class GuiAspectSettings extends GuiContainerExtended {
             String label = LangHelpers.localize(activeProperty.getUnlocalizedName());
             RenderHelpers
                 .drawScaledCenteredString(fontRendererObj, label, 88, 10, 0, 1.0F, 140, Helpers.RGBToInt(10, 10, 10));
+            if (RenderHelpers.isPointInRegion(this.guiLeft + 40, this.guiTop, 110, 20, mouseX, mouseY)) {
+                String unlocalizedInfo = activeProperty.getUnlocalizedName()
+                    .replaceFirst("\\.name$", ".info");
+                if (StatCollector.canTranslate(unlocalizedInfo)) {
+                    drawTooltip(
+                        Lists.newArrayList(EnumChatFormatting.GRAY.toString() + LangHelpers.localize(unlocalizedInfo)),
+                        mouseX - this.guiLeft,
+                        mouseY - this.guiTop + 20);
+                }
+            }
         }
     }
 

@@ -7,7 +7,6 @@ import java.util.List;
 
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiButton;
-import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.item.ItemStack;
@@ -34,6 +33,7 @@ import ruiseki.integrateddynamics.network.packet.LogicProgrammerActivateElementP
 import ruiseki.integrateddynamics.network.packet.LogicProgrammerLabelPacket;
 import ruiseki.integrateddynamics.proxy.ClientProxy;
 import ruiseki.okcore.client.gui.component.button.GuiButtonText;
+import ruiseki.okcore.client.gui.component.input.GuiTextFieldExtended;
 import ruiseki.okcore.client.gui.container.ScrollingGuiContainer;
 import ruiseki.okcore.client.renderer.GlStateManager;
 import ruiseki.okcore.helper.Helpers;
@@ -409,7 +409,7 @@ public class GuiLogicProgrammerBase extends ScrollingGuiContainer {
 
         public static final int BUTTON_EDIT = 1;
 
-        private GuiTextField searchField;
+        private GuiTextFieldExtended searchField;
         private GuiButtonText button = null;
 
         public SubGuiOperatorInfo(
@@ -428,7 +428,14 @@ public class GuiLogicProgrammerBase extends ScrollingGuiContainer {
             }
 
             int searchWidth = 113;
-            this.searchField = new GuiTextField(GuiLogicProgrammerBase.this.fontRendererObj, 0, 0, searchWidth, 11);
+            this.searchField = new GuiTextFieldExtended(
+                0,
+                GuiLogicProgrammerBase.this.fontRendererObj,
+                0,
+                0,
+                searchWidth,
+                11,
+                true);
             this.searchField.setMaxStringLength(64);
             this.searchField.setEnableBackgroundDrawing(true);
             this.searchField.setVisible(false);

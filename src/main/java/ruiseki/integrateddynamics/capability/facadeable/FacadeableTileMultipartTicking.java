@@ -28,7 +28,7 @@ public class FacadeableTileMultipartTicking implements IFacadeable {
             .isEmpty();
     }
 
-    @Override // TODO: move to helpers
+    @Override
     public BlockState getFacade() {
         if (!hasFacade()) {
             return null;
@@ -36,7 +36,7 @@ public class FacadeableTileMultipartTicking implements IFacadeable {
         return BlockHelpers.deserializeBlockState(Pair.of(tile.getFacadeBlockName(), tile.getFacadeMeta()));
     }
 
-    @Override // TODO: move to helpers
+    @Override
     public void setFacade(@Nullable BlockState blockState) {
         if (blockState == null) {
             tile.setFacadeMeta(0);

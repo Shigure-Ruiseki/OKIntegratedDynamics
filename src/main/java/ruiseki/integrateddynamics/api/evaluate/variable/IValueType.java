@@ -76,7 +76,7 @@ public interface IValueType<V extends IValue> {
      * @param valueType The value type to check correspondence with.
      * @return If the given value type can be used with this value type.
      */
-    public boolean correspondsTo(IValueType valueType);
+    public boolean correspondsTo(IValueType<?> valueType);
 
     /**
      * Serialize the given value.
@@ -119,7 +119,7 @@ public interface IValueType<V extends IValue> {
     /**
      * Use this comparator for any comparisons with value types.
      */
-    public static class ValueTypeComparator implements Comparator<IValueType> {
+    public static class ValueTypeComparator implements Comparator<IValueType<?>> {
 
         private static ValueTypeComparator INSTANCE = null;
 
@@ -133,7 +133,7 @@ public interface IValueType<V extends IValue> {
         }
 
         @Override
-        public int compare(IValueType o1, IValueType o2) {
+        public int compare(IValueType<?> o1, IValueType<?> o2) {
             return o1.getUnlocalizedName()
                 .compareTo(o2.getUnlocalizedName());
         }

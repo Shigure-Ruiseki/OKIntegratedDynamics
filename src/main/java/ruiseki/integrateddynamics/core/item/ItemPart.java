@@ -101,7 +101,7 @@ public class ItemPart<P extends IPartType<P, S>, S extends IPartState<P>> extend
                             if (cableFakeable != null) {
                                 CableHelpers.onCableRemoving(world, target, false);
                                 cableFakeable.setRealCable(false);
-                                CableHelpers.onCableRemoved(world, target);
+                                CableHelpers.onCableRemoved(world, target, CableHelpers.ALL_SIDES);
                             } else {
                                 IntegratedDynamics.clog(
                                     Level.WARN,

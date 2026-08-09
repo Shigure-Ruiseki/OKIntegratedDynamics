@@ -4,14 +4,22 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ChatComponentTranslation;
+import net.minecraft.world.World;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.util.ForgeDirection;
 
 import com.google.common.collect.Sets;
 
 import cpw.mods.fml.common.event.FMLServerStartedEvent;
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import cpw.mods.fml.common.gameevent.PlayerEvent;
 import gnu.trove.map.TIntObjectMap;
 import gnu.trove.map.hash.TIntObjectHashMap;
+import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.part.PartPos;
@@ -21,9 +29,11 @@ import ruiseki.integrateddynamics.api.path.IPathElement;
 import ruiseki.integrateddynamics.capability.path.PathElementConfig;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
+import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.helper.CapabilityHelpers;
 import ruiseki.okcore.helper.ItemNBTHelpers;
 import ruiseki.okcore.helper.LangHelpers;
+import ruiseki.okcore.helper.MinecraftHelpers;
 
 /**
  * An omnidirectional wireless connector part that can connect to
@@ -39,6 +49,7 @@ public class PartTypeConnectorOmniDirectional
 
     public PartTypeConnectorOmniDirectional(String name) {
         super(name, new PartRenderPosition(0.25F, 0.3125F, 0.625F, 0.625F));
+        MinecraftForge.EVENT_BUS.register(this);
     }
 
     @Override
@@ -79,26 +90,25 @@ public class PartTypeConnectorOmniDirectional
     }
 
     protected void addPosition(INetwork network, State state, PartPos pos) {
-        if (network.isInitialized() && !PartTypeConnectorOmniDirectional.LOADED_GROUPS.isModifyingPositions()
-            && !state.isAddedToGroup()) {
+        if (!PartTypeConnectorOmniDirectional.LOADED_GROUPS.isModifyingPositions() && !state.isAddedToGroup()) {
             state.setAddedToGroup(true);
-            PartTypeConnectorOmniDirectional.LOADED_GROUPS.addPosition(state.getGroupId(), pos);
+            PartTypeConnectorOmniDirectional.LOADED_GROUPS
+                .addPosition(state.getGroupId(), pos, network.isInitialized());
         }
     }
 
     protected void removePosition(INetwork network, State state, PartPos pos) {
-        if (network.isInitialized() && !PartTypeConnectorOmniDirectional.LOADED_GROUPS.isModifyingPositions()
-            && state.isAddedToGroup()) {
+        if (!PartTypeConnectorOmniDirectional.LOADED_GROUPS.isModifyingPositions() && state.isAddedToGroup()) {
             if (state.hasConnectorId()) {
                 state.setAddedToGroup(false);
-                PartTypeConnectorOmniDirectional.LOADED_GROUPS.removePosition(state.getGroupId(), pos);
+                PartTypeConnectorOmniDirectional.LOADED_GROUPS
+                    .removePosition(state.getGroupId(), pos, network.isInitialized());
             }
         }
     }
 
     public static int generateGroupId() {
-        // return IntegratedDynamics.globalCounters.getNext("omnidir-connectors");
-        return 100; // TODO: change when implemented recipes
+        return IntegratedDynamics.globalCounters.getNext("omnidir-connectors");
     }
 
     @Override
@@ -117,6 +127,49 @@ public class PartTypeConnectorOmniDirectional
     public void loadTooltip(State state, List<String> lines) {
         super.loadTooltip(state, lines);
         lines.add(LangHelpers.localize(L10NValues.PART_TOOLTIP_MONODIRECTIONALCONNECTOR_GROUP, state.getGroupId()));
+    }
+
+    @SubscribeEvent
+    public void onCrafted(PlayerEvent.ItemCraftedEvent event) {
+        // When crafting the item, either copy the group id from the existing item or generate a new id.
+        if (event.crafting.getItem() == this.getItem()) {
+            int groupId = -1;
+            for (int i = 0; i < event.craftMatrix.getSizeInventory(); i++) {
+                ItemStack slotStack = event.craftMatrix.getStackInSlot(i);
+                if (slotStack != null && slotStack.getItem() == this.getItem() && slotStack.hasTagCompound()) {
+                    NBTTagCompound tag = slotStack.getTagCompound();
+                    if (tag.hasKey(NBT_KEY_ID, MinecraftHelpers.NBTTag_Types.NBTTagInt.ordinal())) {
+                        groupId = tag.getInteger(NBT_KEY_ID);
+                        break;
+                    }
+                }
+            }
+
+            if (!MinecraftHelpers.isClientSide()) {
+                if (groupId < 0) {
+                    groupId = generateGroupId();
+                }
+                NBTTagCompound tag = ItemNBTHelpers.getNBT(event.crafting);
+                tag.setInteger(NBT_KEY_ID, groupId);
+            }
+        }
+    }
+
+    @Override
+    public boolean onPartActivated(World world, BlockPos pos, State partState, EntityPlayer player, ItemStack heldItem,
+        ForgeDirection side, float hitX, float hitY, float hitZ) {
+        // Drop through if the player is sneaking
+        if (player.isSneaking() || !partState.isEnabled()) {
+            return false;
+        }
+        if (world.isRemote) {
+            player.addChatComponentMessage(
+                new ChatComponentTranslation(
+                    L10NValues.PART_TOOLTIP_MONODIRECTIONALCONNECTOR_GROUP,
+                    partState.getGroupId()));
+        }
+
+        return true;
     }
 
     public static class State extends PartTypeConnector.State<PartTypeConnectorOmniDirectional> {
@@ -205,36 +258,40 @@ public class PartTypeConnectorOmniDirectional
             }
         }
 
-        public void addPosition(int group, PartPos pos) {
+        public void addPosition(int group, PartPos pos, boolean initNetwork) {
             Set<PartPos> positions = groupPositions.get(group);
             if (positions == null) {
                 groupPositions.put(group, positions = Sets.newTreeSet());
             }
             positions.add(pos);
 
-            modifyingPositions = true;
-            initNetworkGroup(positions);
-            modifyingPositions = false;
+            if (initNetwork) {
+                modifyingPositions = true;
+                initNetworkGroup(positions);
+                modifyingPositions = false;
+            }
         }
 
-        public void removePosition(int group, PartPos pos) {
+        public void removePosition(int group, PartPos pos, boolean initNetwork) {
             Set<PartPos> positions = groupPositions.get(group);
             if (positions == null) {
                 groupPositions.put(group, positions = Sets.newTreeSet());
             }
             positions.remove(pos);
 
-            modifyingPositions = true;
-            initNetworkGroup(positions);
-            if (pos.getPos()
-                .isLoaded()) {
-                NetworkHelpers.initNetwork(
-                    pos.getPos()
-                        .getWorld(),
-                    pos.getPos()
-                        .getBlockPos());
+            if (initNetwork) {
+                modifyingPositions = true;
+                initNetworkGroup(positions);
+                if (pos.getPos()
+                    .isLoaded()) {
+                    NetworkHelpers.initNetwork(
+                        pos.getPos()
+                            .getWorld(),
+                        pos.getPos()
+                            .getBlockPos());
+                }
+                modifyingPositions = false;
             }
-            modifyingPositions = false;
         }
 
         public boolean isModifyingPositions() {

@@ -56,6 +56,7 @@ import ruiseki.okcore.block.collidable.ICollidableParent;
 import ruiseki.okcore.block.collidable.ImmutableAxisAlignedBB;
 import ruiseki.okcore.client.icon.Icon;
 import ruiseki.okcore.config.configurable.ConfigurableBlockContainer;
+import ruiseki.okcore.config.extendedconfig.BlockConfig;
 import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.EnumFacingMap;
@@ -128,7 +129,7 @@ public class BlockCable extends ConfigurableBlockContainer
      *
      * @param eConfig Config for this block.
      */
-    public BlockCable(ExtendedConfig eConfig) {
+    public BlockCable(ExtendedConfig<BlockConfig> eConfig) {
         super(eConfig, BLOCK_MATERIAL, TileMultipartTicking.class);
 
         setHardness(BLOCK_HARDNESS);
@@ -156,7 +157,8 @@ public class BlockCable extends ConfigurableBlockContainer
     protected void onPostBlockDestroyed(World world, int x, int y, int z) {
         super.onPostBlockDestroyed(world, x, y, z);
         if (!IS_MCMP_CONVERTING) { // Yes, this is a hack, we don't want this to be called after a MCMP block conversion
-            CableHelpers.onCableRemoved(world, new BlockPos(x, y, z));
+            BlockPos pos = new BlockPos(x, y, z);
+            CableHelpers.onCableRemoved(world, pos, CableHelpers.getExternallyConnectedCables(world, pos));
         }
         IS_MCMP_CONVERTING = false;
     }
@@ -271,10 +273,7 @@ public class BlockCable extends ConfigurableBlockContainer
     @Override
     public void onNeighborBlockChange(World world, int x, int y, int z, Block neighborBlock) {
         super.onNeighborBlockChange(world, x, y, z, neighborBlock);
-        BlockPos pos = new BlockPos(x, y, z);
-        CableHelpers.updateConnectionsNeighbours(world, pos); // TODO: do we need this here? I think we only have to
-                                                              // update our own connections...
-        NetworkHelpers.onElementProviderBlockNeighborChange(world, pos, neighborBlock);
+        NetworkHelpers.onElementProviderBlockNeighborChange(world, new BlockPos(x, y, z), neighborBlock);
     }
 
     @Override

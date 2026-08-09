@@ -11,7 +11,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 
 import com.google.common.base.Optional;
-import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -182,13 +181,6 @@ public class AspectWriteBuilders {
         public static final IAspectProperties PROPERTIES_SOUND = new AspectProperties(
             ImmutableList.<IAspectPropertyTypeInstance>of(PROP_VOLUME, PROP_FREQUENCY));
         static {
-            Predicate<ValueTypeDouble.ValueDouble> POSITIVE = new Predicate<ValueTypeDouble.ValueDouble>() {
-
-                @Override
-                public boolean apply(ValueTypeDouble.ValueDouble input) {
-                    return input.getRawValue() >= 0;
-                }
-            };
             PROPERTIES_NOTE.setValue(PROP_VOLUME, ValueTypeDouble.ValueDouble.of(3D));
             PROPERTIES_SOUND.setValue(PROP_VOLUME, ValueTypeDouble.ValueDouble.of(3D));
             PROPERTIES_SOUND.setValue(PROP_FREQUENCY, ValueTypeDouble.ValueDouble.of(1D));

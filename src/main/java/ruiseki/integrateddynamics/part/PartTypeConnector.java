@@ -95,8 +95,8 @@ public abstract class PartTypeConnector<P extends PartTypeConnector<P, S>, S ext
         }
 
         @Override
-        public int compareTo(Object o) {
-            return getPosition().compareTo(((IPathElement) o).getPosition());
+        public int compareTo(IPathElement o) {
+            return getPosition().compareTo(o.getPosition());
         }
 
         @Override

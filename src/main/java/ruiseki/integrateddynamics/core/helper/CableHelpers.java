@@ -1,5 +1,6 @@
 package ruiseki.integrateddynamics.core.helper;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -14,6 +15,7 @@ import net.minecraftforge.common.util.ForgeDirection;
 import org.jetbrains.annotations.Nullable;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 
 import ruiseki.integrateddynamics.api.block.IFacadeable;
@@ -43,6 +45,13 @@ import ruiseki.okcore.helper.ItemStackHelpers;
  * @author rubensworks
  */
 public class CableHelpers {
+
+    public static final Collection<ForgeDirection> ALL_SIDES = Sets.newIdentityHashSet();
+    static {
+        for (ForgeDirection side : ForgeDirection.VALID_DIRECTIONS) {
+            ALL_SIDES.add(side);
+        }
+    }
 
     /**
      * Get the cable capability at the given position.
@@ -85,9 +94,10 @@ public class CableHelpers {
      *
      * @param world The world.
      * @param pos   The center position.
+     * @param sides The sides to update connections for.
      */
-    public static void updateConnectionsNeighbours(IBlockAccess world, BlockPos pos) {
-        for (ForgeDirection side : ForgeDirection.VALID_DIRECTIONS) {
+    public static void updateConnectionsNeighbours(IBlockAccess world, BlockPos pos, Collection<ForgeDirection> sides) {
+        for (ForgeDirection side : sides) {
             updateConnections(world, pos.offset(side));
         }
     }
@@ -181,7 +191,9 @@ public class CableHelpers {
 
                 // Signal changes
                 cable.updateConnections();
-                CableHelpers.updateConnectionsNeighbours(world, pos);
+                Collection<ForgeDirection> sidesToUpdate = getCableConnections(cable);
+                sidesToUpdate.add(cableConnectionHit);
+                CableHelpers.updateConnectionsNeighbours(world, pos, sidesToUpdate);
 
                 // Reinit the networks for this block and the disconnected neighbour.
                 NetworkHelpers.initNetwork(world, pos);
@@ -201,7 +213,9 @@ public class CableHelpers {
 
                     // Signal changes
                     cable.updateConnections();
-                    CableHelpers.updateConnectionsNeighbours(world, pos);
+                    Collection<ForgeDirection> sidesToUpdate = getCableConnections(cable);
+                    sidesToUpdate.add(side);
+                    CableHelpers.updateConnectionsNeighbours(world, pos, sidesToUpdate);
 
                     // Reinit the networks for this block and the connected neighbour.
                     NetworkHelpers.initNetwork(world, pos);
@@ -222,7 +236,7 @@ public class CableHelpers {
      * @param pos   The position.
      */
     public static void onCableAdded(World world, BlockPos pos, @Nullable EntityLivingBase placer) {
-        CableHelpers.updateConnectionsNeighbours(world, pos);
+        CableHelpers.updateConnectionsNeighbours(world, pos, CableHelpers.ALL_SIDES);
         if (!world.isRemote) {
             INetwork network = NetworkHelpers.initNetwork(world, pos);
             MinecraftForge.EVENT_BUS.post(new NetworkInitializedEvent(network, world, pos, placer));
@@ -271,13 +285,14 @@ public class CableHelpers {
      *
      * @param world The world.
      * @param pos   The position.
+     * @param sides The sides to update connections for.
      * @return If the cable was removed from the network.
      */
-    public static boolean onCableRemoved(World world, BlockPos pos) {
-        updateConnectionsNeighbours(world, pos);
+    public static boolean onCableRemoved(World world, BlockPos pos, Collection<ForgeDirection> sides) {
+        updateConnectionsNeighbours(world, pos, sides);
         if (!world.isRemote) {
             // Reinit neighbouring networks.
-            for (ForgeDirection side : ForgeDirection.VALID_DIRECTIONS) {
+            for (ForgeDirection side : sides) {
                 BlockPos sidePos = pos.offset(side);
                 NetworkHelpers.initNetwork(world, sidePos);
             }
@@ -308,13 +323,12 @@ public class CableHelpers {
         } else {
             cableFakeable.setRealCable(false);
         }
-        // TODO: abstract dropped itemstack
         if (player == null) {
             ItemStackHelpers.spawnItemStack(world, pos, cable.getItemStack());
         } else if (!player.capabilities.isCreativeMode) {
             ItemStackHelpers.spawnItemStackToPlayer(world, pos, cable.getItemStack(), player);
         }
-        CableHelpers.onCableRemoved(world, pos);
+        CableHelpers.onCableRemoved(world, pos, getCableConnections(cable));
 
         ItemBlockCable.playBreakSound(world, pos);
     }
@@ -357,5 +371,38 @@ public class CableHelpers {
             }
         }
         return false;
+    }
+
+    /**
+     * Get the sides the cable is currently connected to.
+     * 
+     * @param cable A cable.
+     * @return The cable connections.
+     */
+    public static Collection<ForgeDirection> getCableConnections(ICable cable) {
+        Collection<ForgeDirection> sides = Sets.newIdentityHashSet();
+        for (ForgeDirection side : ForgeDirection.VALID_DIRECTIONS) {
+            if (cable.isConnected(side)) {
+                sides.add(side);
+            }
+        }
+        return sides;
+    }
+
+    /**
+     * Get the sides that are externally connected to the given position.
+     * 
+     * @param world The world.
+     * @param pos   The position.
+     * @return The sides.
+     */
+    public static Collection<ForgeDirection> getExternallyConnectedCables(World world, BlockPos pos) {
+        Collection<ForgeDirection> sides = Sets.newIdentityHashSet();
+        for (ForgeDirection side : ForgeDirection.VALID_DIRECTIONS) {
+            if (CableHelpers.isCableConnected(world, pos.offset(side), side.getOpposite())) {
+                sides.add(side);
+            }
+        }
+        return sides;
     }
 }

@@ -63,7 +63,8 @@ public class GuiPartWriter<P extends IPartTypeWriter<P, S> & IGuiContainerProvid
     }
 
     @Override
-    protected void drawAdditionalElementInfo(ContainerMultipartAspects container, int index, IAspectWrite aspect) {
+    protected void drawAdditionalElementInfo(ContainerMultipartAspects<P, S, IAspectWrite> container, int index,
+        IAspectWrite aspect) {
         int aspectBoxHeight = container.getAspectBoxHeight();
 
         // Render dummy target item
@@ -88,7 +89,7 @@ public class GuiPartWriter<P extends IPartTypeWriter<P, S> & IGuiContainerProvid
     @Override
     protected void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY) {
         super.drawGuiContainerBackgroundLayer(partialTicks, mouseX, mouseY);
-        ContainerPartWriter container = (ContainerPartWriter) getContainer();
+        ContainerPartWriter<?, ?> container = (ContainerPartWriter<?, ?>) getContainer();
         RenderHelpers.drawScaledCenteredString(
             fontRendererObj,
             container.getWriteValue(),
@@ -106,5 +107,10 @@ public class GuiPartWriter<P extends IPartTypeWriter<P, S> & IGuiContainerProvid
     @Override
     protected int getBaseYSize() {
         return 222;
+    }
+
+    @Override
+    public int getMaxLabelWidth() {
+        return 85;
     }
 }

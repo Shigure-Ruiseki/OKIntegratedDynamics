@@ -39,7 +39,7 @@ public interface ILogicProgrammerElement<S extends ISubGuiBox, G extends Gui, C 
      * @param valueType The value type to match.
      * @return If it matches
      */
-    public boolean matchesInput(IValueType valueType);
+    public boolean matchesInput(IValueType<?> valueType);
 
     /**
      * If the given value type matches with this element's output.
@@ -47,7 +47,7 @@ public interface ILogicProgrammerElement<S extends ISubGuiBox, G extends Gui, C 
      * @param valueType The value type to match.
      * @return If it matches
      */
-    public boolean matchesOutput(IValueType valueType);
+    public boolean matchesOutput(IValueType<?> valueType);
 
     /**
      * Called when an input item slot has been updated.
@@ -64,7 +64,7 @@ public interface ILogicProgrammerElement<S extends ISubGuiBox, G extends Gui, C 
 
     /**
      * The stack to write the current state of this element to.
-     * 
+     *
      * @param player    The player that is writing the element.
      * @param itemStack The stack to write to.
      * @return The resulting itemstack.
