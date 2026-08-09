@@ -2,6 +2,7 @@ package ruiseki.integrateddynamics.core.inventory.container;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -83,7 +84,7 @@ public abstract class ContainerMultipartAspects<P extends IPartType<P, S> & IGui
                 // But we have a small amount of aspects, so this shouldn't be a problem.
                 return pattern.matcher(
                     LangHelpers.localize(item.getUnlocalizedName())
-                        .toLowerCase())
+                        .toLowerCase(Locale.ENGLISH))
                     .matches();
             }
         });

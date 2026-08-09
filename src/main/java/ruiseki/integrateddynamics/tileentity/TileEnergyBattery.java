@@ -1,5 +1,6 @@
 package ruiseki.integrateddynamics.tileentity;
 
+import net.minecraft.block.Block;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
@@ -47,8 +48,9 @@ public class TileEnergyBattery extends TileCableConnectable
         this.capabilityCache.addCapabilityResolver(BasicCapabilityResolver.create(CapabilityEnergy.ENERGY, () -> this));
     }
 
-    protected boolean isCreative() {
-        return ((BlockEnergyBatteryBase) getBlock()).isCreative();
+    public boolean isCreative() {
+        Block block = getBlock();
+        return block instanceof BlockEnergyBatteryBase && ((BlockEnergyBatteryBase) block).isCreative();
     }
 
     @Override

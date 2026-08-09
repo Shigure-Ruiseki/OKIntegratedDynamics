@@ -21,6 +21,7 @@ public class ValueTypes {
     public static ValueTypeString STRING = REGISTRY.register(new ValueTypeString());
     public static ValueTypeList LIST = REGISTRY.register(new ValueTypeList());
     public static ValueTypeOperator OPERATOR = REGISTRY.register(new ValueTypeOperator());
+    public static ValueTypeNbt NBT = REGISTRY.register(new ValueTypeNbt());
 
     // Object types
     public static ValueObjectTypeBlock OBJECT_BLOCK = REGISTRY.register(new ValueObjectTypeBlock());
@@ -32,6 +33,8 @@ public class ValueTypes {
     public static ValueTypeCategoryAny CATEGORY_ANY = REGISTRY.registerCategory(new ValueTypeCategoryAny());
     public static ValueTypeCategoryNumber CATEGORY_NUMBER = REGISTRY.registerCategory(new ValueTypeCategoryNumber());
     public static ValueTypeCategoryNamed CATEGORY_NAMED = REGISTRY.registerCategory(new ValueTypeCategoryNamed());
+    public static ValueTypeCategoryUniquelyNamed CATEGORY_UNIQUELY_NAMED = REGISTRY
+        .registerCategory(new ValueTypeCategoryUniquelyNamed());
     public static ValueTypeCategoryNullable CATEGORY_NULLABLE = REGISTRY
         .registerCategory(new ValueTypeCategoryNullable());
 

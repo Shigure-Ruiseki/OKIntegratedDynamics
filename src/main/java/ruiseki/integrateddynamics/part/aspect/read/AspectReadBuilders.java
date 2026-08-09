@@ -1,12 +1,15 @@
 package ruiseki.integrateddynamics.part.aspect.read;
 
 import java.util.List;
+import java.util.Locale;
 
 import net.minecraft.entity.item.EntityItemFrame;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.common.util.ForgeDirection;
+import net.minecraftforge.event.world.NoteBlockEvent;
 import net.minecraftforge.fluids.FluidStack;
 
 import org.apache.commons.lang3.tuple.Pair;
@@ -20,11 +23,13 @@ import ruiseki.commoncapabilities.api.capability.temperature.ITemperature;
 import ruiseki.commoncapabilities.api.capability.work.IWorker;
 import ruiseki.commoncapabilities.capability.temperature.TemperatureConfig;
 import ruiseki.commoncapabilities.capability.worker.WorkerConfig;
+import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.api.part.aspect.property.IAspectProperties;
 import ruiseki.integrateddynamics.api.part.aspect.property.IAspectPropertyTypeInstance;
+import ruiseki.integrateddynamics.core.NoteBlockEventReceiver;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueObjectTypeBlock;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueObjectTypeEntity;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueObjectTypeFluidStack;
@@ -37,6 +42,7 @@ import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeListProxyPosit
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeListProxyPositionedTankCapacities;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeListProxyPositionedTankFluidStacks;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeLong;
+import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeNbt;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeString;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
 import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
@@ -76,6 +82,8 @@ public class AspectReadBuilders {
         .forReadType(ValueTypes.OBJECT_ENTITY);
     public static final AspectBuilder<ValueTypeList.ValueList, ValueTypeList, Pair<PartTarget, IAspectProperties>> BUILDER_LIST = AspectBuilder
         .forReadType(ValueTypes.LIST);
+    public static final AspectBuilder<ValueTypeNbt.ValueNbt, ValueTypeNbt, Pair<PartTarget, IAspectProperties>> BUILDER_NBT = AspectBuilder
+        .forReadType(ValueTypes.NBT);
 
     public static final AspectBuilder<ValueObjectTypeItemStack.ValueItemStack, ValueObjectTypeItemStack, Pair<PartTarget, IAspectProperties>> BUILDER_OBJECT_ITEMSTACK = AspectBuilder
         .forReadType(ValueTypes.OBJECT_ITEMSTACK);
@@ -85,62 +93,32 @@ public class AspectReadBuilders {
         .forReadType(ValueTypes.OBJECT_FLUIDSTACK);
 
     // --------------- Value type propagators ---------------
-    public static final IAspectValuePropagator<Boolean, ValueTypeBoolean.ValueBoolean> PROP_GET_BOOLEAN = new IAspectValuePropagator<Boolean, ValueTypeBoolean.ValueBoolean>() {
+    public static final IAspectValuePropagator<Boolean, ValueTypeBoolean.ValueBoolean> PROP_GET_BOOLEAN = (
+        input) -> ValueTypeBoolean.ValueBoolean.of(input);
 
-        @Override
-        public ValueTypeBoolean.ValueBoolean getOutput(Boolean input) {
-            return ValueTypeBoolean.ValueBoolean.of(input);
-        }
-    };
-    public static final IAspectValuePropagator<Integer, ValueTypeInteger.ValueInteger> PROP_GET_INTEGER = new IAspectValuePropagator<Integer, ValueTypeInteger.ValueInteger>() {
+    public static final IAspectValuePropagator<Integer, ValueTypeInteger.ValueInteger> PROP_GET_INTEGER = (
+        input) -> ValueTypeInteger.ValueInteger.of(input);
 
-        @Override
-        public ValueTypeInteger.ValueInteger getOutput(Integer input) {
-            return ValueTypeInteger.ValueInteger.of(input);
-        }
-    };
-    public static final IAspectValuePropagator<Double, ValueTypeDouble.ValueDouble> PROP_GET_DOUBLE = new IAspectValuePropagator<Double, ValueTypeDouble.ValueDouble>() {
+    public static final IAspectValuePropagator<Double, ValueTypeDouble.ValueDouble> PROP_GET_DOUBLE = (
+        input) -> ValueTypeDouble.ValueDouble.of(input);
 
-        @Override
-        public ValueTypeDouble.ValueDouble getOutput(Double input) {
-            return ValueTypeDouble.ValueDouble.of(input);
-        }
-    };
-    public static final IAspectValuePropagator<Long, ValueTypeLong.ValueLong> PROP_GET_LONG = new IAspectValuePropagator<Long, ValueTypeLong.ValueLong>() {
+    public static final IAspectValuePropagator<Long, ValueTypeLong.ValueLong> PROP_GET_LONG = (
+        input) -> ValueTypeLong.ValueLong.of(input);
 
-        @Override
-        public ValueTypeLong.ValueLong getOutput(Long input) {
-            return ValueTypeLong.ValueLong.of(input);
-        }
-    };
-    public static final IAspectValuePropagator<ItemStack, ValueObjectTypeItemStack.ValueItemStack> PROP_GET_ITEMSTACK = new IAspectValuePropagator<ItemStack, ValueObjectTypeItemStack.ValueItemStack>() {
+    public static final IAspectValuePropagator<ItemStack, ValueObjectTypeItemStack.ValueItemStack> PROP_GET_ITEMSTACK = (
+        input) -> ValueObjectTypeItemStack.ValueItemStack.of(input);
 
-        @Override
-        public ValueObjectTypeItemStack.ValueItemStack getOutput(ItemStack input) {
-            return ValueObjectTypeItemStack.ValueItemStack.of(input);
-        }
-    };
-    public static final IAspectValuePropagator<String, ValueTypeString.ValueString> PROP_GET_STRING = new IAspectValuePropagator<String, ValueTypeString.ValueString>() {
+    public static final IAspectValuePropagator<String, ValueTypeString.ValueString> PROP_GET_STRING = (
+        input) -> ValueTypeString.ValueString.of(input);
 
-        @Override
-        public ValueTypeString.ValueString getOutput(String input) {
-            return ValueTypeString.ValueString.of(input);
-        }
-    };
-    public static final IAspectValuePropagator<BlockState, ValueObjectTypeBlock.ValueBlock> PROP_GET_BLOCK = new IAspectValuePropagator<BlockState, ValueObjectTypeBlock.ValueBlock>() {
+    public static final IAspectValuePropagator<BlockState, ValueObjectTypeBlock.ValueBlock> PROP_GET_BLOCK = (
+        input) -> ValueObjectTypeBlock.ValueBlock.of(input);
 
-        @Override
-        public ValueObjectTypeBlock.ValueBlock getOutput(BlockState input) {
-            return ValueObjectTypeBlock.ValueBlock.of(input);
-        }
-    };
-    public static final IAspectValuePropagator<FluidStack, ValueObjectTypeFluidStack.ValueFluidStack> PROP_GET_FLUIDSTACK = new IAspectValuePropagator<FluidStack, ValueObjectTypeFluidStack.ValueFluidStack>() {
+    public static final IAspectValuePropagator<FluidStack, ValueObjectTypeFluidStack.ValueFluidStack> PROP_GET_FLUIDSTACK = (
+        input) -> ValueObjectTypeFluidStack.ValueFluidStack.of(input);
 
-        @Override
-        public ValueObjectTypeFluidStack.ValueFluidStack getOutput(FluidStack input) {
-            return ValueObjectTypeFluidStack.ValueFluidStack.of(input);
-        }
-    };
+    public static final IAspectValuePropagator<NBTTagCompound, ValueTypeNbt.ValueNbt> PROP_GET_NBT = (
+        input) -> ValueTypeNbt.ValueNbt.of(input);
 
     // --------------- Value type validators ---------------
     public static final Predicate<ValueTypeInteger.ValueInteger> VALIDATOR_INTEGER_POSITIVE = new Predicate<ValueTypeInteger.ValueInteger>() {
@@ -183,40 +161,41 @@ public class AspectReadBuilders {
 
         public static final AspectBuilder<ValueTypeInteger.ValueInteger, ValueTypeInteger, Pair<PartTarget, IAspectProperties>> BUILDER_INTEGER = AspectReadBuilders.BUILDER_INTEGER
             .appendKind("audio");
-        // TODO: Add distanceSq
-        // public static AspectBuilder<ValueTypeInteger.ValueInteger, ValueTypeInteger, Integer> forInstrument(
-        // final NoteBlockEvent.Instrument instrument) {
-        // return BUILDER_INTEGER.appendKind("instrument")
-        // .handle(new IAspectValuePropagator<Pair<PartTarget, IAspectProperties>, Integer>() {
-        //
-        // @Override
-        // public Integer getOutput(Pair<PartTarget, IAspectProperties> input) throws EvaluationException {
-        // for (NoteBlockEvent.Play event : NoteBlockEventReceiver.getInstance()
-        // .getEvents()
-        // .get(instrument)) {
-        // net.minecraft.world.World world = input.getLeft()
-        // .getTarget()
-        // .getPos()
-        // .getWorld();
-        // BlockPos pos = input.getLeft()
-        // .getTarget()
-        // .getPos()
-        // .getBlockPos();
-        // int range = input.getRight()
-        // .getValue(PROPERTY_RANGE)
-        // .getRawValue();
-        // if (world.provider.dimensionId == event.world.provider.dimensionId
-        // && pos.distanceSq(event.pos) <= range * range) {
-        // return event.getVanillaNoteId();
-        // }
-        // }
-        // return -1;
-        // }
-        // },
-        // instrument.name()
-        // .toLowerCase(Locale.ENGLISH))
-        // .withProperties(NOTE_PROPERTIES);
-        // }
+
+        public static AspectBuilder<ValueTypeInteger.ValueInteger, ValueTypeInteger, Integer> forInstrument(
+            final NoteBlockEvent.Instrument instrument) {
+            return BUILDER_INTEGER.appendKind("instrument")
+                .handle(new IAspectValuePropagator<Pair<PartTarget, IAspectProperties>, Integer>() {
+
+                    @Override
+                    public Integer getOutput(Pair<PartTarget, IAspectProperties> input) throws EvaluationException {
+                        for (NoteBlockEvent.Play event : NoteBlockEventReceiver.getInstance()
+                            .getEvents()
+                            .get(instrument)) {
+                            net.minecraft.world.World world = input.getLeft()
+                                .getTarget()
+                                .getPos()
+                                .getWorld();
+                            BlockPos pos = input.getLeft()
+                                .getTarget()
+                                .getPos()
+                                .getBlockPos();
+                            int range = input.getRight()
+                                .getValue(PROPERTY_RANGE)
+                                .getRawValue();
+                            BlockPos eventPos = new BlockPos(event.x, event.y, event.z);
+                            if (world.provider.dimensionId == event.world.provider.dimensionId
+                                && pos.distanceSq(eventPos) <= range * range) {
+                                return event.getVanillaNoteId();
+                            }
+                        }
+                        return -1;
+                    }
+                },
+                    instrument.name()
+                        .toLowerCase(Locale.ENGLISH))
+                .withProperties(NOTE_PROPERTIES);
+        }
 
     }
 
@@ -237,6 +216,8 @@ public class AspectReadBuilders {
         public static final AspectBuilder<ValueTypeInteger.ValueInteger, ValueTypeInteger, DimPos> BUILDER_INTEGER = AspectReadBuilders.BUILDER_INTEGER
             .handle(PROP_GET, "block");
         public static final AspectBuilder<ValueObjectTypeBlock.ValueBlock, ValueObjectTypeBlock, DimPos> BUILDER_BLOCK = AspectReadBuilders.BUILDER_OBJECT_BLOCK
+            .handle(PROP_GET, "block");
+        public static final AspectBuilder<ValueTypeNbt.ValueNbt, ValueTypeNbt, DimPos> BUILDER_NBT = AspectReadBuilders.BUILDER_NBT
             .handle(PROP_GET, "block");
 
     }
@@ -624,17 +605,11 @@ public class AspectReadBuilders {
                     input.getRight()
                         .getValue(PROPERTY_LENGTH)
                         .getRawValue());
-                /*
-                 * if(length * 2 > interval) {
-                 * throw new EvaluationException(String.format("A true and false pulse of length %s do not " +
-                 * "fit into an interval of %s.", length, interval));
-                 * }
-                 */
-                return (input.getLeft()
+                return input.getLeft()
                     .getTarget()
                     .getPos()
                     .getWorld()
-                    .getTotalWorldTime() / length) % Math.max(1, interval / length) == 0;
+                    .getTotalWorldTime() % interval < length;
             }
         };
 

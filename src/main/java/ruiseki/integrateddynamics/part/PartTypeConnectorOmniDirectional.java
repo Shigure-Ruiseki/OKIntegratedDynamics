@@ -38,7 +38,7 @@ import ruiseki.okcore.helper.MinecraftHelpers;
 /**
  * An omnidirectional wireless connector part that can connect to
  * all other monodirectional connectors of the same group anywhere in any dimension.
- *
+ * 
  * @author rubensworks
  */
 public class PartTypeConnectorOmniDirectional
@@ -78,6 +78,18 @@ public class PartTypeConnectorOmniDirectional
     }
 
     @Override
+    public State getState(ItemStack itemStack) {
+        State state = super.getState(itemStack);
+        NBTTagCompound tag = itemStack.getTagCompound();
+        if (tag != null && tag.hasKey(NBT_KEY_ID, MinecraftHelpers.NBTTag_Types.NBTTagInt.ordinal())) {
+            state.setGroupId(tag.getInteger(NBT_KEY_ID));
+        } else {
+            state.setGroupId(PartTypeConnectorOmniDirectional.generateGroupId());
+        }
+        return state;
+    }
+
+    @Override
     public void onNetworkAddition(INetwork network, IPartNetwork partNetwork, PartTarget target, State state) {
         super.onNetworkAddition(network, partNetwork, target, state);
         addPosition(network, state, target.getCenter());
@@ -112,6 +124,12 @@ public class PartTypeConnectorOmniDirectional
     }
 
     @Override
+    public void loadTooltip(State state, List<String> lines) {
+        super.loadTooltip(state, lines);
+        lines.add(LangHelpers.localize(L10NValues.PART_TOOLTIP_MONODIRECTIONALCONNECTOR_GROUP, state.getGroupId()));
+    }
+
+    @Override
     public void loadTooltip(ItemStack itemStack, List<String> lines) {
         super.loadTooltip(itemStack, lines);
         if (itemStack.hasTagCompound()) {
@@ -121,12 +139,6 @@ public class PartTypeConnectorOmniDirectional
                     itemStack.getTagCompound()
                         .getInteger(NBT_KEY_ID)));
         }
-    }
-
-    @Override
-    public void loadTooltip(State state, List<String> lines) {
-        super.loadTooltip(state, lines);
-        lines.add(LangHelpers.localize(L10NValues.PART_TOOLTIP_MONODIRECTIONALCONNECTOR_GROUP, state.getGroupId()));
     }
 
     @SubscribeEvent

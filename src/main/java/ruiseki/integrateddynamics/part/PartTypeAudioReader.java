@@ -1,7 +1,12 @@
 package ruiseki.integrateddynamics.part;
 
+import com.google.common.collect.Sets;
+
+import ruiseki.integrateddynamics.api.part.aspect.IAspect;
+import ruiseki.integrateddynamics.core.part.aspect.AspectRegistry;
 import ruiseki.integrateddynamics.core.part.read.PartStateReaderBase;
 import ruiseki.integrateddynamics.core.part.read.PartTypeReadBase;
+import ruiseki.integrateddynamics.part.aspect.Aspects;
 
 /**
  * An audio reader part.
@@ -13,16 +18,15 @@ public class PartTypeAudioReader
 
     public PartTypeAudioReader(String name) {
         super(name);
-        // TODO: add forInstrument
-        // AspectRegistry.getInstance()
-        // .register(
-        // this,
-        // Sets.<IAspect>newHashSet(
-        // Aspects.Read.Audio.INTEGER_PIANO_NOTE,
-        // Aspects.Read.Audio.INTEGER_BASSDRUM_NOTE,
-        // Aspects.Read.Audio.INTEGER_SNARE_NOTE,
-        // Aspects.Read.Audio.INTEGER_CLICKS_NOTE,
-        // Aspects.Read.Audio.INTEGER_BASSGUITAR_NOTE));
+        AspectRegistry.getInstance()
+            .register(
+                this,
+                Sets.<IAspect>newHashSet(
+                    Aspects.Read.Audio.INTEGER_PIANO_NOTE,
+                    Aspects.Read.Audio.INTEGER_BASSDRUM_NOTE,
+                    Aspects.Read.Audio.INTEGER_SNARE_NOTE,
+                    Aspects.Read.Audio.INTEGER_CLICKS_NOTE,
+                    Aspects.Read.Audio.INTEGER_BASSGUITAR_NOTE));
     }
 
     @Override

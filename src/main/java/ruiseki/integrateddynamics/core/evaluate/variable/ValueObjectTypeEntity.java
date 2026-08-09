@@ -2,6 +2,7 @@ package ruiseki.integrateddynamics.core.evaluate.variable;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityList;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.WorldServer;
@@ -11,6 +12,7 @@ import com.google.common.base.Optional;
 import lombok.ToString;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeNamed;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeNullable;
+import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeUniquelyNamed;
 import ruiseki.integrateddynamics.core.logicprogrammer.ValueTypeLPElementBase;
 import ruiseki.okcore.helper.MinecraftHelpers;
 
@@ -19,8 +21,9 @@ import ruiseki.okcore.helper.MinecraftHelpers;
  *
  * @author rubensworks
  */
-public class ValueObjectTypeEntity extends ValueObjectTypeBase<ValueObjectTypeEntity.ValueEntity> implements
-    IValueTypeNamed<ValueObjectTypeEntity.ValueEntity>, IValueTypeNullable<ValueObjectTypeEntity.ValueEntity> {
+public class ValueObjectTypeEntity extends ValueObjectTypeBase<ValueObjectTypeEntity.ValueEntity>
+    implements IValueTypeNamed<ValueObjectTypeEntity.ValueEntity>,
+    IValueTypeUniquelyNamed<ValueObjectTypeEntity.ValueEntity>, IValueTypeNullable<ValueObjectTypeEntity.ValueEntity> {
 
     private static final String DELIMITER = ";";
 
@@ -95,6 +98,16 @@ public class ValueObjectTypeEntity extends ValueObjectTypeBase<ValueObjectTypeEn
     @Override
     public ValueTypeLPElementBase createLogicProgrammerElement() {
         return null;
+    }
+
+    @Override
+    public String getUniqueName(ValueEntity value) {
+        Optional<Entity> entity = value.getRawValue();
+        if (entity.isPresent()) {
+            Entity e = entity.get();
+            return EntityList.getEntityString(e) + " " + e.getUniqueID();
+        }
+        return "";
     }
 
     @ToString

@@ -65,6 +65,7 @@ public class Network implements INetwork {
     private final CapabilityDispatcher capabilityDispatcher;
     private IFullNetworkListener[] fullNetworkListeners;
 
+    private NBTTagCompound toRead = null;
     private volatile boolean changed = false;
     private volatile boolean killed = false;
 
@@ -208,6 +209,13 @@ public class Network implements INetwork {
 
     @Override
     public void deserializeNBT(NBTTagCompound tag) {
+        // NBT reading is postponed until the first network tick, to ensure that the game is properly initialized.
+        // Because other mods may register things such as dimensions at the same time when networks
+        // are being constructed (as was the case in #349)
+        this.toRead = tag;
+    }
+
+    public void deserializeNBTEffective(NBTTagCompound tag) {
         this.baseCluster.deserializeNBT(tag.getCompoundTag("baseCluster"));
         this.crashed = tag.getBoolean("crashed");
         if (this.capabilityDispatcher != null && tag.hasKey("OKCaps")) {
@@ -378,6 +386,11 @@ public class Network implements INetwork {
 
     @Override
     public final synchronized void update() {
+        if (this.toRead != null) {
+            this.deserializeNBTEffective(this.toRead);
+            this.toRead = null;
+        }
+
         this.changed = false;
         if (killIfEmpty() || killed) {
             NetworkWorldStorage.getInstance(IntegratedDynamics._instance)
@@ -398,7 +411,7 @@ public class Network implements INetwork {
                     if (isBeingDiagnozed) {
                         startTime = System.nanoTime();
                     }
-                    int lastElementTick = updateableElementsTicks.get(element);
+                    int lastElementTick = updateableElementsTicks.getOrDefault(element, 0);
                     if (canUpdate(element)) {
                         if (lastElementTick <= 0) {
                             updateableElementsTicks.put(element, element.getUpdateInterval() - 1);

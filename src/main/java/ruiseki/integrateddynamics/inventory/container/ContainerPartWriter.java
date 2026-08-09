@@ -98,7 +98,9 @@ public class ContainerPartWriter<P extends IPartTypeWriter<P, S> & IGuiContainer
             if (!MinecraftHelpers.isClientSide()) {
                 String writeValue = "";
                 int writeValueColor = 0;
-                if (getPartState().hasVariable()) {
+                if (!getPartState().isEnabled()) {
+                    writeValue = "NO POWER";
+                } else if (getPartState().hasVariable()) {
                     IPartNetwork partNetwork = NetworkHelpers.getPartNetwork(
                         NetworkHelpers.getNetwork(
                             getPartContainer().getPosition()

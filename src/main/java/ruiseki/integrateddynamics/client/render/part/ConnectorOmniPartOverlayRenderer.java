@@ -53,7 +53,8 @@ public class ConnectorOmniPartOverlayRenderer extends PartOverlayRendererBase {
 
         if (!shouldRender(pos)) return;
 
-        if (rand.nextInt(20) == 0) {
+        if (rand.nextInt(20) == 0 && !Minecraft.getMinecraft()
+            .isGamePaused()) {
             PartTypeConnectorOmniDirectional.State partState = (PartTypeConnectorOmniDirectional.State) partContainer
                 .getPartState(direction);
             if (partState != null && partState.hasConnectorId()) {

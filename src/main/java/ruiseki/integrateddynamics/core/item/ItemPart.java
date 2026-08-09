@@ -2,7 +2,6 @@ package ruiseki.integrateddynamics.core.item;
 
 import java.util.List;
 
-import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -74,30 +73,43 @@ public class ItemPart<P extends IPartType<P, S>, S extends IPartState<P>> extend
     @Override
     public boolean onItemUse(ItemStack itemStack, EntityPlayer playerIn, World world, int x, int y, int z, int sideInt,
         float hitX, float hitY, float hitZ) {
-        if (!world.isRemote) {
-            ForgeDirection side = ForgeDirection.getOrientation(sideInt);
-            BlockPos pos = new BlockPos(x, y, z);
-            IPartContainer partContainerFirst = PartHelpers.getPartContainer(world, pos);
-            if (partContainerFirst != null) {
-                // Add part to existing cable
-                if (PartHelpers.addPart(world, pos, side, getPart(), itemStack)) {
+        BlockPos pos = new BlockPos(x, y, z);
+        ForgeDirection side = ForgeDirection.getOrientation(sideInt);
+        IPartContainer partContainerFirst = PartHelpers.getPartContainer(world, pos);
+        if (partContainerFirst != null) {
+            // Add part to existing cable
+            if (PartHelpers.addPart(world, pos, side, getPart(), itemStack)) {
+                if (world.isRemote) {
+                    ItemBlockCable.playPlaceSound(world, pos);
+                }
+                if (!playerIn.capabilities.isCreativeMode) {
                     itemStack.stackSize--;
                 }
-                return true;
-            } else {
-
-                // Place part at a new position with an unreal cable
-                BlockPos target = pos.offset(side);
-                Block targetBlock = target.getBlock(world);
-
-                if (targetBlock.isReplaceable(world, target.getX(), target.getY(), target.getZ())) {
-                    ItemBlockCable itemBlockCable = (ItemBlockCable) Item.getItemFromBlock(BlockCable.getInstance());
-
-                    if (itemBlockCable.onItemUse(itemStack, playerIn, world, x, y, z, sideInt, hitX, hitY, hitZ)) {
-                        IPartContainer partContainer = PartHelpers.getPartContainer(world, target);
-                        if (partContainer != null) {
+            }
+            return true;
+        } else {
+            // Place part at a new position with an unreal cable
+            BlockPos target = pos.offset(side);
+            if (target.getBlock(world)
+                .isReplaceable(world, target.getX(), target.getY(), target.getZ())) {
+                ItemBlockCable itemBlockCable = (ItemBlockCable) Item.getItemFromBlock(BlockCable.getInstance());
+                itemStack.stackSize++; // Temporarily grow, because ItemBlock will shrink it.
+                if (itemBlockCable.onItemUse(
+                    itemStack,
+                    playerIn,
+                    world,
+                    target.getX(),
+                    target.getY(),
+                    target.getZ(),
+                    sideInt,
+                    hitX,
+                    hitY,
+                    hitZ)) {
+                    IPartContainer partContainer = PartHelpers.getPartContainer(world, target);
+                    if (partContainer != null) {
+                        ICableFakeable cableFakeable = CableHelpers.getCableFakeable(world, target);
+                        if (!world.isRemote) {
                             PartHelpers.addPart(world, target, side.getOpposite(), getPart(), itemStack);
-                            ICableFakeable cableFakeable = CableHelpers.getCableFakeable(world, target);
                             if (cableFakeable != null) {
                                 CableHelpers.onCableRemoving(world, target, false);
                                 cableFakeable.setRealCable(false);
@@ -109,23 +121,27 @@ public class ItemPart<P extends IPartType<P, S>, S extends IPartState<P>> extend
                                         "Tried to set a fake cable at a block that is not fakeable at %s",
                                         target));
                             }
-                            return true;
+                        } else {
+                            cableFakeable.setRealCable(false);
                         }
-                    }
-                } else {
-                    IPartContainer partContainer = PartHelpers.getPartContainer(world, target);
-                    if (partContainer != null) {
-                        // Add part to existing cable
-                        if (PartHelpers.addPart(world, target, side.getOpposite(), getPart(), itemStack)) {
-                            if (world.isRemote) {
-                                ItemBlockCable.playPlaceSound(world, target);
-                            }
-                            if (!playerIn.capabilities.isCreativeMode) {
-                                itemStack.stackSize--;
-                            }
-                        }
+                        itemStack.stackSize--;
                         return true;
                     }
+                }
+                itemStack.stackSize--; // Shrink manually if failed
+            } else {
+                IPartContainer partContainer = PartHelpers.getPartContainer(world, target);
+                if (partContainer != null) {
+                    // Add part to existing cable
+                    if (PartHelpers.addPart(world, target, side.getOpposite(), getPart(), itemStack)) {
+                        if (world.isRemote) {
+                            ItemBlockCable.playPlaceSound(world, target);
+                        }
+                        if (!playerIn.capabilities.isCreativeMode) {
+                            itemStack.stackSize--;
+                        }
+                    }
+                    return true;
                 }
             }
 

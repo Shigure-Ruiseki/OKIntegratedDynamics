@@ -7,9 +7,11 @@ import net.minecraft.nbt.NBTTagCompound;
 
 import com.google.common.base.Optional;
 
+import cpw.mods.fml.common.registry.GameData;
 import lombok.ToString;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeNamed;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeNullable;
+import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeUniquelyNamed;
 import ruiseki.integrateddynamics.core.logicprogrammer.ValueTypeItemStackLPElement;
 import ruiseki.integrateddynamics.core.logicprogrammer.ValueTypeLPElementBase;
 import ruiseki.okcore.helper.ItemStackHelpers;
@@ -22,6 +24,7 @@ import ruiseki.okcore.helper.LangHelpers;
  */
 public class ValueObjectTypeItemStack extends ValueObjectTypeBase<ValueObjectTypeItemStack.ValueItemStack>
     implements IValueTypeNamed<ValueObjectTypeItemStack.ValueItemStack>,
+    IValueTypeUniquelyNamed<ValueObjectTypeItemStack.ValueItemStack>,
     IValueTypeNullable<ValueObjectTypeItemStack.ValueItemStack> {
 
     public ValueObjectTypeItemStack() {
@@ -98,6 +101,21 @@ public class ValueObjectTypeItemStack extends ValueObjectTypeBase<ValueObjectTyp
                     return ValueObjectTypeItemStack.ValueItemStack.of(itemStack);
                 }
             });
+    }
+
+    @Override
+    public String getUniqueName(ValueItemStack value) {
+        Optional<ItemStack> optional = value.getRawValue();
+        return optional.isPresent() ? GameData.getItemRegistry()
+            .getNameForObject(
+                optional.get()
+                    .getItem())
+            + (optional.get()
+                .getItemDamage() > 0 ? " "
+                    + optional.get()
+                        .getItemDamage()
+                    : "")
+            : "";
     }
 
     @ToString

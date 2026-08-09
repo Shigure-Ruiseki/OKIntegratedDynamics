@@ -11,6 +11,7 @@ import com.google.common.base.Optional;
 import lombok.ToString;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeNamed;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeNullable;
+import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeUniquelyNamed;
 import ruiseki.integrateddynamics.core.helper.Helpers;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.integrateddynamics.core.logicprogrammer.ValueTypeItemStackLPElement;
@@ -24,6 +25,7 @@ import ruiseki.okcore.helper.LangHelpers;
  */
 public class ValueObjectTypeFluidStack extends ValueObjectTypeBase<ValueObjectTypeFluidStack.ValueFluidStack>
     implements IValueTypeNamed<ValueObjectTypeFluidStack.ValueFluidStack>,
+    IValueTypeUniquelyNamed<ValueObjectTypeFluidStack.ValueFluidStack>,
     IValueTypeNullable<ValueObjectTypeFluidStack.ValueFluidStack> {
 
     public ValueObjectTypeFluidStack() {
@@ -98,6 +100,17 @@ public class ValueObjectTypeFluidStack extends ValueObjectTypeBase<ValueObjectTy
                     return ValueObjectTypeFluidStack.ValueFluidStack.of(Helpers.getFluidStack(itemStack));
                 }
             });
+    }
+
+    @Override
+    public String getUniqueName(ValueFluidStack value) {
+        Optional<FluidStack> fluidStack = value.getRawValue();
+        return fluidStack.isPresent() ? String.format(
+            "%s %s",
+            fluidStack.get()
+                .getFluid()
+                .getName(),
+            fluidStack.get().amount) : "";
     }
 
     @ToString

@@ -7,10 +7,12 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 
+import cpw.mods.fml.common.registry.GameData;
 import joptsimple.internal.Strings;
 import lombok.ToString;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeNamed;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeNullable;
+import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeUniquelyNamed;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.integrateddynamics.core.logicprogrammer.ValueTypeItemStackLPElement;
 import ruiseki.integrateddynamics.core.logicprogrammer.ValueTypeLPElementBase;
@@ -23,7 +25,8 @@ import ruiseki.okcore.helper.LangHelpers;
  * @author rubensworks
  */
 public class ValueObjectTypeBlock extends ValueObjectTypeBase<ValueObjectTypeBlock.ValueBlock>
-    implements IValueTypeNamed<ValueObjectTypeBlock.ValueBlock>, IValueTypeNullable<ValueObjectTypeBlock.ValueBlock> {
+    implements IValueTypeNamed<ValueObjectTypeBlock.ValueBlock>,
+    IValueTypeUniquelyNamed<ValueObjectTypeBlock.ValueBlock>, IValueTypeNullable<ValueObjectTypeBlock.ValueBlock> {
 
     public ValueObjectTypeBlock() {
         super("block");
@@ -108,6 +111,19 @@ public class ValueObjectTypeBlock extends ValueObjectTypeBase<ValueObjectTypeBlo
                         .of(itemStack == null ? null : BlockHelpers.getBlockStateFromItemStack(itemStack));
                 }
             });
+    }
+
+    @Override
+    public String getUniqueName(ValueBlock value) {
+        if (value.getRawValue()
+            .isPresent()) {
+            BlockState blockState = value.getRawValue()
+                .get();
+            int meta = blockState.getBlockMeta(0);
+            return GameData.getBlockRegistry()
+                .getNameForObject(blockState.getBlock()) + (meta > 0 ? " " + meta : "");
+        }
+        return "";
     }
 
     @ToString

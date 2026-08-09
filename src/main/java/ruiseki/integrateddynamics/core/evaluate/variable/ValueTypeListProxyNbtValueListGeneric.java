@@ -1,0 +1,89 @@
+package ruiseki.integrateddynamics.core.evaluate.variable;
+
+import java.util.Optional;
+
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagCompound;
+
+import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
+import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
+import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
+import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeListProxyFactoryTypeRegistry;
+
+/**
+ * An abstraction for a list of NBT values of a certain type.
+ */
+public abstract class ValueTypeListProxyNbtValueListGeneric<N extends NBTBase, T extends IValueType<V>, V extends IValue>
+    extends ValueTypeListProxyBase<T, V> {
+
+    private final String key;
+    private final NBTTagCompound tag;
+
+    public ValueTypeListProxyNbtValueListGeneric(String name, T valueType, String key, NBTTagCompound tag) {
+        super(name, valueType);
+        this.key = key;
+        this.tag = tag;
+    }
+
+    public String getKey() {
+        return key;
+    }
+
+    public NBTTagCompound getTag() {
+        return tag;
+    }
+
+    @Override
+    public int getLength() throws EvaluationException {
+        try {
+            return getLength(
+                Optional.ofNullable((N) tag.getTag(key))
+                    .orElse(getDefault()));
+        } catch (ClassCastException e) {
+            return 0;
+        }
+    }
+
+    @Override
+    public V get(int index) throws EvaluationException {
+        try {
+            if (index < getLength()) {
+                return get(
+                    Optional.ofNullable((N) tag.getTag(key))
+                        .orElse(getDefault()),
+                    index);
+            }
+        } catch (ClassCastException e) {}
+        return null;
+    }
+
+    protected abstract int getLength(N tag);
+
+    protected abstract V get(N tag, int index);
+
+    protected abstract N getDefault();
+
+    public static abstract class Factory<L extends ValueTypeListProxyNbtValueListGeneric<N, T, V>, N extends NBTBase, T extends IValueType<V>, V extends IValue>
+        extends ValueTypeListProxyNBTFactorySimple<T, V, L> {
+
+        @Override
+        public String getName() {
+            return "nbt.listValue";
+        }
+
+        @Override
+        protected void serializeNbt(L value, NBTTagCompound tag)
+            throws IValueTypeListProxyFactoryTypeRegistry.SerializationException {
+            tag.setString("key", value.getKey());
+            tag.setTag("tag", value.getTag());
+        }
+
+        @Override
+        protected L deserializeNbt(NBTTagCompound tag)
+            throws IValueTypeListProxyFactoryTypeRegistry.SerializationException {
+            return create(tag.getString("key"), tag.getCompoundTag("tag"));
+        }
+
+        protected abstract L create(String key, NBTTagCompound tag);
+    }
+}

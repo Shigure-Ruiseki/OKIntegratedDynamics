@@ -1,5 +1,6 @@
 package ruiseki.integrateddynamics;
 
+import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeNbt;
 import ruiseki.okcore.config.ConfigurableProperty;
 import ruiseki.okcore.config.ConfigurableTypeCategory;
 import ruiseki.okcore.config.extendedconfig.DummyConfig;
@@ -94,6 +95,17 @@ public class GeneralConfig extends DummyConfig {
         comment = "The maximum offset in blocks a directional connector can look for its target.",
         minimalValue = 1)
     public static int maxDirectionalConnectorOffset = 512;
+
+    /**
+     * The NBT tags that are not allowed to be read by displaying NBT tags or performing operations on them.
+     */
+    @ConfigurableProperty(
+        category = ConfigurableTypeCategory.MACHINE,
+        comment = "The NBT tags that are not allowed to be read by displaying NBT tags or performing operations on them.",
+        changedCallback = ValueTypeNbt.BlacklistChangedCallback.class)
+    public static String[] nbtTagBlacklist = {
+        // Tag names that have to be ignored
+    };
 
     /**
      * Create a new instance.

@@ -231,7 +231,8 @@ public class CableHelpers {
     /**
      * This should be called when a cable is added.
      * This method automatically notifies the neighbours and (re-)initializes the network if this cable carries one.
-     *
+     * This should in most cases only be called server-side.
+     * 
      * @param world The world.
      * @param pos   The position.
      */
@@ -375,7 +376,7 @@ public class CableHelpers {
 
     /**
      * Get the sides the cable is currently connected to.
-     * 
+     *
      * @param cable A cable.
      * @return The cable connections.
      */
@@ -391,7 +392,7 @@ public class CableHelpers {
 
     /**
      * Get the sides that are externally connected to the given position.
-     * 
+     *
      * @param world The world.
      * @param pos   The position.
      * @return The sides.

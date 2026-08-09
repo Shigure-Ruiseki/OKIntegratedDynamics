@@ -14,6 +14,8 @@ import lombok.ToString;
 import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.evaluate.operator.IOperator;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
+import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeNamed;
+import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeUniquelyNamed;
 import ruiseki.integrateddynamics.core.evaluate.operator.Operators;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.integrateddynamics.core.logicprogrammer.ValueTypeLPElementBase;
@@ -26,7 +28,8 @@ import ruiseki.okcore.helper.LangHelpers;
  *
  * @author rubensworks
  */
-public class ValueTypeOperator extends ValueTypeBase<ValueTypeOperator.ValueOperator> {
+public class ValueTypeOperator extends ValueTypeBase<ValueTypeOperator.ValueOperator> implements
+    IValueTypeNamed<ValueTypeOperator.ValueOperator>, IValueTypeUniquelyNamed<ValueTypeOperator.ValueOperator> {
 
     private static final String SIGNATURE_LINK = "->";
 
@@ -157,6 +160,18 @@ public class ValueTypeOperator extends ValueTypeBase<ValueTypeOperator.ValueOper
      */
     public static List<String> getSignatureLines(IOperator operator, boolean indent) {
         return getSignatureLines(operator.getInputTypes(), operator.getOutputType(), indent);
+    }
+
+    @Override
+    public String getName(ValueTypeOperator.ValueOperator a) {
+        return a.getRawValue()
+            .getLocalizedNameFull();
+    }
+
+    @Override
+    public String getUniqueName(ValueOperator a) {
+        return a.getRawValue()
+            .getUniqueName();
     }
 
     @ToString

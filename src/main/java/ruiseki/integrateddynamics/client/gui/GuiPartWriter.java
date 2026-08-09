@@ -51,7 +51,7 @@ public class GuiPartWriter<P extends IPartTypeWriter<P, S> & IGuiContainerProvid
     protected void drawAdditionalElementInfoForeground(ContainerMultipartAspects<P, S, IAspectWrite> container,
         int index, IAspectWrite aspect, int mouseX, int mouseY) {
         // Render error tooltip
-        displayErrors.drawForeground(
+        if (getPartState().isEnabled()) displayErrors.drawForeground(
             getPartState().getErrors(aspect),
             ERROR_X,
             ERROR_Y + container.getAspectBoxHeight() * index,
@@ -73,7 +73,7 @@ public class GuiPartWriter<P extends IPartTypeWriter<P, S> & IGuiContainerProvid
         itemRender.renderItemAndEffectIntoGUI(mc.fontRenderer, mc.getTextureManager(), itemStack, pos.x, pos.y);
 
         // Render error symbol
-        displayErrors.drawBackground(
+        if (getPartState().isEnabled()) displayErrors.drawBackground(
             getPartState().getErrors(aspect),
             ERROR_X,
             ERROR_Y + aspectBoxHeight * index,
@@ -85,7 +85,6 @@ public class GuiPartWriter<P extends IPartTypeWriter<P, S> & IGuiContainerProvid
             getPartState().getActiveAspect() == aspect);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     protected void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY) {
         super.drawGuiContainerBackgroundLayer(partialTicks, mouseX, mouseY);

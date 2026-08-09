@@ -6,7 +6,7 @@ import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
 
 /**
  * A collection of all value type world renderers.
- * 
+ *
  * @author rubensworks
  */
 public class ValueTypeWorldRenderers {
@@ -21,6 +21,7 @@ public class ValueTypeWorldRenderers {
         REGISTRY.register(ValueTypes.OBJECT_BLOCK, new BlockValueTypeWorldRenderer());
         REGISTRY.register(ValueTypes.OBJECT_FLUIDSTACK, new FluidValueTypeWorldRenderer());
         REGISTRY.register(ValueTypes.LIST, new ListValueTypeWorldRenderer());
+        REGISTRY.register(ValueTypes.NBT, new NbtValueTypeWorldRenderer());
     }
 
 }

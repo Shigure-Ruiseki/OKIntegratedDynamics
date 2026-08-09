@@ -1,23 +1,34 @@
 package ruiseki.integrateddynamics.client.render.valuetype;
 
+import java.util.List;
+
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.common.util.ForgeDirection;
+
+import org.apache.commons.lang3.StringUtils;
+
+import com.google.common.collect.Lists;
 
 import ruiseki.integrateddynamics.api.client.render.valuetype.IValueTypeWorldRenderer;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartType;
+import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeNbt;
+import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
 import ruiseki.okcore.client.renderer.GlStateManager;
 import ruiseki.okcore.helper.Helpers;
 
 /**
- * A simple text-based value type world renderer.
- *
+ * A text-based value type world renderer for NBT tags.
+ * 
  * @author rubensworks
  */
-public class TextValueTypeWorldRenderer implements IValueTypeWorldRenderer {
+public class NbtValueTypeWorldRenderer implements IValueTypeWorldRenderer {
 
+    private static final int MAX_LINES = 30;
     private static final float MAX = 12.5F;
     private static final float MARGIN_FACTOR = 1.1F;
 
@@ -28,16 +39,29 @@ public class TextValueTypeWorldRenderer implements IValueTypeWorldRenderer {
         FontRenderer fontRenderer = rendererDispatcher.getFontRenderer();
         float maxWidth = 0;
 
-        String[] lines = value.getType()
-            .toCompactString(value)
-            .split("(?<=[^\\\\])\\\\n");
-        for (String line : lines) {
-            float width = fontRenderer.getStringWidth(polishLine(line)) - 1;
-            maxWidth = Math.max(maxWidth, width);
+        List<String> lines = Lists.newLinkedList();
+        NBTTagCompound tag = ((ValueTypeNbt.ValueNbt) value).getRawValue();
+        lines.add("{");
+        for (String key : tag.func_150296_c()) {
+            if (lines.size() >= MAX_LINES) {
+                lines.add("...");
+                break;
+            } else {
+                NBTBase subTag = tag.getTag(key);
+                if (subTag instanceof NBTTagCompound) {
+                    subTag = ValueTypes.NBT.filterBlacklistedTags((NBTTagCompound) subTag);
+                }
+                String string = "  " + key + ": " + StringUtils.abbreviate(subTag.toString(), 40) + "";
+                float width = fontRenderer.getStringWidth(string) - 1;
+                lines.add(string);
+                maxWidth = Math.max(maxWidth, width);
+            }
         }
+        lines.add("}");
 
         float singleHeight = fontRenderer.FONT_HEIGHT;
-        float totalHeight = singleHeight * lines.length;
+        float totalHeight = singleHeight * lines.size();
+
         GlStateManager.pushMatrix();
         GlStateManager.enableRescaleNormal();
 
@@ -51,20 +75,13 @@ public class TextValueTypeWorldRenderer implements IValueTypeWorldRenderer {
 
         int offset = 0;
         for (String line : lines) {
-            int color = Helpers.addAlphaToColor(
-                value.getType()
-                    .getDisplayColor(),
-                distanceAlpha);
+            int color = Helpers.addAlphaToColor(ValueTypes.NBT.getDisplayColor(), distanceAlpha);
             rendererDispatcher.getFontRenderer()
-                .drawString(polishLine(line), 0, offset, color);
+                .drawString(line, 0, offset, color);
             offset += singleHeight;
         }
 
         GlStateManager.disableRescaleNormal();
         GlStateManager.popMatrix();
-    }
-
-    protected String polishLine(String line) {
-        return line.replaceAll("\\\\\\\\n", "\\\\n");
     }
 }
