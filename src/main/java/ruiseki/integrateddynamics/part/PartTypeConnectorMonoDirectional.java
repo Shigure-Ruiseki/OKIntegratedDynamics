@@ -9,18 +9,23 @@ import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import com.google.common.collect.Sets;
+import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 
 import ruiseki.integrateddynamics.GeneralConfig;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
+import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.integrateddynamics.api.part.PartRenderPosition;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.api.path.IPathElement;
 import ruiseki.integrateddynamics.capability.path.PathElementConfig;
+import ruiseki.integrateddynamics.core.block.IgnoredBlock;
+import ruiseki.integrateddynamics.core.block.IgnoredBlockStatus;
 import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
 import ruiseki.integrateddynamics.core.helper.PartHelpers;
 import ruiseki.okcore.datastructure.DimPos;
+import ruiseki.okcore.helper.BlockStateHelpers;
 import ruiseki.okcore.helper.CapabilityHelpers;
 
 /**
@@ -113,6 +118,21 @@ public class PartTypeConnectorMonoDirectional
             return offset;
         }
         return 0;
+    }
+
+    protected IgnoredBlockStatus.Status getStatus(PartTypeConnectorMonoDirectional.State state) {
+        return state != null && state.hasTarget() ? IgnoredBlockStatus.Status.ACTIVE
+            : IgnoredBlockStatus.Status.INACTIVE;
+    }
+
+    @Override
+    public BlockState getBlockState(IPartContainer partContainer, ForgeDirection side) {
+        BlockState state = BlockStateHelpers.getState(getBlock(), 0);
+        IgnoredBlockStatus.Status status = getStatus(
+            partContainer != null ? (PartTypeConnectorMonoDirectional.State) partContainer.getPartState(side) : null);
+        state.setPropertyValue(IgnoredBlock.FACING, side);
+        state.setPropertyValue(IgnoredBlockStatus.STATUS, status);
+        return state;
     }
 
     public static class State extends PartTypeConnector.State<PartTypeConnectorMonoDirectional> {

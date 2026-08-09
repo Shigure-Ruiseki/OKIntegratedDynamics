@@ -56,7 +56,8 @@ public class BlockEnergyBattery extends BlockEnergyBatteryBase {
         do {
             ItemStack currentStack = itemStack.copy();
             IEnergyStorageCapacity energyStorage = (IEnergyStorageCapacity) CapabilityHelpers
-                .getCapability(itemStack, CapabilityEnergy.ENERGY);
+                .getCapability(itemStack, CapabilityEnergy.ENERGY)
+                .getOrNull();
             energyStorage.setCapacity(capacity);
             list.add(currentStack.copy());
             energyStorage.receiveEnergy(capacity, false);

@@ -15,12 +15,9 @@ import org.apache.logging.log4j.Level;
 
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 import com.gtnewhorizon.gtnhlib.client.model.BakedModelQuadContext;
-import com.gtnewhorizon.gtnhlib.client.model.JSONVariant;
 import com.gtnewhorizon.gtnhlib.client.model.baked.BakedModel;
 import com.gtnewhorizon.gtnhlib.client.model.loading.ModelDeserializer.Position;
 import com.gtnewhorizon.gtnhlib.client.model.loading.ModelRegistry;
-import com.gtnewhorizon.gtnhlib.client.model.loading.ResourceLoc;
-import com.gtnewhorizon.gtnhlib.client.model.unbaked.JSONModel;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuad;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing;
@@ -33,7 +30,6 @@ import ruiseki.integrateddynamics.api.part.PartRenderPosition;
 import ruiseki.integrateddynamics.core.helper.CableHelpers;
 import ruiseki.integrateddynamics.core.helper.PartHelpers;
 import ruiseki.okcore.datastructure.BlockPos;
-import ruiseki.okcore.datastructure.ThreadsafeCache;
 import ruiseki.okcore.helper.QuadBuilderHelpers;
 
 public class CableModel implements BakedModel {
@@ -50,13 +46,6 @@ public class CableModel implements BakedModel {
         (((float) TEXTURE_SIZE - (float) RADIUS) / 2 / (float) TEXTURE_SIZE),
         (float) RADIUS / (float) TEXTURE_SIZE,
         (float) RADIUS / (float) TEXTURE_SIZE);
-
-    private record PartCacheKey(ResourceLoc.ModelLoc modelLoc, ForgeDirection side) {}
-
-    private static final ThreadsafeCache<PartCacheKey, BakedModel> BAKED_MODEL_CACHE = new ThreadsafeCache<>(
-        256,
-        key -> bakePartModel(((PartCacheKey) key).modelLoc(), ((PartCacheKey) key).side()),
-        false);
 
     private static final Map<ForgeDirection, List<ModelQuadView>> CACHED_CORE_FACES = new EnumMap<>(
         ForgeDirection.class);
@@ -140,10 +129,12 @@ public class CableModel implements BakedModel {
                             }
                         }
 
-                        String modelPath = part.getBlockModelPath(partContainer, side);
-                        if (modelPath != null && !modelPath.isEmpty()) {
-                            ResourceLoc.ModelLoc partModelLoc = parseModelLocStatic(modelPath);
-                            addPartQuads(combinedQuads, partModelLoc, side, context);
+                        BlockState partState = part.getBlockState(partContainer, side);
+                        if (partState != null) {
+                            BakedModel partModel = ModelRegistry.getBakedModel(partState);
+                            if (partModel != null) {
+                                combinedQuads.addAll(partModel.getQuads(context));
+                            }
                         }
                     }
                 } else if (isConnected) {
@@ -209,21 +200,12 @@ public class CableModel implements BakedModel {
             float z2 = z1 + h;
             float z3 = 1F;
 
-            /*
-             * -------
-             * |1|2|3|
-             * -------
-             * |4|P|5|
-             * -------
-             * |6|7|8|
-             * -------
-             */
             addBakedQuad(ret, x0, x1, z0, z1, 1F, texture, side); // 1
             addBakedQuad(ret, x1, x2, z0, z1, 1F, texture, side); // 2
             addBakedQuad(ret, x2, x3, z0, z1, 1F, texture, side); // 3
 
             addBakedQuad(ret, x0, x1, z1, z2, 1F, texture, side); // 4
-            // P (Bỏ qua Part)
+            // P (Skipped Part)
             addBakedQuad(ret, x2, x3, z1, z2, 1F, texture, side); // 5
 
             addBakedQuad(ret, x0, x1, z2, z3, 1F, texture, side); // 6
@@ -276,66 +258,6 @@ public class CableModel implements BakedModel {
         quads.add(quad);
     }
 
-    private void addPartQuads(List<ModelQuadView> targetList, ResourceLoc.ModelLoc modelLoc, ForgeDirection side,
-        BakedModelQuadContext ctx) {
-        try {
-            BakedModel bakedPart = BAKED_MODEL_CACHE.get(new PartCacheKey(modelLoc, side));
-
-            if (bakedPart != null) {
-                List<ModelQuadView> partQuads = bakedPart.getQuads(ctx);
-                if (partQuads != null && !partQuads.isEmpty()) {
-                    targetList.addAll(partQuads);
-                }
-            }
-        } catch (Exception e) {
-            IntegratedDynamics.clog(Level.ERROR, "Error render part from cache: " + modelLoc, e);
-        }
-    }
-
-    private static BakedModel bakePartModel(ResourceLoc.ModelLoc modelLoc, ForgeDirection side) {
-        JSONModel baseModel = ModelRegistry.getJSONModel(modelLoc);
-        JSONVariant variant = createVariantForPart(modelLoc, side);
-        return baseModel.bake(variant);
-    }
-
-    private static ResourceLoc.ModelLoc parseModelLocStatic(String modelPath) {
-        if (modelPath == null || modelPath.isEmpty()) {
-            return new ResourceLoc.ModelLoc(Reference.MOD_ID, "");
-        }
-
-        String domain = Reference.MOD_ID;
-        String path = modelPath;
-
-        if (path.contains(":")) {
-            String[] split = path.split(":", 2);
-            domain = split[0];
-            path = split[1];
-        }
-
-        if (path.startsWith("/")) {
-            path = path.substring(1);
-        }
-
-        return new ResourceLoc.ModelLoc(domain, path);
-    }
-
-    private static JSONVariant createVariantForPart(ResourceLoc.ModelLoc modelLoc, ForgeDirection side) {
-        int rotX = 0;
-        int rotY = 0;
-
-        switch (side) {
-            case DOWN -> rotX = 90;
-            case UP -> rotX = 270;
-            case NORTH -> rotY = 180;
-            case SOUTH -> rotY = 0;
-            case WEST -> rotY = 270;
-            case EAST -> rotY = 90;
-            default -> {}
-        }
-
-        return new JSONVariant(modelLoc, rotX, rotY, false);
-    }
-
     @Override
     public Position.ModelDisplay getDisplay(Position pos, BakedModelQuadContext context) {
         return Position.ModelDisplay.DEFAULT;
@@ -346,12 +268,6 @@ public class CableModel implements BakedModel {
         return Minecraft.getMinecraft()
             .getTextureMapBlocks()
             .getAtlasSprite(Reference.MOD_ID + ":cable");
-    }
-
-    public static BakedModel getBakedPartModel(String modelPath, ForgeDirection side) {
-        if (modelPath == null || modelPath.isEmpty()) return null;
-        ResourceLoc.ModelLoc modelLoc = parseModelLocStatic(modelPath);
-        return BAKED_MODEL_CACHE.get(new PartCacheKey(modelLoc, side));
     }
 
     public static ArrayList<ModelQuadView> buildCustomConnectionSegment(ForgeDirection side, float targetDepth,

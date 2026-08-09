@@ -40,7 +40,7 @@ public final class PartTypes {
     public static final PartTypeEntityReader ENTITY_READER = REGISTRY
         .register(new PartTypeEntityReader("entity_reader"));
     public static final PartTypeExtraDimensionalReader EXTRADIMENSIONAL_READER = REGISTRY
-        .register(new PartTypeExtraDimensionalReader("extra_dimensional_reader"));
+        .register(new PartTypeExtraDimensionalReader("extradimensional_reader"));
     public static final PartTypeFluidReader FLUID_READER = REGISTRY.register(new PartTypeFluidReader("fluid_reader"));
     public static final PartTypeInventoryReader INVENTORY_READER = REGISTRY
         .register(new PartTypeInventoryReader("inventory_reader"));

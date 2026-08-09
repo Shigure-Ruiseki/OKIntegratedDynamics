@@ -5,12 +5,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 import net.minecraftforge.client.MinecraftForgeClient;
 import net.minecraftforge.common.util.ForgeDirection;
+
+import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 
 import lombok.Getter;
 import ruiseki.integrateddynamics.IntegratedDynamics;
@@ -25,14 +28,18 @@ import ruiseki.integrateddynamics.api.part.PartRenderPosition;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.api.part.PartTypeAdapter;
 import ruiseki.integrateddynamics.client.model.ItemPartRenderer;
+import ruiseki.integrateddynamics.core.block.IgnoredBlock;
 import ruiseki.integrateddynamics.core.client.gui.ExtendedGuiHandler;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.integrateddynamics.core.item.ItemPart;
 import ruiseki.integrateddynamics.core.network.PartNetworkElement;
+import ruiseki.okcore.config.configurabletypeaction.BlockAction;
 import ruiseki.okcore.config.configurabletypeaction.ItemAction;
+import ruiseki.okcore.config.extendedconfig.BlockConfig;
 import ruiseki.okcore.config.extendedconfig.ItemConfig;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
+import ruiseki.okcore.helper.BlockStateHelpers;
 import ruiseki.okcore.helper.Helpers;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
@@ -53,6 +60,8 @@ public abstract class PartTypeBase<P extends IPartType<P, S>, S extends IPartSta
     private final Item item;
     private ItemConfig itemConfig;
     @Getter
+    private final Block block;
+    @Getter
     private final int guiID;
     @Getter
     private final String name;
@@ -68,7 +77,8 @@ public abstract class PartTypeBase<P extends IPartType<P, S>, S extends IPartSta
         } else {
             this.guiID = -1;
         }
-        this.name = name;
+        this.name = name;;
+        this.block = registerBlock();
         this.item = registerItem();
         this.partRenderPosition = partRenderPosition;
 
@@ -86,6 +96,40 @@ public abstract class PartTypeBase<P extends IPartType<P, S>, S extends IPartSta
      * @return The actual class for this part type.
      */
     public abstract Class<? super P> getPartTypeClass();
+
+    /**
+     * Factory method for creating a block instance.
+     *
+     * @param blockConfig The config to register the block for.
+     * @return The block instance.
+     */
+    protected Block createBlock(BlockConfig blockConfig) {
+        return new IgnoredBlock(blockConfig);
+    }
+
+    /**
+     * Creates and registers a block instance for this part type.
+     * This is mainly used for the block model.
+     *
+     * @return The corresponding block.
+     */
+    protected Block registerBlock() {
+        BlockConfig blockConfig = new BlockConfig(getMod(), true, "part_" + getName(), null, null) {
+
+            @Override
+            public boolean isDisableable() {
+                return false;
+            }
+
+            @Override
+            public Block getBlockInstance() {
+                return PartTypeBase.this.getBlock();
+            }
+        };
+        Block block = createBlock(blockConfig);
+        BlockAction.register(block, null, blockConfig.getSubUniqueName(), blockConfig.getTargetTab());
+        return block;
+    }
 
     /**
      * Factory method for creating a item instance.
@@ -122,8 +166,8 @@ public abstract class PartTypeBase<P extends IPartType<P, S>, S extends IPartSta
     }
 
     @Override
-    public String getBlockModelPath(IPartContainer partContainer, ForgeDirection side) {
-        return getMod().getModId() + ":" + "part/part_" + getName() + "_block";
+    public String getBlockModelPath() {
+        return getMod().getModId() + ":" + "part_" + getName();
     }
 
     @Override
@@ -169,6 +213,13 @@ public abstract class PartTypeBase<P extends IPartType<P, S>, S extends IPartSta
             return true;
         }
         return false;
+    }
+
+    @Override
+    public BlockState getBlockState(IPartContainer partContainer, ForgeDirection side) {
+        BlockState state = BlockStateHelpers.getState(getBlock(), 0);
+        state.setPropertyValue(IgnoredBlock.FACING, side);
+        return state;
     }
 
     @Override

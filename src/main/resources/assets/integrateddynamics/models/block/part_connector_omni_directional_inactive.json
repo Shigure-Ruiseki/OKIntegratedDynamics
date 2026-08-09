@@ -1,0 +1,7 @@
+{
+  "parent": "integrateddynamics:block/part_connector_omni_directional",
+  "textures": {
+    "back": "integrateddynamics:blocks/parts/part_connector_omni_directional_back",
+    "front": "integrateddynamics:blocks/parts/part_connector_omni_directional_front_inactive"
+  }
+}

@@ -13,6 +13,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import com.google.common.collect.Sets;
+import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 
 import cpw.mods.fml.common.event.FMLServerStartedEvent;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
@@ -22,14 +23,18 @@ import gnu.trove.map.hash.TIntObjectHashMap;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
+import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.integrateddynamics.api.part.PartRenderPosition;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.api.path.IPathElement;
 import ruiseki.integrateddynamics.capability.path.PathElementConfig;
+import ruiseki.integrateddynamics.core.block.IgnoredBlock;
+import ruiseki.integrateddynamics.core.block.IgnoredBlockStatus;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
 import ruiseki.okcore.datastructure.BlockPos;
+import ruiseki.okcore.helper.BlockStateHelpers;
 import ruiseki.okcore.helper.CapabilityHelpers;
 import ruiseki.okcore.helper.ItemNBTHelpers;
 import ruiseki.okcore.helper.LangHelpers;
@@ -139,6 +144,21 @@ public class PartTypeConnectorOmniDirectional
                     itemStack.getTagCompound()
                         .getInteger(NBT_KEY_ID)));
         }
+    }
+
+    protected IgnoredBlockStatus.Status getStatus(PartTypeConnectorOmniDirectional.State state) {
+        return state != null && state.hasConnectorId() ? IgnoredBlockStatus.Status.ACTIVE
+            : IgnoredBlockStatus.Status.INACTIVE;
+    }
+
+    @Override
+    public BlockState getBlockState(IPartContainer partContainer, ForgeDirection side) {
+        BlockState state = BlockStateHelpers.getState(getBlock(), 0);
+        IgnoredBlockStatus.Status status = getStatus(
+            partContainer != null ? (PartTypeConnectorOmniDirectional.State) partContainer.getPartState(side) : null);
+        state.setPropertyValue(IgnoredBlock.FACING, side);
+        state.setPropertyValue(IgnoredBlockStatus.STATUS, status);
+        return state;
     }
 
     @SubscribeEvent

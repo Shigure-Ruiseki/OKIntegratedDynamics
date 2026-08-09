@@ -14,6 +14,8 @@ import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
+import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
+
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.INetworkElement;
 import ruiseki.integrateddynamics.api.network.INetworkEventListener;
@@ -53,7 +55,7 @@ public interface IPartType<P extends IPartType<P, S>, S extends IPartState<P>>
     /**
      * @return JSON model path for the block representation of this part.
      */
-    public String getBlockModelPath(IPartContainer partContainer, ForgeDirection side);
+    public String getBlockModelPath();
 
     /**
      * @return The item associated with this part type.
@@ -269,6 +271,16 @@ public interface IPartType<P extends IPartType<P, S>, S extends IPartState<P>>
         ForgeDirection side, float hitX, float hitY, float hitZ);
 
     /**
+     * Get the base block state that will be rendered for this part.
+     * An appropriate {@link ruiseki.integrateddynamics.core.block.IgnoredBlock#FACING} property will be set.
+     *
+     * @param partContainer The part entity.
+     * @param side          The position of the part.
+     * @return The block state to render with.
+     */
+    public BlockState getBlockState(IPartContainer partContainer, ForgeDirection side);
+
+    /**
      * Called when a block update occurs
      *
      * @param world     The world.
@@ -355,7 +367,7 @@ public interface IPartType<P extends IPartType<P, S>, S extends IPartState<P>>
 
     /**
      * Add tooltip lines for this aspect when this part's item is being hovered.
-     * 
+     *
      * @param itemStack The itemstack.
      * @param lines     The list to add lines to.
      */

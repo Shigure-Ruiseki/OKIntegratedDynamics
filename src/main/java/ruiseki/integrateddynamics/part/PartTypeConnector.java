@@ -1,22 +1,21 @@
 package ruiseki.integrateddynamics.part;
 
+import net.minecraft.block.Block;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.inventory.Container;
-import net.minecraftforge.common.util.ForgeDirection;
 
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
-import ruiseki.integrateddynamics.api.part.IPartContainer;
-import ruiseki.integrateddynamics.api.part.IPartState;
 import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.integrateddynamics.api.part.PartRenderPosition;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.api.path.IPathElement;
 import ruiseki.integrateddynamics.capability.path.PathElementConfig;
+import ruiseki.integrateddynamics.core.block.IgnoredBlockStatus;
 import ruiseki.integrateddynamics.core.part.PartStateBase;
 import ruiseki.integrateddynamics.core.part.PartTypeBase;
-import ruiseki.integrateddynamics.core.part.panel.PartTypePanelVariableDriven;
 import ruiseki.okcore.capabilities.Capability;
+import ruiseki.okcore.config.extendedconfig.BlockConfig;
 import ruiseki.okcore.datastructure.DimPos;
 import ruiseki.okcore.datastructure.LazyOptional;
 
@@ -30,6 +29,11 @@ public abstract class PartTypeConnector<P extends PartTypeConnector<P, S>, S ext
 
     public PartTypeConnector(String name, PartRenderPosition partRenderPosition) {
         super(name, partRenderPosition);
+    }
+
+    @Override
+    protected Block createBlock(BlockConfig blockConfig) {
+        return new IgnoredBlockStatus(blockConfig);
     }
 
     @Override
@@ -57,24 +61,6 @@ public abstract class PartTypeConnector<P extends PartTypeConnector<P, S>, S ext
     public void onNetworkAddition(INetwork network, IPartNetwork partNetwork, PartTarget target, S state) {
         super.onNetworkAddition(network, partNetwork, target, state);
         state.setPosition(target.getCenter());
-    }
-
-    @Override
-    public String getBlockModelPath(IPartContainer partContainer, ForgeDirection side) {
-        String status = "_inactive";
-        if (partContainer != null) {
-            IPartState stateBase = partContainer.getPartState(side);
-            if (stateBase instanceof PartTypePanelVariableDriven.State) {
-                PartTypePanelVariableDriven.State state = (PartTypePanelVariableDriven.State) stateBase;
-                if (state.hasVariable() && state.isEnabled()) {
-                    status = "_active";
-                } else if (!state.getInventory()
-                    .isEmpty()) {
-                        status = "_error";
-                    }
-            }
-        }
-        return super.getBlockModelPath(partContainer, side) + status;
     }
 
     public static abstract class State<P extends PartTypeConnector> extends PartStateBase<P> implements IPathElement {

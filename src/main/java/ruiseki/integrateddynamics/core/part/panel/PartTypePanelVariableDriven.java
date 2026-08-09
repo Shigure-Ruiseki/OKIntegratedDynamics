@@ -16,6 +16,8 @@ import net.minecraftforge.common.util.ForgeDirection;
 
 import org.apache.logging.log4j.Level;
 
+import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
+
 import lombok.Getter;
 import lombok.Setter;
 import ruiseki.integrateddynamics.IntegratedDynamics;
@@ -27,9 +29,10 @@ import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.network.event.INetworkEvent;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
-import ruiseki.integrateddynamics.api.part.IPartState;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.client.gui.GuiPartDisplay;
+import ruiseki.integrateddynamics.core.block.IgnoredBlock;
+import ruiseki.integrateddynamics.core.block.IgnoredBlockStatus;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueHelpers;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
@@ -41,6 +44,7 @@ import ruiseki.integrateddynamics.core.part.PartStateActiveVariableBase;
 import ruiseki.integrateddynamics.inventory.container.ContainerPartDisplay;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.helper.BlockHelpers;
+import ruiseki.okcore.helper.BlockStateHelpers;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
 
@@ -183,35 +187,27 @@ public abstract class PartTypePanelVariableDriven<P extends PartTypePanelVariabl
         return GuiPartDisplay.class;
     }
 
-    protected Status getStatus(PartTypePanelVariableDriven.State state) {
-        Status status = Status.INACTIVE;
+    protected IgnoredBlockStatus.Status getStatus(PartTypePanelVariableDriven.State state) {
+        IgnoredBlockStatus.Status status = IgnoredBlockStatus.Status.INACTIVE;
         if (state != null && !state.getInventory()
             .isEmpty()) {
             if (state.hasVariable() && state.isEnabled()) {
-                status = Status.ACTIVE;
+                status = IgnoredBlockStatus.Status.ACTIVE;
             } else {
-                status = Status.ERROR;
+                status = IgnoredBlockStatus.Status.ERROR;
             }
         }
         return status;
     }
 
     @Override
-    public String getBlockModelPath(IPartContainer partContainer, ForgeDirection side) {
-        String status = "_inactive";
-        if (partContainer != null) {
-            IPartState stateBase = partContainer.getPartState(side);
-            if (stateBase instanceof PartTypePanelVariableDriven.State) {
-                PartTypePanelVariableDriven.State state = (PartTypePanelVariableDriven.State) stateBase;
-                if (state.hasVariable() && state.isEnabled()) {
-                    status = "_active";
-                } else if (!state.getInventory()
-                    .isEmpty()) {
-                        status = "_error";
-                    }
-            }
-        }
-        return super.getBlockModelPath(partContainer, side) + status;
+    public BlockState getBlockState(IPartContainer partContainer, ForgeDirection side) {
+        BlockState state = BlockStateHelpers.getState(getBlock(), 0);
+        IgnoredBlockStatus.Status status = getStatus(
+            partContainer != null ? (PartTypePanelVariableDriven.State) partContainer.getPartState(side) : null);
+        state.setPropertyValue(IgnoredBlock.FACING, side);
+        state.setPropertyValue(IgnoredBlockStatus.STATUS, status);
+        return state;
     }
 
     protected void onVariableContentsUpdated(IPartNetwork network, PartTarget target, S state) {
