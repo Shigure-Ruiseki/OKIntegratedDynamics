@@ -8,7 +8,7 @@ import ruiseki.integrateddynamics.api.part.PartPos;
 
 /**
  * A network that can hold prioritized positions.
- * 
+ *
  * @author rubensworks
  */
 public interface IPositionedAddonsNetwork {
@@ -20,7 +20,7 @@ public interface IPositionedAddonsNetwork {
 
     /**
      * Add the given position.
-     * 
+     *
      * @param pos      The position.
      * @param priority The priority.
      * @return If the position was added, otherwise it was already present.
@@ -29,10 +29,32 @@ public interface IPositionedAddonsNetwork {
 
     /**
      * Remove the given position.
-     * 
+     *
      * @param pos The position.
      */
     public void removePosition(PartPos pos);
+
+    /**
+     * Check if the given position is disabled.
+     * 
+     * @param pos The position.
+     * @return If it is disabled.
+     */
+    public boolean isPositionDisabled(PartPos pos);
+
+    /**
+     * Disable a position.
+     * 
+     * @param pos The position.
+     */
+    public void disablePosition(PartPos pos);
+
+    /**
+     * Enable a position.
+     * 
+     * @param pos The position.
+     */
+    public void enablePosition(PartPos pos);
 
     public static class PrioritizedPartPos implements Comparable<PrioritizedPartPos> {
 

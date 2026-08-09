@@ -6,11 +6,11 @@ import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.IBlockAccess;
 import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fluids.IFluidBlock;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
-import net.minecraftforge.fluids.IFluidBlock;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
 import ruiseki.okcore.fluid.FluidHelpers;
@@ -33,10 +33,11 @@ public final class Helpers {
      */
     public static FluidStack getFluidStack(ItemStack itemStack) {
         FluidStack fluidStack = FluidHelpers.getFluidContained(itemStack);
-        if (fluidStack == null
-            && itemStack.getItem() instanceof ItemBlock
+        if (fluidStack == null && itemStack.getItem() instanceof ItemBlock
             && ((ItemBlock) itemStack.getItem()).field_150939_a instanceof IFluidBlock) {
-            fluidStack = new FluidStack(((IFluidBlock) ((ItemBlock) itemStack.getItem()).field_150939_a).getFluid(), FluidHelpers.BUCKET_VOLUME);
+            fluidStack = new FluidStack(
+                ((IFluidBlock) ((ItemBlock) itemStack.getItem()).field_150939_a).getFluid(),
+                FluidHelpers.BUCKET_VOLUME);
         }
         return fluidStack;
     }

@@ -11,6 +11,8 @@ import net.minecraft.inventory.Container;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.ResourceLocation;
 
+import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
 import com.google.common.collect.Lists;
 
 import cpw.mods.fml.relauncher.Side;
@@ -18,11 +20,13 @@ import cpw.mods.fml.relauncher.SideOnly;
 import lombok.Data;
 import ruiseki.integrateddynamics.api.client.gui.subgui.IGuiInputElement;
 import ruiseki.integrateddynamics.api.client.gui.subgui.ISubGuiBox;
+import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 import ruiseki.integrateddynamics.api.logicprogrammer.IConfigRenderPattern;
 import ruiseki.integrateddynamics.core.client.gui.IDropdownEntry;
 import ruiseki.integrateddynamics.core.client.gui.IDropdownEntryListener;
 import ruiseki.integrateddynamics.core.client.gui.subgui.SubGuiBox;
+import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.integrateddynamics.core.logicprogrammer.SubGuiConfigRenderPattern;
 import ruiseki.okcore.client.gui.container.GuiContainerExtended;
 import ruiseki.okcore.client.gui.image.Images;
@@ -40,6 +44,7 @@ public class ValueTypeGuiElement<G extends Gui, C extends Container>
     implements IGuiInputElement<SubGuiConfigRenderPattern, G, C>, IDropdownEntryListener {
 
     private final IValueType valueType;
+    private Predicate<IValue> validator;
     private final IConfigRenderPattern renderPattern;
     private String defaultInputString;
     private String inputString;
@@ -48,6 +53,7 @@ public class ValueTypeGuiElement<G extends Gui, C extends Container>
 
     public ValueTypeGuiElement(IValueType valueType, IConfigRenderPattern renderPattern) {
         this.valueType = valueType;
+        this.validator = Predicates.alwaysTrue();
         this.renderPattern = renderPattern;
         defaultInputString = getValueType().toCompactString(getValueType().getDefault());
     }
@@ -58,6 +64,10 @@ public class ValueTypeGuiElement<G extends Gui, C extends Container>
             subGui.getSearchField()
                 .setText(inputString);
         }
+    }
+
+    public void setValidator(Predicate<IValue> validator) {
+        this.validator = validator;
     }
 
     @Override
@@ -87,7 +97,11 @@ public class ValueTypeGuiElement<G extends Gui, C extends Container>
 
     @Override
     public LangHelpers.UnlocalizedString validate() {
-        return getValueType().canDeserialize(inputString);
+        LangHelpers.UnlocalizedString error = getValueType().canDeserialize(inputString);
+        if (error == null && !this.validator.apply(getValueType().deserialize(inputString))) {
+            error = new LangHelpers.UnlocalizedString(L10NValues.VALUE_ERROR);
+        }
+        return error;
     }
 
     @Override

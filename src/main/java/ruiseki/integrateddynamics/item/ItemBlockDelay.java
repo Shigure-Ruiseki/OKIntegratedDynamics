@@ -9,7 +9,6 @@ import net.minecraft.item.ItemStack;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
-import ruiseki.integrateddynamics.part.aspect.Aspects;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.item.ItemBlockNBT;
 

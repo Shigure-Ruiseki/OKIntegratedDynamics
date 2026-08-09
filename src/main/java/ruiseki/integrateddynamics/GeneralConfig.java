@@ -77,6 +77,16 @@ public class GeneralConfig extends DummyConfig {
     public static int wildMenrilTreeChance = 350;
 
     /**
+     * The maximum network energy transfer rate.
+     */
+    @ConfigurableProperty(
+        category = ConfigurableTypeCategory.CORE,
+        comment = "The maximum network energy transfer rate.",
+        isCommandable = true,
+        minimalValue = 0)
+    public static int energyRateLimit = Integer.MAX_VALUE;
+
+    /**
      * Create a new instance.
      */
     public GeneralConfig() {

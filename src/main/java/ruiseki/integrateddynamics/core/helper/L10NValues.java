@@ -31,6 +31,7 @@ public class L10NValues {
     public static final String GUI_INPUT = "gui." + NS + ".aspect.input";
     public static final String GUI_OUTPUT = "gui." + NS + ".aspect.output";
 
+    public static final String VALUE_ERROR = "valuetype." + NS + ".error.value";
     public static final String VALUETYPE_VALUETYPE = "valuetype." + NS + ".valueType";
     public static final String VALUETYPE_TOOLTIP_TYPENAME = "valuetype." + NS + ".tooltip.typeName";
     public static final String VALUETYPE_TOOLTIP_VALUE = "valuetype." + NS + ".tooltip.value";

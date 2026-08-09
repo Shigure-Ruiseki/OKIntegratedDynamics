@@ -142,10 +142,27 @@ public class AspectReadBuilders {
         }
     };
 
+    // --------------- Value type validators ---------------
+    public static final Predicate<ValueTypeInteger.ValueInteger> VALIDATOR_INTEGER_POSITIVE = new Predicate<ValueTypeInteger.ValueInteger>() {
+
+        @Override
+        public boolean apply(ValueTypeInteger.ValueInteger input) {
+            return input.getRawValue() >= 0;
+        }
+    };
+    public static final Predicate<ValueTypeDouble.ValueDouble> VALIDATOR_DOUBLE_POSITIVE = new Predicate<ValueTypeDouble.ValueDouble>() {
+
+        @Override
+        public boolean apply(ValueTypeDouble.ValueDouble input) {
+            return input.getRawValue() >= 0;
+        }
+    };
+
     // --------------- Generic properties ---------------
     public static final IAspectPropertyTypeInstance<ValueTypeInteger, ValueTypeInteger.ValueInteger> PROPERTY_LISTINDEX = new AspectPropertyTypeInstance<>(
         ValueTypes.INTEGER,
-        "aspect.aspecttypes.integrateddynamics.integer.listindex.name");
+        "aspect.aspecttypes.integrateddynamics.integer.listindex.name",
+        VALIDATOR_INTEGER_POSITIVE);
     public static final IAspectProperties LIST_PROPERTIES = new AspectProperties(
         ImmutableList.<IAspectPropertyTypeInstance>of(PROPERTY_LISTINDEX));
     static {
@@ -156,7 +173,8 @@ public class AspectReadBuilders {
 
         public static final IAspectPropertyTypeInstance<ValueTypeInteger, ValueTypeInteger.ValueInteger> PROPERTY_RANGE = new AspectPropertyTypeInstance<>(
             ValueTypes.INTEGER,
-            "aspect.aspecttypes.integrateddynamics.integer.range.name");
+            "aspect.aspecttypes.integrateddynamics.integer.range.name",
+            VALIDATOR_INTEGER_POSITIVE);
         public static final IAspectProperties NOTE_PROPERTIES = new AspectProperties(
             ImmutableList.<IAspectPropertyTypeInstance>of(PROPERTY_RANGE));
         static {
@@ -267,7 +285,8 @@ public class AspectReadBuilders {
 
         public static final IAspectPropertyTypeInstance<ValueTypeInteger, ValueTypeInteger.ValueInteger> PROP_TANKID = new AspectPropertyTypeInstance<>(
             ValueTypes.INTEGER,
-            "aspect.aspecttypes.integrateddynamics.integer.tankid.name");
+            "aspect.aspecttypes.integrateddynamics.integer.tankid.name",
+            VALIDATOR_INTEGER_POSITIVE);
         public static final IAspectProperties PROPERTIES = new AspectProperties(
             ImmutableList.<IAspectPropertyTypeInstance>of(PROP_TANKID));
         static {
@@ -377,7 +396,8 @@ public class AspectReadBuilders {
 
         public static final IAspectPropertyTypeInstance<ValueTypeInteger, ValueTypeInteger.ValueInteger> PROPERTY_SLOTID = new AspectPropertyTypeInstance<>(
             ValueTypes.INTEGER,
-            "aspect.aspecttypes.integrateddynamics.integer.slotid.name");
+            "aspect.aspecttypes.integrateddynamics.integer.slotid.name",
+            VALIDATOR_INTEGER_POSITIVE);
         public static final IAspectProperties PROPERTIES = new AspectProperties(
             ImmutableList.<IAspectPropertyTypeInstance>of(PROPERTY_SLOTID));
         static {
@@ -526,10 +546,12 @@ public class AspectReadBuilders {
 
         public static final IAspectPropertyTypeInstance<ValueTypeInteger, ValueTypeInteger.ValueInteger> PROPERTY_INTERVAL = new AspectPropertyTypeInstance<>(
             ValueTypes.INTEGER,
-            "aspect.aspecttypes.integrateddynamics.integer.interval.name");
+            "aspect.aspecttypes.integrateddynamics.integer.interval.name",
+            VALIDATOR_INTEGER_POSITIVE);
         public static final IAspectPropertyTypeInstance<ValueTypeInteger, ValueTypeInteger.ValueInteger> PROPERTY_LENGTH = new AspectPropertyTypeInstance<>(
             ValueTypes.INTEGER,
-            "aspect.aspecttypes.integrateddynamics.integer.length.name");
+            "aspect.aspecttypes.integrateddynamics.integer.length.name",
+            VALIDATOR_INTEGER_POSITIVE);
         public static final IAspectProperties PROPERTIES_CLOCK = new AspectProperties(
             ImmutableList.<IAspectPropertyTypeInstance>of(PROPERTY_INTERVAL, PROPERTY_LENGTH));
         static {

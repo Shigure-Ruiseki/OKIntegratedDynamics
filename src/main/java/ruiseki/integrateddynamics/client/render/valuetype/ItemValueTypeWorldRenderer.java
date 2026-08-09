@@ -8,18 +8,17 @@ import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.util.ForgeDirection;
 
-import com.google.common.base.Optional;
-
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
+
+import com.google.common.base.Optional;
+
 import ruiseki.integrateddynamics.api.client.render.valuetype.IValueTypeWorldRenderer;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueObjectTypeItemStack;
-import ruiseki.okcore.client.renderer.GlStateManager;
 import ruiseki.okcore.helper.Helpers;
-import ruiseki.okcore.helper.RenderHelpers;
 
 /**
  * A value type world renderer for items (Minecraft 1.7.10 Port).
@@ -32,8 +31,8 @@ public class ItemValueTypeWorldRenderer implements IValueTypeWorldRenderer {
 
     @Override
     public void renderValue(IPartContainer partContainer, double x, double y, double z, float partialTick,
-                            int destroyStage, ForgeDirection direction, IPartType partType, IValue value,
-                            TileEntityRendererDispatcher rendererDispatcher, float alpha) {
+        int destroyStage, ForgeDirection direction, IPartType partType, IValue value,
+        TileEntityRendererDispatcher rendererDispatcher, float alpha) {
         Optional<ItemStack> itemStackOptional = ((ValueObjectTypeItemStack.ValueItemStack) value).getRawValue();
         if (itemStackOptional.isPresent()) {
             ItemStack itemStack = itemStackOptional.get();
