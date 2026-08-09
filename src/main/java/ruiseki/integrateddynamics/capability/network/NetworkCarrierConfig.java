@@ -8,7 +8,7 @@ import ruiseki.okcore.config.extendedconfig.CapabilityConfig;
 
 /**
  * Config for the network carrier capability.
- * 
+ *
  * @author rubensworks
  *
  */
@@ -29,7 +29,7 @@ public class NetworkCarrierConfig extends CapabilityConfig<INetworkCarrier> {
         super(
             CommonCapabilities._instance,
             true,
-            "networkCarrier",
+            "network_carrier",
             "Capability that can hold networks",
             INetworkCarrier.class);
     }

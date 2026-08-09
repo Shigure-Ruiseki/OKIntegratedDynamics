@@ -8,7 +8,7 @@ import ruiseki.okcore.config.extendedconfig.CapabilityConfig;
 
 /**
  * Config for the variable facade holder capability.
- * 
+ *
  * @author rubensworks
  *
  */
@@ -29,7 +29,7 @@ public class VariableFacadeHolderConfig extends CapabilityConfig<IVariableFacade
         super(
             CommonCapabilities._instance,
             true,
-            "variableFacadeHolder",
+            "variable_facade_holder",
             "Allows holding of variable facades.",
             IVariableFacadeHolder.class);
     }

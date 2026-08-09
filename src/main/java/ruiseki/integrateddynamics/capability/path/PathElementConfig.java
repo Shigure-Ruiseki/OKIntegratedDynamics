@@ -8,7 +8,7 @@ import ruiseki.okcore.config.extendedconfig.CapabilityConfig;
 
 /**
  * Config for the path element capability.
- * 
+ *
  * @author rubensworks
  *
  */
@@ -29,7 +29,7 @@ public class PathElementConfig extends CapabilityConfig<IPathElement> {
         super(
             CommonCapabilities._instance,
             true,
-            "pathElementProvider",
+            "path_element_provider",
             "Capability for elements used for path construction",
             IPathElement.class);
     }

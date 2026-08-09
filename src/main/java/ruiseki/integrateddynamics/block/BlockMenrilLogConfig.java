@@ -37,7 +37,7 @@ public class BlockMenrilLogConfig extends BlockConfig {
      * Make a new instance.
      */
     public BlockMenrilLogConfig() {
-        super(IntegratedDynamics._instance, true, "menrilLog", null, BlockMenrilLog.class);
+        super(IntegratedDynamics._instance, true, "menril_log", null, BlockMenrilLog.class);
     }
 
     @Override

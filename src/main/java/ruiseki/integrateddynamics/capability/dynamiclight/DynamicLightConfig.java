@@ -29,7 +29,7 @@ public class DynamicLightConfig extends CapabilityConfig<IDynamicLight> {
         super(
             CommonCapabilities._instance,
             true,
-            "dynamicLight",
+            "dynamic_light",
             "Allows light level modifications.",
             IDynamicLight.class);
     }

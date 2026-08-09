@@ -1,0 +1,7 @@
+{
+  "parent": "integrateddynamics:block/reader",
+  "textures": {
+    "back": "integrateddynamics:blocks/parts/extra_dimensional_reader_back",
+    "front": "integrateddynamics:blocks/parts/extra_dimensional_reader_front"
+  }
+}

@@ -5,7 +5,7 @@ import ruiseki.okcore.config.extendedconfig.ItemConfig;
 
 /**
  * Config for the portable logic programmer.
- * 
+ *
  * @author rubensworks
  */
 public class ItemPortableLogicProgrammerConfig extends ItemConfig {
@@ -19,7 +19,7 @@ public class ItemPortableLogicProgrammerConfig extends ItemConfig {
      * Make a new instance.
      */
     public ItemPortableLogicProgrammerConfig() {
-        super(IntegratedDynamics._instance, true, "portableLogicProgrammer", null, ItemPortableLogicProgrammer.class);
+        super(IntegratedDynamics._instance, true, "portable_logic_programmer", null, ItemPortableLogicProgrammer.class);
     }
 
 }

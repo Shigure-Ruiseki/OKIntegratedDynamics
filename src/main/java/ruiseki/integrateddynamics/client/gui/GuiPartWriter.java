@@ -44,7 +44,7 @@ public class GuiPartWriter<P extends IPartTypeWriter<P, S> & IGuiContainerProvid
 
     @Override
     protected String getNameId() {
-        return "partWriter";
+        return "part_writer";
     }
 
     @Override

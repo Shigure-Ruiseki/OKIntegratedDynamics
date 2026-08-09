@@ -30,7 +30,7 @@ public class BlockMenrilSaplingConfig extends BlockConfig {
      * Make a new instance.
      */
     public BlockMenrilSaplingConfig() {
-        super(IntegratedDynamics._instance, true, "menrilSapling", null, null);
+        super(IntegratedDynamics._instance, true, "menril_sapling", null, null);
     }
 
     @Override

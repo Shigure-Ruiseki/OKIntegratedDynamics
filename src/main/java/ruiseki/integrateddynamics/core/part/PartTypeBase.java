@@ -123,7 +123,7 @@ public abstract class PartTypeBase<P extends IPartType<P, S>, S extends IPartSta
 
     @Override
     public String getBlockModelPath(IPartContainer partContainer, ForgeDirection side) {
-        return getMod().getModId() + ":" + "part/part_" + getName() + "Block";
+        return getMod().getModId() + ":" + "part/part_" + getName() + "_block";
     }
 
     @Override

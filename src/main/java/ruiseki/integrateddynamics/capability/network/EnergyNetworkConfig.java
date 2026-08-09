@@ -8,7 +8,7 @@ import ruiseki.okcore.config.extendedconfig.CapabilityConfig;
 
 /**
  * Config for the energy network capability.
- * 
+ *
  * @author rubensworks
  *
  */
@@ -29,7 +29,7 @@ public class EnergyNetworkConfig extends CapabilityConfig<IEnergyNetwork> {
         super(
             CommonCapabilities._instance,
             true,
-            "energyNetwork",
+            "energy_network",
             "A capability for networks that can hold energy.",
             IEnergyNetwork.class);
     }

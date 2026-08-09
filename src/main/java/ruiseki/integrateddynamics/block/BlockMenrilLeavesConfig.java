@@ -45,7 +45,7 @@ public class BlockMenrilLeavesConfig extends BlockConfig {
      * Make a new instance.
      */
     public BlockMenrilLeavesConfig() {
-        super(IntegratedDynamics._instance, true, "menrilLeaves", null, null);
+        super(IntegratedDynamics._instance, true, "menril_leaves", null, null);
     }
 
     @Override

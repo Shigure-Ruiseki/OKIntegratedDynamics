@@ -58,7 +58,7 @@ public class BlockEnergyBatteryConfig extends BlockContainerConfig {
      * Make a new instance.
      */
     public BlockEnergyBatteryConfig() {
-        super(IntegratedDynamics._instance, true, "energyBattery", null, BlockEnergyBattery.class);
+        super(IntegratedDynamics._instance, true, "energy_battery", null, BlockEnergyBattery.class);
     }
 
     @Override

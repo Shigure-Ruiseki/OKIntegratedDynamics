@@ -41,7 +41,7 @@ public class GuiPartDisplay<P extends PartTypePanelVariableDriven<P, S>, S exten
 
     @Override
     protected String getNameId() {
-        return "partDisplay";
+        return "part_display";
     }
 
     @SuppressWarnings("unchecked")

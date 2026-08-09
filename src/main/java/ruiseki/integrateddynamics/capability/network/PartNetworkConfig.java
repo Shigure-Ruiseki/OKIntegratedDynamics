@@ -8,7 +8,7 @@ import ruiseki.okcore.config.extendedconfig.CapabilityConfig;
 
 /**
  * Config for the part network capability.
- * 
+ *
  * @author rubensworks
  *
  */
@@ -29,7 +29,7 @@ public class PartNetworkConfig extends CapabilityConfig<IPartNetwork> {
         super(
             CommonCapabilities._instance,
             true,
-            "partNetwork",
+            "part_network",
             "A capability for adding parts to a network.",
             IPartNetwork.class);
     }

@@ -12,7 +12,7 @@ import ruiseki.okcore.config.extendedconfig.BlockConfig;
 
 /**
  * Config for the Menril Planks.
- * 
+ *
  * @author rubensworks
  *
  */
@@ -27,7 +27,7 @@ public class BlockMenrilPlanksConfig extends BlockConfig {
      * Make a new instance.
      */
     public BlockMenrilPlanksConfig() {
-        super(IntegratedDynamics._instance, true, "menrilPlanks", null, null);
+        super(IntegratedDynamics._instance, true, "menril_planks", null, null);
     }
 
     @Override

@@ -33,38 +33,38 @@ public final class PartTypes {
     public static void load() {}
 
     // Readers
-    public static final PartTypeAudioReader AUDIO_READER = REGISTRY.register(new PartTypeAudioReader("audioReader"));
-    public static final PartTypeBlockReader BLOCK_READER = REGISTRY.register(new PartTypeBlockReader("blockReader"));
+    public static final PartTypeAudioReader AUDIO_READER = REGISTRY.register(new PartTypeAudioReader("audio_reader"));
+    public static final PartTypeBlockReader BLOCK_READER = REGISTRY.register(new PartTypeBlockReader("block_reader"));
     public static final PartTypeEntityReader ENTITY_READER = REGISTRY
-        .register(new PartTypeEntityReader("entityReader"));
+        .register(new PartTypeEntityReader("entity_reader"));
     public static final PartTypeExtraDimensionalReader EXTRADIMENSIONAL_READER = REGISTRY
-        .register(new PartTypeExtraDimensionalReader("extradimensionalReader"));
-    public static final PartTypeFluidReader FLUID_READER = REGISTRY.register(new PartTypeFluidReader("fluidReader"));
+        .register(new PartTypeExtraDimensionalReader("extra_dimensional_reader"));
+    public static final PartTypeFluidReader FLUID_READER = REGISTRY.register(new PartTypeFluidReader("fluid_reader"));
     public static final PartTypeInventoryReader INVENTORY_READER = REGISTRY
-        .register(new PartTypeInventoryReader("inventoryReader"));
+        .register(new PartTypeInventoryReader("inventory_reader"));
     public static final PartTypeMachineReader MACHINE_READER = REGISTRY
-        .register(new PartTypeMachineReader("machineReader"));
+        .register(new PartTypeMachineReader("machine_reader"));
     public static final PartTypeNetworkReader NETWORK_READER = REGISTRY
-        .register(new PartTypeNetworkReader("networkReader"));
+        .register(new PartTypeNetworkReader("network_reader"));
     public static final PartTypeRedstoneReader REDSTONE_READER = REGISTRY
-        .register(new PartTypeRedstoneReader("redstoneReader"));
-    public static final PartTypeWorldReader WORLD_READER = REGISTRY.register(new PartTypeWorldReader("worldReader"));
+        .register(new PartTypeRedstoneReader("redstone_reader"));
+    public static final PartTypeWorldReader WORLD_READER = REGISTRY.register(new PartTypeWorldReader("world_reader"));
 
     // Writers
-    public static final PartTypeAudioWriter AUDIO_WRITER = REGISTRY.register(new PartTypeAudioWriter("audioWriter"));
+    public static final PartTypeAudioWriter AUDIO_WRITER = REGISTRY.register(new PartTypeAudioWriter("audio_writer"));
     public static final PartTypeEffectWriter EFFECT_WRITER = REGISTRY
-        .register(new PartTypeEffectWriter("effectWriter"));
+        .register(new PartTypeEffectWriter("effect_writer"));
     public static final PartTypeInventoryWriter INVENTORY_WRITER = REGISTRY
-        .register(new PartTypeInventoryWriter("inventoryWriter"));
+        .register(new PartTypeInventoryWriter("inventory_writer"));
     public static final PartTypeRedstoneWriter REDSTONE_WRITER = REGISTRY
-        .register(new PartTypeRedstoneWriter("redstoneWriter"));
+        .register(new PartTypeRedstoneWriter("redstone_writer"));
 
     // Panels
     public static final PartTypePanelLightStatic STATIC_LIGHT_PANEL = REGISTRY
-        .register(new PartTypePanelLightStatic("staticLightPanel"));
+        .register(new PartTypePanelLightStatic("static_light_panel"));
     public static final PartTypePanelLightDynamic DYNAMIC_LIGHT_PANEL = REGISTRY
-        .register(new PartTypePanelLightDynamic("dynamicLightPanel"));
+        .register(new PartTypePanelLightDynamic("dynamic_light_panel"));
     public static final PartTypePanelDisplay DISPLAY_PANEL = REGISTRY
-        .register(new PartTypePanelDisplay("displayPanel"));
+        .register(new PartTypePanelDisplay("display_panel"));
 
 }
