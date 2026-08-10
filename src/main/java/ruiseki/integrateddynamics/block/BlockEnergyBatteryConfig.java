@@ -3,7 +3,7 @@ package ruiseki.integrateddynamics.block;
 import net.minecraft.item.ItemBlock;
 
 import ruiseki.integrateddynamics.IntegratedDynamics;
-import ruiseki.integrateddynamics.core.item.ItemBlockEnergyContainer;
+import ruiseki.integrateddynamics.core.item.ItemBlockEnergyContainerAutoSupply;
 import ruiseki.okcore.config.ConfigurableProperty;
 import ruiseki.okcore.config.ConfigurableTypeCategory;
 import ruiseki.okcore.config.extendedconfig.BlockContainerConfig;
@@ -73,6 +73,6 @@ public class BlockEnergyBatteryConfig extends BlockContainerConfig {
 
     @Override
     public Class<? extends ItemBlock> getItemBlockClass() {
-        return ItemBlockEnergyContainer.class;
+        return ItemBlockEnergyContainerAutoSupply.class;
     }
 }

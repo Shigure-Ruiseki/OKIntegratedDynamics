@@ -48,24 +48,37 @@ public class BlockEnergyBattery extends BlockEnergyBatteryBase {
 
     @Override
     public void getSubBlocks(Item item, CreativeTabs tab, List<ItemStack> list) {
-        ItemStack itemStack = new ItemStack(item);
-
         int capacityOriginal = BlockEnergyBatteryConfig.capacity;
         int capacity = capacityOriginal;
         int lastCapacity;
+
+        int maxCap = Math.min(BlockEnergyBatteryConfig.maxCreativeCapacity, BlockEnergyBatteryConfig.maxCapacity);
+
         do {
-            ItemStack currentStack = itemStack.copy();
-            IEnergyStorageCapacity energyStorage = (IEnergyStorageCapacity) CapabilityHelpers
-                .getCapability(itemStack, CapabilityEnergy.ENERGY)
+            ItemStack emptyStack = new ItemStack(item);
+            IEnergyStorageCapacity emptyStorage = (IEnergyStorageCapacity) CapabilityHelpers
+                .getCapability(emptyStack, CapabilityEnergy.ENERGY)
                 .getOrNull();
-            energyStorage.setCapacity(capacity);
-            list.add(currentStack.copy());
-            energyStorage.receiveEnergy(capacity, false);
-            list.add(currentStack.copy());
+
+            if (emptyStorage != null) {
+                emptyStorage.setCapacity(capacity);
+                list.add(emptyStack);
+            }
+
+            ItemStack fullStack = new ItemStack(item);
+            IEnergyStorageCapacity fullStorage = (IEnergyStorageCapacity) CapabilityHelpers
+                .getCapability(fullStack, CapabilityEnergy.ENERGY)
+                .getOrNull();
+
+            if (fullStorage != null) {
+                fullStorage.setCapacity(capacity);
+                fullStorage.receiveEnergy(capacity, false);
+                list.add(fullStack);
+            }
+
             lastCapacity = capacity;
             capacity = capacity << 2;
-        } while (capacity < Math.min(BlockEnergyBatteryConfig.maxCreativeCapacity, BlockEnergyBatteryConfig.maxCapacity)
-            && capacity > lastCapacity);
+        } while (capacity <= maxCap && capacity > lastCapacity);
     }
 
     @Override

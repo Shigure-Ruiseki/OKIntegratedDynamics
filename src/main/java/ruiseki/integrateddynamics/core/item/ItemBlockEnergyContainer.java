@@ -14,6 +14,7 @@ import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.integrateddynamics.block.IEnergyContainerBlock;
 import ruiseki.integrateddynamics.capability.energystorage.EnergyStorageItemBlockEnergyContainer;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
+import ruiseki.integrateddynamics.tileentity.TileEnergyBattery;
 import ruiseki.okcore.capabilities.ICapabilityProvider;
 import ruiseki.okcore.energy.capability.CapabilityEnergy;
 import ruiseki.okcore.helper.CapabilityHelpers;
@@ -82,7 +83,13 @@ public class ItemBlockEnergyContainer extends ItemBlockNBT implements IEnergyCon
     public ICapabilityProvider initCapabilities(ItemStack stack, NBTTagCompound nbt) {
         return new DefaultCapabilityProvider<>(
             () -> CapabilityEnergy.ENERGY,
-            new EnergyStorageItemBlockEnergyContainer(this, stack));
+            new EnergyStorageItemBlockEnergyContainer(this, stack) {
+
+                @Override
+                public int getRate() {
+                    return TileEnergyBattery.getEnergyPerTick(getMaxEnergyStored());
+                }
+            });
     }
 
     /*

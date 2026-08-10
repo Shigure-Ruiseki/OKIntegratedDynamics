@@ -93,10 +93,14 @@ public class TileEnergyBattery extends TileCableConnectable
         }
     }
 
-    protected int getEnergyPerTick() {
+    public static int getEnergyPerTick(int capacity) {
         return Math.max(
-            getMaxEnergyStored() / BlockEnergyBatteryConfig.energyRateCapacityFraction,
+            capacity / BlockEnergyBatteryConfig.energyRateCapacityFraction,
             BlockEnergyBatteryConfig.minEnergyRate);
+    }
+
+    protected int getEnergyPerTick() {
+        return getEnergyPerTick(getMaxEnergyStored());
     }
 
     @Override
