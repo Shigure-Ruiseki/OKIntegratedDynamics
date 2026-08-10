@@ -114,6 +114,7 @@ public class ItemVariable extends ConfigurableItem {
     }
 
     @Override
+    @SideOnly(Side.CLIENT)
     public void registerIcons(IIconRegister register) {
         super.registerIcons(register);
 
