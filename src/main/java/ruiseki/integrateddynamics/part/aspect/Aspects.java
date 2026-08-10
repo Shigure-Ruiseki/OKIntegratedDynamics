@@ -30,7 +30,9 @@ import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 
 import cofh.api.energy.IEnergyStorage;
 import cpw.mods.fml.common.FMLCommonHandler;
+import ruiseki.integrateddynamics.GeneralConfig;
 import ruiseki.integrateddynamics.IntegratedDynamics;
+import ruiseki.integrateddynamics.api.network.IEnergyConsumingNetworkElement;
 import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.api.part.aspect.IAspectRead;
@@ -679,6 +681,18 @@ public class Aspects {
                 .appendKind("max")
                 .buildRead();
 
+            public static final IAspectRead<ValueTypeInteger.ValueInteger, ValueTypeInteger> INTEGER_ENERGY_CONSUMPTION_RATE = AspectReadBuilders.Network.BUILDER_INTEGER
+                .handle(
+                    network -> network != null && GeneralConfig.energyConsumptionMultiplier > 0 ? network.getElements()
+                        .stream()
+                        .mapToInt(
+                            (e) -> e instanceof IEnergyConsumingNetworkElement
+                                ? ((IEnergyConsumingNetworkElement) e).getConsumptionRate()
+                                : 0)
+                        .sum() * GeneralConfig.energyConsumptionMultiplier : 0)
+                .handle(AspectReadBuilders.PROP_GET_INTEGER, "energy")
+                .appendKind("consumptionrate")
+                .buildRead();
         }
 
         public static final class Redstone {
