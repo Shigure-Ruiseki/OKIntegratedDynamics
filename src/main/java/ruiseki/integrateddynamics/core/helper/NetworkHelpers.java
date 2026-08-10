@@ -6,6 +6,7 @@ import net.minecraft.world.World;
 
 import org.jetbrains.annotations.Nullable;
 
+import ruiseki.integrateddynamics.GeneralConfig;
 import ruiseki.integrateddynamics.api.network.IEnergyNetwork;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.INetworkCarrier;
@@ -133,4 +134,10 @@ public class NetworkHelpers {
         }
     }
 
+    /**
+     * @return If networks should work and evaluations should be done.
+     */
+    public static boolean shouldWork() {
+        return !GeneralConfig.safeMode;
+    }
 }

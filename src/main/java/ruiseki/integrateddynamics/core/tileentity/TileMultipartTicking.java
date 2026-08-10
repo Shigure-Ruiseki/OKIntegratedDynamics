@@ -188,6 +188,7 @@ public class TileMultipartTicking extends TileEntityOK
     }
 
     public void updateRedstoneInfo(ForgeDirection side, boolean strongPower) {
+        this.markDirty();
         int targetX = xCoord + side.offsetX;
         int targetY = yCoord + side.offsetY;
         int targetZ = zCoord + side.offsetZ;

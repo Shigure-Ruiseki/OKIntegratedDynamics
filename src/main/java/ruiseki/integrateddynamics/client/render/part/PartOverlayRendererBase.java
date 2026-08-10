@@ -6,6 +6,7 @@ import net.minecraftforge.common.util.ForgeDirection;
 import cpw.mods.fml.client.FMLClientHandler;
 import ruiseki.integrateddynamics.GeneralConfig;
 import ruiseki.integrateddynamics.api.client.render.part.IPartOverlayRenderer;
+import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
 import ruiseki.okcore.client.renderer.GlStateManager;
 import ruiseki.okcore.datastructure.BlockPos;
 
@@ -21,6 +22,9 @@ public abstract class PartOverlayRendererBase implements IPartOverlayRenderer {
     }
 
     protected boolean shouldRender(BlockPos pos) {
+        if (!NetworkHelpers.shouldWork()) {
+            return false;
+        }
         Entity renderEntity = FMLClientHandler.instance()
             .getClient().thePlayer;
         return renderEntity.getDistance(pos.getX(), pos.getY(), pos.getZ()) < getMaxRenderDistance();

@@ -4,6 +4,7 @@ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.network.INetwork;
+import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
 import ruiseki.integrateddynamics.core.network.diagnostics.NetworkDiagnostics;
 import ruiseki.integrateddynamics.core.persist.world.NetworkWorldStorage;
 import ruiseki.okcore.helper.MinecraftHelpers;
@@ -36,7 +37,7 @@ public final class TickHandler {
 
     @SubscribeEvent
     public void onTick(TickEvent event) {
-        if (event.type == TickEvent.Type.SERVER && event.phase == TickEvent.Phase.END) {
+        if (event.type == TickEvent.Type.SERVER && event.phase == TickEvent.Phase.END && NetworkHelpers.shouldWork()) {
             if (shouldCrash) {
                 throw new RuntimeException("Forcefully crashed the server.");
             }

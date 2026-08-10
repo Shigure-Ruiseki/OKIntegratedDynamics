@@ -43,7 +43,9 @@ public class ContainerActiveVariableBase<T extends TileActiveVariableBase<?>>
             String readValue = "";
             int readValueColor = 0;
             IVariable variable = getTile().getVariable(NetworkHelpers.getPartNetwork(getTile().getNetwork()));
-            if (variable != null) {
+            if (!NetworkHelpers.shouldWork()) {
+                readValue = "SAFE-MODE";
+            } else if (variable != null) {
                 try {
                     IValue value = variable.getValue();
                     readValue = value.getType()

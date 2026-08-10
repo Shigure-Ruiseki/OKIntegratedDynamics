@@ -207,6 +207,7 @@ public class GuiPartSettings extends GuiContainerExtended {
                 16,
                 save,
                 true));
+        this.refreshValues();
     }
 
     @Override
