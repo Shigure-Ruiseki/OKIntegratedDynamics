@@ -143,13 +143,13 @@ public class BlockCable extends ConfigurableBlockContainer
 
     @Override
     protected void onPreBlockDestroyed(World world, int x, int y, int z, EntityPlayer player) {
-        CableHelpers.onCableRemoving(world, new BlockPos(x, y, z), true);
+        CableHelpers.onCableRemoving(world, new BlockPos(x, y, z), true, false);
         super.onPreBlockDestroyed(world, x, y, z);
     }
 
     @Override
     protected void onPreBlockDestroyed(World world, int x, int y, int z) {
-        CableHelpers.onCableRemoving(world, new BlockPos(x, y, z), false);
+        CableHelpers.onCableRemoving(world, new BlockPos(x, y, z), false, false);
         super.onPreBlockDestroyed(world, x, y, z);
     }
 
@@ -174,7 +174,7 @@ public class BlockCable extends ConfigurableBlockContainer
         RayTraceResult<ForgeDirection> rayTraceResult = doRayTrace(world, pos, player);
         if (rayTraceResult != null && rayTraceResult.getCollisionType() != null
             && rayTraceResult.getCollisionType()
-                .destroy(world, pos, rayTraceResult.getPositionHit(), player, willHarvest)) {
+                .destroy(world, pos, rayTraceResult.getPositionHit(), player, false)) {
             return true;
         }
         return rayTraceResult != null && super.removedByPlayer(world, player, x, y, z, willHarvest);

@@ -7,6 +7,7 @@ import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
 import ruiseki.integrateddynamics.GeneralConfig;
+import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.network.IEnergyNetwork;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.INetworkCarrier;
@@ -20,6 +21,7 @@ import ruiseki.integrateddynamics.capability.network.PartNetworkConfig;
 import ruiseki.integrateddynamics.capability.networkelementprovider.NetworkElementProviderConfig;
 import ruiseki.integrateddynamics.capability.path.PathElementConfig;
 import ruiseki.integrateddynamics.core.network.Network;
+import ruiseki.integrateddynamics.core.persist.world.NetworkWorldStorage;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.helper.CapabilityHelpers;
 
@@ -139,5 +141,61 @@ public class NetworkHelpers {
      */
     public static boolean shouldWork() {
         return !GeneralConfig.safeMode;
+    }
+
+    /**
+     * Invalidate all network elements at the given position.
+     * 
+     * @param world The world.
+     * @param pos   The position.
+     */
+    public static void invalidateNetworkElements(World world, BlockPos pos) {
+        INetworkCarrier networkCarrier = CapabilityHelpers.getCapability(world, pos, NetworkCarrierConfig.CAPABILITY)
+            .getOrNull();
+        if (networkCarrier != null) {
+            INetwork network = networkCarrier.getNetwork();
+            if (network != null) {
+                INetworkElementProvider networkElementProvider = CapabilityHelpers
+                    .getCapability(world, pos, NetworkElementProviderConfig.CAPABILITY)
+                    .getOrNull();
+                if (networkElementProvider != null) {
+                    for (INetworkElement networkElement : networkElementProvider.createNetworkElements(world, pos)) {
+                        networkElement.invalidate(network);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Revalidate all network elements at the given position.
+     * 
+     * @param world The world.
+     * @param pos   The position.
+     */
+    public static void revalidateNetworkElements(World world, BlockPos pos) {
+        INetworkCarrier networkCarrier = CapabilityHelpers.getCapability(world, pos, NetworkCarrierConfig.CAPABILITY)
+            .getOrNull();
+        IPathElement pathElement = CapabilityHelpers.getCapability(world, pos, PathElementConfig.CAPABILITY)
+            .getOrNull();
+        if (networkCarrier != null && pathElement != null && networkCarrier.getNetwork() == null) {
+            INetworkElementProvider networkElementProvider = CapabilityHelpers
+                .getCapability(world, pos, NetworkElementProviderConfig.CAPABILITY)
+                .getOrNull();
+            if (networkElementProvider != null) {
+                // Attempt to revalidate the network elements in this provider
+                for (INetwork network : NetworkWorldStorage.getInstance(IntegratedDynamics._instance)
+                    .getNetworks()) {
+                    if (network.containsPathElement(pathElement)) {
+                        // Revalidate all network elements
+                        for (INetworkElement networkElement : networkElementProvider
+                            .createNetworkElements(world, pos)) {
+                            networkElement.revalidate(network);
+                        }
+                        break; // No need to check the other networks anymore
+                    }
+                }
+            }
+        }
     }
 }

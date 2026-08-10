@@ -5,6 +5,7 @@ import java.util.Objects;
 
 import net.minecraft.block.Block;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.IBlockAccess;
 import net.minecraftforge.common.util.ForgeDirection;
 
@@ -165,8 +166,8 @@ public class PartNetworkElement<P extends IPartType<P, S>, S extends IPartState<
     }
 
     @Override
-    public void addDrops(List<ItemStack> itemStacks, boolean dropMainElement) {
-        part.addDrops(getTarget(), getPartState(), itemStacks, dropMainElement);
+    public void addDrops(List<ItemStack> itemStacks, boolean dropMainElement, boolean saveState) {
+        part.addDrops(getTarget(), getPartState(), itemStacks, dropMainElement, saveState);
     }
 
     @Override
@@ -279,5 +280,18 @@ public class PartNetworkElement<P extends IPartType<P, S>, S extends IPartState<
     public ForgeDirection getSide() {
         return getTarget().getCenter()
             .getSide();
+    }
+
+    @Override
+    public int getId() {
+        if (!hasPartState()) {
+            return -1;
+        }
+        return getPartState().getId();
+    }
+
+    @Override
+    public ResourceLocation getGroup() {
+        return IPartNetworkElement.GROUP;
     }
 }

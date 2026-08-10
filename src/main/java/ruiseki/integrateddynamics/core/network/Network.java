@@ -86,7 +86,7 @@ public class Network implements INetwork {
 
     /**
      * Check if two networks are equal.
-     * 
+     *
      * @param networkA A network.
      * @param networkB Another network.
      * @return If they are equal.
@@ -565,6 +565,11 @@ public class Network implements INetwork {
     @Override
     public void revalidateElement(INetworkElement element) {
         invalidatedElements.remove(element);
+    }
+
+    @Override
+    public boolean containsPathElement(IPathElement pathElement) {
+        return baseCluster.contains(pathElement);
     }
 
     protected boolean isValid(INetworkElement element) {

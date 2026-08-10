@@ -57,7 +57,8 @@ public class CollidableComponentFacade implements ICollidable.IComponent<ForgeDi
     }
 
     @Override
-    public boolean destroy(World world, BlockPos pos, ForgeDirection direction, EntityPlayer player, boolean b) {
+    public boolean destroy(World world, BlockPos pos, ForgeDirection direction, EntityPlayer player,
+        boolean saveState) {
         if (!world.isRemote) {
             IFacadeable facadeable = CapabilityHelpers.getCapability(world, pos, FacadeableConfig.CAPABILITY, null)
                 .getOrNull();

@@ -135,17 +135,19 @@ public abstract class PartTypeAdapter<P extends IPartType<P, S>, S extends IPart
     }
 
     @Override
-    public ItemStack getItemStack(S state) {
-        NBTTagCompound tag = new NBTTagCompound();
-        toNBT(tag, state);
+    public ItemStack getItemStack(S state, boolean saveState) {
         ItemStack itemStack = new ItemStack(getItem());
-        itemStack.setTagCompound(tag);
+        if (saveState) {
+            NBTTagCompound tag = new NBTTagCompound();
+            toNBT(tag, state);
+            itemStack.setTagCompound(tag);
+        }
         return itemStack;
     }
 
     @Override
     public ItemStack getPickBlock(World world, BlockPos pos, S state) {
-        return getItemStack(state);
+        return getItemStack(state, false);
     }
 
     @Override
@@ -176,9 +178,10 @@ public abstract class PartTypeAdapter<P extends IPartType<P, S>, S extends IPart
     }
 
     @Override
-    public void addDrops(PartTarget target, S state, List<ItemStack> itemStacks, boolean dropMainElement) {
+    public void addDrops(PartTarget target, S state, List<ItemStack> itemStacks, boolean dropMainElement,
+        boolean saveState) {
         if (dropMainElement) {
-            itemStacks.add(getItemStack(state));
+            itemStacks.add(getItemStack(state, saveState));
         }
     }
 

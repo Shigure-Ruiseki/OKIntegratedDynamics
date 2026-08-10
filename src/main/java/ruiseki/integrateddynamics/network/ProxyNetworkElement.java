@@ -1,11 +1,15 @@
 package ruiseki.integrateddynamics.network;
 
+import net.minecraft.util.ResourceLocation;
+
 import org.apache.logging.log4j.Level;
 import org.jetbrains.annotations.Nullable;
 
 import ruiseki.integrateddynamics.IntegratedDynamics;
+import ruiseki.integrateddynamics.Reference;
 import ruiseki.integrateddynamics.api.network.IChanneledNetwork;
 import ruiseki.integrateddynamics.api.network.IEventListenableNetworkElement;
+import ruiseki.integrateddynamics.api.network.IIdentifiableNetworkElement;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
@@ -19,14 +23,22 @@ import ruiseki.okcore.datastructure.DimPos;
  * @author rubensworks
  */
 public class ProxyNetworkElement extends TileNetworkElement<TileProxy>
-    implements IEventListenableNetworkElement<TileProxy> {
+    implements IEventListenableNetworkElement<TileProxy>, IIdentifiableNetworkElement {
+
+    public static final ResourceLocation GROUP = new ResourceLocation(Reference.MOD_ID, "proxy");
 
     public ProxyNetworkElement(DimPos pos) {
         super(pos);
     }
 
-    protected int getId() {
+    @Override
+    public int getId() {
         return getTile().getProxyId();
+    }
+
+    @Override
+    public ResourceLocation getGroup() {
+        return ProxyNetworkElement.GROUP;
     }
 
     @Override

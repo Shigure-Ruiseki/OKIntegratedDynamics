@@ -63,8 +63,9 @@ public interface INetworkElement extends Comparable<INetworkElement> {
      *
      * @param itemStacks      The itemstack list to add to.
      * @param dropMainElement If the part itself should also be dropped.
+     * @param saveState       If the element state should be saved in the item.
      */
-    public void addDrops(List<ItemStack> itemStacks, boolean dropMainElement);
+    public void addDrops(List<ItemStack> itemStacks, boolean dropMainElement, boolean saveState);
 
     /**
      * Called when this element is added to the network.
@@ -109,7 +110,7 @@ public interface INetworkElement extends Comparable<INetworkElement> {
 
     /**
      * Set the priority and channel of this element in the network.
-     * 
+     *
      * @deprecated Should only be called from {@link INetwork#setPriorityAndChannel(INetworkElement, int, int)}!
      * @param network  The network this element is present in.
      * @param priority The new priority

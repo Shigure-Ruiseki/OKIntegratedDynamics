@@ -232,7 +232,7 @@ public class CableHelpers {
      * This should be called when a cable is added.
      * This method automatically notifies the neighbours and (re-)initializes the network if this cable carries one.
      * This should in most cases only be called server-side.
-     * 
+     *
      * @param world The world.
      * @param pos   The position.
      */
@@ -248,7 +248,7 @@ public class CableHelpers {
      * This should be called when a cable was added by a player.
      * This should be called after {@link CableHelpers#onCableAdded(World, BlockPos)}.
      * It simply emits an player-sensitive init event on the network bus.
-     * 
+     *
      * @param world  The world.
      * @param pos    The position.
      * @param placer The entity who placed the cable.
@@ -267,9 +267,10 @@ public class CableHelpers {
      * @param world           The world.
      * @param pos             The position.
      * @param dropMainElement If the main part element should be dropped.
+     * @param saveState       If the element state should be saved in the item.
      * @return If the cable was removed from the network.
      */
-    public static boolean onCableRemoving(World world, BlockPos pos, boolean dropMainElement) {
+    public static boolean onCableRemoving(World world, BlockPos pos, boolean dropMainElement, boolean saveState) {
         if (!world.isRemote && CableHelpers.isNoFakeCable(world, pos)) {
             INetworkCarrier networkCarrier = NetworkHelpers.getNetworkCarrier(world, pos);
 
@@ -278,7 +279,7 @@ public class CableHelpers {
             INetworkElementProvider networkElementProvider = NetworkHelpers.getNetworkElementProvider(world, pos);
             if (networkElementProvider != null) {
                 for (INetworkElement networkElement : networkElementProvider.createNetworkElements(world, pos)) {
-                    networkElement.addDrops(itemStacks, dropMainElement);
+                    networkElement.addDrops(itemStacks, dropMainElement, saveState);
                 }
                 for (ItemStack itemStack : itemStacks) {
                     InventoryHelpers.dropItems(world, itemStack, pos);
@@ -332,7 +333,7 @@ public class CableHelpers {
         IPartContainer partContainer = PartHelpers.getPartContainer(world, pos);
         if (cable == null) return;
 
-        CableHelpers.onCableRemoving(world, pos, false);
+        CableHelpers.onCableRemoving(world, pos, false, false);
         // If the cable has no parts or is not fakeable, remove the block,
         // otherwise mark the cable as being fake.
         if (cableFakeable == null || partContainer == null || !partContainer.hasParts()) {

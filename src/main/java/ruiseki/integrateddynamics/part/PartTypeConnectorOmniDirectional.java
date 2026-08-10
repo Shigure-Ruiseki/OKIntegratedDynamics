@@ -73,8 +73,8 @@ public class PartTypeConnectorOmniDirectional
     }
 
     @Override
-    public ItemStack getItemStack(State state) {
-        ItemStack itemStack = super.getItemStack(state);
+    public ItemStack getItemStack(State state, boolean saveState) {
+        ItemStack itemStack = super.getItemStack(state, saveState);
         if (state.hasConnectorId()) {
             NBTTagCompound tag = ItemNBTHelpers.getNBT(itemStack);
             tag.setInteger(NBT_KEY_ID, state.getGroupId());

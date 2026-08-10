@@ -148,7 +148,7 @@ public interface IPartType<P extends IPartType<P, S>, S extends IPartState<P>>
 
     /**
      * Indicate that the given part should interact with the given side of the target.
-     * 
+     *
      * @param state The state
      * @param side  The side of the target block to interact with.
      *              Null removes the side override.
@@ -164,7 +164,7 @@ public interface IPartType<P extends IPartType<P, S>, S extends IPartState<P>>
 
     /**
      * Get the part target for this part.
-     * 
+     *
      * @param pos   The center position of this part.
      * @param state The state.
      * @return The part target.
@@ -224,10 +224,11 @@ public interface IPartType<P extends IPartType<P, S>, S extends IPartState<P>>
     /**
      * Get the itemstack from the given state.
      *
-     * @param state The state
+     * @param state     The state
+     * @param saveState If the part state should be saved in the item.
      * @return The itemstack possibly containing the state information.
      */
-    public ItemStack getItemStack(S state);
+    public ItemStack getItemStack(S state, boolean saveState);
 
     /**
      * Get the itemstack from the given state.
@@ -254,8 +255,10 @@ public interface IPartType<P extends IPartType<P, S>, S extends IPartState<P>>
      * @param state           The state
      * @param itemStacks      The itemstack list to add to.
      * @param dropMainElement If the part itself should also be dropped.
+     * @param saveState       If the part state should be saved in the item.
      */
-    public void addDrops(PartTarget target, S state, List<ItemStack> itemStacks, boolean dropMainElement);
+    public void addDrops(PartTarget target, S state, List<ItemStack> itemStacks, boolean dropMainElement,
+        boolean saveState);
 
     /**
      * Called when this element is added to the network.

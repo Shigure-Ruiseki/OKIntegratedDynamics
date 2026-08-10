@@ -44,7 +44,8 @@ public class CollidableComponentCableCenter implements ICollidable.IComponent<Fo
     }
 
     @Override
-    public boolean destroy(World world, BlockPos pos, ForgeDirection direction, EntityPlayer player, boolean b) {
+    public boolean destroy(World world, BlockPos pos, ForgeDirection direction, EntityPlayer player,
+        boolean saveState) {
         if (!world.isRemote) {
             CableHelpers.removeCable(world, pos, player);
             return true;

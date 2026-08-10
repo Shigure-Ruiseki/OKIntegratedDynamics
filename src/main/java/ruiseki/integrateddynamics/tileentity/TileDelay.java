@@ -6,6 +6,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraft.world.World;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Queues;
@@ -18,13 +19,20 @@ import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IVariable;
 import ruiseki.integrateddynamics.api.item.IDelayVariableFacade;
 import ruiseki.integrateddynamics.api.item.IVariableFacadeHandlerRegistry;
+import ruiseki.integrateddynamics.api.network.INetworkElement;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
+import ruiseki.integrateddynamics.capability.networkelementprovider.NetworkElementProviderConfig;
+import ruiseki.integrateddynamics.capability.networkelementprovider.NetworkElementProviderSingleton;
 import ruiseki.integrateddynamics.core.evaluate.DelayVariableFacadeHandler;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueHelpers;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeList;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
 import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
 import ruiseki.integrateddynamics.core.item.DelayVariableFacade;
+import ruiseki.integrateddynamics.network.DelayNetworkElement;
+import ruiseki.okcore.capabilities.resolver.BasicCapabilityResolver;
+import ruiseki.okcore.datastructure.BlockPos;
+import ruiseki.okcore.datastructure.DimPos;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.persist.nbt.NBTPersist;
@@ -65,6 +73,15 @@ public class TileDelay extends TileProxy {
                 return list;
             }
         };
+        this.capabilityCache.addCapabilityResolver(
+            BasicCapabilityResolver
+                .create(NetworkElementProviderConfig.CAPABILITY, () -> new NetworkElementProviderSingleton() {
+
+                    @Override
+                    public INetworkElement createNetworkElement(World world, BlockPos blockPos) {
+                        return new DelayNetworkElement(DimPos.of(world, blockPos));
+                    }
+                }));
     }
 
     @Override

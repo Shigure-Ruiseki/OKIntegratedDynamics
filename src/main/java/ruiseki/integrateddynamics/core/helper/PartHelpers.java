@@ -252,13 +252,14 @@ public class PartHelpers {
      * @param side           The side.
      * @param player         The player that is removing the part or null.
      * @param destroyIfEmpty If the cable block must be removed if no other parts are present after this removal.
+     * @param saveState      If the element state should be saved in the item.
      * @return If the block was NOT set to air (false if removed).
      */
     public static boolean removePart(World world, BlockPos pos, ForgeDirection side, @Nullable EntityPlayer player,
-        boolean destroyIfEmpty, boolean dropMainElement) {
+        boolean destroyIfEmpty, boolean dropMainElement, boolean saveState) {
         IPartContainer partContainer = getPartContainer(world, pos);
         ICableFakeable cableFakeable = CableHelpers.getCableFakeable(world, pos);
-        partContainer.removePart(side, player, dropMainElement);
+        partContainer.removePart(side, player, dropMainElement, saveState);
 
         boolean removeCompletely = destroyIfEmpty && (cableFakeable == null || !cableFakeable.isRealCable())
             && !partContainer.hasParts();

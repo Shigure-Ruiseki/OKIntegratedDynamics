@@ -86,13 +86,12 @@ public abstract class PartTypeConnector<P extends PartTypeConnector<P, S>, S ext
         }
 
         @Override
-        public <T> LazyOptional<T> getCapability(Capability<T> capability) {
+        public <T> LazyOptional<T> getCapability(Capability<T> capability, IPartNetwork network, PartTarget target) {
             if (capability == PathElementConfig.CAPABILITY) {
                 return LazyOptional.of(() -> this)
                     .cast();
             }
-            return super.getCapability(capability);
+            return super.getCapability(capability, network, target);
         }
-
     }
 }

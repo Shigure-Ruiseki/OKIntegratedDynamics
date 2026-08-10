@@ -11,6 +11,7 @@ import ruiseki.integrateddynamics.capability.network.NetworkCarrierConfig;
 import ruiseki.integrateddynamics.capability.network.NetworkCarrierDefault;
 import ruiseki.integrateddynamics.capability.path.PathElementConfig;
 import ruiseki.integrateddynamics.capability.path.PathElementTile;
+import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
 import ruiseki.okcore.capabilities.resolver.BasicCapabilityResolver;
 import ruiseki.okcore.datastructure.EnumFacingMap;
 import ruiseki.okcore.persist.nbt.NBTPersist;
@@ -68,6 +69,9 @@ public class TileCableConnectableInventory extends InventoryTileEntity implement
         if (connected.isEmpty()) {
             cable.updateConnections();
         }
+        if (getWorldObj() != null && !getWorldObj().isRemote) {
+            NetworkHelpers.revalidateNetworkElements(getWorldObj(), getPos());
+        }
     }
 
     /**
@@ -81,4 +85,11 @@ public class TileCableConnectableInventory extends InventoryTileEntity implement
         return this.networkCarrier.getNetwork();
     }
 
+    @Override
+    public void onChunkUnload() {
+        super.onChunkUnload();
+        if (getWorldObj() != null && !getWorldObj().isRemote) {
+            NetworkHelpers.invalidateNetworkElements(getWorldObj(), getPos());
+        }
+    }
 }

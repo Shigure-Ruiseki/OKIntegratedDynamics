@@ -55,9 +55,9 @@ public class CollidableComponentParts implements ICollidable.IComponent<ForgeDir
     }
 
     @Override
-    public boolean destroy(World world, BlockPos pos, ForgeDirection position, EntityPlayer player, boolean b) {
+    public boolean destroy(World world, BlockPos pos, ForgeDirection position, EntityPlayer player, boolean saveState) {
         if (!world.isRemote) {
-            return PartHelpers.removePart(world, pos, position, player, true, true);
+            return PartHelpers.removePart(world, pos, position, player, true, true, saveState);
         }
         return false;
     }

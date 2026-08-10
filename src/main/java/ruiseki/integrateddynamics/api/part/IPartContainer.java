@@ -81,11 +81,13 @@ public interface IPartContainer extends ICapabilitySerializable {
     /**
      * Remove the part from a side, can return null if there was no part on that side.
      *
-     * @param side   The side.
-     * @param player The player removing the part.
+     * @param side      The side.
+     * @param player    The player removing the part.
+     * @param saveState If the part state should be saved in the item.
      * @return The removed part or null.
      */
-    public IPartType removePart(ForgeDirection side, @Nullable EntityPlayer player, boolean dropMainElement);
+    public IPartType removePart(ForgeDirection side, @Nullable EntityPlayer player, boolean dropMainElement,
+        boolean saveState);
 
     /**
      * dz

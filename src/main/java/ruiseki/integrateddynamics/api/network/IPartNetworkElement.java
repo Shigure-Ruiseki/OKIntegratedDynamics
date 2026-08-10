@@ -1,5 +1,8 @@
 package ruiseki.integrateddynamics.api.network;
 
+import net.minecraft.util.ResourceLocation;
+
+import ruiseki.integrateddynamics.Reference;
 import ruiseki.integrateddynamics.api.PartStateException;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartState;
@@ -11,8 +14,10 @@ import ruiseki.integrateddynamics.api.part.PartTarget;
  *
  * @author rubensworks
  */
-public interface IPartNetworkElement<P extends IPartType<P, S>, S extends IPartState<P>>
-    extends IEventListenableNetworkElement<P>, IPositionedNetworkElement, ISidedNetworkElement {
+public interface IPartNetworkElement<P extends IPartType<P, S>, S extends IPartState<P>> extends
+    IEventListenableNetworkElement<P>, IPositionedNetworkElement, ISidedNetworkElement, IIdentifiableNetworkElement {
+
+    public static final ResourceLocation GROUP = new ResourceLocation(Reference.MOD_ID, "part");
 
     /**
      * @return The part.
