@@ -59,7 +59,7 @@ public final class TickHandler {
                     if (!network.isCrashed()) {
                         network.update();
                     }
-                } catch (RuntimeException e) {
+                } catch (Throwable e) {
                     network.setCrashed(true);
                     throw e;
                 }

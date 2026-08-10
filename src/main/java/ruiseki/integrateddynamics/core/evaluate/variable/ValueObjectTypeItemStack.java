@@ -31,6 +31,20 @@ public class ValueObjectTypeItemStack extends ValueObjectTypeBase<ValueObjectTyp
         super("itemstack");
     }
 
+    public static String getItemStackDisplayNameUsSafe(ItemStack itemStack) throws NoSuchMethodException {
+        return itemStack != null ? itemStack.getDisplayName() : "";
+    }
+
+    public static String getItemStackDisplayNameSafe(ItemStack itemStack) {
+        // Certain mods may call client-side only methods,
+        // so call a server-side-safe fallback method if that fails.
+        try {
+            return getItemStackDisplayNameUsSafe(itemStack);
+        } catch (NoSuchMethodException e) {
+            return LangHelpers.localize(itemStack.getUnlocalizedName() + ".name");
+        }
+    }
+
     @Override
     public ValueItemStack getDefault() {
         return ValueItemStack.of(null);
@@ -38,8 +52,7 @@ public class ValueObjectTypeItemStack extends ValueObjectTypeBase<ValueObjectTyp
 
     @Override
     public String toCompactString(ValueItemStack value) {
-        ItemStack itemStack = value.getRawValue();
-        return itemStack != null ? itemStack.getDisplayName() : "";
+        return ValueObjectTypeItemStack.getItemStackDisplayNameSafe(value.getRawValue());
     }
 
     @Override

@@ -13,6 +13,7 @@ import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.block.BlockInvisibleLight;
 import ruiseki.integrateddynamics.block.BlockInvisibleLightConfig;
 import ruiseki.integrateddynamics.capability.dynamiclight.DynamicLightConfig;
+import ruiseki.integrateddynamics.core.block.IgnoredBlockStatus;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeLightLevels;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.integrateddynamics.core.part.panel.PartTypePanelVariableDriven;
@@ -42,6 +43,16 @@ public class PartTypePanelLightDynamic
     @Override
     public PartTypePanelLightDynamic.State constructDefaultState() {
         return new PartTypePanelLightDynamic.State();
+    }
+
+    @Override
+    protected IgnoredBlockStatus.Status getStatus(PartTypePanelVariableDriven.State state) {
+        IgnoredBlockStatus.Status status = super.getStatus(state);
+        if (status == IgnoredBlockStatus.Status.ACTIVE && state.getDisplayValue() != null
+            && getLightLevel((State) state, state.getDisplayValue()) == 0) {
+            return IgnoredBlockStatus.Status.INACTIVE;
+        }
+        return status;
     }
 
     @SuppressWarnings("unchecked")

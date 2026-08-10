@@ -15,7 +15,7 @@ import ruiseki.okcore.helper.LangHelpers;
 
 /**
  * A general choice operator.
- * 
+ *
  * @author rubensworks
  */
 public class GeneralChoiceOperator extends GeneralOperator {
@@ -62,7 +62,7 @@ public class GeneralChoiceOperator extends GeneralOperator {
                     this.getOperatorName(),
                     Integer.toString(i));
             }
-            if (i == 0 && getInputTypes()[i] != inputType) {
+            if (i == 0 && !ValueHelpers.correspondsTo(getInputTypes()[i], inputType)) {
                 return new LangHelpers.UnlocalizedString(
                     L10NValues.OPERATOR_ERROR_WRONGTYPE,
                     this.getOperatorName(),

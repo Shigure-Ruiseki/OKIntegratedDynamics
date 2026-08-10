@@ -10,6 +10,7 @@ import org.jetbrains.annotations.Nullable;
 
 import lombok.Data;
 import ruiseki.integrateddynamics.api.network.INetwork;
+import ruiseki.integrateddynamics.api.network.INetworkCarrier;
 import ruiseki.integrateddynamics.api.network.INetworkElement;
 import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
 import ruiseki.okcore.datastructure.DimPos;
@@ -97,7 +98,9 @@ public abstract class NetworkElementBase implements INetworkElement {
     }
 
     protected void revalidatePositioned(INetwork network, DimPos dimPos) {
-        NetworkHelpers.getNetworkCarrier(dimPos.getWorld(), dimPos.getBlockPos())
-            .setNetwork(network);
+        INetworkCarrier networkCarrier = NetworkHelpers.getNetworkCarrier(dimPos.getWorld(), dimPos.getBlockPos());
+        if (networkCarrier != null) {
+            networkCarrier.setNetwork(network);
+        }
     }
 }
