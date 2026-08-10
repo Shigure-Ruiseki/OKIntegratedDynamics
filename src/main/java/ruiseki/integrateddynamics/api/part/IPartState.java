@@ -61,9 +61,9 @@ public interface IPartState<P extends IPartType> {
 
     /**
      * Set the priority of this part in the network.
-     * 
+     *
      * @deprecated Should only be called from
-     *             {@link ruiseki.integrateddynamics.api.network.INetwork#setPriority(INetworkElement, int)}}!
+     *             {@link ruiseki.integrateddynamics.api.network.INetwork#setPriorityAndChannel(INetworkElement, int)}}!
      * @param priority The new priority
      */
     @Deprecated
@@ -73,6 +73,18 @@ public interface IPartState<P extends IPartType> {
      * @return The priority of this part in the network.
      */
     public int getPriority();
+
+    /**
+     * Set the channel for this state.
+     *
+     * @param channel The new channel
+     */
+    public void setChannel(int channel);
+
+    /**
+     * @return This part's channel.
+     */
+    public int getChannel();
 
     /**
      * Check if dirty and reset the dirty state.

@@ -70,7 +70,7 @@ public class EnergyNetwork extends PositionedAddonsNetwork implements IEnergyNet
         int multiplier = GeneralConfig.energyConsumptionMultiplier;
         if (multiplier == 0) return true;
         int consumptionRate = ((IEnergyConsumingNetworkElement) element).getConsumptionRate() * multiplier;
-        return extractEnergy(consumptionRate, true) == consumptionRate;
+        return getChannel(element.getChannel()).extractEnergy(consumptionRate, true) == consumptionRate;
     }
 
     @Override
@@ -86,80 +86,22 @@ public class EnergyNetwork extends PositionedAddonsNetwork implements IEnergyNet
             int multiplier = GeneralConfig.energyConsumptionMultiplier;
             if (multiplier > 0) {
                 int consumptionRate = ((IEnergyConsumingNetworkElement) element).getConsumptionRate() * multiplier;
-                extractEnergy(consumptionRate, false);
+                getChannel(element.getChannel()).extractEnergy(consumptionRate, false);
             }
             ((IEnergyConsumingNetworkElement) element).postUpdate(getNetwork(), true);
         }
     }
 
-    protected int addSafe(int a, int b) {
+    protected static int addSafe(int a, int b) {
         int add = a + b;
         if (add < a || add < b) return Integer.MAX_VALUE;
         return add;
     }
 
     @Override
-    public int getEnergyStored() {
-        int energy = 0;
-        for (PrioritizedPartPos partPos : getPositions()) {
-            IEnergyStorage energyStorage = getEnergyStorage(partPos);
-            if (energyStorage != null) {
-                disablePosition(partPos.getPartPos());
-                energy = addSafe(energy, energyStorage.getEnergyStored());
-                enablePosition(partPos.getPartPos());
-            }
-        }
-        return energy;
-    }
-
-    @Override
-    public int getMaxEnergyStored() {
-        int maxEnergy = 0;
-        for (PrioritizedPartPos partPos : getPositions()) {
-            IEnergyStorage energyStorage = getEnergyStorage(partPos);
-            if (energyStorage != null) {
-                disablePosition(partPos.getPartPos());
-                maxEnergy = addSafe(maxEnergy, energyStorage.getMaxEnergyStored());
-                enablePosition(partPos.getPartPos());
-            }
-        }
-        return maxEnergy;
-    }
-
-    @Override
-    public int receiveEnergy(int energy, boolean simulate) {
-        energy = Math.min(energy, GeneralConfig.energyRateLimit);
-        int toAdd = energy;
-        for (PrioritizedPartPos partPos : getPositions()) {
-            IEnergyStorage energyStorage = getEnergyStorage(partPos);
-            if (energyStorage != null) {
-                disablePosition(partPos.getPartPos());
-                toAdd -= energyStorage.receiveEnergy(toAdd, simulate);
-                enablePosition(partPos.getPartPos());
-            }
-        }
-        return energy - toAdd;
-    }
-
-    @Override
-    public int extractEnergy(int energy, boolean simulate) {
-        energy = Math.min(energy, GeneralConfig.energyRateLimit);
-        int toConsume = energy;
-        for (PrioritizedPartPos partPos : getPositions()) {
-            IEnergyStorage energyStorage = getEnergyStorage(partPos);
-            if (energyStorage != null) {
-                disablePosition(partPos.getPartPos());
-                toConsume -= energyStorage.extractEnergy(toConsume, simulate);
-                enablePosition(partPos.getPartPos());
-            }
-        }
-        return energy - toConsume;
-    }
-
-    @Override
-    public boolean addPosition(PartPos pos, int priority) {
+    public boolean addPosition(PartPos pos, int priority, int channel) {
         IEnergyStorage energyStorage = EnergyHelpers.getEnergyStorage(pos);
-        return energyStorage != null && super.addPosition(pos, priority);
+        return energyStorage != null && super.addPosition(pos, priority, channel);
     }
 
     @Override
@@ -175,5 +117,10 @@ public class EnergyNetwork extends PositionedAddonsNetwork implements IEnergyNet
 
     protected IEnergyStorage getEnergyStorage(PrioritizedPartPos pos) {
         return isPositionDisabled(pos.getPartPos()) ? null : EnergyHelpers.getEnergyStorage(pos.getPartPos());
+    }
+
+    @Override
+    public IEnergyStorage getChannel(int channel) {
+        return new EnergyChannel(this, channel);
     }
 }

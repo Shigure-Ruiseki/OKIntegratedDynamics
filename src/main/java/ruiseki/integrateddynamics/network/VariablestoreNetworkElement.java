@@ -1,5 +1,6 @@
 package ruiseki.integrateddynamics.network;
 
+import ruiseki.integrateddynamics.api.network.IChanneledNetwork;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
 import ruiseki.integrateddynamics.core.network.TileNetworkElement;
@@ -37,6 +38,16 @@ public class VariablestoreNetworkElement extends TileNetworkElement<TileVariable
     @Override
     public int getPriority() {
         return 0;
+    }
+
+    @Override
+    public void setChannel(INetwork network, int channel) {
+
+    }
+
+    @Override
+    public int getChannel() {
+        return IChanneledNetwork.DEFAULT_CHANNEL;
     }
 
     @Override

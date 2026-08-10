@@ -41,6 +41,7 @@ public class GuiPartSettings extends GuiContainerExtended {
 
     private GuiNumberField numberFieldUpdateInterval = null;
     private GuiNumberField numberFieldPriority = null;
+    private GuiNumberField numberFieldChannel = null;
 
     /**
      * Make a new instance.
@@ -68,6 +69,7 @@ public class GuiPartSettings extends GuiContainerExtended {
                 try {
                     int updateInterval = numberFieldUpdateInterval.getInt();
                     int priority = numberFieldPriority.getInt();
+                    int channel = numberFieldChannel.getInt();
                     ValueNotifierHelpers.setValue(
                         getContainer(),
                         ((ContainerPartSettings) getContainer()).getLastUpdateValueId(),
@@ -76,6 +78,10 @@ public class GuiPartSettings extends GuiContainerExtended {
                         getContainer(),
                         ((ContainerPartSettings) getContainer()).getLastPriorityValueId(),
                         priority);
+                    ValueNotifierHelpers.setValue(
+                        getContainer(),
+                        ((ContainerPartSettings) getContainer()).getLastChannelValueId(),
+                        channel);
                 } catch (NumberFormatException e) {}
             }
         });
@@ -85,7 +91,7 @@ public class GuiPartSettings extends GuiContainerExtended {
     public String getGuiTexture() {
         return getContainer().getGuiProvider()
             .getModGui()
-            .getReferenceValue(ModBase.REFKEY_TEXTURE_PATH_GUI) + "partSettings.png";
+            .getReferenceValue(ModBase.REFKEY_TEXTURE_PATH_GUI) + "part_settings.png";
     }
 
     @Override
@@ -124,6 +130,21 @@ public class GuiPartSettings extends GuiContainerExtended {
         numberFieldPriority.setTextColor(16777215);
         numberFieldPriority.setCanLoseFocus(true);
 
+        numberFieldChannel = new GuiNumberField(
+            0,
+            Minecraft.getMinecraft().fontRenderer,
+            guiLeft + 68,
+            guiTop + 59,
+            70,
+            14,
+            true,
+            true);
+        numberFieldChannel.setPositiveOnly(false);
+        numberFieldChannel.setMaxStringLength(15);
+        numberFieldChannel.setVisible(true);
+        numberFieldChannel.setTextColor(16777215);
+        numberFieldChannel.setCanLoseFocus(true);
+
         String save = LangHelpers.localize("gui.integrateddynamics.button.save");
         buttonList.add(
             new GuiButtonText(
@@ -140,7 +161,8 @@ public class GuiPartSettings extends GuiContainerExtended {
     protected void keyTyped(char typedChar, int keyCode) {
         if (!this.checkHotbarKeys(keyCode)) {
             if (!this.numberFieldUpdateInterval.textboxKeyTyped(typedChar, keyCode)
-                && !this.numberFieldPriority.textboxKeyTyped(typedChar, keyCode)) {
+                && !this.numberFieldPriority.textboxKeyTyped(typedChar, keyCode)
+                && !this.numberFieldChannel.textboxKeyTyped(typedChar, keyCode)) {
                 super.keyTyped(typedChar, keyCode);
             }
         }
@@ -150,6 +172,7 @@ public class GuiPartSettings extends GuiContainerExtended {
     protected void mouseClicked(int mouseX, int mouseY, int mouseButton) {
         this.numberFieldUpdateInterval.mouseClicked(mouseX, mouseY, mouseButton);
         this.numberFieldPriority.mouseClicked(mouseX, mouseY, mouseButton);
+        this.numberFieldChannel.mouseClicked(mouseX, mouseY, mouseButton);
         super.mouseClicked(mouseX, mouseY, mouseButton);
     }
 
@@ -159,6 +182,7 @@ public class GuiPartSettings extends GuiContainerExtended {
         super.drawGuiContainerBackgroundLayer(partialTicks, mouseX, mouseY);
         numberFieldUpdateInterval.drawTextBox(Minecraft.getMinecraft(), mouseX - guiLeft, mouseY - guiTop);
         numberFieldPriority.drawTextBox(Minecraft.getMinecraft(), mouseX - guiLeft, mouseY - guiTop);
+        numberFieldChannel.drawTextBox(Minecraft.getMinecraft(), mouseX - guiLeft, mouseY - guiTop);
         fontRendererObj.drawString(
             LangHelpers.localize("gui.integrateddynamics.partsettings.updateInterval"),
             guiLeft + 8,
@@ -168,6 +192,11 @@ public class GuiPartSettings extends GuiContainerExtended {
             LangHelpers.localize("gui.integrateddynamics.partsettings.priority"),
             guiLeft + 8,
             guiTop + 37,
+            Helpers.RGBToInt(0, 0, 0));
+        fontRendererObj.drawString(
+            LangHelpers.localize("gui.integrateddynamics.partsettings.channel"),
+            guiLeft + 8,
+            guiTop + 62,
             Helpers.RGBToInt(0, 0, 0));
     }
 
@@ -180,6 +209,10 @@ public class GuiPartSettings extends GuiContainerExtended {
         if (valueId == ((ContainerPartSettings) getContainer()).getLastPriorityValueId()) {
             numberFieldPriority
                 .setText(Integer.toString(((ContainerPartSettings) getContainer()).getLastPriorityValue()));
+        }
+        if (valueId == ((ContainerPartSettings) getContainer()).getLastChannelValueId()) {
+            numberFieldChannel
+                .setText(Integer.toString(((ContainerPartSettings) getContainer()).getLastChannelValue()));
         }
     }
 }

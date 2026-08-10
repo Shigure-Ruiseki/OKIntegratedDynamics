@@ -155,7 +155,7 @@ public class GuiAspectSettings extends GuiContainerExtended {
     public String getGuiTexture() {
         return getContainer().getGuiProvider()
             .getModGui()
-            .getReferenceValue(ModBase.REFKEY_TEXTURE_PATH_GUI) + "aspectSettings.png";
+            .getReferenceValue(ModBase.REFKEY_TEXTURE_PATH_GUI) + "aspect_settings.png";
     }
 
     @Override

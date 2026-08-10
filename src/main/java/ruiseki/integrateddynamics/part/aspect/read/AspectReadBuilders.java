@@ -16,19 +16,23 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.Nullable;
 
 import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 
+import cofh.api.energy.IEnergyStorage;
 import ruiseki.commoncapabilities.api.capability.temperature.ITemperature;
 import ruiseki.commoncapabilities.api.capability.work.IWorker;
 import ruiseki.commoncapabilities.capability.temperature.TemperatureConfig;
 import ruiseki.commoncapabilities.capability.worker.WorkerConfig;
 import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
+import ruiseki.integrateddynamics.api.network.IChanneledNetwork;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.api.part.aspect.property.IAspectProperties;
 import ruiseki.integrateddynamics.api.part.aspect.property.IAspectPropertyTypeInstance;
+import ruiseki.integrateddynamics.capability.network.EnergyNetworkConfig;
 import ruiseki.integrateddynamics.core.NoteBlockEventReceiver;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueObjectTypeBlock;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueObjectTypeEntity;
@@ -505,6 +509,16 @@ public class AspectReadBuilders {
 
     public static final class Network {
 
+        public static final IAspectPropertyTypeInstance<ValueTypeInteger, ValueTypeInteger.ValueInteger> PROPERTY_CHANNEL = new AspectPropertyTypeInstance<>(
+            ValueTypes.INTEGER,
+            "aspect.aspecttypes.integrateddynamics.integer.channel.name",
+            Predicates.alwaysTrue());
+        public static final IAspectProperties PROPERTIES = new AspectProperties(
+            ImmutableList.<IAspectPropertyTypeInstance>of(PROPERTY_CHANNEL));
+        static {
+            PROPERTIES.setValue(PROPERTY_CHANNEL, ValueTypeInteger.ValueInteger.of(IChanneledNetwork.WILDCARD_CHANNEL));
+        }
+
         public static final IAspectValuePropagator<Pair<PartTarget, IAspectProperties>, INetwork> PROP_GET_NETWORK = new IAspectValuePropagator<Pair<PartTarget, IAspectProperties>, INetwork>() {
 
             @Override
@@ -520,6 +534,24 @@ public class AspectReadBuilders {
             .handle(PROP_GET_NETWORK, "network");
         public static final AspectBuilder<ValueTypeInteger.ValueInteger, ValueTypeInteger, INetwork> BUILDER_INTEGER = AspectReadBuilders.BUILDER_INTEGER
             .handle(PROP_GET_NETWORK, "network");
+
+        public static final IAspectValuePropagator<Pair<PartTarget, IAspectProperties>, IEnergyStorage> PROP_GET_ENERGY_CHANNEL = input -> {
+            DimPos dimPos = input.getLeft()
+                .getTarget()
+                .getPos();
+            INetwork network = NetworkHelpers.getNetwork(dimPos.getWorld(), dimPos.getBlockPos());
+            int channel = input.getRight()
+                .getValue(PROPERTY_CHANNEL)
+                .getRawValue();
+            return network != null && network.getCapability(EnergyNetworkConfig.CAPABILITY)
+                .isPresent() ? network.getCapability(EnergyNetworkConfig.CAPABILITY)
+                    .getOrNull()
+                    .getChannel(channel) : null;
+        };
+
+        public static final AspectBuilder<ValueTypeInteger.ValueInteger, ValueTypeInteger, IEnergyStorage> ENERGY_BUILDER = AspectReadBuilders.BUILDER_INTEGER
+            .handle(PROP_GET_ENERGY_CHANNEL, "network")
+            .withProperties(PROPERTIES);
 
     }
 

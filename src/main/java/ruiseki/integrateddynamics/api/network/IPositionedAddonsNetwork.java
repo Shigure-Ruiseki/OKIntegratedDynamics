@@ -25,7 +25,7 @@ public interface IPositionedAddonsNetwork {
      * @param priority The priority.
      * @return If the position was added, otherwise it was already present.
      */
-    public boolean addPosition(PartPos pos, int priority);
+    public boolean addPosition(PartPos pos, int priority, int channel);
 
     /**
      * Remove the given position.
@@ -36,7 +36,7 @@ public interface IPositionedAddonsNetwork {
 
     /**
      * Check if the given position is disabled.
-     * 
+     *
      * @param pos The position.
      * @return If it is disabled.
      */
@@ -44,14 +44,14 @@ public interface IPositionedAddonsNetwork {
 
     /**
      * Disable a position.
-     * 
+     *
      * @param pos The position.
      */
     public void disablePosition(PartPos pos);
 
     /**
      * Enable a position.
-     * 
+     *
      * @param pos The position.
      */
     public void enablePosition(PartPos pos);
@@ -59,11 +59,12 @@ public interface IPositionedAddonsNetwork {
     public static class PrioritizedPartPos implements Comparable<PrioritizedPartPos> {
 
         private final PartPos partPos;
-        private final int priority;
+        private final int priority, channel;
 
-        private PrioritizedPartPos(PartPos partPos, int priority) {
+        private PrioritizedPartPos(PartPos partPos, int priority, int channel) {
             this.partPos = partPos;
             this.priority = priority;
+            this.channel = channel;
         }
 
         @Override
@@ -88,8 +89,8 @@ public interface IPositionedAddonsNetwork {
             return compPriority;
         }
 
-        public static PrioritizedPartPos of(PartPos pos, int priority) {
-            return new PrioritizedPartPos(pos, priority);
+        public static PrioritizedPartPos of(PartPos pos, int priority, int channel) {
+            return new PrioritizedPartPos(pos, priority, channel);
         }
 
         public PartPos getPartPos() {
@@ -98,6 +99,10 @@ public interface IPositionedAddonsNetwork {
 
         public int getPriority() {
             return priority;
+        }
+
+        public int getChannel() {
+            return channel;
         }
     }
 

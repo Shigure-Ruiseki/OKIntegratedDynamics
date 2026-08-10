@@ -4,6 +4,7 @@ import org.apache.logging.log4j.Level;
 import org.jetbrains.annotations.Nullable;
 
 import ruiseki.integrateddynamics.IntegratedDynamics;
+import ruiseki.integrateddynamics.api.network.IChanneledNetwork;
 import ruiseki.integrateddynamics.api.network.IEventListenableNetworkElement;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
@@ -64,6 +65,16 @@ public class ProxyNetworkElement extends TileNetworkElement<TileProxy>
     @Override
     public int getPriority() {
         return 0;
+    }
+
+    @Override
+    public void setChannel(INetwork network, int channel) {
+
+    }
+
+    @Override
+    public int getChannel() {
+        return IChanneledNetwork.DEFAULT_CHANNEL;
     }
 
     @Override

@@ -626,22 +626,14 @@ public class Aspects {
                 .appendKind("batterycount")
                 .buildRead();
 
-            public static final IAspectRead<ValueTypeInteger.ValueInteger, ValueTypeInteger> INTEGER_ENERGY_STORED = AspectReadBuilders.Network.BUILDER_INTEGER
-                .handle(
-                    (network) -> network != null && network.getCapability(EnergyNetworkConfig.CAPABILITY)
-                        .isPresent() ? network.getCapability(EnergyNetworkConfig.CAPABILITY)
-                            .getOrNull()
-                            .getEnergyStored() : 0)
+            public static final IAspectRead<ValueTypeInteger.ValueInteger, ValueTypeInteger> INTEGER_ENERGY_STORED = AspectReadBuilders.Network.ENERGY_BUILDER
+                .handle(storage -> storage != null ? storage.getEnergyStored() : 0)
                 .handle(AspectReadBuilders.PROP_GET_INTEGER, "energy")
                 .appendKind("stored")
                 .buildRead();
 
-            public static final IAspectRead<ValueTypeInteger.ValueInteger, ValueTypeInteger> INTEGER_ENERGY_MAX = AspectReadBuilders.Network.BUILDER_INTEGER
-                .handle(
-                    (network) -> network != null && network.getCapability(EnergyNetworkConfig.CAPABILITY)
-                        .isPresent() ? network.getCapability(EnergyNetworkConfig.CAPABILITY)
-                            .getOrNull()
-                            .getMaxEnergyStored() : 0)
+            public static final IAspectRead<ValueTypeInteger.ValueInteger, ValueTypeInteger> INTEGER_ENERGY_MAX = AspectReadBuilders.Network.ENERGY_BUILDER
+                .handle(storage -> storage != null ? storage.getMaxEnergyStored() : 0)
                 .handle(AspectReadBuilders.PROP_GET_INTEGER, "energy")
                 .appendKind("max")
                 .buildRead();

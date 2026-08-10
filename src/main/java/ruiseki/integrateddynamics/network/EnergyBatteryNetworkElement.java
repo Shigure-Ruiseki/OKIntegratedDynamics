@@ -8,6 +8,7 @@ import net.minecraft.world.IBlockAccess;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import ruiseki.integrateddynamics.api.network.IChanneledNetwork;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.INetworkElement;
 import ruiseki.integrateddynamics.api.part.PartPos;
@@ -65,7 +66,7 @@ public class EnergyBatteryNetworkElement extends NetworkElementBase {
     @Override
     public boolean onNetworkAddition(INetwork network) {
         return NetworkHelpers.getEnergyNetwork(network)
-            .addPosition(PartPos.of(getPos(), null), 0);
+            .addPosition(PartPos.of(getPos(), null), 0, 0);
     }
 
     @Override
@@ -92,6 +93,16 @@ public class EnergyBatteryNetworkElement extends NetworkElementBase {
     @Override
     public int getPriority() {
         return 0;
+    }
+
+    @Override
+    public void setChannel(INetwork network, int channel) {
+
+    }
+
+    @Override
+    public int getChannel() {
+        return IChanneledNetwork.DEFAULT_CHANNEL;
     }
 
     @Override

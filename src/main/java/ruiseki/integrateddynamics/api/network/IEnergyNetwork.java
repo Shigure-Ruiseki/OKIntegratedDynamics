@@ -7,11 +7,10 @@ import cofh.api.energy.IEnergyStorage;
  *
  * @author rubensworks
  */
-public interface IEnergyNetwork extends IEnergyStorage, IPositionedAddonsNetwork {
+public interface IEnergyNetwork extends IChanneledNetwork<IEnergyStorage>, IPositionedAddonsNetwork {
 
     /**
      * @return The current network consumption rate.
      */
     public int getConsumptionRate();
-
 }

@@ -110,7 +110,7 @@ public interface INetworkElement extends Comparable<INetworkElement> {
     /**
      * Set the priority of this element in the network.
      *
-     * @deprecated Should only be called from {@link INetwork#setPriority(INetworkElement, int)}!
+     * @deprecated Should only be called from {@link INetwork#setPriorityAndChannel(INetworkElement, int, int)}!
      * @param priority The new priority
      */
     @Deprecated
@@ -122,15 +122,30 @@ public interface INetworkElement extends Comparable<INetworkElement> {
     public int getPriority();
 
     /**
-     * Invalidate this network element.
+     * Set the channel of this element in the network.
      * 
+     * @deprecated Should only be called from {@link INetwork#setPriorityAndChannel(INetworkElement, int, int)}!
+     * @param network The network this element is present in.
+     * @param channel The new channel
+     */
+    @Deprecated
+    public void setChannel(INetwork network, int channel);
+
+    /**
+     * @return The channel of this element in the network.
+     */
+    public int getChannel();
+
+    /**
+     * Invalidate this network element.
+     *
      * @param network The network.
      */
     public void invalidate(INetwork network);
 
     /**
      * Check if this element can be revalidated if it has been invalidated.
-     * 
+     *
      * @param network The network.
      * @return If it can be revalidated.
      */
@@ -138,7 +153,7 @@ public interface INetworkElement extends Comparable<INetworkElement> {
 
     /**
      * Revalidate this network element after it has been invalidated.
-     * 
+     *
      * @param network The network.
      */
     public void revalidate(INetwork network);
