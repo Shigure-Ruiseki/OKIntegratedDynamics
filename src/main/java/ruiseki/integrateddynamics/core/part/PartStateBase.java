@@ -6,6 +6,10 @@ import java.util.Map;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.util.Constants;
+import net.minecraftforge.common.util.ForgeDirection;
+
+import org.jetbrains.annotations.Nullable;
 
 import ruiseki.integrateddynamics.GeneralConfig;
 import ruiseki.integrateddynamics.IntegratedDynamics;
@@ -35,6 +39,7 @@ public abstract class PartStateBase<P extends IPartType> implements IPartState<P
     private int updateInterval = getDefaultUpdateInterval();
     private int priority = 0;
     private int channel = 0;
+    private ForgeDirection targetSide = null;
     private int id = -1;
     private Map<IAspect, IAspectProperties> aspectProperties = new IdentityHashMap<>();
     private boolean enabled = true;
@@ -46,6 +51,9 @@ public abstract class PartStateBase<P extends IPartType> implements IPartState<P
         tag.setInteger("updateInterval", this.updateInterval);
         tag.setInteger("priority", this.priority);
         tag.setInteger("channel", this.channel);
+        if (this.targetSide != null) {
+            tag.setInteger("targetSide", this.targetSide.ordinal());
+        }
         tag.setInteger("id", this.id);
         writeAspectProperties("aspectProperties", tag);
         tag.setBoolean("enabled", this.enabled);
@@ -59,6 +67,9 @@ public abstract class PartStateBase<P extends IPartType> implements IPartState<P
         this.updateInterval = tag.getInteger("updateInterval");
         this.priority = tag.getInteger("priority");
         this.channel = tag.getInteger("channel");
+        if (tag.hasKey("targetSide", Constants.NBT.TAG_INT)) {
+            this.targetSide = ForgeDirection.VALID_DIRECTIONS[tag.getInteger("targetSide")];
+        }
         this.id = tag.getInteger("id");
         this.aspectProperties.clear();
         readAspectProperties("aspectProperties", tag);
@@ -146,6 +157,17 @@ public abstract class PartStateBase<P extends IPartType> implements IPartState<P
     @Override
     public int getChannel() {
         return channel;
+    }
+
+    @Override
+    public void setTargetSideOverride(ForgeDirection targetSide) {
+        this.targetSide = targetSide;
+    }
+
+    @Nullable
+    @Override
+    public ForgeDirection getTargetSideOverride() {
+        return targetSide;
     }
 
     @Override

@@ -1,10 +1,20 @@
 package ruiseki.integrateddynamics.core.client.gui.container;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+import java.util.stream.Collectors;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.EnumChatFormatting;
+import net.minecraftforge.common.util.ForgeDirection;
 
 import org.lwjgl.input.Keyboard;
+
+import com.google.common.collect.Sets;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -13,6 +23,8 @@ import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.core.client.gui.ExtendedGuiHandler;
+import ruiseki.integrateddynamics.core.client.gui.GuiTextFieldDropdown;
+import ruiseki.integrateddynamics.core.client.gui.IDropdownEntry;
 import ruiseki.integrateddynamics.core.inventory.container.ContainerPartSettings;
 import ruiseki.okcore.client.gui.component.button.GuiButtonText;
 import ruiseki.okcore.client.gui.component.input.GuiNumberField;
@@ -42,6 +54,8 @@ public class GuiPartSettings extends GuiContainerExtended {
     private GuiNumberField numberFieldUpdateInterval = null;
     private GuiNumberField numberFieldPriority = null;
     private GuiNumberField numberFieldChannel = null;
+    private GuiTextFieldDropdown<ForgeDirection> dropdownFieldSide = null;
+    private List<SideDropdownEntry> dropdownEntries;
 
     /**
      * Make a new instance.
@@ -70,6 +84,10 @@ public class GuiPartSettings extends GuiContainerExtended {
                     int updateInterval = numberFieldUpdateInterval.getInt();
                     int priority = numberFieldPriority.getInt();
                     int channel = numberFieldChannel.getInt();
+                    ForgeDirection selectedSide = dropdownFieldSide.getSelectedDropdownPossibility() == null ? null
+                        : dropdownFieldSide.getSelectedDropdownPossibility()
+                            .getValue();
+                    int side = selectedSide != null && selectedSide != getDefaultSide() ? selectedSide.ordinal() : -1;
                     ValueNotifierHelpers.setValue(
                         getContainer(),
                         ((ContainerPartSettings) getContainer()).getLastUpdateValueId(),
@@ -82,6 +100,8 @@ public class GuiPartSettings extends GuiContainerExtended {
                         getContainer(),
                         ((ContainerPartSettings) getContainer()).getLastChannelValueId(),
                         channel);
+                    ValueNotifierHelpers
+                        .setValue(getContainer(), ((ContainerPartSettings) getContainer()).getLastSideValueId(), side);
                 } catch (NumberFormatException e) {}
             }
         });
@@ -94,16 +114,50 @@ public class GuiPartSettings extends GuiContainerExtended {
             .getReferenceValue(ModBase.REFKEY_TEXTURE_PATH_GUI) + "part_settings.png";
     }
 
+    protected ForgeDirection getCurrentSide() {
+        return getTarget().getTarget()
+            .getSide();
+    }
+
+    protected ForgeDirection getDefaultSide() {
+        return getTarget().getCenter()
+            .getSide()
+            .getOpposite();
+    }
+
+    protected String getSideText(ForgeDirection side) {
+        return side.name()
+            .toLowerCase(Locale.ENGLISH);
+    }
+
     @Override
     public void initGui() {
         super.initGui();
         Keyboard.enableRepeatEvents(true);
 
-        numberFieldUpdateInterval = new GuiNumberField(
+        dropdownEntries = Arrays.stream(ForgeDirection.VALID_DIRECTIONS)
+            .map(SideDropdownEntry::new)
+            .collect(Collectors.toList());
+        dropdownFieldSide = new GuiTextFieldDropdown(
             0,
             Minecraft.getMinecraft().fontRenderer,
             guiLeft + 106,
             guiTop + 9,
+            70,
+            14,
+            true,
+            Sets.newHashSet(dropdownEntries));
+        setSideInDropdownField(getCurrentSide());
+        dropdownFieldSide.setMaxStringLength(15);
+        dropdownFieldSide.setVisible(true);
+        dropdownFieldSide.setTextColor(16777215);
+        dropdownFieldSide.setCanLoseFocus(true);
+
+        numberFieldUpdateInterval = new GuiNumberField(
+            0,
+            Minecraft.getMinecraft().fontRenderer,
+            guiLeft + 106,
+            guiTop + 34,
             70,
             14,
             true,
@@ -117,7 +171,7 @@ public class GuiPartSettings extends GuiContainerExtended {
             0,
             Minecraft.getMinecraft().fontRenderer,
             guiLeft + 106,
-            guiTop + 34,
+            guiTop + 59,
             70,
             14,
             true,
@@ -132,7 +186,7 @@ public class GuiPartSettings extends GuiContainerExtended {
             0,
             Minecraft.getMinecraft().fontRenderer,
             guiLeft + 106,
-            guiTop + 59,
+            guiTop + 84,
             70,
             14,
             true,
@@ -160,7 +214,8 @@ public class GuiPartSettings extends GuiContainerExtended {
         if (!this.checkHotbarKeys(keyCode)) {
             if (!this.numberFieldUpdateInterval.textboxKeyTyped(typedChar, keyCode)
                 && !this.numberFieldPriority.textboxKeyTyped(typedChar, keyCode)
-                && !this.numberFieldChannel.textboxKeyTyped(typedChar, keyCode)) {
+                && !this.numberFieldChannel.textboxKeyTyped(typedChar, keyCode)
+                && !this.dropdownFieldSide.textboxKeyTyped(typedChar, keyCode)) {
                 super.keyTyped(typedChar, keyCode);
             }
         }
@@ -171,6 +226,7 @@ public class GuiPartSettings extends GuiContainerExtended {
         this.numberFieldUpdateInterval.mouseClicked(mouseX, mouseY, mouseButton);
         this.numberFieldPriority.mouseClicked(mouseX, mouseY, mouseButton);
         this.numberFieldChannel.mouseClicked(mouseX, mouseY, mouseButton);
+        this.dropdownFieldSide.mouseClicked(mouseX, mouseY, mouseButton);
         super.mouseClicked(mouseX, mouseY, mouseButton);
     }
 
@@ -181,26 +237,41 @@ public class GuiPartSettings extends GuiContainerExtended {
         numberFieldUpdateInterval.drawTextBox(Minecraft.getMinecraft(), mouseX, mouseY);
         numberFieldPriority.drawTextBox(Minecraft.getMinecraft(), mouseX, mouseY);
         numberFieldChannel.drawTextBox(Minecraft.getMinecraft(), mouseX, mouseY);
+        dropdownFieldSide.drawTextBox(Minecraft.getMinecraft(), mouseX, mouseY);
         fontRendererObj.drawString(
-            LangHelpers.localize("gui.integrateddynamics.partsettings.update_interval"),
+            LangHelpers.localize("gui.integrateddynamics.partsettings.side"),
             guiLeft + 8,
             guiTop + 12,
             Helpers.RGBToInt(0, 0, 0));
         fontRendererObj.drawString(
-            LangHelpers.localize("gui.integrateddynamics.partsettings.priority"),
+            LangHelpers.localize("gui.integrateddynamics.partsettings.update_interval"),
             guiLeft + 8,
             guiTop + 37,
             Helpers.RGBToInt(0, 0, 0));
-        fontRendererObj.drawString(getChannelText(), guiLeft + 8, guiTop + 62, Helpers.RGBToInt(0, 0, 0));
-    }
-
-    protected String getChannelText() {
-        return LangHelpers.localize("gui.integrateddynamics.partsettings.channel");
+        fontRendererObj.drawString(
+            LangHelpers.localize("gui.integrateddynamics.partsettings.priority"),
+            guiLeft + 8,
+            guiTop + 62,
+            Helpers.RGBToInt(0, 0, 0));
+        fontRendererObj.drawString(
+            LangHelpers.localize("gui.integrateddynamics.partsettings.channel"),
+            guiLeft + 8,
+            guiTop + 87,
+            Helpers.RGBToInt(0, 0, 0));
     }
 
     @Override
     protected int getBaseXSize() {
         return 214;
+    }
+
+    @Override
+    protected int getBaseYSize() {
+        return 191;
+    }
+
+    protected void setSideInDropdownField(ForgeDirection side) {
+        dropdownFieldSide.selectPossibility(dropdownEntries.get(side.ordinal()));
     }
 
     @Override
@@ -217,5 +288,39 @@ public class GuiPartSettings extends GuiContainerExtended {
             numberFieldChannel
                 .setText(Integer.toString(((ContainerPartSettings) getContainer()).getLastChannelValue()));
         }
+        if (valueId == ((ContainerPartSettings) getContainer()).getLastSideValueId()) {
+            int side = ((ContainerPartSettings) getContainer()).getLastSideValue();
+            setSideInDropdownField(side == -1 ? getDefaultSide() : ForgeDirection.VALID_DIRECTIONS[side]);
+        }
     }
+
+    public class SideDropdownEntry implements IDropdownEntry<ForgeDirection> {
+
+        private final ForgeDirection side;
+
+        public SideDropdownEntry(ForgeDirection side) {
+            this.side = side;
+        }
+
+        @Override
+        public String getMatchString() {
+            return getSideText(side);
+        }
+
+        @Override
+        public String getDisplayString() {
+            return (getDefaultSide() == this.side ? EnumChatFormatting.YELLOW : "") + getMatchString();
+        }
+
+        @Override
+        public List<String> getTooltip() {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public ForgeDirection getValue() {
+            return this.side;
+        }
+    }
+
 }

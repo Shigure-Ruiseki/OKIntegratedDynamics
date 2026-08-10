@@ -24,7 +24,6 @@ import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartState;
 import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartPos;
-import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.api.part.aspect.IAspectRead;
 import ruiseki.integrateddynamics.api.part.read.IPartStateReader;
 import ruiseki.integrateddynamics.api.part.read.IPartTypeReader;
@@ -106,9 +105,10 @@ public class PartNetwork extends FullNetworkListenerAdapter implements IPartNetw
             return false;
         }
         try {
-            return ((IPartTypeReader) getPartType(partId))
-                .getVariable(PartTarget.fromCenter(partPositions.get(partId)), (IPartStateReader) partState, aspect)
-                != null;
+            return ((IPartTypeReader) partType).getVariable(
+                partType.getTarget(partPositions.get(partId), partState),
+                (IPartStateReader) partState,
+                aspect) != null;
         } catch (IllegalArgumentException e) {
             return false;
         }

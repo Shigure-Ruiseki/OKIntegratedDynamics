@@ -1,6 +1,9 @@
 package ruiseki.integrateddynamics.api.part;
 
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraftforge.common.util.ForgeDirection;
+
+import org.jetbrains.annotations.Nullable;
 
 import ruiseki.integrateddynamics.api.network.INetworkElement;
 import ruiseki.integrateddynamics.api.part.aspect.IAspect;
@@ -88,6 +91,20 @@ public interface IPartState<P extends IPartType> {
      * @return This part's channel.
      */
     public int getChannel();
+
+    /**
+     * Indicate that the given part should interact with the given side of the target.
+     * 
+     * @param side The side of the target block to interact with.
+     *             Null removes the side override.
+     */
+    public void setTargetSideOverride(@Nullable ForgeDirection side);
+
+    /**
+     * @return The side of the target block to interact with. Can be null.
+     */
+    @Nullable
+    public ForgeDirection getTargetSideOverride();
 
     /**
      * Check if dirty and reset the dirty state.

@@ -74,6 +74,9 @@ public class TileMultipartTicking extends TileEntityOK
     private EnumFacingMap<Boolean> redstoneStrong = EnumFacingMap.newMap();
     @Getter
     @NBTPersist
+    private EnumFacingMap<Integer> lastRedstonePulses = EnumFacingMap.newMap();
+    @Getter
+    @NBTPersist
     private EnumFacingMap<Integer> lightLevels = EnumFacingMap.newMap();
     private EnumFacingMap<Integer> previousLightLevels;
     @Getter

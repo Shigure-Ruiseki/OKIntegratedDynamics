@@ -10,17 +10,20 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.apache.logging.log4j.Level;
 
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartType;
+import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.api.part.aspect.IAspect;
 import ruiseki.integrateddynamics.core.helper.PartHelpers;
 import ruiseki.integrateddynamics.core.part.PartTypeBase;
 import ruiseki.okcore.client.gui.GuiHandler;
 import ruiseki.okcore.datastructure.BlockPos;
+import ruiseki.okcore.datastructure.DimPos;
 import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.init.ModBase;
 
@@ -47,7 +50,7 @@ public class ExtendedGuiHandler extends GuiHandler {
             public Object getServerGuiElement(int id, EntityPlayer player, World world, int x, int y, int z,
                 Class<? extends Container> containerClass, ForgeDirection side) {
                 try {
-                    Pair<IPartContainer, PartTypeBase> data = getPartConstructionData(
+                    Triple<IPartContainer, PartTypeBase, PartTarget> data = getPartConstructionData(
                         world,
                         new BlockPos(x, y, z),
                         side);
@@ -58,7 +61,7 @@ public class ExtendedGuiHandler extends GuiHandler {
                             EntityPlayer.class,
                             PartTarget.class,
                             IPartContainer.class,
-                            data.getRight()
+                            data.getMiddle()
                                 .getPartTypeClass());
                     } catch (NoSuchMethodException e) {
                         containerConstructor = containerClass.getConstructor(
@@ -67,11 +70,7 @@ public class ExtendedGuiHandler extends GuiHandler {
                             IPartContainer.class,
                             IPartType.class);
                     }
-                    return containerConstructor.newInstance(
-                        player,
-                        PartTarget.fromCenter(world, new BlockPos(x, y, z), side),
-                        data.getLeft(),
-                        data.getRight());
+                    return containerConstructor.newInstance(player, data.getRight(), data.getLeft(), data.getMiddle());
                 } catch (InstantiationException | IllegalAccessException | InvocationTargetException
                     | NoSuchMethodException e) {
                     e.printStackTrace();
@@ -87,7 +86,7 @@ public class ExtendedGuiHandler extends GuiHandler {
                 public Object getClientGuiElement(int id, EntityPlayer player, World world, int x, int y, int z,
                     Class<? extends GuiScreen> guiClass, ForgeDirection side) {
                     try {
-                        Pair<IPartContainer, PartTypeBase> data = getPartConstructionData(
+                        Triple<IPartContainer, PartTypeBase, PartTarget> data = getPartConstructionData(
                             world,
                             new BlockPos(x, y, z),
                             side);
@@ -98,7 +97,7 @@ public class ExtendedGuiHandler extends GuiHandler {
                                 EntityPlayer.class,
                                 PartTarget.class,
                                 IPartContainer.class,
-                                data.getRight()
+                                data.getMiddle()
                                     .getPartTypeClass());
                         } catch (NoSuchMethodException e) {
                             guiConstructor = guiClass.getConstructor(
@@ -107,11 +106,7 @@ public class ExtendedGuiHandler extends GuiHandler {
                                 IPartContainer.class,
                                 IPartType.class);
                         }
-                        return guiConstructor.newInstance(
-                            player,
-                            PartTarget.fromCenter(world, new BlockPos(x, y, z), side),
-                            data.getLeft(),
-                            data.getRight());
+                        return guiConstructor.newInstance(player, data.getRight(), data.getLeft(), data.getMiddle());
                     } catch (InstantiationException | IllegalAccessException | InvocationTargetException
                         | NoSuchMethodException e) {
                         e.printStackTrace();
@@ -128,7 +123,7 @@ public class ExtendedGuiHandler extends GuiHandler {
                 Class<? extends Container> containerClass, Pair<ForgeDirection, IAspect> dataIn) {
                 try {
                     if (dataIn == null) return null;
-                    Pair<IPartContainer, PartTypeBase> data = getPartConstructionData(
+                    Triple<IPartContainer, PartTypeBase, PartTarget> data = getPartConstructionData(
                         world,
                         new BlockPos(x, y, z),
                         dataIn.getLeft());
@@ -139,12 +134,8 @@ public class ExtendedGuiHandler extends GuiHandler {
                         IPartContainer.class,
                         IPartType.class,
                         IAspect.class);
-                    return containerConstructor.newInstance(
-                        player,
-                        PartTarget.fromCenter(world, new BlockPos(x, y, z), dataIn.getLeft()),
-                        data.getLeft(),
-                        data.getRight(),
-                        dataIn.getRight());
+                    return containerConstructor
+                        .newInstance(player, data.getRight(), data.getLeft(), data.getMiddle(), dataIn.getRight());
                 } catch (InstantiationException | IllegalAccessException | InvocationTargetException
                     | NoSuchMethodException e) {
                     e.printStackTrace();
@@ -161,7 +152,7 @@ public class ExtendedGuiHandler extends GuiHandler {
                     Class<? extends GuiScreen> guiClass, Pair<ForgeDirection, IAspect> dataIn) {
                     try {
                         if (dataIn == null) return null;
-                        Pair<IPartContainer, PartTypeBase> data = getPartConstructionData(
+                        Triple<IPartContainer, PartTypeBase, PartTarget> data = getPartConstructionData(
                             world,
                             new BlockPos(x, y, z),
                             dataIn.getLeft());
@@ -172,12 +163,8 @@ public class ExtendedGuiHandler extends GuiHandler {
                             IPartContainer.class,
                             IPartType.class,
                             IAspect.class);
-                        return guiConstructor.newInstance(
-                            player,
-                            PartTarget.fromCenter(world, new BlockPos(x, y, z), dataIn.getLeft()),
-                            data.getLeft(),
-                            data.getRight(),
-                            dataIn.getRight());
+                        return guiConstructor
+                            .newInstance(player, data.getRight(), data.getLeft(), data.getMiddle(), dataIn.getRight());
                     } catch (InstantiationException | IllegalAccessException | InvocationTargetException
                         | NoSuchMethodException e) {
                         e.printStackTrace();
@@ -188,7 +175,7 @@ public class ExtendedGuiHandler extends GuiHandler {
         }
     }
 
-    private static Pair<IPartContainer, PartTypeBase> getPartConstructionData(World world, BlockPos pos,
+    private static Triple<IPartContainer, PartTypeBase, PartTarget> getPartConstructionData(World world, BlockPos pos,
         ForgeDirection side) {
         IPartContainer partContainer = PartHelpers.getPartContainer(world, pos);
         if (partContainer == null) {
@@ -204,7 +191,9 @@ public class ExtendedGuiHandler extends GuiHandler {
             return null;
         }
 
-        return Pair.of(partContainer, (PartTypeBase) partType);
+        PartTarget target = partType
+            .getTarget(PartPos.of(DimPos.of(world, pos), side), partContainer.getPartState(side));
+        return Triple.of(partContainer, (PartTypeBase) partType, target);
     }
 
     public ExtendedGuiHandler(ModBase mod) {

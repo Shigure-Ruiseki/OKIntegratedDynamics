@@ -89,6 +89,27 @@ public abstract class PartTypeAdapter<P extends IPartType<P, S>, S extends IPart
     }
 
     @Override
+    public void setTargetSideOverride(S state, @Nullable ForgeDirection side) {
+        state.setTargetSideOverride(side);
+    }
+
+    @Nullable
+    @Override
+    public ForgeDirection getTargetSideOverride(S state) {
+        return state.getTargetSideOverride();
+    }
+
+    @Override
+    public PartTarget getTarget(PartPos pos, S state) {
+        PartTarget target = PartTarget.fromCenter(pos);
+        ForgeDirection sideOverride = getTargetSideOverride(state);
+        if (sideOverride != null) {
+            target = target.forTargetSide(sideOverride);
+        }
+        return target;
+    }
+
+    @Override
     public boolean isUpdate(S state) {
         return false;
     }

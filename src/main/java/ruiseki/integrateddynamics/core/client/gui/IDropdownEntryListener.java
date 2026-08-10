@@ -1,16 +1,17 @@
 package ruiseki.integrateddynamics.core.client.gui;
 
 /**
- * Listener for {@link GuiTextFieldDropdown} dropdown element selection..
+ * Listener for {@link GuiTextFieldDropdown} dropdown element selection.
  * 
+ * @param <T> The dropdown entry type.
  * @author rubensworks
  */
-public interface IDropdownEntryListener {
+public interface IDropdownEntryListener<T> {
 
     /**
      * Will be called when a dropdown entry is selected or completely matches.
-     * 
+     *
      * @param dropdownEntry The selected entry.
      */
-    public void onSetDropdownPossiblity(IDropdownEntry<?> dropdownEntry);
+    public void onSetDropdownPossiblity(IDropdownEntry<T> dropdownEntry);
 }

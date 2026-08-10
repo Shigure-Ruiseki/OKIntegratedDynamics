@@ -31,4 +31,10 @@ public class PartStateReaderBase<P extends IPartTypeReader> extends PartStateBas
     public void setVariable(IAspect aspect, IAspectVariable variable) {
         aspectVariables.put(aspect, variable);
     }
+
+    @Override
+    public void resetVariables() {
+        this.aspectVariables.clear();
+    }
+
 }

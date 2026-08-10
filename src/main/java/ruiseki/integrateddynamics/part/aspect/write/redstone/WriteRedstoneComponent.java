@@ -29,6 +29,33 @@ public class WriteRedstoneComponent implements IWriteRedstoneComponent {
     }
 
     @Override
+    public void setLastPulseValue(PartTarget target, int value) {
+        DimPos dimPos = target.getCenter()
+            .getPos();
+        IDynamicRedstone block = getDynamicRedstoneBlock(
+            dimPos,
+            target.getCenter()
+                .getSide());
+        if (block != null) {
+            block.setLastPulseValue(value);
+        }
+    }
+
+    @Override
+    public int getLastPulseValue(PartTarget target) {
+        DimPos dimPos = target.getCenter()
+            .getPos();
+        IDynamicRedstone block = getDynamicRedstoneBlock(
+            dimPos,
+            target.getCenter()
+                .getSide());
+        if (block != null) {
+            return block.getLastPulseValue();
+        }
+        return 0;
+    }
+
+    @Override
     public void deactivate(PartTarget target) {
         DimPos dimPos = target.getCenter()
             .getPos();

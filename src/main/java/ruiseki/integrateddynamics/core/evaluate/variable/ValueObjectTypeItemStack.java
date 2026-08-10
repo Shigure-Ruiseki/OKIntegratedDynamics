@@ -1,11 +1,11 @@
 package ruiseki.integrateddynamics.core.evaluate.variable;
 
+import java.util.Objects;
+
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.JsonToNBT;
 import net.minecraft.nbt.NBTException;
 import net.minecraft.nbt.NBTTagCompound;
-
-import com.google.common.base.Optional;
 
 import cpw.mods.fml.common.registry.GameData;
 import lombok.ToString;
@@ -38,19 +38,17 @@ public class ValueObjectTypeItemStack extends ValueObjectTypeBase<ValueObjectTyp
 
     @Override
     public String toCompactString(ValueItemStack value) {
-        Optional<ItemStack> itemStack = value.getRawValue();
-        return itemStack.isPresent() ? itemStack.get()
-            .getDisplayName() : "";
+        ItemStack itemStack = value.getRawValue();
+        return itemStack != null ? itemStack.getDisplayName() : "";
     }
 
     @Override
     public String serialize(ValueItemStack value) {
         NBTTagCompound tag = new NBTTagCompound();
-        Optional<ItemStack> itemStack = value.getRawValue();
-        if (itemStack.isPresent()) {
-            itemStack.get()
-                .writeToNBT(tag);
-            tag.setInteger("Count", itemStack.get().stackSize);
+        ItemStack itemStack = value.getRawValue();
+        if (itemStack != null) {
+            itemStack.writeToNBT(tag);
+            tag.setInteger("Count", itemStack.stackSize);
         }
         return tag.toString();
     }
@@ -76,8 +74,7 @@ public class ValueObjectTypeItemStack extends ValueObjectTypeBase<ValueObjectTyp
 
     @Override
     public boolean isNull(ValueItemStack a) {
-        return !a.getRawValue()
-            .isPresent();
+        return a.getRawValue() == null;
     }
 
     @Override
@@ -105,34 +102,40 @@ public class ValueObjectTypeItemStack extends ValueObjectTypeBase<ValueObjectTyp
 
     @Override
     public String getUniqueName(ValueItemStack value) {
-        Optional<ItemStack> optional = value.getRawValue();
-        return optional.isPresent() ? GameData.getItemRegistry()
-            .getNameForObject(
-                optional.get()
-                    .getItem())
-            + (optional.get()
-                .getItemDamage() > 0 ? " "
-                    + optional.get()
-                        .getItemDamage()
-                    : "")
-            : "";
+        ItemStack itemStack = value.getRawValue();
+        return itemStack != null ? GameData.getItemRegistry()
+            .getNameForObject(itemStack.getItem())
+            + (itemStack.getItemDamage() > 0 ? " " + itemStack.getItemDamage() : "") : "";
     }
 
     @ToString
-    public static class ValueItemStack extends ValueOptionalBase<ItemStack> {
+    public static class ValueItemStack extends ValueBase {
+
+        private final ItemStack itemStack;
 
         private ValueItemStack(ItemStack itemStack) {
-            super(ValueTypes.OBJECT_ITEMSTACK, itemStack);
+            super(ValueTypes.OBJECT_ITEMSTACK);
+            this.itemStack = Objects
+                .requireNonNull(itemStack, "Attempted to create a ValueItemStack for a null ItemStack.");
         }
 
         public static ValueItemStack of(ItemStack itemStack) {
             return new ValueItemStack(itemStack);
         }
 
+        public ItemStack getRawValue() {
+            return itemStack;
+        }
+
         @Override
-        protected boolean isEqual(ItemStack a, ItemStack b) {
-            return ItemStackHelpers.areItemStacksIdentical(a, b);
+        public boolean equals(Object o) {
+            return o instanceof ValueItemStack
+                && ItemStack.areItemStacksEqual(((ValueItemStack) o).itemStack, this.itemStack);
+        }
+
+        @Override
+        public int hashCode() {
+            return 37 + ItemStackHelpers.getItemStackHashCode(itemStack);
         }
     }
-
 }

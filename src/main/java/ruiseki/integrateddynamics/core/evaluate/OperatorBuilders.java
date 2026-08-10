@@ -260,11 +260,7 @@ public class OperatorBuilders {
             @Override
             public ItemStack getOutput(OperatorBase.SafeVariablesGetter input) throws EvaluationException {
                 ValueObjectTypeItemStack.ValueItemStack a = input.getValue(0);
-                return a.getRawValue()
-                    .isPresent()
-                        ? a.getRawValue()
-                            .get()
-                        : null;
+                return a.getRawValue() != null ? a.getRawValue() : null;
             }
         });
     public static final IterativeFunction.PrePostBuilder<ItemStack, Integer> FUNCTION_ITEMSTACK_TO_INT = FUNCTION_ITEMSTACK
@@ -278,17 +274,9 @@ public class OperatorBuilders {
             @Override
             public IEnergyStorage getOutput(OperatorBase.SafeVariablesGetter input) throws EvaluationException {
                 ValueObjectTypeItemStack.ValueItemStack a = input.getValue(0);
-                if (a.getRawValue()
-                    .isPresent()
-                    && CapabilityHelpers.getCapability(
-                        a.getRawValue()
-                            .get(),
-                        CapabilityEnergy.ENERGY)
-                        .isPresent()) {
-                    return CapabilityHelpers.getCapability(
-                        a.getRawValue()
-                            .get(),
-                        CapabilityEnergy.ENERGY)
+                if (a.getRawValue() != null && CapabilityHelpers.getCapability(a.getRawValue(), CapabilityEnergy.ENERGY)
+                    .isPresent()) {
+                    return CapabilityHelpers.getCapability(a.getRawValue(), CapabilityEnergy.ENERGY)
                         .getOrNull();
                 }
                 return null;

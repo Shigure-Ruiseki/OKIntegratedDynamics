@@ -1,6 +1,8 @@
 package ruiseki.integrateddynamics.inventory.container;
 
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.inventory.IInventory;
+import net.minecraft.inventory.Slot;
 import net.minecraftforge.common.MinecraftForge;
 
 import lombok.Data;
@@ -15,6 +17,7 @@ import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
 import ruiseki.integrateddynamics.core.inventory.container.ContainerMultipart;
+import ruiseki.integrateddynamics.core.inventory.container.slot.SlotVariable;
 import ruiseki.integrateddynamics.core.part.event.PartVariableDrivenVariableContentsUpdatedEvent;
 import ruiseki.integrateddynamics.core.part.panel.PartTypePanelVariableDriven;
 import ruiseki.okcore.helper.MinecraftHelpers;
@@ -57,6 +60,11 @@ public class ContainerPartDisplay<P extends PartTypePanelVariableDriven<P, S>, S
 
         addInventory(getPartState().getInventory(), 0, 80, 14, 1, 1);
         addPlayerInventory(player.inventory, 8, 46);
+    }
+
+    @Override
+    protected Slot createNewSlot(IInventory inventory, int index, int x, int y) {
+        return new SlotVariable(inventory, index, x, y);
     }
 
     @Override

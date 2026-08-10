@@ -4,6 +4,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.world.World;
+import net.minecraftforge.common.util.ForgeDirection;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -48,6 +49,7 @@ public class ContainerPartSettings extends ExtendedInventoryContainer {
     private final int lastUpdateValueId;
     private final int lastPriorityValueId;
     private final int lastChannelValueId;
+    private final int lastSideValueId;
 
     /**
      * Make a new instance.
@@ -67,11 +69,12 @@ public class ContainerPartSettings extends ExtendedInventoryContainer {
         ChunkCoordinates coordinates = player.getPlayerCoordinates();
         this.pos = new BlockPos(coordinates.posX, coordinates.posY, coordinates.posZ);
 
-        addPlayerInventory(player.inventory, 27, 82);
+        addPlayerInventory(player.inventory, 27, 107);
 
         lastUpdateValueId = getNextValueId();
         lastPriorityValueId = getNextValueId();
         lastChannelValueId = getNextValueId();
+        lastSideValueId = getNextValueId();
 
         putButtonAction(GuiPartSettings.BUTTON_SAVE, new IButtonActionServer<InventoryContainer>() {
 
@@ -109,6 +112,8 @@ public class ContainerPartSettings extends ExtendedInventoryContainer {
         ValueNotifierHelpers.setValue(this, lastUpdateValueId, getPartType().getUpdateInterval(getPartState()));
         ValueNotifierHelpers.setValue(this, lastPriorityValueId, getPartType().getPriority(getPartState()));
         ValueNotifierHelpers.setValue(this, lastChannelValueId, getPartType().getChannel(getPartState()));
+        ForgeDirection targetSide = getPartType().getTargetSideOverride(getPartState());
+        ValueNotifierHelpers.setValue(this, lastSideValueId, targetSide == null ? -1 : targetSide.ordinal());
     }
 
     public int getLastUpdateValue() {
@@ -123,7 +128,10 @@ public class ContainerPartSettings extends ExtendedInventoryContainer {
         return ValueNotifierHelpers.getValueInt(this, lastChannelValueId);
     }
 
-    @SuppressWarnings("unchecked")
+    public int getLastSideValue() {
+        return ValueNotifierHelpers.getValueInt(this, lastSideValueId);
+    }
+
     public IPartState getPartState() {
         return partContainer.getPartState(
             getTarget().getCenter()
@@ -149,7 +157,16 @@ public class ContainerPartSettings extends ExtendedInventoryContainer {
                 DimPos dimPos = getTarget().getCenter()
                     .getPos();
                 INetwork network = NetworkHelpers.getNetwork(dimPos.getWorld(), dimPos.getBlockPos());
-                PartNetworkElement networkElement = new PartNetworkElement(getPartType(), getTarget());
+
+                PartTarget target = getTarget();
+                ForgeDirection targetSide = getLastSideValue() >= 0
+                    ? ForgeDirection.VALID_DIRECTIONS[getLastSideValue()]
+                    : null;
+                getPartType().setTargetSideOverride(getPartState(), targetSide);
+                if (targetSide != null) {
+                    target = target.forTargetSide(targetSide);
+                }
+                PartNetworkElement networkElement = new PartNetworkElement(getPartType(), target);
                 network.setPriorityAndChannel(networkElement, getLastPriorityValue(), getLastChannelValue());
             }
         } catch (PartStateException e) {

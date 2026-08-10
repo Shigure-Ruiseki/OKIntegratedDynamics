@@ -11,8 +11,6 @@ import net.minecraftforge.common.util.ForgeDirection;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 
-import com.google.common.base.Optional;
-
 import ruiseki.integrateddynamics.api.client.render.valuetype.IValueTypeWorldRenderer;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
@@ -33,9 +31,8 @@ public class ItemValueTypeWorldRenderer implements IValueTypeWorldRenderer {
     public void renderValue(IPartContainer partContainer, double x, double y, double z, float partialTick,
         int destroyStage, ForgeDirection direction, IPartType partType, IValue value,
         TileEntityRendererDispatcher rendererDispatcher, float alpha) {
-        Optional<ItemStack> itemStackOptional = ((ValueObjectTypeItemStack.ValueItemStack) value).getRawValue();
-        if (itemStackOptional.isPresent()) {
-            ItemStack itemStack = itemStackOptional.get();
+        ItemStack itemStack = ((ValueObjectTypeItemStack.ValueItemStack) value).getRawValue();
+        if (itemStack != null) {
 
             // ItemStack
             renderItemStack(itemStack, alpha);

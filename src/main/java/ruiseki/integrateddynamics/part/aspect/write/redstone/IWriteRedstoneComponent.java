@@ -15,6 +15,10 @@ public interface IWriteRedstoneComponent {
 
     public void setRedstoneLevel(PartTarget target, int level, boolean strongPower);
 
+    public void setLastPulseValue(PartTarget target, int value);
+
+    public int getLastPulseValue(PartTarget target);
+
     public void deactivate(PartTarget target);
 
     public IDynamicRedstone getDynamicRedstoneBlock(DimPos dimPos, ForgeDirection side);

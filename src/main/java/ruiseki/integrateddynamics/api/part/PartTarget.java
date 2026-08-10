@@ -18,7 +18,7 @@ public class PartTarget {
 
     /**
      * Get the target from a center block that is targeted at another block.
-     * 
+     *
      * @param pos  The central position that is referring to the target.
      * @param side The side on the central position that points to the target.
      * @return The target referral.
@@ -78,6 +78,16 @@ public class PartTarget {
     private PartTarget(PartPos center, PartPos target) {
         this.center = center;
         this.target = target;
+    }
+
+    /**
+     * Create a new instance with the given target side.
+     * 
+     * @param targetSide The side of the target.
+     * @return A new {@link PartTarget} instance.
+     */
+    public PartTarget forTargetSide(ForgeDirection targetSide) {
+        return new PartTarget(center, PartPos.of(target.getPos(), targetSide));
     }
 
     @Override

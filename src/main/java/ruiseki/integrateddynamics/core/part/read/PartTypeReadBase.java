@@ -4,6 +4,9 @@ import java.util.List;
 
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.inventory.Container;
+import net.minecraftforge.common.util.ForgeDirection;
+
+import org.jetbrains.annotations.Nullable;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -83,6 +86,15 @@ public abstract class PartTypeReadBase<P extends IPartTypeReader<P, S>, S extend
             partState.setVariable(aspect, variable);
         }
         return variable;
+    }
+
+    @Override
+    public void setTargetSideOverride(S state, @Nullable ForgeDirection side) {
+        ForgeDirection lastSide = getTargetSideOverride(state);
+        super.setTargetSideOverride(state, side);
+        if (lastSide != side) {
+            state.resetVariables();
+        }
     }
 
     @Override
