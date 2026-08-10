@@ -7,14 +7,16 @@ import net.minecraftforge.common.util.ForgeDirection;
 import org.jetbrains.annotations.Nullable;
 
 import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
-import ruiseki.okcore.fluid.handler.IFluidHandlerItem;
+import ruiseki.okcore.fluid.handler.IFluidHandler;
 import ruiseki.okcore.persist.nbt.INBTProvider;
+
+import java.util.Objects;
 
 /**
  * A list proxy for the fluid handler fluids of an entity.
  */
 public class ValueTypeListProxyEntityFluids extends
-    ValueTypeListProxyEntityCapability<IFluidHandlerItem, ValueObjectTypeFluidStack, ValueObjectTypeFluidStack.ValueFluidStack>
+    ValueTypeListProxyEntityCapability<IFluidHandler, ValueObjectTypeFluidStack, ValueObjectTypeFluidStack.ValueFluidStack>
     implements INBTProvider {
 
     public ValueTypeListProxyEntityFluids(World world, Entity entity, @Nullable ForgeDirection side) {
@@ -23,7 +25,7 @@ public class ValueTypeListProxyEntityFluids extends
             ValueTypes.OBJECT_FLUIDSTACK,
             world,
             entity,
-            CapabilityFluidHandler.FLUID_HANDLER_ITEM,
+            CapabilityFluidHandler.FLUID_HANDLER,
             side);
     }
 
@@ -40,7 +42,7 @@ public class ValueTypeListProxyEntityFluids extends
     @Override
     public ValueObjectTypeFluidStack.ValueFluidStack get(int index) {
         return ValueObjectTypeFluidStack.ValueFluidStack.of(
-            getCapability().map(handler -> handler.getTankProperties()[index].getContents())
+            getCapability().map(handler -> Objects.requireNonNull(handler.getTankProperties()[index].getContents()))
                 .orElse(null));
     }
 }
