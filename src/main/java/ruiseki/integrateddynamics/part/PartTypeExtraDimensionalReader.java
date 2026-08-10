@@ -25,6 +25,7 @@ public class PartTypeExtraDimensionalReader
                     Aspects.Read.ExtraDimensional.INTEGER_RANDOM,
                     Aspects.Read.ExtraDimensional.INTEGER_PLAYERCOUNT,
                     Aspects.Read.ExtraDimensional.INTEGER_TICKTIME,
+                    Aspects.Read.ExtraDimensional.DOUBLE_TPS,
                     Aspects.Read.ExtraDimensional.LIST_PLAYERS));
     }
 

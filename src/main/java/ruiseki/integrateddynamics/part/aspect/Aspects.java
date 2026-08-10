@@ -257,6 +257,25 @@ public class Aspects {
                 .handle(input -> (int) DoubleMath.mean(input.tickTimeArray))
                 .handle(AspectReadBuilders.PROP_GET_INTEGER, "ticktime")
                 .buildRead();
+            public static final IAspectRead<ValueTypeDouble.ValueDouble, ValueTypeDouble> DOUBLE_TPS = AspectReadBuilders.ExtraDimensional.BUILDER_DOUBLE
+                .handle(minecraft -> {
+                    long[] times = minecraft.tickTimeArray;
+                    if (times == null || times.length == 0) return 20.0D;
+
+                    long totalTime = 0;
+                    for (long time : times) {
+                        totalTime += time;
+                    }
+
+                    double meanTickTimeMs = (totalTime / (double) times.length) * 1.0E-6D;
+                    if (meanTickTimeMs <= 0) return 20.0D;
+
+                    double tps = 1000.0D / meanTickTimeMs;
+                    return Math.min(20.0D, tps);
+                })
+                .handle(AspectReadBuilders.PROP_GET_DOUBLE, "tps")
+                .buildRead();
+
             public static final IAspectRead<ValueTypeList.ValueList, ValueTypeList> LIST_PLAYERS = AspectReadBuilders.ExtraDimensional.BUILDER_LIST
                 .handle(
                     input -> ValueTypeList.ValueList.ofList(
@@ -760,6 +779,35 @@ public class Aspects {
                             dimPos.getBlockPos()
                                 .getZ()))
                 .handle(AspectReadBuilders.PROP_GET_INTEGER, "lightlevel")
+                .buildRead();
+            public static final IAspectRead<ValueTypeDouble.ValueDouble, ValueTypeDouble> DOUBLE_TPS = AspectReadBuilders.World.BUILDER_DOUBLE
+                .handle(AspectReadBuilders.World.PROP_GET_WORLD)
+                .handle(world -> {
+                    if (world == null || FMLCommonHandler.instance()
+                        .getMinecraftServerInstance() == null) {
+                        return 20.0D;
+                    }
+
+                    int dimId = world.provider.dimensionId;
+                    long[] times = FMLCommonHandler.instance()
+                        .getMinecraftServerInstance().worldTickTimes.get(dimId);
+
+                    if (times == null || times.length == 0) {
+                        return 20.0D;
+                    }
+
+                    long totalTime = 0;
+                    for (long time : times) {
+                        totalTime += time;
+                    }
+
+                    double meanTickTimeMs = (totalTime / (double) times.length) * 1.0E-6D;
+                    if (meanTickTimeMs <= 0) return 20.0D;
+
+                    double tps = 1000.0D / meanTickTimeMs;
+                    return Math.min(20.0D, tps);
+                })
+                .handle(AspectReadBuilders.PROP_GET_DOUBLE, "tps")
                 .buildRead();
 
             public static final IAspectRead<ValueTypeLong.ValueLong, ValueTypeLong> LONG_TIME = AspectReadBuilders.World.BUILDER_LONG
