@@ -46,10 +46,12 @@ public class PartHelpers {
      *
      * @param world The world.
      * @param pos   The position.
+     * @param side  The side.
      * @return The part container capability, or null if not present.
      */
-    public static @Nullable IPartContainer getPartContainer(IBlockAccess world, BlockPos pos) {
-        return CapabilityHelpers.getCapability(world, pos, PartContainerConfig.CAPABILITY)
+    public static @Nullable IPartContainer getPartContainer(IBlockAccess world, BlockPos pos,
+        @Nullable ForgeDirection side) {
+        return CapabilityHelpers.getCapability(world, pos, PartContainerConfig.CAPABILITY, side)
             .getOrNull();
     }
 
@@ -57,10 +59,11 @@ public class PartHelpers {
      * Get the part container capability at the given position.
      *
      * @param dimPos The dimensional position.
+     * @param side   The side.
      * @return The part container capability, or null if not present.
      */
-    public static @Nullable IPartContainer getPartContainer(DimPos dimPos) {
-        return CapabilityHelpers.getCapability(dimPos, PartContainerConfig.CAPABILITY)
+    public static @Nullable IPartContainer getPartContainer(DimPos dimPos, @Nullable ForgeDirection side) {
+        return CapabilityHelpers.getCapability(dimPos, PartContainerConfig.CAPABILITY, side)
             .getOrNull();
     }
 
@@ -257,8 +260,8 @@ public class PartHelpers {
      */
     public static boolean removePart(World world, BlockPos pos, ForgeDirection side, @Nullable EntityPlayer player,
         boolean destroyIfEmpty, boolean dropMainElement, boolean saveState) {
-        IPartContainer partContainer = getPartContainer(world, pos);
-        ICableFakeable cableFakeable = CableHelpers.getCableFakeable(world, pos);
+        IPartContainer partContainer = getPartContainer(world, pos, side);
+        ICableFakeable cableFakeable = CableHelpers.getCableFakeable(world, pos, side);
         partContainer.removePart(side, player, dropMainElement, saveState);
 
         boolean removeCompletely = destroyIfEmpty && (cableFakeable == null || !cableFakeable.isRealCable())
@@ -268,10 +271,10 @@ public class PartHelpers {
         } else {
             world.notifyBlocksOfNeighborChange(pos.getX(), pos.getY(), pos.getZ(), pos.getBlock(world));
             // If there is a cable in the direction of the removed part, try connecting with it.
-            if (CableHelpers.getCable(world, pos.offset(side)) != null) {
-                CableHelpers.updateConnections(world, pos);
-                CableHelpers.updateConnections(world, pos.offset(side));
-                NetworkHelpers.initNetwork(world, pos);
+            if (CableHelpers.getCable(world, pos.offset(side), side.getOpposite()) != null) {
+                CableHelpers.updateConnections(world, pos, side);
+                CableHelpers.updateConnections(world, pos.offset(side), side.getOpposite());
+                NetworkHelpers.initNetwork(world, pos, side);
             }
         }
 
@@ -290,7 +293,7 @@ public class PartHelpers {
      */
     public static boolean addPart(World world, BlockPos pos, ForgeDirection side, IPartType partType,
         ItemStack itemStack) {
-        IPartContainer partContainer = getPartContainer(world, pos);
+        IPartContainer partContainer = getPartContainer(world, pos, side);
         if (partContainer.canAddPart(side, partType)) {
             if (!world.isRemote) {
                 partContainer.setPart(side, partType, partType.getState(itemStack));
@@ -312,7 +315,7 @@ public class PartHelpers {
      */
     public static boolean addPart(World world, BlockPos pos, ForgeDirection side, IPartType partType,
         IPartState partState) {
-        IPartContainer partContainer = getPartContainer(world, pos);
+        IPartContainer partContainer = getPartContainer(world, pos, side);
         if (partContainer.canAddPart(side, partType)) {
             if (!world.isRemote) {
                 partContainer.setPart(side, partType, partState);
@@ -338,7 +341,7 @@ public class PartHelpers {
         IPartType part, IPartState partState, IPartStateHolderCallback callback) {
         callback.onSet(PartStateHolder.of(part, partState));
         if (network != null) {
-            IPartContainer partContainer = PartHelpers.getPartContainer(world, pos);
+            IPartContainer partContainer = PartHelpers.getPartContainer(world, pos, side);
             INetworkElement networkElement = part.createNetworkElement(partContainer, DimPos.of(world, pos), side);
             if (!network.addNetworkElement(networkElement, false)) {
                 // In this case, the addition failed because that part id is already present in the network,
@@ -370,7 +373,9 @@ public class PartHelpers {
             .getBlockPos();
         IPartContainer partContainer = PartHelpers.getPartContainer(
             target.getCenter()
-                .getPos());
+                .getPos(),
+            target.getCenter()
+                .getSide());
         return partContainer == expectedPartContainer && player.getDistanceSq(
             (double) blockPos.getX() + 0.5D,
             (double) blockPos.getY() + 0.5D,
@@ -385,7 +390,7 @@ public class PartHelpers {
      */
     public static @Nullable PartStateHolder<?, ?> getPart(PartPos partPos) {
         ForgeDirection side = partPos.getSide();
-        IPartContainer partContainer = PartHelpers.getPartContainer(partPos.getPos());
+        IPartContainer partContainer = PartHelpers.getPartContainer(partPos.getPos(), partPos.getSide());
         if (partContainer != null && partContainer.hasPart(side)) {
             return PartStateHolder.of(partContainer.getPart(side), partContainer.getPartState(side));
         }

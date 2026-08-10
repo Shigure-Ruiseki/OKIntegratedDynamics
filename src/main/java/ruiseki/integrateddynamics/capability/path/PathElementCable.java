@@ -11,6 +11,7 @@ import com.google.common.collect.Sets;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.block.cable.ICable;
 import ruiseki.integrateddynamics.api.path.IPathElement;
+import ruiseki.integrateddynamics.api.path.ISidedPathElement;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.helper.CapabilityHelpers;
 
@@ -24,14 +25,15 @@ public abstract class PathElementCable extends PathElementDefault {
     protected abstract ICable getCable();
 
     @Override
-    public Set<IPathElement> getReachableElements() {
-        Set<IPathElement> elements = Sets.newHashSet();
+    public Set<ISidedPathElement> getReachableElements() {
+        Set<ISidedPathElement> elements = Sets.newHashSet();
         BlockPos pos = getPosition().getBlockPos();
         for (ForgeDirection side : ForgeDirection.VALID_DIRECTIONS) {
             if (getCable().isConnected(side)) {
                 BlockPos posOffset = pos.offset(side);
+                ForgeDirection pathElementSide = side.getOpposite();
                 IPathElement pathElement = CapabilityHelpers
-                    .getCapability(getPosition().getWorld(), posOffset, PathElementConfig.CAPABILITY)
+                    .getCapability(getPosition().getWorld(), posOffset, PathElementConfig.CAPABILITY, pathElementSide)
                     .getOrNull();
                 if (pathElement == null) {
                     IntegratedDynamics.clog(
@@ -44,7 +46,7 @@ public abstract class PathElementCable extends PathElementDefault {
                             pos,
                             side));
                 } else {
-                    elements.add(pathElement);
+                    elements.add(SidedPathElement.of(pathElement, pathElementSide));
                 }
             }
         }

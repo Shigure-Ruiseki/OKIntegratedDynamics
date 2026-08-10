@@ -88,6 +88,11 @@ public interface IConfigRenderPattern {
         22,
         new Pair[] { Pair.of(2, 2), Pair.of(80, 2), Pair.of(100, 2) },
         Pair.of(22, 2));
+    public static final IConfigRenderPattern INFIX_2_LATE = new IConfigRenderPattern.Base(
+        120,
+        22,
+        new Pair[] { Pair.of(2, 2), Pair.of(22, 2), Pair.of(100, 2) },
+        Pair.of(55, 2));
     public static final IConfigRenderPattern PREFIX_2 = new IConfigRenderPattern.Base(
         80,
         22,

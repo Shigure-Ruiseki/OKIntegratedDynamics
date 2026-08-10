@@ -149,11 +149,13 @@ public class TileMultipartTicking extends TileEntityOK
         } else {
             partContainer.deserializeNBT(tag.getCompoundTag("partContainer"));
         }
-        boolean wasLightTransparent = getWorldObj() != null && CableHelpers.isLightTransparent(getWorldObj(), getPos());
+        boolean wasLightTransparent = getWorldObj() != null
+            && CableHelpers.isLightTransparent(getWorldObj(), getPos(), null);
 
         super.readFromNBT(tag);
         cableFakeable.setRealCable(tag.getBoolean("realCable"));
-        boolean isLightTransparent = getWorldObj() != null && CableHelpers.isLightTransparent(getWorldObj(), getPos());
+        boolean isLightTransparent = getWorldObj() != null
+            && CableHelpers.isLightTransparent(getWorldObj(), getPos(), null);
         if (getWorldObj() != null && (lastConnected == null || connected == null
             || !lastConnected.equals(connected)
             || !Objects.equals(lastFacadeBlockName, facadeBlockName)

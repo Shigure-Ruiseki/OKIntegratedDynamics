@@ -1,5 +1,7 @@
 package ruiseki.integrateddynamics.core.network;
 
+import net.minecraftforge.common.util.ForgeDirection;
+
 import cofh.api.energy.IEnergyStorage;
 import lombok.Getter;
 import lombok.Setter;
@@ -50,7 +52,7 @@ public class EnergyNetwork extends PositionedAddonsNetwork implements IEnergyNet
     }
 
     @Override
-    public boolean removePathElement(IPathElement pathElement) {
+    public boolean removePathElement(IPathElement pathElement, ForgeDirection side) {
         return true;
     }
 

@@ -1,10 +1,12 @@
 package ruiseki.integrateddynamics.api.network;
 
+import net.minecraftforge.common.util.ForgeDirection;
+
 import ruiseki.integrateddynamics.api.path.IPathElement;
 
 /**
  * Default implementation of {@link IFullNetworkListener}.
- * 
+ *
  * @author rubensworks
  */
 public class FullNetworkListenerAdapter implements IFullNetworkListener {
@@ -35,7 +37,7 @@ public class FullNetworkListenerAdapter implements IFullNetworkListener {
     }
 
     @Override
-    public boolean removePathElement(IPathElement pathElement) {
+    public boolean removePathElement(IPathElement pathElement, ForgeDirection side) {
         return true;
     }
 

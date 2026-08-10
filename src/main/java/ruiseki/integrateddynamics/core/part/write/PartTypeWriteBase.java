@@ -179,7 +179,9 @@ public abstract class PartTypeWriteBase<P extends IPartTypeWriter<P, S>, S exten
                     .getWorld(),
                 target.getCenter()
                     .getPos()
-                    .getBlockPos());
+                    .getBlockPos(),
+                target.getCenter()
+                    .getSide());
             IPartNetwork partNetwork = NetworkHelpers.getPartNetwork(network);
             MinecraftForge.EVENT_BUS.post(
                 new PartWriterAspectEvent<>(

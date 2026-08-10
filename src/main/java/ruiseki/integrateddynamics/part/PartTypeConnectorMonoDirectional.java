@@ -19,7 +19,9 @@ import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.integrateddynamics.api.part.PartRenderPosition;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.api.path.IPathElement;
+import ruiseki.integrateddynamics.api.path.ISidedPathElement;
 import ruiseki.integrateddynamics.capability.path.PathElementConfig;
+import ruiseki.integrateddynamics.capability.path.SidedPathElement;
 import ruiseki.integrateddynamics.core.block.IgnoredBlock;
 import ruiseki.integrateddynamics.core.block.IgnoredBlockStatus;
 import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
@@ -73,8 +75,17 @@ public class PartTypeConnectorMonoDirectional
                     .getPos();
                 DimPos targetPos = PartTypeConnectorMonoDirectional.State
                     .getTargetPos(target.getCenter(), state.getOffset());
-                NetworkHelpers.initNetwork(originPos.getWorld(), originPos.getBlockPos());
-                NetworkHelpers.initNetwork(targetPos.getWorld(), targetPos.getBlockPos());
+                NetworkHelpers.initNetwork(
+                    originPos.getWorld(),
+                    originPos.getBlockPos(),
+                    target.getCenter()
+                        .getSide());
+                NetworkHelpers.initNetwork(
+                    targetPos.getWorld(),
+                    targetPos.getBlockPos(),
+                    target.getCenter()
+                        .getSide()
+                        .getOpposite());
             }
         }
     }
@@ -96,9 +107,18 @@ public class PartTypeConnectorMonoDirectional
             state.removeTarget();
 
             // Re-init network at the two disconnected connectors
-            NetworkHelpers.initNetwork(originPos.getWorld(), originPos.getBlockPos());
+            NetworkHelpers.initNetwork(
+                originPos.getWorld(),
+                originPos.getBlockPos(),
+                target.getCenter()
+                    .getSide());
             if (targetPos != null) {
-                NetworkHelpers.initNetwork(targetPos.getWorld(), targetPos.getBlockPos());
+                NetworkHelpers.initNetwork(
+                    targetPos.getWorld(),
+                    targetPos.getBlockPos(),
+                    target.getCenter()
+                        .getSide()
+                        .getOpposite());
             }
         }
     }
@@ -140,13 +160,15 @@ public class PartTypeConnectorMonoDirectional
         private int offset = 0;
 
         @Override
-        public Set<IPathElement> getReachableElements() {
+        public Set<ISidedPathElement> getReachableElements() {
             if (getPartPos() != null) {
+                ForgeDirection targetSide = getPartPos().getSide()
+                    .getOpposite();
                 IPathElement pathElement = CapabilityHelpers
-                    .getCapability(State.getTargetPos(getPartPos(), offset), PathElementConfig.CAPABILITY)
+                    .getCapability(State.getTargetPos(getPartPos(), offset), PathElementConfig.CAPABILITY, targetSide)
                     .getOrNull();
                 if (pathElement != null) {
-                    return Sets.newHashSet(pathElement);
+                    return Sets.newHashSet(SidedPathElement.of(pathElement, targetSide));
                 }
             }
             return Collections.emptySet();

@@ -15,6 +15,7 @@ import lombok.Getter;
 import lombok.Setter;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
+import ruiseki.integrateddynamics.api.evaluate.expression.VariableAdapter;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IVariable;
 import ruiseki.integrateddynamics.api.item.IDelayVariableFacade;
@@ -61,7 +62,7 @@ public class TileDelay extends TileProxy {
     private EntityPlayer lastPlayer = null;
 
     public TileDelay() {
-        this.variable = new IVariable<ValueTypeList.ValueList>() {
+        this.variable = new VariableAdapter<ValueTypeList.ValueList>() {
 
             @Override
             public ValueTypeList getType() {

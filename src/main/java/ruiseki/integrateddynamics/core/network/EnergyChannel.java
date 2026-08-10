@@ -2,6 +2,7 @@ package ruiseki.integrateddynamics.core.network;
 
 import cofh.api.energy.IEnergyStorage;
 import ruiseki.integrateddynamics.GeneralConfig;
+import ruiseki.integrateddynamics.api.network.IPositionedAddonsNetwork;
 import ruiseki.integrateddynamics.api.network.IPositionedAddonsNetwork.PrioritizedPartPos;
 
 public class EnergyChannel implements IEnergyStorage {
@@ -18,13 +19,18 @@ public class EnergyChannel implements IEnergyStorage {
     public int receiveEnergy(int energy, boolean simulate) {
         energy = Math.min(energy, GeneralConfig.energyRateLimit);
         int toAdd = energy;
-        for (PrioritizedPartPos partPos : network.getPositions(this.channel)) {
+        IPositionedAddonsNetwork.PositionsIterator it = network.getPositionIterator(this.channel);
+        while (it.hasNext() && toAdd > 0) {
+            PrioritizedPartPos partPos = it.next();
             IEnergyStorage energyStorage = network.getEnergyStorage(partPos);
             if (energyStorage != null) {
                 network.disablePosition(partPos.getPartPos());
                 toAdd -= energyStorage.receiveEnergy(toAdd, simulate);
                 network.enablePosition(partPos.getPartPos());
             }
+        }
+        if (!simulate) {
+            network.setPositionIterator(it, this.channel);
         }
         return energy - toAdd;
     }
@@ -33,13 +39,18 @@ public class EnergyChannel implements IEnergyStorage {
     public int extractEnergy(int energy, boolean simulate) {
         energy = Math.min(energy, GeneralConfig.energyRateLimit);
         int toConsume = energy;
-        for (PrioritizedPartPos partPos : network.getPositions(this.channel)) {
+        IPositionedAddonsNetwork.PositionsIterator it = network.getPositionIterator(this.channel);
+        while (it.hasNext() && toConsume > 0) {
+            PrioritizedPartPos partPos = it.next();
             IEnergyStorage energyStorage = network.getEnergyStorage(partPos);
             if (energyStorage != null) {
                 network.disablePosition(partPos.getPartPos());
                 toConsume -= energyStorage.extractEnergy(toConsume, simulate);
                 network.enablePosition(partPos.getPartPos());
             }
+        }
+        if (!simulate) {
+            network.setPositionIterator(it, this.channel);
         }
         return energy - toConsume;
     }

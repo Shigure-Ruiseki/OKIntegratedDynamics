@@ -156,7 +156,11 @@ public class ContainerPartSettings extends ExtendedInventoryContainer {
                 getPartType().setUpdateInterval(getPartState(), getLastUpdateValue());
                 DimPos dimPos = getTarget().getCenter()
                     .getPos();
-                INetwork network = NetworkHelpers.getNetwork(dimPos.getWorld(), dimPos.getBlockPos());
+                INetwork network = NetworkHelpers.getNetwork(
+                    dimPos.getWorld(),
+                    dimPos.getBlockPos(),
+                    getTarget().getCenter()
+                        .getSide());
 
                 PartTarget target = getTarget();
                 ForgeDirection targetSide = getLastSideValue() >= 0

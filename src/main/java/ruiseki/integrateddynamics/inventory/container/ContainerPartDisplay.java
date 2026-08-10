@@ -106,7 +106,9 @@ public class ContainerPartDisplay<P extends PartTypePanelVariableDriven<P, S>, S
                             .getWorld(),
                         getTarget().getCenter()
                             .getPos()
-                            .getBlockPos());
+                            .getBlockPos(),
+                        getTarget().getCenter()
+                            .getSide());
                     IPartNetwork partNetwork = NetworkHelpers.getPartNetwork(network);
                     IVariable variable = getPartState().getVariable(partNetwork);
                     MinecraftForge.EVENT_BUS.post(

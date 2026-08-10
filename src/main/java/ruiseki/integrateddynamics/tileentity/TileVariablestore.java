@@ -15,16 +15,19 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 import ruiseki.integrateddynamics.api.block.IVariableContainer;
+import ruiseki.integrateddynamics.api.evaluate.variable.IVariable;
 import ruiseki.integrateddynamics.api.item.IVariableFacade;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.INetworkElement;
 import ruiseki.integrateddynamics.api.network.INetworkEventListener;
+import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.network.event.INetworkEvent;
 import ruiseki.integrateddynamics.capability.networkelementprovider.NetworkElementProviderConfig;
 import ruiseki.integrateddynamics.capability.networkelementprovider.NetworkElementProviderSingleton;
 import ruiseki.integrateddynamics.capability.variablecontainer.VariableContainerConfig;
 import ruiseki.integrateddynamics.capability.variablecontainer.VariableContainerDefault;
 import ruiseki.integrateddynamics.capability.variablefacade.VariableFacadeHolderConfig;
+import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
 import ruiseki.integrateddynamics.core.network.event.VariableContentsUpdatedEvent;
 import ruiseki.integrateddynamics.core.tileentity.TileCableConnectableInventory;
 import ruiseki.integrateddynamics.item.ItemVariable;
@@ -94,18 +97,36 @@ public class TileVariablestore extends TileCableConnectableInventory
     }
 
     protected void refreshVariables(IInventory inventory, boolean sendVariablesUpdateEvent) {
-        variableCache.clear();
+        // Invalidate variables
+        IPartNetwork partNetwork = NetworkHelpers.getPartNetwork(getNetwork());
+        if (partNetwork != null) {
+            for (IVariableFacade variableFacade : variableContainer.getVariableCache()
+                .values()) {
+                IVariable<?> variable = variableFacade.getVariable(partNetwork);
+                if (variable != null) {
+                    if (variable.canInvalidate()) {
+                        variable.invalidate();
+                    }
+                }
+            }
+        }
+
+        // Reset variable facades
+        variableContainer.getVariableCache()
+            .clear();
         for (int i = 0; i < inventory.getSizeInventory(); i++) {
             ItemStack itemStack = inventory.getStackInSlot(i);
             if (itemStack != null) {
                 IVariableFacade variableFacade = ItemVariable.getInstance()
                     .getVariableFacade(itemStack);
                 if (variableFacade != null && variableFacade.isValid()) {
-                    variableCache.put(variableFacade.getId(), variableFacade);
+                    variableContainer.getVariableCache()
+                        .put(variableFacade.getId(), variableFacade);
                 }
             }
         }
 
+        // Trigger event in network
         if (sendVariablesUpdateEvent) {
             INetwork network = getNetwork();
             if (network != null) {

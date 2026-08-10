@@ -38,6 +38,7 @@ import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.network.IEnergyConsumingNetworkElement;
 import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.integrateddynamics.api.part.PartTarget;
+import ruiseki.integrateddynamics.api.part.aspect.AspectUpdateType;
 import ruiseki.integrateddynamics.api.part.aspect.IAspectRead;
 import ruiseki.integrateddynamics.api.part.aspect.IAspectRegistry;
 import ruiseki.integrateddynamics.api.part.aspect.IAspectWrite;
@@ -118,12 +119,14 @@ public class Aspects {
                         .getBlock(dimPos.getWorld());
                     return block != Blocks.air;
                 })
+                .withUpdateType(AspectUpdateType.BLOCK_UPDATE)
                 .handle(AspectReadBuilders.PROP_GET_BOOLEAN, "block")
                 .buildRead();
 
             public static final IAspectRead<ValueTypeInteger.ValueInteger, ValueTypeInteger> INTEGER_DIMENSION = AspectReadBuilders.Block.BUILDER_INTEGER
                 .handle(AspectReadBuilders.World.PROP_GET_WORLD)
                 .handle((world) -> world.provider.dimensionId)
+                .withUpdateType(AspectUpdateType.NEVER)
                 .handle(AspectReadBuilders.PROP_GET_INTEGER, "dimension")
                 .buildRead();
 
@@ -136,17 +139,20 @@ public class Aspects {
             public static final IAspectRead<ValueTypeInteger.ValueInteger, ValueTypeInteger> INTEGER_POSY = AspectReadBuilders.Block.BUILDER_INTEGER
                 .handle(AspectReadBuilders.World.PROP_GET_POS)
                 .handle(BlockPos::getY)
+                .withUpdateType(AspectUpdateType.NEVER)
                 .handle(AspectReadBuilders.PROP_GET_INTEGER, "posy")
                 .buildRead();
 
             public static final IAspectRead<ValueTypeInteger.ValueInteger, ValueTypeInteger> INTEGER_POSZ = AspectReadBuilders.Block.BUILDER_INTEGER
                 .handle(AspectReadBuilders.World.PROP_GET_POS)
                 .handle(BlockPos::getZ)
+                .withUpdateType(AspectUpdateType.NEVER)
                 .handle(AspectReadBuilders.PROP_GET_INTEGER, "posz")
                 .buildRead();
 
             public static final IAspectRead<ValueObjectTypeBlock.ValueBlock, ValueObjectTypeBlock> BLOCK = AspectReadBuilders.Block.BUILDER_BLOCK
                 .handle((dimPos) -> BlockStateHelpers.getState(dimPos.getWorld(), dimPos.getBlockPos()))
+                .withUpdateType(AspectUpdateType.BLOCK_UPDATE)
                 .handle(AspectReadBuilders.PROP_GET_BLOCK)
                 .buildRead();
 
@@ -720,17 +726,18 @@ public class Aspects {
         public static final class Redstone {
 
             public static final IAspectRead<ValueTypeBoolean.ValueBoolean, ValueTypeBoolean> BOOLEAN_LOW = AspectReadBuilders.Redstone.BUILDER_BOOLEAN
-                .handle((input) -> input == 0)
+                .handle(input -> input == 0)
+                .withUpdateType(AspectUpdateType.BLOCK_UPDATE)
                 .handle(AspectReadBuilders.PROP_GET_BOOLEAN, "low")
                 .buildRead();
-
             public static final IAspectRead<ValueTypeBoolean.ValueBoolean, ValueTypeBoolean> BOOLEAN_NONLOW = AspectReadBuilders.Redstone.BUILDER_BOOLEAN
-                .handle((input) -> input > 0)
+                .handle(input -> input > 0)
+                .withUpdateType(AspectUpdateType.BLOCK_UPDATE)
                 .handle(AspectReadBuilders.PROP_GET_BOOLEAN, "nonlow")
                 .buildRead();
-
             public static final IAspectRead<ValueTypeBoolean.ValueBoolean, ValueTypeBoolean> BOOLEAN_HIGH = AspectReadBuilders.Redstone.BUILDER_BOOLEAN
-                .handle((input) -> input == 15)
+                .handle(input -> input == 15)
+                .withUpdateType(AspectUpdateType.BLOCK_UPDATE)
                 .handle(AspectReadBuilders.PROP_GET_BOOLEAN, "high")
                 .buildRead();
             public static final IAspectRead<ValueTypeBoolean.ValueBoolean, ValueTypeBoolean> BOOLEAN_CLOCK = AspectReadBuilders.Redstone.BUILDER_BOOLEAN_CLOCK
@@ -738,12 +745,13 @@ public class Aspects {
                 .buildRead();
 
             public static final IAspectRead<ValueTypeInteger.ValueInteger, ValueTypeInteger> INTEGER_VALUE = AspectReadBuilders.Redstone.BUILDER_INTEGER
+                .withUpdateType(AspectUpdateType.BLOCK_UPDATE)
                 .handle(AspectReadBuilders.PROP_GET_INTEGER, "value")
                 .buildRead();
             public static final IAspectRead<ValueTypeInteger.ValueInteger, ValueTypeInteger> INTEGER_COMPARATOR = AspectReadBuilders.Redstone.BUILDER_INTEGER_COMPARATOR
+                .withUpdateType(AspectUpdateType.BLOCK_UPDATE)
                 .handle(AspectReadBuilders.PROP_GET_INTEGER, "comparator")
                 .buildRead();
-
         }
 
         public static final class World {

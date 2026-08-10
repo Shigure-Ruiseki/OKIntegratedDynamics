@@ -29,8 +29,8 @@ public class CollidableComponentCableCenter implements ICollidable.IComponent<Fo
     }
 
     @Override
-    public boolean isActive(BlockCable block, World world, BlockPos pos, ForgeDirection direction) {
-        return CableHelpers.isNoFakeCable(world, pos);
+    public boolean isActive(BlockCable block, World world, BlockPos pos, ForgeDirection position) {
+        return CableHelpers.isNoFakeCable(world, pos, position);
     }
 
     @Override

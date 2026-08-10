@@ -82,6 +82,6 @@ public abstract class BlockContainerGuiCabled extends ConfigurableBlockContainer
     public void onNeighborBlockChange(World world, int x, int y, int z, Block neighborBlock) {
         super.onNeighborBlockChange(world, x, y, z, neighborBlock);
         BlockPos pos = new BlockPos(x, y, z);
-        NetworkHelpers.onElementProviderBlockNeighborChange(world, pos, neighborBlock);
+        NetworkHelpers.onElementProviderBlockNeighborChange(world, pos, neighborBlock, null);
     }
 }

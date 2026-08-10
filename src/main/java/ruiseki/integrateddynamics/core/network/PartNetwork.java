@@ -4,6 +4,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import net.minecraftforge.common.util.ForgeDirection;
+
 import org.apache.logging.log4j.Level;
 
 import com.google.common.collect.Lists;
@@ -65,14 +67,14 @@ public class PartNetwork extends FullNetworkListenerAdapter implements IPartNetw
     @Override
     public IPartState getPartState(int partId) {
         PartPos partPos = partPositions.get(partId);
-        return PartHelpers.getPartContainer(partPos.getPos())
+        return PartHelpers.getPartContainer(partPos.getPos(), partPos.getSide())
             .getPartState(partPos.getSide());
     }
 
     @Override
     public IPartType getPartType(int partId) {
         PartPos partPos = partPositions.get(partId);
-        return PartHelpers.getPartContainer(partPos.getPos())
+        return PartHelpers.getPartContainer(partPos.getPos(), partPos.getSide())
             .getPart(partPos.getSide());
     }
 
@@ -87,7 +89,7 @@ public class PartNetwork extends FullNetworkListenerAdapter implements IPartNetw
             return false;
         }
         PartPos partPos = partPositions.get(partId);
-        IPartContainer partContainer = PartHelpers.getPartContainer(partPos.getPos());
+        IPartContainer partContainer = PartHelpers.getPartContainer(partPos.getPos(), partPos.getSide());
         return partContainer != null && partContainer.hasPart(partPos.getSide());
     }
 
@@ -167,6 +169,11 @@ public class PartNetwork extends FullNetworkListenerAdapter implements IPartNetw
     }
 
     @Override
+    public void removeValue(int id) {
+        lazyExpressionValueCache.remove(id);
+    }
+
+    @Override
     public boolean addVariableContainer(DimPos dimPos) {
         compositeVariableCache = null;
         return variableContainerPositions.add(dimPos);
@@ -208,8 +215,6 @@ public class PartNetwork extends FullNetworkListenerAdapter implements IPartNetw
 
     @Override
     public void update() {
-        // Reset lazy variable cache
-        lazyExpressionValueCache.clear();
 
         // Signal parts of any changes
         if (partsChanged) {
@@ -219,7 +224,7 @@ public class PartNetwork extends FullNetworkListenerAdapter implements IPartNetw
     }
 
     @Override
-    public boolean removePathElement(IPathElement pathElement) {
+    public boolean removePathElement(IPathElement pathElement, ForgeDirection side) {
         notifyPartsChanged();
         return true;
     }

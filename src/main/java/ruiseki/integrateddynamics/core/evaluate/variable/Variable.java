@@ -1,16 +1,16 @@
 package ruiseki.integrateddynamics.core.evaluate.variable;
 
 import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
+import ruiseki.integrateddynamics.api.evaluate.expression.VariableAdapter;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
-import ruiseki.integrateddynamics.api.evaluate.variable.IVariable;
 
 /**
  * A default variable implementation.
  *
  * @author rubensworks
  */
-public class Variable<V extends IValue> implements IVariable<V> {
+public class Variable<V extends IValue> extends VariableAdapter<V> {
 
     private final IValueType<V> type;
     private final V value;

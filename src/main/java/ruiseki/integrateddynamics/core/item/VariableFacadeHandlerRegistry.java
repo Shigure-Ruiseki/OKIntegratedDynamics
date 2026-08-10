@@ -14,6 +14,7 @@ import org.jetbrains.annotations.Nullable;
 import com.google.common.collect.Maps;
 
 import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
+import ruiseki.integrateddynamics.api.evaluate.expression.VariableAdapter;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 import ruiseki.integrateddynamics.api.evaluate.variable.IVariable;
@@ -151,7 +152,7 @@ public class VariableFacadeHandlerRegistry implements IVariableFacadeHandlerRegi
      */
     public static class DummyVariableFacade extends VariableFacadeBase {
 
-        private static final IVariable VARIABLE_TRUE = new IVariable<ValueTypeBoolean.ValueBoolean>() {
+        private static final IVariable VARIABLE_TRUE = new VariableAdapter() {
 
             @Override
             public IValueType<ValueTypeBoolean.ValueBoolean> getType() {

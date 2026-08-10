@@ -9,6 +9,7 @@ import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.part.IPartState;
 import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartTarget;
+import ruiseki.integrateddynamics.api.part.aspect.AspectUpdateType;
 import ruiseki.integrateddynamics.api.part.aspect.IAspectRead;
 import ruiseki.integrateddynamics.api.part.aspect.IAspectVariable;
 import ruiseki.integrateddynamics.api.part.aspect.property.IAspectProperties;
@@ -30,12 +31,14 @@ public abstract class AspectReadBase<V extends IValue, T extends IValueType<V>> 
 
     private final String unlocalizedTypeSuffix;
     private final String customIconPath;
+    private final AspectUpdateType updateType;
 
     public AspectReadBase(ModBase mod, ModBase modGui, String unlocalizedTypeSuffix,
-        IAspectProperties defaultProperties, String customIconPath) {
+        IAspectProperties defaultProperties, AspectUpdateType updateType, String customIconPath) {
         super(mod, modGui, defaultProperties);
         this.unlocalizedTypeSuffix = unlocalizedTypeSuffix;
         this.customIconPath = customIconPath;
+        this.updateType = updateType;
         if (MinecraftHelpers.isClientSide()) {
             registerModelResourceLocation();
         }
@@ -46,8 +49,8 @@ public abstract class AspectReadBase<V extends IValue, T extends IValueType<V>> 
     public <P extends IPartType<P, S>, S extends IPartState<P>> void update(IPartNetwork network, P partType,
         PartTarget target, S state) {
         IAspectVariable variable = ((IPartTypeReader) partType).getVariable(target, (IPartStateReader) state, this);
-        if (variable.requiresUpdate()) {
-            variable.update();
+        if (variable.canInvalidate()) {
+            variable.invalidate();
         }
     }
 
@@ -84,4 +87,8 @@ public abstract class AspectReadBase<V extends IValue, T extends IValueType<V>> 
         };
     }
 
+    @Override
+    public AspectUpdateType getUpdateType() {
+        return updateType;
+    }
 }

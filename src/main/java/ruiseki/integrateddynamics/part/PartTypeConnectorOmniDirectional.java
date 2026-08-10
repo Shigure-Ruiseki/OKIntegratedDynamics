@@ -28,7 +28,9 @@ import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.integrateddynamics.api.part.PartRenderPosition;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.api.path.IPathElement;
+import ruiseki.integrateddynamics.api.path.ISidedPathElement;
 import ruiseki.integrateddynamics.capability.path.PathElementConfig;
+import ruiseki.integrateddynamics.capability.path.SidedPathElement;
 import ruiseki.integrateddynamics.core.block.IgnoredBlock;
 import ruiseki.integrateddynamics.core.block.IgnoredBlockStatus;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
@@ -228,16 +230,16 @@ public class PartTypeConnectorOmniDirectional
         }
 
         @Override
-        public Set<IPathElement> getReachableElements() {
+        public Set<ISidedPathElement> getReachableElements() {
             if (hasConnectorId()) {
-                Set<IPathElement> pathElements = Sets.newTreeSet();
+                Set<ISidedPathElement> pathElements = Sets.newTreeSet();
                 for (PartPos pos : PartTypeConnectorOmniDirectional.LOADED_GROUPS.getPositions(getGroupId())) {
                     if (!pos.equals(this.getPartPos())) {
                         IPathElement pathElement = CapabilityHelpers
                             .getCapability(pos.getPos(), PathElementConfig.CAPABILITY, pos.getSide())
                             .getOrNull();
                         if (pathElement != null) {
-                            pathElements.add(pathElement);
+                            pathElements.add(SidedPathElement.of(pathElement, pos.getSide()));
                         }
                     }
                 }
@@ -291,7 +293,8 @@ public class PartTypeConnectorOmniDirectional
                         position.getPos()
                             .getWorld(),
                         position.getPos()
-                            .getBlockPos());
+                            .getBlockPos(),
+                        position.getSide());
                 }
             }
         }
@@ -326,7 +329,8 @@ public class PartTypeConnectorOmniDirectional
                         pos.getPos()
                             .getWorld(),
                         pos.getPos()
-                            .getBlockPos());
+                            .getBlockPos(),
+                        pos.getSide());
                 }
                 modifyingPositions = false;
             }

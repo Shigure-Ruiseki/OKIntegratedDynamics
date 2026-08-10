@@ -108,7 +108,9 @@ public class ContainerPartWriter<P extends IPartTypeWriter<P, S> & IGuiContainer
                             getPartContainer().getPosition()
                                 .getWorld(),
                             getPartContainer().getPosition()
-                                .getBlockPos()));
+                                .getBlockPos(),
+                            getTarget().getCenter()
+                                .getSide()));
                     if (partNetwork != null) {
                         IVariable variable = getPartState().getVariable(partNetwork);
                         if (variable != null) {

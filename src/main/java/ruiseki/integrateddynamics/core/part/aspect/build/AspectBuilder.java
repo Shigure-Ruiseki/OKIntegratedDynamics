@@ -19,6 +19,7 @@ import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.part.IPartState;
 import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartTarget;
+import ruiseki.integrateddynamics.api.part.aspect.AspectUpdateType;
 import ruiseki.integrateddynamics.api.part.aspect.IAspectRead;
 import ruiseki.integrateddynamics.api.part.aspect.IAspectWrite;
 import ruiseki.integrateddynamics.api.part.aspect.property.IAspectProperties;
@@ -50,6 +51,7 @@ public class AspectBuilder<V extends IValue, T extends IValueType<V>, O> {
     private final ModBase modGui;
     private final List<IAspectUpdateListener.Before> beforeUpdateListeners;
     private final List<IAspectUpdateListener.After> afterUpdateListeners;
+    private final AspectUpdateType updateType;
 
     private final String customIconPath;
 
@@ -57,7 +59,7 @@ public class AspectBuilder<V extends IValue, T extends IValueType<V>, O> {
         List<IAspectValuePropagator> valuePropagators, List<IAspectWriteActivator> writeActivators,
         List<IAspectWriteDeactivator> writeDeactivators, ModBase mod, ModBase modGui,
         List<IAspectUpdateListener.Before> beforeUpdateListeners,
-        List<IAspectUpdateListener.After> afterUpdateListeners, String customIconPath) {
+        List<IAspectUpdateListener.After> afterUpdateListeners, AspectUpdateType updateType, String customIconPath) {
         this.read = read;
         this.valueType = valueType;
         this.kinds = kinds;
@@ -69,6 +71,7 @@ public class AspectBuilder<V extends IValue, T extends IValueType<V>, O> {
         this.modGui = Objects.requireNonNull(modGui);
         this.beforeUpdateListeners = beforeUpdateListeners;
         this.afterUpdateListeners = afterUpdateListeners;
+        this.updateType = updateType;
         this.customIconPath = customIconPath;
     }
 
@@ -91,6 +94,7 @@ public class AspectBuilder<V extends IValue, T extends IValueType<V>, O> {
             modGui,
             beforeUpdateListeners,
             afterUpdateListeners,
+            updateType,
             customIconPath);
     }
 
@@ -117,6 +121,7 @@ public class AspectBuilder<V extends IValue, T extends IValueType<V>, O> {
             modGui,
             beforeUpdateListeners,
             afterUpdateListeners,
+            updateType,
             this.customIconPath);
     }
 
@@ -136,6 +141,7 @@ public class AspectBuilder<V extends IValue, T extends IValueType<V>, O> {
             modGui,
             beforeUpdateListeners,
             afterUpdateListeners,
+            updateType,
             this.customIconPath);
     }
 
@@ -155,6 +161,7 @@ public class AspectBuilder<V extends IValue, T extends IValueType<V>, O> {
             modGui,
             beforeUpdateListeners,
             afterUpdateListeners,
+            updateType,
             this.customIconPath);
     }
 
@@ -177,6 +184,7 @@ public class AspectBuilder<V extends IValue, T extends IValueType<V>, O> {
             modGui,
             beforeUpdateListeners,
             afterUpdateListeners,
+            updateType,
             this.customIconPath);
     }
 
@@ -199,6 +207,7 @@ public class AspectBuilder<V extends IValue, T extends IValueType<V>, O> {
             modGui,
             beforeUpdateListeners,
             afterUpdateListeners,
+            updateType,
             this.customIconPath);
     }
 
@@ -221,6 +230,7 @@ public class AspectBuilder<V extends IValue, T extends IValueType<V>, O> {
             modGui,
             beforeUpdateListeners,
             afterUpdateListeners,
+            updateType,
             this.customIconPath);
     }
 
@@ -243,6 +253,7 @@ public class AspectBuilder<V extends IValue, T extends IValueType<V>, O> {
             modGui,
             beforeUpdateListeners,
             afterUpdateListeners,
+            updateType,
             this.customIconPath);
     }
 
@@ -265,6 +276,7 @@ public class AspectBuilder<V extends IValue, T extends IValueType<V>, O> {
             modGui,
             Helpers.joinList(beforeUpdateListeners, listener),
             Helpers.joinList(afterUpdateListeners, null),
+            updateType,
             customIconPath);
     }
 
@@ -287,6 +299,32 @@ public class AspectBuilder<V extends IValue, T extends IValueType<V>, O> {
             modGui,
             Helpers.joinList(beforeUpdateListeners, null),
             Helpers.joinList(afterUpdateListeners, listener),
+            updateType,
+            customIconPath);
+    }
+
+    /**
+     * Set the update type of the reader aspect.
+     *
+     * @return The new builder instance.
+     */
+    public AspectBuilder<V, T, O> withUpdateType(AspectUpdateType updateType) {
+        if (!this.read) {
+            throw new RuntimeException("Custom update types are only applicable to readers.");
+        }
+        return new AspectBuilder<>(
+            this.read,
+            this.valueType,
+            Helpers.joinList(this.kinds, null),
+            this.defaultAspectProperties,
+            Helpers.joinList(this.valuePropagators, null),
+            Helpers.joinList(writeActivators, null),
+            Helpers.joinList(writeDeactivators, null),
+            mod,
+            modGui,
+            beforeUpdateListeners,
+            afterUpdateListeners,
+            updateType,
             customIconPath);
     }
 
@@ -329,6 +367,7 @@ public class AspectBuilder<V extends IValue, T extends IValueType<V>, O> {
             IntegratedDynamics._instance,
             Lists.newArrayList(),
             Lists.newArrayList(),
+            AspectUpdateType.NETWORK_TICK,
             null);
     }
 
@@ -349,6 +388,7 @@ public class AspectBuilder<V extends IValue, T extends IValueType<V>, O> {
             IntegratedDynamics._instance,
             Lists.newArrayList(),
             Lists.newArrayList(),
+            AspectUpdateType.NETWORK_TICK,
             null);
     }
 
@@ -365,6 +405,7 @@ public class AspectBuilder<V extends IValue, T extends IValueType<V>, O> {
                 aspectBuilder.modGui,
                 deriveUnlocalizedType(aspectBuilder),
                 aspectBuilder.defaultAspectProperties,
+                aspectBuilder.updateType,
                 deriveCustomIconPath(aspectBuilder));
             this.valueType = aspectBuilder.valueType;
             this.valuePropagators = aspectBuilder.valuePropagators;

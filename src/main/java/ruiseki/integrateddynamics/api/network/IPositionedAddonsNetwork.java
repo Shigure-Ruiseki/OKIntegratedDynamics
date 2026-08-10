@@ -1,8 +1,14 @@
 package ruiseki.integrateddynamics.api.network;
 
 import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
 
 import net.minecraftforge.common.util.ForgeDirection;
+
+import org.jetbrains.annotations.Nullable;
+
+import com.google.common.collect.Lists;
 
 import ruiseki.integrateddynamics.api.part.PartPos;
 
@@ -23,6 +29,34 @@ public interface IPositionedAddonsNetwork {
      * @return All stored positions, order is undefined.
      */
     public Collection<PrioritizedPartPos> getPositions();
+
+    /**
+     * Get an iterator over the positions in the given channel.
+     *
+     * This can return a cloned state of the internal iterator.
+     * In some cases, it can be useful to commit the new state of the iterator
+     * by calling {@link IPositionedAddonsNetwork#setPositionIterator(PositionsIterator, int)}.
+     *
+     * @param channel The channel id.
+     * @return A positions iterator.
+     */
+    public PositionsIterator getPositionIterator(int channel);
+
+    /**
+     * Set the iterator over the positions in the given channel.
+     * 
+     * @param iterator The iterator, null if the internal network iteration order should be used.
+     * @param channel  The channel id.
+     */
+    public void setPositionIterator(@Nullable PositionsIterator iterator, int channel);
+
+    /**
+     * Create a new iterator over the positions in the given channel.
+     * 
+     * @param channel The channel id.
+     * @return A new positions iterator.
+     */
+    public PositionsIterator createPositionIterator(int channel);
 
     /**
      * Add the given position.
@@ -107,4 +141,45 @@ public interface IPositionedAddonsNetwork {
         }
     }
 
+    public static class PositionsIterator implements Iterator<PrioritizedPartPos> {
+
+        private boolean valid;
+        private final Collection<PrioritizedPartPos> collection;
+        private final Iterator<PrioritizedPartPos> it;
+        private int steps;
+        private final List<PositionsIterator> children;
+
+        public PositionsIterator(Collection<PrioritizedPartPos> collection) {
+            this.valid = true;
+            this.collection = collection;
+            this.it = this.collection.iterator();
+            this.steps = 0;
+            this.children = Lists.newLinkedList();
+        }
+
+        public void invalidate() {
+            this.valid = false;
+            this.children.forEach(PositionsIterator::invalidate);
+        }
+
+        @Override
+        public boolean hasNext() {
+            return valid && it.hasNext();
+        }
+
+        @Override
+        public PrioritizedPartPos next() {
+            steps++;
+            return it.next();
+        }
+
+        public PositionsIterator cloneState() {
+            PositionsIterator child = new PositionsIterator(this.collection);
+            this.children.add(child);
+            for (int step = 0; step < steps; step++) {
+                child.next();
+            }
+            return child;
+        }
+    }
 }

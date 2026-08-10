@@ -3,6 +3,7 @@ package ruiseki.integrateddynamics.core.evaluate.expression;
 import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.evaluate.expression.IExpression;
 import ruiseki.integrateddynamics.api.evaluate.expression.ILazyExpressionValueCache;
+import ruiseki.integrateddynamics.api.evaluate.expression.VariableAdapter;
 import ruiseki.integrateddynamics.api.evaluate.operator.IOperator;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
@@ -14,7 +15,7 @@ import ruiseki.integrateddynamics.api.evaluate.variable.IVariable;
  *
  * @author rubensworks
  */
-public class LazyExpression<V extends IValue> implements IExpression<V> {
+public class LazyExpression<V extends IValue> extends VariableAdapter<V> implements IExpression<V> {
 
     private final int id;
     private final IOperator op;
@@ -35,6 +36,9 @@ public class LazyExpression<V extends IValue> implements IExpression<V> {
             return valueCache.getValue(id);
         }
         IValue value = op.evaluate(input);
+        for (IVariable inputVariable : input) {
+            inputVariable.addDependent(this);
+        }
         valueCache.setValue(id, value);
         return value;
     }
@@ -69,6 +73,12 @@ public class LazyExpression<V extends IValue> implements IExpression<V> {
                     value.getType(),
                     op.getOutputType()));
         }
+    }
+
+    @Override
+    public void invalidate() {
+        super.invalidate();
+        valueCache.removeValue(id);
     }
 
     public IOperator getOperator() {

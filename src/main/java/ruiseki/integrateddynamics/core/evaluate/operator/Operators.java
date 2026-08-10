@@ -105,6 +105,7 @@ import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
 import ruiseki.integrateddynamics.core.evaluate.variable.Variable;
 import ruiseki.integrateddynamics.core.helper.Helpers;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
+import ruiseki.integrateddynamics.core.helper.NbtHelpers;
 import ruiseki.integrateddynamics.core.helper.obfuscation.ObfuscationHelpers;
 import ruiseki.okcore.datastructure.NonNullList;
 import ruiseki.okcore.energy.capability.CapabilityEnergy;
@@ -3314,6 +3315,26 @@ public final class Operators {
     }
 
     /**
+     * Create a new operator that gives its input to the first and second operators, and pipes the outputs from both of
+     * them to the third operator.
+     */
+    public static final IOperator OPERATOR_PIPE2 = REGISTRY.register(
+        OperatorBuilders.OPERATOR
+            .inputTypes(new IValueType[] { ValueTypes.OPERATOR, ValueTypes.OPERATOR, ValueTypes.OPERATOR })
+            .renderPattern(IConfigRenderPattern.INFIX_2_LATE)
+            .output(ValueTypes.OPERATOR)
+            .symbol(".2")
+            .operatorName("pipe2")
+            .function(
+                OperatorBuilders.FUNCTION_THREE_OPERATORS.build(
+                    input -> ValueTypeOperator.ValueOperator
+                        .of(CombinedOperator.Pipe2.asOperator(input.getLeft(), input.getMiddle(), input.getRight()))))
+            .build());
+    static {
+        REGISTRY.registerSerializer(new CombinedOperator.Pipe2.Serializer());
+    }
+
+    /**
      * Flip the input parameters of an operator with two inputs.
      */
     public static final IOperator OPERATOR_FLIP = REGISTRY.register(
@@ -3846,6 +3867,62 @@ public final class Operators {
                             return tag;
                         }
                     }))
+            .build());
+
+    /**
+     * Check if the first NBT tag is a subset of the second NBT tag.
+     */
+    public static final IOperator NBT_SUBSET = REGISTRY.register(
+        OperatorBuilders.NBT_2_NBT.output(ValueTypes.BOOLEAN)
+            .operatorName("subset")
+            .symbol("NBT.⊆")
+            .function(variables -> {
+                NBTTagCompound a = ((ValueTypeNbt.ValueNbt) variables.getValue(0)).getRawValue();
+                NBTTagCompound b = ((ValueTypeNbt.ValueNbt) variables.getValue(1)).getRawValue();
+                return ValueTypeBoolean.ValueBoolean.of(NbtHelpers.nbtMatchesSubset(a, b, true));
+            })
+            .build());
+
+    /**
+     * The union of the given NBT tags. Nested tags will be joined recusively.
+     */
+    public static final IOperator NBT_UNION = REGISTRY.register(
+        OperatorBuilders.NBT_2_NBT.output(ValueTypes.NBT)
+            .operatorName("union")
+            .symbol("NBT.∪")
+            .function(variables -> {
+                NBTTagCompound a = ((ValueTypeNbt.ValueNbt) variables.getValue(0)).getRawValue();
+                NBTTagCompound b = ((ValueTypeNbt.ValueNbt) variables.getValue(1)).getRawValue();
+                return ValueTypeNbt.ValueNbt.of(NbtHelpers.union(a, b));
+            })
+            .build());
+
+    /**
+     * The intersection of the given NBT tags. Nested tags will be intersected recusively.
+     */
+    public static final IOperator NBT_INTERSECTION = REGISTRY.register(
+        OperatorBuilders.NBT_2_NBT.output(ValueTypes.NBT)
+            .operatorName("intersection")
+            .symbol("NBT.∩")
+            .function(variables -> {
+                NBTTagCompound a = ((ValueTypeNbt.ValueNbt) variables.getValue(0)).getRawValue();
+                NBTTagCompound b = ((ValueTypeNbt.ValueNbt) variables.getValue(1)).getRawValue();
+                return ValueTypeNbt.ValueNbt.of(NbtHelpers.intersection(a, b));
+            })
+            .build());
+
+    /**
+     * The difference of the given NBT tags. Nested tags will be subtracted recusively.
+     */
+    public static final IOperator NBT_MINUS = REGISTRY.register(
+        OperatorBuilders.NBT_2_NBT.output(ValueTypes.NBT)
+            .operatorName("minus")
+            .symbol("NBT.∖")
+            .function(variables -> {
+                NBTTagCompound a = ((ValueTypeNbt.ValueNbt) variables.getValue(0)).getRawValue();
+                NBTTagCompound b = ((ValueTypeNbt.ValueNbt) variables.getValue(1)).getRawValue();
+                return ValueTypeNbt.ValueNbt.of(NbtHelpers.minus(a, b));
+            })
             .build());
 
     /**

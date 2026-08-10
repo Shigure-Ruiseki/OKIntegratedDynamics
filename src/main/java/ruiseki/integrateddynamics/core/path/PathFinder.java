@@ -6,6 +6,7 @@ import java.util.TreeSet;
 import com.google.common.collect.Sets;
 
 import ruiseki.integrateddynamics.api.path.IPathElement;
+import ruiseki.integrateddynamics.api.path.ISidedPathElement;
 import ruiseki.okcore.datastructure.DimPos;
 
 /**
@@ -15,26 +16,36 @@ import ruiseki.okcore.datastructure.DimPos;
  */
 public final class PathFinder {
 
-    protected static TreeSet<IPathElement> getConnectedElements(IPathElement head, Set<DimPos> visitedPositions) {
-        TreeSet<IPathElement> elements = Sets.newTreeSet();
+    protected static TreeSet<ISidedPathElement> getConnectedElements(ISidedPathElement head,
+        Set<DimPos> visitedPositions) {
+        TreeSet<ISidedPathElement> elements = Sets.newTreeSet();
 
         // Make sure to add our head
-        if (!visitedPositions.contains(head.getPosition())) {
+        if (!visitedPositions.contains(
+            head.getPathElement()
+                .getPosition())) {
             elements.add(head);
-            visitedPositions.add(head.getPosition());
+            visitedPositions.add(
+                head.getPathElement()
+                    .getPosition());
         }
 
         // Add neighbours that haven't been checked yet.
-        for (IPathElement neighbour : head.getReachableElements()) {
-            if (!visitedPositions.contains(neighbour.getPosition())) {
+        for (ISidedPathElement neighbour : head.getPathElement()
+            .getReachableElements()) {
+            if (!visitedPositions.contains(
+                neighbour.getPathElement()
+                    .getPosition())) {
                 elements.add(neighbour);
-                visitedPositions.add(neighbour.getPosition());
+                visitedPositions.add(
+                    neighbour.getPathElement()
+                        .getPosition());
             }
         }
 
         // Loop over the added neighbours to recursively check their neighbours.
-        Set<IPathElement> neighbourElements = Sets.newHashSet();
-        for (IPathElement addedElement : elements) {
+        Set<ISidedPathElement> neighbourElements = Sets.newHashSet();
+        for (ISidedPathElement addedElement : elements) {
             neighbourElements.addAll(getConnectedElements(addedElement, visitedPositions));
         }
         elements.addAll(neighbourElements);
@@ -42,7 +53,7 @@ public final class PathFinder {
         return elements;
     }
 
-    public static Cluster getConnectedCluster(IPathElement head) {
+    public static Cluster getConnectedCluster(ISidedPathElement head) {
         return new Cluster(getConnectedElements(head, Sets.<DimPos>newTreeSet()));
     }
 

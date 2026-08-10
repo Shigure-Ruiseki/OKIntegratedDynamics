@@ -530,7 +530,12 @@ public class AspectReadBuilders {
                 DimPos dimPos = input.getLeft()
                     .getTarget()
                     .getPos();
-                return NetworkHelpers.getNetwork(dimPos.getWorld(), dimPos.getBlockPos());
+                return NetworkHelpers.getNetwork(
+                    dimPos.getWorld(),
+                    dimPos.getBlockPos(),
+                    input.getLeft()
+                        .getTarget()
+                        .getSide());
             }
         };
 
@@ -543,7 +548,12 @@ public class AspectReadBuilders {
             DimPos dimPos = input.getLeft()
                 .getTarget()
                 .getPos();
-            INetwork network = NetworkHelpers.getNetwork(dimPos.getWorld(), dimPos.getBlockPos());
+            INetwork network = NetworkHelpers.getNetwork(
+                dimPos.getWorld(),
+                dimPos.getBlockPos(),
+                input.getLeft()
+                    .getTarget()
+                    .getSide());
             int channel = input.getRight()
                 .getValue(PROPERTY_CHANNEL)
                 .getRawValue();

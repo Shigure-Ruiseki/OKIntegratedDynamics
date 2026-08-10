@@ -208,9 +208,9 @@ public class BlockCable extends ConfigurableBlockContainer
                             ItemBlockCable.playBreakSound(world, pos);
                         }
                         return true;
-                    } else if (CableHelpers.isNoFakeCable(world, pos)) {
+                    } else if (CableHelpers.isNoFakeCable(world, pos, side)) {
                         // Delegate activated call to part
-                        IPartContainer partContainer = PartHelpers.getPartContainer(world, pos);
+                        IPartContainer partContainer = PartHelpers.getPartContainer(world, pos, side);
                         return partContainer.getPart(positionHit)
                             .onPartActivated(
                                 world,
@@ -264,7 +264,7 @@ public class BlockCable extends ConfigurableBlockContainer
 
     @Override
     public boolean isDropBlockItem(IBlockAccess world, int x, int y, int z, int fortune) {
-        return CableHelpers.isNoFakeCable(world, new BlockPos(x, y, z));
+        return CableHelpers.isNoFakeCable(world, new BlockPos(x, y, z), null);
     }
 
     @Override
@@ -283,7 +283,19 @@ public class BlockCable extends ConfigurableBlockContainer
     @Override
     public void onNeighborBlockChange(World world, int x, int y, int z, Block neighborBlock) {
         super.onNeighborBlockChange(world, x, y, z, neighborBlock);
-        NetworkHelpers.onElementProviderBlockNeighborChange(world, new BlockPos(x, y, z), neighborBlock);
+        NetworkHelpers.onElementProviderBlockNeighborChange(world, new BlockPos(x, y, z), neighborBlock, null);
+    }
+
+    @Override
+    public void onNeighborChange(IBlockAccess world, int x, int y, int z, int tileX, int tileY, int tileZ) {
+        super.onNeighborChange(world, x, y, z, tileX, tileY, tileZ);
+        if (world instanceof World) {
+            NetworkHelpers.onElementProviderBlockNeighborChange(
+                (World) world,
+                new BlockPos(x, y, z),
+                world.getBlock(tileX, tileY, tileZ),
+                null);
+        }
     }
 
     @Override
@@ -324,7 +336,7 @@ public class BlockCable extends ConfigurableBlockContainer
     @Override
     public int getLightOpacity(IBlockAccess world, int x, int y, int z) {
         BlockPos pos = new BlockPos(x, y, z);
-        return CableHelpers.hasFacade(world, pos) && !CableHelpers.isLightTransparent(world, pos) ? 255 : 0;
+        return CableHelpers.hasFacade(world, pos) && !CableHelpers.isLightTransparent(world, pos, null) ? 255 : 0;
     }
 
     @Override
@@ -372,7 +384,7 @@ public class BlockCable extends ConfigurableBlockContainer
         if (CableHelpers.hasFacade(world, pos)) {
             return true;
         }
-        IPartContainer partContainer = PartHelpers.getPartContainer(world, pos);
+        IPartContainer partContainer = PartHelpers.getPartContainer(world, pos, side);
         if (partContainer != null && partContainer.hasPart(side)) {
             IPartType partType = partContainer.getPart(side);
             return partType.isSolid(partContainer.getPartState(side));

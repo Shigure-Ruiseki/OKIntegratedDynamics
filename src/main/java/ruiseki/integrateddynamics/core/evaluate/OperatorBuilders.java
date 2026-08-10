@@ -337,6 +337,28 @@ public class OperatorBuilders {
             return Pair.of(first, second);
 
         });
+    public static final IterativeFunction.PrePostBuilder<Triple<IOperator, IOperator, IOperator>, IValue> FUNCTION_THREE_OPERATORS = IterativeFunction.PrePostBuilder
+        .begin()
+        .appendPre(input -> {
+            IOperator third = getSafeOperator(
+                (ValueTypeOperator.ValueOperator) input.getValue(2),
+                ValueTypes.CATEGORY_ANY);
+            IValueType<?>[] types = third.getInputTypes();
+            if (types.length < 2) {
+                throw new EvaluationException("The operator did not accept enough inputs");
+            }
+            IValueType<?> firstOutputType = types[0];
+            IValueType<?> secondOutputType = types[1];
+            if (ValueHelpers.correspondsTo(firstOutputType, ValueTypes.OPERATOR)) {
+                firstOutputType = ValueTypes.CATEGORY_ANY;
+            }
+            if (ValueHelpers.correspondsTo(secondOutputType, ValueTypes.OPERATOR)) {
+                secondOutputType = ValueTypes.CATEGORY_ANY;
+            }
+            IOperator first = getSafeOperator((ValueTypeOperator.ValueOperator) input.getValue(0), firstOutputType);
+            IOperator second = getSafeOperator((ValueTypeOperator.ValueOperator) input.getValue(1), secondOutputType);
+            return Triple.of(first, second, third);
+        });
     public static final IterativeFunction.PrePostBuilder<Pair<IOperator, OperatorBase.SafeVariablesGetter>, IValue> FUNCTION_OPERATOR_TAKE_OPERATOR_LIST = IterativeFunction.PrePostBuilder
         .begin()
         .appendPre(input -> {
@@ -501,6 +523,9 @@ public class OperatorBuilders {
     public static final OperatorBuilder<OperatorBase.SafeVariablesGetter> NBT_2 = NBT
         .inputTypes(ValueTypes.NBT, ValueTypes.STRING)
         .renderPattern(IConfigRenderPattern.INFIX);
+    public static final OperatorBuilder<OperatorBase.SafeVariablesGetter> NBT_2_NBT = NBT
+        .inputTypes(ValueTypes.NBT, ValueTypes.NBT)
+        .renderPattern(IConfigRenderPattern.INFIX);
     public static final OperatorBuilder<OperatorBase.SafeVariablesGetter> NBT_3 = NBT
         .inputTypes(ValueTypes.NBT, ValueTypes.STRING, ValueTypes.STRING)
         .output(ValueTypes.NBT)
@@ -547,7 +572,7 @@ public class OperatorBuilders {
 
     /**
      * Helper function to create an operator function builder for deriving capabilities from an itemstack.
-     * 
+     *
      * @param capabilityReference The capability instance reference.
      * @param <T>                 The capability type.
      * @return The builder.

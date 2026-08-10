@@ -229,7 +229,9 @@ public class ContainerPartReader<P extends IPartTypeReader<P, S> & IGuiContainer
                 .getWorld(),
             getTarget().getCenter()
                 .getPos()
-                .getBlockPos());
+                .getBlockPos(),
+            getTarget().getCenter()
+                .getSide());
         IPartNetwork partNetwork = NetworkHelpers.getPartNetwork(network);
         PartReaderAspectEvent event = new PartReaderAspectEvent<>(
             network,

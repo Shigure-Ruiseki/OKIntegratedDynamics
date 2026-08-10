@@ -259,6 +259,42 @@ public class CombinedOperator extends OperatorBase {
         }
     }
 
+    public static class Pipe2 extends OperatorsFunction {
+
+        public Pipe2(IOperator... operators) {
+            super(operators);
+        }
+
+        @Override
+        public IValue evaluate(SafeVariablesGetter variables) throws EvaluationException {
+            IOperator[] operators = getOperators();
+            IValue input = variables.getValue(0);
+            IValue[] intermediates = new IValue[operators.length - 1];
+            for (int i = 0; i < operators.length - 1; ++i) {
+                intermediates[i] = ValueHelpers.evaluateOperator(operators[i], input);
+            }
+            return ValueHelpers.evaluateOperator(operators[operators.length - 1], intermediates);
+        }
+
+        public static CombinedOperator asOperator(IOperator... operators) {
+            CombinedOperator.Pipe2 pipe2 = new CombinedOperator.Pipe2(operators);
+            return new CombinedOperator(":.2:", "piped2", pipe2, operators[operators.length - 1].getOutputType());
+        }
+
+        public static class Serializer extends ListOperatorSerializer<Pipe2> {
+
+            public Serializer() {
+                super("pipe2", Pipe2.class);
+            }
+
+            @Override
+            public CombinedOperator newFunction(IOperator... operators) {
+                return Pipe2.asOperator(operators);
+            }
+
+        }
+    }
+
     public static class Flip extends OperatorsFunction {
 
         public Flip(IOperator operator) {

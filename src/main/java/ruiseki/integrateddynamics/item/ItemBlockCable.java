@@ -36,8 +36,8 @@ public class ItemBlockCable extends ItemBlockMetadata {
         USE_ACTIONS.add(useAction);
     }
 
-    protected boolean checkCableAt(World world, BlockPos pos) {
-        if (!CableHelpers.isNoFakeCable(world, pos) && CableHelpers.getCable(world, pos) != null) {
+    protected boolean checkCableAt(World world, BlockPos pos, ForgeDirection side) {
+        if (!CableHelpers.isNoFakeCable(world, pos, side) && CableHelpers.getCable(world, pos, side) != null) {
             return true;
         }
         for (IUseAction useAction : USE_ACTIONS) {
@@ -56,9 +56,9 @@ public class ItemBlockCable extends ItemBlockMetadata {
         BlockPos target = pos.offset(side);
 
         // First check if pos is an unreal cable.
-        if (checkCableAt(world, pos)) return true;
+        if (checkCableAt(world, pos, side)) return true;
         // Check if target is an unreal cable.
-        if (checkCableAt(world, target)) return true;
+        if (checkCableAt(world, target, side.getOpposite())) return true;
 
         // FIX: Check if either the clicked position OR target offset position is replaceable!
         Block blockAtPos = pos.getBlock(world);
@@ -72,15 +72,15 @@ public class ItemBlockCable extends ItemBlockMetadata {
                 .isLiquid();
     }
 
-    protected boolean attempItemUseTarget(ItemStack stack, World world, BlockPos pos, BlockCable blockCable,
-        EntityLivingBase placer, boolean offsetAdded) {
+    protected boolean attempItemUseTarget(ItemStack stack, World world, BlockPos pos, ForgeDirection side,
+        BlockCable blockCable, EntityLivingBase placer, boolean offsetAdded) {
         Block block = pos.getBlock(world);
         if (!block.isAir(world, pos.getX(), pos.getY(), pos.getZ())) {
-            ICableFakeable cable = CableHelpers.getCableFakeable(world, pos);
+            ICableFakeable cable = CableHelpers.getCableFakeable(world, pos, side);
             if (cable != null && !cable.isRealCable()) {
                 if (!world.isRemote) {
                     cable.setRealCable(true);
-                    CableHelpers.updateConnections(world, pos);
+                    CableHelpers.updateConnections(world, pos, side);
                     CableHelpers.onCableAdded(world, pos);
                     CableHelpers.onCableAddedByPlayer(world, pos, placer);
                 }
@@ -132,14 +132,14 @@ public class ItemBlockCable extends ItemBlockMetadata {
         blockCable.setDisableCollisionBox(true);
 
         // 1. Try placing inside fake cable at clicked position
-        if (attempItemUseTarget(stack, worldIn, pos, blockCable, playerIn, false)) {
+        if (attempItemUseTarget(stack, worldIn, pos, side, blockCable, playerIn, false)) {
             afterItemUse(stack, worldIn, pos, blockCable, false);
             return true;
         }
 
         // 2. Try placing inside fake cable at target offset position
         BlockPos targetPos = pos.offset(side);
-        if (attempItemUseTarget(stack, worldIn, targetPos, blockCable, playerIn, true)) {
+        if (attempItemUseTarget(stack, worldIn, targetPos, side.getOpposite(), blockCable, playerIn, true)) {
             // FIX: Pass targetPos instead of pos!
             afterItemUse(stack, worldIn, pos.offset(side), blockCable, false);
             return true;

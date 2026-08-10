@@ -5,6 +5,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import lombok.Getter;
 import lombok.NonNull;
 import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
+import ruiseki.integrateddynamics.api.evaluate.expression.VariableAdapter;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 import ruiseki.integrateddynamics.api.part.IPartState;
@@ -21,7 +22,7 @@ import ruiseki.integrateddynamics.api.part.aspect.property.IAspectProperties;
  *
  * @author rubensworks
  */
-public abstract class LazyAspectVariable<V extends IValue> implements IAspectVariable<V> {
+public abstract class LazyAspectVariable<V extends IValue> extends VariableAdapter<V> implements IAspectVariable<V> {
 
     @Getter
     private final IValueType<V> type;
@@ -40,12 +41,13 @@ public abstract class LazyAspectVariable<V extends IValue> implements IAspectVar
     }
 
     @Override
-    public boolean requiresUpdate() {
+    public boolean canInvalidate() {
         return value != null;
     }
 
     @Override
-    public void update() {
+    public void invalidate() {
+        super.invalidate();
         value = null;
         cachedProperties = null;
     }

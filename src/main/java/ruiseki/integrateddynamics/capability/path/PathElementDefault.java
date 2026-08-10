@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.Set;
 
 import ruiseki.integrateddynamics.api.path.IPathElement;
+import ruiseki.integrateddynamics.api.path.ISidedPathElement;
 
 /**
  * Default implementation of {@link IPathElement}.
@@ -13,7 +14,7 @@ import ruiseki.integrateddynamics.api.path.IPathElement;
 public abstract class PathElementDefault implements IPathElement {
 
     @Override
-    public Set<IPathElement> getReachableElements() {
+    public Set<ISidedPathElement> getReachableElements() {
         return Collections.emptySet();
     }
 

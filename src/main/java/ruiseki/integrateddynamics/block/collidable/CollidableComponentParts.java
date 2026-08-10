@@ -20,7 +20,7 @@ import ruiseki.okcore.datastructure.BlockPos;
 public class CollidableComponentParts implements ICollidable.IComponent<ForgeDirection, BlockCable> {
 
     protected AxisAlignedBB getPartBoundingBox(World world, BlockPos pos, ForgeDirection side) {
-        IPartContainer partContainer = PartHelpers.getPartContainer(world, pos);
+        IPartContainer partContainer = PartHelpers.getPartContainer(world, pos, side);
         return partContainer != null ? partContainer.getPart(side)
             .getPartRenderPosition()
             .getBoundingBox(side) : null;
@@ -38,7 +38,7 @@ public class CollidableComponentParts implements ICollidable.IComponent<ForgeDir
 
     @Override
     public boolean isActive(BlockCable cable, World world, BlockPos pos, ForgeDirection position) {
-        IPartContainer partContainer = PartHelpers.getPartContainer(world, pos);
+        IPartContainer partContainer = PartHelpers.getPartContainer(world, pos, position);
         return partContainer != null && partContainer.hasPart(position);
     }
 
@@ -49,7 +49,7 @@ public class CollidableComponentParts implements ICollidable.IComponent<ForgeDir
 
     @Override
     public ItemStack getPickBlock(World world, BlockPos pos, ForgeDirection position) {
-        IPartContainer partContainer = PartHelpers.getPartContainer(world, pos);
+        IPartContainer partContainer = PartHelpers.getPartContainer(world, pos, position);
         return partContainer.getPart(position)
             .getPickBlock(world, pos, partContainer.getPartState(position));
     }

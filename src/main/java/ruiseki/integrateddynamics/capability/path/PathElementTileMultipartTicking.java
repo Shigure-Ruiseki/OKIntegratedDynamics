@@ -6,11 +6,12 @@ import net.minecraftforge.common.util.ForgeDirection;
 
 import ruiseki.integrateddynamics.api.block.cable.ICable;
 import ruiseki.integrateddynamics.api.path.IPathElement;
+import ruiseki.integrateddynamics.api.path.ISidedPathElement;
 import ruiseki.integrateddynamics.core.tileentity.TileMultipartTicking;
 
 /**
  * Implementation of {@link IPathElement} for {@link TileMultipartTicking}.
- * 
+ *
  * @author rubensworks
  */
 public class PathElementTileMultipartTicking extends PathElementTile<TileMultipartTicking> {
@@ -20,9 +21,9 @@ public class PathElementTileMultipartTicking extends PathElementTile<TileMultipa
     }
 
     @Override
-    public Set<IPathElement> getReachableElements() {
+    public Set<ISidedPathElement> getReachableElements() {
         // Add the reachable path elements from the parts that provide one.
-        Set<IPathElement> pathElements = super.getReachableElements();
+        Set<ISidedPathElement> pathElements = super.getReachableElements();
         for (ForgeDirection side : ForgeDirection.VALID_DIRECTIONS) {
             if (getTile().getPartContainer()
                 .getCapability(PathElementConfig.CAPABILITY, side)

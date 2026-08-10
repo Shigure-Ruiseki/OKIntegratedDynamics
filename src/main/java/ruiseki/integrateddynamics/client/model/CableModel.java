@@ -105,8 +105,8 @@ public class CableModel implements BakedModel {
             BlockPos pos = new BlockPos(worldContext.getX(), worldContext.getY(), worldContext.getZ());
 
             List<ModelQuadView> combinedQuads = new ArrayList<>(48);
-            boolean realCable = CableHelpers.isNoFakeCable(world, pos);
-            IPartContainer partContainer = PartHelpers.getPartContainer(world, pos);
+            boolean realCable = CableHelpers.isNoFakeCable(world, pos, null);
+            IPartContainer partContainer = PartHelpers.getPartContainer(world, pos, null);
 
             if (realCable) {
                 combinedQuads.addAll(CACHED_CENTER_CORE_QUADS);

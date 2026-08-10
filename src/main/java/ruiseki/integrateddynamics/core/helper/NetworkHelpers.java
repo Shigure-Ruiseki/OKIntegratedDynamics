@@ -3,6 +3,7 @@ package ruiseki.integrateddynamics.core.helper;
 import net.minecraft.block.Block;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+import net.minecraftforge.common.util.ForgeDirection;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -20,6 +21,7 @@ import ruiseki.integrateddynamics.capability.network.NetworkCarrierConfig;
 import ruiseki.integrateddynamics.capability.network.PartNetworkConfig;
 import ruiseki.integrateddynamics.capability.networkelementprovider.NetworkElementProviderConfig;
 import ruiseki.integrateddynamics.capability.path.PathElementConfig;
+import ruiseki.integrateddynamics.capability.path.SidedPathElement;
 import ruiseki.integrateddynamics.core.network.Network;
 import ruiseki.integrateddynamics.core.persist.world.NetworkWorldStorage;
 import ruiseki.okcore.datastructure.BlockPos;
@@ -37,10 +39,11 @@ public class NetworkHelpers {
      *
      * @param world The world.
      * @param pos   The position.
+     * @param side  The side.
      * @return The network carrier capability, or null if not present.
      */
-    public static INetworkCarrier getNetworkCarrier(IBlockAccess world, BlockPos pos) {
-        return CapabilityHelpers.getCapability(world, pos, NetworkCarrierConfig.CAPABILITY)
+    public static INetworkCarrier getNetworkCarrier(IBlockAccess world, BlockPos pos, @Nullable ForgeDirection side) {
+        return CapabilityHelpers.getCapability(world, pos, NetworkCarrierConfig.CAPABILITY, side)
             .getOrNull();
     }
 
@@ -49,10 +52,12 @@ public class NetworkHelpers {
      *
      * @param world The world.
      * @param pos   The position.
+     * @param side  The side.
      * @return The network element provider capability, or null if not present.
      */
-    public static INetworkElementProvider getNetworkElementProvider(IBlockAccess world, BlockPos pos) {
-        return CapabilityHelpers.getCapability(world, pos, NetworkElementProviderConfig.CAPABILITY)
+    public static INetworkElementProvider getNetworkElementProvider(IBlockAccess world, BlockPos pos,
+        @Nullable ForgeDirection side) {
+        return CapabilityHelpers.getCapability(world, pos, NetworkElementProviderConfig.CAPABILITY, side)
             .getOrNull();
     }
 
@@ -61,10 +66,11 @@ public class NetworkHelpers {
      *
      * @param world The world.
      * @param pos   The position.
+     * @param side  The side.
      * @return The network, or null if no network or network carrier present.
      */
-    public static INetwork getNetwork(IBlockAccess world, BlockPos pos) {
-        INetworkCarrier networkCarrier = getNetworkCarrier(world, pos);
+    public static INetwork getNetwork(IBlockAccess world, BlockPos pos, @Nullable ForgeDirection side) {
+        INetworkCarrier networkCarrier = getNetworkCarrier(world, pos, side);
         if (networkCarrier != null) {
             return networkCarrier.getNetwork();
         }
@@ -103,14 +109,15 @@ public class NetworkHelpers {
      *
      * @param world The world.
      * @param pos   The starting position.
+     * @param side  The side.
      * @return The newly created part network.
      *         Can be null if the starting position did not have a {@link IPathElement} capability.
      */
-    public static @Nullable INetwork initNetwork(World world, BlockPos pos) {
+    public static @Nullable INetwork initNetwork(World world, BlockPos pos, @Nullable ForgeDirection side) {
         IPathElement pathElement = CapabilityHelpers.getCapability(world, pos, PathElementConfig.CAPABILITY)
             .getOrNull();
         if (pathElement != null) {
-            Network network = Network.initiateNetworkSetup(pathElement);
+            Network network = Network.initiateNetworkSetup(SidedPathElement.of(pathElement, side));
             network.initialize();
             return network;
         }
@@ -125,11 +132,13 @@ public class NetworkHelpers {
      * @param world         The world in which the neighbour was updated.
      * @param pos           The position of the center block.
      * @param neighborBlock The block type of the neighbour that was updated.
+     * @param side          The side at the center block.
      */
-    public static void onElementProviderBlockNeighborChange(World world, BlockPos pos, Block neighborBlock) {
+    public static void onElementProviderBlockNeighborChange(World world, BlockPos pos, Block neighborBlock,
+        @Nullable ForgeDirection side) {
         if (!world.isRemote) {
-            INetwork network = getNetwork(world, pos);
-            INetworkElementProvider networkElementProvider = getNetworkElementProvider(world, pos);
+            INetwork network = getNetwork(world, pos, side);
+            INetworkElementProvider networkElementProvider = getNetworkElementProvider(world, pos, side);
             for (INetworkElement networkElement : networkElementProvider.createNetworkElements(world, pos)) {
                 networkElement.onNeighborBlockChange(network, world, neighborBlock);
             }
@@ -145,7 +154,7 @@ public class NetworkHelpers {
 
     /**
      * Invalidate all network elements at the given position.
-     * 
+     *
      * @param world The world.
      * @param pos   The position.
      */
@@ -169,7 +178,7 @@ public class NetworkHelpers {
 
     /**
      * Revalidate all network elements at the given position.
-     * 
+     *
      * @param world The world.
      * @param pos   The position.
      */
@@ -186,7 +195,7 @@ public class NetworkHelpers {
                 // Attempt to revalidate the network elements in this provider
                 for (INetwork network : NetworkWorldStorage.getInstance(IntegratedDynamics._instance)
                     .getNetworks()) {
-                    if (network.containsPathElement(pathElement)) {
+                    if (network.containsSidedPathElement(SidedPathElement.of(pathElement, null))) {
                         // Revalidate all network elements
                         for (INetworkElement networkElement : networkElementProvider
                             .createNetworkElements(world, pos)) {

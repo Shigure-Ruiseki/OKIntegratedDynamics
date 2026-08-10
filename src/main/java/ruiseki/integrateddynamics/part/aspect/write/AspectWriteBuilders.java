@@ -3,6 +3,7 @@ package ruiseki.integrateddynamics.part.aspect.write;
 import java.util.List;
 
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 import net.minecraftforge.event.world.NoteBlockEvent;
 import net.minecraftforge.fluids.FluidStack;
@@ -33,6 +34,7 @@ import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeDouble;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeInteger;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeList;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeLong;
+import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeNbt;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeOperator;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeString;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
@@ -70,6 +72,8 @@ public class AspectWriteBuilders {
         AspectBuilder.forWriteType(ValueTypes.OBJECT_FLUIDSTACK));
     public static final AspectBuilder<ValueTypeOperator.ValueOperator, ValueTypeOperator, Triple<PartTarget, IAspectProperties, ValueTypeOperator.ValueOperator>> BUILDER_OPERATOR = getValue(
         AspectBuilder.forWriteType(ValueTypes.OPERATOR));
+    public static final AspectBuilder<ValueTypeNbt.ValueNbt, ValueTypeNbt, Triple<PartTarget, IAspectProperties, ValueTypeNbt.ValueNbt>> BUILDER_NBT = getValue(
+        AspectBuilder.forWriteType(ValueTypes.NBT));
 
     // --------------- Value type propagators ---------------
     public static final IAspectValuePropagator<Triple<PartTarget, IAspectProperties, ValueTypeBoolean.ValueBoolean>, Triple<PartTarget, IAspectProperties, Boolean>> PROP_GET_BOOLEAN = input -> Triple
@@ -130,6 +134,13 @@ public class AspectWriteBuilders {
             input.getRight()
                 .getRawValue()
                 .orNull());
+
+    public static final IAspectValuePropagator<Triple<PartTarget, IAspectProperties, ValueTypeNbt.ValueNbt>, Triple<PartTarget, IAspectProperties, NBTTagCompound>> PROP_GET_NBT = input -> Triple
+        .of(
+            input.getLeft(),
+            input.getMiddle(),
+            input.getRight()
+                .getRawValue());
 
     public static final class Audio {
 

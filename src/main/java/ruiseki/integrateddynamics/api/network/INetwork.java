@@ -5,7 +5,7 @@ import java.util.Set;
 import org.jetbrains.annotations.NotNull;
 
 import ruiseki.integrateddynamics.api.network.event.INetworkEventBus;
-import ruiseki.integrateddynamics.api.path.IPathElement;
+import ruiseki.integrateddynamics.api.path.ISidedPathElement;
 import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.persist.nbt.INBTSerializable;
@@ -128,8 +128,8 @@ public interface INetwork extends IFullNetworkListener, INBTSerializable {
     public void revalidateElement(INetworkElement element);
 
     /**
-     * @param pathElement A path element.
-     * @return If this network contains the given path element.
+     * @param sidedPathElement A sided path element.
+     * @return If this network contains the given sided path element.
      */
-    public boolean containsPathElement(IPathElement pathElement);
+    public boolean containsSidedPathElement(ISidedPathElement sidedPathElement);
 }
