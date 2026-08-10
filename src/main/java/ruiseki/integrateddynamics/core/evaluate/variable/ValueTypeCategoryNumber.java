@@ -12,6 +12,7 @@ import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueCastRegistry;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
+import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeNamed;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeNumber;
 import ruiseki.integrateddynamics.api.evaluate.variable.IVariable;
 import ruiseki.okcore.helper.Helpers;
@@ -21,7 +22,7 @@ import ruiseki.okcore.helper.Helpers;
  *
  * @author rubensworks
  */
-public class ValueTypeCategoryNumber extends ValueTypeCategoryBase<IValue> {
+public class ValueTypeCategoryNumber extends ValueTypeCategoryBase<IValue> implements IValueTypeNamed<IValue> {
 
     private static final IValueTypeNumber[] ELEMENTS = new IValueTypeNumber[] { ValueTypes.INTEGER, ValueTypes.DOUBLE,
         ValueTypes.LONG };
@@ -170,5 +171,10 @@ public class ValueTypeCategoryNumber extends ValueTypeCategoryBase<IValue> {
     public ValueTypeInteger.ValueInteger floor(IVariable a) throws EvaluationException {
         IValueTypeNumber type = getType(a);
         return type.floor(castValue(type, a.getValue()));
+    }
+
+    @Override
+    public String getName(IValue a) {
+        return ((IValueTypeNamed) a.getType()).getName(a);
     }
 }
