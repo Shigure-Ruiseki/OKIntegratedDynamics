@@ -2,7 +2,6 @@ package ruiseki.integrateddynamics.core.network;
 
 import cofh.api.energy.IEnergyStorage;
 import ruiseki.integrateddynamics.GeneralConfig;
-import ruiseki.integrateddynamics.api.network.IChanneledNetwork;
 import ruiseki.integrateddynamics.api.network.IPositionedAddonsNetwork.PrioritizedPartPos;
 
 public class EnergyChannel implements IEnergyStorage {
@@ -19,8 +18,7 @@ public class EnergyChannel implements IEnergyStorage {
     public int receiveEnergy(int energy, boolean simulate) {
         energy = Math.min(energy, GeneralConfig.energyRateLimit);
         int toAdd = energy;
-        for (PrioritizedPartPos partPos : network.getPositions()) {
-            if (!IChanneledNetwork.channelsMatch(partPos.getChannel(), channel)) continue;
+        for (PrioritizedPartPos partPos : network.getPositions(this.channel)) {
             IEnergyStorage energyStorage = network.getEnergyStorage(partPos);
             if (energyStorage != null) {
                 network.disablePosition(partPos.getPartPos());
@@ -35,8 +33,7 @@ public class EnergyChannel implements IEnergyStorage {
     public int extractEnergy(int energy, boolean simulate) {
         energy = Math.min(energy, GeneralConfig.energyRateLimit);
         int toConsume = energy;
-        for (PrioritizedPartPos partPos : network.getPositions()) {
-            if (!IChanneledNetwork.channelsMatch(partPos.getChannel(), channel)) continue;
+        for (PrioritizedPartPos partPos : network.getPositions(this.channel)) {
             IEnergyStorage energyStorage = network.getEnergyStorage(partPos);
             if (energyStorage != null) {
                 network.disablePosition(partPos.getPartPos());
@@ -50,8 +47,7 @@ public class EnergyChannel implements IEnergyStorage {
     @Override
     public int getEnergyStored() {
         int energy = 0;
-        for (PrioritizedPartPos partPos : network.getPositions()) {
-            if (!IChanneledNetwork.channelsMatch(partPos.getChannel(), channel)) continue;
+        for (PrioritizedPartPos partPos : network.getPositions(this.channel)) {
             IEnergyStorage energyStorage = network.getEnergyStorage(partPos);
             if (energyStorage != null) {
                 network.disablePosition(partPos.getPartPos());
@@ -65,8 +61,7 @@ public class EnergyChannel implements IEnergyStorage {
     @Override
     public int getMaxEnergyStored() {
         int maxEnergy = 0;
-        for (PrioritizedPartPos partPos : network.getPositions()) {
-            if (!IChanneledNetwork.channelsMatch(partPos.getChannel(), channel)) continue;
+        for (PrioritizedPartPos partPos : network.getPositions(this.channel)) {
             IEnergyStorage energyStorage = network.getEnergyStorage(partPos);
             if (energyStorage != null) {
                 network.disablePosition(partPos.getPartPos());

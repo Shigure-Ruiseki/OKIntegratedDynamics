@@ -1,5 +1,6 @@
 package ruiseki.integrateddynamics.api.network;
 
+import java.util.Collection;
 import java.util.Set;
 
 import net.minecraftforge.common.util.ForgeDirection;
@@ -14,9 +15,15 @@ import ruiseki.integrateddynamics.api.part.PartPos;
 public interface IPositionedAddonsNetwork {
 
     /**
+     * @param channel The channel id.
      * @return The stored positions, sorted by priority.
      */
-    public Set<PrioritizedPartPos> getPositions();
+    public Set<PrioritizedPartPos> getPositions(int channel);
+
+    /**
+     * @return All stored positions, order is undefined.
+     */
+    public Collection<PrioritizedPartPos> getPositions();
 
     /**
      * Add the given position.
@@ -60,12 +67,11 @@ public interface IPositionedAddonsNetwork {
     public static class PrioritizedPartPos implements Comparable<PrioritizedPartPos> {
 
         private final PartPos partPos;
-        private final int priority, channel;
+        private final int priority;
 
-        private PrioritizedPartPos(PartPos partPos, int priority, int channel) {
+        private PrioritizedPartPos(PartPos partPos, int priority) {
             this.partPos = partPos;
             this.priority = priority;
-            this.channel = channel;
         }
 
         @Override
@@ -82,16 +88,15 @@ public interface IPositionedAddonsNetwork {
                         .getSide();
                     ForgeDirection otherSide = o.getPartPos()
                         .getSide();
-                    return thisSide == otherSide ? Integer.compare(this.getChannel(), o.getChannel())
-                        : (thisSide == null ? -1 : (otherSide == null ? 1 : thisSide.compareTo(otherSide)));
+                    return thisSide == null ? -1 : (otherSide == null ? 1 : thisSide.compareTo(otherSide));
                 }
                 return compPos;
             }
             return compPriority;
         }
 
-        public static PrioritizedPartPos of(PartPos pos, int priority, int channel) {
-            return new PrioritizedPartPos(pos, priority, channel);
+        public static PrioritizedPartPos of(PartPos pos, int priority) {
+            return new PrioritizedPartPos(pos, priority);
         }
 
         public PartPos getPartPos() {
@@ -100,10 +105,6 @@ public interface IPositionedAddonsNetwork {
 
         public int getPriority() {
             return priority;
-        }
-
-        public int getChannel() {
-            return channel;
         }
     }
 

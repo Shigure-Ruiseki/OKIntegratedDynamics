@@ -253,11 +253,11 @@ public class GuiPartSettings extends GuiContainerExtended {
             guiLeft + 8,
             guiTop + 62,
             Helpers.RGBToInt(0, 0, 0));
-        fontRendererObj.drawString(
-            LangHelpers.localize("gui.integrateddynamics.partsettings.channel"),
-            guiLeft + 8,
-            guiTop + 87,
-            Helpers.RGBToInt(0, 0, 0));
+        fontRendererObj.drawString(getChannelText(), guiLeft + 8, guiTop + 87, Helpers.RGBToInt(0, 0, 0));
+    }
+
+    protected String getChannelText() {
+        return LangHelpers.localize("gui.integrateddynamics.partsettings.channel");
     }
 
     @Override

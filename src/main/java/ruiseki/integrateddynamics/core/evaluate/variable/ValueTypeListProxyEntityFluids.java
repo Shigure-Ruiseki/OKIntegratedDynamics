@@ -1,5 +1,7 @@
 package ruiseki.integrateddynamics.core.evaluate.variable;
 
+import java.util.Objects;
+
 import net.minecraft.entity.Entity;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
@@ -9,8 +11,6 @@ import org.jetbrains.annotations.Nullable;
 import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
 import ruiseki.okcore.fluid.handler.IFluidHandler;
 import ruiseki.okcore.persist.nbt.INBTProvider;
-
-import java.util.Objects;
 
 /**
  * A list proxy for the fluid handler fluids of an entity.

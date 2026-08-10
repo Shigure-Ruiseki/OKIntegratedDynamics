@@ -76,8 +76,10 @@ public class EnergyBatteryNetworkElement extends NetworkElementBase {
 
     @Override
     public void onNetworkRemoval(INetwork network) {
-        NetworkHelpers.getEnergyNetwork(network)
-            .removePosition(PartPos.of(getPos(), null));
+        IEnergyNetwork energyNetwork = NetworkHelpers.getEnergyNetwork(network);
+        if (energyNetwork != null) {
+            energyNetwork.removePosition(PartPos.of(getPos(), null));
+        }
     }
 
     @Override

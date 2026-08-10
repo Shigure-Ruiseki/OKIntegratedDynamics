@@ -11,6 +11,7 @@ import ruiseki.okcore.block.property.BlockProperty;
 import ruiseki.okcore.block.property.IntegerProperty;
 import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 import ruiseki.okcore.energy.capability.CapabilityEnergy;
+import ruiseki.okcore.helper.BlockHelpers;
 import ruiseki.okcore.helper.CapabilityHelpers;
 
 /**
@@ -47,38 +48,28 @@ public class BlockEnergyBattery extends BlockEnergyBatteryBase {
     }
 
     @Override
-    public void getSubBlocks(Item item, CreativeTabs tab, List<ItemStack> list) {
+    public void getSubBlocks(Item itemIn, CreativeTabs tab, List<ItemStack> list) {
+        if (!BlockHelpers.isValidCreativeTab(this, tab)) return;
+        ItemStack itemStack = new ItemStack(this);
+
         int capacityOriginal = BlockEnergyBatteryConfig.capacity;
         int capacity = capacityOriginal;
         int lastCapacity;
-
-        int maxCap = Math.min(BlockEnergyBatteryConfig.maxCreativeCapacity, BlockEnergyBatteryConfig.maxCapacity);
-
         do {
-            ItemStack emptyStack = new ItemStack(item);
-            IEnergyStorageCapacity emptyStorage = (IEnergyStorageCapacity) CapabilityHelpers
-                .getCapability(emptyStack, CapabilityEnergy.ENERGY)
-                .getOrNull();
-
-            if (emptyStorage != null) {
-                emptyStorage.setCapacity(capacity);
-                list.add(emptyStack);
+            ItemStack currentStack = itemStack.copy();
+            IEnergyStorageCapacity energyStorage = (IEnergyStorageCapacity) CapabilityHelpers
+                .getCapability(currentStack, CapabilityEnergy.ENERGY, null);
+            energyStorage.setCapacity(capacity);
+            list.add(currentStack.copy());
+            int stored = 1;
+            while (stored > 0) {
+                stored = energyStorage.receiveEnergy(capacity, false);
             }
-
-            ItemStack fullStack = new ItemStack(item);
-            IEnergyStorageCapacity fullStorage = (IEnergyStorageCapacity) CapabilityHelpers
-                .getCapability(fullStack, CapabilityEnergy.ENERGY)
-                .getOrNull();
-
-            if (fullStorage != null) {
-                fullStorage.setCapacity(capacity);
-                fullStorage.receiveEnergy(capacity, false);
-                list.add(fullStack);
-            }
-
+            list.add(currentStack.copy());
             lastCapacity = capacity;
             capacity = capacity << 2;
-        } while (capacity <= maxCap && capacity > lastCapacity);
+        } while (capacity < Math.min(BlockEnergyBatteryConfig.maxCreativeCapacity, BlockEnergyBatteryConfig.maxCapacity)
+            && capacity > lastCapacity);
     }
 
     @Override
