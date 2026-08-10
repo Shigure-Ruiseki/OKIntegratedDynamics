@@ -16,6 +16,7 @@ import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 import ruiseki.integrateddynamics.api.part.aspect.property.IAspectProperties;
 import ruiseki.integrateddynamics.api.part.aspect.property.IAspectPropertyTypeInstance;
+import ruiseki.integrateddynamics.core.evaluate.variable.ValueHelpers;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
 import ruiseki.okcore.helper.MinecraftHelpers;
 
@@ -86,11 +87,7 @@ public class AspectProperties implements IAspectProperties {
                 "label",
                 entry.getKey()
                     .getUnlocalizedName());
-            nbtEntry.setString(
-                "value",
-                entry.getKey()
-                    .getType()
-                    .serialize(entry.getValue()));
+            nbtEntry.setString("value", ValueHelpers.serializeRaw(entry.getValue()));
             map.appendTag(nbtEntry);
         }
         tag.setTag("map", map);

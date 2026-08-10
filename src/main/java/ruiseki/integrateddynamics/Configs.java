@@ -22,6 +22,7 @@ import ruiseki.integrateddynamics.capability.network.PartNetworkConfig;
 import ruiseki.integrateddynamics.capability.networkelementprovider.NetworkElementProviderConfig;
 import ruiseki.integrateddynamics.capability.partcontainer.PartContainerConfig;
 import ruiseki.integrateddynamics.capability.path.PathElementConfig;
+import ruiseki.integrateddynamics.capability.valueinterface.ValueInterfaceConfig;
 import ruiseki.integrateddynamics.capability.variablecontainer.VariableContainerConfig;
 import ruiseki.integrateddynamics.capability.variablefacade.VariableFacadeHolderConfig;
 import ruiseki.integrateddynamics.item.ItemFacadeConfig;
@@ -53,6 +54,7 @@ public class Configs {
         configHandler.add(new VariableFacadeHolderConfig());
         configHandler.add(new PartNetworkConfig());
         configHandler.add(new EnergyNetworkConfig());
+        configHandler.add(new ValueInterfaceConfig());
 
         // Fluids
         // configHandler.add(new FluidMenrilResinConfig());

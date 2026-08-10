@@ -21,6 +21,7 @@ import ruiseki.integrateddynamics.api.part.aspect.property.IAspectProperties;
 import ruiseki.integrateddynamics.api.part.aspect.property.IAspectPropertyTypeInstance;
 import ruiseki.integrateddynamics.core.client.gui.ExtendedGuiHandler;
 import ruiseki.integrateddynamics.core.client.gui.container.GuiAspectSettings;
+import ruiseki.integrateddynamics.core.evaluate.variable.ValueHelpers;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.helper.ValueNotifierHelpers;
 import ruiseki.okcore.inventory.IGuiContainerProvider;
@@ -122,8 +123,7 @@ public class ContainerAspectSettings extends ExtendedInventoryContainer {
             this,
             propertyIds.inverse()
                 .get(property),
-            property.getType()
-                .serialize(value));
+            ValueHelpers.serializeRaw(value));
     }
 
     @SuppressWarnings("unchecked")

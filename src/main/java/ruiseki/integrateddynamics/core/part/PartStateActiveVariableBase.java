@@ -1,6 +1,7 @@
 package ruiseki.integrateddynamics.core.part;
 
 import java.util.List;
+import java.util.Optional;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -12,13 +13,17 @@ import com.google.common.collect.Lists;
 import lombok.Getter;
 import lombok.Setter;
 import ruiseki.integrateddynamics.IntegratedDynamics;
+import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IVariable;
 import ruiseki.integrateddynamics.api.item.IVariableFacade;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartTarget;
+import ruiseki.integrateddynamics.capability.valueinterface.ValueInterfaceConfig;
 import ruiseki.integrateddynamics.item.ItemVariable;
+import ruiseki.okcore.capabilities.Capability;
+import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.inventory.SimpleInventory;
 import ruiseki.okcore.persist.nbt.NBTClassType;
@@ -148,6 +153,28 @@ public abstract class PartStateActiveVariableBase<P extends IPartType> extends P
         // noinspection unchecked
         this.globalErrorMessages = NBTClassType.readNbt(List.class, "globalErrorMessages", tag);
         inventory.readFromNBT(tag);
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T> LazyOptional<T> getCapability(Capability<T> capability, IPartNetwork network, PartTarget target) {
+        if (capability == ValueInterfaceConfig.CAPABILITY) {
+            return LazyOptional.of(() -> {
+                if (hasVariable()) {
+                    IVariable<IValue> variable = getVariable(network);
+                    if (variable != null) {
+                        try {
+                            return Optional.ofNullable(variable.getValue());
+                        } catch (EvaluationException e) {
+                            return Optional.empty();
+                        }
+                    }
+                }
+                return Optional.empty();
+            })
+                .cast();
+        }
+        return super.getCapability(capability, network, target);
     }
 
     /**

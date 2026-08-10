@@ -6,6 +6,7 @@ import net.minecraftforge.common.util.ForgeDirection;
 import org.jetbrains.annotations.Nullable;
 
 import ruiseki.integrateddynamics.api.network.INetworkElement;
+import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.part.aspect.IAspect;
 import ruiseki.integrateddynamics.api.part.aspect.property.IAspectProperties;
 import ruiseki.okcore.capabilities.Capability;
@@ -94,7 +95,7 @@ public interface IPartState<P extends IPartType> {
 
     /**
      * Indicate that the given part should interact with the given side of the target.
-     * 
+     *
      * @param side The side of the target block to interact with.
      *             Null removes the side override.
      */
@@ -184,9 +185,11 @@ public interface IPartState<P extends IPartType> {
      *
      * @param capability The capability to get.
      * @param <T>        The capability type.
+     * @param network    The network the part belongs to.
+     * @param target     The target.
      * @return The capability instance.
      */
-    <T> LazyOptional<T> getCapability(Capability<T> capability);
+    <T> LazyOptional<T> getCapability(Capability<T> capability, IPartNetwork network, PartTarget target);
 
     /**
      * Add a capability to this state that will not be automatically persisted to NBT.

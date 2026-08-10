@@ -4,6 +4,7 @@ import net.minecraft.nbt.NBTTagCompound;
 
 import org.jetbrains.annotations.Nullable;
 
+import ruiseki.integrateddynamics.GeneralConfig;
 import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.evaluate.operator.IOperator;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
@@ -124,6 +125,21 @@ public class ValueHelpers {
     }
 
     /**
+     * Serialize the given value to a raw string.
+     * 
+     * @param value The value.
+     * @return The NBT tag.
+     */
+    public static String serializeRaw(IValue value) {
+        String raw = value.getType()
+            .serialize(value);
+        if (raw.length() >= GeneralConfig.maxValueByteSize) {
+            return "TOO LONG";
+        }
+        return raw;
+    }
+
+    /**
      * Serialize the given value to NBT.
      *
      * @param value The value.
@@ -135,10 +151,7 @@ public class ValueHelpers {
             "valueType",
             value.getType()
                 .getUnlocalizedName());
-        tag.setString(
-            "value",
-            value.getType()
-                .serialize(value));
+        tag.setString("value", serializeRaw(value));
         return tag;
     }
 

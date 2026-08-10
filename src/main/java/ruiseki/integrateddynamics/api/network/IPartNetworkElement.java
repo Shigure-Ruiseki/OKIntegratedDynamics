@@ -12,7 +12,7 @@ import ruiseki.integrateddynamics.api.part.PartTarget;
  * @author rubensworks
  */
 public interface IPartNetworkElement<P extends IPartType<P, S>, S extends IPartState<P>>
-    extends IEventListenableNetworkElement<P> {
+    extends IEventListenableNetworkElement<P>, IPositionedNetworkElement, ISidedNetworkElement {
 
     /**
      * @return The part.

@@ -1,6 +1,7 @@
 package ruiseki.integrateddynamics.core.tileentity;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import net.minecraft.item.ItemStack;
@@ -10,6 +11,8 @@ import com.google.common.collect.Sets;
 
 import lombok.Getter;
 import ruiseki.integrateddynamics.IntegratedDynamics;
+import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
+import ruiseki.integrateddynamics.api.evaluate.IValueInterface;
 import ruiseki.integrateddynamics.api.evaluate.variable.IVariable;
 import ruiseki.integrateddynamics.api.item.IVariableFacade;
 import ruiseki.integrateddynamics.api.item.IVariableFacadeHandlerRegistry;
@@ -17,10 +20,12 @@ import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.INetworkEventListener;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.network.event.INetworkEvent;
+import ruiseki.integrateddynamics.capability.valueinterface.ValueInterfaceConfig;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
 import ruiseki.integrateddynamics.core.network.event.VariableContentsUpdatedEvent;
+import ruiseki.okcore.capabilities.resolver.BasicCapabilityResolver;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.persist.IDirtyMarkListener;
 import ruiseki.okcore.persist.nbt.NBTPersist;
@@ -42,6 +47,26 @@ public abstract class TileActiveVariableBase<E> extends TileCableConnectableInve
     public TileActiveVariableBase(int inventorySize, String inventoryName) {
         super(inventorySize, inventoryName, 1);
         inventory.addDirtyMarkListener(this);
+        IValueInterface valueInterface = () -> {
+            INetwork network = getNetwork();
+            IPartNetwork partNetwork = NetworkHelpers.getPartNetwork(network);
+            if (network == null || partNetwork == null) {
+                return Optional.empty();
+            }
+            if (hasVariable()) {
+                IVariable<?> variable = getVariable(partNetwork);
+                if (variable != null) {
+                    try {
+                        return Optional.ofNullable(variable.getValue());
+                    } catch (EvaluationException e) {
+                        return Optional.empty();
+                    }
+                }
+            }
+            return Optional.empty();
+        };
+        this.capabilityCache.addCapabilityResolver(
+            BasicCapabilityResolver.create(ValueInterfaceConfig.CAPABILITY, () -> valueInterface));
     }
 
     public abstract int getSlotRead();

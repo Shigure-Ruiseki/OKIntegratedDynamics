@@ -32,6 +32,9 @@ import cofh.api.energy.IEnergyStorage;
 import cpw.mods.fml.common.FMLCommonHandler;
 import ruiseki.integrateddynamics.GeneralConfig;
 import ruiseki.integrateddynamics.IntegratedDynamics;
+import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
+import ruiseki.integrateddynamics.api.evaluate.IValueInterface;
+import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.network.IEnergyConsumingNetworkElement;
 import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.integrateddynamics.api.part.PartTarget;
@@ -40,11 +43,13 @@ import ruiseki.integrateddynamics.api.part.aspect.IAspectRegistry;
 import ruiseki.integrateddynamics.api.part.aspect.IAspectWrite;
 import ruiseki.integrateddynamics.api.part.aspect.property.IAspectProperties;
 import ruiseki.integrateddynamics.capability.network.EnergyNetworkConfig;
+import ruiseki.integrateddynamics.capability.valueinterface.ValueInterfaceConfig;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueObjectTypeBlock;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueObjectTypeEntity;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueObjectTypeFluidStack;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueObjectTypeItemStack;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeBoolean;
+import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeCategoryAny;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeDouble;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeInteger;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeList;
@@ -63,6 +68,7 @@ import ruiseki.okcore.datastructure.DimPos;
 import ruiseki.okcore.fluid.capability.wrapper.BlockLiquidWrapper;
 import ruiseki.okcore.fluid.handler.IFluidTankProperties;
 import ruiseki.okcore.helper.BlockStateHelpers;
+import ruiseki.okcore.helper.CapabilityHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
 
 /**
@@ -692,6 +698,22 @@ public class Aspects {
                         .sum() * GeneralConfig.energyConsumptionMultiplier : 0)
                 .handle(AspectReadBuilders.PROP_GET_INTEGER, "energy")
                 .appendKind("consumptionrate")
+                .buildRead();
+            public static final IAspectRead<IValue, ValueTypeCategoryAny> ANY_VALUE = AspectReadBuilders.BUILDER_ANY
+                .appendKind("network")
+                .handle(data -> {
+                    PartPos target = data.getLeft()
+                        .getTarget();
+                    IValueInterface valueInterface = CapabilityHelpers
+                        .getCapability(target.getPos(), ValueInterfaceConfig.CAPABILITY, target.getSide())
+                        .getOrNull();
+                    if (valueInterface != null) {
+                        return valueInterface.getValue()
+                            .orElseThrow(() -> new EvaluationException("No valid value interface value was found."));
+                    }
+                    throw new EvaluationException("No valid value interface was found.");
+                })
+                .appendKind("value")
                 .buildRead();
         }
 

@@ -32,7 +32,7 @@ public class ValueTypeListProxyMaterializedFactory implements
         for (IValue value : values) {
             sb.append(ELEMENT_DELIMITER);
             sb.append(
-                valueType.serialize(value)
+                ValueHelpers.serializeRaw(value)
                     .replaceAll(ELEMENT_DELIMITER, ELEMENT_DELIMITER_ESCAPED));
         }
         return sb.toString();

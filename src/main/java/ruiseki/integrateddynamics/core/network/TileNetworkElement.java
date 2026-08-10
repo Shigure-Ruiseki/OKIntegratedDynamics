@@ -11,6 +11,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.INetworkElement;
+import ruiseki.integrateddynamics.api.network.IPositionedNetworkElement;
 import ruiseki.integrateddynamics.core.tileentity.TileCableConnectableInventory;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
@@ -26,7 +27,8 @@ import ruiseki.okcore.item.capability.CapabilityItemHandler;
  */
 @EqualsAndHashCode(callSuper = false)
 @Data
-public abstract class TileNetworkElement<T extends TileCableConnectableInventory> extends ConsumingNetworkElementBase {
+public abstract class TileNetworkElement<T extends TileCableConnectableInventory> extends ConsumingNetworkElementBase
+    implements IPositionedNetworkElement {
 
     private final DimPos pos;
 
@@ -76,5 +78,10 @@ public abstract class TileNetworkElement<T extends TileCableConnectableInventory
     public void revalidate(INetwork network) {
         super.revalidate(network);
         revalidatePositioned(network, pos);
+    }
+
+    @Override
+    public DimPos getPosition() {
+        return this.pos;
     }
 }

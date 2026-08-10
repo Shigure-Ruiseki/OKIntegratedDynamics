@@ -1,7 +1,6 @@
 package ruiseki.integrateddynamics.api.network;
 
 import java.util.Collection;
-import java.util.Set;
 
 import net.minecraftforge.common.util.ForgeDirection;
 
@@ -18,7 +17,7 @@ public interface IPositionedAddonsNetwork {
      * @param channel The channel id.
      * @return The stored positions, sorted by priority.
      */
-    public Set<PrioritizedPartPos> getPositions(int channel);
+    public Collection<PrioritizedPartPos> getPositions(int channel);
 
     /**
      * @return All stored positions, order is undefined.

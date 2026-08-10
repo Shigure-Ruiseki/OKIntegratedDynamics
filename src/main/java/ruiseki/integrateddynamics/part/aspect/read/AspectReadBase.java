@@ -2,6 +2,7 @@ package ruiseki.integrateddynamics.part.aspect.read;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
@@ -68,15 +69,16 @@ public abstract class AspectReadBase<V extends IValue, T extends IValueType<V>> 
      * @param target     The target to get the value for.
      * @param properties The optional properties for this aspect.
      * @return The value that will be inserted into a variable so it can be used elsewhere.
+     * @throws EvaluationException If evaluation has gone wrong.
      */
-    protected abstract V getValue(PartTarget target, IAspectProperties properties);
+    protected abstract V getValue(PartTarget target, IAspectProperties properties) throws EvaluationException;
 
     @Override
     public IAspectVariable<V> createNewVariable(final PartTarget target) {
         return new LazyAspectVariable<V>(getValueType(), target, this) {
 
             @Override
-            public V getValueLazy() {
+            public V getValueLazy() throws EvaluationException {
                 return AspectReadBase.this.getValue(target, getAspectProperties());
             }
         };

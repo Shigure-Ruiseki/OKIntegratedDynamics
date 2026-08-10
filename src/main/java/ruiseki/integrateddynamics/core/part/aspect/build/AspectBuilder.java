@@ -8,12 +8,16 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 import ruiseki.integrateddynamics.api.evaluate.variable.IVariable;
+import ruiseki.integrateddynamics.api.network.IPartNetwork;
+import ruiseki.integrateddynamics.api.part.IPartState;
+import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.api.part.aspect.IAspectRead;
 import ruiseki.integrateddynamics.api.part.aspect.IAspectWrite;
@@ -44,12 +48,16 @@ public class AspectBuilder<V extends IValue, T extends IValueType<V>, O> {
     private final List<IAspectWriteDeactivator> writeDeactivators;
     private final ModBase mod;
     private final ModBase modGui;
+    private final List<IAspectUpdateListener.Before> beforeUpdateListeners;
+    private final List<IAspectUpdateListener.After> afterUpdateListeners;
 
     private final String customIconPath;
 
     private AspectBuilder(boolean read, T valueType, List<String> kinds, IAspectProperties defaultAspectProperties,
         List<IAspectValuePropagator> valuePropagators, List<IAspectWriteActivator> writeActivators,
-        List<IAspectWriteDeactivator> writeDeactivators, ModBase mod, ModBase modGui, String customIconPath) {
+        List<IAspectWriteDeactivator> writeDeactivators, ModBase mod, ModBase modGui,
+        List<IAspectUpdateListener.Before> beforeUpdateListeners,
+        List<IAspectUpdateListener.After> afterUpdateListeners, String customIconPath) {
         this.read = read;
         this.valueType = valueType;
         this.kinds = kinds;
@@ -59,6 +67,8 @@ public class AspectBuilder<V extends IValue, T extends IValueType<V>, O> {
         this.writeDeactivators = writeDeactivators;
         this.mod = Objects.requireNonNull(mod);
         this.modGui = Objects.requireNonNull(modGui);
+        this.beforeUpdateListeners = beforeUpdateListeners;
+        this.afterUpdateListeners = afterUpdateListeners;
         this.customIconPath = customIconPath;
     }
 
@@ -79,6 +89,8 @@ public class AspectBuilder<V extends IValue, T extends IValueType<V>, O> {
             Helpers.joinList(this.writeDeactivators, null),
             mod,
             modGui,
+            beforeUpdateListeners,
+            afterUpdateListeners,
             customIconPath);
     }
 
@@ -103,6 +115,8 @@ public class AspectBuilder<V extends IValue, T extends IValueType<V>, O> {
             Helpers.joinList(writeDeactivators, null),
             mod,
             modGui,
+            beforeUpdateListeners,
+            afterUpdateListeners,
             this.customIconPath);
     }
 
@@ -120,6 +134,8 @@ public class AspectBuilder<V extends IValue, T extends IValueType<V>, O> {
             Helpers.joinList(writeDeactivators, null),
             mod,
             modGui,
+            beforeUpdateListeners,
+            afterUpdateListeners,
             this.customIconPath);
     }
 
@@ -137,6 +153,8 @@ public class AspectBuilder<V extends IValue, T extends IValueType<V>, O> {
             Helpers.joinList(writeDeactivators, null),
             mod,
             modGui,
+            beforeUpdateListeners,
+            afterUpdateListeners,
             this.customIconPath);
     }
 
@@ -157,6 +175,8 @@ public class AspectBuilder<V extends IValue, T extends IValueType<V>, O> {
             Helpers.joinList(writeDeactivators, null),
             mod,
             modGui,
+            beforeUpdateListeners,
+            afterUpdateListeners,
             this.customIconPath);
     }
 
@@ -177,6 +197,8 @@ public class AspectBuilder<V extends IValue, T extends IValueType<V>, O> {
             Helpers.joinList(writeDeactivators, deactivator),
             mod,
             modGui,
+            beforeUpdateListeners,
+            afterUpdateListeners,
             this.customIconPath);
     }
 
@@ -197,6 +219,8 @@ public class AspectBuilder<V extends IValue, T extends IValueType<V>, O> {
             Helpers.joinList(writeDeactivators, null),
             mod,
             modGui,
+            beforeUpdateListeners,
+            afterUpdateListeners,
             this.customIconPath);
     }
 
@@ -217,7 +241,53 @@ public class AspectBuilder<V extends IValue, T extends IValueType<V>, O> {
             Helpers.joinList(writeDeactivators, null),
             mod,
             modGui,
+            beforeUpdateListeners,
+            afterUpdateListeners,
             this.customIconPath);
+    }
+
+    /**
+     * Add a before-update listener.
+     *
+     * @param listener The listener.
+     * @return The new builder instance.
+     */
+    public AspectBuilder<V, T, O> appendBeforeUpdateListener(IAspectUpdateListener.Before listener) {
+        return new AspectBuilder<>(
+            this.read,
+            this.valueType,
+            Helpers.joinList(this.kinds, null),
+            this.defaultAspectProperties,
+            Helpers.joinList(this.valuePropagators, null),
+            Helpers.joinList(writeActivators, null),
+            Helpers.joinList(writeDeactivators, null),
+            mod,
+            modGui,
+            Helpers.joinList(beforeUpdateListeners, listener),
+            Helpers.joinList(afterUpdateListeners, null),
+            customIconPath);
+    }
+
+    /**
+     * Add an after-update listener.
+     *
+     * @param listener The listener.
+     * @return The new builder instance.
+     */
+    public AspectBuilder<V, T, O> appendAfterUpdateListener(IAspectUpdateListener.After listener) {
+        return new AspectBuilder<>(
+            this.read,
+            this.valueType,
+            Helpers.joinList(this.kinds, null),
+            this.defaultAspectProperties,
+            Helpers.joinList(this.valuePropagators, null),
+            Helpers.joinList(writeActivators, null),
+            Helpers.joinList(writeDeactivators, null),
+            mod,
+            modGui,
+            Helpers.joinList(beforeUpdateListeners, null),
+            Helpers.joinList(afterUpdateListeners, listener),
+            customIconPath);
     }
 
     /**
@@ -257,6 +327,8 @@ public class AspectBuilder<V extends IValue, T extends IValueType<V>, O> {
             Collections.<IAspectWriteDeactivator>emptyList(),
             IntegratedDynamics._instance,
             IntegratedDynamics._instance,
+            Lists.newArrayList(),
+            Lists.newArrayList(),
             null);
     }
 
@@ -275,6 +347,8 @@ public class AspectBuilder<V extends IValue, T extends IValueType<V>, O> {
             Collections.<IAspectWriteDeactivator>emptyList(),
             IntegratedDynamics._instance,
             IntegratedDynamics._instance,
+            Lists.newArrayList(),
+            Lists.newArrayList(),
             null);
     }
 
@@ -282,6 +356,8 @@ public class AspectBuilder<V extends IValue, T extends IValueType<V>, O> {
 
         private final T valueType;
         private final List<IAspectValuePropagator> valuePropagators;
+        private final List<IAspectUpdateListener.Before> beforeUpdateListeners;
+        private final List<IAspectUpdateListener.After> afterUpdateListeners;
 
         public BuiltReader(AspectBuilder<V, T, V> aspectBuilder) {
             super(
@@ -292,6 +368,8 @@ public class AspectBuilder<V extends IValue, T extends IValueType<V>, O> {
                 deriveCustomIconPath(aspectBuilder));
             this.valueType = aspectBuilder.valueType;
             this.valuePropagators = aspectBuilder.valuePropagators;
+            this.beforeUpdateListeners = aspectBuilder.beforeUpdateListeners;
+            this.afterUpdateListeners = aspectBuilder.afterUpdateListeners;
         }
 
         protected static <V extends IValue, T extends IValueType<V>> String deriveCustomIconPath(
@@ -314,16 +392,10 @@ public class AspectBuilder<V extends IValue, T extends IValueType<V>, O> {
 
         @SuppressWarnings("unchecked")
         @Override
-        protected V getValue(PartTarget target, IAspectProperties properties) {
+        protected V getValue(PartTarget target, IAspectProperties properties) throws EvaluationException {
             Object output = Pair.of(target, properties);
             for (IAspectValuePropagator valuePropagator : valuePropagators) {
-                try {
-                    output = valuePropagator.getOutput(output);
-                } catch (EvaluationException e) {
-                    e.printStackTrace();
-                    throw new RuntimeException(
-                        "Caught unexpected exception in read aspect, this is probably a programming error.");
-                }
+                output = valuePropagator.getOutput(output);
             }
             return (V) output;
         }
@@ -331,6 +403,14 @@ public class AspectBuilder<V extends IValue, T extends IValueType<V>, O> {
         @Override
         public T getValueType() {
             return valueType;
+        }
+
+        @Override
+        public <P extends IPartType<P, S>, S extends IPartState<P>> void update(IPartNetwork network, P partType,
+            PartTarget target, S state) {
+            this.beforeUpdateListeners.forEach(l -> l.onUpdate(network, partType, target, state));
+            super.update(network, partType, target, state);
+            this.afterUpdateListeners.forEach(l -> l.onUpdate(network, partType, target, state));
         }
     }
 
@@ -340,6 +420,8 @@ public class AspectBuilder<V extends IValue, T extends IValueType<V>, O> {
         private final List<IAspectValuePropagator> valuePropagators;
         private final List<IAspectWriteActivator> writeActivators;
         private final List<IAspectWriteDeactivator> writeDeactivators;
+        private final List<IAspectUpdateListener.Before> beforeUpdateListeners;
+        private final List<IAspectUpdateListener.After> afterUpdateListeners;
 
         public BuiltWriter(AspectBuilder<V, T, V> aspectBuilder) {
             super(
@@ -352,6 +434,8 @@ public class AspectBuilder<V extends IValue, T extends IValueType<V>, O> {
             this.valuePropagators = aspectBuilder.valuePropagators;
             this.writeActivators = aspectBuilder.writeActivators;
             this.writeDeactivators = aspectBuilder.writeDeactivators;
+            this.beforeUpdateListeners = aspectBuilder.beforeUpdateListeners;
+            this.afterUpdateListeners = aspectBuilder.afterUpdateListeners;
         }
 
         protected static <V extends IValue, T extends IValueType<V>> String deriveCustomIconPath(
@@ -404,6 +488,14 @@ public class AspectBuilder<V extends IValue, T extends IValueType<V>, O> {
             for (IAspectWriteDeactivator writeDeactivator : this.writeDeactivators) {
                 writeDeactivator.onDeactivate(partType, target, state);
             }
+        }
+
+        @Override
+        public <P extends IPartType<P, S>, S extends IPartState<P>> void update(IPartNetwork network, P partType,
+            PartTarget target, S state) {
+            this.beforeUpdateListeners.forEach(l -> l.onUpdate(network, partType, target, state));
+            super.update(network, partType, target, state);
+            this.afterUpdateListeners.forEach(l -> l.onUpdate(network, partType, target, state));
         }
     }
 }

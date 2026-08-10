@@ -78,10 +78,7 @@ public class ValueTypeListProxyLazyBuilt<T extends IValueType<V>, V extends IVal
                 "valueType",
                 value.value.getType()
                     .getUnlocalizedName());
-            tag.setString(
-                "value",
-                value.value.getType()
-                    .serialize(value.value));
+            tag.setString("value", ValueHelpers.serializeRaw(value.value));
             tag.setString("operator", Operators.REGISTRY.serialize(value.operator));
         }
 

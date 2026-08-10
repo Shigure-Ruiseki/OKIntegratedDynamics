@@ -6,6 +6,8 @@ import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.integrateddynamics.capability.energystorage.IEnergyStorageCapacity;
 import ruiseki.okcore.block.property.BlockProperty;
 import ruiseki.okcore.block.property.IntegerProperty;
@@ -48,28 +50,25 @@ public class BlockEnergyBattery extends BlockEnergyBatteryBase {
     }
 
     @Override
+    @SideOnly(Side.CLIENT)
     public void getSubBlocks(Item itemIn, CreativeTabs tab, List<ItemStack> list) {
         if (!BlockHelpers.isValidCreativeTab(this, tab)) return;
-        ItemStack itemStack = new ItemStack(this);
 
-        int capacityOriginal = BlockEnergyBatteryConfig.capacity;
-        int capacity = capacityOriginal;
-        int lastCapacity;
-        do {
-            ItemStack currentStack = itemStack.copy();
-            IEnergyStorageCapacity energyStorage = (IEnergyStorageCapacity) CapabilityHelpers
-                .getCapability(currentStack, CapabilityEnergy.ENERGY, null);
-            energyStorage.setCapacity(capacity);
-            list.add(currentStack.copy());
+        ItemStack itemStack = new ItemStack(this, 1, 0);
+        IEnergyStorageCapacity energyStorage = (IEnergyStorageCapacity) CapabilityHelpers
+            .getCapability(itemStack, CapabilityEnergy.ENERGY, null)
+            .getOrNull();
+
+        if (energyStorage != null) {
+            energyStorage.setCapacity(BlockEnergyBatteryConfig.capacity);
+            list.add(itemStack.copy());
+
             int stored = 1;
             while (stored > 0) {
-                stored = energyStorage.receiveEnergy(capacity, false);
+                stored = energyStorage.receiveEnergy(BlockEnergyBatteryConfig.capacity, false);
             }
-            list.add(currentStack.copy());
-            lastCapacity = capacity;
-            capacity = capacity << 2;
-        } while (capacity < Math.min(BlockEnergyBatteryConfig.maxCreativeCapacity, BlockEnergyBatteryConfig.maxCapacity)
-            && capacity > lastCapacity);
+            list.add(itemStack.copy());
+        }
     }
 
     @Override

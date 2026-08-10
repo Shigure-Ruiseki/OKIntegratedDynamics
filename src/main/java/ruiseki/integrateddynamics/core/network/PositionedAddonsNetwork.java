@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
@@ -13,6 +14,7 @@ import gnu.trove.map.TIntObjectMap;
 import gnu.trove.map.hash.TIntObjectHashMap;
 import lombok.Getter;
 import lombok.Setter;
+import ruiseki.integrateddynamics.api.network.IChanneledNetwork;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.IPositionedAddonsNetwork;
 import ruiseki.integrateddynamics.api.part.PartPos;
@@ -31,12 +33,15 @@ public class PositionedAddonsNetwork implements IPositionedAddonsNetwork {
     private final Set<PartPos> disabledPositions = Sets.newHashSet();
 
     @Override
-    public Set<PrioritizedPartPos> getPositions(int channel) {
-        Set<PrioritizedPartPos> positions = this.positions.get(channel);
-        if (positions == null) {
-            return Collections.emptySet();
+    public Collection<PrioritizedPartPos> getPositions(int channel) {
+        if (channel == IChanneledNetwork.WILDCARD_CHANNEL) {
+            return getPositions();
         }
-        return ImmutableSet.copyOf(positions);
+        Set<PrioritizedPartPos> positions = this.positions.get(channel);
+        Set<PrioritizedPartPos> wildcardPositions = this.positions.get(IChanneledNetwork.WILDCARD_CHANNEL);
+        if (positions == null) positions = Collections.emptySet();
+        if (wildcardPositions == null) wildcardPositions = Collections.emptySet();
+        return ImmutableSet.copyOf(Iterables.concat(positions, wildcardPositions));
     }
 
     @Override

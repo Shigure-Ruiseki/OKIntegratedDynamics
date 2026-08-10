@@ -11,6 +11,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import org.apache.logging.log4j.Level;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import com.google.common.base.Function;
@@ -25,6 +26,7 @@ import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartState;
 import ruiseki.integrateddynamics.api.part.IPartType;
+import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
 import ruiseki.integrateddynamics.core.helper.PartHelpers;
 import ruiseki.okcore.capabilities.Capability;
@@ -208,17 +210,19 @@ public abstract class PartContainerDefault implements IPartContainer {
     }
 
     @Override
-    public <T> LazyOptional<T> getCapability(Capability<T> capability, @Nullable ForgeDirection facing) {
+    public <T> LazyOptional<T> getCapability(@NotNull Capability<T> capability, @Nullable ForgeDirection facing) {
+        IPartNetwork partNetwork = getPartNetwork();
+        DimPos pos = getPosition();
         if (facing == null) {
             for (Map.Entry<ForgeDirection, PartHelpers.PartStateHolder<?, ?>> entry : partData.entrySet()) {
                 IPartState partState = entry.getValue()
                     .getState();
-                return partState.getCapability(capability);
+                return partState.getCapability(capability, partNetwork, PartTarget.fromCenter(pos, entry.getKey()));
             }
         } else {
             if (hasPart(facing)) {
                 IPartState partState = getPartState(facing);
-                return partState.getCapability(capability);
+                return partState.getCapability(capability, partNetwork, PartTarget.fromCenter(pos, facing));
             }
         }
         return LazyOptional.empty();

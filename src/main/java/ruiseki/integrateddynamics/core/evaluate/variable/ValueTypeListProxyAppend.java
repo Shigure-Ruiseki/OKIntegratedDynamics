@@ -56,10 +56,7 @@ public class ValueTypeListProxyAppend<T extends IValueType<V>, V extends IValue>
                 "valueType",
                 value.value.getType()
                     .getUnlocalizedName());
-            tag.setString(
-                "value",
-                value.value.getType()
-                    .serialize(value.value));
+            tag.setString("value", ValueHelpers.serializeRaw(value.value));
             tag.setString("sublist", ValueTypeListProxyFactories.REGISTRY.serialize(value.list));
 
         }

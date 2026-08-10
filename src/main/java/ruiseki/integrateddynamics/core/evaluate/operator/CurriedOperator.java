@@ -16,6 +16,7 @@ import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 import ruiseki.integrateddynamics.api.evaluate.variable.IVariable;
 import ruiseki.integrateddynamics.api.logicprogrammer.IConfigRenderPattern;
+import ruiseki.integrateddynamics.core.evaluate.variable.ValueHelpers;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
 import ruiseki.integrateddynamics.core.evaluate.variable.Variable;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
@@ -24,7 +25,7 @@ import ruiseki.okcore.helper.MinecraftHelpers;
 
 /**
  * An operator that is partially being applied.
- * 
+ *
  * @author rubensworks
  */
 public class CurriedOperator implements IOperator {
@@ -183,7 +184,7 @@ public class CurriedOperator implements IOperator {
                 NBTTagCompound valueTag = new NBTTagCompound();
                 IValueType valueType = value.getType();
                 valueTag.setString("valueType", valueType.getUnlocalizedName());
-                valueTag.setString("value", valueType.serialize(value));
+                valueTag.setString("value", ValueHelpers.serializeRaw(value));
                 list.appendTag(valueTag);
             }
 

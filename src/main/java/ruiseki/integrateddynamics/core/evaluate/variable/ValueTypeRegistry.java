@@ -119,10 +119,6 @@ public final class ValueTypeRegistry implements IValueTypeRegistry {
             "typeName",
             variableFacade.getValueType()
                 .getUnlocalizedName());
-        tag.setString(
-            "value",
-            variableFacade.getValue()
-                .getType()
-                .serialize(variableFacade.getValue()));
+        tag.setString("value", ValueHelpers.serializeRaw(variableFacade.getValue()));
     }
 }

@@ -268,4 +268,16 @@ public class PartNetworkElement<P extends IPartType<P, S>, S extends IPartState<
                 o.getClass()
                     .getCanonicalName());
     }
+
+    @Override
+    public DimPos getPosition() {
+        return getTarget().getCenter()
+            .getPos();
+    }
+
+    @Override
+    public ForgeDirection getSide() {
+        return getTarget().getCenter()
+            .getSide();
+    }
 }

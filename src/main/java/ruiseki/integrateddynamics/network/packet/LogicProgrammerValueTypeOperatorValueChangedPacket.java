@@ -8,6 +8,7 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.integrateddynamics.api.evaluate.operator.IOperator;
 import ruiseki.integrateddynamics.api.logicprogrammer.ILogicProgrammerElement;
+import ruiseki.integrateddynamics.core.evaluate.variable.ValueHelpers;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeOperator;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
 import ruiseki.integrateddynamics.core.logicprogrammer.ValueTypeOperatorLPElement;
@@ -32,8 +33,7 @@ public class LogicProgrammerValueTypeOperatorValueChangedPacket extends PacketCo
 
     public LogicProgrammerValueTypeOperatorValueChangedPacket(ValueTypeOperator.ValueOperator value) {
         try {
-            this.operatorValue = value.getType()
-                .serialize(value);
+            this.operatorValue = ValueHelpers.serializeRaw(value);
         } catch (Exception e) {
             this.operatorValue = "";
         }

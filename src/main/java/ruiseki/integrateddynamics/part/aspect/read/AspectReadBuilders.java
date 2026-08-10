@@ -25,6 +25,7 @@ import ruiseki.commoncapabilities.api.capability.work.IWorker;
 import ruiseki.commoncapabilities.capability.temperature.TemperatureConfig;
 import ruiseki.commoncapabilities.capability.worker.WorkerConfig;
 import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
+import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.network.IChanneledNetwork;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.part.PartPos;
@@ -38,6 +39,7 @@ import ruiseki.integrateddynamics.core.evaluate.variable.ValueObjectTypeEntity;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueObjectTypeFluidStack;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueObjectTypeItemStack;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeBoolean;
+import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeCategoryAny;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeDouble;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeInteger;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeList;
@@ -87,6 +89,8 @@ public class AspectReadBuilders {
         .forReadType(ValueTypes.LIST);
     public static final AspectBuilder<ValueTypeNbt.ValueNbt, ValueTypeNbt, Pair<PartTarget, IAspectProperties>> BUILDER_NBT = AspectBuilder
         .forReadType(ValueTypes.NBT);
+    public static final AspectBuilder<IValue, ValueTypeCategoryAny, Pair<PartTarget, IAspectProperties>> BUILDER_ANY = AspectBuilder
+        .forReadType(ValueTypes.CATEGORY_ANY);
 
     public static final AspectBuilder<ValueObjectTypeItemStack.ValueItemStack, ValueObjectTypeItemStack, Pair<PartTarget, IAspectProperties>> BUILDER_OBJECT_ITEMSTACK = AspectBuilder
         .forReadType(ValueTypes.OBJECT_ITEMSTACK);

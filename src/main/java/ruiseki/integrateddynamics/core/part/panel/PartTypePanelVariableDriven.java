@@ -29,6 +29,7 @@ import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.network.event.INetworkEvent;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
+import ruiseki.integrateddynamics.api.part.IPartTypeActiveVariable;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.client.gui.GuiPartDisplay;
 import ruiseki.integrateddynamics.core.block.IgnoredBlock;
@@ -54,7 +55,7 @@ import ruiseki.okcore.helper.MinecraftHelpers;
  * @author rubensworks
  */
 public abstract class PartTypePanelVariableDriven<P extends PartTypePanelVariableDriven<P, S>, S extends PartTypePanelVariableDriven.State<P, S>>
-    extends PartTypePanel<P, S> {
+    extends PartTypePanel<P, S> implements IPartTypeActiveVariable<P, S> {
 
     public PartTypePanelVariableDriven(String name) {
         super(name);
@@ -154,6 +155,16 @@ public abstract class PartTypePanelVariableDriven<P extends PartTypePanelVariabl
                     .getPos()
                     .getBlockPos());
         }
+    }
+
+    @Override
+    public boolean hasActiveVariable(IPartNetwork network, PartTarget target, S partState) {
+        return partState.hasVariable();
+    }
+
+    @Override
+    public <V extends IValue> IVariable<V> getActiveVariable(IPartNetwork network, PartTarget target, S partState) {
+        return partState.getVariable(network);
     }
 
     protected void onValueChanged(INetwork network, IPartNetwork partNetwork, PartTarget target, S state,
@@ -287,10 +298,7 @@ public abstract class PartTypePanelVariableDriven<P extends PartTypePanelVariabl
                     "displayValueType",
                     value.getType()
                         .getUnlocalizedName());
-                tag.setString(
-                    "displayValue",
-                    value.getType()
-                        .serialize(value));
+                tag.setString("displayValue", ValueHelpers.serializeRaw(value));
             }
             tag.setInteger("facingRotation", facingRotation.ordinal());
         }

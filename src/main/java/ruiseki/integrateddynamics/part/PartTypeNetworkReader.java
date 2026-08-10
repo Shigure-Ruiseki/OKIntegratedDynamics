@@ -27,7 +27,8 @@ public class PartTypeNetworkReader
                     Aspects.Read.Network.INTEGER_ENERGY_BATTERY_COUNT,
                     Aspects.Read.Network.INTEGER_ENERGY_STORED,
                     Aspects.Read.Network.INTEGER_ENERGY_MAX,
-                    Aspects.Read.Network.INTEGER_ENERGY_CONSUMPTION_RATE));
+                    Aspects.Read.Network.INTEGER_ENERGY_CONSUMPTION_RATE,
+                    Aspects.Read.Network.ANY_VALUE));
     }
 
     @Override

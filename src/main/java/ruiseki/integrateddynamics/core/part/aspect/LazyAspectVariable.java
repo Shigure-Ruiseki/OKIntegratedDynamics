@@ -4,6 +4,7 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import lombok.Getter;
 import lombok.NonNull;
+import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 import ruiseki.integrateddynamics.api.part.IPartState;
@@ -17,7 +18,7 @@ import ruiseki.integrateddynamics.api.part.aspect.property.IAspectProperties;
 /**
  * Variable for a specific aspect from a part that calculates its target value only maximum once per ticking interval.
  * No calculations will be done if the value of this variable is not called.
- * 
+ *
  * @author rubensworks
  */
 public abstract class LazyAspectVariable<V extends IValue> implements IAspectVariable<V> {
@@ -50,7 +51,7 @@ public abstract class LazyAspectVariable<V extends IValue> implements IAspectVar
     }
 
     @Override
-    public V getValue() {
+    public V getValue() throws EvaluationException {
         if (value == null) {
             this.value = getValueLazy();
         }
@@ -71,9 +72,10 @@ public abstract class LazyAspectVariable<V extends IValue> implements IAspectVar
     /**
      * Calculate the current value for this variable.
      * It will only be called when required.
-     * 
+     *
      * @return The current value of this variable.
+     * @throws EvaluationException If evaluation has gone wrong.
      */
-    public abstract V getValueLazy();
+    public abstract V getValueLazy() throws EvaluationException;
 
 }
