@@ -21,7 +21,7 @@ import ruiseki.okcore.helper.MinecraftHelpers;
 
 /**
  * An operator that somehow combines one or more operators.
- * 
+ *
  * @author rubensworks
  */
 public class CombinedOperator extends OperatorBase {
@@ -222,7 +222,8 @@ public class CombinedOperator extends OperatorBase {
             int size = variables.getVariables().length;
             IValue[] values = new IValue[size];
             for (int i = 0; i < size; i++) {
-                values[size - i - 1] = variables.getValue(i);
+                int targetI = i < 2 ? 1 - i : i;
+                values[i] = variables.getValue(targetI);
             }
             return ValueHelpers.evaluateOperator(getOperators()[0], values);
         }
@@ -232,7 +233,8 @@ public class CombinedOperator extends OperatorBase {
             IValueType[] originalInputTypes = operator.getInputTypes();
             IValueType[] flippedInputTypes = new IValueType[originalInputTypes.length];
             for (int i = 0; i < flippedInputTypes.length; i++) {
-                flippedInputTypes[flippedInputTypes.length - i - 1] = originalInputTypes[i];
+                int targetI = i < 2 ? 1 - i : i;
+                flippedInputTypes[i] = originalInputTypes[targetI];
             }
             CombinedOperator combinedOperator;
             try {
@@ -242,7 +244,7 @@ public class CombinedOperator extends OperatorBase {
                     flip,
                     flippedInputTypes,
                     operator.getOutputType(),
-                    IConfigRenderPattern.INFIX);
+                    operator.getRenderPattern());
             } catch (IllegalArgumentException e) {
                 throw new EvaluationException(e.getMessage());
             }

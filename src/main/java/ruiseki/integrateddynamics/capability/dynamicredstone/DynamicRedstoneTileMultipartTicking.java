@@ -58,7 +58,7 @@ public class DynamicRedstoneTileMultipartTicking implements IDynamicRedstone {
                 redstoneStrongs.put(side, strongPower);
             }
             if (sendUpdate) {
-                tile.updateRedstoneInfo(side);
+                tile.updateRedstoneInfo(side, strongPower);
             }
         }
     }

@@ -234,6 +234,7 @@ public class PartHelpers {
                     if (oldPartType != newPartType
                         || oldPartType.shouldTriggerBlockRenderUpdate(oldPartState, newPartState)) {
                         triggerBlockRenderUpdate = true;
+                        break;
                     }
                 }
             }

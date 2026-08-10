@@ -67,7 +67,7 @@ public class ContainerPartSettings extends ExtendedInventoryContainer {
         ChunkCoordinates coordinates = player.getPlayerCoordinates();
         this.pos = new BlockPos(coordinates.posX, coordinates.posY, coordinates.posZ);
 
-        addPlayerInventory(player.inventory, 8, 82);
+        addPlayerInventory(player.inventory, 27, 82);
 
         lastUpdateValueId = getNextValueId();
         lastPriorityValueId = getNextValueId();

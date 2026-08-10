@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Random;
 
+import net.minecraft.block.BlockLiquid;
 import net.minecraft.command.IEntitySelector;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -16,6 +17,7 @@ import net.minecraft.util.StringUtils;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.event.world.NoteBlockEvent;
+import net.minecraftforge.fluids.IFluidBlock;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
@@ -24,6 +26,7 @@ import org.jetbrains.annotations.Nullable;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.google.common.math.DoubleMath;
+import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 
 import cofh.api.energy.IEnergyStorage;
 import cpw.mods.fml.common.FMLCommonHandler;
@@ -55,6 +58,7 @@ import ruiseki.integrateddynamics.part.aspect.write.AspectWriteBuilders;
 import ruiseki.okcore.block.collidable.ImmutableAxisAlignedBB;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
+import ruiseki.okcore.fluid.capability.wrapper.BlockLiquidWrapper;
 import ruiseki.okcore.fluid.handler.IFluidTankProperties;
 import ruiseki.okcore.helper.BlockStateHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
@@ -376,6 +380,24 @@ public class Aspects {
                 .handle(AspectReadBuilders.Fluid.PROP_GET_ACTIVATABLE, "fluid")
                 .withProperties(AspectReadBuilders.Fluid.PROPERTIES)
                 .handle(AspectReadBuilders.Fluid.PROP_GET_FLUIDSTACK)
+                .handle(AspectReadBuilders.PROP_GET_FLUIDSTACK)
+                .buildRead();
+
+            public static final IAspectRead<ValueObjectTypeFluidStack.ValueFluidStack, ValueObjectTypeFluidStack> BLOCK = AspectReadBuilders.BUILDER_OBJECT_FLUIDSTACK
+                .handle(AspectReadBuilders.Block.PROP_GET, "block")
+                .handle(dimPos -> {
+                    BlockState blockState = BlockStateHelpers.getState(dimPos.getWorld(), dimPos.getBlockPos());
+                    net.minecraft.block.Block block = blockState.getBlock();
+                    if (block instanceof IFluidBlock) {
+                        return ((IFluidBlock) block)
+                            .drain(dimPos.getWorld(), dimPos.getX(), dimPos.getY(), dimPos.getZ(), false);
+                    }
+                    if (block instanceof BlockLiquid) {
+                        return new BlockLiquidWrapper((BlockLiquid) block, dimPos.getWorld(), dimPos.getBlockPos())
+                            .drain(Integer.MAX_VALUE, false);
+                    }
+                    return null;
+                })
                 .handle(AspectReadBuilders.PROP_GET_FLUIDSTACK)
                 .buildRead();
 

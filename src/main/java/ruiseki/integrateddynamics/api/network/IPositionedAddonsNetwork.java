@@ -23,6 +23,7 @@ public interface IPositionedAddonsNetwork {
      *
      * @param pos      The position.
      * @param priority The priority.
+     * @param channel  The channel id.
      * @return If the position was added, otherwise it was already present.
      */
     public boolean addPosition(PartPos pos, int priority, int channel);
@@ -81,7 +82,7 @@ public interface IPositionedAddonsNetwork {
                         .getSide();
                     ForgeDirection otherSide = o.getPartPos()
                         .getSide();
-                    return thisSide == otherSide ? 0
+                    return thisSide == otherSide ? Integer.compare(this.getChannel(), o.getChannel())
                         : (thisSide == null ? -1 : (otherSide == null ? 1 : thisSide.compareTo(otherSide)));
                 }
                 return compPos;

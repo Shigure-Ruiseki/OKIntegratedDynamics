@@ -102,13 +102,12 @@ public class GuiPartSettings extends GuiContainerExtended {
         numberFieldUpdateInterval = new GuiNumberField(
             0,
             Minecraft.getMinecraft().fontRenderer,
-            guiLeft + 68,
+            guiLeft + 106,
             guiTop + 9,
             70,
             14,
             true,
             true);
-        numberFieldUpdateInterval.setMaxStringLength(64);
         numberFieldUpdateInterval.setMaxStringLength(15);
         numberFieldUpdateInterval.setVisible(true);
         numberFieldUpdateInterval.setTextColor(16777215);
@@ -117,14 +116,13 @@ public class GuiPartSettings extends GuiContainerExtended {
         numberFieldPriority = new GuiNumberField(
             0,
             Minecraft.getMinecraft().fontRenderer,
-            guiLeft + 68,
+            guiLeft + 106,
             guiTop + 34,
             70,
             14,
             true,
             true);
         numberFieldPriority.setPositiveOnly(false);
-        numberFieldPriority.setMaxStringLength(64);
         numberFieldPriority.setMaxStringLength(15);
         numberFieldPriority.setVisible(true);
         numberFieldPriority.setTextColor(16777215);
@@ -133,7 +131,7 @@ public class GuiPartSettings extends GuiContainerExtended {
         numberFieldChannel = new GuiNumberField(
             0,
             Minecraft.getMinecraft().fontRenderer,
-            guiLeft + 68,
+            guiLeft + 106,
             guiTop + 59,
             70,
             14,
@@ -149,7 +147,7 @@ public class GuiPartSettings extends GuiContainerExtended {
         buttonList.add(
             new GuiButtonText(
                 BUTTON_SAVE,
-                this.guiLeft + 140,
+                this.guiLeft + 178,
                 this.guiTop + 8,
                 fontRendererObj.getStringWidth(save) + 6,
                 16,
@@ -180,11 +178,11 @@ public class GuiPartSettings extends GuiContainerExtended {
     @Override
     protected void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY) {
         super.drawGuiContainerBackgroundLayer(partialTicks, mouseX, mouseY);
-        numberFieldUpdateInterval.drawTextBox(Minecraft.getMinecraft(), mouseX - guiLeft, mouseY - guiTop);
-        numberFieldPriority.drawTextBox(Minecraft.getMinecraft(), mouseX - guiLeft, mouseY - guiTop);
-        numberFieldChannel.drawTextBox(Minecraft.getMinecraft(), mouseX - guiLeft, mouseY - guiTop);
+        numberFieldUpdateInterval.drawTextBox(Minecraft.getMinecraft(), mouseX, mouseY);
+        numberFieldPriority.drawTextBox(Minecraft.getMinecraft(), mouseX, mouseY);
+        numberFieldChannel.drawTextBox(Minecraft.getMinecraft(), mouseX, mouseY);
         fontRendererObj.drawString(
-            LangHelpers.localize("gui.integrateddynamics.partsettings.updateInterval"),
+            LangHelpers.localize("gui.integrateddynamics.partsettings.update_interval"),
             guiLeft + 8,
             guiTop + 12,
             Helpers.RGBToInt(0, 0, 0));
@@ -193,11 +191,16 @@ public class GuiPartSettings extends GuiContainerExtended {
             guiLeft + 8,
             guiTop + 37,
             Helpers.RGBToInt(0, 0, 0));
-        fontRendererObj.drawString(
-            LangHelpers.localize("gui.integrateddynamics.partsettings.channel"),
-            guiLeft + 8,
-            guiTop + 62,
-            Helpers.RGBToInt(0, 0, 0));
+        fontRendererObj.drawString(getChannelText(), guiLeft + 8, guiTop + 62, Helpers.RGBToInt(0, 0, 0));
+    }
+
+    protected String getChannelText() {
+        return LangHelpers.localize("gui.integrateddynamics.partsettings.channel");
+    }
+
+    @Override
+    protected int getBaseXSize() {
+        return 214;
     }
 
     @Override

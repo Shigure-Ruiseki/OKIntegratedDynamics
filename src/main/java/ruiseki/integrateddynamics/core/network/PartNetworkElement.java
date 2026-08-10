@@ -12,6 +12,7 @@ import org.jetbrains.annotations.Nullable;
 
 import lombok.Data;
 import ruiseki.integrateddynamics.api.PartStateException;
+import ruiseki.integrateddynamics.api.network.IChanneledNetwork;
 import ruiseki.integrateddynamics.api.network.IEnergyConsumingNetworkElement;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.INetworkElement;
@@ -65,9 +66,15 @@ public class PartNetworkElement<P extends IPartType<P, S>, S extends IPartState<
     }
 
     @Override
-    public void setPriority(INetwork network, int priority) {
+    public void setPriorityAndChannel(INetwork network, int priority, int channel) {
         // noinspection deprecation
-        part.setPriority(network, NetworkHelpers.getPartNetwork(network), getTarget(), getPartState(), priority);
+        part.setPriorityAndChannel(
+            network,
+            NetworkHelpers.getPartNetwork(network),
+            getTarget(),
+            getPartState(),
+            priority,
+            channel);
     }
 
     @Override
@@ -76,14 +83,8 @@ public class PartNetworkElement<P extends IPartType<P, S>, S extends IPartState<
     }
 
     @Override
-    public void setChannel(INetwork network, int channel) {
-        // noinspection deprecation
-        part.setChannel(getPartState(), channel);
-    }
-
-    @Override
     public int getChannel() {
-        return hasPartState() ? part.getChannel(getPartState()) : 0;
+        return hasPartState() ? part.getChannel(getPartState()) : IChanneledNetwork.DEFAULT_CHANNEL;
     }
 
     @Override

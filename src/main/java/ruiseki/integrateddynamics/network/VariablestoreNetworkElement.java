@@ -1,6 +1,9 @@
 package ruiseki.integrateddynamics.network;
 
+import org.jetbrains.annotations.Nullable;
+
 import ruiseki.integrateddynamics.api.network.IChanneledNetwork;
+import ruiseki.integrateddynamics.api.network.IEventListenableNetworkElement;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
 import ruiseki.integrateddynamics.core.network.TileNetworkElement;
@@ -12,7 +15,8 @@ import ruiseki.okcore.datastructure.DimPos;
  *
  * @author rubensworks
  */
-public class VariablestoreNetworkElement extends TileNetworkElement<TileVariablestore> {
+public class VariablestoreNetworkElement extends TileNetworkElement<TileVariablestore>
+    implements IEventListenableNetworkElement<TileVariablestore> {
 
     public VariablestoreNetworkElement(DimPos pos) {
         super(pos);
@@ -31,18 +35,13 @@ public class VariablestoreNetworkElement extends TileNetworkElement<TileVariable
     }
 
     @Override
-    public void setPriority(INetwork network, int priority) {
+    public void setPriorityAndChannel(INetwork network, int priority, int channel) {
 
     }
 
     @Override
     public int getPriority() {
         return 0;
-    }
-
-    @Override
-    public void setChannel(INetwork network, int channel) {
-
     }
 
     @Override
@@ -58,5 +57,11 @@ public class VariablestoreNetworkElement extends TileNetworkElement<TileVariable
     @Override
     protected Class<TileVariablestore> getTileClass() {
         return TileVariablestore.class;
+    }
+
+    @Nullable
+    @Override
+    public TileVariablestore getNetworkEventListener() {
+        return getTile();
     }
 }

@@ -27,6 +27,7 @@ import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeList;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.integrateddynamics.inventory.container.ContainerLogicProgrammerBase;
+import ruiseki.integrateddynamics.network.packet.LogicProgrammerSetElementInventory;
 import ruiseki.integrateddynamics.network.packet.LogicProgrammerValueTypeListValueChangedPacket;
 import ruiseki.okcore.client.gui.component.button.GuiButtonArrow;
 import ruiseki.okcore.client.gui.component.button.GuiButtonText;
@@ -116,8 +117,10 @@ public class ValueTypeListLPElement extends ValueTypeLPElementBase {
         if (index >= 0 && !subElements.containsKey(index)) {
             subElements.put(index, listValueType.createLogicProgrammerElement());
         }
-        masterGui.setActiveElement(activeElement);
-        masterGui.container.onDirty();
+        if (MinecraftHelpers.isClientSide()) {
+            masterGui.setActiveElement(activeElement);
+            masterGui.container.onDirty();
+        }
     }
 
     public void removeElement(int index) {
@@ -308,6 +311,9 @@ public class ValueTypeListLPElement extends ValueTypeLPElementBase {
                 true,
                 getValueTypes());
             valueTypeSelector.setListener(this);
+            if (element.activeElement == -1) {
+                onChanged();
+            }
             int x = guiLeft + getX();
             int y = guiTop + getY();
             buttonList
@@ -369,10 +375,16 @@ public class ValueTypeListLPElement extends ValueTypeLPElementBase {
                     .createSubGui(baseX, baseY, maxWidth, maxHeight / 3 * 2, gui, container);
                 element.subElementGuis.put(element.activeElement, subGui);
             }
+            int x = getX() + baseX - 24;
+            int y = getY() + baseY - 23;
             gui.getContainer()
-                .setElementInventory(subElement, getX() + baseX - 24, getY() + baseY - 23);
+                .setElementInventory(subElement, x, y);
             subElement.setValueInGui(subGui);
             subGuiHolder.addSubGui(subGui);
+
+            // Do the same thing server-side
+            IntegratedDynamics._instance.getPacketHandler()
+                .sendToServer(new LogicProgrammerSetElementInventory(element.listValueType, x, y));
         }
 
         @Override

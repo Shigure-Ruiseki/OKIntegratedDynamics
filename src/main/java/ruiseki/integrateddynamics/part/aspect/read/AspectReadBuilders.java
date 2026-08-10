@@ -16,7 +16,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.Nullable;
 
 import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 
@@ -511,8 +510,7 @@ public class AspectReadBuilders {
 
         public static final IAspectPropertyTypeInstance<ValueTypeInteger, ValueTypeInteger.ValueInteger> PROPERTY_CHANNEL = new AspectPropertyTypeInstance<>(
             ValueTypes.INTEGER,
-            "aspect.aspecttypes.integrateddynamics.integer.channel.name",
-            Predicates.alwaysTrue());
+            "aspect.aspecttypes.integrateddynamics.integer.channel.name");
         public static final IAspectProperties PROPERTIES = new AspectProperties(
             ImmutableList.<IAspectPropertyTypeInstance>of(PROPERTY_CHANNEL));
         static {
@@ -565,11 +563,16 @@ public class AspectReadBuilders {
             ValueTypes.INTEGER,
             "aspect.aspecttypes.integrateddynamics.integer.length.name",
             VALIDATOR_INTEGER_POSITIVE);
+        public static final IAspectPropertyTypeInstance<ValueTypeInteger, ValueTypeInteger.ValueInteger> PROPERTY_OFFSET = new AspectPropertyTypeInstance<>(
+            ValueTypes.INTEGER,
+            "aspect.aspecttypes.integrateddynamics.integer.offset.name",
+            VALIDATOR_INTEGER_POSITIVE);
         public static final IAspectProperties PROPERTIES_CLOCK = new AspectProperties(
             ImmutableList.<IAspectPropertyTypeInstance>of(PROPERTY_INTERVAL, PROPERTY_LENGTH));
         static {
             PROPERTIES_CLOCK.setValue(PROPERTY_INTERVAL, ValueTypeInteger.ValueInteger.of(20));
             PROPERTIES_CLOCK.setValue(PROPERTY_LENGTH, ValueTypeInteger.ValueInteger.of(1));
+            PROPERTIES_CLOCK.setValue(PROPERTY_OFFSET, ValueTypeInteger.ValueInteger.of(0));
         }
 
         public static final IAspectValuePropagator<Pair<PartTarget, IAspectProperties>, Integer> PROP_GET = new IAspectValuePropagator<Pair<PartTarget, IAspectProperties>, Integer>() {
@@ -609,18 +612,22 @@ public class AspectReadBuilders {
                     .getPos();
                 return dimPos.getBlockPos()
                     .getBlock(dimPos.getWorld())
-                    .getComparatorInputOverride(
-                        dimPos.getWorld(),
-                        dimPos.getBlockPos()
-                            .getX(),
-                        dimPos.getBlockPos()
-                            .getY(),
-                        dimPos.getBlockPos()
-                            .getZ(),
-                        input.getLeft()
-                            .getCenter()
-                            .getSide()
-                            .ordinal());
+                    .hasComparatorInputOverride()
+                        ? dimPos.getBlockPos()
+                            .getBlock(dimPos.getWorld())
+                            .getComparatorInputOverride(
+                                dimPos.getWorld(),
+                                dimPos.getBlockPos()
+                                    .getX(),
+                                dimPos.getBlockPos()
+                                    .getY(),
+                                dimPos.getBlockPos()
+                                    .getZ(),
+                                input.getLeft()
+                                    .getCenter()
+                                    .getSide()
+                                    .ordinal())
+                        : 0;
             }
         };
         public static final IAspectValuePropagator<Pair<PartTarget, IAspectProperties>, Boolean> PROP_GET_CLOCK = new IAspectValuePropagator<Pair<PartTarget, IAspectProperties>, Boolean>() {

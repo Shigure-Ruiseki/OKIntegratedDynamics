@@ -9,11 +9,13 @@ import ruiseki.integrateddynamics.part.PartTypeConnectorMonoDirectional;
 import ruiseki.integrateddynamics.part.PartTypeConnectorOmniDirectional;
 import ruiseki.integrateddynamics.part.PartTypeEffectWriter;
 import ruiseki.integrateddynamics.part.PartTypeEntityReader;
+import ruiseki.integrateddynamics.part.PartTypeEntityWriter;
 import ruiseki.integrateddynamics.part.PartTypeExtraDimensionalReader;
 import ruiseki.integrateddynamics.part.PartTypeFluidReader;
 import ruiseki.integrateddynamics.part.PartTypeInventoryReader;
 import ruiseki.integrateddynamics.part.PartTypeInventoryWriter;
 import ruiseki.integrateddynamics.part.PartTypeMachineReader;
+import ruiseki.integrateddynamics.part.PartTypeMachineWriter;
 import ruiseki.integrateddynamics.part.PartTypeNetworkReader;
 import ruiseki.integrateddynamics.part.PartTypePanelDisplay;
 import ruiseki.integrateddynamics.part.PartTypePanelLightDynamic;
@@ -56,6 +58,10 @@ public final class PartTypes {
     public static final PartTypeAudioWriter AUDIO_WRITER = REGISTRY.register(new PartTypeAudioWriter("audio_writer"));
     public static final PartTypeEffectWriter EFFECT_WRITER = REGISTRY
         .register(new PartTypeEffectWriter("effect_writer"));
+    public static final PartTypeEntityWriter ENTITY_WRITER = REGISTRY
+        .register(new PartTypeEntityWriter("entity_writer"));
+    public static final PartTypeMachineWriter MACHINE_WRITER = REGISTRY
+        .register(new PartTypeMachineWriter("machine_writer"));
     public static final PartTypeInventoryWriter INVENTORY_WRITER = REGISTRY
         .register(new PartTypeInventoryWriter("inventory_writer"));
     public static final PartTypeRedstoneWriter REDSTONE_WRITER = REGISTRY

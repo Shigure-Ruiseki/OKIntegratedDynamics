@@ -127,7 +127,6 @@ public class ValueTypeOperator extends ValueTypeBase<ValueTypeOperator.ValueOper
         List<String> lines = Lists.newArrayList();
 
         StringBuilder sb = new StringBuilder();
-        sb.append("(");
         boolean first = true;
         for (IValueType inputType : inputTypes) {
             if (first) {
@@ -143,7 +142,7 @@ public class ValueTypeOperator extends ValueTypeBase<ValueTypeOperator.ValueOper
         sb.append(")");
 
         sb = switchSignatureLineContext(lines, sb);
-        sb.append(SIGNATURE_LINK + " ")
+        sb.append((indent ? "  " : "") + SIGNATURE_LINK + " ")
             .append(outputType.getDisplayColorFormat())
             .append(LangHelpers.localize(outputType.getUnlocalizedName()))
             .append(EnumChatFormatting.RESET);

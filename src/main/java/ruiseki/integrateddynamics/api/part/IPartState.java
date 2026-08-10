@@ -63,7 +63,7 @@ public interface IPartState<P extends IPartType> {
      * Set the priority of this part in the network.
      *
      * @deprecated Should only be called from
-     *             {@link ruiseki.integrateddynamics.api.network.INetwork#setPriorityAndChannel(INetworkElement, int)}}!
+     *             {@link ruiseki.integrateddynamics.api.network.INetwork#setPriorityAndChannel(INetworkElement, int, int)}!
      * @param priority The new priority
      */
     @Deprecated
@@ -77,8 +77,11 @@ public interface IPartState<P extends IPartType> {
     /**
      * Set the channel for this state.
      *
+     * @deprecated Should only be called from
+     *             {@link ruiseki.integrateddynamics.api.network.INetwork#setPriorityAndChannel(INetworkElement, int, int)}}!
      * @param channel The new channel
      */
+    @Deprecated
     public void setChannel(int channel);
 
     /**
@@ -99,6 +102,27 @@ public interface IPartState<P extends IPartType> {
      * @return If this state has changed since the last time and needs to be updated to the client.
      */
     public boolean isUpdateAndReset();
+
+    /**
+     * Set a flag indicating that the next time that
+     * {@link IPartType#shouldTriggerBlockRenderUpdate(IPartState, IPartState)}
+     * is queried, it should return true.
+     *
+     * This is useful in cases where the player makes changes inside a part,
+     * the state difference checking can not be relied upon,
+     * and a state update should be forced in any case.
+     *
+     * This should only be called client-side.
+     */
+    public void forceBlockRenderUpdate();
+
+    /**
+     * @return If a block render update is forced.
+     *         This flagged will be set to false after this method is called.
+     *
+     *         This should only be called client-side.
+     */
+    public boolean isForceBlockRenderUpdateAndReset();
 
     /**
      * Get the properties for the given aspect.

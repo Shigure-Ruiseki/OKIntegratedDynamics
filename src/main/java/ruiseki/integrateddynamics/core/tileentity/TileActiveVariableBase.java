@@ -50,7 +50,7 @@ public abstract class TileActiveVariableBase<E> extends TileCableConnectableInve
         return getStackInSlot(getSlotRead()) != null;
     }
 
-    protected void updateReadVariable() {
+    protected void updateReadVariable(boolean sendVariablesUpdateEvent) {
         INetwork network = getNetwork();
         IPartNetwork partNetwork = NetworkHelpers.getPartNetwork(network);
 
@@ -80,7 +80,7 @@ public abstract class TileActiveVariableBase<E> extends TileCableConnectableInve
                 addError(new LangHelpers.UnlocalizedString(e.getMessage()));
             }
         }
-        if (partNetwork != null && lastVariabledId != variableId) {
+        if (sendVariablesUpdateEvent && partNetwork != null && lastVariabledId != variableId) {
             network.getEventBus()
                 .post(new VariableContentsUpdatedEvent(network));
         }
@@ -94,7 +94,7 @@ public abstract class TileActiveVariableBase<E> extends TileCableConnectableInve
     @Override
     public void onDirty() {
         if (!worldObj.isRemote) {
-            updateReadVariable();
+            updateReadVariable(true);
         }
     }
 
@@ -126,13 +126,13 @@ public abstract class TileActiveVariableBase<E> extends TileCableConnectableInve
     @Override
     public void onEvent(INetworkEvent event, E networkElement) {
         if (event instanceof VariableContentsUpdatedEvent) {
-            updateReadVariable();
+            updateReadVariable(false);
         }
     }
 
     @Override
     public void afterNetworkReAlive() {
         super.afterNetworkReAlive();
-        updateReadVariable();
+        updateReadVariable(true);
     }
 }

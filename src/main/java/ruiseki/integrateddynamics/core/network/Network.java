@@ -85,13 +85,14 @@ public class Network implements INetwork {
     }
 
     /**
-     * @param networkA The first network
-     * @param networkB The second network
-     * @return If the networks are equal
-     * @deprecated Use {@link Object#equals} instead
+     * Check if two networks are equal.
+     * 
+     * @param networkA A network.
+     * @param networkB Another network.
+     * @return If they are equal.
      */
     public static boolean areNetworksEqual(Network networkA, Network networkB) {
-        return networkA.equals(networkB);
+        return networkA.elements.containsAll(networkB.elements) && networkA.elements.size() == networkB.elements.size();
     }
 
     /**
@@ -192,7 +193,7 @@ public class Network implements INetwork {
 
     @Override
     public boolean equals(Object object) {
-        return object instanceof Network && elements.equals(((Network) object).elements);
+        return object instanceof Network && areNetworksEqual(this, (Network) object);
     }
 
     @Override
@@ -290,9 +291,7 @@ public class Network implements INetwork {
         }
 
         // noinspection deprecation
-        element.setPriority(this, priority);
-        // noinspection deprecation
-        element.setChannel(this, channel);
+        element.setPriorityAndChannel(this, priority, channel);
         elements.add(element);
         if (element.isUpdate()) {
             updateableElements.add(element);
@@ -318,6 +317,8 @@ public class Network implements INetwork {
         element.onNetworkRemoval(this);
         elements.remove(element);
         removeNetworkElementUpdateable(element);
+        invalidatedElements.remove(element); // The element may be invalidated (like in an unloaded chunk) when it is
+                                             // being removed.
         getEventBus().post(new NetworkElementRemoveEvent.Post(this, element));
         onNetworkChanged();
     }

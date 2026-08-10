@@ -34,7 +34,8 @@ public class PartTypeFluidReader
                     Aspects.Read.Fluid.DOUBLE_FILLRATIO,
                     Aspects.Read.Fluid.LIST_TANKFLUIDS,
                     Aspects.Read.Fluid.LIST_TANKCAPACITIES,
-                    Aspects.Read.Fluid.FLUIDSTACK));
+                    Aspects.Read.Fluid.FLUIDSTACK,
+                    Aspects.Read.Fluid.BLOCK));
     }
 
     @Override

@@ -1,12 +1,18 @@
 package ruiseki.integrateddynamics.core.part;
 
+import java.util.List;
 import java.util.Set;
+
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.EnumChatFormatting;
 
 import ruiseki.integrateddynamics.api.part.IPartState;
 import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartRenderPosition;
 import ruiseki.integrateddynamics.api.part.aspect.IAspect;
+import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.integrateddynamics.part.aspect.Aspects;
+import ruiseki.okcore.helper.LangHelpers;
 
 /**
  * An abstract {@link IPartType} that can hold aspects.
@@ -42,4 +48,11 @@ public abstract class PartTypeAspects<P extends IPartType<P, S>, S extends IPart
         return 1;
     }
 
+    @Override
+    public void loadTooltip(ItemStack itemStack, List<String> lines) {
+        super.loadTooltip(itemStack, lines);
+        if (getAspects().isEmpty()) {
+            lines.add(EnumChatFormatting.GOLD + LangHelpers.localize(L10NValues.PART_TOOLTIP_NOASPECTS));
+        }
+    }
 }

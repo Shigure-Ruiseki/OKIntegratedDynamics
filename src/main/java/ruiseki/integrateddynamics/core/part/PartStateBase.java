@@ -31,6 +31,7 @@ public abstract class PartStateBase<P extends IPartType> implements IPartState<P
 
     private boolean dirty = false;
     private boolean update = false;
+    private boolean forceBlockUpdateRender = false;
     private int updateInterval = getDefaultUpdateInterval();
     private int priority = 0;
     private int channel = 0;
@@ -162,8 +163,21 @@ public abstract class PartStateBase<P extends IPartType> implements IPartState<P
     }
 
     @Override
+    public void forceBlockRenderUpdate() {
+        this.forceBlockUpdateRender = true;
+    }
+
+    @Override
+    public boolean isForceBlockRenderUpdateAndReset() {
+        boolean wasForceBlockUpdateRender = this.forceBlockUpdateRender;
+        this.forceBlockUpdateRender = false;
+        return wasForceBlockUpdateRender;
+    }
+
+    @Override
     public void onDirty() {
         this.dirty = true;
+        this.forceBlockRenderUpdate();
     }
 
     /**

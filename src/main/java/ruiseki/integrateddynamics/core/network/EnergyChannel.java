@@ -7,10 +7,10 @@ import ruiseki.integrateddynamics.api.network.IPositionedAddonsNetwork.Prioritiz
 
 public class EnergyChannel implements IEnergyStorage {
 
-    final EnergyNetwork network;
-    final int channel;
+    private final EnergyNetwork network;
+    private final int channel;
 
-    EnergyChannel(EnergyNetwork network, int channel) {
+    public EnergyChannel(EnergyNetwork network, int channel) {
         this.network = network;
         this.channel = channel;
     }

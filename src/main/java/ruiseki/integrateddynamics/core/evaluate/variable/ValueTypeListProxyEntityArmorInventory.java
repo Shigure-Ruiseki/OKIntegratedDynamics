@@ -4,7 +4,6 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 
 import ruiseki.okcore.persist.nbt.INBTProvider;
@@ -45,15 +44,5 @@ public class ValueTypeListProxyEntityArmorInventory
     @Override
     public ValueObjectTypeItemStack.ValueItemStack get(int index) {
         return ValueObjectTypeItemStack.ValueItemStack.of(getInventory()[index]);
-    }
-
-    @Override
-    public void writeGeneratedFieldsToNBT(NBTTagCompound tag) {
-
-    }
-
-    @Override
-    public void readGeneratedFieldsFromNBT(NBTTagCompound tag) {
-
     }
 }

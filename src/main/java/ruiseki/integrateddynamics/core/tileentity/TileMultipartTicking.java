@@ -184,12 +184,16 @@ public class TileMultipartTicking extends TileEntityOK
         return networkCarrier.getNetwork();
     }
 
-    public void updateRedstoneInfo(ForgeDirection side) {
+    public void updateRedstoneInfo(ForgeDirection side, boolean strongPower) {
         int targetX = xCoord + side.offsetX;
         int targetY = yCoord + side.offsetY;
         int targetZ = zCoord + side.offsetZ;
         if (this.worldObj != null && this.worldObj.blockExists(targetX, targetY, targetZ)) {
             this.worldObj.notifyBlockOfNeighborChange(targetX, targetY, targetZ, getBlockType());
+            if (strongPower) {
+                // When we are emitting a strong power, also update all neighbours of the target
+                this.worldObj.notifyBlockOfNeighborChange(targetX, targetY, targetZ, getBlockType());
+            }
         }
     }
 
