@@ -1,12 +1,16 @@
 package ruiseki.integrateddynamics.core.network;
 
 import java.util.Iterator;
+import java.util.function.Supplier;
 
 import javax.annotation.Nonnull;
+
+import org.apache.commons.lang3.tuple.Pair;
 
 import ruiseki.commoncapabilities.api.ingredient.IIngredientMatcher;
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
 import ruiseki.commoncapabilities.api.ingredient.storage.IIngredientComponentStorage;
+import ruiseki.integrateddynamics.api.network.IPartPosIteratorHandler;
 import ruiseki.integrateddynamics.api.network.IPositionedAddonsNetworkIngredients;
 import ruiseki.integrateddynamics.api.part.PartPos;
 
@@ -60,6 +64,21 @@ public abstract class IngredientChannelAdapter<T, M> implements IIngredientCompo
         return sum;
     }
 
+    protected Pair<IPartPosIteratorHandler, Iterator<PartPos>> getPartPosIteratorData(
+        Supplier<Iterator<PartPos>> iteratorSupplier, int channel) {
+        IPartPosIteratorHandler handler = network.getPartPosIteratorHandler();
+        if (handler == null) {
+            handler = PartPosIteratorHandlerDummy.INSTANCE;
+        } else {
+            handler = handler.clone();
+        }
+        return Pair.of(handler, handler.handleIterator(iteratorSupplier, channel));
+    }
+
+    protected void savePartPosIteratorHandler(IPartPosIteratorHandler partPosIteratorHandler) {
+        network.setPartPosIteratorHandler(partPosIteratorHandler);
+    }
+
     @Override
     public T insert(@Nonnull T ingredient, boolean simulate) {
         IIngredientMatcher<T, M> matcher = getComponent().getMatcher();
@@ -80,7 +99,10 @@ public abstract class IngredientChannelAdapter<T, M> implements IIngredientCompo
 
         // Try inserting the ingredient at all positions that are not full,
         // until the ingredient becomes completely empty.
-        Iterator<PartPos> it = this.getNonFullPositions();
+        Pair<IPartPosIteratorHandler, Iterator<PartPos>> partPosIteratorData = getPartPosIteratorData(
+            this::getNonFullPositions,
+            channel);
+        Iterator<PartPos> it = partPosIteratorData.getRight();
         while (it.hasNext()) {
             PartPos pos = it.next();
             this.network.disablePosition(pos);
@@ -97,6 +119,10 @@ public abstract class IngredientChannelAdapter<T, M> implements IIngredientCompo
             ingredient = matcher.withQuantity(ingredient, skippedQuantity + matcher.getQuantity(ingredient));
         }
 
+        if (!simulate) {
+            savePartPosIteratorHandler(partPosIteratorData.getLeft());
+        }
+
         return ingredient;
     }
 
@@ -109,7 +135,10 @@ public abstract class IngredientChannelAdapter<T, M> implements IIngredientCompo
 
         // Try extracting from all non-empty positions
         // until one succeeds.
-        Iterator<PartPos> it = this.getNonEmptyPositions();
+        Pair<IPartPosIteratorHandler, Iterator<PartPos>> partPosIteratorData = getPartPosIteratorData(
+            this::getNonEmptyPositions,
+            channel);
+        Iterator<PartPos> it = partPosIteratorData.getRight();
         while (it.hasNext()) {
             PartPos pos = it.next();
             this.network.disablePosition(pos);
@@ -117,39 +146,54 @@ public abstract class IngredientChannelAdapter<T, M> implements IIngredientCompo
                 .extract(maxQuantity, simulate);
             this.network.enablePosition(pos);
             if (!matcher.isEmpty(extracted)) {
+                if (!simulate) {
+                    savePartPosIteratorHandler(partPosIteratorData.getLeft());
+                }
                 return extracted;
             }
+        }
+
+        if (!simulate) {
+            savePartPosIteratorHandler(partPosIteratorData.getLeft());
         }
 
         return matcher.getEmptyInstance();
     }
 
     @Override
-    public T extract(@Nonnull T prototype, M matchFlags, boolean simulate) {
+    public T extract(@Nonnull T prototype, final M matchFlags, boolean simulate) {
         IIngredientMatcher<T, M> matcher = getComponent().getMatcher();
 
         // Limit rate
         long limit = network.getRateLimit();
-        if (matcher.hasCondition(
-            matchFlags,
-            getComponent().getPrimaryQuantifier()
-                .getMatchCondition())
-            && matcher.getQuantity(prototype) > limit) {
+        if (matcher.getQuantity(prototype) > limit) {
             prototype = matcher.withQuantity(prototype, limit);
         }
+        final T prototypeFinal = prototype;
 
         // Try extracting from all positions that match with the given conditions
+
         // until one succeeds.
-        Iterator<PartPos> it = this.getMatchingPositions(prototype, matchFlags);
+        Pair<IPartPosIteratorHandler, Iterator<PartPos>> partPosIteratorData = getPartPosIteratorData(
+            () -> this.getMatchingPositions(prototypeFinal, matchFlags),
+            channel);
+        Iterator<PartPos> it = partPosIteratorData.getRight();
         while (it.hasNext()) {
             PartPos pos = it.next();
             this.network.disablePosition(pos);
             T extracted = this.network.getPositionedStorage(pos)
-                .extract(prototype, matchFlags, simulate);
+                .extract(prototypeFinal, matchFlags, simulate);
             this.network.enablePosition(pos);
             if (!matcher.isEmpty(extracted)) {
+                if (!simulate) {
+                    savePartPosIteratorHandler(partPosIteratorData.getLeft());
+                }
                 return extracted;
             }
+        }
+
+        if (!simulate) {
+            savePartPosIteratorHandler(partPosIteratorData.getLeft());
         }
 
         return matcher.getEmptyInstance();

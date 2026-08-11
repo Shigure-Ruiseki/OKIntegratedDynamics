@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.WeakHashMap;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -16,6 +15,7 @@ import gnu.trove.map.hash.TIntObjectHashMap;
 import lombok.Getter;
 import lombok.Setter;
 import ruiseki.integrateddynamics.api.network.INetwork;
+import ruiseki.integrateddynamics.api.network.IPartPosIteratorHandler;
 import ruiseki.integrateddynamics.api.network.IPositionedAddonsNetwork;
 import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.integrateddynamics.api.part.PrioritizedPartPos;
@@ -35,8 +35,7 @@ public abstract class PositionedAddonsNetwork implements IPositionedAddonsNetwor
     private final TIntObjectMap<Set<PrioritizedPartPos>> positions = new TIntObjectHashMap<>();
     private final Set<PartPos> disabledPositions = Sets.newHashSet();
 
-    private final TIntObjectMap<PositionsIterator> positionsIterators = new TIntObjectHashMap<>();
-    private final Set<PositionsIterator> createdIterators = Collections.newSetFromMap(new WeakHashMap<>());
+    private IPartPosIteratorHandler partPosIteratorHandler = null;
 
     @Override
     public int[] getChannels() {
@@ -75,43 +74,22 @@ public abstract class PositionedAddonsNetwork implements IPositionedAddonsNetwor
         return this.allPositions;
     }
 
-    @Override
-    public PositionsIterator getPositionIterator(int channel) {
-        PositionsIterator it = positionsIterators.get(channel);
-        if (it == null) {
-            // If no custom iterator was given, iterate in first-come-first-serve order
-            it = createPositionIterator(channel);
-        } else {
-            it = it.cloneState();
-        }
-        return it;
-    }
-
-    @Override
-    public void setPositionIterator(@Nullable PositionsIterator iterator, int channel) {
-        if (iterator == null || !iterator.hasNext()) {
-            positionsIterators.remove(channel);
-        } else {
-            positionsIterators.put(channel, iterator);
-        }
-    }
-
-    @Override
-    public PositionsIterator createPositionIterator(int channel) {
-        PositionsIterator it = new PositionsIterator(getPositions(channel), this);
-        onPositionIteratorCreated(it);
-        return it;
-    }
-
-    @Override
-    public void onPositionIteratorCreated(PositionsIterator positionsIterator) {
-        createdIterators.add(positionsIterator);
-    }
-
     protected void invalidateIterators() {
-        this.positionsIterators.clear();
-        this.createdIterators.forEach(PositionsIterator::invalidate);
-        this.createdIterators.clear();
+        setPartPosIteratorHandler(null);
+    }
+
+    @Override
+    public void setPartPosIteratorHandler(@Nullable IPartPosIteratorHandler iteratorHandler) {
+        this.partPosIteratorHandler = iteratorHandler;
+    }
+
+    @Nullable
+    @Override
+    public IPartPosIteratorHandler getPartPosIteratorHandler() {
+        if (partPosIteratorHandler != null) {
+            return partPosIteratorHandler;
+        }
+        return null;
     }
 
     @Override
