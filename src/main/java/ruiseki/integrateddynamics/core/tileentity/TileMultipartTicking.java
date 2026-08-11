@@ -35,6 +35,7 @@ import ruiseki.integrateddynamics.capability.partcontainer.PartContainerTileMult
 import ruiseki.integrateddynamics.capability.path.PathElementConfig;
 import ruiseki.integrateddynamics.capability.path.PathElementTileMultipartTicking;
 import ruiseki.integrateddynamics.core.helper.CableHelpers;
+import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
 import ruiseki.integrateddynamics.core.helper.PartHelpers;
 import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.capabilities.resolver.BasicCapabilityResolver;
@@ -183,6 +184,11 @@ public class TileMultipartTicking extends TileEntityOK
             cable.updateConnections();
         }
         partContainer.update();
+
+        // Revalidate network if that hasn't happened yet
+        if (getNetwork() == null && getWorldObj() != null && !getWorldObj().isRemote) {
+            NetworkHelpers.revalidateNetworkElements(getWorldObj(), getPos());
+        }
     }
 
     public INetwork getNetwork() {

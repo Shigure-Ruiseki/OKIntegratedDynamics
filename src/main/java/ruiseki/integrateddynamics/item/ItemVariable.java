@@ -2,6 +2,7 @@ package ruiseki.integrateddynamics.item;
 
 import java.util.List;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -26,6 +27,7 @@ import ruiseki.okcore.capabilities.ICapabilityProvider;
 import ruiseki.okcore.config.configurable.ConfigurableItem;
 import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 import ruiseki.okcore.helper.CapabilityHelpers;
+import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.modcompat.capabilities.DefaultCapabilityProvider;
 
 public class ItemVariable extends ConfigurableItem {
@@ -87,6 +89,10 @@ public class ItemVariable extends ConfigurableItem {
     @Override
     public void addInformation(ItemStack itemStack, EntityPlayer entityPlayer, List list, boolean par4) {
         getVariableFacade(itemStack).addInformation(list, entityPlayer);
+        if (Minecraft.getMinecraft().thePlayer != null
+            && Minecraft.getMinecraft().thePlayer.capabilities.isCreativeMode) {
+            list.add(LangHelpers.localize("item.items.integrateddynamics.variable.warning"));
+        }
         super.addInformation(itemStack, entityPlayer, list, par4);
     }
 

@@ -107,7 +107,6 @@ import ruiseki.integrateddynamics.core.helper.Helpers;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.integrateddynamics.core.helper.NbtHelpers;
 import ruiseki.integrateddynamics.core.helper.obfuscation.ObfuscationHelpers;
-import ruiseki.okcore.datastructure.NonNullList;
 import ruiseki.okcore.energy.capability.CapabilityEnergy;
 import ruiseki.okcore.helper.BlockHelpers;
 import ruiseki.okcore.helper.BlockStateHelpers;
@@ -810,7 +809,7 @@ public final class Operators {
      */
     public static final IOperator STRING_REGEX_GROUPS = REGISTRY.register(
         OperatorBuilders.STRING_2.symbolOperator("regex_groups")
-            .output(ValueTypes.STRING)
+            .output(ValueTypes.LIST)
             .function(variables -> {
                 ValueTypeString.ValueString pattern = variables.getValue(0);
                 ValueTypeString.ValueString str = variables.getValue(1);
@@ -1981,18 +1980,9 @@ public final class Operators {
                 ValueTypeString.ValueString a = variables.getValue(0);
                 ImmutableList.Builder<ValueObjectTypeItemStack.ValueItemStack> builder = ImmutableList.builder();
                 if (!StringUtils.isNullOrEmpty(a.getRawValue())) {
-                    for (ItemStack itemStack : OreDictionary.getOres(a.getRawValue())) {
-                        if (itemStack.getItemDamage() == OreDictionary.WILDCARD_VALUE) {
-                            NonNullList<ItemStack> subItems = NonNullList.create();
-                            itemStack.getItem()
-                                .getSubItems(itemStack.getItem(), null, subItems);
-                            for (ItemStack subItem : subItems) {
-                                builder.add(ValueObjectTypeItemStack.ValueItemStack.of(subItem));
-                            }
-                        } else {
-                            builder.add(ValueObjectTypeItemStack.ValueItemStack.of(itemStack));
-                        }
-                    }
+                    Helpers.getOresWildcard(a.getRawValue())
+                        .map(ValueObjectTypeItemStack.ValueItemStack::of)
+                        .forEach(builder::add);
                 }
                 return ValueTypeList.ValueList.ofList(ValueTypes.OBJECT_ITEMSTACK, builder.build());
             })

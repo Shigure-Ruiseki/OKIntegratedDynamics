@@ -78,6 +78,11 @@ public class OperatorLPElement
 
     @Override
     public IConfigRenderPattern getRenderPattern() {
+        if (getOperator().getRenderPattern() == null) {
+            throw new IllegalStateException(
+                "Tried to render a (possibly virtual) operator with a null render pattern: "
+                    + getOperator().getUniqueName());
+        }
         return getOperator().getRenderPattern();
     }
 

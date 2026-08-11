@@ -9,6 +9,7 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.nbt.NBTTagString;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.jetbrains.annotations.Nullable;
 
 import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.evaluate.operator.IOperator;
@@ -21,6 +22,8 @@ import ruiseki.integrateddynamics.core.evaluate.variable.ValueHelpers;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeBoolean;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
 import ruiseki.integrateddynamics.core.evaluate.variable.Variable;
+import ruiseki.integrateddynamics.core.helper.L10NValues;
+import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
 
 /**
@@ -33,17 +36,11 @@ public class CombinedOperator extends OperatorBase {
     private final String unlocalizedType;
 
     public CombinedOperator(String symbol, String operatorName, OperatorsFunction function, IValueType outputType) {
-        this(
-            symbol,
-            operatorName,
-            function,
-            new IValueType[] { ValueTypes.CATEGORY_ANY },
-            outputType,
-            IConfigRenderPattern.PREFIX_1);
+        this(symbol, operatorName, function, new IValueType[] { ValueTypes.CATEGORY_ANY }, outputType, null);
     }
 
     public CombinedOperator(String symbol, String operatorName, OperatorsFunction function, IValueType[] inputTypes,
-        IValueType outputType, IConfigRenderPattern configRenderPattern) {
+        IValueType outputType, @Nullable IConfigRenderPattern configRenderPattern) {
         super(symbol, operatorName, inputTypes, outputType, function, configRenderPattern);
         this.unlocalizedType = "virtual";
     }
@@ -317,6 +314,15 @@ public class CombinedOperator extends OperatorBase {
             CombinedOperator.Flip flip = new CombinedOperator.Flip(operator);
             IValueType[] originalInputTypes = operator.getInputTypes();
             IValueType[] flippedInputTypes = new IValueType[originalInputTypes.length];
+            if (originalInputTypes.length < 2) {
+                throw new EvaluationException(
+                    LangHelpers.localize(
+                        L10NValues.OPERATOR_ERROR_WRONGINPUTLENGTHVIRTIUAL,
+                        LangHelpers.localize(Operators.OPERATOR_FLIP.getUnlocalizedName()),
+                        LangHelpers.localize(operator.getUnlocalizedName()),
+                        originalInputTypes.length,
+                        2));
+            }
             for (int i = 0; i < flippedInputTypes.length; i++) {
                 int targetI = i < 2 ? 1 - i : i;
                 flippedInputTypes[i] = originalInputTypes[targetI];
@@ -329,7 +335,7 @@ public class CombinedOperator extends OperatorBase {
                     flip,
                     flippedInputTypes,
                     operator.getOutputType(),
-                    operator.getRenderPattern());
+                    null);
             } catch (IllegalArgumentException e) {
                 throw new EvaluationException(e.getMessage());
             }

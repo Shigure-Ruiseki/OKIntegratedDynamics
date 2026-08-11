@@ -6,6 +6,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.ChatComponentTranslation;
 import net.minecraft.world.World;
 
+import cofh.api.energy.IEnergyStorage;
 import ruiseki.integrateddynamics.core.block.BlockContainerCabled;
 import ruiseki.integrateddynamics.core.helper.Helpers;
 import ruiseki.integrateddynamics.tileentity.TileEnergyBattery;
@@ -63,5 +64,18 @@ public abstract class BlockEnergyBatteryBase extends BlockContainerCabled implem
             }
         }
         return false;
+    }
+
+    /**
+     * Fill an IEnergyStorage with all the energy it can hold
+     * 
+     * @param energyStorage IEnergyStorage that is to be filled
+     */
+    public static void fill(IEnergyStorage energyStorage) {
+        int max = energyStorage.getMaxEnergyStored();
+        int stored = 1;
+        while (stored > 0) {
+            stored = energyStorage.receiveEnergy(max, false);
+        }
     }
 }

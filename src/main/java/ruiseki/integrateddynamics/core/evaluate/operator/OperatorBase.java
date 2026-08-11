@@ -3,6 +3,8 @@ package ruiseki.integrateddynamics.core.evaluate.operator;
 import java.util.Arrays;
 import java.util.List;
 
+import org.jetbrains.annotations.Nullable;
+
 import ruiseki.integrateddynamics.Reference;
 import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.evaluate.operator.IOperator;
@@ -26,19 +28,20 @@ public abstract class OperatorBase implements IOperator {
     private final IValueType[] inputTypes;
     private final IValueType outputType;
     private final IFunction function;
+    @Nullable
     private final IConfigRenderPattern renderPattern;
 
     private String unlocalizedName = null;
 
     protected OperatorBase(String symbol, String operatorName, IValueType[] inputTypes, IValueType outputType,
-        IFunction function, IConfigRenderPattern renderPattern) {
+        IFunction function, @Nullable IConfigRenderPattern renderPattern) {
         this.symbol = symbol;
         this.operatorName = operatorName;
         this.inputTypes = inputTypes;
         this.outputType = outputType;
         this.function = function;
         this.renderPattern = renderPattern;
-        if (renderPattern.getSlotPositions().length != inputTypes.length) {
+        if (renderPattern != null && renderPattern.getSlotPositions().length != inputTypes.length) {
             throw new IllegalArgumentException(
                 String.format(
                     "The given config render pattern with %s slots is not "
@@ -195,6 +198,7 @@ public abstract class OperatorBase implements IOperator {
     }
 
     @Override
+    @Nullable
     public IConfigRenderPattern getRenderPattern() {
         return renderPattern;
     }
@@ -213,7 +217,11 @@ public abstract class OperatorBase implements IOperator {
         }
 
         public <V extends IValue> V getValue(int i) throws EvaluationException {
-            return (V) variables[i].getValue();
+            try {
+                return (V) variables[i].getValue();
+            } catch (ClassCastException e) {
+                throw new EvaluationException(e.getMessage());
+            }
         }
 
         public IVariable[] getVariables() {

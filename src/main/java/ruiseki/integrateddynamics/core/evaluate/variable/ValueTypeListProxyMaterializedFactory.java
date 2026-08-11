@@ -2,6 +2,7 @@ package ruiseki.integrateddynamics.core.evaluate.variable;
 
 import com.google.common.collect.ImmutableList;
 
+import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeListProxyFactoryTypeRegistry;
@@ -28,6 +29,14 @@ public class ValueTypeListProxyMaterializedFactory implements
         throws IValueTypeListProxyFactoryTypeRegistry.SerializationException {
         StringBuilder sb = new StringBuilder();
         IValueType<IValue> valueType = values.getValueType();
+        try {
+            // Hack to avoid issue where categories are sometimes used to serialize/deserialize,
+            // which is not allowed (and will crash during deserialization #570).
+            if (valueType.isCategory() && values.getLength() > 0) {
+                valueType = values.get(0)
+                    .getType();
+            }
+        } catch (EvaluationException e) {}
         sb.append(valueType.getUnlocalizedName());
         for (IValue value : values) {
             sb.append(ELEMENT_DELIMITER);

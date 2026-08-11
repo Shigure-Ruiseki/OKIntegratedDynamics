@@ -62,11 +62,7 @@ public class BlockEnergyBattery extends BlockEnergyBatteryBase {
         if (energyStorage != null) {
             energyStorage.setCapacity(BlockEnergyBatteryConfig.capacity);
             list.add(itemStack.copy());
-
-            int stored = 1;
-            while (stored > 0) {
-                stored = energyStorage.receiveEnergy(BlockEnergyBatteryConfig.capacity, false);
-            }
+            fill(energyStorage);
             list.add(itemStack.copy());
         }
     }

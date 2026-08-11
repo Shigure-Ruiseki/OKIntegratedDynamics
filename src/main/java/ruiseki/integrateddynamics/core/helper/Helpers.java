@@ -1,6 +1,7 @@
 package ruiseki.integrateddynamics.core.helper;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
@@ -8,12 +9,14 @@ import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.IFluidBlock;
+import net.minecraftforge.oredict.OreDictionary;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
+import ruiseki.okcore.datastructure.NonNullList;
 import ruiseki.okcore.fluid.FluidHelpers;
 import ruiseki.okcore.fluid.handler.IFluidHandler;
 import ruiseki.okcore.fluid.handler.IFluidTankProperties;
@@ -59,6 +62,30 @@ public final class Helpers {
             }
         }
         return 0;
+    }
+
+    /**
+     * Retrieves a Stream of items that are registered to this ore type
+     * with wildcard meta values expanded out into sub items
+     *
+     * @param name The ore name, directly calls OreDictionary.getOres
+     * @return A Stream containing ItemStacks registered for this ore
+     */
+    public static Stream<ItemStack> getOresWildcard(String name) {
+        Stream.Builder<ItemStack> builder = Stream.builder();
+        for (ItemStack itemStack : OreDictionary.getOres(name)) {
+            if (itemStack.getItemDamage() == OreDictionary.WILDCARD_VALUE) {
+                NonNullList<ItemStack> subItems = NonNullList.create();
+                itemStack.getItem()
+                    .getSubItems(itemStack.getItem(), null, subItems);
+                for (ItemStack subItem : subItems) {
+                    builder.accept(subItem);
+                }
+            } else {
+                builder.accept(itemStack);
+            }
+        }
+        return builder.build();
     }
 
     /**
@@ -144,7 +171,7 @@ public final class Helpers {
 
     /**
      * Get a localized string showing the ratio of stored energy vs the capacity.
-     * 
+     *
      * @param stored   The stored amount of energy.
      * @param capacity The capacity of the energy container.
      * @return The localized string.
