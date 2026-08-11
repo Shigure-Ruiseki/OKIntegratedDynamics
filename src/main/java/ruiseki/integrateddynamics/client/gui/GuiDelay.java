@@ -58,9 +58,9 @@ public class GuiDelay extends GuiActiveVariableBase<ContainerDelay, TileDelay> {
         numberFieldUpdateInterval = new GuiNumberField(
             0,
             Minecraft.getMinecraft().fontRenderer,
-            guiLeft + 68,
+            guiLeft + 98,
             guiTop + 102,
-            103,
+            73,
             14,
             true,
             true);
@@ -74,9 +74,9 @@ public class GuiDelay extends GuiActiveVariableBase<ContainerDelay, TileDelay> {
         numberFieldCapacity = new GuiNumberField(
             0,
             Minecraft.getMinecraft().fontRenderer,
-            guiLeft + 68,
+            guiLeft + 98,
             guiTop + 126,
-            103,
+            73,
             14,
             true,
             true);

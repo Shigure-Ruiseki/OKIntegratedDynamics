@@ -270,15 +270,18 @@ public class GuiPartSettings extends GuiContainerExtended {
     @Override
     protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
         super.drawGuiContainerForegroundLayer(mouseX, mouseY);
-        GuiHelpers.renderTooltip(
-            this,
-            8,
-            87,
-            100,
-            20,
-            mouseX,
-            mouseY,
-            () -> Lists.newArrayList(LangHelpers.localize("gui.integrateddynamics.partsettings.channel.disabledinfo")));
+        if (!isChannelEnabled()) {
+            GuiHelpers.renderTooltip(
+                this,
+                8,
+                87,
+                100,
+                20,
+                mouseX,
+                mouseY,
+                () -> Lists
+                    .newArrayList(LangHelpers.localize("gui.integrateddynamics.partsettings.channel.disabledinfo")));
+        }
     }
 
     protected boolean isChannelEnabled() {

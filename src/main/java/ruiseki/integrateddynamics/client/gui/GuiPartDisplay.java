@@ -1,9 +1,13 @@
 package ruiseki.integrateddynamics.client.gui;
 
 import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.gui.GuiButton;
 import net.minecraft.entity.player.EntityPlayer;
 
+import org.lwjgl.input.Keyboard;
+
 import com.cleanroommc.modularui.utils.GlStateManager;
+import com.google.common.collect.Lists;
 
 import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartType;
@@ -11,6 +15,11 @@ import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.core.client.gui.container.GuiMultipart;
 import ruiseki.integrateddynamics.core.part.panel.PartTypePanelVariableDriven;
 import ruiseki.integrateddynamics.inventory.container.ContainerPartDisplay;
+import ruiseki.okcore.client.gui.component.button.GuiButtonText;
+import ruiseki.okcore.client.key.KeyConflictContext;
+import ruiseki.okcore.client.key.KeyModifier;
+import ruiseki.okcore.helper.GuiHelpers;
+import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.RenderHelpers;
 
 /**
@@ -26,6 +35,8 @@ public class GuiPartDisplay<P extends PartTypePanelVariableDriven<P, S>, S exten
     private static final int OK_X = 104;
     private static final int OK_Y = 16;
 
+    private static final int BUTTON_COPY = 0;
+
     /**
      * Make a new instance.
      *
@@ -37,6 +48,21 @@ public class GuiPartDisplay<P extends PartTypePanelVariableDriven<P, S>, S exten
     public GuiPartDisplay(EntityPlayer player, PartTarget partTarget, IPartContainer partContainer,
         IPartType partType) {
         super(new ContainerPartDisplay<>(player, partTarget, partContainer, partType));
+    }
+
+    @Override
+    public void initGui() {
+        super.initGui();
+
+        this.buttonList.add(
+            new GuiButtonText(
+                BUTTON_COPY,
+                getGuiLeftTotal() + 128,
+                getGuiTopTotal() + 32,
+                30,
+                12,
+                LangHelpers.localize("gui.integrateddynamics.button.copy"),
+                true));
     }
 
     @Override
@@ -89,6 +115,24 @@ public class GuiPartDisplay<P extends PartTypePanelVariableDriven<P, S>, S exten
             this,
             this.guiLeft,
             this.guiTop);
+        // Draw tooltip over copy button
+        GuiHelpers.renderTooltip(
+            this,
+            128,
+            32,
+            30,
+            12,
+            mouseX,
+            mouseY,
+            () -> Lists.newArrayList(LangHelpers.localize("gui.integrateddynamics.button.copy.info")));
+    }
+
+    @Override
+    protected void keyTyped(char typedChar, int keyCode) {
+        super.keyTyped(typedChar, keyCode);
+        if (Keyboard.KEY_C == keyCode && KeyModifier.CONTROL.isActive(KeyConflictContext.GUI)) {
+            valueToClipboard();
+        }
     }
 
     @Override
@@ -99,5 +143,20 @@ public class GuiPartDisplay<P extends PartTypePanelVariableDriven<P, S>, S exten
     @Override
     protected int getBaseYSize() {
         return 128;
+    }
+
+    @Override
+    protected void actionPerformed(GuiButton button) {
+        super.actionPerformed(button);
+        if (button.id == BUTTON_COPY) {
+            valueToClipboard();
+        }
+    }
+
+    protected void valueToClipboard() {
+        String readValue = ((ContainerPartDisplay<?, ?>) getContainer()).getReadValue();
+        if (readValue != null) {
+            setClipboardString(readValue);
+        }
     }
 }

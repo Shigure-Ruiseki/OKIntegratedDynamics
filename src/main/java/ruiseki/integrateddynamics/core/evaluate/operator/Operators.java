@@ -3147,7 +3147,7 @@ public final class Operators {
             .conditionalOutputTypeDeriver(OperatorBuilders.newOperatorConditionalOutputDeriver(1))
             .output(ValueTypes.CATEGORY_ANY)
             .symbolOperator("apply")
-            .typeValidator(OperatorBuilders.createOperatorTypeValidator(ValueTypes.LIST))
+            .typeValidator(OperatorBuilders.createOperatorTypeValidator(ValueTypes.CATEGORY_ANY))
             .function(OperatorBuilders.FUNCTION_OPERATOR_TAKE_OPERATOR.build(input -> {
                 IOperator innerOperator = input.getLeft();
                 OperatorBase.SafeVariablesGetter variables = input.getRight();
@@ -3168,7 +3168,8 @@ public final class Operators {
             .inputTypes(ValueTypes.OPERATOR, ValueTypes.CATEGORY_ANY, ValueTypes.CATEGORY_ANY)
             .output(ValueTypes.CATEGORY_ANY)
             .symbolOperator("apply2")
-            .typeValidator(OperatorBuilders.createOperatorTypeValidator(ValueTypes.LIST, ValueTypes.LIST))
+            .typeValidator(
+                OperatorBuilders.createOperatorTypeValidator(ValueTypes.CATEGORY_ANY, ValueTypes.CATEGORY_ANY))
             .function(OperatorBuilders.FUNCTION_OPERATOR_TAKE_OPERATOR.build(input -> {
                 IOperator innerOperator = input.getLeft();
                 OperatorBase.SafeVariablesGetter variables = input.getRight();
@@ -3188,7 +3189,10 @@ public final class Operators {
             .output(ValueTypes.CATEGORY_ANY)
             .symbolOperator("apply3")
             .typeValidator(
-                OperatorBuilders.createOperatorTypeValidator(ValueTypes.LIST, ValueTypes.LIST, ValueTypes.LIST))
+                OperatorBuilders.createOperatorTypeValidator(
+                    ValueTypes.CATEGORY_ANY,
+                    ValueTypes.CATEGORY_ANY,
+                    ValueTypes.CATEGORY_ANY))
             .function(OperatorBuilders.FUNCTION_OPERATOR_TAKE_OPERATOR.build(input -> {
                 IOperator innerOperator = input.getLeft();
                 OperatorBase.SafeVariablesGetter variables = input.getRight();
