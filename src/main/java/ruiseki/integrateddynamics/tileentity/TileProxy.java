@@ -11,12 +11,13 @@ import lombok.Getter;
 import lombok.Setter;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.item.IProxyVariableFacade;
-import ruiseki.integrateddynamics.api.item.IVariableFacade;
 import ruiseki.integrateddynamics.api.item.IVariableFacadeHandlerRegistry;
 import ruiseki.integrateddynamics.api.network.INetworkElement;
 import ruiseki.integrateddynamics.capability.networkelementprovider.NetworkElementProviderConfig;
 import ruiseki.integrateddynamics.capability.networkelementprovider.NetworkElementProviderSingleton;
+import ruiseki.integrateddynamics.core.evaluate.InventoryVariableEvaluator;
 import ruiseki.integrateddynamics.core.evaluate.ProxyVariableFacadeHandler;
+import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.integrateddynamics.core.item.ProxyVariableFacade;
 import ruiseki.integrateddynamics.core.tileentity.TileActiveVariableBase;
@@ -69,6 +70,26 @@ public class TileProxy extends TileActiveVariableBase<ProxyNetworkElement> {
                         return new ProxyNetworkElement(DimPos.of(world, blockPos));
                     }
                 }));
+    }
+
+    @Override
+    protected InventoryVariableEvaluator createEvaluator() {
+        return new InventoryVariableEvaluator(this, getSlotRead(), ValueTypes.CATEGORY_ANY) {
+
+            @Override
+            protected void preValidate() {
+                super.preValidate();
+                // Hard check to make sure the variable is not directly referring to this proxy.
+                if (getVariableFacade() instanceof IProxyVariableFacade) {
+                    if (((IProxyVariableFacade) getVariableFacade()).getProxyId() == getProxyId()) {
+                        addError(
+                            new LangHelpers.UnlocalizedString(
+                                L10NValues.VARIABLE_ERROR_RECURSION,
+                                getVariableFacade().getId()));
+                    }
+                }
+            }
+        };
     }
 
     @Override
@@ -142,17 +163,5 @@ public class TileProxy extends TileActiveVariableBase<ProxyNetworkElement> {
             },
             lastPlayer,
             getBlock());
-    }
-
-    @Override
-    protected void preValidate(IVariableFacade variableStored) {
-        super.preValidate(variableStored);
-        // Hard check to make sure the variable is not directly referring to this proxy.
-        if (variableStored instanceof IProxyVariableFacade) {
-            if (((IProxyVariableFacade) variableStored).getProxyId() == getProxyId()) {
-                addError(
-                    new LangHelpers.UnlocalizedString(L10NValues.VARIABLE_ERROR_RECURSION, variableStored.getId()));
-            }
-        }
     }
 }

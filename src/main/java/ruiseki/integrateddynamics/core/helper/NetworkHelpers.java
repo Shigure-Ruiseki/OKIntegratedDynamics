@@ -7,6 +7,7 @@ import net.minecraftforge.common.util.ForgeDirection;
 
 import org.jetbrains.annotations.Nullable;
 
+import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
 import ruiseki.integrateddynamics.GeneralConfig;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.network.IEnergyNetwork;
@@ -15,11 +16,13 @@ import ruiseki.integrateddynamics.api.network.INetworkCarrier;
 import ruiseki.integrateddynamics.api.network.INetworkElement;
 import ruiseki.integrateddynamics.api.network.INetworkElementProvider;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
+import ruiseki.integrateddynamics.api.network.IPositionedAddonsNetworkIngredients;
 import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.integrateddynamics.api.path.IPathElement;
 import ruiseki.integrateddynamics.capability.network.EnergyNetworkConfig;
 import ruiseki.integrateddynamics.capability.network.NetworkCarrierConfig;
 import ruiseki.integrateddynamics.capability.network.PartNetworkConfig;
+import ruiseki.integrateddynamics.capability.network.PositionedAddonsNetworkIngredientsHandlerConfig;
 import ruiseki.integrateddynamics.capability.networkelementprovider.NetworkElementProviderConfig;
 import ruiseki.integrateddynamics.capability.path.PathElementConfig;
 import ruiseki.integrateddynamics.capability.path.SidedPathElement;
@@ -43,6 +46,7 @@ public class NetworkHelpers {
      * @param side  The side.
      * @return The network carrier capability, or null if not present.
      */
+    @Nullable
     public static INetworkCarrier getNetworkCarrier(IBlockAccess world, BlockPos pos, @Nullable ForgeDirection side) {
         return CapabilityHelpers.getCapability(world, pos, NetworkCarrierConfig.CAPABILITY, side)
             .getOrNull();
@@ -56,6 +60,7 @@ public class NetworkHelpers {
      * @param side  The side.
      * @return The network element provider capability, or null if not present.
      */
+    @Nullable
     public static INetworkElementProvider getNetworkElementProvider(IBlockAccess world, BlockPos pos,
         @Nullable ForgeDirection side) {
         return CapabilityHelpers.getCapability(world, pos, NetworkElementProviderConfig.CAPABILITY, side)
@@ -70,6 +75,7 @@ public class NetworkHelpers {
      * @param side  The side.
      * @return The network, or null if no network or network carrier present.
      */
+    @Nullable
     public static INetwork getNetwork(IBlockAccess world, BlockPos pos, @Nullable ForgeDirection side) {
         INetworkCarrier networkCarrier = getNetworkCarrier(world, pos, side);
         if (networkCarrier != null) {
@@ -80,17 +86,18 @@ public class NetworkHelpers {
 
     /**
      * Get the network at the given position.
-     * 
-     * @param partPos The part position
+     *
+     * @param pos The position.
      * @return The network, or null if no network or network carrier present.
      */
-    public static INetwork getNetwork(PartPos partPos) {
-        return NetworkHelpers.getNetwork(
-            partPos.getPos()
+    @Nullable
+    public static INetwork getNetwork(PartPos pos) {
+        return getNetwork(
+            pos.getPos()
                 .getWorld(),
-            partPos.getPos()
+            pos.getPos()
                 .getBlockPos(),
-            partPos.getSide());
+            pos.getSide());
     }
 
     /**
@@ -99,6 +106,7 @@ public class NetworkHelpers {
      * @param network The network.
      * @return The part network.
      */
+    @Nullable
     public static IPartNetwork getPartNetwork(@Nullable INetwork network) {
         if (network == null) return null;
         return network.getCapability(PartNetworkConfig.CAPABILITY)
@@ -111,10 +119,30 @@ public class NetworkHelpers {
      * @param network The network.
      * @return The part network.
      */
+    @Nullable
     public static IEnergyNetwork getEnergyNetwork(@Nullable INetwork network) {
         if (network == null) return null;
         return network.getCapability(EnergyNetworkConfig.CAPABILITY)
             .getOrNull();
+    }
+
+    /**
+     * Get the ingredient network within a network.
+     * 
+     * @param network             The network.
+     * @param ingredientComponent The ingredient component type.
+     * @param <T>                 The instance type.
+     * @param <M>                 The matching condition parameter.
+     * @return The ingredient network.
+     */
+    @Nullable
+    public static <T, M> IPositionedAddonsNetworkIngredients<T, M> getIngredientNetwork(@Nullable INetwork network,
+        IngredientComponent<T, M> ingredientComponent) {
+        return network != null
+            && ingredientComponent.hasCapability(PositionedAddonsNetworkIngredientsHandlerConfig.CAPABILITY)
+                ? ingredientComponent.getCapability(PositionedAddonsNetworkIngredientsHandlerConfig.CAPABILITY)
+                    .getStorage(network)
+                : null;
     }
 
     /**

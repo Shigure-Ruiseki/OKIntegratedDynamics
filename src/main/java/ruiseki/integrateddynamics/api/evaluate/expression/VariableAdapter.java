@@ -6,33 +6,28 @@ import com.google.common.collect.Lists;
 
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IVariable;
+import ruiseki.integrateddynamics.api.evaluate.variable.IVariableInvalidateListener;
 
 /**
  * A basic variable implementation.
- * 
+ *
  * @author rubensworks
  */
 public abstract class VariableAdapter<V extends IValue> implements IVariable<V> {
 
-    private List<IVariable<?>> dependents = Lists.newLinkedList();
-
-    @Override
-    public boolean canInvalidate() {
-        return true;
-    }
+    private List<IVariableInvalidateListener> invalidateListeners = Lists.newLinkedList();
 
     @Override
     public void invalidate() {
-        for (IVariable<?> dependent : dependents) {
-            if (dependent.canInvalidate()) {
-                dependent.invalidate();
-            }
+        for (IVariableInvalidateListener invalidateListener : Lists.newArrayList(invalidateListeners)) {
+            invalidateListener.invalidate();
+
         }
-        dependents.clear();
+        invalidateListeners.clear();
     }
 
     @Override
-    public void addDependent(IVariable<?> dependent) {
-        dependents.add(dependent);
+    public void addInvalidationListener(IVariableInvalidateListener invalidateListener) {
+        invalidateListeners.add(invalidateListener);
     }
 }

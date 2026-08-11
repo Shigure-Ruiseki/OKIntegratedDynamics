@@ -16,9 +16,11 @@ import ruiseki.integrateddynamics.capability.cable.CableFakeableConfig;
 import ruiseki.integrateddynamics.capability.dynamiclight.DynamicLightConfig;
 import ruiseki.integrateddynamics.capability.dynamicredstone.DynamicRedstoneConfig;
 import ruiseki.integrateddynamics.capability.facadeable.FacadeableConfig;
+import ruiseki.integrateddynamics.capability.ingredient.IngredientComponentValueHandlerConfig;
 import ruiseki.integrateddynamics.capability.network.EnergyNetworkConfig;
 import ruiseki.integrateddynamics.capability.network.NetworkCarrierConfig;
 import ruiseki.integrateddynamics.capability.network.PartNetworkConfig;
+import ruiseki.integrateddynamics.capability.network.PositionedAddonsNetworkIngredientsHandlerConfig;
 import ruiseki.integrateddynamics.capability.networkelementprovider.NetworkElementProviderConfig;
 import ruiseki.integrateddynamics.capability.partcontainer.PartContainerConfig;
 import ruiseki.integrateddynamics.capability.path.PathElementConfig;
@@ -55,6 +57,8 @@ public class Configs {
         configHandler.add(new PartNetworkConfig());
         configHandler.add(new EnergyNetworkConfig());
         configHandler.add(new ValueInterfaceConfig());
+        configHandler.add(new PositionedAddonsNetworkIngredientsHandlerConfig());
+        configHandler.add(new IngredientComponentValueHandlerConfig());
 
         // Fluids
         // configHandler.add(new FluidMenrilResinConfig());

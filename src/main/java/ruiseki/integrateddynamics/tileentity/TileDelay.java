@@ -176,7 +176,7 @@ public class TileDelay extends TileProxy {
                 try {
                     value = variable.getValue();
                 } catch (EvaluationException e) {
-                    addError(new LangHelpers.UnlocalizedString(e.toString()));
+                    getEvaluator().addError(new LangHelpers.UnlocalizedString(e.toString()));
                 }
                 if (value != null) {
                     try {

@@ -1,0 +1,181 @@
+package ruiseki.integrateddynamics.core.network;
+
+import net.minecraftforge.common.util.ForgeDirection;
+
+import org.jetbrains.annotations.Nullable;
+
+import gnu.trove.map.TIntObjectMap;
+import gnu.trove.map.hash.TIntObjectHashMap;
+import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
+import ruiseki.commoncapabilities.api.ingredient.storage.IIngredientComponentStorage;
+import ruiseki.integrateddynamics.GeneralConfig;
+import ruiseki.integrateddynamics.api.ingredient.IIngredientComponentStorageObservable;
+import ruiseki.integrateddynamics.api.ingredient.IIngredientPositionsIndex;
+import ruiseki.integrateddynamics.api.network.IFullNetworkListener;
+import ruiseki.integrateddynamics.api.network.INetworkElement;
+import ruiseki.integrateddynamics.api.network.IPositionedAddonsNetworkIngredients;
+import ruiseki.integrateddynamics.api.part.PartPos;
+import ruiseki.integrateddynamics.api.path.IPathElement;
+import ruiseki.okcore.ingredient.collection.IIngredientCollection;
+
+/**
+ * An ingredient network that can hold prioritized positions.
+ *
+ * @param <T> The instance type.
+ * @param <M> The matching condition parameter, may be Void. Instances MUST properly implement the equals method.
+ * @author rubensworks
+ */
+public abstract class PositionedAddonsNetworkIngredients<T, M> extends PositionedAddonsNetwork
+    implements IPositionedAddonsNetworkIngredients<T, M>, IFullNetworkListener,
+    IIngredientComponentStorageObservable.IIndexChangeObserver<T, M> {
+
+    private final IngredientComponent<T, M> component;
+
+    private final IngredientObserver<T, M> ingredientObserver;
+    private final TIntObjectMap<IngredientPositionsIndex<T, M>> indexes;
+
+    public PositionedAddonsNetworkIngredients(IngredientComponent<T, M> component) {
+        this.component = component;
+
+        this.ingredientObserver = new IngredientObserver<>(this);
+        this.ingredientObserver.addChangeObserver(this);
+        this.indexes = new TIntObjectHashMap<>();
+    }
+
+    @Override
+    public IngredientComponent<T, M> getComponent() {
+        return component;
+    }
+
+    @Nullable
+    public IIngredientPositionsIndex<T, M> getInstanceLocationsIndex(int channel) {
+        return this.indexes.get(channel);
+    }
+
+    @Override
+    public boolean addPosition(PartPos pos, int priority, int channel) {
+        return getPositionedStorageUnsafe(pos) != null && super.addPosition(pos, priority, channel);
+    }
+
+    @Override
+    public void onChange(IIngredientComponentStorageObservable.StorageChangeEvent<T, M> event) {
+        applyChangesToChannel(event, event.getChannel());
+        applyChangesToChannel(event, -1); // Apply all changes to "all" channels
+
+        if (GeneralConfig.logChangeEvents) {
+            System.out.println(this.toString() + event);
+        }
+    }
+
+    protected void applyChangesToChannel(IIngredientComponentStorageObservable.StorageChangeEvent<T, M> event,
+        int channel) {
+        IIngredientCollection<T, M> instances = event.getInstances();
+        PartPos pos = event.getPos();
+        IngredientPositionsIndex<T, M> index = getIndexSafe(channel);
+        if (event.getChangeType() == IIngredientComponentStorageObservable.Change.DELETION) {
+            index.removeAll(instances);
+            if (event.isCompleteChange()) {
+                for (T instance : instances) {
+                    index.removePosition(instance, pos);
+                }
+            }
+
+            // Cleanup empty collections
+            if (index.isEmpty()) {
+                this.indexes.remove(channel);
+            }
+        } else if (event.getChangeType() == IIngredientComponentStorageObservable.Change.ADDITION) {
+            index.addAll(instances);
+            for (T instance : instances) {
+                index.addPosition(instance, pos);
+            }
+        }
+    }
+
+    protected IngredientPositionsIndex<T, M> getIndexSafe(int channel) {
+        IngredientPositionsIndex<T, M> index = this.indexes.get(channel);
+        if (index == null) {
+            index = new IngredientPositionsIndex<>(getComponent());
+            this.indexes.put(channel, index);
+        }
+        return index;
+    }
+
+    @Override
+    protected void onPositionRemoved(int channel, PartPos pos) {
+        super.onPositionRemoved(channel, pos);
+        ingredientObserver.onPositionRemoved(channel, pos);
+    }
+
+    @Override
+    public IIngredientComponentStorage<T, M> getChannel(int channel) {
+        IIngredientPositionsIndex<T, M> index = getInstanceLocationsIndex(channel);
+        return index == null ? new IngredientChannelPositioned<>(this, channel)
+            : new IngredientChannelIndexed<>(this, channel, index);
+    }
+
+    @Override
+    public void addObserver(IIndexChangeObserver<T, M> observer) {
+        this.ingredientObserver.addChangeObserver(observer);
+    }
+
+    @Override
+    public void removeObserver(IIndexChangeObserver<T, M> observer) {
+        this.ingredientObserver.removeChangeObserver(observer);
+    }
+
+    @Override
+    public boolean addNetworkElement(INetworkElement element, boolean networkPreinit) {
+        return true;
+    }
+
+    @Override
+    public boolean removeNetworkElementPre(INetworkElement element) {
+        return true;
+    }
+
+    @Override
+    public void removeNetworkElementPost(INetworkElement element) {
+
+    }
+
+    @Override
+    public void kill() {
+
+    }
+
+    public void update() {
+        this.ingredientObserver.observe();
+    }
+
+    @Override
+    public boolean removePathElement(IPathElement pathElement, ForgeDirection side) {
+        return true;
+    }
+
+    @Override
+    public void afterServerLoad() {
+
+    }
+
+    @Override
+    public void beforeServerStop() {
+
+    }
+
+    @Override
+    public boolean canUpdate(INetworkElement element) {
+        return true;
+    }
+
+    @Override
+    public void onSkipUpdate(INetworkElement element) {
+
+    }
+
+    @Override
+    public void postUpdate(INetworkElement element) {
+
+    }
+
+}

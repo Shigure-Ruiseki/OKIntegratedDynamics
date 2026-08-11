@@ -4,12 +4,12 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.WeakHashMap;
+import java.util.stream.Collectors;
 
 import org.jetbrains.annotations.Nullable;
 
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
@@ -17,17 +17,17 @@ import gnu.trove.map.TIntObjectMap;
 import gnu.trove.map.hash.TIntObjectHashMap;
 import lombok.Getter;
 import lombok.Setter;
-import ruiseki.integrateddynamics.api.network.IChanneledNetwork;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.IPositionedAddonsNetwork;
 import ruiseki.integrateddynamics.api.part.PartPos;
+import ruiseki.okcore.datastructure.Wrapper;
 
 /**
  * A network that can hold prioritized positions.
  *
  * @author rubensworks
  */
-public class PositionedAddonsNetwork implements IPositionedAddonsNetwork {
+public abstract class PositionedAddonsNetwork implements IPositionedAddonsNetwork {
 
     @Getter
     @Setter
@@ -39,22 +39,39 @@ public class PositionedAddonsNetwork implements IPositionedAddonsNetwork {
     private final Set<PositionsIterator> createdIterators = Collections.newSetFromMap(new WeakHashMap<>());
 
     @Override
-    public Collection<PrioritizedPartPos> getPositions(int channel) {
-        if (channel == IChanneledNetwork.WILDCARD_CHANNEL) {
-            return getPositions();
-        }
-        Set<PrioritizedPartPos> positions = this.positions.get(channel);
-        Set<PrioritizedPartPos> wildcardPositions = this.positions.get(IChanneledNetwork.WILDCARD_CHANNEL);
-        if (positions == null) positions = Collections.emptySet();
-        if (wildcardPositions == null) wildcardPositions = Collections.emptySet();
-        return ImmutableSet.copyOf(Iterables.concat(positions, wildcardPositions));
+    public int[] getChannels() {
+        return positions.keys();
     }
 
     @Override
-    public Collection<PrioritizedPartPos> getPositions() {
-        List<PrioritizedPartPos> allPositions = Lists.newArrayList();
+    public boolean hasPositions() {
+        return !positions.isEmpty();
+    }
+
+    @Override
+    public Collection<PartPos> getPositions(int channel) {
+        if (channel == WILDCARD_CHANNEL) {
+            return getPositions();
+        }
+        Set<PrioritizedPartPos> positions = this.positions.get(channel);
+        Set<PrioritizedPartPos> wildcardPositions = this.positions.get(WILDCARD_CHANNEL);
+        if (positions == null) positions = Collections.emptySet();
+        if (wildcardPositions == null) wildcardPositions = Collections.emptySet();
+        TreeSet<PrioritizedPartPos> merged = Sets.newTreeSet();
+        merged.addAll(positions);
+        merged.addAll(wildcardPositions);
+        return merged.stream()
+            .map(PrioritizedPartPos::getPartPos)
+            .collect(Collectors.toList());
+    }
+
+    @Override
+    public Collection<PartPos> getPositions() {
+        List<PartPos> allPositions = Lists.newArrayList();
         for (Set<PrioritizedPartPos> positions : this.positions.valueCollection()) {
-            allPositions.addAll(positions);
+            for (PrioritizedPartPos position : positions) {
+                allPositions.add(position.getPartPos());
+            }
         }
         return allPositions;
     }
@@ -63,7 +80,7 @@ public class PositionedAddonsNetwork implements IPositionedAddonsNetwork {
     public PositionsIterator getPositionIterator(int channel) {
         PositionsIterator it = positionsIterators.get(channel);
         if (it == null) {
-            // If no custom iterator was given, iterate in first-come-first-serve orde
+            // If no custom iterator was given, iterate in first-come-first-serve order
             it = createPositionIterator(channel);
         } else {
             it = it.cloneState();
@@ -111,14 +128,32 @@ public class PositionedAddonsNetwork implements IPositionedAddonsNetwork {
     }
 
     @Override
+
     public void removePosition(PartPos pos) {
         invalidateIterators();
 
-        for (Set<PrioritizedPartPos> positions : this.positions.valueCollection()) {
-            positions.removeIf(
+        Wrapper<Integer> removedChannel = new Wrapper<>(-2);
+        this.positions.forEachEntry((channel, positions) -> {
+            if (positions.removeIf(
                 prioritizedPartPos -> prioritizedPartPos.getPartPos()
-                    .equals(pos));
+                    .equals(pos))) {
+                removedChannel.set(channel);
+                return false;
+            }
+            return true;
+        });
+        int channel = removedChannel.get();
+        if (channel != -2) {
+            this.onPositionRemoved(channel, pos);
+            if (positions.get(channel)
+                .isEmpty()) {
+                this.positions.remove(channel);
+            }
         }
+    }
+
+    protected void onPositionRemoved(int channel, PartPos pos) {
+
     }
 
     @Override

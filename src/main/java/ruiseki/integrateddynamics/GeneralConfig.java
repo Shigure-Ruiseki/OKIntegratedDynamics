@@ -135,6 +135,24 @@ public class GeneralConfig extends DummyConfig {
     public static boolean safeMode = false;
 
     /**
+     * The default frequency in ticks at which ingredient network should be observed.
+     */
+    @ConfigurableProperty(
+        category = ConfigurableTypeCategory.MACHINE,
+        comment = "The default frequency in ticks at which ingredient network should be observed.",
+        minimalValue = 1)
+    public static int defaultIngredientNetworkObserverFrequency = 1;
+
+    /**
+     * If network change events should be logged. Only enable this when debugging.
+     */
+    @ConfigurableProperty(
+        category = ConfigurableTypeCategory.CORE,
+        comment = "If network change events should be logged. Only enable this when debugging.",
+        isCommandable = true)
+    public static boolean logChangeEvents = false;
+
+    /**
      * Create a new instance.
      */
     public GeneralConfig() {

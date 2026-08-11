@@ -4,30 +4,32 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
+
+import org.jetbrains.annotations.Nullable;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 import lombok.Getter;
-import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.evaluate.IValueInterface;
+import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IVariable;
 import ruiseki.integrateddynamics.api.item.IVariableFacade;
-import ruiseki.integrateddynamics.api.item.IVariableFacadeHandlerRegistry;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.INetworkEventListener;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.network.event.INetworkEvent;
 import ruiseki.integrateddynamics.capability.valueinterface.ValueInterfaceConfig;
+import ruiseki.integrateddynamics.core.evaluate.InventoryVariableEvaluator;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
-import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
 import ruiseki.integrateddynamics.core.network.event.VariableContentsUpdatedEvent;
 import ruiseki.okcore.capabilities.resolver.BasicCapabilityResolver;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.persist.IDirtyMarkListener;
+import ruiseki.okcore.persist.nbt.NBTClassType;
 import ruiseki.okcore.persist.nbt.NBTPersist;
 
 /**
@@ -37,7 +39,9 @@ import ruiseki.okcore.persist.nbt.NBTPersist;
  * @author rubensworks
  */
 public abstract class TileActiveVariableBase<E> extends TileCableConnectableInventory
-    implements IDirtyMarkListener, IVariableFacade.IValidator, INetworkEventListener<E> {
+    implements IDirtyMarkListener, INetworkEventListener<E> {
+
+    private final InventoryVariableEvaluator<IValue> evaluator;
 
     protected IVariableFacade variableStored = null;
     @NBTPersist
@@ -67,6 +71,28 @@ public abstract class TileActiveVariableBase<E> extends TileCableConnectableInve
         };
         this.capabilityCache.addCapabilityResolver(
             BasicCapabilityResolver.create(ValueInterfaceConfig.CAPABILITY, () -> valueInterface));
+        this.evaluator = createEvaluator();
+    }
+
+    protected InventoryVariableEvaluator<IValue> createEvaluator() {
+        return new InventoryVariableEvaluator<>(this, getSlotRead(), ValueTypes.CATEGORY_ANY);
+    }
+
+    public InventoryVariableEvaluator getEvaluator() {
+        return evaluator;
+    }
+
+    @Override
+    public void writeToNBT(NBTTagCompound tag) {
+        List<LangHelpers.UnlocalizedString> errors = evaluator.getErrors();
+        NBTClassType.writeNbt(List.class, "errors", errors, tag);
+        super.writeToNBT(tag);
+    }
+
+    @Override
+    public void readFromNBT(NBTTagCompound tag) {
+        evaluator.setErrors(NBTClassType.readNbt(List.class, "errors", tag));
+        super.readFromNBT(tag);
     }
 
     public abstract int getSlotRead();
@@ -76,39 +102,7 @@ public abstract class TileActiveVariableBase<E> extends TileCableConnectableInve
     }
 
     protected void updateReadVariable(boolean sendVariablesUpdateEvent) {
-        INetwork network = getNetwork();
-        IPartNetwork partNetwork = NetworkHelpers.getPartNetwork(network);
-
-        int lastVariabledId = this.variableStored == null ? -1 : this.variableStored.getId();
-        int variableId = -1;
-        if (getStackInSlot(getSlotRead()) != null && NetworkHelpers.shouldWork()) {
-            // Update proxy input
-            ItemStack itemStack = getStackInSlot(getSlotRead());
-            IVariableFacadeHandlerRegistry handler = IntegratedDynamics._instance.getRegistryManager()
-                .getRegistry(IVariableFacadeHandlerRegistry.class);
-            this.variableStored = handler.handle(itemStack);
-            if (this.variableStored != null) {
-                variableId = this.variableStored.getId();
-            }
-        } else {
-            this.variableStored = null;
-        }
-
-        this.errors.clear();
-        if (partNetwork == null) {
-            addError(new LangHelpers.UnlocalizedString(L10NValues.GENERAL_ERROR_NONETWORK));
-        } else if (this.variableStored != null) {
-            preValidate(variableStored);
-            try {
-                variableStored.validate(partNetwork, this, ValueTypes.CATEGORY_ANY);
-            } catch (IllegalArgumentException e) {
-                addError(new LangHelpers.UnlocalizedString(e.getMessage()));
-            }
-        }
-        if (sendVariablesUpdateEvent && partNetwork != null && lastVariabledId != variableId) {
-            network.getEventBus()
-                .post(new VariableContentsUpdatedEvent(network));
-        }
+        evaluator.refreshVariable(getNetwork(), sendVariablesUpdateEvent);
         sendUpdate();
     }
 
@@ -123,19 +117,9 @@ public abstract class TileActiveVariableBase<E> extends TileCableConnectableInve
         }
     }
 
+    @Nullable
     public IVariable<?> getVariable(IPartNetwork network) {
-        if (variableStored == null || !getErrors().isEmpty()) return null;
-        try {
-            return variableStored.getVariable(network);
-        } catch (IllegalArgumentException e) {
-            addError(new LangHelpers.UnlocalizedString(e.getMessage()));
-            return null;
-        }
-    }
-
-    @Override
-    public void addError(LangHelpers.UnlocalizedString error) {
-        errors.add(error);
+        return evaluator.getVariable(network);
     }
 
     @Override

@@ -60,6 +60,7 @@ public abstract class GuiActiveVariableBase<C extends ContainerActiveVariableBas
         GlStateManager.color(1f, 1f, 1f, 1f);
         displayErrors.drawBackground(
             getContainer().getTile()
+                .getEvaluator()
                 .getErrors(),
             getErrorX(),
             getErrorY(),
@@ -76,6 +77,7 @@ public abstract class GuiActiveVariableBase<C extends ContainerActiveVariableBas
         super.drawGuiContainerForegroundLayer(mouseX, mouseY);
         displayErrors.drawForeground(
             getContainer().getTile()
+                .getEvaluator()
                 .getErrors(),
             getErrorX(),
             getErrorY(),

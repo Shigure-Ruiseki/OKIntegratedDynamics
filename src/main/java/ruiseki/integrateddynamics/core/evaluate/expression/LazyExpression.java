@@ -41,7 +41,7 @@ public class LazyExpression<V extends IValue> extends VariableAdapter<V> impleme
         }
         IValue value = op.evaluate(input);
         for (IVariable inputVariable : input) {
-            inputVariable.addDependent(this);
+            inputVariable.addInvalidationListener(this);
         }
         valueCache.setValue(id, value);
         return value;
@@ -81,8 +81,8 @@ public class LazyExpression<V extends IValue> extends VariableAdapter<V> impleme
 
     @Override
     public void invalidate() {
-        super.invalidate();
         valueCache.removeValue(id);
+        super.invalidate();
     }
 
     public IOperator getOperator() {

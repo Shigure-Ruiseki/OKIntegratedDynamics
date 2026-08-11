@@ -8,15 +8,16 @@ import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IVariable;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
+import ruiseki.integrateddynamics.api.part.IPartState;
+import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartTarget;
-import ruiseki.integrateddynamics.core.part.panel.PartTypePanelVariableDriven;
 
 /**
  * An event that is posted in the Forge event bus when the variable contents in a variable-driven part is updated.
  *
  * @author rubensworks
  */
-public class PartVariableDrivenVariableContentsUpdatedEvent<P extends PartTypePanelVariableDriven<P, S>, S extends PartTypePanelVariableDriven.State<P, S>>
+public class PartVariableDrivenVariableContentsUpdatedEvent<P extends IPartType<P, S>, S extends IPartState<P>>
     extends PartEvent<P, S> {
 
     @Nullable

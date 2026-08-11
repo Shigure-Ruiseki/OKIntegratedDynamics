@@ -2,9 +2,9 @@ package ruiseki.integrateddynamics.network;
 
 import org.jetbrains.annotations.Nullable;
 
-import ruiseki.integrateddynamics.api.network.IChanneledNetwork;
 import ruiseki.integrateddynamics.api.network.IEventListenableNetworkElement;
 import ruiseki.integrateddynamics.api.network.INetwork;
+import ruiseki.integrateddynamics.api.network.IPositionedAddonsNetwork;
 import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
 import ruiseki.integrateddynamics.core.network.TileNetworkElement;
 import ruiseki.integrateddynamics.tileentity.TileVariablestore;
@@ -46,7 +46,7 @@ public class VariablestoreNetworkElement extends TileNetworkElement<TileVariable
 
     @Override
     public int getChannel() {
-        return IChanneledNetwork.DEFAULT_CHANNEL;
+        return IPositionedAddonsNetwork.DEFAULT_CHANNEL;
     }
 
     @Override

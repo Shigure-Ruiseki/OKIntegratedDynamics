@@ -26,8 +26,8 @@ import ruiseki.commoncapabilities.capability.temperature.TemperatureConfig;
 import ruiseki.commoncapabilities.capability.worker.WorkerConfig;
 import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
-import ruiseki.integrateddynamics.api.network.IChanneledNetwork;
 import ruiseki.integrateddynamics.api.network.INetwork;
+import ruiseki.integrateddynamics.api.network.IPositionedAddonsNetwork;
 import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.api.part.aspect.property.IAspectProperties;
@@ -58,6 +58,7 @@ import ruiseki.integrateddynamics.core.part.aspect.property.AspectPropertyTypeIn
 import ruiseki.okcore.block.collidable.ImmutableAxisAlignedBB;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
+import ruiseki.okcore.energy.capability.CapabilityEnergy;
 import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
 import ruiseki.okcore.fluid.handler.IFluidHandler;
 import ruiseki.okcore.fluid.handler.IFluidTankProperties;
@@ -520,7 +521,9 @@ public class AspectReadBuilders {
         public static final IAspectProperties PROPERTIES = new AspectProperties(
             ImmutableList.<IAspectPropertyTypeInstance>of(PROPERTY_CHANNEL));
         static {
-            PROPERTIES.setValue(PROPERTY_CHANNEL, ValueTypeInteger.ValueInteger.of(IChanneledNetwork.WILDCARD_CHANNEL));
+            PROPERTIES.setValue(
+                PROPERTY_CHANNEL,
+                ValueTypeInteger.ValueInteger.of(IPositionedAddonsNetwork.WILDCARD_CHANNEL));
         }
 
         public static final IAspectValuePropagator<Pair<PartTarget, IAspectProperties>, INetwork> PROP_GET_NETWORK = new IAspectValuePropagator<Pair<PartTarget, IAspectProperties>, INetwork>() {
@@ -560,7 +563,7 @@ public class AspectReadBuilders {
             return network != null && network.getCapability(EnergyNetworkConfig.CAPABILITY)
                 .isPresent() ? network.getCapability(EnergyNetworkConfig.CAPABILITY)
                     .getOrNull()
-                    .getChannel(channel) : null;
+                    .getChannelExternal(CapabilityEnergy.ENERGY, channel) : null;
         };
 
         public static final AspectBuilder<ValueTypeInteger.ValueInteger, ValueTypeInteger, IEnergyStorage> ENERGY_BUILDER = AspectReadBuilders.BUILDER_INTEGER
