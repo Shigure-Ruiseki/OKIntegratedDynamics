@@ -18,6 +18,7 @@ import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
 import ruiseki.integrateddynamics.core.inventory.container.ContainerMultipart;
 import ruiseki.integrateddynamics.core.inventory.container.slot.SlotVariable;
+import ruiseki.integrateddynamics.core.network.event.VariableContentsUpdatedEvent;
 import ruiseki.integrateddynamics.core.part.event.PartVariableDrivenVariableContentsUpdatedEvent;
 import ruiseki.integrateddynamics.core.part.panel.PartTypePanelVariableDriven;
 import ruiseki.okcore.helper.MinecraftHelpers;
@@ -25,7 +26,7 @@ import ruiseki.okcore.helper.ValueNotifierHelpers;
 import ruiseki.okcore.inventory.SimpleInventory;
 
 /**
- * Container for writer parts.
+ * Container for display parts.
  *
  * @author rubensworks
  */
@@ -97,18 +98,10 @@ public class ContainerPartDisplay<P extends PartTypePanelVariableDriven<P, S>, S
     public void onDirty() {
         if (!MinecraftHelpers.isClientSide()) {
             getPartState().onVariableContentsUpdated(getPartType(), getTarget());
+            INetwork network = NetworkHelpers.getNetwork(getTarget().getCenter());
             if (!getPartState().getInventory()
                 .isEmpty()) {
                 try {
-                    INetwork network = NetworkHelpers.getNetwork(
-                        getTarget().getCenter()
-                            .getPos()
-                            .getWorld(),
-                        getTarget().getCenter()
-                            .getPos()
-                            .getBlockPos(),
-                        getTarget().getCenter()
-                            .getSide());
                     IPartNetwork partNetwork = NetworkHelpers.getPartNetwork(network);
                     IVariable variable = getPartState().getVariable(partNetwork);
                     MinecraftForge.EVENT_BUS.post(
@@ -124,6 +117,10 @@ public class ContainerPartDisplay<P extends PartTypePanelVariableDriven<P, S>, S
                 } catch (EvaluationException e) {
 
                 }
+            }
+            if (network != null) {
+                network.getEventBus()
+                    .post(new VariableContentsUpdatedEvent(network));
             }
         }
     }

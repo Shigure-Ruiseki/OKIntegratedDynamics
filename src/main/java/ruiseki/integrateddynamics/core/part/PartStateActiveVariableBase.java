@@ -13,14 +13,20 @@ import com.google.common.collect.Lists;
 import lombok.Getter;
 import lombok.Setter;
 import ruiseki.integrateddynamics.IntegratedDynamics;
+import ruiseki.integrateddynamics.api.block.IVariableContainer;
 import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IVariable;
 import ruiseki.integrateddynamics.api.item.IVariableFacade;
+import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.part.IPartType;
+import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.capability.valueinterface.ValueInterfaceConfig;
+import ruiseki.integrateddynamics.capability.variablecontainer.VariableContainerConfig;
+import ruiseki.integrateddynamics.capability.variablecontainer.VariableContainerDefault;
+import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
 import ruiseki.integrateddynamics.item.ItemVariable;
 import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.datastructure.LazyOptional;
@@ -38,6 +44,7 @@ public abstract class PartStateActiveVariableBase<P extends IPartType> extends P
 
     private boolean checkedForWriteVariable = false;
     protected IVariableFacade currentVariableFacade = null;
+    private final IVariableContainer variableContainer;
     @Getter
     @Setter
     private boolean deactivated = false;
@@ -49,6 +56,8 @@ public abstract class PartStateActiveVariableBase<P extends IPartType> extends P
         this.inventory = new SingularInventory(inventorySize);
         this.inventory.addDirtyMarkListener(this); // No need to remove myself eventually. If I am removed, inv is also
                                                    // removed.
+        variableContainer = new VariableContainerDefault();
+        addVolatileCapability(VariableContainerConfig.CAPABILITY, variableContainer);
     }
 
     /**
@@ -116,6 +125,16 @@ public abstract class PartStateActiveVariableBase<P extends IPartType> extends P
         this.currentVariableFacade = null;
         // this.deactivated = false; // This *should* not be required anymore, re-activation is handled in
         // AspectWriteBase#update.
+
+        // Refresh any contained variables
+        PartPos center = target.getCenter();
+        INetwork network = NetworkHelpers.getNetwork(
+            center.getPos()
+                .getWorld(),
+            center.getPos()
+                .getBlockPos(),
+            center.getSide());
+        variableContainer.refreshVariables(network, inventory, false);
     }
 
     /**

@@ -3,7 +3,9 @@ package ruiseki.integrateddynamics.capability.energystorage;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 
+import ruiseki.integrateddynamics.block.BlockEnergyBatteryBase;
 import ruiseki.integrateddynamics.block.BlockEnergyBatteryConfig;
+import ruiseki.integrateddynamics.block.IEnergyContainerBlock;
 import ruiseki.integrateddynamics.core.item.ItemBlockEnergyContainer;
 import ruiseki.okcore.helper.ItemNBTHelpers;
 
@@ -34,8 +36,14 @@ public class EnergyStorageItemBlockEnergyContainer implements IEnergyStorageCapa
         return rate;
     }
 
+    public boolean isCreative() {
+        IEnergyContainerBlock block = itemBlockEnergyContainer.get();
+        return block instanceof BlockEnergyBatteryBase && ((BlockEnergyBatteryBase) block).isCreative();
+    }
+
     @Override
     public int getEnergyStored() {
+        if (isCreative()) return Integer.MAX_VALUE;
         NBTTagCompound tag = ItemNBTHelpers.getNBT(itemStack);
         return tag.getInteger(
             itemBlockEnergyContainer.get()
@@ -44,6 +52,7 @@ public class EnergyStorageItemBlockEnergyContainer implements IEnergyStorageCapa
 
     @Override
     public int getMaxEnergyStored() {
+        if (isCreative()) return Integer.MAX_VALUE;
         NBTTagCompound tag = ItemNBTHelpers.getNBT(itemStack);
         if (!tag.hasKey(
             itemBlockEnergyContainer.get()
@@ -57,17 +66,19 @@ public class EnergyStorageItemBlockEnergyContainer implements IEnergyStorageCapa
 
     @Override
     public int receiveEnergy(int energy, boolean simulate) {
+        if (isCreative()) return 0;
         energy = Math.min(energy, getRate());
         int stored = getEnergyStored();
-        int newEnergy = Math.min(stored + energy, getMaxEnergyStored());
+        int energyReceived = Math.min(getMaxEnergyStored() - stored, energy);
         if (!simulate) {
-            setEnergy(itemStack, newEnergy);
+            setEnergy(itemStack, stored + energyReceived);
         }
-        return newEnergy - stored;
+        return energyReceived;
     }
 
     @Override
     public int extractEnergy(int energy, boolean simulate) {
+        if (isCreative()) return energy;
         energy = Math.min(energy, getRate());
         int stored = getEnergyStored();
         int newEnergy = Math.max(stored - energy, 0);
@@ -78,6 +89,7 @@ public class EnergyStorageItemBlockEnergyContainer implements IEnergyStorageCapa
     }
 
     protected void setEnergy(ItemStack itemStack, int energy) {
+        if (isCreative()) return;
         NBTTagCompound tag = ItemNBTHelpers.getNBT(itemStack);
         tag.setInteger(
             itemBlockEnergyContainer.get()

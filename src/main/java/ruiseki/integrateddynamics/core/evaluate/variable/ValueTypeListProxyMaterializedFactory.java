@@ -29,16 +29,22 @@ public class ValueTypeListProxyMaterializedFactory implements
         throws IValueTypeListProxyFactoryTypeRegistry.SerializationException {
         StringBuilder sb = new StringBuilder();
         IValueType<IValue> valueType = values.getValueType();
+        boolean heterogeneous = false;
         try {
             // Hack to avoid issue where categories are sometimes used to serialize/deserialize,
             // which is not allowed (and will crash during deserialization #570).
             if (valueType.isCategory() && values.getLength() > 0) {
-                valueType = values.get(0)
-                    .getType();
+                heterogeneous = true;
             }
         } catch (EvaluationException e) {}
         sb.append(valueType.getUnlocalizedName());
         for (IValue value : values) {
+            if (heterogeneous) {
+                sb.append(ELEMENT_DELIMITER);
+                sb.append(
+                    value.getType()
+                        .getUnlocalizedName());
+            }
             sb.append(ELEMENT_DELIMITER);
             sb.append(
                 ValueHelpers.serializeRaw(value)
@@ -64,12 +70,23 @@ public class ValueTypeListProxyMaterializedFactory implements
                     "Could not deserialize the serialized materialized list proxy value because the value type by name '%s' was not found.",
                     valueTypeName));
         }
-        String[] values = new String[split.length - 1];
-        System.arraycopy(split, 1, values, 0, split.length - 1);
+        boolean heterogeneous = valueType.isCategory();
+        IValueType<IValue> elementValueType = valueType;
 
         ImmutableList.Builder<IValue> builder = ImmutableList.builder();
-        for (String serializedValue : values) {
-            IValue deserializedValue = valueType
+        for (int i = 1; i < split.length; ++i) {
+            if (heterogeneous) {
+                elementValueType = ValueTypes.REGISTRY.getValueType(split[i]);
+                if (elementValueType == null) {
+                    throw new IValueTypeListProxyFactoryTypeRegistry.SerializationException(
+                        String.format(
+                            "Could not deserialize the serialized materialized list proxy value because the value type by name '%s' was not found.",
+                            split[i]));
+                }
+                ++i;
+            }
+            String serializedValue = split[i];
+            IValue deserializedValue = elementValueType
                 .deserialize(serializedValue.replaceAll(ELEMENT_DELIMITER_ESCAPED, ELEMENT_DELIMITER));
             builder.add(deserializedValue);
         }

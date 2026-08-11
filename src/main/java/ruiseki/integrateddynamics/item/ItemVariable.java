@@ -2,7 +2,6 @@ package ruiseki.integrateddynamics.item;
 
 import java.util.List;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -88,9 +87,9 @@ public class ItemVariable extends ConfigurableItem {
     @SideOnly(Side.CLIENT)
     @Override
     public void addInformation(ItemStack itemStack, EntityPlayer entityPlayer, List list, boolean par4) {
-        getVariableFacade(itemStack).addInformation(list, entityPlayer);
-        if (Minecraft.getMinecraft().thePlayer != null
-            && Minecraft.getMinecraft().thePlayer.capabilities.isCreativeMode) {
+        IVariableFacade variableFacade = getVariableFacade(itemStack);
+        variableFacade.addInformation(list, entityPlayer);
+        if (variableFacade != VariableFacadeHandlerRegistry.DUMMY_FACADE && entityPlayer.capabilities.isCreativeMode) {
             list.add(LangHelpers.localize("item.items.integrateddynamics.variable.warning"));
         }
         super.addInformation(itemStack, entityPlayer, list, par4);

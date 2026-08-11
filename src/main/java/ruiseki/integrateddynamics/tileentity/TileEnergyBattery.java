@@ -89,8 +89,14 @@ public class TileEnergyBattery extends TileCableConnectable
                 this.energy = energy;
                 updateBlockState();
                 markDirty();
+                sendUpdate();
             }
         }
+    }
+
+    @Override
+    protected int getUpdateBackoffTicks() {
+        return 20;
     }
 
     public static int getEnergyPerTick(int capacity) {
@@ -121,7 +127,7 @@ public class TileEnergyBattery extends TileCableConnectable
         if (isCreative()) return energy;
         energy = Math.max(0, Math.min(energy, getEnergyPerTick()));
         int stored = getEnergyStored();
-        int newEnergy = Math.max(stored - energy, 0);
+        int newEnergy = Math.max(stored - energy, 0);;
         if (!simulate) {
             setEnergy(newEnergy);
         }

@@ -15,6 +15,7 @@ import ruiseki.integrateddynamics.api.network.INetworkCarrier;
 import ruiseki.integrateddynamics.api.network.INetworkElement;
 import ruiseki.integrateddynamics.api.network.INetworkElementProvider;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
+import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.integrateddynamics.api.path.IPathElement;
 import ruiseki.integrateddynamics.capability.network.EnergyNetworkConfig;
 import ruiseki.integrateddynamics.capability.network.NetworkCarrierConfig;
@@ -75,6 +76,21 @@ public class NetworkHelpers {
             return networkCarrier.getNetwork();
         }
         return null;
+    }
+
+    /**
+     * Get the network at the given position.
+     * 
+     * @param partPos The part position
+     * @return The network, or null if no network or network carrier present.
+     */
+    public static INetwork getNetwork(PartPos partPos) {
+        return NetworkHelpers.getNetwork(
+            partPos.getPos()
+                .getWorld(),
+            partPos.getPos()
+                .getBlockPos(),
+            partPos.getSide());
     }
 
     /**

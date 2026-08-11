@@ -172,16 +172,8 @@ public abstract class PartTypeWriteBase<P extends IPartTypeWriter<P, S>, S exten
         IAspectWrite aspect = activeIndex == -1 ? null : getWriteAspects().get(activeIndex);
         partState.triggerAspectInfoUpdate((P) this, target, aspect);
 
+        INetwork network = NetworkHelpers.getNetwork(target.getCenter());
         if (aspect != null) {
-            INetwork network = NetworkHelpers.getNetwork(
-                target.getCenter()
-                    .getPos()
-                    .getWorld(),
-                target.getCenter()
-                    .getPos()
-                    .getBlockPos(),
-                target.getCenter()
-                    .getSide());
             IPartNetwork partNetwork = NetworkHelpers.getPartNetwork(network);
             MinecraftForge.EVENT_BUS.post(
                 new PartWriterAspectEvent<>(
@@ -194,6 +186,10 @@ public abstract class PartTypeWriteBase<P extends IPartTypeWriter<P, S>, S exten
                     aspect,
                     partState.getInventory()
                         .getStackInSlot(activeIndex)));
+        }
+        if (network != null) {
+            network.getEventBus()
+                .post(new VariableContentsUpdatedEvent(network));
         }
     }
 

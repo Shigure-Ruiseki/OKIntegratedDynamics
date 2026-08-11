@@ -11,6 +11,7 @@ import ruiseki.integrateddynamics.api.client.render.valuetype.IValueTypeWorldRen
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
+import ruiseki.integrateddynamics.api.part.IPartState;
 import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.client.render.valuetype.ValueTypeWorldRenderers;
 import ruiseki.integrateddynamics.part.PartTypePanelDisplay;
@@ -85,10 +86,15 @@ public class DisplayPartOverlayRenderer extends PartOverlayRendererBase {
         GlStateManager.scale(1, -1, 1);
         GlStateManager.disableRescaleNormal();
 
-        PartTypePanelDisplay.State partState = (PartTypePanelDisplay.State) partContainer.getPartState(direction);
-        if (partState == null || partState.getFacingRotation() == null) {
+        IPartState partStateUnsafe = partContainer.getPartState(direction);
+        if (!(partStateUnsafe instanceof PartTypePanelDisplay.State)) {
             drawError(rendererDispatcher, distanceAlpha);
         } else {
+            PartTypePanelDisplay.State partState = (PartTypePanelDisplay.State) partStateUnsafe;
+            if (partState.getFacingRotation() == null) {
+                drawError(rendererDispatcher, distanceAlpha);
+                return;
+            }
             int rotation = partState.getFacingRotation()
                 .ordinal() - 2;
             GlStateManager.translate(6, 6, 0);

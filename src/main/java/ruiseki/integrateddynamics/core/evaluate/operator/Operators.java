@@ -3,6 +3,7 @@ package ruiseki.integrateddynamics.core.evaluate.operator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.regex.Matcher;
@@ -3359,6 +3360,45 @@ public final class Operators {
                     .getSafeOperator((ValueTypeOperator.ValueOperator) variables.getValue(0), accumulator.getType());
                 ValueTypeList.ValueList<IValueType<IValue>, IValue> inputList = variables.getValue(1);
                 for (IValue listValue : inputList.getRawValue()) {
+                    accumulator = innerOperator.evaluate(
+                        new IVariable[] { new Variable<>(accumulator.getType(), accumulator),
+                            new Variable<>(listValue.getType(), listValue) });
+                }
+                return accumulator;
+            })
+            .build());
+
+    /**
+     * Apply the given operator on all elements of a list to reduce the list to one value.
+     */
+    public static final IOperator OPERATOR_REDUCE1 = REGISTRY.register(
+        OperatorBuilders.OPERATOR.inputTypes(new IValueType[] { ValueTypes.OPERATOR, ValueTypes.LIST })
+            .renderPattern(IConfigRenderPattern.PREFIX_2_LONG)
+            .output(ValueTypes.CATEGORY_ANY)
+            .symbolOperator("reduce1")
+            .conditionalOutputTypeDeriver((operator, input) -> {
+                try {
+                    IValueTypeListProxy a = ((ValueTypeList.ValueList) input[1].getValue()).getRawValue();
+                    return a.getValueType();
+                } catch (EvaluationException e) {
+                    return operator.getConditionalOutputType(input);
+                }
+            })
+            .function(variables -> {
+                Iterator<IValue> iter = ((ValueTypeList.ValueList) variables.getValue(1)).getRawValue()
+                    .iterator();
+                if (!iter.hasNext()) {
+                    throw new EvaluationException(
+                        "The reduce1 operator tried to get the head of an empty list. "
+                            + "Use the reduce operator instead to provide a base value to support empty lists.");
+                }
+
+                IValue accumulator = iter.next();
+                final IOperator innerOperator = OperatorBuilders
+                    .getSafeOperator((ValueTypeOperator.ValueOperator) variables.getValue(0), accumulator.getType());
+
+                while (iter.hasNext()) {
+                    IValue listValue = iter.next();
                     accumulator = innerOperator.evaluate(
                         new IVariable[] { new Variable<>(accumulator.getType(), accumulator),
                             new Variable<>(listValue.getType(), listValue) });

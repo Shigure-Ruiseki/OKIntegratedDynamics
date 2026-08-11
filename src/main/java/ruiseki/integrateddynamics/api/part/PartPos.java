@@ -4,6 +4,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.jetbrains.annotations.Nullable;
 
 import ruiseki.integrateddynamics.core.helper.PartHelpers;
 import ruiseki.okcore.datastructure.BlockPos;
@@ -19,15 +20,15 @@ public class PartPos implements Comparable<PartPos> {
     private final DimPos pos;
     private final ForgeDirection side;
 
-    public static PartPos of(World world, BlockPos pos, ForgeDirection side) {
+    public static PartPos of(World world, BlockPos pos, @Nullable ForgeDirection side) {
         return of(DimPos.of(world, pos), side);
     }
 
-    public static PartPos of(DimPos pos, ForgeDirection side) {
+    public static PartPos of(DimPos pos, @Nullable ForgeDirection side) {
         return new PartPos(pos, side);
     }
 
-    private PartPos(DimPos pos, ForgeDirection side) {
+    private PartPos(DimPos pos, @Nullable ForgeDirection side) {
         this.pos = pos;
         this.side = side;
     }
@@ -36,6 +37,7 @@ public class PartPos implements Comparable<PartPos> {
         return pos;
     }
 
+    @Nullable
     public ForgeDirection getSide() {
         return side;
     }
@@ -85,8 +87,10 @@ public class PartPos implements Comparable<PartPos> {
         int pos = this.getPos()
             .compareTo(o.getPos());
         if (pos == 0) {
-            return this.getSide()
-                .compareTo(o.getSide());
+            ForgeDirection thisSide = this.getSide();
+            ForgeDirection thatSide = o.getSide();
+            return thisSide == null ? (thatSide == null ? 0 : -1)
+                : (thatSide == null ? 1 : thisSide.compareTo(thatSide));
         }
         return pos;
     }

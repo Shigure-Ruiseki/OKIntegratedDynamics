@@ -109,6 +109,10 @@ public class ValueTypeList extends ValueObjectTypeBase<ValueTypeList.ValueList> 
                 : ofList(values[0].getType(), Lists.newArrayList(values));
         }
 
+        public static <V extends IValue> ValueList ofAll(IValueType type, V... values) {
+            return ofList(type, ImmutableList.copyOf(values));
+        }
+
         public static <T extends IValueType<V>, V extends IValue> ValueList ofFactory(IValueTypeListProxy<T, V> proxy) {
             return new ValueList<>(proxy);
         }

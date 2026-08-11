@@ -6,6 +6,8 @@ import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraftforge.common.util.ForgeDirection;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 import com.google.common.collect.Lists;
 
 import ruiseki.integrateddynamics.api.client.render.valuetype.IValueTypeWorldRenderer;
@@ -19,7 +21,7 @@ import ruiseki.okcore.helper.Helpers;
 
 /**
  * A text-based value type world renderer for lists.
- * 
+ *
  * @author rubensworks
  */
 public class ListValueTypeWorldRenderer implements IValueTypeWorldRenderer {
@@ -35,17 +37,18 @@ public class ListValueTypeWorldRenderer implements IValueTypeWorldRenderer {
         FontRenderer fontRenderer = rendererDispatcher.getFontRenderer();
         float maxWidth = 0;
 
-        List<String> lines = Lists.newLinkedList();
+        List<Pair<String, Integer>> lines = Lists.newLinkedList();
         IValueType listType = ((ValueTypeList.ValueList<?, ?>) value).getRawValue()
             .getValueType();
         for (IValue element : ((ValueTypeList.ValueList<?, ?>) value).getRawValue()) {
             if (lines.size() >= MAX_LINES) {
-                lines.add("...");
+                lines.add(Pair.of("...", listType.getDisplayColor()));
                 break;
             } else {
-                String string = " - " + listType.toCompactString(element);
+                IValueType elementType = element.getType();
+                String string = " - " + elementType.toCompactString(element);
                 float width = fontRenderer.getStringWidth(string) - 1;
-                lines.add(string);
+                lines.add(Pair.of(string, elementType.getDisplayColor()));
                 maxWidth = Math.max(maxWidth, width);
             }
         }
@@ -65,10 +68,10 @@ public class ListValueTypeWorldRenderer implements IValueTypeWorldRenderer {
         GlStateManager.scale(scale, scale, 1F);
 
         int offset = 0;
-        for (String line : lines) {
-            int color = Helpers.addAlphaToColor(listType.getDisplayColor(), distanceAlpha);
+        for (Pair<String, Integer> line : lines) {
+            int color = Helpers.addAlphaToColor(line.getRight(), distanceAlpha);
             rendererDispatcher.getFontRenderer()
-                .drawString(line, 0, offset, color);
+                .drawString(line.getLeft(), 0, offset, color);
             offset += singleHeight;
         }
 

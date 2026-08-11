@@ -1,5 +1,7 @@
 package ruiseki.integrateddynamics.core.tileentity;
 
+import net.minecraft.nbt.NBTTagCompound;
+
 import lombok.Getter;
 import lombok.experimental.Delegate;
 import ruiseki.integrateddynamics.api.block.cable.ICable;
@@ -60,6 +62,12 @@ public class TileCableConnectableInventory extends InventoryTileEntity implement
             BasicCapabilityResolver.create(NetworkCarrierConfig.CAPABILITY, () -> networkCarrier));
         this.capabilityCache.addCapabilityResolver(
             BasicCapabilityResolver.create(PathElementConfig.CAPABILITY, () -> new PathElementTile<>(this, cable)));
+    }
+
+    @Override
+    public void readFromNBT(NBTTagCompound tag) {
+        super.readFromNBT(tag);
+        connected.clear();
     }
 
     @Override

@@ -60,6 +60,7 @@ public class PartNetwork extends FullNetworkListenerAdapter implements IPartNetw
         if (partPositions.containsKey(partId)) {
             return false;
         }
+        compositeVariableCache = null;
         partPositions.put(partId, partPos);
         return true;
     }
@@ -80,6 +81,7 @@ public class PartNetwork extends FullNetworkListenerAdapter implements IPartNetw
 
     @Override
     public void removePart(int partId) {
+        compositeVariableCache = null;
         partPositions.remove(partId);
     }
 
@@ -136,6 +138,16 @@ public class PartNetwork extends FullNetworkListenerAdapter implements IPartNetw
                     IntegratedDynamics
                         .clog(Level.ERROR, "The variable container at " + dimPos + " was invalid, skipping.");
                     it.remove();
+                }
+            }
+            // Also check parts
+            for (PartPos partPos : partPositions.valueCollection()) {
+                IPartContainer partContainer = PartHelpers.getPartContainer(partPos.getPos(), partPos.getSide());
+                IVariableContainer variableContainer = partContainer
+                    .getCapability(VariableContainerConfig.CAPABILITY, partPos.getSide())
+                    .getOrNull();
+                if (variableContainer != null) {
+                    compositeMap.addElement(variableContainer.getVariableCache());
                 }
             }
             compositeVariableCache = compositeMap;

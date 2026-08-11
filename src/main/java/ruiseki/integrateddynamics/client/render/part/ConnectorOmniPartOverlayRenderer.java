@@ -13,6 +13,7 @@ import cpw.mods.fml.relauncher.SideOnly;
 import gnu.trove.map.TIntIntMap;
 import gnu.trove.map.hash.TIntIntHashMap;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
+import ruiseki.integrateddynamics.api.part.IPartState;
 import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.part.PartTypeConnectorOmniDirectional;
 import ruiseki.okcore.client.particle.ParticleBlur;
@@ -45,68 +46,62 @@ public class ConnectorOmniPartOverlayRenderer extends PartOverlayRendererBase {
     public void renderPartOverlay(IPartContainer partContainer, double x, double y, double z, float partialTick,
         int destroyStage, ForgeDirection direction, IPartType partType,
         TileEntityRendererDispatcher rendererDispatcher) {
+
         BlockPos pos = partContainer.getPosition()
             .getBlockPos();
-        int posX = pos.getX();
-        int posY = pos.getY();
-        int posZ = pos.getZ();
 
         if (!shouldRender(pos)) return;
 
         if (rand.nextInt(20) == 0 && !Minecraft.getMinecraft()
             .isGamePaused()) {
-            PartTypeConnectorOmniDirectional.State partState = (PartTypeConnectorOmniDirectional.State) partContainer
-                .getPartState(direction);
-            if (partState != null && partState.hasConnectorId()) {
+            IPartState partStateUnsafe = partContainer.getPartState(direction);
+            if (partStateUnsafe instanceof PartTypeConnectorOmniDirectional.State) {
+                PartTypeConnectorOmniDirectional.State partState = (PartTypeConnectorOmniDirectional.State) partStateUnsafe;
+                if (partState.hasConnectorId()) {
 
-                int offsetX = direction.offsetX;
-                int offsetY = direction.offsetY;
-                int offsetZ = direction.offsetZ;
+                    boolean isXAxis = (direction == ForgeDirection.WEST || direction == ForgeDirection.EAST);
+                    boolean isYAxis = (direction == ForgeDirection.DOWN || direction == ForgeDirection.UP);
+                    boolean isZAxis = (direction == ForgeDirection.NORTH || direction == ForgeDirection.SOUTH);
 
-                double tx = posX + 0.5F
-                    + offsetX * 1.15F
-                    - 0.03F
-                    + rand.nextFloat() * 0.04F
-                    + (direction != ForgeDirection.WEST && direction != ForgeDirection.EAST
-                        ? 0.25F - rand.nextFloat() * 0.5F
-                        : 0F);
-                double ty = posY + 0.5F
-                    + offsetY * 1.15F
-                    - 0.03F
-                    + rand.nextFloat() * 0.04F
-                    + (direction != ForgeDirection.DOWN && direction != ForgeDirection.UP
-                        ? 0.25F - rand.nextFloat() * 0.5F
-                        : 0F);
-                double tz = posZ + 0.5F
-                    + offsetZ * 1.15F
-                    - 0.03F
-                    + rand.nextFloat() * 0.04F
-                    + (direction != ForgeDirection.NORTH && direction != ForgeDirection.SOUTH
-                        ? 0.25F - rand.nextFloat() * 0.5F
-                        : 0F);
+                    double tx = pos.getX() + 0.5F
+                        + direction.offsetX * 1.15F
+                        - 0.03F
+                        + rand.nextFloat() * 0.04F
+                        + (!isXAxis ? 0.25F - rand.nextFloat() * 0.5F : 0F);
+                    double ty = pos.getY() + 0.5F
+                        + direction.offsetY * 1.15F
+                        - 0.03F
+                        + rand.nextFloat() * 0.04F
+                        + (!isYAxis ? 0.25F - rand.nextFloat() * 0.5F : 0F);
+                    double tz = pos.getZ() + 0.5F
+                        + direction.offsetZ * 1.15F
+                        - 0.03F
+                        + rand.nextFloat() * 0.04F
+                        + (!isZAxis ? 0.25F - rand.nextFloat() * 0.5F : 0F);
 
-                float scale = 0.15F;
-                Triple<Float, Float, Float> colors = Helpers.intToRGB(getGroupColor(partState.getGroupId()));
-                float red = colors.getLeft() + rand.nextFloat() * 0.1F - 0.05F;
-                float green = colors.getMiddle() + rand.nextFloat() * 0.1F - 0.05F;
-                float blue = colors.getRight() + rand.nextFloat() * 0.1F - 0.05F;
-                float ageMultiplier = 17F;
+                    float scale = 0.15F;
+                    Triple<Float, Float, Float> colors = Helpers.intToRGB(getGroupColor(partState.getGroupId()));
+                    float red = colors.getLeft() + rand.nextFloat() * 0.1F - 0.05F;
+                    float green = colors.getMiddle() + rand.nextFloat() * 0.1F - 0.05F;
+                    float blue = colors.getRight() + rand.nextFloat() * 0.1F - 0.05F;
+                    float ageMultiplier = 17F;
 
-                ParticleBlur blur = new ParticleBlur(
-                    Minecraft.getMinecraft().theWorld,
-                    tx,
-                    ty,
-                    tz,
-                    scale,
-                    -(offsetX * 0.05F + rand.nextFloat() * 0.02F - 0.01F),
-                    -(offsetY * 0.05F + rand.nextFloat() * 0.02F - 0.01F),
-                    -(offsetZ * 0.05F + rand.nextFloat() * 0.02F - 0.01F),
-                    red,
-                    green,
-                    blue,
-                    ageMultiplier);
+                    ParticleBlur blur = new ParticleBlur(
+                        Minecraft.getMinecraft().theWorld,
+                        tx,
+                        ty,
+                        tz,
+                        scale,
+                        -(direction.offsetX * 0.05F + rand.nextFloat() * 0.02F - 0.01F),
+                        -(direction.offsetY * 0.05F + rand.nextFloat() * 0.02F - 0.01F),
+                        -(direction.offsetZ * 0.05F + rand.nextFloat() * 0.02F - 0.01F),
+                        red,
+                        green,
+                        blue,
+                        ageMultiplier);
 
-                Minecraft.getMinecraft().effectRenderer.addEffect(blur);
+                    Minecraft.getMinecraft().effectRenderer.addEffect(blur);
+                }
             }
         }
     }
