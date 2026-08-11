@@ -9,12 +9,16 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
+import cpw.mods.fml.common.FMLCommonHandler;
 import gnu.trove.map.TIntObjectMap;
 import gnu.trove.map.hash.TIntObjectHashMap;
 import ruiseki.integrateddynamics.GeneralConfig;
 import ruiseki.integrateddynamics.api.ingredient.IIngredientComponentStorageObservable;
 import ruiseki.integrateddynamics.api.network.IPositionedAddonsNetworkIngredients;
+import ruiseki.integrateddynamics.api.part.PartPos;
+import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.api.part.PrioritizedPartPos;
+import ruiseki.integrateddynamics.core.network.diagnostics.NetworkDiagnostics;
 import ruiseki.okcore.ingredient.collection.diff.IngredientCollectionDiff;
 import ruiseki.okcore.ingredient.collection.diff.IngredientCollectionDiffManager;
 
@@ -57,45 +61,8 @@ public class IngredientObserver<T, M> {
     }
 
     /**
-     * Remove the observer tick interval for the given position.
-     * This will virtually set it to the default value.
-     * 
-     * @param partPos The position.
-     * @param channel The channel of the position.
-     */
-    public void removePositionObserverTickInterval(PrioritizedPartPos partPos, int channel) {
-        Map<PrioritizedPartPos, Integer> channelIntervals = this.observeTargetTickIntervals.get(channel);
-        if (channelIntervals != null) {
-            channelIntervals.remove(partPos);
-            if (channelIntervals.isEmpty()) {
-                this.observeTargetTickIntervals.remove(channel);
-            }
-        }
-    }
-
-    /**
-     * Set the observer tick interval for the given position.
-     * 
-     * @param partPos  The position.
-     * @param channel  The channel of the position.
-     * @param interval The tick interval.
-     */
-    public void setPositionObserverTickInterval(PrioritizedPartPos partPos, int channel, int interval) {
-        if (interval <= 1) {
-            removePositionObserverTickInterval(partPos, channel);
-        } else {
-            Map<PrioritizedPartPos, Integer> channelIntervals = this.observeTargetTickIntervals.get(channel);
-            if (channelIntervals == null) {
-                channelIntervals = Maps.newHashMap();
-                this.observeTargetTickIntervals.put(channel, channelIntervals);
-            }
-            channelIntervals.put(partPos, interval);
-        }
-    }
-
-    /**
      * Add an observer for listing to index change events.
-     * 
+     *
      * @param observer An index change observer.
      */
     public synchronized void addChangeObserver(
@@ -106,12 +73,18 @@ public class IngredientObserver<T, M> {
     /**
      * Remove the given index change observer.
      * This will silently fail if the given observer was not registered.
-     * 
+     *
      * @param observer An index change observer.
      */
     public synchronized void removeChangeObserver(
         IIngredientComponentStorageObservable.IIndexChangeObserver<T, M> observer) {
         changeObservers.remove(observer);
+    }
+
+    protected int getCurrentTick() {
+        return FMLCommonHandler.instance()
+            .getMinecraftServerInstance()
+            .getTickCounter();
     }
 
     protected void emitEvent(IIngredientComponentStorageObservable.StorageChangeEvent<T, M> event) {
@@ -138,12 +111,17 @@ public class IngredientObserver<T, M> {
     }
 
     protected void observe(int channel) {
+        int currentTick = getCurrentTick();
+
         // Prepare ticking collections
         Map<PrioritizedPartPos, Integer> channelTargetTicks = observeTargetTicks.get(channel);
         if (channelTargetTicks == null) {
             channelTargetTicks = Maps.newHashMap();
         }
         Map<PrioritizedPartPos, Integer> channelIntervals = this.observeTargetTickIntervals.get(channel);
+        if (channelIntervals == null) {
+            channelIntervals = Maps.newHashMap();
+        }
 
         // Calculate diff of all positions
         Map<PrioritizedPartPos, IngredientCollectionDiffManager<T, M>> diffManagers = this.channeledDiffManagers
@@ -153,16 +131,27 @@ public class IngredientObserver<T, M> {
             this.channeledDiffManagers.put(channel, diffManagers);
         }
 
+        // Check if we should diagnoze the observer
+        boolean isBeingDiagnozed = NetworkDiagnostics.getInstance()
+            .isBeingDiagnozed();
+        Map<PartPos, Long> lastSecondDurations = network.getLastSecondDurationIndex();
+        if (!isBeingDiagnozed && !lastSecondDurations.isEmpty()) {
+            // Make sure we aren't using any unnecessary memory.
+            lastSecondDurations.clear();
+        }
+
         // Emit diffs for all current positions
         Set<PrioritizedPartPos> positions = getPositionsCopy(channel);
         for (PrioritizedPartPos partPos : positions) {
-            // Check if we should observe this position in this tick
-            int tickInterval = GeneralConfig.defaultIngredientNetworkObserverFrequency;
-            if (channelIntervals != null) {
-                tickInterval = channelIntervals.getOrDefault(partPos, tickInterval);
+            // Get current time if diagnostics are enabled
+            long startTime = 0;
+            if (isBeingDiagnozed) {
+                startTime = System.nanoTime();
             }
-            int lastTick = channelTargetTicks.getOrDefault(partPos, tickInterval);
-            if (--lastTick <= 0) {
+
+            // Check if we should observe this position in this tick
+            int lastTick = channelTargetTicks.getOrDefault(partPos, currentTick);
+            if (lastTick <= currentTick) {
                 IngredientCollectionDiffManager<T, M> diffManager = diffManagers.get(partPos);
                 if (diffManager == null) {
                     diffManager = new IngredientCollectionDiffManager<>(network.getComponent());
@@ -172,7 +161,9 @@ public class IngredientObserver<T, M> {
                 // Emit event of diff
                 IngredientCollectionDiff<T, M> diff = diffManager
                     .onChange(getNetwork().getRawInstances(partPos.getPartPos()));
+                boolean hasChanges = false;
                 if (diff.hasAdditions()) {
+                    hasChanges = true;
                     this.emitEvent(
                         new IIngredientComponentStorageObservable.StorageChangeEvent<>(
                             channel,
@@ -182,6 +173,7 @@ public class IngredientObserver<T, M> {
                             diff.getAdditions()));
                 }
                 if (diff.hasDeletions()) {
+                    hasChanges = true;
                     this.emitEvent(
                         new IIngredientComponentStorageObservable.StorageChangeEvent<>(
                             channel,
@@ -190,11 +182,58 @@ public class IngredientObserver<T, M> {
                             diff.isCompletelyEmpty(),
                             diff.getDeletions()));
                 }
-            } else {
-                // Otherwise, store the remaining ticks.
-                // This means that we'll never store positions with a tick interval of 1,
-                // which will happen in most of the cases. (efficiency++)
-                channelTargetTicks.put(partPos, lastTick);
+
+                // Update the next tick value
+                int tickInterval = channelIntervals
+                    .getOrDefault(partPos, GeneralConfig.ingredientNetworkObserverFrequencyMax);
+                // Decrease the frequency when changes were detected
+                // Increase the frequency when no changes were detected
+                // This will make it so that quickly changing storages will be observed
+                // more frequently than slowly changing storages
+                boolean tickIntervalChanged = false;
+                if (hasChanges) {
+                    if (tickInterval > GeneralConfig.ingredientNetworkObserverFrequencyMin) {
+                        tickIntervalChanged = true;
+                        tickInterval = Math.max(
+                            GeneralConfig.ingredientNetworkObserverFrequencyMin,
+                            tickInterval - GeneralConfig.ingredientNetworkObserverFrequencyDecreaseFactor);
+                    }
+                } else {
+                    if (tickInterval < GeneralConfig.ingredientNetworkObserverFrequencyMax) {
+                        tickIntervalChanged = true;
+                        tickInterval = Math.min(
+                            GeneralConfig.ingredientNetworkObserverFrequencyMax,
+                            tickInterval + GeneralConfig.ingredientNetworkObserverFrequencyIncreaseFactor);
+                    }
+                }
+                // No need to store the interval if it == 1, as the previous or default value will
+                // definitely also cause this part to tick in next tick.
+                // This makes these cases slightly faster, as no map updates are needed.
+                if (tickInterval != 1) {
+                    channelTargetTicks.put(partPos, lastTick + tickInterval);
+
+                }
+                // Only update when the interval has changed.
+                // In most cases, this will remain the same.
+                if (tickIntervalChanged) {
+                    if (tickInterval != GeneralConfig.ingredientNetworkObserverFrequencyMax) {
+                        channelIntervals.put(partPos, tickInterval);
+                    } else {
+                        channelIntervals.remove(partPos);
+                    }
+                }
+            }
+
+            // Calculate duration if diagnostics are enabled
+            if (isBeingDiagnozed) {
+                long duration = System.nanoTime() - startTime;
+                PartPos interfacePos = PartTarget.fromCenter(partPos.getPartPos())
+                    .getTarget();
+                Long lastDuration = lastSecondDurations.get(interfacePos);
+                if (lastDuration != null) {
+                    duration = duration + lastDuration;
+                }
+                lastSecondDurations.put(interfacePos, duration);
             }
         }
 
@@ -223,7 +262,10 @@ public class IngredientObserver<T, M> {
 
         // Store our new ticking collections
         if (!channelTargetTicks.isEmpty()) {
-            observeTargetTickIntervals.put(channel, channelTargetTicks);
+            observeTargetTicks.put(channel, channelTargetTicks);
+        }
+        if (!channelIntervals.isEmpty()) {
+            observeTargetTickIntervals.put(channel, channelIntervals);
         }
     }
 

@@ -1,8 +1,12 @@
 package ruiseki.integrateddynamics.core.network;
 
+import java.util.Map;
+
 import net.minecraftforge.common.util.ForgeDirection;
 
 import org.jetbrains.annotations.Nullable;
+
+import com.google.common.collect.Maps;
 
 import gnu.trove.map.TIntObjectMap;
 import gnu.trove.map.hash.TIntObjectHashMap;
@@ -21,7 +25,7 @@ import ruiseki.okcore.ingredient.collection.IIngredientCollection;
 
 /**
  * An ingredient network that can hold prioritized positions.
- * 
+ *
  * @param <T> The instance type.
  * @param <M> The matching condition parameter, may be Void. Instances MUST properly implement the equals method.
  * @author rubensworks
@@ -35,12 +39,17 @@ public abstract class PositionedAddonsNetworkIngredients<T, M> extends Positione
     private final IngredientObserver<T, M> ingredientObserver;
     private final TIntObjectMap<IngredientPositionsIndex<T, M>> indexes;
 
+    private boolean observe;
+    private Map<PartPos, Long> lastSecondDurations = Maps.newHashMap();
+
     public PositionedAddonsNetworkIngredients(IngredientComponent<T, M> component) {
         this.component = component;
 
         this.ingredientObserver = new IngredientObserver<>(this);
         this.ingredientObserver.addChangeObserver(this);
         this.indexes = new TIntObjectHashMap<>();
+
+        this.observe = false;
     }
 
     @Override
@@ -126,6 +135,21 @@ public abstract class PositionedAddonsNetworkIngredients<T, M> extends Positione
     }
 
     @Override
+    public void scheduleObservation() {
+        this.observe = true;
+    }
+
+    @Override
+    public boolean shouldObserve() {
+        return this.observe;
+    }
+
+    @Override
+    public IIngredientPositionsIndex<T, M> getChannelIndex(int channel) {
+        return this.indexes.get(channel);
+    }
+
+    @Override
     public boolean addNetworkElement(INetworkElement element, boolean networkPreinit) {
         return true;
     }
@@ -146,7 +170,10 @@ public abstract class PositionedAddonsNetworkIngredients<T, M> extends Positione
     }
 
     public void update() {
-        this.ingredientObserver.observe();
+        if (this.shouldObserve()) {
+            this.ingredientObserver.observe();
+            this.observe = false;
+        }
     }
 
     @Override
@@ -179,4 +206,13 @@ public abstract class PositionedAddonsNetworkIngredients<T, M> extends Positione
 
     }
 
+    @Override
+    public Map<PartPos, Long> getLastSecondDurationIndex() {
+        return lastSecondDurations;
+    }
+
+    @Override
+    public void resetLastSecondDurationsIndex() {
+        lastSecondDurations.clear();
+    }
 }

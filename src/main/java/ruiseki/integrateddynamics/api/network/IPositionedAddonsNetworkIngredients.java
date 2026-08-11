@@ -1,6 +1,7 @@
 package ruiseki.integrateddynamics.api.network;
 
 import java.util.Iterator;
+import java.util.Map;
 
 import net.minecraft.tileentity.TileEntity;
 
@@ -18,7 +19,7 @@ import ruiseki.okcore.datastructure.DimPos;
 
 /**
  * An ingredient network that can hold prioritized positions.
- * 
+ *
  * @param <T> The instance type.
  * @param <M> The matching condition parameter, may be Void. Instances MUST properly implement the equals method.
  * @author rubensworks
@@ -38,7 +39,7 @@ public interface IPositionedAddonsNetworkIngredients<T, M>
 
     /**
      * Get the storage at the given position.
-     * 
+     *
      * @param pos A position.
      * @return The storage, or an empty storage if none is available.
      */
@@ -49,7 +50,7 @@ public interface IPositionedAddonsNetworkIngredients<T, M>
 
     /**
      * Get all instances at the target position.
-     * 
+     *
      * @param pos A part position.
      * @return A collection of instances. This can not be a view, and must be a deep copy of the target.
      */
@@ -59,7 +60,7 @@ public interface IPositionedAddonsNetworkIngredients<T, M>
 
     /**
      * Get the storage at the given position.
-     * 
+     *
      * @param pos A position.
      * @return The storage.
      */
@@ -73,7 +74,7 @@ public interface IPositionedAddonsNetworkIngredients<T, M>
 
     /**
      * Get the storage at the given channel.
-     * 
+     *
      * @param channel A channel id.
      * @return A storage.
      */
@@ -81,7 +82,7 @@ public interface IPositionedAddonsNetworkIngredients<T, M>
 
     /**
      * Get the external storage at the given channel.
-     * 
+     *
      * @param capability A capability to wrap the channel in.
      * @param channel    A channel id.
      * @param <S>        The external storage type.
@@ -94,4 +95,15 @@ public interface IPositionedAddonsNetworkIngredients<T, M>
         return wrapperHandler != null ? wrapperHandler.wrapStorage(getChannel(channel)) : null;
     }
 
+    /**
+     * Get the last tick duration of the index observer.
+     * 
+     * @return Duration in nanoseconds
+     */
+    public Map<PartPos, Long> getLastSecondDurationIndex();
+
+    /**
+     * Reset the last second duration count.
+     */
+    public void resetLastSecondDurationsIndex();
 }

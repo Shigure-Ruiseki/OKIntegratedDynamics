@@ -3,7 +3,9 @@ package ruiseki.integrateddynamics.core;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
 import ruiseki.integrateddynamics.IntegratedDynamics;
+import ruiseki.integrateddynamics.api.network.IFullNetworkListener;
 import ruiseki.integrateddynamics.api.network.INetwork;
+import ruiseki.integrateddynamics.api.network.IPositionedAddonsNetworkIngredients;
 import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
 import ruiseki.integrateddynamics.core.network.diagnostics.NetworkDiagnostics;
 import ruiseki.integrateddynamics.core.persist.world.NetworkWorldStorage;
@@ -54,6 +56,14 @@ public final class TickHandler {
                     NetworkDiagnostics.getInstance()
                         .sendNetworkUpdate(network);
                     network.resetLastSecondDurations();
+
+                    // Also reset durations of indexes
+                    for (IFullNetworkListener fullNetworkListener : network.getFullNetworkListeners()) {
+                        if (fullNetworkListener instanceof IPositionedAddonsNetworkIngredients) {
+                            IPositionedAddonsNetworkIngredients<?, ?> networkIngredients = (IPositionedAddonsNetworkIngredients<?, ?>) fullNetworkListener;
+                            networkIngredients.resetLastSecondDurationsIndex();
+                        }
+                    }
                 }
                 try {
                     if (!network.isCrashed()) {

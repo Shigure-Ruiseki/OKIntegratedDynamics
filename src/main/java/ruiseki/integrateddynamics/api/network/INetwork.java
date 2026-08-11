@@ -132,4 +132,9 @@ public interface INetwork extends IFullNetworkListener, INBTSerializable {
      * @return If this network contains the given sided path element.
      */
     public boolean containsSidedPathElement(ISidedPathElement sidedPathElement);
+
+    /**
+     * @return All registered network listeners.
+     */
+    public IFullNetworkListener[] getFullNetworkListeners();
 }
