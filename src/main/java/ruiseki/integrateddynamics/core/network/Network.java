@@ -20,6 +20,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 import ruiseki.integrateddynamics.IntegratedDynamics;
+import ruiseki.integrateddynamics.api.PartStateException;
 import ruiseki.integrateddynamics.api.network.AttachCapabilitiesEventNetwork;
 import ruiseki.integrateddynamics.api.network.IEventListenableNetworkElement;
 import ruiseki.integrateddynamics.api.network.IFullNetworkListener;
@@ -204,11 +205,6 @@ public class Network implements INetwork {
     }
 
     @Override
-    public int hashCode() {
-        return elements.hashCode();
-    }
-
-    @Override
     public NBTTagCompound serializeNBT() {
         NBTTagCompound tag = new NBTTagCompound();
         tag.setTag("baseCluster", this.baseCluster.serializeNBT());
@@ -227,7 +223,7 @@ public class Network implements INetwork {
         this.toRead = tag;
     }
 
-    public void deserializeNBTEffective(NBTTagCompound tag) {
+    public void fromNBTEffective(NBTTagCompound tag) {
         this.baseCluster.deserializeNBT(tag.getCompoundTag("baseCluster"));
         this.crashed = tag.getBoolean("crashed");
         if (this.capabilityDispatcher != null && tag.hasKey("OKCaps")) {
@@ -299,6 +295,7 @@ public class Network implements INetwork {
 
         // noinspection deprecation
         element.setPriorityAndChannel(this, priority, channel);
+
         elements.add(element);
         if (element.isUpdate()) {
             updateableElements.add(element);
@@ -401,7 +398,7 @@ public class Network implements INetwork {
     @Override
     public final synchronized void update() {
         if (this.toRead != null) {
-            this.deserializeNBTEffective(this.toRead);
+            this.fromNBTEffective(this.toRead);
             this.toRead = null;
         }
 
@@ -420,32 +417,42 @@ public class Network implements INetwork {
                 lastSecondDurations.clear();
             }
             for (INetworkElement element : updateableElements) {
-                if (isValid(element)) {
-                    long startTime = 0;
-                    if (isBeingDiagnozed) {
-                        startTime = System.nanoTime();
-                    }
-                    int lastElementTick = updateableElementsTicks.getOrDefault(element, 0);
-                    if (canUpdate(element)) {
-                        if (lastElementTick <= 0) {
-                            updateableElementsTicks.put(element, element.getUpdateInterval() - 1);
-                            element.update(this);
-                            postUpdate(element);
+                try {
+                    if (isValid(element)) {
+                        long startTime = 0;
+                        if (isBeingDiagnozed) {
+                            startTime = System.nanoTime();
+                        }
+                        int lastElementTick = updateableElementsTicks.getOrDefault(element, 0);
+                        if (canUpdate(element)) {
+                            if (lastElementTick <= 0) {
+                                updateableElementsTicks.put(element, element.getUpdateInterval() - 1);
+                                element.update(this);
+                                postUpdate(element);
+                            } else {
+                                updateableElementsTicks.put(element, lastElementTick - 1);
+                            }
                         } else {
+                            onSkipUpdate(element);
                             updateableElementsTicks.put(element, lastElementTick - 1);
                         }
-                    } else {
-                        onSkipUpdate(element);
-                        updateableElementsTicks.put(element, lastElementTick - 1);
-                    }
-                    if (isBeingDiagnozed) {
-                        long duration = System.nanoTime() - startTime;
-                        Long lastDuration = lastSecondDurations.get(element);
-                        if (lastDuration != null) {
-                            duration = duration + lastDuration;
+                        if (isBeingDiagnozed) {
+                            long duration = System.nanoTime() - startTime;
+                            Long lastDuration = lastSecondDurations.get(element);
+                            if (lastDuration != null) {
+                                duration = duration + lastDuration;
+                            }
+                            lastSecondDurations.put(element, duration);
                         }
-                        lastSecondDurations.put(element, duration);
                     }
+                } catch (PartStateException e) {
+                    IntegratedDynamics.clog(
+                        Level.WARN,
+                        "Attempted to tick a part that was not properly unloaded. "
+                            + "Report this to the Integrated Dynamics issue tracker with details on what you did "
+                            + "leading up to this stacktrace. The part was forcefully unloaded");
+                    e.printStackTrace();
+                    element.invalidate(this);
                 }
             }
         }
@@ -466,7 +473,7 @@ public class Network implements INetwork {
         }
         if (baseCluster.remove(SidedPathElement.of(pathElement, null))) {
             DimPos position = pathElement.getPosition();
-            INetworkElementProvider networkElementProvider = CapabilityHelpers
+            INetworkElementProvider networkElementProvider = (INetworkElementProvider) CapabilityHelpers
                 .getCapability(position, NetworkElementProviderConfig.CAPABILITY, side)
                 .getOrNull();
             if (networkElementProvider != null) {

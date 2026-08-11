@@ -11,7 +11,7 @@ import ruiseki.integrateddynamics.api.network.INetworkElement;
 
 /**
  * A network that can hold energy.
- *
+ * 
  * @author rubensworks
  */
 public class EnergyNetwork extends PositionedAddonsNetworkIngredients<Integer, Boolean> implements IEnergyNetwork {

@@ -12,7 +12,7 @@ import ruiseki.okcore.persist.world.WorldStorage;
 
 /**
  * World NBT storage for all active networks.
- *
+ * 
  * @author rubensworks
  */
 public class NetworkWorldStorage extends WorldStorage {
@@ -45,7 +45,7 @@ public class NetworkWorldStorage extends WorldStorage {
 
     /**
      * Add a network that needs persistence.
-     *
+     * 
      * @param network The network.
      */
     public synchronized void addNewNetwork(INetwork network) {
@@ -55,7 +55,7 @@ public class NetworkWorldStorage extends WorldStorage {
     /**
      * Remove a network that was invalidated and does not need persistence anymore.
      * This is allowed to be called if the network was already removed.
-     *
+     * 
      * @param network The network.
      */
     public synchronized void removeInvalidatedNetwork(INetwork network) {

@@ -14,6 +14,11 @@ import ruiseki.integrateddynamics.core.network.PartNetwork;
 import ruiseki.okcore.energy.capability.CapabilityEnergy;
 import ruiseki.okcore.modcompat.capabilities.DefaultCapabilityProvider;
 
+/**
+ * Constructor event for network capabilities.
+ *
+ * @author rubensworks
+ */
 public class NetworkCapabilityConstructors {
 
     @SubscribeEvent
@@ -23,14 +28,19 @@ public class NetworkCapabilityConstructors {
         EnergyNetwork energyNetwork = new EnergyNetwork(IngredientComponent.ENERGY);
         IEnergyStorage energyChannel = energyNetwork
             .getChannelExternal(CapabilityEnergy.ENERGY, IPositionedAddonsNetwork.DEFAULT_CHANNEL);
+
         event.addCapability(
             new ResourceLocation(Reference.MOD_ID, "partNetwork"),
             new DefaultCapabilityProvider<>(() -> PartNetworkConfig.CAPABILITY, partNetwork));
         event.addCapability(
             new ResourceLocation(Reference.MOD_ID, "energyNetwork"),
+            new DefaultCapabilityProvider<>(() -> EnergyNetworkConfig.CAPABILITY, energyNetwork));
+        event.addCapability(
+            new ResourceLocation(Reference.MOD_ID, "energyStorageNetwork"),
             new DefaultCapabilityProvider<>(() -> CapabilityEnergy.ENERGY, energyChannel));
 
         event.addFullNetworkListener(partNetwork);
         event.addFullNetworkListener(energyNetwork);
     }
+
 }

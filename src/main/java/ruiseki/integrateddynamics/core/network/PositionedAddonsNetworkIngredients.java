@@ -25,7 +25,7 @@ import ruiseki.okcore.ingredient.collection.IIngredientCollection;
 
 /**
  * An ingredient network that can hold prioritized positions.
- *
+ * 
  * @param <T> The instance type.
  * @param <M> The matching condition parameter, may be Void. Instances MUST properly implement the equals method.
  * @author rubensworks

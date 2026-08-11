@@ -6,10 +6,12 @@ import java.util.Map;
 import java.util.UUID;
 
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.server.MinecraftServer;
+
+import org.jetbrains.annotations.Nullable;
 
 import com.google.common.collect.Lists;
 
-import cpw.mods.fml.common.FMLCommonHandler;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.network.IFullNetworkListener;
 import ruiseki.integrateddynamics.api.network.INetwork;
@@ -38,18 +40,23 @@ public class NetworkDiagnostics {
         return _INSTANCE;
     }
 
+    @Nullable
     protected EntityPlayerMP getPlayer(UUID uuid) {
         if (uuid == null) return null;
 
-        List<EntityPlayerMP> players = FMLCommonHandler.instance()
-            .getMinecraftServerInstance()
-            .getConfigurationManager().playerEntityList;
+        MinecraftServer server = MinecraftServer.getServer();
+        if (server == null || server.getConfigurationManager() == null) {
+            return null;
+        }
 
-        for (EntityPlayerMP player : players) {
-            if (uuid.equals(player.getPersistentID())) {
-                return player;
+        for (Object obj : server.getConfigurationManager().playerEntityList) {
+            if (obj instanceof EntityPlayerMP player) {
+                if (uuid.equals(player.getPersistentID())) {
+                    return player;
+                }
             }
         }
+
         return null;
     }
 

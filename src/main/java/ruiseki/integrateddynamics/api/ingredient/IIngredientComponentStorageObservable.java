@@ -7,7 +7,7 @@ import ruiseki.okcore.ingredient.collection.diff.IngredientCollectionDiff;
 
 /**
  * An observable ingredient component storage.
- *
+ * 
  * @param <T> The instance type.
  * @param <M> The matching condition parameter, may be Void. Instances MUST properly implement the equals method.
  * @author rubensworks
@@ -21,7 +21,7 @@ public interface IIngredientComponentStorageObservable<T, M> {
 
     /**
      * Add an observer for listing to index change events.
-     *
+     * 
      * @param observer An index change observer.
      */
     public void addObserver(IIndexChangeObserver<T, M> observer);
@@ -29,7 +29,7 @@ public interface IIngredientComponentStorageObservable<T, M> {
     /**
      * Remove the given index change observer.
      * This will silently fail if the given observer was not registered.
-     *
+     * 
      * @param observer An index change observer.
      */
     public void removeObserver(IIndexChangeObserver<T, M> observer);
@@ -59,7 +59,7 @@ public interface IIngredientComponentStorageObservable<T, M> {
 
     /**
      * An observer for listening to storage changes.
-     *
+     * 
      * @param <T> The instance type.
      * @param <M> The match condition type.
      */
@@ -67,7 +67,7 @@ public interface IIngredientComponentStorageObservable<T, M> {
 
         /**
          * Called when a change event is emitted.
-         *
+         * 
          * @param event A storage change event.
          */
         public void onChange(StorageChangeEvent<T, M> event);
@@ -77,7 +77,7 @@ public interface IIngredientComponentStorageObservable<T, M> {
      * A storage change event.
      * This is thrown for either additions or deletions,
      * as identified by the change type.
-     *
+     * 
      * @param <T> The instance type.
      * @param <M> The match condition type.
      */
