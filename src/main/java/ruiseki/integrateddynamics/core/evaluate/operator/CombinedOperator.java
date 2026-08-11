@@ -234,10 +234,11 @@ public class CombinedOperator extends OperatorBase {
                     IValueType[] valueTypes = new IValueType[0];
                     boolean removeOutputType = false;
                     for (IOperator operator : operators) {
-                        if (removeOutputType) {
-                            valueTypes = ArrayUtils.subarray(valueTypes, 1, valueTypes.length);
+                        IValueType[] operatorInputTypes = operator.getInputTypes();
+                        if (removeOutputType && operatorInputTypes.length > 0) {
+                            operatorInputTypes = ArrayUtils.subarray(operatorInputTypes, 1, operatorInputTypes.length);
                         }
-                        valueTypes = ArrayUtils.addAll(valueTypes, operator.getInputTypes());
+                        valueTypes = ArrayUtils.addAll(valueTypes, operatorInputTypes);
                         removeOutputType = true;
                     }
                     return valueTypes;

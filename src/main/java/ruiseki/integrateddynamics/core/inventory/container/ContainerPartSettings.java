@@ -69,7 +69,7 @@ public class ContainerPartSettings extends ExtendedInventoryContainer {
         ChunkCoordinates coordinates = player.getPlayerCoordinates();
         this.pos = new BlockPos(coordinates.posX, coordinates.posY, coordinates.posZ);
 
-        addPlayerInventory(player.inventory, 27, 107);
+        addPlayerInventory(player.inventory, 27, getPlayerInventoryOffsetY());
 
         lastUpdateValueId = getNextValueId();
         lastPriorityValueId = getNextValueId();
@@ -105,6 +105,10 @@ public class ContainerPartSettings extends ExtendedInventoryContainer {
                 }
             }
         });
+    }
+
+    protected int getPlayerInventoryOffsetY() {
+        return 107;
     }
 
     @Override
@@ -163,12 +167,9 @@ public class ContainerPartSettings extends ExtendedInventoryContainer {
                         .getSide());
 
                 PartTarget target = getTarget();
-                ForgeDirection targetSide = getLastSideValue() >= 0
-                    ? ForgeDirection.VALID_DIRECTIONS[getLastSideValue()]
-                    : null;
-                getPartType().setTargetSideOverride(getPartState(), targetSide);
-                if (targetSide != null) {
-                    target = target.forTargetSide(targetSide);
+                updatePartSettings();
+                if (getPartState().getTargetSideOverride() != null) {
+                    target = target.forTargetSide(getPartState().getTargetSideOverride());
                 }
                 PartNetworkElement networkElement = new PartNetworkElement(getPartType(), target);
                 network.setPriorityAndChannel(networkElement, getLastPriorityValue(), getLastChannelValue());
@@ -176,5 +177,12 @@ public class ContainerPartSettings extends ExtendedInventoryContainer {
         } catch (PartStateException e) {
             player.closeScreen();
         }
+    }
+
+    protected void updatePartSettings() {
+        getPartType().setUpdateInterval(getPartState(), getLastUpdateValue());
+        ForgeDirection targetSide = getLastSideValue() >= 0 ? ForgeDirection.VALID_DIRECTIONS[getLastSideValue()]
+            : null;
+        getPartType().setTargetSideOverride(getPartState(), targetSide);
     }
 }

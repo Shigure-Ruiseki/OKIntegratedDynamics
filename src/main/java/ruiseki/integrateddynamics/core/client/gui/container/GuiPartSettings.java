@@ -14,10 +14,12 @@ import net.minecraftforge.common.util.ForgeDirection;
 
 import org.lwjgl.input.Keyboard;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import ruiseki.integrateddynamics.GeneralConfig;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartType;
@@ -29,12 +31,11 @@ import ruiseki.integrateddynamics.core.inventory.container.ContainerPartSettings
 import ruiseki.okcore.client.gui.component.button.GuiButtonText;
 import ruiseki.okcore.client.gui.component.input.GuiNumberField;
 import ruiseki.okcore.client.gui.container.GuiContainerExtended;
+import ruiseki.okcore.helper.GuiHelpers;
 import ruiseki.okcore.helper.Helpers;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.ValueNotifierHelpers;
 import ruiseki.okcore.init.ModBase;
-import ruiseki.okcore.inventory.container.ExtendedInventoryContainer;
-import ruiseki.okcore.inventory.container.button.IButtonActionClient;
 
 /**
  * Gui for part settings.
@@ -66,45 +67,49 @@ public class GuiPartSettings extends GuiContainerExtended {
      * @param partType      The part type.
      */
     public GuiPartSettings(EntityPlayer player, PartTarget target, IPartContainer partContainer, IPartType partType) {
-        super(new ContainerPartSettings(player, target, partContainer, partType));
+        this(
+            new ContainerPartSettings(player, target, partContainer, partType),
+            player,
+            target,
+            partContainer,
+            partType);
+    }
+
+    public GuiPartSettings(ContainerPartSettings containerPartSettings, EntityPlayer player, PartTarget target,
+        IPartContainer partContainer, IPartType partType) {
+        super(containerPartSettings);
         this.target = target;
         this.partContainer = partContainer;
         this.partType = partType;
 
-        putButtonAction(BUTTON_SAVE, new IButtonActionClient<GuiContainerExtended, ExtendedInventoryContainer>() {
+        putButtonAction(BUTTON_SAVE, (buttonId, gui, container) -> onSave());
+    }
 
-            @Override
-            public void onAction(int buttonId, GuiContainerExtended gui, ExtendedInventoryContainer container) {
-                IntegratedDynamics._instance.getGuiHandler()
-                    .setTemporaryData(
-                        ExtendedGuiHandler.PART,
-                        getTarget().getCenter()
-                            .getSide());
-                try {
-                    int updateInterval = numberFieldUpdateInterval.getInt();
-                    int priority = numberFieldPriority.getInt();
-                    int channel = numberFieldChannel.getInt();
-                    ForgeDirection selectedSide = dropdownFieldSide.getSelectedDropdownPossibility() == null ? null
-                        : dropdownFieldSide.getSelectedDropdownPossibility()
-                            .getValue();
-                    int side = selectedSide != null && selectedSide != getDefaultSide() ? selectedSide.ordinal() : -1;
-                    ValueNotifierHelpers.setValue(
-                        getContainer(),
-                        ((ContainerPartSettings) getContainer()).getLastUpdateValueId(),
-                        updateInterval);
-                    ValueNotifierHelpers.setValue(
-                        getContainer(),
-                        ((ContainerPartSettings) getContainer()).getLastPriorityValueId(),
-                        priority);
-                    ValueNotifierHelpers.setValue(
-                        getContainer(),
-                        ((ContainerPartSettings) getContainer()).getLastChannelValueId(),
-                        channel);
-                    ValueNotifierHelpers
-                        .setValue(getContainer(), ((ContainerPartSettings) getContainer()).getLastSideValueId(), side);
-                } catch (NumberFormatException e) {}
-            }
-        });
+    protected void onSave() {
+        IntegratedDynamics._instance.getGuiHandler()
+            .setTemporaryData(
+                ExtendedGuiHandler.PART,
+                getTarget().getCenter()
+                    .getSide());
+        try {
+            int updateInterval = numberFieldUpdateInterval.getInt();
+            int priority = numberFieldPriority.getInt();
+            int channel = numberFieldChannel.getInt();
+            ForgeDirection selectedSide = dropdownFieldSide.getSelectedDropdownPossibility() == null ? null
+                : dropdownFieldSide.getSelectedDropdownPossibility()
+                    .getValue();
+            int side = selectedSide != null && selectedSide != getDefaultSide() ? selectedSide.ordinal() : -1;
+            ValueNotifierHelpers.setValue(
+                getContainer(),
+                ((ContainerPartSettings) getContainer()).getLastUpdateValueId(),
+                updateInterval);
+            ValueNotifierHelpers
+                .setValue(getContainer(), ((ContainerPartSettings) getContainer()).getLastPriorityValueId(), priority);
+            ValueNotifierHelpers
+                .setValue(getContainer(), ((ContainerPartSettings) getContainer()).getLastChannelValueId(), channel);
+            ValueNotifierHelpers
+                .setValue(getContainer(), ((ContainerPartSettings) getContainer()).getLastSideValueId(), side);
+        } catch (NumberFormatException e) {}
     }
 
     @Override
@@ -196,6 +201,7 @@ public class GuiPartSettings extends GuiContainerExtended {
         numberFieldChannel.setVisible(true);
         numberFieldChannel.setTextColor(16777215);
         numberFieldChannel.setCanLoseFocus(true);
+        numberFieldChannel.setEnabled(isChannelEnabled());
 
         String save = LangHelpers.localize("gui.integrateddynamics.button.save");
         buttonList.add(
@@ -254,11 +260,29 @@ public class GuiPartSettings extends GuiContainerExtended {
             guiLeft + 8,
             guiTop + 62,
             Helpers.RGBToInt(0, 0, 0));
-        fontRendererObj.drawString(getChannelText(), guiLeft + 8, guiTop + 87, Helpers.RGBToInt(0, 0, 0));
+        fontRendererObj.drawString(
+            LangHelpers.localize("gui.integrateddynamics.partsettings.channel"),
+            guiLeft + 8,
+            guiTop + 87,
+            isChannelEnabled() ? Helpers.RGBToInt(0, 0, 0) : Helpers.RGBToInt(100, 100, 100));
     }
 
-    protected String getChannelText() {
-        return LangHelpers.localize("gui.integrateddynamics.partsettings.channel");
+    @Override
+    protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
+        super.drawGuiContainerForegroundLayer(mouseX, mouseY);
+        GuiHelpers.renderTooltip(
+            this,
+            8,
+            87,
+            100,
+            20,
+            mouseX,
+            mouseY,
+            () -> Lists.newArrayList(LangHelpers.localize("gui.integrateddynamics.partsettings.channel.disabledinfo")));
+    }
+
+    protected boolean isChannelEnabled() {
+        return GeneralConfig.energyConsumptionMultiplier > 0;
     }
 
     @Override
