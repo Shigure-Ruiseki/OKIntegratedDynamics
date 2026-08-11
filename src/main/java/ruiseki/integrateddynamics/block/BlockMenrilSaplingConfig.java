@@ -3,6 +3,8 @@ package ruiseki.integrateddynamics.block;
 import net.minecraft.block.material.Material;
 import net.minecraftforge.event.terraingen.DecorateBiomeEvent;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import ruiseki.integrateddynamics.GeneralConfig;
 import ruiseki.integrateddynamics.IntegratedDynamics;
@@ -46,7 +48,9 @@ public class BlockMenrilSaplingConfig extends BlockConfig {
     @SubscribeEvent
     public void onDecorate(DecorateBiomeEvent.Decorate decorateBiomeEvent) {
         if (decorateBiomeEvent.type == DecorateBiomeEvent.Decorate.EventType.TREE) {
-            if (GeneralConfig.wildMenrilTreeChance > 0
+            if (!ArrayUtils
+                .contains(GeneralConfig.wildMenrilTreeDimensionBlacklist, decorateBiomeEvent.world.provider.dimensionId)
+                && GeneralConfig.wildMenrilTreeChance > 0
                 && decorateBiomeEvent.rand.nextInt(GeneralConfig.wildMenrilTreeChance) == 0) {
                 int x = decorateBiomeEvent.chunkX + decorateBiomeEvent.rand.nextInt(16) + 8;
                 int z = decorateBiomeEvent.chunkZ + decorateBiomeEvent.rand.nextInt(16) + 8;

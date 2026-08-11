@@ -4,9 +4,12 @@ import java.util.Random;
 
 import net.minecraft.block.BlockFlower;
 import net.minecraft.init.Blocks;
+import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeDecorator;
 import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraftforge.common.MinecraftForge;
+
+import org.apache.commons.lang3.ArrayUtils;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -43,6 +46,13 @@ public class BiomeMeneglin extends ConfigurableBiome {
         this.theBiomeDecorator.flowersPerChunk = 70;
 
         MinecraftForge.TERRAIN_GEN_BUS.register(this);
+    }
+
+    @Override
+    public void decorate(World world, Random random, int chunkX, int chunkZ) {
+        if (!ArrayUtils.contains(BiomeMeneglinConfig.meneglinBiomeDimensionBlacklist, world.provider.dimensionId)) {
+            super.decorate(world, random, chunkX, chunkZ);
+        }
     }
 
     @SideOnly(Side.CLIENT)

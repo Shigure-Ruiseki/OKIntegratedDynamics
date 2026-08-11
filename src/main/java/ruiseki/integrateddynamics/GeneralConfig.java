@@ -87,6 +87,14 @@ public class GeneralConfig extends DummyConfig {
     public static int wildMenrilTreeChance = 350;
 
     /**
+     * List of dimension IDs in which wild menril trees should not generate.
+     */
+    @ConfigurableProperty(
+        category = ConfigurableTypeCategory.WORLDGENERATION,
+        comment = "List of dimension IDs in which wild menril trees should not generate.")
+    public static int[] wildMenrilTreeDimensionBlacklist = new int[] { -1, 1 };
+
+    /**
      * The maximum network energy transfer rate.
      */
     @ConfigurableProperty(
