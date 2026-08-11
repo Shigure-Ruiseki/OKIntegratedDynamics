@@ -1,7 +1,7 @@
 package ruiseki.integrateddynamics.api.ingredient;
 
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
-import ruiseki.integrateddynamics.api.part.PartPos;
+import ruiseki.integrateddynamics.api.part.PrioritizedPartPos;
 import ruiseki.okcore.ingredient.collection.IIngredientCollection;
 import ruiseki.okcore.ingredient.collection.diff.IngredientCollectionDiff;
 
@@ -61,12 +61,12 @@ public interface IIngredientComponentStorageObservable<T, M> {
     public static class StorageChangeEvent<T, M> {
 
         private final int channel;
-        private final PartPos pos;
+        private final PrioritizedPartPos pos;
         private final Change changeType;
         private final boolean completeChange;
         private final IIngredientCollection<T, M> instances;
 
-        public StorageChangeEvent(int channel, PartPos pos, Change changeType, boolean completeChange,
+        public StorageChangeEvent(int channel, PrioritizedPartPos pos, Change changeType, boolean completeChange,
             IIngredientCollection<T, M> instances) {
             this.channel = channel;
             this.pos = pos;
@@ -79,7 +79,7 @@ public interface IIngredientComponentStorageObservable<T, M> {
             return channel;
         }
 
-        public PartPos getPos() {
+        public PrioritizedPartPos getPos() {
             return pos;
         }
 

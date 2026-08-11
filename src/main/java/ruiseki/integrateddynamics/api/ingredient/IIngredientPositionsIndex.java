@@ -3,6 +3,7 @@ package ruiseki.integrateddynamics.api.ingredient;
 import java.util.Iterator;
 
 import ruiseki.integrateddynamics.api.part.PartPos;
+import ruiseki.integrateddynamics.api.part.PrioritizedPartPos;
 import ruiseki.okcore.ingredient.collection.IIngredientCollection;
 
 /**
@@ -20,7 +21,7 @@ public interface IIngredientPositionsIndex<T, M> extends IIngredientCollection<T
 
     /**
      * Get all positions that have an instance that contain the given instance.
-     * 
+     *
      * @param instance   An instance to match.
      * @param matchFlags Instance match conditions.
      * @return The positions.
@@ -29,11 +30,11 @@ public interface IIngredientPositionsIndex<T, M> extends IIngredientCollection<T
 
     /**
      * Indicate that the given position contains the given position.
-     * 
+     *
      * @param instance An instance.
      * @param pos      A position.
      */
-    public void addPosition(T instance, PartPos pos);
+    public void addPosition(T instance, PrioritizedPartPos pos);
 
     /**
      * Indicate that the given instance is removed from the given position.
@@ -44,6 +45,6 @@ public interface IIngredientPositionsIndex<T, M> extends IIngredientCollection<T
      * @param instance An instance.
      * @param pos      A position.
      */
-    public void removePosition(T instance, PartPos pos);
+    public void removePosition(T instance, PrioritizedPartPos pos);
 
 }

@@ -15,12 +15,13 @@ import ruiseki.integrateddynamics.api.network.IFullNetworkListener;
 import ruiseki.integrateddynamics.api.network.INetworkElement;
 import ruiseki.integrateddynamics.api.network.IPositionedAddonsNetworkIngredients;
 import ruiseki.integrateddynamics.api.part.PartPos;
+import ruiseki.integrateddynamics.api.part.PrioritizedPartPos;
 import ruiseki.integrateddynamics.api.path.IPathElement;
 import ruiseki.okcore.ingredient.collection.IIngredientCollection;
 
 /**
  * An ingredient network that can hold prioritized positions.
- *
+ * 
  * @param <T> The instance type.
  * @param <M> The matching condition parameter, may be Void. Instances MUST properly implement the equals method.
  * @author rubensworks
@@ -70,7 +71,7 @@ public abstract class PositionedAddonsNetworkIngredients<T, M> extends Positione
     protected void applyChangesToChannel(IIngredientComponentStorageObservable.StorageChangeEvent<T, M> event,
         int channel) {
         IIngredientCollection<T, M> instances = event.getInstances();
-        PartPos pos = event.getPos();
+        PrioritizedPartPos pos = event.getPos();
         IngredientPositionsIndex<T, M> index = getIndexSafe(channel);
         if (event.getChangeType() == IIngredientComponentStorageObservable.Change.DELETION) {
             index.removeAll(instances);
@@ -102,7 +103,7 @@ public abstract class PositionedAddonsNetworkIngredients<T, M> extends Positione
     }
 
     @Override
-    protected void onPositionRemoved(int channel, PartPos pos) {
+    protected void onPositionRemoved(int channel, PrioritizedPartPos pos) {
         super.onPositionRemoved(channel, pos);
         ingredientObserver.onPositionRemoved(channel, pos);
     }

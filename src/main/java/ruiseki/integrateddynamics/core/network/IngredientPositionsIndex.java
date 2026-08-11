@@ -1,5 +1,6 @@
 package ruiseki.integrateddynamics.core.network;
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.TreeSet;
 
@@ -8,8 +9,8 @@ import com.google.common.collect.Sets;
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
 import ruiseki.integrateddynamics.api.ingredient.IIngredientPositionsIndex;
 import ruiseki.integrateddynamics.api.part.PartPos;
+import ruiseki.integrateddynamics.api.part.PrioritizedPartPos;
 import ruiseki.okcore.datastructure.DistinctIterator;
-import ruiseki.okcore.datastructure.MultitransformIterator;
 import ruiseki.okcore.ingredient.collection.IIngredientCollectionMutable;
 import ruiseki.okcore.ingredient.collection.IIngredientMapMutable;
 import ruiseki.okcore.ingredient.collection.IngredientCollectionMutableWrapper;
@@ -18,7 +19,7 @@ import ruiseki.okcore.ingredient.collection.IngredientHashMap;
 
 /**
  * An index that maps ingredients to positions that contain that instance.
- * 
+ *
  * @param <T> An instance type.
  * @param <M> The matching condition parameter.
  * @author rubensworks
@@ -27,7 +28,7 @@ public class IngredientPositionsIndex<T, M>
     extends IngredientCollectionMutableWrapper<T, M, IIngredientCollectionMutable<T, M>>
     implements IIngredientPositionsIndex<T, M> {
 
-    private final IIngredientMapMutable<T, M, TreeSet<PartPos>> positionsMap;
+    private final IIngredientMapMutable<T, M, TreeSet<PrioritizedPartPos>> positionsMap;
 
     public IngredientPositionsIndex(IngredientComponent<T, M> component) {
         super(new IngredientCollectionPrototypeMap<>(component, false));
@@ -52,15 +53,17 @@ public class IngredientPositionsIndex<T, M>
     @Override
     public Iterator<PartPos> getPositions(T instance, M matchFlags) {
         return new DistinctIterator<>(
-            MultitransformIterator.flattenIterableIterator(
-                this.positionsMap.getAll(getPrototype(instance), matchFlags)
-                    .iterator()));
+            this.positionsMap.getAll(getPrototype(instance), matchFlags)
+                .stream()
+                .flatMap(Collection::stream)
+                .map(PrioritizedPartPos::getPartPos)
+                .iterator());
     }
 
     @Override
-    public void addPosition(T instance, PartPos pos) {
+    public void addPosition(T instance, PrioritizedPartPos pos) {
         T prototype = getPrototype(instance);
-        TreeSet<PartPos> set = this.positionsMap.get(prototype);
+        TreeSet<PrioritizedPartPos> set = this.positionsMap.get(prototype);
         if (set == null) {
             set = Sets.newTreeSet();
             this.positionsMap.put(prototype, set);
@@ -69,9 +72,9 @@ public class IngredientPositionsIndex<T, M>
     }
 
     @Override
-    public void removePosition(T instance, PartPos pos) {
+    public void removePosition(T instance, PrioritizedPartPos pos) {
         T prototype = getPrototype(instance);
-        TreeSet<PartPos> set = this.positionsMap.get(prototype);
+        TreeSet<PrioritizedPartPos> set = this.positionsMap.get(prototype);
         if (set != null) {
             set.remove(pos);
             if (set.isEmpty()) {

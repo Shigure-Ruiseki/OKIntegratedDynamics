@@ -5,12 +5,12 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.WeakHashMap;
-
-import net.minecraftforge.common.util.ForgeDirection;
+import java.util.stream.Collectors;
 
 import org.jetbrains.annotations.Nullable;
 
 import ruiseki.integrateddynamics.api.part.PartPos;
+import ruiseki.integrateddynamics.api.part.PrioritizedPartPos;
 
 /**
  * A network that can hold prioritized positions.
@@ -31,7 +31,7 @@ public interface IPositionedAddonsNetwork {
 
     /**
      * Whether two parts on the given channels may interact.
-     * 
+     *
      * @param first  The id of the first channel.
      * @param second The id of the second channel.
      * @return If the two channels match.
@@ -54,12 +54,31 @@ public interface IPositionedAddonsNetwork {
      * @param channel The channel id.
      * @return The stored positions, sorted by priority.
      */
-    public Collection<PartPos> getPositions(int channel);
+    public Collection<PrioritizedPartPos> getPrioritizedPositions(int channel);
+
+    /**
+     * @param channel The channel id.
+     * @return The stored positions, sorted by priority.
+     */
+    public default Collection<PartPos> getPositions(int channel) {
+        return getPrioritizedPositions(channel).stream()
+            .map(PrioritizedPartPos::getPartPos)
+            .collect(Collectors.toList());
+    }
 
     /**
      * @return All stored positions, order is undefined.
      */
-    public Collection<PartPos> getPositions();
+    public Collection<PrioritizedPartPos> getPrioritizedPositions();
+
+    /**
+     * @return All stored positions, order is undefined.
+     */
+    public default Collection<PartPos> getPositions() {
+        return getPrioritizedPositions().stream()
+            .map(PrioritizedPartPos::getPartPos)
+            .collect(Collectors.toList());
+    }
 
     /**
      * Get an iterator over the positions in the given channel.
@@ -136,55 +155,6 @@ public interface IPositionedAddonsNetwork {
      * @param pos The position.
      */
     public void enablePosition(PartPos pos);
-
-    public static class PrioritizedPartPos implements Comparable<PrioritizedPartPos> {
-
-        private final PartPos partPos;
-        private final int priority;
-
-        private PrioritizedPartPos(PartPos partPos, int priority) {
-            this.partPos = partPos;
-            this.priority = priority;
-        }
-
-        @Override
-        public int compareTo(PrioritizedPartPos o) {
-            int compPriority = -Integer.compare(this.getPriority(), o.getPriority());
-            if (compPriority == 0) {
-                int compPos = this.getPartPos()
-                    .getPos()
-                    .compareTo(
-                        o.getPartPos()
-                            .getPos());
-                if (compPos == 0) {
-                    ForgeDirection thisSide = this.getPartPos()
-                        .getSide();
-                    ForgeDirection otherSide = o.getPartPos()
-                        .getSide();
-                    return thisSide == null ? -1 : (otherSide == null ? 1 : thisSide.compareTo(otherSide));
-                }
-                return compPos;
-            }
-            return compPriority;
-        }
-
-        public static PrioritizedPartPos of(PartPos pos, int priority) {
-            return new PrioritizedPartPos(pos, priority);
-        }
-
-        public PartPos getPartPos() {
-            return partPos;
-        }
-
-        public int getPriority() {
-            return priority;
-        }
-
-        @Override
-        public int hashCode() {
-            return getPartPos().hashCode() + getPriority() << 1;
-        }
-    }
 
     public static class PositionsIterator implements Iterator<PartPos> {
 
