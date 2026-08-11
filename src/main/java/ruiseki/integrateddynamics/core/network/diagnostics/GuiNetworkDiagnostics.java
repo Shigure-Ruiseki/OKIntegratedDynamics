@@ -106,17 +106,16 @@ public class GuiNetworkDiagnostics extends JFrame {
 
                 networkDataParts.putAll(id, parts);
             }
-        }
-        synchronized (networkDataObservers) {
-            Collection<ObservableObserverData> previous = networkDataObservers.removeAll(id);
+
+            Collection<ObservableObserverData> previousObservers = networkDataObservers.removeAll(id);
 
             // The positions that were being rendered previously
-            Set<PartPos> previousPositionsWithRender = Sets.newHashSet();
-            for (ObservableObserverData partData : previous) {
+            Set<PartPos> previousPositionsWithRenderObservers = Sets.newHashSet();
+            for (ObservableObserverData partData : previousObservers) {
                 PartPos pos = partData.toPartPos();
                 if (pos != null && NetworkDiagnosticsPartOverlayRenderer.getInstance()
                     .hasPartPos(pos)) {
-                    previousPositionsWithRender.add(pos);
+                    previousPositionsWithRenderObservers.add(pos);
                 }
             }
 
@@ -135,13 +134,13 @@ public class GuiNetworkDiagnostics extends JFrame {
                     // Remove this position from the previously rendered list
                     PartPos pos = partData.toPartPos();
                     if (pos != null) {
-                        previousPositionsWithRender.remove(pos);
+                        previousPositionsWithRenderObservers.remove(pos);
                     }
                 }
 
                 // Remove all remaining positions from the renderlist,
                 // because those do not exist anymore.
-                for (PartPos partPos : previousPositionsWithRender) {
+                for (PartPos partPos : previousPositionsWithRenderObservers) {
                     NetworkDiagnosticsPartOverlayRenderer.getInstance()
                         .removePos(partPos);
                 }
@@ -156,6 +155,7 @@ public class GuiNetworkDiagnostics extends JFrame {
 
     public static void clearNetworkData() {
         networkDataParts.clear();
+        networkDataObservers.clear();
     }
 
     public static void start() {
@@ -460,7 +460,7 @@ public class GuiNetworkDiagnostics extends JFrame {
             return null;
         }
         Object[] data;
-        synchronized (networkDataObservers) {
+        synchronized (networkDataParts) {
             data = networkDataObservers.values()
                 .toArray();
         }

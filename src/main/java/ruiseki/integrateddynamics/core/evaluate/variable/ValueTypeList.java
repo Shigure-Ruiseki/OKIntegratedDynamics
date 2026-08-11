@@ -27,6 +27,8 @@ import ruiseki.okcore.helper.LangHelpers;
  */
 public class ValueTypeList extends ValueObjectTypeBase<ValueTypeList.ValueList> {
 
+    public static final int MAX_RENDER_LINES = 20;
+
     public ValueTypeList() {
         super("list", Helpers.RGBToInt(175, 3, 1), EnumChatFormatting.DARK_RED.toString());
     }

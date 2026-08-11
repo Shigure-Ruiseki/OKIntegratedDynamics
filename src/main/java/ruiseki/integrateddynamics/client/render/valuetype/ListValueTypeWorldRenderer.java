@@ -41,7 +41,7 @@ public class ListValueTypeWorldRenderer implements IValueTypeWorldRenderer {
         IValueType listType = ((ValueTypeList.ValueList<?, ?>) value).getRawValue()
             .getValueType();
         for (IValue element : ((ValueTypeList.ValueList<?, ?>) value).getRawValue()) {
-            if (lines.size() >= MAX_LINES) {
+            if (lines.size() >= ValueTypeList.MAX_RENDER_LINES) {
                 lines.add(Pair.of("...", listType.getDisplayColor()));
                 break;
             } else {

@@ -16,6 +16,7 @@ import net.minecraftforge.common.util.ForgeDirection;
 
 import org.apache.logging.log4j.Level;
 
+import com.google.common.collect.Lists;
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 
 import lombok.Getter;
@@ -24,6 +25,7 @@ import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
+import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeListProxy;
 import ruiseki.integrateddynamics.api.evaluate.variable.IVariable;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
@@ -35,6 +37,7 @@ import ruiseki.integrateddynamics.client.gui.GuiPartDisplay;
 import ruiseki.integrateddynamics.core.block.IgnoredBlock;
 import ruiseki.integrateddynamics.core.block.IgnoredBlockStatus;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueHelpers;
+import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeList;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
@@ -299,6 +302,19 @@ public abstract class PartTypePanelVariableDriven<P extends PartTypePanelVariabl
                     "displayValueType",
                     value.getType()
                         .getUnlocalizedName());
+                if (value.getType() == ValueTypes.LIST) {
+                    IValueTypeListProxy<IValueType<IValue>, IValue> original = ((ValueTypeList.ValueList) value)
+                        .getRawValue();
+                    try {
+                        if (original.getLength() > ValueTypeList.MAX_RENDER_LINES) {
+                            List<IValue> list = Lists.newArrayList();
+                            for (int i = 0; i < ValueTypeList.MAX_RENDER_LINES; i++) {
+                                list.add(original.get(i));
+                            }
+                            value = ValueTypeList.ValueList.ofList(original.getValueType(), list);
+                        }
+                    } catch (EvaluationException e) {}
+                }
                 tag.setString("displayValue", ValueHelpers.serializeRaw(value));
             }
             tag.setInteger("facingRotation", facingRotation.ordinal());
