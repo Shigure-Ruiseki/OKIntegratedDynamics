@@ -52,8 +52,10 @@ public class IngredientChannelAdapterWrapperSlotted<T, M> implements IIngredient
                 .isLoaded() || network.isPositionDisabled(pos)) {
                 continue;
             }
+            network.disablePosition(pos);
             IIngredientComponentStorage<T, M> storage = network.getPositionedStorage(pos);
             slots = Helpers.addSafe(slots, getIngredientComponentStorageSize(storage));
+            network.enablePosition(pos);
         }
 
         return slots;
@@ -68,8 +70,10 @@ public class IngredientChannelAdapterWrapperSlotted<T, M> implements IIngredient
                 .isLoaded() || network.isPositionDisabled(pos)) {
                 continue;
             }
+            network.disablePosition(pos);
             IIngredientComponentStorage<T, M> storage = network.getPositionedStorage(pos);
             int storageSize = getIngredientComponentStorageSize(storage);
+            network.enablePosition(pos);
             if (slot < storageSize) {
                 return Pair.of(storage, slot);
             } else {

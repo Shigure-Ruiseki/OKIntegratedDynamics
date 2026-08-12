@@ -3,6 +3,7 @@ package ruiseki.integrateddynamics.part;
 import java.util.Collections;
 import java.util.Set;
 
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
@@ -123,6 +124,21 @@ public class PartTypeConnectorMonoDirectional
         }
     }
 
+    @Override
+    public ItemStack getItemStack(State state, boolean saveState) {
+        // Set offset to 0 to make sure it is not stored in the item
+        int offset = state.getOffset();
+        state.setOffset(0);
+
+        // Serialize to item
+        ItemStack itemStack = super.getItemStack(state, saveState);
+
+        // Set original offset back
+        state.setOffset(offset);
+
+        return itemStack;
+    }
+
     /**
      * Look in the part's direction for an unbound monodirectional connector.
      *
@@ -175,7 +191,7 @@ public class PartTypeConnectorMonoDirectional
         }
 
         public void setTarget(int offset) {
-            this.offset = offset;
+            setOffset(offset);
             sendUpdate();
 
             DimPos dimPos = getPosition();
@@ -206,6 +222,16 @@ public class PartTypeConnectorMonoDirectional
 
         public int getOffset() {
             return this.offset;
+        }
+
+        /**
+         * Set the raw offset.
+         * Prefer {@link #setTarget(int)}.
+         *
+         * @param offset The new offset.
+         */
+        public void setOffset(int offset) {
+            this.offset = offset;
         }
 
         public void removeTarget() {

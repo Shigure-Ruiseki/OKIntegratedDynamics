@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 import net.minecraft.client.Minecraft;
@@ -232,17 +231,25 @@ public class ValueTypeRecipeLPElement extends ValueTypeLPElementBase {
         return fluidHandler.getContainer();
     }
 
-    @Override
-    public boolean canWriteElementPre() {
-        boolean inputValid = inputStacks.stream()
-            .anyMatch(stack -> stack.getLeft() != null) || inputFluid != null
+    protected boolean isInputValid() {
+        return inputStacks.stream()
+            .anyMatch(stack -> stack.getLeft() != null)
+
+            || inputFluid != null
             || !inputFluidAmount.equalsIgnoreCase("0")
             || !inputEnergy.equalsIgnoreCase("0");
-        boolean outputValid = outputStacks.stream()
-            .anyMatch(Objects::nonNull) || outputFluid != null
+    }
+
+    protected boolean isOutputValid() {
+        return outputStacks.stream()
+            .anyMatch(stack -> stack != null) || outputFluid != null
             || !outputFluidAmount.equalsIgnoreCase("0")
             || !outputEnergy.equalsIgnoreCase("0");
-        return inputValid && outputValid;
+    }
+
+    @Override
+    public boolean canWriteElementPre() {
+        return isInputValid() == isOutputValid(); // Not &&, because we also allow fully blank recipes
     }
 
     @Override

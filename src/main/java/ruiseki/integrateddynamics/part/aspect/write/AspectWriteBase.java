@@ -15,6 +15,7 @@ import ruiseki.integrateddynamics.api.part.aspect.IAspectWrite;
 import ruiseki.integrateddynamics.api.part.aspect.property.IAspectProperties;
 import ruiseki.integrateddynamics.api.part.write.IPartStateWriter;
 import ruiseki.integrateddynamics.api.part.write.IPartTypeWriter;
+import ruiseki.integrateddynamics.core.evaluate.variable.ValueHelpers;
 import ruiseki.integrateddynamics.part.aspect.AspectBase;
 import ruiseki.integrateddynamics.part.aspect.Aspects;
 import ruiseki.okcore.helper.LangHelpers;
@@ -50,7 +51,7 @@ public abstract class AspectWriteBase<V extends IValue, T extends IValueType<V>>
         IPartStateWriter writerState = (IPartStateWriter) state;
         IVariable variable = partTypeWriter.getActiveVariable(network, partNetwork, target, writerState);
         if (variable != null && writerState.getErrors(this)
-            .isEmpty() && getValueType().correspondsTo(variable.getType())) {
+            .isEmpty() && ValueHelpers.correspondsTo(getValueType(), variable.getType())) {
             if (writerState.isDeactivated() || writerState.checkAndResetFirstTick()) {
                 onActivate(partTypeWriter, target, writerState);
             }

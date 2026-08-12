@@ -7,6 +7,7 @@ import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 import ruiseki.integrateddynamics.api.evaluate.variable.IVariable;
 import ruiseki.integrateddynamics.api.logicprogrammer.IConfigRenderPattern;
+import ruiseki.integrateddynamics.core.evaluate.variable.ValueHelpers;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.okcore.helper.LangHelpers;
 
@@ -86,7 +87,7 @@ public class CompositionalOperator extends OperatorBase {
                 for (AppliedOperatorBuilder builder : builders) {
                     IValueType[] subInputTypes = builder.getInputTypes();
                     for (int i = 0; i < subInputTypes.length; i++) {
-                        if (inputTypes[i] != null && !inputTypes[i].correspondsTo(subInputTypes[i])) {
+                        if (inputTypes[i] != null && !ValueHelpers.correspondsTo(inputTypes[i], subInputTypes[i])) {
                             throw new IllegalArgumentException(
                                 String.format(
                                     "An composed operator expected type %s "
