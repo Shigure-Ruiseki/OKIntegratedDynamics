@@ -13,6 +13,7 @@ import org.jetbrains.annotations.Nullable;
 
 import ruiseki.integrateddynamics.GeneralConfig;
 import ruiseki.integrateddynamics.IntegratedDynamics;
+import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.part.AttachCapabilitiesEventPart;
 import ruiseki.integrateddynamics.api.part.IPartState;
@@ -248,12 +249,13 @@ public abstract class PartStateBase<P extends IPartType> implements IPartState<P
     }
 
     @Override
-    public <T> LazyOptional<T> getCapability(Capability<T> capability, IPartNetwork network, PartTarget target) {
+    public <T> LazyOptional<T> getCapability(Capability<T> capability, INetwork network, IPartNetwork partNetwork,
+        PartTarget target) {
         LazyOptional<?> lazyOptional = volatileCapabilities.get(capability);
         if (lazyOptional != null) {
             return lazyOptional.cast();
         }
-        return capabilities == null ? LazyOptional.empty() : capabilities.getCapability(capability, null);
+        return capabilities == null ? null : capabilities.getCapability(capability, null);
     }
 
     @Override

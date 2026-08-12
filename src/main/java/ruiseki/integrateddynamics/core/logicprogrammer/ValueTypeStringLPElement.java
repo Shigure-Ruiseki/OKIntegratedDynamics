@@ -6,6 +6,7 @@ import ruiseki.integrateddynamics.api.client.gui.subgui.ISubGuiBox;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 import ruiseki.integrateddynamics.client.gui.GuiLogicProgrammerBase;
+import ruiseki.integrateddynamics.core.evaluate.variable.ValueHelpers;
 import ruiseki.integrateddynamics.inventory.container.ContainerLogicProgrammerBase;
 import ruiseki.okcore.helper.LangHelpers;
 
@@ -50,8 +51,7 @@ public class ValueTypeStringLPElement extends ValueTypeLPElementBase {
 
     @Override
     public IValue getValue() {
-        return getInnerGuiElement().getValueType()
-            .deserialize(getInnerGuiElement().getInputString());
+        return ValueHelpers.deserializeRaw(getInnerGuiElement().getValueType(), getInnerGuiElement().getInputString());
     }
 
     @Override

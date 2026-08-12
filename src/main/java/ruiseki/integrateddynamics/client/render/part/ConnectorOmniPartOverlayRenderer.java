@@ -10,8 +10,8 @@ import org.apache.commons.lang3.tuple.Triple;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-import gnu.trove.map.TIntIntMap;
-import gnu.trove.map.hash.TIntIntHashMap;
+import it.unimi.dsi.fastutil.ints.Int2IntMap;
+import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartState;
 import ruiseki.integrateddynamics.api.part.IPartType;
@@ -28,7 +28,7 @@ import ruiseki.okcore.helper.Helpers;
 @SideOnly(Side.CLIENT)
 public class ConnectorOmniPartOverlayRenderer extends PartOverlayRendererBase {
 
-    private static final TIntIntMap CACHED_GROUP_COLORS = new TIntIntHashMap();
+    private static final Int2IntMap CACHED_GROUP_COLORS = new Int2IntOpenHashMap();
 
     private final Random rand = new Random();
 

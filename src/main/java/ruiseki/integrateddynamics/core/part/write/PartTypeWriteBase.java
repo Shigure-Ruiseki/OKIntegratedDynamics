@@ -100,7 +100,7 @@ public abstract class PartTypeWriteBase<P extends IPartTypeWriter<P, S>, S exten
         super.update(network, partNetwork, target, state);
         IAspect aspect = getActiveAspect(target, state);
         if (aspect != null) {
-            aspect.update(partNetwork, this, target, state);
+            aspect.update(network, partNetwork, this, target, state);
         }
     }
 
@@ -146,10 +146,10 @@ public abstract class PartTypeWriteBase<P extends IPartTypeWriter<P, S>, S exten
         return partState.hasVariable();
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    public <V extends IValue> IVariable<V> getActiveVariable(IPartNetwork network, PartTarget target, S partState) {
-        return partState.getVariable(network);
+    public <V extends IValue> IVariable<V> getActiveVariable(INetwork network, IPartNetwork partNetwork,
+        PartTarget target, S partState) {
+        return partState.getVariable(network, partNetwork);
     }
 
     @Override

@@ -18,8 +18,8 @@ import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 import cpw.mods.fml.common.event.FMLServerStartedEvent;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent;
-import gnu.trove.map.TIntObjectMap;
-import gnu.trove.map.hash.TIntObjectHashMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
@@ -271,7 +271,7 @@ public class PartTypeConnectorOmniDirectional
 
     public static class LoadedGroups {
 
-        private TIntObjectMap<Set<PartPos>> groupPositions = new TIntObjectHashMap<>();
+        private Int2ObjectMap<Set<PartPos>> groupPositions = new Int2ObjectOpenHashMap<>();
         private boolean modifyingPositions = false;
 
         public void onStartedEvent(FMLServerStartedEvent event) {

@@ -21,6 +21,10 @@ public class ValueTypeListProxyPositionedInventory
         super(ValueTypeListProxyFactories.POSITIONED_INVENTORY.getName(), ValueTypes.OBJECT_ITEMSTACK, pos, side);
     }
 
+    public ValueTypeListProxyPositionedInventory() {
+        this(null, null);
+    }
+
     protected IItemHandler getInventory() {
         return CapabilityHelpers.getCapability(getPos(), CapabilityItemHandler.ITEM_HANDLER, getSide())
             .getOrNull();

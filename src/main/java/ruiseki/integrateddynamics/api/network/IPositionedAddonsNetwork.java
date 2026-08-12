@@ -10,7 +10,7 @@ import ruiseki.integrateddynamics.api.part.PrioritizedPartPos;
 
 /**
  * A network that can hold prioritized positions.
- * 
+ *
  * @author rubensworks
  */
 public interface IPositionedAddonsNetwork {
@@ -27,7 +27,7 @@ public interface IPositionedAddonsNetwork {
 
     /**
      * Whether two parts on the given channels may interact.
-     * 
+     *
      * @param first  The id of the first channel.
      * @param second The id of the second channel.
      * @return If the two channels match.
@@ -51,6 +51,15 @@ public interface IPositionedAddonsNetwork {
      * @return The stored positions, sorted by priority.
      */
     public Collection<PrioritizedPartPos> getPrioritizedPositions(int channel);
+
+    /**
+     * Get the channel this position is present in.
+     * -1 if it is not present in any channel.
+     * 
+     * @param pos A position.
+     * @return A channel.
+     */
+    public int getPositionChannel(PartPos pos);
 
     /**
      * @param channel The channel id.
@@ -84,14 +93,14 @@ public interface IPositionedAddonsNetwork {
 
     /**
      * Set a part positions iterator handler for this network.
-     * 
+     *
      * @param iteratorHandler An iterator handler or null if it should be reset.
      */
     public void setPartPosIteratorHandler(@Nullable IPartPosIteratorHandler iteratorHandler);
 
     /**
      * Add the given position.
-     * 
+     *
      * @param pos      The position.
      * @param priority The priority.
      * @param channel  The channel id.
@@ -101,14 +110,14 @@ public interface IPositionedAddonsNetwork {
 
     /**
      * Remove the given position.
-     * 
+     *
      * @param pos The position.
      */
     public void removePosition(PartPos pos);
 
     /**
      * Check if the given position is disabled.
-     * 
+     *
      * @param pos The position.
      * @return If it is disabled.
      */
@@ -116,14 +125,14 @@ public interface IPositionedAddonsNetwork {
 
     /**
      * Disable a position.
-     * 
+     *
      * @param pos The position.
      */
     public void disablePosition(PartPos pos);
 
     /**
      * Enable a position.
-     * 
+     *
      * @param pos The position.
      */
     public void enablePosition(PartPos pos);

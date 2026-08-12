@@ -73,6 +73,7 @@ public class GuiTextFieldDropdown<T> extends GuiTextFieldExtended {
                     }
                     return true;
                 case Keyboard.KEY_NUMPADENTER:
+                case Keyboard.KEY_RETURN:
                 case Keyboard.KEY_RIGHT:
                     if (visiblePossibilitiesIndex >= 0 && visiblePossibilitiesIndex < visiblePossibilities.size()) {
                         selectVisiblePossibility(visiblePossibilitiesIndex);
@@ -208,6 +209,12 @@ public class GuiTextFieldDropdown<T> extends GuiTextFieldExtended {
                 .max(0, Math.min(visiblePossibilitiesIndex, visiblePossibilities.size() - getDropdownSize()));
             int endIndex = Math.min(startIndex + getDropdownSize(), visiblePossibilities.size());
             int cy = y;
+
+            // Draw ... if we are not at the first element
+            if (startIndex > 0) {
+                cy += 10;
+            }
+
             for (int i = startIndex; i < endIndex; i++) {
                 // Initialize entry
                 IDropdownEntry<?> dropdownEntry = visiblePossibilities.get(i);

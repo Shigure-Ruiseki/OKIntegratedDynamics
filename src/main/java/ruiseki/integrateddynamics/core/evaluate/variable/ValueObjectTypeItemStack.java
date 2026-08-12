@@ -32,7 +32,9 @@ public class ValueObjectTypeItemStack extends ValueObjectTypeBase<ValueObjectTyp
     }
 
     public static String getItemStackDisplayNameUsSafe(ItemStack itemStack) throws NoSuchMethodException {
-        return itemStack != null ? itemStack.getDisplayName() : "";
+        return itemStack != null
+            ? (itemStack.getDisplayName() + (itemStack.stackSize > 1 ? " (" + itemStack.stackSize + ")" : ""))
+            : "";
     }
 
     public static String getItemStackDisplayNameSafe(ItemStack itemStack) {
@@ -70,9 +72,13 @@ public class ValueObjectTypeItemStack extends ValueObjectTypeBase<ValueObjectTyp
     public ValueItemStack deserialize(String value) {
         try {
             NBTTagCompound tag = (NBTTagCompound) JsonToNBT.func_150315_a(value);
+            // Forge returns air for tags with negative count,
+            // so we set it to 1 for deserialization and fix it afterwards.
+            int realCount = tag.getInteger("Count");
+            tag.setByte("Count", (byte) 1);
             ItemStack itemStack = ItemStack.loadItemStackFromNBT(tag);
             if (itemStack != null) {
-                itemStack.stackSize = tag.getInteger("Count");
+                itemStack.stackSize = realCount;
             }
             return ValueItemStack.of(itemStack);
         } catch (NBTException e) {

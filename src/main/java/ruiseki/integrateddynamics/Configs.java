@@ -37,6 +37,7 @@ import ruiseki.integrateddynamics.item.ItemVariableTransformerConfig;
 import ruiseki.integrateddynamics.item.ItemWrenchConfig;
 import ruiseki.integrateddynamics.world.biome.BiomeMeneglinConfig;
 import ruiseki.okcore.config.ConfigHandler;
+import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 
 public class Configs {
 
@@ -99,5 +100,16 @@ public class Configs {
 
         // Biomes
         configHandler.add(new BiomeMeneglinConfig());
+    }
+
+    /**
+     * A safe way to check if a {@link ruiseki.okcore.config.configurable.IConfigurable} is enabled. @see
+     * ExtendedConfig#isEnabled()
+     * 
+     * @param config The config to check.
+     * @return If the given config is enabled.
+     */
+    public static boolean isEnabled(Class<? extends ExtendedConfig<?>> config) {
+        return ConfigHandler.isEnabled(config);
     }
 }

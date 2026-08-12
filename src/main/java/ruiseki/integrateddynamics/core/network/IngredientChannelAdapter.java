@@ -1,11 +1,15 @@
 package ruiseki.integrateddynamics.core.network;
 
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
 
 import javax.annotation.Nonnull;
 
 import org.apache.commons.lang3.tuple.Pair;
+
+import com.google.common.collect.Lists;
 
 import ruiseki.commoncapabilities.api.ingredient.IIngredientMatcher;
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
@@ -13,6 +17,9 @@ import ruiseki.commoncapabilities.api.ingredient.storage.IIngredientComponentSto
 import ruiseki.integrateddynamics.api.network.IPartPosIteratorHandler;
 import ruiseki.integrateddynamics.api.network.IPositionedAddonsNetworkIngredients;
 import ruiseki.integrateddynamics.api.part.PartPos;
+import ruiseki.okcore.datastructure.Wrapper;
+import ruiseki.okcore.ingredient.collection.IIngredientMapMutable;
+import ruiseki.okcore.ingredient.collection.IngredientHashMap;
 
 /**
  * An abstract {@link IIngredientComponentStorage} that wraps over a {@link IPositionedAddonsNetworkIngredients}.
@@ -25,9 +32,20 @@ public abstract class IngredientChannelAdapter<T, M> implements IIngredientCompo
     private final IPositionedAddonsNetworkIngredients<T, M> network;
     private final int channel;
 
+    private boolean limitsEnabled;
+
     public IngredientChannelAdapter(PositionedAddonsNetworkIngredients<T, M> network, int channel) {
         this.network = network;
         this.channel = channel;
+        this.limitsEnabled = true;
+    }
+
+    public void enableLimits() {
+        this.limitsEnabled = true;
+    }
+
+    public void disableLimits() {
+        this.limitsEnabled = false;
     }
 
     public IPositionedAddonsNetworkIngredients<T, M> getNetwork() {
@@ -56,9 +74,15 @@ public abstract class IngredientChannelAdapter<T, M> implements IIngredientCompo
         long sum = 0;
         Iterator<PartPos> it = getAllPositions();
         while (it.hasNext()) {
+            PartPos pos = it.next();
+            // Skip if the position is not loaded
+            if (!pos.getPos()
+                .isLoaded()) {
+                continue;
+            }
             sum = Math.addExact(
                 sum,
-                this.network.getPositionedStorage(it.next())
+                this.network.getPositionedStorage(pos)
                     .getMaxQuantity());
         }
         return sum;
@@ -79,6 +103,10 @@ public abstract class IngredientChannelAdapter<T, M> implements IIngredientCompo
         network.setPartPosIteratorHandler(partPosIteratorHandler);
     }
 
+    protected void markStoragePositionChanged(int channel, PartPos targetPos) {
+        this.network.scheduleObservationForced(channel, targetPos);
+    }
+
     @Override
     public T insert(@Nonnull T ingredient, boolean simulate) {
         IIngredientMatcher<T, M> matcher = getComponent().getMatcher();
@@ -89,12 +117,15 @@ public abstract class IngredientChannelAdapter<T, M> implements IIngredientCompo
         }
 
         // Limit rate
-        long limit = network.getRateLimit();
-        long currentQuantity = matcher.getQuantity(ingredient);
         long skippedQuantity = 0;
-        if (currentQuantity > limit) {
-            ingredient = matcher.withQuantity(ingredient, limit);
-            skippedQuantity = currentQuantity - limit;
+        T ingredientOriginal = ingredient;
+        if (this.limitsEnabled) {
+            long limit = network.getRateLimit();
+            long currentQuantity = matcher.getQuantity(ingredient);
+            if (currentQuantity > limit) {
+                ingredient = matcher.withQuantity(ingredient, limit);
+                skippedQuantity = currentQuantity - limit;
+            }
         }
 
         // Try inserting the ingredient at all positions that are not full,
@@ -105,10 +136,20 @@ public abstract class IngredientChannelAdapter<T, M> implements IIngredientCompo
         Iterator<PartPos> it = partPosIteratorData.getRight();
         while (it.hasNext()) {
             PartPos pos = it.next();
+            // Skip if the position is not loaded or disabled
+            if (!pos.getPos()
+                .isLoaded() || network.isPositionDisabled(pos)) {
+                continue;
+            }
             this.network.disablePosition(pos);
+            long quantityBefore = matcher.getQuantity(ingredient);
             ingredient = this.network.getPositionedStorage(pos)
                 .insert(ingredient, simulate);
+            long quantityAfter = matcher.getQuantity(ingredient);
             this.network.enablePosition(pos);
+            if (!simulate && quantityBefore != quantityAfter) {
+                markStoragePositionChanged(channel, pos);
+            }
             if (matcher.isEmpty(ingredient)) {
                 break;
             }
@@ -116,7 +157,8 @@ public abstract class IngredientChannelAdapter<T, M> implements IIngredientCompo
 
         // Re-add skipped quantity to response if applicable
         if (skippedQuantity > 0) {
-            ingredient = matcher.withQuantity(ingredient, skippedQuantity + matcher.getQuantity(ingredient));
+            // Modify ingredientOriginal instead of ingredient, because ingredient may be EMPTY.
+            ingredient = matcher.withQuantity(ingredientOriginal, skippedQuantity + matcher.getQuantity(ingredient));
         }
 
         if (!simulate) {
@@ -131,7 +173,9 @@ public abstract class IngredientChannelAdapter<T, M> implements IIngredientCompo
         IIngredientMatcher<T, M> matcher = getComponent().getMatcher();
 
         // Limit rate
-        maxQuantity = (int) Math.min(maxQuantity, network.getRateLimit());
+        if (this.limitsEnabled) {
+            maxQuantity = (int) Math.min(maxQuantity, network.getRateLimit());
+        }
 
         // Try extracting from all non-empty positions
         // until one succeeds.
@@ -141,12 +185,18 @@ public abstract class IngredientChannelAdapter<T, M> implements IIngredientCompo
         Iterator<PartPos> it = partPosIteratorData.getRight();
         while (it.hasNext()) {
             PartPos pos = it.next();
+            // Skip if the position is not loaded or disabled
+            if (!pos.getPos()
+                .isLoaded() || network.isPositionDisabled(pos)) {
+                continue;
+            }
             this.network.disablePosition(pos);
             T extracted = this.network.getPositionedStorage(pos)
                 .extract(maxQuantity, simulate);
             this.network.enablePosition(pos);
             if (!matcher.isEmpty(extracted)) {
                 if (!simulate) {
+                    markStoragePositionChanged(channel, pos);
                     savePartPosIteratorHandler(partPosIteratorData.getLeft());
                 }
                 return extracted;
@@ -156,46 +206,165 @@ public abstract class IngredientChannelAdapter<T, M> implements IIngredientCompo
         if (!simulate) {
             savePartPosIteratorHandler(partPosIteratorData.getLeft());
         }
+        // Schedule an observation if nothing was extracted, because the index may not be initialized yet.
+        scheduleObservation();
 
         return matcher.getEmptyInstance();
     }
 
     @Override
-    public T extract(@Nonnull T prototype, final M matchFlags, boolean simulate) {
+    public T extract(@Nonnull T prototype, M matchFlags, boolean simulate) {
         IIngredientMatcher<T, M> matcher = getComponent().getMatcher();
+        boolean checkQuantity = matcher.hasCondition(
+            matchFlags,
+            getComponent().getPrimaryQuantifier()
+                .getMatchCondition());
 
         // Limit rate
-        long limit = network.getRateLimit();
-        if (matcher.getQuantity(prototype) > limit) {
-            prototype = matcher.withQuantity(prototype, limit);
+        if (this.limitsEnabled) {
+            long limit = network.getRateLimit();
+            if (matcher.getQuantity(prototype) > limit) {
+                // Fail immediately if we require more than the limit
+                if (checkQuantity) {
+                    return matcher.getEmptyInstance();
+                }
+
+                // Otherwise, we reduce our requested quantity
+                prototype = matcher.withQuantity(prototype, limit);
+            }
         }
+
         final T prototypeFinal = prototype;
+        long requiredQuantity = matcher.getQuantity(prototypeFinal);
+
+        // Modify our match condition that will be used to test each separate interface
+        if (checkQuantity) {
+            matchFlags = matcher.withoutCondition(
+                matchFlags,
+                getComponent().getPrimaryQuantifier()
+                    .getMatchCondition());
+        }
+        M finalMatchFlags = matchFlags;
+
+        // Maintain a temporary mapping of prototype items to their total count over all positions,
+        // plus the list of positions in which they are present.
+        IIngredientMapMutable<T, M, Pair<Wrapper<Long>, List<PartPos>>> validInstancesCollapsed = new IngredientHashMap<>(
+            getComponent());
 
         // Try extracting from all positions that match with the given conditions
-
         // until one succeeds.
         Pair<IPartPosIteratorHandler, Iterator<PartPos>> partPosIteratorData = getPartPosIteratorData(
-            () -> this.getMatchingPositions(prototypeFinal, matchFlags),
+            () -> this.getMatchingPositions(prototypeFinal, finalMatchFlags),
             channel);
         Iterator<PartPos> it = partPosIteratorData.getRight();
         while (it.hasNext()) {
             PartPos pos = it.next();
+
+            // Skip if the position is not loaded or disabled
+            if (!pos.getPos()
+                .isLoaded() || network.isPositionDisabled(pos)) {
+                continue;
+            }
+
+            // Do a simulated extraction
             this.network.disablePosition(pos);
-            T extracted = this.network.getPositionedStorage(pos)
-                .extract(prototypeFinal, matchFlags, simulate);
+            T extractedSimulated = this.network.getPositionedStorage(pos)
+                .extract(prototypeFinal, finalMatchFlags, true);
             this.network.enablePosition(pos);
-            if (!matcher.isEmpty(extracted)) {
+            T storagePrototype = getComponent().getMatcher()
+                .withQuantity(extractedSimulated, 1);
+
+            // Get existing value from temporary mapping
+            Pair<Wrapper<Long>, List<PartPos>> existingValue = validInstancesCollapsed.get(storagePrototype);
+            if (existingValue == null) {
+                existingValue = Pair.of(new Wrapper<>(0L), Lists.newLinkedList());
+                validInstancesCollapsed.put(storagePrototype, existingValue);
+            }
+
+            // Update the counter and pos-list for our prototype
+            long newCount = existingValue.getLeft()
+                .get() + matcher.getQuantity(extractedSimulated);
+            existingValue.getLeft()
+                .set(newCount);
+            existingValue.getRight()
+                .add(pos);
+
+            // If the count is sufficient for our query, return
+            if (newCount >= requiredQuantity) {
+                // Save the iterator state before returning
                 if (!simulate) {
                     savePartPosIteratorHandler(partPosIteratorData.getLeft());
                 }
-                return extracted;
+                existingValue.getLeft()
+                    .set(requiredQuantity);
+                return finalizeExtraction(storagePrototype, matchFlags, existingValue, simulate);
             }
         }
 
+        // If we reach this point, then our effective count is below requiredQuantity
+
+        // Save the iterator state before returning
         if (!simulate) {
             savePartPosIteratorHandler(partPosIteratorData.getLeft());
         }
 
-        return matcher.getEmptyInstance();
+        // Fail if we required an exact quantity
+        if (checkQuantity) {
+            return matcher.getEmptyInstance();
+        }
+
+        // Extract for the instance that had the most matches if we didn't require an exact quantity
+        Pair<Wrapper<Long>, List<PartPos>> maxValue = Pair.of(new Wrapper<>(0L), Lists.newArrayList());
+        T maxInstance = matcher.getEmptyInstance();
+        for (Map.Entry<T, Pair<Wrapper<Long>, List<PartPos>>> entry : validInstancesCollapsed) {
+            if (entry.getValue()
+                .getLeft()
+                .get()
+                > maxValue.getLeft()
+                    .get()) {
+                maxInstance = entry.getKey();
+                maxValue = entry.getValue();
+            }
+        }
+        return finalizeExtraction(maxInstance, matchFlags, maxValue, simulate);
+    }
+
+    protected T finalizeExtraction(T instancePrototype, M matchFlags, Pair<Wrapper<Long>, List<PartPos>> value,
+        boolean simulate) {
+        IIngredientMatcher<T, M> matcher = getComponent().getMatcher();
+        long extractedCount = value.getLeft()
+            .get();
+
+        if (!simulate && extractedCount > 0) {
+            long toExtract = extractedCount;
+            for (PartPos pos : value.getRight()) {
+                // Update the remaining prototype quantity for this iteration
+                instancePrototype = matcher.withQuantity(instancePrototype, toExtract);
+
+                this.network.disablePosition(pos);
+                T extracted = this.network.getPositionedStorage(pos)
+                    .extract(instancePrototype, matchFlags, false);
+                this.network.enablePosition(pos);
+                markStoragePositionChanged(channel, pos);
+                long thisExtractedAmount = matcher.getQuantity(extracted);
+                toExtract -= thisExtractedAmount;
+            }
+            // Quick heuristic check to see if 'storage' did not lie during its simulation
+            if (toExtract != 0) {
+                /*
+                 * IntegratedDynamics.clog(Level.WARN, String.format(
+                 * "A storage resulted in inconsistent simulated and non-simulated output. Storages: %s",
+                 * value.getRight()));
+                 */
+                // This is not such a huge problem actually, so just make sure our output is correct.
+                extractedCount -= toExtract;
+            }
+        }
+        return getComponent().getMatcher()
+            .withQuantity(instancePrototype, extractedCount);
+    }
+
+    protected void scheduleObservation() {
+        this.network.scheduleObservation();
     }
 }

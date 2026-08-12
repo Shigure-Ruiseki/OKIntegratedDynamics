@@ -100,9 +100,15 @@ public class EnergyStorageItemBlockEnergyContainer implements IEnergyStorageCapa
     @Override
     public void setCapacity(int capacity) {
         NBTTagCompound tag = ItemNBTHelpers.getNBT(itemStack);
-        tag.setInteger(
-            itemBlockEnergyContainer.get()
-                .getEneryContainerCapacityNBTName(),
-            capacity);
+        if (capacity == BlockEnergyBatteryConfig.capacity) {
+            tag.removeTag(
+                itemBlockEnergyContainer.get()
+                    .getEneryContainerCapacityNBTName());
+        } else {
+            tag.setInteger(
+                itemBlockEnergyContainer.get()
+                    .getEneryContainerCapacityNBTName(),
+                capacity);
+        }
     }
 }

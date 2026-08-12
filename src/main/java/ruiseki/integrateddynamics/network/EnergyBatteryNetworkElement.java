@@ -66,19 +66,25 @@ public class EnergyBatteryNetworkElement extends NetworkElementBase {
 
     @Override
     public boolean onNetworkAddition(INetwork network) {
-        IEnergyNetwork energyNetwork = NetworkHelpers.getEnergyNetwork(network);
-        if (energyNetwork != null) {
-            energyNetwork.addPosition(PartPos.of(getPos(), null), 0, IPositionedAddonsNetwork.DEFAULT_CHANNEL);
-            return super.onNetworkAddition(network);
-        }
-        return false;
+        PartPos pos = PartPos.of(getPos(), null);
+        boolean added = NetworkHelpers.getEnergyNetwork(network)
+            .addPosition(pos, 0, IPositionedAddonsNetwork.DEFAULT_CHANNEL);
+        scheduleNetworkObservation(network, pos);
+        return added;
     }
 
     @Override
     public void onNetworkRemoval(INetwork network) {
+        PartPos pos = PartPos.of(getPos(), null);
+        scheduleNetworkObservation(network, pos);
+        NetworkHelpers.getEnergyNetwork(network)
+            .removePosition(pos);
+    }
+
+    protected void scheduleNetworkObservation(INetwork network, PartPos pos) {
         IEnergyNetwork energyNetwork = NetworkHelpers.getEnergyNetwork(network);
         if (energyNetwork != null) {
-            energyNetwork.removePosition(PartPos.of(getPos(), null));
+            energyNetwork.scheduleObservationForced(IPositionedAddonsNetwork.DEFAULT_CHANNEL, pos);
         }
     }
 

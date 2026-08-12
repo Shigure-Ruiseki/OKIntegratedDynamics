@@ -86,8 +86,9 @@ public class ValueTypeListProxyMaterializedFactory implements
                 ++i;
             }
             String serializedValue = split[i];
-            IValue deserializedValue = elementValueType
-                .deserialize(serializedValue.replaceAll(ELEMENT_DELIMITER_ESCAPED, ELEMENT_DELIMITER));
+            IValue deserializedValue = ValueHelpers.deserializeRaw(
+                elementValueType,
+                serializedValue.replaceAll(ELEMENT_DELIMITER_ESCAPED, ELEMENT_DELIMITER));
             builder.add(deserializedValue);
         }
 

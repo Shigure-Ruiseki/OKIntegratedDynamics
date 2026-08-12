@@ -24,6 +24,10 @@ public class ValueTypeListProxyPositionedTankFluidStacks
             side);
     }
 
+    public ValueTypeListProxyPositionedTankFluidStacks() {
+        this(null, null);
+    }
+
     protected IFluidHandler getTank() {
         return CapabilityHelpers
             .getCapability(getPos().getWorld(), getPos().getBlockPos(), CapabilityFluidHandler.FLUID_HANDLER, getSide())

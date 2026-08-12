@@ -127,7 +127,7 @@ public abstract class PartTypePanelVariableDriven<P extends PartTypePanelVariabl
         IValue newValue = null;
         if (state.hasVariable()) {
             try {
-                IVariable variable = state.getVariable(partNetwork);
+                IVariable variable = state.getVariable(network, partNetwork);
                 if (variable != null) {
                     newValue = variable.getValue();
                 }
@@ -167,8 +167,9 @@ public abstract class PartTypePanelVariableDriven<P extends PartTypePanelVariabl
     }
 
     @Override
-    public <V extends IValue> IVariable<V> getActiveVariable(IPartNetwork network, PartTarget target, S partState) {
-        return partState.getVariable(network);
+    public <V extends IValue> IVariable<V> getActiveVariable(INetwork network, IPartNetwork partNetwork,
+        PartTarget target, S partState) {
+        return partState.getVariable(network, partNetwork);
     }
 
     protected void onValueChanged(INetwork network, IPartNetwork partNetwork, PartTarget target, S state,
@@ -178,6 +179,17 @@ public abstract class PartTypePanelVariableDriven<P extends PartTypePanelVariabl
         } else {
             IValue materializedValue = null;
             try {
+                if (newValue.getType() == ValueTypes.LIST) {
+                    IValueTypeListProxy<IValueType<IValue>, IValue> original = ((ValueTypeList.ValueList) newValue)
+                        .getRawValue();
+                    if (original.getLength() > ValueTypeList.MAX_RENDER_LINES) {
+                        List<IValue> list = Lists.newArrayList();
+                        for (int i = 0; i < ValueTypeList.MAX_RENDER_LINES; i++) {
+                            list.add(original.get(i));
+                        }
+                        newValue = ValueTypeList.ValueList.ofList(original.getValueType(), list);
+                    }
+                }
                 materializedValue = newValue.getType()
                     .materialize(newValue);
             } catch (EvaluationException e) {
@@ -302,19 +314,6 @@ public abstract class PartTypePanelVariableDriven<P extends PartTypePanelVariabl
                     "displayValueType",
                     value.getType()
                         .getUnlocalizedName());
-                if (value.getType() == ValueTypes.LIST) {
-                    IValueTypeListProxy<IValueType<IValue>, IValue> original = ((ValueTypeList.ValueList) value)
-                        .getRawValue();
-                    try {
-                        if (original.getLength() > ValueTypeList.MAX_RENDER_LINES) {
-                            List<IValue> list = Lists.newArrayList();
-                            for (int i = 0; i < ValueTypeList.MAX_RENDER_LINES; i++) {
-                                list.add(original.get(i));
-                            }
-                            value = ValueTypeList.ValueList.ofList(original.getValueType(), list);
-                        }
-                    } catch (EvaluationException e) {}
-                }
                 tag.setString("displayValue", ValueHelpers.serializeRaw(value));
             }
             tag.setInteger("facingRotation", facingRotation.ordinal());
@@ -330,7 +329,7 @@ public abstract class PartTypePanelVariableDriven<P extends PartTypePanelVariabl
                     String serializedValue = tag.getString("displayValue");
                     LangHelpers.UnlocalizedString deserializationError = valueType.canDeserialize(serializedValue);
                     if (deserializationError == null) {
-                        setDisplayValue(valueType.deserialize(serializedValue));
+                        setDisplayValue(ValueHelpers.deserializeRaw(valueType, serializedValue));
                     } else {
                         IntegratedDynamics.clog(Level.ERROR, deserializationError.localize());
                     }

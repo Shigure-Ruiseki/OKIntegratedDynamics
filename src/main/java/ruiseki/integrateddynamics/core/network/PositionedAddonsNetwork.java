@@ -3,15 +3,17 @@ package ruiseki.integrateddynamics.core.network;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
 import org.jetbrains.annotations.Nullable;
 
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
-import gnu.trove.map.TIntObjectMap;
-import gnu.trove.map.hash.TIntObjectHashMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import lombok.Getter;
 import lombok.Setter;
 import ruiseki.integrateddynamics.api.network.INetwork;
@@ -23,7 +25,7 @@ import ruiseki.okcore.datastructure.Wrapper;
 
 /**
  * A network that can hold prioritized positions.
- * 
+ *
  * @author rubensworks
  */
 public abstract class PositionedAddonsNetwork implements IPositionedAddonsNetwork {
@@ -32,14 +34,16 @@ public abstract class PositionedAddonsNetwork implements IPositionedAddonsNetwor
     @Setter
     private INetwork network;
     private final Set<PrioritizedPartPos> allPositions = Sets.newTreeSet();
-    private final TIntObjectMap<Set<PrioritizedPartPos>> positions = new TIntObjectHashMap<>();
+    private final Int2ObjectMap<Set<PrioritizedPartPos>> positions = new Int2ObjectOpenHashMap<>();
+    private final Map<PartPos, Integer> positionChannels = Maps.newHashMap();
     private final Set<PartPos> disabledPositions = Sets.newHashSet();
 
     private IPartPosIteratorHandler partPosIteratorHandler = null;
 
     @Override
     public int[] getChannels() {
-        return positions.keys();
+        return positions.keySet()
+            .toIntArray();
     }
 
     @Override
@@ -74,6 +78,11 @@ public abstract class PositionedAddonsNetwork implements IPositionedAddonsNetwor
         return this.allPositions;
     }
 
+    @Override
+    public int getPositionChannel(PartPos pos) {
+        return this.positionChannels.getOrDefault(pos, -1);
+    }
+
     protected void invalidateIterators() {
         setPartPosIteratorHandler(null);
     }
@@ -104,9 +113,15 @@ public abstract class PositionedAddonsNetwork implements IPositionedAddonsNetwor
                 this.positions.put(channel, positions);
             }
             positions.add(prioritizedPosition);
+            this.positionChannels.put(pos, channel);
+            this.onPositionAdded(channel, prioritizedPosition);
             return true;
         }
         return false;
+    }
+
+    protected void onPositionAdded(int channel, PrioritizedPartPos pos) {
+
     }
 
     @Override
@@ -115,7 +130,9 @@ public abstract class PositionedAddonsNetwork implements IPositionedAddonsNetwor
 
         Wrapper<Integer> removedChannel = new Wrapper<>(-2);
         Wrapper<PrioritizedPartPos> removedPos = new Wrapper<>(null);
-        this.positions.forEachEntry((channel, positions) -> {
+        for (Int2ObjectMap.Entry<Set<PrioritizedPartPos>> entry : this.positions.int2ObjectEntrySet()) {
+            int channel = entry.getIntKey();
+            Set<PrioritizedPartPos> positions = entry.getValue();
             Iterator<PrioritizedPartPos> it = positions.iterator();
             while (it.hasNext()) {
                 PrioritizedPartPos prioritizedPartPos = it.next();
@@ -125,11 +142,11 @@ public abstract class PositionedAddonsNetwork implements IPositionedAddonsNetwor
                     allPositions.remove(prioritizedPartPos);
                     removedPos.set(prioritizedPartPos);
                     removedChannel.set(channel);
-                    return false;
+                    break;
                 }
             }
-            return true;
-        });
+        }
+
         int channel = removedChannel.get();
         if (channel != -2) {
             this.onPositionRemoved(channel, removedPos.get());
@@ -138,6 +155,7 @@ public abstract class PositionedAddonsNetwork implements IPositionedAddonsNetwor
                 this.positions.remove(channel);
             }
         }
+        positionChannels.remove(pos);
     }
 
     protected void onPositionRemoved(int channel, PrioritizedPartPos pos) {

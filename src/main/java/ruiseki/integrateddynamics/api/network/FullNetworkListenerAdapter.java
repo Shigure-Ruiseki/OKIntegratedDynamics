@@ -65,4 +65,14 @@ public class FullNetworkListenerAdapter implements IFullNetworkListener {
     public void onSkipUpdate(INetworkElement element) {
 
     }
+
+    @Override
+    public void invalidateElement(INetworkElement element) {
+
+    }
+
+    @Override
+    public void revalidateElement(INetworkElement element) {
+
+    }
 }

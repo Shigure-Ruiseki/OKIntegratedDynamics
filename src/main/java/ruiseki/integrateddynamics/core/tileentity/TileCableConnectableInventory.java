@@ -97,7 +97,7 @@ public class TileCableConnectableInventory extends InventoryTileEntity implement
     public void onChunkUnload() {
         super.onChunkUnload();
         if (getWorldObj() != null && !getWorldObj().isRemote) {
-            NetworkHelpers.invalidateNetworkElements(getWorldObj(), getPos());
+            NetworkHelpers.invalidateNetworkElements(getWorldObj(), getPos(), this);
         }
     }
 }

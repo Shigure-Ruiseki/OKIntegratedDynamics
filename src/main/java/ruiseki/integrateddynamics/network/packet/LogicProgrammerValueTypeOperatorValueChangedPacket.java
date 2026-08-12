@@ -57,7 +57,7 @@ public class LogicProgrammerValueTypeOperatorValueChangedPacket extends PacketCo
             if (element instanceof ValueTypeOperatorLPElement) {
                 IOperator operator;
                 try {
-                    operator = ValueTypes.OPERATOR.deserialize(operatorValue)
+                    operator = ValueHelpers.deserializeRaw(ValueTypes.OPERATOR, operatorValue)
                         .getRawValue();
                 } catch (IllegalArgumentException e) {
                     operator = null;

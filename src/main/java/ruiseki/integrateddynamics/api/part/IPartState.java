@@ -5,6 +5,7 @@ import net.minecraftforge.common.util.ForgeDirection;
 
 import org.jetbrains.annotations.Nullable;
 
+import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.INetworkElement;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.part.aspect.IAspect;
@@ -183,13 +184,15 @@ public interface IPartState<P extends IPartType> {
     /**
      * Get the given capability.
      *
-     * @param capability The capability to get.
-     * @param <T>        The capability type.
-     * @param network    The network the part belongs to.
-     * @param target     The target.
-     * @return The capability instance.
+     * @param capability  The capability to get.
+     * @param <T>         The capability type.
+     * @param network     The network the part belongs to.
+     * @param partNetwork The part network the part belongs to.
+     * @param target      The target.
+     * @return If this has the given capability.
      */
-    <T> LazyOptional<T> getCapability(Capability<T> capability, IPartNetwork network, PartTarget target);
+    <T> LazyOptional<T> getCapability(Capability<T> capability, INetwork network, IPartNetwork partNetwork,
+        PartTarget target);
 
     /**
      * Add a capability to this state that will not be automatically persisted to NBT.

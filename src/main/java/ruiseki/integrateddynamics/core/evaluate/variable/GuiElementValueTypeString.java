@@ -98,7 +98,7 @@ public class GuiElementValueTypeString<G extends Gui, C extends Container>
     @Override
     public LangHelpers.UnlocalizedString validate() {
         LangHelpers.UnlocalizedString error = getValueType().canDeserialize(inputString);
-        if (error == null && !this.validator.apply(getValueType().deserialize(inputString))) {
+        if (error == null && !this.validator.apply(ValueHelpers.deserializeRaw(getValueType(), inputString))) {
             error = new LangHelpers.UnlocalizedString(L10NValues.VALUE_ERROR);
         }
         return error;

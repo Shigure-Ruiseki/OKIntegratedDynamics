@@ -12,6 +12,7 @@ import org.jetbrains.annotations.Nullable;
 import com.google.common.collect.Sets;
 
 import lombok.ToString;
+import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeNamed;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeNullable;
 import ruiseki.okcore.config.IChangedCallback;
 import ruiseki.okcore.helper.Helpers;
@@ -22,7 +23,7 @@ import ruiseki.okcore.helper.Helpers;
  * @author rubensworks
  */
 public class ValueTypeNbt extends ValueTypeBase<ValueTypeNbt.ValueNbt>
-    implements IValueTypeNullable<ValueTypeNbt.ValueNbt> {
+    implements IValueTypeNullable<ValueTypeNbt.ValueNbt>, IValueTypeNamed<ValueTypeNbt.ValueNbt> {
 
     private Set<String> tagBlacklist = Sets.newHashSet();
 
@@ -66,7 +67,7 @@ public class ValueTypeNbt extends ValueTypeBase<ValueTypeNbt.ValueNbt>
     /**
      * Filter away the blacklisted tags from the given NBT tag.
      * This won't modify the original tag.
-     * 
+     *
      * @param tag The tag.
      * @return The tag where all blacklisted tags have been removed.
      */
@@ -82,6 +83,11 @@ public class ValueTypeNbt extends ValueTypeBase<ValueTypeNbt.ValueNbt>
             }
         }
         return tag;
+    }
+
+    @Override
+    public String getName(ValueNbt value) {
+        return toCompactString(value);
     }
 
     @ToString

@@ -4,6 +4,7 @@ import net.minecraft.block.Block;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 
+import ruiseki.integrateddynamics.Configs;
 import ruiseki.integrateddynamics.api.block.IDynamicLight;
 import ruiseki.integrateddynamics.api.evaluate.InvalidValueTypeException;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
@@ -17,7 +18,6 @@ import ruiseki.integrateddynamics.core.block.IgnoredBlockStatus;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeLightLevels;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.integrateddynamics.core.part.panel.PartTypePanelVariableDriven;
-import ruiseki.okcore.config.ConfigHandler;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.helper.BlockStateHelpers;
 import ruiseki.okcore.helper.CapabilityHelpers;
@@ -113,7 +113,7 @@ public class PartTypePanelLightDynamic
     }
 
     public static void setLightLevel(PartTarget target, int lightLevel) {
-        if (ConfigHandler.isEnabled(BlockInvisibleLightConfig.class)) {
+        if (Configs.isEnabled(BlockInvisibleLightConfig.class)) {
             World world = target.getTarget()
                 .getPos()
                 .getWorld();

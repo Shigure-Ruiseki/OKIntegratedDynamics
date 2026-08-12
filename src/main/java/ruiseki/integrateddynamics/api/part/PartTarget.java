@@ -3,6 +3,8 @@ package ruiseki.integrateddynamics.api.part;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
+import org.jetbrains.annotations.Nullable;
+
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
 
@@ -23,15 +25,16 @@ public class PartTarget {
      * @param side The side on the central position that points to the target.
      * @return The target referral.
      */
-    public static PartTarget fromCenter(DimPos pos, ForgeDirection side) {
+    public static PartTarget fromCenter(DimPos pos, @Nullable ForgeDirection side) {
         return PartTarget.of(
             PartPos.of(pos, side),
             PartPos.of(
                 DimPos.of(
                     pos.getDimensionId(),
-                    pos.getBlockPos()
-                        .offset(side)),
-                side.getOpposite()));
+                    side == null ? pos.getBlockPos()
+                        : pos.getBlockPos()
+                            .offset(side)),
+                side == null ? null : side.getOpposite()));
     }
 
     /**
@@ -82,7 +85,7 @@ public class PartTarget {
 
     /**
      * Create a new instance with the given target side.
-     * 
+     *
      * @param targetSide The side of the target.
      * @return A new {@link PartTarget} instance.
      */

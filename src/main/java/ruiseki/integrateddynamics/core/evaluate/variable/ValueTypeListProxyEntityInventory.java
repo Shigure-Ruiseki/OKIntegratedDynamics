@@ -18,6 +18,10 @@ public class ValueTypeListProxyEntityInventory
         super(ValueTypeListProxyFactories.ENTITY_INVENTORY.getName(), ValueTypes.OBJECT_ITEMSTACK, world, entity);
     }
 
+    public ValueTypeListProxyEntityInventory() {
+        this(null, null);
+    }
+
     protected ItemStack[] getInventory() {
         Entity e = getEntity();
         if (e != null && e instanceof EntityPlayer) {

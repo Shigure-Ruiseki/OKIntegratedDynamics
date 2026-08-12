@@ -1,6 +1,7 @@
 package ruiseki.integrateddynamics.core.helper;
 
 import net.minecraft.block.Block;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
@@ -128,7 +129,7 @@ public class NetworkHelpers {
 
     /**
      * Get the ingredient network within a network.
-     * 
+     *
      * @param network             The network.
      * @param ingredientComponent The ingredient component type.
      * @param <T>                 The instance type.
@@ -198,18 +199,20 @@ public class NetworkHelpers {
 
     /**
      * Invalidate all network elements at the given position.
-     *
+     * Warning: this assumes unsided network carrier capabilities, for example full-block network elements.
+     * 
      * @param world The world.
      * @param pos   The position.
+     * @param tile  The tile entity that is unloaded.
      */
-    public static void invalidateNetworkElements(World world, BlockPos pos) {
-        INetworkCarrier networkCarrier = CapabilityHelpers.getCapability(world, pos, NetworkCarrierConfig.CAPABILITY)
+    public static void invalidateNetworkElements(World world, BlockPos pos, TileEntity tile) {
+        INetworkCarrier networkCarrier = CapabilityHelpers.getCapability(tile, NetworkCarrierConfig.CAPABILITY, null)
             .getOrNull();
         if (networkCarrier != null) {
             INetwork network = networkCarrier.getNetwork();
             if (network != null) {
                 INetworkElementProvider networkElementProvider = CapabilityHelpers
-                    .getCapability(world, pos, NetworkElementProviderConfig.CAPABILITY)
+                    .getCapability(tile, NetworkElementProviderConfig.CAPABILITY, null)
                     .getOrNull();
                 if (networkElementProvider != null) {
                     for (INetworkElement networkElement : networkElementProvider.createNetworkElements(world, pos)) {

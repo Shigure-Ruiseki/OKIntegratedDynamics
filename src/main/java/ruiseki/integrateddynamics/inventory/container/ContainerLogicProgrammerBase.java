@@ -30,7 +30,6 @@ import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.inventory.IGuiContainerProvider;
 import ruiseki.okcore.inventory.SimpleInventory;
 import ruiseki.okcore.inventory.container.ScrollingInventoryContainer;
-import ruiseki.okcore.inventory.slot.SlotExtended;
 import ruiseki.okcore.inventory.slot.SlotSingleItem;
 import ruiseki.okcore.persist.IDirtyMarkListener;
 
@@ -186,27 +185,19 @@ public abstract class ContainerLogicProgrammerBase extends ScrollingInventoryCon
                 : element.getRenderPattern()
                     .getSlotPositions().length,
             "temporaryInput",
-            1);
+            element == null ? 0 : element.getItemStackSizeLimit());
         temporaryInputSlots.addDirtyMarkListener(this);
         this.temporarySlotsElement = element;
         if (element != null) {
             Pair<Integer, Integer>[] slotPositions = element.getRenderPattern()
                 .getSlotPositions();
             for (int i = 0; i < temporaryInputSlots.getSizeInventory(); i++) {
-                final int slotId = i;
-                SlotExtended slot = new SlotExtended(
-                    temporaryInputSlots,
-                    i,
-                    1 + baseX + slotPositions[i].getLeft(),
-                    1 + baseY + slotPositions[i].getRight()) {
-
-                    @Override
-                    public boolean isItemValid(ItemStack itemStack) {
-                        return element.isItemValidForSlot(slotId, itemStack);
-                    }
-                };
-                slot.setPhantom(true);
-                addSlotToContainer(slot);
+                addSlotToContainer(
+                    element.createSlot(
+                        temporaryInputSlots,
+                        i,
+                        1 + baseX + slotPositions[i].getLeft(),
+                        1 + baseY + slotPositions[i].getRight()));
             }
         }
         initializeSlotsPost();
@@ -253,7 +244,7 @@ public abstract class ContainerLogicProgrammerBase extends ScrollingInventoryCon
         if (itemStack != null) {
             IVariableFacade variableFacade = ItemVariable.getInstance()
                 .getVariableFacade(itemStack);
-            if (variableFacade.isValid()) {
+            if (this.lastLabel != null && variableFacade.isValid()) {
                 LabelsWorldStorage.getInstance(IntegratedDynamics._instance)
                     .put(variableFacade.getId(), this.lastLabel);
             }
@@ -322,12 +313,14 @@ public abstract class ContainerLogicProgrammerBase extends ScrollingInventoryCon
     }
 
     @Override
-    public ItemStack slotClick(int slotId, int arg, int clickType, EntityPlayer player) {
+    public ItemStack slotClick(int slotId, int mouseButton, int clickType, EntityPlayer player) {
         // Handle cases where the client may have more (phantom) slots than the server.
-        if (slotId >= this.inventorySlots.size()) {
+        if (slotId >= this.inventorySlots.size() || (this.activeElement != null && this.inventorySlots.size() > slotId
+            && slotId >= 0
+            && this.activeElement.slotClick(slotId, this.getSlot(slotId), mouseButton, clickType, player))) {
             return null;
         }
-        return super.slotClick(slotId, arg, clickType, player);
+        return super.slotClick(slotId, mouseButton, clickType, player);
     }
 
     /**

@@ -84,7 +84,7 @@ public abstract class PartTypeReadBase<P extends IPartTypeReader<P, S>, S extend
     public void update(INetwork network, IPartNetwork partNetwork, PartTarget target, S state) {
         super.update(network, partNetwork, target, state);
         for (IAspect aspect : getUpdateAspects(AspectUpdateType.NETWORK_TICK)) {
-            aspect.update(partNetwork, this, target, state);
+            aspect.update(network, partNetwork, this, target, state);
         }
     }
 
@@ -93,7 +93,7 @@ public abstract class PartTypeReadBase<P extends IPartTypeReader<P, S>, S extend
         IBlockAccess world, Block neighborBlock) {
         super.onBlockNeighborChange(network, partNetwork, target, state, world, neighborBlock);
         for (IAspect aspect : getUpdateAspects(AspectUpdateType.BLOCK_UPDATE)) {
-            aspect.update(partNetwork, this, target, state);
+            aspect.update(network, partNetwork, this, target, state);
         }
     }
 

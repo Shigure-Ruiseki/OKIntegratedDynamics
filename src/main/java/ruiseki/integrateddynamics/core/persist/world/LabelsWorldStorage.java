@@ -1,6 +1,9 @@
 package ruiseki.integrateddynamics.core.persist.world;
 
 import java.util.Map;
+import java.util.Objects;
+
+import javax.annotation.Nonnull;
 
 import net.minecraft.entity.player.EntityPlayerMP;
 
@@ -61,7 +64,8 @@ public class LabelsWorldStorage extends WorldStorage {
      * @param variableId The variable id.
      * @param label      The onLabelPacket
      */
-    public synchronized void putUnsafe(int variableId, String label) {
+    public synchronized void putUnsafe(int variableId, @Nonnull String label) {
+        Objects.requireNonNull(label);
         labels.put(variableId, label);
     }
 
@@ -81,7 +85,7 @@ public class LabelsWorldStorage extends WorldStorage {
      * @param variableId The variable id.
      * @param label      The onLabelPacket
      */
-    public void put(int variableId, String label) {
+    public void put(int variableId, @Nonnull String label) {
         if (MinecraftHelpers.isClientSide()) {
             IntegratedDynamics._instance.getPacketHandler()
                 .sendToServer(new ActionLabelPacket(variableId, label));
@@ -126,4 +130,12 @@ public class LabelsWorldStorage extends WorldStorage {
         }
     }
 
+    @Override
+    public void afterLoad() {
+        super.afterLoad();
+        // Fix all null labels
+        // TODO: remove in 1.13
+        labels.entrySet()
+            .removeIf(integerStringEntry -> integerStringEntry.getValue() == null);
+    }
 }

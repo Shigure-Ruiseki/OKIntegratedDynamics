@@ -6,6 +6,7 @@ import java.util.List;
 
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
+import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.part.IPartState;
 import ruiseki.integrateddynamics.api.part.IPartType;
@@ -43,16 +44,17 @@ public interface IAspect<V extends IValue, T extends IValueType<V>> {
 
     /**
      * Called inside part types for updating a part on a block.
-     *
-     * @param <P>      The part type type.
-     * @param <S>      The part state.
-     * @param network  The network to update in.
-     * @param partType The part type.
-     * @param target   The position that is targeted by the given part.
-     * @param state    The current state of the given part.
+     * 
+     * @param <P>         The part type type.
+     * @param <S>         The part state.
+     * @param network     The network to update in.
+     * @param partNetwork The part network to update in.
+     * @param partType    The part type.
+     * @param target      The position that is targeted by the given part.
+     * @param state       The current state of the given part.
      */
-    public <P extends IPartType<P, S>, S extends IPartState<P>> void update(IPartNetwork network, P partType,
-        PartTarget target, S state);
+    public <P extends IPartType<P, S>, S extends IPartState<P>> void update(INetwork network, IPartNetwork partNetwork,
+        P partType, PartTarget target, S state);
 
     /**
      * @return If this aspect supports additional properties.

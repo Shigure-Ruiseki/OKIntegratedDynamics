@@ -175,7 +175,7 @@ public class ExtendedGuiHandler extends GuiHandler {
         }
     }
 
-    private static Triple<IPartContainer, PartTypeBase, PartTarget> getPartConstructionData(World world, BlockPos pos,
+    public static Triple<IPartContainer, PartTypeBase, PartTarget> getPartConstructionData(World world, BlockPos pos,
         ForgeDirection side) {
         IPartContainer partContainer = PartHelpers.getPartContainer(world, pos, side);
         if (partContainer == null) {

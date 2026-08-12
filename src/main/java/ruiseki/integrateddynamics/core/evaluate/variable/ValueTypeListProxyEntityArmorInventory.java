@@ -19,6 +19,10 @@ public class ValueTypeListProxyEntityArmorInventory
         super(ValueTypeListProxyFactories.ENTITY_ARMORINVENTORY.getName(), ValueTypes.OBJECT_ITEMSTACK, world, entity);
     }
 
+    public ValueTypeListProxyEntityArmorInventory() {
+        this(null, null);
+    }
+
     protected ItemStack[] getInventory() {
         Entity e = getEntity();
         if (e != null) {

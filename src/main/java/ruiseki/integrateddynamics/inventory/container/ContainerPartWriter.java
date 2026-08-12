@@ -4,16 +4,18 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.Slot;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 import ruiseki.integrateddynamics.api.PartStateException;
-import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
-import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IVariable;
+import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.api.part.aspect.IAspectWrite;
 import ruiseki.integrateddynamics.api.part.write.IPartStateWriter;
 import ruiseki.integrateddynamics.api.part.write.IPartTypeWriter;
+import ruiseki.integrateddynamics.core.evaluate.variable.ValueHelpers;
 import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
 import ruiseki.integrateddynamics.core.inventory.container.ContainerMultipartAspects;
 import ruiseki.integrateddynamics.core.inventory.container.slot.SlotVariable;
@@ -93,48 +95,30 @@ public class ContainerPartWriter<P extends IPartTypeWriter<P, S> & IGuiContainer
     @Override
     public void detectAndSendChanges() {
         super.detectAndSendChanges();
-
         try {
             if (!MinecraftHelpers.isClientSide()) {
-                String writeValue = "";
-                int writeValueColor = 0;
-                if (!NetworkHelpers.shouldWork()) {
-                    writeValue = "SAFE-MODE";
-                } else if (!getPartState().isEnabled()) {
-                    writeValue = "NO POWER";
+                Pair<String, Integer> readValue;
+                if (!getPartState().isEnabled()) {
+                    readValue = Pair.of("NO POWER", 0);
                 } else if (getPartState().hasVariable()) {
-                    IPartNetwork partNetwork = NetworkHelpers.getPartNetwork(
-                        NetworkHelpers.getNetwork(
-                            getPartContainer().getPosition()
-                                .getWorld(),
-                            getPartContainer().getPosition()
-                                .getBlockPos(),
-                            getTarget().getCenter()
-                                .getSide()));
+                    INetwork network = NetworkHelpers.getNetwork(
+                        getPartContainer().getPosition()
+                            .getWorld(),
+                        getPartContainer().getPosition()
+                            .getBlockPos(),
+                        getTarget().getCenter()
+                            .getSide());
+                    IPartNetwork partNetwork = NetworkHelpers.getPartNetwork(network);
                     if (partNetwork != null) {
-                        IVariable variable = getPartState().getVariable(partNetwork);
-                        if (variable != null) {
-                            try {
-                                IValue value = variable.getValue();
-                                writeValue = value.getType()
-                                    .toCompactString(value);
-                                writeValueColor = variable.getType()
-                                    .getDisplayColor();
-                            } catch (EvaluationException e) {
-                                writeValue = "ERROR";
-                                writeValueColor = Helpers.RGBToInt(255, 0, 0);
-                            }
-                        }
+                        IVariable variable = getPartState().getVariable(network, partNetwork);
+                        readValue = ValueHelpers.getSafeReadableValue(variable);
                     } else {
-                        writeValue = "NETWORK CORRUPTED!";
-                        writeValueColor = Helpers.RGBToInt(255, 100, 0);
+                        readValue = Pair.of("NETWORK CORRUPTED!", Helpers.RGBToInt(255, 100, 0));
                     }
                 } else {
-                    writeValue = "";
-
+                    readValue = Pair.of("", 0);
                 }
-                setWriteValue(writeValue, writeValueColor);
-
+                setWriteValue(readValue.getLeft(), readValue.getRight());
             }
         } catch (PartStateException e) {
             getPlayer().closeScreen();

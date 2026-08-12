@@ -11,7 +11,6 @@ import ruiseki.integrateddynamics.api.ingredient.IIngredientPositionsIndex;
 import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.integrateddynamics.api.part.PrioritizedPartPos;
 import ruiseki.okcore.datastructure.DistinctIterator;
-import ruiseki.okcore.ingredient.collection.IIngredientCollectionMutable;
 import ruiseki.okcore.ingredient.collection.IIngredientMapMutable;
 import ruiseki.okcore.ingredient.collection.IngredientCollectionMutableWrapper;
 import ruiseki.okcore.ingredient.collection.IngredientCollectionPrototypeMap;
@@ -25,7 +24,7 @@ import ruiseki.okcore.ingredient.collection.IngredientHashMap;
  * @author rubensworks
  */
 public class IngredientPositionsIndex<T, M>
-    extends IngredientCollectionMutableWrapper<T, M, IIngredientCollectionMutable<T, M>>
+    extends IngredientCollectionMutableWrapper<T, M, IngredientCollectionPrototypeMap<T, M>>
     implements IIngredientPositionsIndex<T, M> {
 
     private final IIngredientMapMutable<T, M, TreeSet<PrioritizedPartPos>> positionsMap;
@@ -83,4 +82,8 @@ public class IngredientPositionsIndex<T, M>
         }
     }
 
+    @Override
+    public long getQuantity(T instance) {
+        return getInnerCollection().getQuantity(instance);
+    }
 }

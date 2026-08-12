@@ -91,7 +91,7 @@ public class ValueObjectTypeFluidStack extends ValueObjectTypeBase<ValueObjectTy
 
                 @Override
                 public LangHelpers.UnlocalizedString validate(ItemStack itemStack) {
-                    return Helpers.getFluidStack(itemStack) != null ? null
+                    return itemStack != null && Helpers.getFluidStack(itemStack) != null ? null
                         : new LangHelpers.UnlocalizedString(L10NValues.VALUETYPE_OBJECT_FLUID_ERROR_NOFLUID);
                 }
 

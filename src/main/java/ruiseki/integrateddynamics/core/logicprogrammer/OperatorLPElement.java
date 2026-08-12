@@ -3,6 +3,7 @@ package ruiseki.integrateddynamics.core.logicprogrammer;
 import java.util.List;
 
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 
 import cpw.mods.fml.relauncher.Side;
@@ -171,6 +172,16 @@ public class OperatorLPElement
     @Override
     public boolean isItemValidForSlot(int slotId, ItemStack itemStack) {
         return itemStack.getItem() == ItemVariable.getInstance();
+    }
+
+    @Override
+    public boolean slotClick(int slotId, Slot slot, int mouseButton, int clickType, EntityPlayer player) {
+        return false;
+    }
+
+    @Override
+    public int getItemStackSizeLimit() {
+        return 1;
     }
 
     @Override

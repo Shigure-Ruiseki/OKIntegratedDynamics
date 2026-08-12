@@ -45,6 +45,14 @@ import ruiseki.integrateddynamics.api.part.aspect.IAspectWrite;
 import ruiseki.integrateddynamics.api.part.aspect.property.IAspectProperties;
 import ruiseki.integrateddynamics.capability.network.EnergyNetworkConfig;
 import ruiseki.integrateddynamics.capability.valueinterface.ValueInterfaceConfig;
+import ruiseki.integrateddynamics.core.evaluate.operator.Operators;
+import ruiseki.integrateddynamics.core.evaluate.operator.PositionedOperator;
+import ruiseki.integrateddynamics.core.evaluate.operator.PositionedOperatorRecipeHandlerInputs;
+import ruiseki.integrateddynamics.core.evaluate.operator.PositionedOperatorRecipeHandlerOutput;
+import ruiseki.integrateddynamics.core.evaluate.operator.PositionedOperatorRecipeHandlerRecipeByInput;
+import ruiseki.integrateddynamics.core.evaluate.operator.PositionedOperatorRecipeHandlerRecipeByOutput;
+import ruiseki.integrateddynamics.core.evaluate.operator.PositionedOperatorRecipeHandlerRecipesByInput;
+import ruiseki.integrateddynamics.core.evaluate.operator.PositionedOperatorRecipeHandlerRecipesByOutput;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueObjectTypeBlock;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueObjectTypeEntity;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueObjectTypeFluidStack;
@@ -54,8 +62,10 @@ import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeCategoryAny;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeDouble;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeInteger;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeList;
+import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeListProxyPositionedRecipes;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeLong;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeNbt;
+import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeOperator;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeString;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
 import ruiseki.integrateddynamics.core.helper.EnergyHelpers;
@@ -588,8 +598,133 @@ public class Aspects {
                 .handle(AspectReadBuilders.PROP_GET_DOUBLE, "defaulttemperature")
                 .buildRead();
 
-            public static final IAspectValuePropagator<Pair<PartTarget, IAspectProperties>, IEnergyStorage> PROP_GET = (
-                input) -> EnergyHelpers.getEnergyStorage(
+            public static final IAspectRead<ValueTypeBoolean.ValueBoolean, ValueTypeBoolean> BOOLEAN_ISRECIPEHANDLER = AspectReadBuilders.Machine.BUILDER_RECIPE_HANDLER_BOOLEAN
+                .handle(Objects::nonNull)
+                .handle(AspectReadBuilders.PROP_GET_BOOLEAN, "applicable")
+                .buildRead();
+            public static final IAspectRead<ValueTypeList.ValueList, ValueTypeList> LIST_GETRECIPES = AspectReadBuilders.Machine.BUILDER_RECIPE_HANDLER_LIST
+                .handle(
+                    input -> ValueTypeList.ValueList.ofFactory(
+                        new ValueTypeListProxyPositionedRecipes(
+                            input.getLeft()
+                                .getTarget()
+                                .getPos(),
+                            input.getLeft()
+                                .getTarget()
+                                .getSide())))
+                .appendKind("recipes")
+                .buildRead();
+            public static final IAspectRead<ValueTypeOperator.ValueOperator, ValueTypeOperator> OPERATOR_GETRECIPEOUTPUT = AspectReadBuilders.Machine.BUILDER_RECIPE_HANDLER_OPERATOR
+                .handle(
+                    input -> ValueTypeOperator.ValueOperator.of(
+                        new PositionedOperatorRecipeHandlerOutput<>(
+                            input.getLeft()
+                                .getTarget()
+                                .getPos(),
+                            input.getLeft()
+                                .getTarget()
+                                .getSide())))
+                .appendKind("recipeoutputbyinput")
+                .buildRead();
+            static {
+                Operators.REGISTRY.registerSerializer(
+                    new PositionedOperator.Serializer(
+                        PositionedOperatorRecipeHandlerOutput.class,
+                        "positionedRecipeHandlerOutput"));
+            }
+            public static final IAspectRead<ValueTypeOperator.ValueOperator, ValueTypeOperator> OPERATOR_GETRECIPEINPUTS = AspectReadBuilders.Machine.BUILDER_RECIPE_HANDLER_OPERATOR
+                .handle(
+                    input -> ValueTypeOperator.ValueOperator.of(
+                        new PositionedOperatorRecipeHandlerInputs<>(
+                            input.getLeft()
+                                .getTarget()
+                                .getPos(),
+                            input.getLeft()
+                                .getTarget()
+                                .getSide())))
+                .appendKind("recipeinputsbyoutput")
+                .buildRead();
+            static {
+                Operators.REGISTRY.registerSerializer(
+                    new PositionedOperator.Serializer(
+                        PositionedOperatorRecipeHandlerInputs.class,
+                        "positionedRecipeHandlerInputs"));
+            }
+            public static final IAspectRead<ValueTypeOperator.ValueOperator, ValueTypeOperator> OPERATOR_GETRECIPESBYINPUT = AspectReadBuilders.Machine.BUILDER_RECIPE_HANDLER_OPERATOR
+                .handle(
+                    input -> ValueTypeOperator.ValueOperator.of(
+                        new PositionedOperatorRecipeHandlerRecipesByInput<>(
+                            input.getLeft()
+                                .getTarget()
+                                .getPos(),
+                            input.getLeft()
+                                .getTarget()
+                                .getSide())))
+                .appendKind("recipesbyinput")
+                .buildRead();
+            static {
+                Operators.REGISTRY.registerSerializer(
+                    new PositionedOperator.Serializer(
+                        PositionedOperatorRecipeHandlerRecipesByInput.class,
+                        "positionedRecipeHandlerRecipesByInput"));
+            }
+            public static final IAspectRead<ValueTypeOperator.ValueOperator, ValueTypeOperator> OPERATOR_GETRECIPESBYOUTPUT = AspectReadBuilders.Machine.BUILDER_RECIPE_HANDLER_OPERATOR
+                .handle(
+                    input -> ValueTypeOperator.ValueOperator.of(
+                        new PositionedOperatorRecipeHandlerRecipesByOutput<>(
+                            input.getLeft()
+                                .getTarget()
+                                .getPos(),
+                            input.getLeft()
+                                .getTarget()
+                                .getSide())))
+                .appendKind("recipesbyoutput")
+                .buildRead();
+            static {
+                Operators.REGISTRY.registerSerializer(
+                    new PositionedOperator.Serializer(
+                        PositionedOperatorRecipeHandlerRecipesByOutput.class,
+                        "positionedRecipeHandlerRecipesByOutput"));
+            }
+            public static final IAspectRead<ValueTypeOperator.ValueOperator, ValueTypeOperator> OPERATOR_GETRECIPEBYINPUT = AspectReadBuilders.Machine.BUILDER_RECIPE_HANDLER_OPERATOR
+                .handle(
+                    input -> ValueTypeOperator.ValueOperator.of(
+                        new PositionedOperatorRecipeHandlerRecipeByInput<>(
+                            input.getLeft()
+                                .getTarget()
+                                .getPos(),
+                            input.getLeft()
+                                .getTarget()
+                                .getSide())))
+                .appendKind("recipebyinput")
+                .buildRead();
+            static {
+                Operators.REGISTRY.registerSerializer(
+                    new PositionedOperator.Serializer(
+                        PositionedOperatorRecipeHandlerRecipeByInput.class,
+                        "positionedRecipeHandlerRecipeByInput"));
+            }
+            public static final IAspectRead<ValueTypeOperator.ValueOperator, ValueTypeOperator> OPERATOR_GETRECIPEBYOUTPUT = AspectReadBuilders.Machine.BUILDER_RECIPE_HANDLER_OPERATOR
+                .handle(
+                    input -> ValueTypeOperator.ValueOperator.of(
+                        new PositionedOperatorRecipeHandlerRecipeByOutput<>(
+                            input.getLeft()
+                                .getTarget()
+                                .getPos(),
+                            input.getLeft()
+                                .getTarget()
+                                .getSide())))
+                .appendKind("recipebyoutput")
+                .buildRead();
+            static {
+                Operators.REGISTRY.registerSerializer(
+                    new PositionedOperator.Serializer(
+                        PositionedOperatorRecipeHandlerRecipeByOutput.class,
+                        "positionedRecipeHandlerRecipeByOutput"));
+            }
+
+            public static final IAspectValuePropagator<Pair<PartTarget, IAspectProperties>, IEnergyStorage> PROP_GET = input -> EnergyHelpers
+                .getEnergyStorage(
                     input.getLeft()
                         .getTarget());
 
@@ -601,47 +736,41 @@ public class Aspects {
                 .handle(PROP_GET, "fe");
 
             public static final IAspectRead<ValueTypeBoolean.ValueBoolean, ValueTypeBoolean> BOOLEAN_ISENERGY = BUILDER_BOOLEAN
-                .handle((data) -> data != null)
+                .handle(Objects::nonNull)
                 .handle(AspectReadBuilders.PROP_GET_BOOLEAN, "applicable")
                 .buildRead();
-
             public static final IAspectRead<ValueTypeBoolean.ValueBoolean, ValueTypeBoolean> BOOLEAN_CANEXTRACTENERGY = BUILDER_BOOLEAN
-                .handle((data) -> data != null && data.extractEnergy(1, true) == 1)
+                .handle(data -> data != null && data.extractEnergy(1, true) == 1)
                 .handle(AspectReadBuilders.PROP_GET_BOOLEAN, "canextract")
                 .buildRead();
-
             public static final IAspectRead<ValueTypeBoolean.ValueBoolean, ValueTypeBoolean> BOOLEAN_CANINSERTENERGY = BUILDER_BOOLEAN
-                .handle((data) -> data != null && data.receiveEnergy(1, true) == 1)
+                .handle(data -> data != null && data.receiveEnergy(1, true) == 1)
                 .handle(AspectReadBuilders.PROP_GET_BOOLEAN, "caninsert")
                 .buildRead();
-
             public static final IAspectRead<ValueTypeBoolean.ValueBoolean, ValueTypeBoolean> BOOLEAN_ISENERGYFULL = BUILDER_BOOLEAN
-                .handle((data) -> data != null && data.getEnergyStored() == data.getMaxEnergyStored())
+                .handle(data -> data != null && data.getEnergyStored() == data.getMaxEnergyStored())
                 .handle(AspectReadBuilders.PROP_GET_BOOLEAN, "isfull")
                 .buildRead();
-
             public static final IAspectRead<ValueTypeBoolean.ValueBoolean, ValueTypeBoolean> BOOLEAN_ISENERGYEMPTY = BUILDER_BOOLEAN
-                .handle((data) -> data != null && data.getEnergyStored() == 0)
+                .handle(data -> data != null && data.getEnergyStored() == 0)
                 .handle(AspectReadBuilders.PROP_GET_BOOLEAN, "isempty")
                 .buildRead();
-
             public static final IAspectRead<ValueTypeBoolean.ValueBoolean, ValueTypeBoolean> BOOLEAN_ISENERGYNONEMPTY = BUILDER_BOOLEAN
-                .handle((data) -> data != null && data.getEnergyStored() != 0)
+                .handle(data -> data != null && data.getEnergyStored() != 0)
                 .handle(AspectReadBuilders.PROP_GET_BOOLEAN, "isnonempty")
                 .buildRead();
 
             public static final IAspectRead<ValueTypeInteger.ValueInteger, ValueTypeInteger> INTEGER_ENERGYSTORED = BUILDER_INTEGER
-                .handle((data) -> data != null ? data.getEnergyStored() : 0)
+                .handle(data -> data != null ? data.getEnergyStored() : 0)
                 .handle(AspectReadBuilders.PROP_GET_INTEGER, "amount")
                 .buildRead();
-
             public static final IAspectRead<ValueTypeInteger.ValueInteger, ValueTypeInteger> INTEGER_ENERGYCAPACITY = BUILDER_INTEGER
-                .handle((data) -> data != null ? data.getMaxEnergyStored() : 0)
+                .handle(data -> data != null ? data.getMaxEnergyStored() : 0)
                 .handle(AspectReadBuilders.PROP_GET_INTEGER, "capacity")
                 .buildRead();
 
             public static final IAspectRead<ValueTypeDouble.ValueDouble, ValueTypeDouble> DOUBLE_ENERGYFILLRATIO = BUILDER_DOUBLE
-                .handle((data) -> {
+                .handle(data -> {
                     if (data != null) {
                         double capacity = (double) data.getMaxEnergyStored();
                         if (capacity == 0.0D) {

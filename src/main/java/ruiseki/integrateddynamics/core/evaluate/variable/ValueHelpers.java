@@ -2,9 +2,12 @@ package ruiseki.integrateddynamics.core.evaluate.variable;
 
 import net.minecraft.nbt.NBTTagCompound;
 
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.Nullable;
 
 import ruiseki.integrateddynamics.GeneralConfig;
+import ruiseki.integrateddynamics.api.PartStateException;
 import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.evaluate.operator.IOperator;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
@@ -13,6 +16,8 @@ import ruiseki.integrateddynamics.api.evaluate.variable.IVariable;
 import ruiseki.integrateddynamics.api.item.IVariableFacade;
 import ruiseki.integrateddynamics.core.evaluate.operator.CurriedOperator;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
+import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
+import ruiseki.okcore.helper.Helpers;
 import ruiseki.okcore.helper.LangHelpers;
 
 /**
@@ -118,10 +123,35 @@ public class ValueHelpers {
      * @throws EvaluationException If something went wrong during operator evaluation.
      */
     public static IValue evaluateOperator(IOperator operator, IVariable... variables) throws EvaluationException {
-        if (operator.getRequiredInputLength() == variables.length) {
+        int requiredLength = operator.getRequiredInputLength();
+        if (requiredLength == variables.length) {
             return operator.evaluate(variables);
         } else {
-            return ValueTypeOperator.ValueOperator.of(new CurriedOperator(operator, variables));
+            if (variables.length > requiredLength) { // We have MORE variables as input than the operator accepts
+                IVariable[] acceptableVariables = ArrayUtils.subarray(variables, 0, requiredLength);
+                IVariable[] remainingVariables = ArrayUtils.subarray(variables, requiredLength, variables.length);
+
+                // Pass all required variables to the operator, and forward all remaining ones to the resulting operator
+                IValue result = evaluateOperator(operator, acceptableVariables);
+
+                // Error if the result is NOT an operatorø
+                if (result.getType() != ValueTypes.OPERATOR) {
+                    throw new EvaluationException(
+                        String.format(
+                            L10NValues.OPERATOR_ERROR_CURRYINGOVERFLOW,
+                            operator.getUnlocalizedName(),
+                            requiredLength,
+                            variables.length,
+                            result.getType()));
+                }
+
+                // Pass all remaining variables to the resulting operator
+                IOperator nextOperator = ((ValueTypeOperator.ValueOperator) result).getRawValue();
+                return evaluateOperator(nextOperator, remainingVariables);
+
+            } else { // Else, the given variables only partially take up the required input
+                return ValueTypeOperator.ValueOperator.of(new CurriedOperator(operator, variables));
+            }
         }
     }
 
@@ -167,12 +197,27 @@ public class ValueHelpers {
         if (valueType == null) {
             return null;
         }
-        return valueType.deserialize(tag.getString("value"));
+        return deserializeRaw(valueType, tag.getString("value"));
+    }
+
+    /**
+     * Deserialize the given value string to a value.
+     *
+     * @param valueType   The value type to deserialize for.
+     * @param valueString The value string.
+     * @param <T>         The type of value.
+     * @return The value.
+     */
+    public static <T extends IValue> T deserializeRaw(IValueType<T> valueType, String valueString) {
+        if ("TOO LONG".equals(valueString)) {
+            return valueType.getDefault();
+        }
+        return valueType.deserialize(valueString);
     }
 
     /**
      * Check if the given result (from the given operator) is a boolean.
-     * 
+     *
      * @param predicate A predicate, used for error logging.
      * @param result    A result from the given predicate
      * @throws EvaluationException If the value was not a boolean.
@@ -186,5 +231,31 @@ public class ValueHelpers {
                 ValueTypes.BOOLEAN);
             throw new EvaluationException(error.localize());
         }
+    }
+
+    /**
+     * Get the human readable value of the given value in a safe way.
+     *
+     * @param variable A nullable variable.
+     * @return A pair of a string and color.
+     */
+    public static Pair<String, Integer> getSafeReadableValue(@Nullable IVariable variable) {
+        String readValue = "";
+        int readValueColor = 0;
+        if (!NetworkHelpers.shouldWork()) {
+            readValue = "SAFE-MODE";
+        } else if (variable != null) {
+            try {
+                IValue value = variable.getValue();
+                readValue = value.getType()
+                    .toCompactString(value);
+                readValueColor = value.getType()
+                    .getDisplayColor();
+            } catch (EvaluationException | NullPointerException | PartStateException e) {
+                readValue = "ERROR";
+                readValueColor = Helpers.RGBToInt(255, 0, 0);
+            }
+        }
+        return Pair.of(readValue, readValueColor);
     }
 }

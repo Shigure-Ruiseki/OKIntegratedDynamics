@@ -1,5 +1,6 @@
 package ruiseki.integrateddynamics.core.network;
 
+import java.util.List;
 import java.util.Map;
 
 import net.minecraftforge.common.util.ForgeDirection;
@@ -8,24 +9,27 @@ import org.jetbrains.annotations.Nullable;
 
 import com.google.common.collect.Maps;
 
-import gnu.trove.map.TIntObjectMap;
-import gnu.trove.map.hash.TIntObjectHashMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
 import ruiseki.commoncapabilities.api.ingredient.storage.IIngredientComponentStorage;
+import ruiseki.commoncapabilities.api.ingredient.storage.IIngredientComponentStorageWrapperHandler;
 import ruiseki.integrateddynamics.GeneralConfig;
 import ruiseki.integrateddynamics.api.ingredient.IIngredientComponentStorageObservable;
 import ruiseki.integrateddynamics.api.ingredient.IIngredientPositionsIndex;
 import ruiseki.integrateddynamics.api.network.IFullNetworkListener;
 import ruiseki.integrateddynamics.api.network.INetworkElement;
+import ruiseki.integrateddynamics.api.network.IPositionedAddonsNetwork;
 import ruiseki.integrateddynamics.api.network.IPositionedAddonsNetworkIngredients;
 import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.integrateddynamics.api.part.PrioritizedPartPos;
 import ruiseki.integrateddynamics.api.path.IPathElement;
+import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.ingredient.collection.IIngredientCollection;
 
 /**
  * An ingredient network that can hold prioritized positions.
- * 
+ *
  * @param <T> The instance type.
  * @param <M> The matching condition parameter, may be Void. Instances MUST properly implement the equals method.
  * @author rubensworks
@@ -37,7 +41,7 @@ public abstract class PositionedAddonsNetworkIngredients<T, M> extends Positione
     private final IngredientComponent<T, M> component;
 
     private final IngredientObserver<T, M> ingredientObserver;
-    private final TIntObjectMap<IngredientPositionsIndex<T, M>> indexes;
+    private final Int2ObjectMap<IngredientPositionsIndex<T, M>> indexes;
 
     private boolean observe;
     private Map<PartPos, Long> lastSecondDurations = Maps.newHashMap();
@@ -47,7 +51,7 @@ public abstract class PositionedAddonsNetworkIngredients<T, M> extends Positione
 
         this.ingredientObserver = new IngredientObserver<>(this);
         this.ingredientObserver.addChangeObserver(this);
-        this.indexes = new TIntObjectHashMap<>();
+        this.indexes = new Int2ObjectOpenHashMap<>();
 
         this.observe = false;
     }
@@ -112,6 +116,18 @@ public abstract class PositionedAddonsNetworkIngredients<T, M> extends Positione
     }
 
     @Override
+    protected void onPositionAdded(int channel, PrioritizedPartPos pos) {
+        super.onPositionAdded(channel, pos);
+
+        // If our position was added to the lastRemoved list without it being processed yet,
+        // remove it from the list before that processing is going to start.
+        List<PrioritizedPartPos> lastRemoved = ingredientObserver.getLastRemoved(channel);
+        if (lastRemoved != null) {
+            lastRemoved.remove(pos);
+        }
+    }
+
+    @Override
     protected void onPositionRemoved(int channel, PrioritizedPartPos pos) {
         super.onPositionRemoved(channel, pos);
         ingredientObserver.onPositionRemoved(channel, pos);
@@ -119,9 +135,7 @@ public abstract class PositionedAddonsNetworkIngredients<T, M> extends Positione
 
     @Override
     public IIngredientComponentStorage<T, M> getChannel(int channel) {
-        IIngredientPositionsIndex<T, M> index = getInstanceLocationsIndex(channel);
-        return index == null ? new IngredientChannelPositioned<>(this, channel)
-            : new IngredientChannelIndexed<>(this, channel, index);
+        return new IngredientChannelIndexed<>(this, channel, getChannelIndex(channel));
     }
 
     @Override
@@ -140,13 +154,40 @@ public abstract class PositionedAddonsNetworkIngredients<T, M> extends Positione
     }
 
     @Override
+    public void scheduleObservationForced(int channel, PartPos pos) {
+        scheduleObservation();
+        if (channel == IPositionedAddonsNetwork.WILDCARD_CHANNEL) {
+            this.ingredientObserver.resetTickInterval(getPositionChannel(pos), pos);
+        } else {
+            this.ingredientObserver.resetTickInterval(channel, pos);
+        }
+    }
+
+    @Override
     public boolean shouldObserve() {
         return this.observe;
     }
 
     @Override
     public IIngredientPositionsIndex<T, M> getChannelIndex(int channel) {
-        return this.indexes.get(channel);
+        IIngredientPositionsIndex<T, M> index = getInstanceLocationsIndex(channel);
+        if (index == null) {
+            // This can occur when the index is empty,
+            // which can be caused by all attached storages being empty or no storages being available.
+            index = new IngredientPositionsIndexEmpty<>(getComponent());
+        }
+        return index;
+    }
+
+    @Nullable
+    @Override
+    public <S> S getChannelExternal(Capability<S> capability, int channel) {
+        IIngredientComponentStorageWrapperHandler<T, M, S> wrapperHandler = getComponent()
+            .getStorageWrapperHandler(capability);
+        return wrapperHandler != null
+            ? wrapperHandler.wrapStorage(
+                new IngredientChannelAdapterWrapperSlotted<>((IngredientChannelAdapter<T, M>) getChannel(channel)))
+            : null;
     }
 
     @Override
@@ -214,5 +255,15 @@ public abstract class PositionedAddonsNetworkIngredients<T, M> extends Positione
     @Override
     public void resetLastSecondDurationsIndex() {
         lastSecondDurations.clear();
+    }
+
+    @Override
+    public void invalidateElement(INetworkElement element) {
+
+    }
+
+    @Override
+    public void revalidateElement(INetworkElement element) {
+
     }
 }

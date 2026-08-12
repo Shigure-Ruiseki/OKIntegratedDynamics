@@ -22,6 +22,7 @@ import ruiseki.integrateddynamics.api.item.IVariableFacade;
 import ruiseki.integrateddynamics.api.item.IVariableFacadeHandler;
 import ruiseki.integrateddynamics.api.item.IVariableFacadeHandlerRegistry;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
+import ruiseki.integrateddynamics.core.evaluate.variable.ValueHelpers;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeBoolean;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
@@ -184,7 +185,7 @@ public class VariableFacadeHandlerRegistry implements IVariableFacadeHandlerRegi
 
         @Override
         public void validate(IPartNetwork network, IValidator validator, IValueType containingValueType) {
-            if (containingValueType != ValueTypes.BOOLEAN) {
+            if (!ValueHelpers.correspondsTo(containingValueType, ValueTypes.BOOLEAN)) {
                 validator.addError(new LangHelpers.UnlocalizedString(unlocalizedError));
             }
         }

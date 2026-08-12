@@ -243,8 +243,9 @@ public class GuiNetworkDiagnostics extends JFrame {
                             BlockPos pos = observableObserverData.getPos();
                             row.add(String.format("%s / %s / %s", pos.getX(), pos.getY(), pos.getZ()));
                             row.add(
-                                observableObserverData.getSide()
-                                    .name());
+                                observableObserverData.getSide() == null ? "null"
+                                    : observableObserverData.getSide()
+                                        .name());
                             row.add(i++);
                             dataObservers.addElement(row);
                         }

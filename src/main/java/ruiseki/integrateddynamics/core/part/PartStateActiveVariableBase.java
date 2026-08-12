@@ -27,7 +27,6 @@ import ruiseki.integrateddynamics.capability.valueinterface.ValueInterfaceConfig
 import ruiseki.integrateddynamics.capability.variablecontainer.VariableContainerConfig;
 import ruiseki.integrateddynamics.capability.variablecontainer.VariableContainerDefault;
 import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
-import ruiseki.integrateddynamics.item.ItemVariable;
 import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.helper.LangHelpers;
@@ -74,7 +73,8 @@ public abstract class PartStateActiveVariableBase<P extends IPartType> extends P
     }
 
     protected void onCorruptedState() {
-        IntegratedDynamics.clog(Level.WARN, "A corrupted part state was found at, repairing...");
+        IntegratedDynamics.clog(Level.ERROR, "A corrupted part state was found at, repairing...");
+        Thread.dumpStack();
         this.checkedForWriteVariable = false;
         this.deactivated = true;
     }
@@ -88,19 +88,23 @@ public abstract class PartStateActiveVariableBase<P extends IPartType> extends P
 
     /**
      * Get the active variable in this state.
-     *
-     * @param <V>     The variable value type.
-     * @param network The network.
+     * 
+     * @param <V>         The variable value type.
+     * @param network     The network.
+     * @param partNetwork The part network.
      * @return The variable.
      */
-    public <V extends IValue> IVariable<V> getVariable(IPartNetwork network) {
+    public <V extends IValue> IVariable<V> getVariable(INetwork network, IPartNetwork partNetwork) {
         if (!checkedForWriteVariable) {
-            for (int slot = 0; slot < getInventory().getSizeInventory(); slot++) {
-                ItemStack itemStack = getInventory().getStackInSlot(slot);
-                if (itemStack != null) {
-                    this.currentVariableFacade = ItemVariable.getInstance()
-                        .getVariableFacade(itemStack);
-                    validate(network);
+            if (variableContainer.getVariableCache()
+                .isEmpty()) {
+                variableContainer.refreshVariables(network, inventory, false);
+            }
+            for (IVariableFacade facade : variableContainer.getVariableCache()
+                .values()) {
+                if (facade != null) {
+                    currentVariableFacade = facade;
+                    validate(partNetwork);
                 }
             }
             this.checkedForWriteVariable = true;
@@ -109,7 +113,7 @@ public abstract class PartStateActiveVariableBase<P extends IPartType> extends P
             onCorruptedState();
             return null;
         }
-        return currentVariableFacade.getVariable(network);
+        return currentVariableFacade.getVariable(partNetwork);
     }
 
     /**
@@ -176,11 +180,12 @@ public abstract class PartStateActiveVariableBase<P extends IPartType> extends P
 
     @Override
     @SuppressWarnings("unchecked")
-    public <T> LazyOptional<T> getCapability(Capability<T> capability, IPartNetwork network, PartTarget target) {
+    public <T> LazyOptional<T> getCapability(Capability<T> capability, INetwork network, IPartNetwork partNetwork,
+        PartTarget target) {
         if (capability == ValueInterfaceConfig.CAPABILITY) {
             return LazyOptional.of(() -> {
                 if (hasVariable()) {
-                    IVariable<IValue> variable = getVariable(network);
+                    IVariable<IValue> variable = getVariable(network, partNetwork);
                     if (variable != null) {
                         try {
                             return Optional.ofNullable(variable.getValue());
@@ -193,7 +198,7 @@ public abstract class PartStateActiveVariableBase<P extends IPartType> extends P
             })
                 .cast();
         }
-        return super.getCapability(capability, network, target);
+        return super.getCapability(capability, network, partNetwork, target);
     }
 
     /**

@@ -3,8 +3,12 @@ package ruiseki.integrateddynamics.core.network;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
+import org.jetbrains.annotations.Nullable;
 
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
@@ -13,8 +17,10 @@ import com.google.common.collect.Sets;
 import com.gtnewhorizon.gtnhlib.util.ServerThreadUtil;
 
 import cpw.mods.fml.common.FMLCommonHandler;
-import gnu.trove.map.TIntObjectMap;
-import gnu.trove.map.hash.TIntObjectHashMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.ints.IntLinkedOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
 import ruiseki.commoncapabilities.api.capability.inventorystate.IInventoryState;
 import ruiseki.commoncapabilities.capability.inventorystate.InventoryStateConfig;
 import ruiseki.integrateddynamics.GeneralConfig;
@@ -41,25 +47,34 @@ public class IngredientObserver<T, M> {
     private final IPositionedAddonsNetworkIngredients<T, M> network;
 
     private final Set<IIngredientComponentStorageObservable.IIndexChangeObserver<T, M>> changeObservers;
-    private final TIntObjectMap<Map<PrioritizedPartPos, Integer>> observeTargetTickIntervals;
-    private final TIntObjectMap<Map<PrioritizedPartPos, Integer>> observeTargetTicks;
-    private final TIntObjectMap<Map<PrioritizedPartPos, IngredientCollectionDiffManager<T, M>>> channeledDiffManagers;
+    private final Int2ObjectMap<Map<PartPos, Integer>> observeTargetTickIntervals;
+    private final Int2ObjectMap<Map<PartPos, Integer>> observeTargetTicks;
+    private final Int2ObjectMap<Map<PrioritizedPartPos, IngredientCollectionDiffManager<T, M>>> channeledDiffManagers;
 
-    private final TIntObjectMap<List<PrioritizedPartPos>> lastRemoved;
+    private final Int2ObjectMap<List<PrioritizedPartPos>> lastRemoved;
     private final Map<PartPos, Integer> lastInventoryStates;
+
+    private CountDownLatch lastObserverBarrier;
 
     public IngredientObserver(IPositionedAddonsNetworkIngredients<T, M> network) {
         this.network = network;
         this.changeObservers = Sets.newIdentityHashSet();
-        this.observeTargetTickIntervals = new TIntObjectHashMap<>();
-        this.observeTargetTicks = new TIntObjectHashMap<>();
-        this.channeledDiffManagers = new TIntObjectHashMap<>();
-        this.lastRemoved = new TIntObjectHashMap<>();
+        this.observeTargetTickIntervals = new Int2ObjectOpenHashMap<>();
+        this.observeTargetTicks = new Int2ObjectOpenHashMap<>();
+        this.channeledDiffManagers = new Int2ObjectOpenHashMap<>();
+        this.lastRemoved = new Int2ObjectOpenHashMap<>();
         this.lastInventoryStates = Maps.newHashMap();
+
+        this.lastObserverBarrier = null;
     }
 
     public IPositionedAddonsNetworkIngredients<T, M> getNetwork() {
         return network;
+    }
+
+    @Nullable
+    public List<PrioritizedPartPos> getLastRemoved(int channel) {
+        return lastRemoved.get(channel);
     }
 
     public void onPositionRemoved(int channel, PrioritizedPartPos pos) {
@@ -69,6 +84,7 @@ public class IngredientObserver<T, M> {
             this.lastRemoved.put(channel, positions);
         }
         positions.add(pos);
+        this.lastInventoryStates.remove(pos.getPartPos());
     }
 
     /**
@@ -117,16 +133,49 @@ public class IngredientObserver<T, M> {
         return Lists.newArrayList(this.changeObservers);
     }
 
+    protected int[] getChannels() {
+        int[] networkChannels = getNetwork().getChannels();
+        IntSet lastRemovedChannels = this.lastRemoved.keySet();
+        if (lastRemovedChannels.size() == 0) {
+            return networkChannels;
+        }
+
+        // We use a set that maintains insertion order,
+        // because we MUST iterate over the channels that have removals first!
+        IntSet uniqueChannels = new IntLinkedOpenHashSet();
+        for (int lastRemovedChannel : lastRemovedChannels) {
+            uniqueChannels.add(lastRemovedChannel);
+        }
+        for (int networkChannel : networkChannels) {
+            uniqueChannels.add(networkChannel);
+        }
+        return uniqueChannels.toIntArray();
+    }
+
     protected void observe() {
         if (!this.changeObservers.isEmpty()) {
             if (GeneralConfig.ingredientNetworkObserverEnableMultithreading) {
+                // If we still have an uncompleted job from the previous tick, wait for it to finish first!
+                if (this.lastObserverBarrier != null) {
+                    try {
+                        this.lastObserverBarrier.await(1, TimeUnit.SECONDS);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                // Schedule the observation job
+                this.lastObserverBarrier = new CountDownLatch(1);
                 WORKER_POOL.execute(() -> {
-                    for (int channel : getNetwork().getChannels()) {
+                    for (int channel : getChannels()) {
                         observe(channel);
                     }
+                    CountDownLatch lastObserverBarrier = this.lastObserverBarrier;
+                    this.lastObserverBarrier = null;
+                    lastObserverBarrier.countDown();
                 });
             } else {
-                for (int channel : getNetwork().getChannels()) {
+                for (int channel : getChannels()) {
                     observe(channel);
                 }
             }
@@ -141,11 +190,11 @@ public class IngredientObserver<T, M> {
         int currentTick = getCurrentTick();
 
         // Prepare ticking collections
-        Map<PrioritizedPartPos, Integer> channelTargetTicks = observeTargetTicks.get(channel);
+        Map<PartPos, Integer> channelTargetTicks = observeTargetTicks.get(channel);
         if (channelTargetTicks == null) {
             channelTargetTicks = Maps.newHashMap();
         }
-        Map<PrioritizedPartPos, Integer> channelIntervals = this.observeTargetTickIntervals.get(channel);
+        Map<PartPos, Integer> channelIntervals = this.observeTargetTickIntervals.get(channel);
         if (channelIntervals == null) {
             channelIntervals = Maps.newHashMap();
         }
@@ -177,25 +226,34 @@ public class IngredientObserver<T, M> {
             }
 
             // Check if we should observe this position in this tick
-            int lastTick = channelTargetTicks.getOrDefault(partPos, currentTick);
+            int lastTick = channelTargetTicks.getOrDefault(partPos.getPartPos(), currentTick);
             if (lastTick <= currentTick) {
                 // If an inventory state is exposed, check if it has changed since the last observation call.
                 boolean skipPosition = false;
-                IInventoryState inventoryState = CapabilityHelpers.getCapability(
-                    partPos.getPartPos()
-                        .getPos(),
-                    InventoryStateConfig.CAPABILITY,
-                    partPos.getPartPos()
-                        .getSide())
-                    .getOrNull();
-                if (inventoryState != null) {
-                    Integer lastState = this.lastInventoryStates.get(partPos.getPartPos());
-                    int newState = inventoryState.getHash();
-                    if (lastState != null && lastState == newState) {
-                        // Skip this position if it hasn't not changed
-                        skipPosition = true;
-                    } else {
-                        this.lastInventoryStates.put(partPos.getPartPos(), newState);
+                // Skip position forcefully if it is not loaded
+                if (!partPos.getPartPos()
+                    .getPos()
+                    .isLoaded()) {
+                    skipPosition = true;
+                }
+
+                if (!skipPosition) {
+                    IInventoryState inventoryState = CapabilityHelpers.getCapability(
+                        partPos.getPartPos()
+                            .getPos(),
+                        InventoryStateConfig.CAPABILITY,
+                        partPos.getPartPos()
+                            .getSide())
+                        .getOrNull();
+                    if (inventoryState != null) {
+                        Integer lastState = this.lastInventoryStates.get(partPos.getPartPos());
+                        int newState = inventoryState.getHash();
+                        if (lastState != null && lastState == newState) {
+                            // Skip this position if it hasn't not changed
+                            skipPosition = true;
+                        } else {
+                            this.lastInventoryStates.put(partPos.getPartPos(), newState);
+                        }
                     }
                 }
 
@@ -233,7 +291,7 @@ public class IngredientObserver<T, M> {
 
                     // Update the next tick value
                     int tickInterval = channelIntervals
-                        .getOrDefault(partPos, GeneralConfig.ingredientNetworkObserverFrequencyMax);
+                        .getOrDefault(partPos.getPartPos(), GeneralConfig.ingredientNetworkObserverFrequencyMax);
                     // Decrease the frequency when changes were detected
                     // Increase the frequency when no changes were detected
                     // This will make it so that quickly changing storages will be observed
@@ -258,16 +316,16 @@ public class IngredientObserver<T, M> {
                     // definitely also cause this part to tick in next tick.
                     // This makes these cases slightly faster, as no map updates are needed.
                     if (tickInterval != 1) {
-                        channelTargetTicks.put(partPos, currentTick + tickInterval);
+                        channelTargetTicks.put(partPos.getPartPos(), currentTick + tickInterval);
 
                     }
                     // Only update when the interval has changed.
                     // In most cases, this will remain the same.
                     if (tickIntervalChanged) {
                         if (tickInterval != GeneralConfig.ingredientNetworkObserverFrequencyMax) {
-                            channelIntervals.put(partPos, tickInterval);
+                            channelIntervals.put(partPos.getPartPos(), tickInterval);
                         } else {
-                            channelIntervals.remove(partPos);
+                            channelIntervals.remove(partPos.getPartPos());
                         }
                     }
                 }
@@ -316,6 +374,15 @@ public class IngredientObserver<T, M> {
         if (!channelIntervals.isEmpty()) {
             observeTargetTickIntervals.put(channel, channelIntervals);
         }
+    }
+
+    public void resetTickInterval(int channel, PartPos targetPos) {
+        Map<PartPos, Integer> channelTicks = this.observeTargetTicks.get(channel);
+        if (channelTicks == null) {
+            channelTicks = Maps.newHashMap();
+            this.observeTargetTicks.put(channel, channelTicks);
+        }
+        channelTicks.put(targetPos, getCurrentTick() + GeneralConfig.ingredientNetworkObserverFrequencyForced);
     }
 
 }

@@ -16,6 +16,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 
+import ruiseki.commoncapabilities.api.capability.recipehandler.IRecipeDefinition;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
@@ -29,6 +30,7 @@ import ruiseki.integrateddynamics.api.part.write.IPartTypeWriter;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueObjectTypeBlock;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueObjectTypeFluidStack;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueObjectTypeItemStack;
+import ruiseki.integrateddynamics.core.evaluate.variable.ValueObjectTypeRecipe;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeBoolean;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeDouble;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeInteger;
@@ -74,6 +76,8 @@ public class AspectWriteBuilders {
         AspectBuilder.forWriteType(ValueTypes.OPERATOR));
     public static final AspectBuilder<ValueTypeNbt.ValueNbt, ValueTypeNbt, Triple<PartTarget, IAspectProperties, ValueTypeNbt.ValueNbt>> BUILDER_NBT = getValue(
         AspectBuilder.forWriteType(ValueTypes.NBT));
+    public static final AspectBuilder<ValueObjectTypeRecipe.ValueRecipe, ValueObjectTypeRecipe, Triple<PartTarget, IAspectProperties, ValueObjectTypeRecipe.ValueRecipe>> BUILDER_RECIPE = getValue(
+        AspectBuilder.forWriteType(ValueTypes.OBJECT_RECIPE));
 
     // --------------- Value type propagators ---------------
     public static final IAspectValuePropagator<Triple<PartTarget, IAspectProperties, ValueTypeBoolean.ValueBoolean>, Triple<PartTarget, IAspectProperties, Boolean>> PROP_GET_BOOLEAN = input -> Triple
@@ -141,6 +145,14 @@ public class AspectWriteBuilders {
             input.getMiddle(),
             input.getRight()
                 .getRawValue());
+
+    public static final IAspectValuePropagator<Triple<PartTarget, IAspectProperties, ValueObjectTypeRecipe.ValueRecipe>, Triple<PartTarget, IAspectProperties, IRecipeDefinition>> PROP_GET_RECIPE = input -> Triple
+        .of(
+            input.getLeft(),
+            input.getMiddle(),
+            input.getRight()
+                .getRawValue()
+                .orNull());
 
     public static final class Audio {
 

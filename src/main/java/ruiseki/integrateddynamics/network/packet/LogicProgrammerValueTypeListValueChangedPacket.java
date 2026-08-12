@@ -35,7 +35,7 @@ public class LogicProgrammerValueTypeListValueChangedPacket extends PacketCodec 
     }
 
     protected ValueTypeList.ValueList getListValue() {
-        return ValueTypes.LIST.deserialize(value);
+        return ValueHelpers.deserializeRaw(ValueTypes.LIST, value);
     }
 
     @Override

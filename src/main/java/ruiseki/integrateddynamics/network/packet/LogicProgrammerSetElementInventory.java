@@ -12,6 +12,7 @@ import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 import ruiseki.integrateddynamics.api.logicprogrammer.ILogicProgrammerElement;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
+import ruiseki.integrateddynamics.core.logicprogrammer.ValueTypeIngredientsLPElement;
 import ruiseki.integrateddynamics.core.logicprogrammer.ValueTypeListLPElement;
 import ruiseki.integrateddynamics.inventory.container.ContainerLogicProgrammerBase;
 import ruiseki.okcore.network.CodecField;
@@ -19,7 +20,7 @@ import ruiseki.okcore.network.PacketCodec;
 
 /**
  * Packet for updating the element inventory inside the logic programmer.
- * 
+ *
  * @author rubensworks
  *
  */
@@ -58,7 +59,7 @@ public class LogicProgrammerSetElementInventory extends PacketCodec {
         if (player.openContainer instanceof ContainerLogicProgrammerBase) {
             ContainerLogicProgrammerBase container = (ContainerLogicProgrammerBase) player.openContainer;
             ILogicProgrammerElement element = container.getActiveElement();
-            if (element instanceof ValueTypeListLPElement) {
+            if (element instanceof ValueTypeListLPElement || element instanceof ValueTypeIngredientsLPElement) {
                 IValueType valueType = ValueTypes.REGISTRY.getValueType(this.listValueType);
                 if (valueType != null) {
                     ((ContainerLogicProgrammerBase) player.openContainer)

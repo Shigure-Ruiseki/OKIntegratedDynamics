@@ -20,8 +20,11 @@ import com.google.common.collect.ImmutableList;
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 
 import cofh.api.energy.IEnergyStorage;
+import ruiseki.commoncapabilities.api.capability.block.BlockCapabilities;
+import ruiseki.commoncapabilities.api.capability.recipehandler.IRecipeHandler;
 import ruiseki.commoncapabilities.api.capability.temperature.ITemperature;
 import ruiseki.commoncapabilities.api.capability.work.IWorker;
+import ruiseki.commoncapabilities.capability.recipehandler.RecipeHandlerConfig;
 import ruiseki.commoncapabilities.capability.temperature.TemperatureConfig;
 import ruiseki.commoncapabilities.capability.worker.WorkerConfig;
 import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
@@ -48,6 +51,7 @@ import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeListProxyPosit
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeListProxyPositionedTankFluidStacks;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeLong;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeNbt;
+import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeOperator;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeString;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
 import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
@@ -62,6 +66,7 @@ import ruiseki.okcore.energy.capability.CapabilityEnergy;
 import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
 import ruiseki.okcore.fluid.handler.IFluidHandler;
 import ruiseki.okcore.fluid.handler.IFluidTankProperties;
+import ruiseki.okcore.helper.BlockStateHelpers;
 import ruiseki.okcore.helper.CapabilityHelpers;
 import ruiseki.okcore.item.capability.CapabilityItemHandler;
 import ruiseki.okcore.item.handler.IItemHandler;
@@ -92,6 +97,8 @@ public class AspectReadBuilders {
         .forReadType(ValueTypes.NBT);
     public static final AspectBuilder<IValue, ValueTypeCategoryAny, Pair<PartTarget, IAspectProperties>> BUILDER_ANY = AspectBuilder
         .forReadType(ValueTypes.CATEGORY_ANY);
+    public static final AspectBuilder<ValueTypeOperator.ValueOperator, ValueTypeOperator, Pair<PartTarget, IAspectProperties>> BUILDER_OPERATOR = AspectBuilder
+        .forReadType(ValueTypes.OPERATOR);
 
     public static final AspectBuilder<ValueObjectTypeItemStack.ValueItemStack, ValueObjectTypeItemStack, Pair<PartTarget, IAspectProperties>> BUILDER_OBJECT_ITEMSTACK = AspectBuilder
         .forReadType(ValueTypes.OBJECT_ITEMSTACK);
@@ -466,41 +473,64 @@ public class AspectReadBuilders {
 
     public static final class Machine {
 
-        public static final IAspectValuePropagator<Pair<PartTarget, IAspectProperties>, IWorker> PROP_GET_WORKER = new IAspectValuePropagator<Pair<PartTarget, IAspectProperties>, IWorker>() {
-
-            @Override
-            public IWorker getOutput(Pair<PartTarget, IAspectProperties> input) {
-                DimPos dimPos = input.getLeft()
-                    .getTarget()
-                    .getPos();
-
-                return CapabilityHelpers
-                    .getCapability(
-                        dimPos.getWorld(),
-                        dimPos.getBlockPos(),
-                        WorkerConfig.CAPABILITY,
-                        input.getLeft()
-                            .getTarget()
-                            .getSide())
-                    .getOrNull();
-            }
+        public static final IAspectValuePropagator<Pair<PartTarget, IAspectProperties>, IWorker> PROP_GET_WORKER = input -> {
+            DimPos dimPos = input.getLeft()
+                .getTarget()
+                .getPos();
+            return CapabilityHelpers
+                .getCapability(
+                    dimPos.getWorld(),
+                    dimPos.getBlockPos(),
+                    WorkerConfig.CAPABILITY,
+                    input.getLeft()
+                        .getTarget()
+                        .getSide())
+                .getOrNull();
         };
-        public static final IAspectValuePropagator<Pair<PartTarget, IAspectProperties>, ITemperature> PROP_GET_TEMPERATURE = new IAspectValuePropagator<Pair<PartTarget, IAspectProperties>, ITemperature>() {
+        public static final IAspectValuePropagator<Pair<PartTarget, IAspectProperties>, ITemperature> PROP_GET_TEMPERATURE = input -> {
+            DimPos dimPos = input.getLeft()
+                .getTarget()
+                .getPos();
+            return CapabilityHelpers
+                .getCapability(
+                    dimPos.getWorld(),
+                    dimPos.getBlockPos(),
+                    TemperatureConfig.CAPABILITY,
+                    input.getLeft()
+                        .getTarget()
+                        .getSide())
+                .getOrNull();
+        };
+        public static final IAspectValuePropagator<Pair<PartTarget, IAspectProperties>, IRecipeHandler> PROP_GET_RECIPE_HANDLER = new IAspectValuePropagator<Pair<PartTarget, IAspectProperties>, IRecipeHandler>() {
 
             @Override
-            public ITemperature getOutput(Pair<PartTarget, IAspectProperties> input) {
+            public IRecipeHandler getOutput(Pair<PartTarget, IAspectProperties> input) {
                 DimPos dimPos = input.getLeft()
                     .getTarget()
                     .getPos();
-                return CapabilityHelpers
+                IRecipeHandler recipeHandler = CapabilityHelpers
                     .getCapability(
                         dimPos.getWorld(),
                         dimPos.getBlockPos(),
-                        TemperatureConfig.CAPABILITY,
+                        RecipeHandlerConfig.CAPABILITY,
                         input.getLeft()
                             .getTarget()
                             .getSide())
                     .getOrNull();
+                if (recipeHandler == null) {
+                    BlockState blockState = BlockStateHelpers.getState(dimPos.getWorld(), dimPos.getBlockPos());
+                    return BlockCapabilities.getInstance()
+                        .getCapability(
+                            blockState,
+                            RecipeHandlerConfig.CAPABILITY,
+                            dimPos.getWorld(),
+                            dimPos.getBlockPos(),
+                            input.getLeft()
+                                .getTarget()
+                                .getSide())
+                        .getOrNull();
+                }
+                return recipeHandler;
             }
         };
 
@@ -508,9 +538,16 @@ public class AspectReadBuilders {
             .handle(PROP_GET_WORKER, "machine");
         public static final AspectBuilder<ValueTypeBoolean.ValueBoolean, ValueTypeBoolean, ITemperature> BUILDER_TEMPERATURE_BOOLEAN = AspectReadBuilders.BUILDER_BOOLEAN
             .handle(PROP_GET_TEMPERATURE, "temperature");
+        public static final AspectBuilder<ValueTypeBoolean.ValueBoolean, ValueTypeBoolean, IRecipeHandler> BUILDER_RECIPE_HANDLER_BOOLEAN = AspectReadBuilders.BUILDER_BOOLEAN
+            .handle(PROP_GET_RECIPE_HANDLER, "recipehandler");
 
         public static final AspectBuilder<ValueTypeDouble.ValueDouble, ValueTypeDouble, ITemperature> BUILDER_TEMPERATURE_DOUBLE = AspectReadBuilders.BUILDER_DOUBLE
             .handle(PROP_GET_TEMPERATURE, "temperature");
+
+        public static final AspectBuilder<ValueTypeList.ValueList, ValueTypeList, Pair<PartTarget, IAspectProperties>> BUILDER_RECIPE_HANDLER_LIST = AspectReadBuilders.BUILDER_LIST
+            .appendKind("recipehandler");
+        public static final AspectBuilder<ValueTypeOperator.ValueOperator, ValueTypeOperator, Pair<PartTarget, IAspectProperties>> BUILDER_RECIPE_HANDLER_OPERATOR = AspectReadBuilders.BUILDER_OPERATOR
+            .appendKind("recipehandler");
     }
 
     public static final class Network {

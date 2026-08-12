@@ -29,7 +29,7 @@ import ruiseki.okcore.helper.MinecraftHelpers;
 
 /**
  * Registry for {@link IOperator}
- *
+ * 
  * @author rubensworks
  */
 public class OperatorRegistry implements IOperatorRegistry {
@@ -67,6 +67,7 @@ public class OperatorRegistry implements IOperatorRegistry {
         namedOperators.put(operator.getUniqueName(), operator);
         inputTypedOperators.put(ImmutableList.copyOf(operator.getInputTypes()), operator);
         outputTypedOperators.put(operator.getOutputType(), operator);
+        categoryOperators.put(operator.getUnlocalizedCategoryName(), operator);
         return operator;
     }
 

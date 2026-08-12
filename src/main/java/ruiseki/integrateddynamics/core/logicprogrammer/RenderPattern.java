@@ -1,7 +1,5 @@
 package ruiseki.integrateddynamics.core.logicprogrammer;
 
-import java.util.List;
-
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.renderer.texture.TextureManager;
@@ -9,18 +7,14 @@ import net.minecraft.inventory.Container;
 
 import org.apache.commons.lang3.tuple.Pair;
 
-import com.google.common.collect.Lists;
-
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import lombok.Getter;
 import ruiseki.integrateddynamics.api.client.gui.subgui.IGuiInputElement;
 import ruiseki.integrateddynamics.api.client.gui.subgui.ISubGuiBox;
-import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 import ruiseki.integrateddynamics.api.logicprogrammer.IConfigRenderPattern;
 import ruiseki.integrateddynamics.core.client.gui.subgui.SubGuiBox;
 import ruiseki.okcore.client.renderer.GlStateManager;
-import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.RenderHelpers;
 
 /**
@@ -78,7 +72,6 @@ public class RenderPattern<E extends IGuiInputElement, G extends Gui, C extends 
         }
 
         if (configRenderPattern.getSymbolPosition() != null) {
-            int width = fontRenderer.getStringWidth(element.getSymbol());
             RenderHelpers.drawScaledCenteredString(
                 fontRenderer,
                 element.getSymbol(),
@@ -86,7 +79,7 @@ public class RenderPattern<E extends IGuiInputElement, G extends Gui, C extends 
                     .getLeft(),
                 baseY + configRenderPattern.getSymbolPosition()
                     .getRight() + 8,
-                width,
+                0,
                 1,
                 0);
         }
@@ -113,12 +106,6 @@ public class RenderPattern<E extends IGuiInputElement, G extends Gui, C extends 
     public int getHeight() {
         return element.getRenderPattern()
             .getHeight();
-    }
-
-    protected List<String> getValueTypeTooltip(IValueType<?> valueType) {
-        List<String> lines = Lists.newLinkedList();
-        lines.add(valueType.getDisplayColorFormat() + LangHelpers.localize(valueType.getUnlocalizedName()));
-        return lines;
     }
 
 }

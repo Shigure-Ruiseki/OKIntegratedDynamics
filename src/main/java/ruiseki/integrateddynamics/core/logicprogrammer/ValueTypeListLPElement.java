@@ -115,7 +115,9 @@ public class ValueTypeListLPElement extends ValueTypeLPElementBase {
     public void setActiveElement(int index) {
         activeElement = index;
         if (index >= 0 && !subElements.containsKey(index)) {
-            subElements.put(index, listValueType.createLogicProgrammerElement());
+            IValueTypeLogicProgrammerElement subElement = listValueType.createLogicProgrammerElement();
+            subElements.put(index, subElement);
+            subElement.activate();
         }
         if (MinecraftHelpers.isClientSide()) {
             masterGui.setActiveElement(activeElement);
@@ -148,7 +150,7 @@ public class ValueTypeListLPElement extends ValueTypeLPElementBase {
 
     @Override
     public void deactivate() {
-
+        this.activeElement = -1;
     }
 
     @Override
@@ -199,7 +201,8 @@ public class ValueTypeListLPElement extends ValueTypeLPElementBase {
      */
     @SideOnly(Side.CLIENT)
     protected static class MasterSubGuiRenderPattern
-        extends RenderPattern<ValueTypeListLPElement, GuiLogicProgrammerBase, ContainerLogicProgrammerBase> {
+        extends RenderPattern<ValueTypeListLPElement, GuiLogicProgrammerBase, ContainerLogicProgrammerBase>
+        implements IRenderPatternValueTypeTooltip {
 
         private final int baseX;
         private final int baseY;
@@ -211,6 +214,7 @@ public class ValueTypeListLPElement extends ValueTypeLPElementBase {
         protected ListElementSubGui elementSubGui = null;
         protected int lastGuiLeft;
         protected int lastGuiTop;
+        private boolean renderTooltip = true;
 
         public MasterSubGuiRenderPattern(ValueTypeListLPElement element, int baseX, int baseY, int maxWidth,
             int maxHeight, GuiLogicProgrammerBase gui, ContainerLogicProgrammerBase container) {
@@ -253,20 +257,19 @@ public class ValueTypeListLPElement extends ValueTypeLPElementBase {
         public void drawGuiContainerForegroundLayer(int guiLeft, int guiTop, TextureManager textureManager,
             FontRenderer fontRenderer, int mouseX, int mouseY) {
             super.drawGuiContainerForegroundLayer(guiLeft, guiTop, textureManager, fontRenderer, mouseX, mouseY);
-            IValueType valueType = element.getValueType();
 
             // Output type tooltip
-            if (!container.hasWriteItemInSlot()) {
-                if (gui.func_146978_c(
-                    ContainerLogicProgrammerBase.OUTPUT_X,
-                    ContainerLogicProgrammerBase.OUTPUT_Y,
-                    GuiLogicProgrammerBase.BOX_HEIGHT,
-                    GuiLogicProgrammerBase.BOX_HEIGHT,
-                    mouseX,
-                    mouseY)) {
-                    gui.drawTooltip(getValueTypeTooltip(valueType), mouseX - guiLeft, mouseY - guiTop);
-                }
-            }
+            this.drawTooltipForeground(gui, container, guiLeft, guiTop, mouseX, mouseY, element.getValueType());
+        }
+
+        @Override
+        public boolean isRenderTooltip() {
+            return this.renderTooltip;
+        }
+
+        @Override
+        public void setRenderTooltip(boolean renderTooltip) {
+            this.renderTooltip = renderTooltip;
         }
     }
 
@@ -386,6 +389,9 @@ public class ValueTypeListLPElement extends ValueTypeLPElementBase {
                 .setElementInventory(subElement, x, y);
             subElement.setValueInGui(subGui);
             subGuiHolder.addSubGui(subGui);
+            if (subGui instanceof IRenderPatternValueTypeTooltip) {
+                ((IRenderPatternValueTypeTooltip) subGui).setRenderTooltip(false);
+            }
 
             // Do the same thing server-side
             IntegratedDynamics._instance.getPacketHandler()

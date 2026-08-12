@@ -135,20 +135,10 @@ public class GeneralConfig extends DummyConfig {
     public static boolean safeMode = false;
 
     /**
-     * The default frequency in ticks at which ingredient network should be observed.
-     */
-    @ConfigurableProperty(
-        category = ConfigurableTypeCategory.MACHINE,
-        comment = "The default frequency in ticks at which ingredient network should be observed.",
-        minimalValue = 1,
-        isCommandable = true)
-    public static int ingredientNetworkObserverFrequencyDefault = 10;
-
-    /**
      * The fastest possible frequency in ticks at which ingredient network should be observed.
      */
     @ConfigurableProperty(
-        category = ConfigurableTypeCategory.MACHINE,
+        category = ConfigurableTypeCategory.CORE,
         comment = "The fastest possible frequency in ticks at which ingredient network should be observed.",
         minimalValue = 1,
         isCommandable = true)
@@ -158,7 +148,7 @@ public class GeneralConfig extends DummyConfig {
      * The slowest possible frequency in ticks at which ingredient network should be observed.
      */
     @ConfigurableProperty(
-        category = ConfigurableTypeCategory.MACHINE,
+        category = ConfigurableTypeCategory.CORE,
         comment = "The slowest possible frequency in ticks at which ingredient network should be observed.",
         minimalValue = 1,
         isCommandable = true)
@@ -168,7 +158,7 @@ public class GeneralConfig extends DummyConfig {
      * The ingredient network observation frequency slowdown rate in ticks.
      */
     @ConfigurableProperty(
-        category = ConfigurableTypeCategory.MACHINE,
+        category = ConfigurableTypeCategory.CORE,
         comment = "The ingredient network observation frequency slowdown rate in ticks.",
         minimalValue = 1,
         isCommandable = true)
@@ -178,17 +168,27 @@ public class GeneralConfig extends DummyConfig {
      * The ingredient network observation frequency speedup rate in ticks.
      */
     @ConfigurableProperty(
-        category = ConfigurableTypeCategory.MACHINE,
+        category = ConfigurableTypeCategory.CORE,
         comment = "The ingredient network observation frequency slowdown rate in ticks.",
         minimalValue = 1,
         isCommandable = true)
     public static int ingredientNetworkObserverFrequencyDecreaseFactor = 5;
 
     /**
+     * The frequency in ticks at which ingredient network should be observed after a position's contents are changed.
+     */
+    @ConfigurableProperty(
+        category = ConfigurableTypeCategory.CORE,
+        comment = "The frequency in ticks at which ingredient network should be observed after a position's contents are changed.",
+        minimalValue = 0,
+        isCommandable = true)
+    public static int ingredientNetworkObserverFrequencyForced = 0;
+
+    /**
      * The number of threads that the ingredient network observer can use.
      */
     @ConfigurableProperty(
-        category = ConfigurableTypeCategory.MACHINE,
+        category = ConfigurableTypeCategory.CORE,
         comment = "The number of threads that the ingredient network observer can use.",
         minimalValue = 1,
         requiresMcRestart = true)
@@ -198,7 +198,7 @@ public class GeneralConfig extends DummyConfig {
      * If the ingredient network observer can work on separate thread.
      */
     @ConfigurableProperty(
-        category = ConfigurableTypeCategory.MACHINE,
+        category = ConfigurableTypeCategory.CORE,
         comment = "If the ingredient network observer can work on separate thread.",
         isCommandable = true)
     public static boolean ingredientNetworkObserverEnableMultithreading = true;

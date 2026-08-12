@@ -12,8 +12,6 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 
 import ruiseki.integrateddynamics.api.PartStateException;
-import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
-import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IVariable;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
@@ -23,10 +21,10 @@ import ruiseki.integrateddynamics.api.part.aspect.IAspect;
 import ruiseki.integrateddynamics.api.part.aspect.IAspectRead;
 import ruiseki.integrateddynamics.api.part.read.IPartStateReader;
 import ruiseki.integrateddynamics.api.part.read.IPartTypeReader;
+import ruiseki.integrateddynamics.core.evaluate.variable.ValueHelpers;
 import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
 import ruiseki.integrateddynamics.core.inventory.container.slot.SlotVariable;
 import ruiseki.integrateddynamics.core.part.event.PartReaderAspectEvent;
-import ruiseki.okcore.helper.Helpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.helper.ValueNotifierHelpers;
 import ruiseki.okcore.inventory.IGuiContainerProvider;
@@ -160,36 +158,22 @@ public class ContainerPartReader<P extends IPartTypeReader<P, S> & IGuiContainer
     }
 
     @Override
-
     public void detectAndSendChanges() {
         super.detectAndSendChanges();
 
         try {
             if (!MinecraftHelpers.isClientSide()) {
                 for (IAspectRead aspectRead : getUnfilteredItems()) {
-                    String readValue = "";
-                    int readValueColor = 0;
+                    Pair<String, Integer> readValue;
+
                     if (getPartState().isEnabled()) {
                         IVariable variable = getPartType().getVariable(getTarget(), getPartState(), aspectRead);
-                        if (!NetworkHelpers.shouldWork()) {
-                            readValue = "SAFE-MODE";
-                        } else if (variable != null) {
-                            try {
-                                IValue value = variable.getValue();
-                                readValue = value.getType()
-                                    .toCompactString(value);
-                                readValueColor = variable.getType()
-                                    .getDisplayColor();
-                            } catch (EvaluationException | NullPointerException e) {
-                                readValue = "ERROR";
-                                readValueColor = Helpers.RGBToInt(255, 0, 0);
-                            }
-                        }
+                        readValue = ValueHelpers.getSafeReadableValue(variable);
                     } else {
-                        readValue = "NO POWER";
+                        readValue = Pair.of("NO POWER", 0);
                     }
 
-                    setReadValue(aspectRead, Pair.of(readValue, readValueColor));
+                    setReadValue(aspectRead, readValue);
                 }
             }
         } catch (PartStateException e) {

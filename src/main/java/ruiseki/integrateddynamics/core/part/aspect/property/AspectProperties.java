@@ -107,7 +107,7 @@ public class AspectProperties implements IAspectProperties {
                     Level.ERROR,
                     String.format("Could not find value type with name %s, skipping loading.", valueTypeName));
             } else {
-                IValue value = type.deserialize(nbtEntry.getString("value"));
+                IValue value = ValueHelpers.deserializeRaw(type, nbtEntry.getString("value"));
                 String label = nbtEntry.getString("label");
                 if (value == null) {
                     IntegratedDynamics.clog(

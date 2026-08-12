@@ -27,7 +27,9 @@ public class RawObserverData implements IRawData {
         NBTTagCompound tag = new NBTTagCompound();
         tag.setInteger("dimension", dimension);
         tag.setLong("pos", pos.toLong());
-        tag.setInteger("side", side.ordinal());
+        if (side != null) {
+            tag.setInteger("side", side.ordinal());
+        }
         tag.setString("name", name);
         tag.setLong("last20TicksDurationNs", last20TicksDurationNs);
         return tag;
@@ -37,7 +39,7 @@ public class RawObserverData implements IRawData {
         return new RawObserverData(
             tag.getInteger("dimension"),
             BlockPos.fromLong(tag.getLong("pos")),
-            ForgeDirection.VALID_DIRECTIONS[tag.getInteger("side")],
+            tag.hasKey("side") ? ForgeDirection.VALID_DIRECTIONS[tag.getInteger("side")] : null,
             tag.getString("name"),
             tag.getLong("last20TicksDurationNs"));
     }

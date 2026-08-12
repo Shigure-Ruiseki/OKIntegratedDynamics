@@ -5,6 +5,7 @@ import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
+import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.part.IPartState;
 import ruiseki.integrateddynamics.api.part.IPartType;
@@ -46,8 +47,8 @@ public abstract class AspectReadBase<V extends IValue, T extends IValueType<V>> 
 
     @SuppressWarnings("unchecked")
     @Override
-    public <P extends IPartType<P, S>, S extends IPartState<P>> void update(IPartNetwork network, P partType,
-        PartTarget target, S state) {
+    public <P extends IPartType<P, S>, S extends IPartState<P>> void update(INetwork network, IPartNetwork partNetwork,
+        P partType, PartTarget target, S state) {
         IAspectVariable variable = ((IPartTypeReader) partType).getVariable(target, (IPartStateReader) state, this);
         variable.invalidate();
     }

@@ -26,6 +26,7 @@ import ruiseki.integrateddynamics.core.client.gui.ExtendedGuiHandler;
 import ruiseki.integrateddynamics.core.client.gui.subgui.SubGuiHolder;
 import ruiseki.integrateddynamics.core.evaluate.variable.GuiElementValueTypeString;
 import ruiseki.integrateddynamics.core.evaluate.variable.GuiElementValueTypeStringRenderPattern;
+import ruiseki.integrateddynamics.core.evaluate.variable.ValueHelpers;
 import ruiseki.integrateddynamics.core.inventory.container.ContainerAspectSettings;
 import ruiseki.integrateddynamics.core.logicprogrammer.RenderPattern;
 import ruiseki.okcore.client.gui.component.button.GuiButtonText;
@@ -134,8 +135,7 @@ public class GuiAspectSettings extends GuiContainerExtended {
             ContainerAspectSettings aspectContainer = (ContainerAspectSettings) container;
             aspectContainer.setValue(
                 getActiveProperty(),
-                guiElement.getValueType()
-                    .deserialize(guiElement.getInputString()));
+                ValueHelpers.deserializeRaw(guiElement.getValueType(), guiElement.getInputString()));
         }
     }
 

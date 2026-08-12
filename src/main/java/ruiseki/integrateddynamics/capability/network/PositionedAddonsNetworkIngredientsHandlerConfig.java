@@ -2,14 +2,13 @@ package ruiseki.integrateddynamics.capability.network;
 
 import ruiseki.commoncapabilities.CommonCapabilities;
 import ruiseki.integrateddynamics.api.ingredient.capability.IPositionedAddonsNetworkIngredientsHandler;
-import ruiseki.integrateddynamics.api.network.IEnergyNetwork;
 import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.capabilities.CapabilityInject;
 import ruiseki.okcore.config.extendedconfig.CapabilityConfig;
 
 /**
  * Config for the positioned addons network handler capability.
- * 
+ *
  * @author rubensworks
  */
 public class PositionedAddonsNetworkIngredientsHandlerConfig
@@ -20,7 +19,7 @@ public class PositionedAddonsNetworkIngredientsHandlerConfig
      */
     public static PositionedAddonsNetworkIngredientsHandlerConfig _instance;
 
-    @CapabilityInject(IEnergyNetwork.class)
+    @CapabilityInject(IPositionedAddonsNetworkIngredientsHandler.class)
     public static Capability<IPositionedAddonsNetworkIngredientsHandler> CAPABILITY = null;
 
     /**

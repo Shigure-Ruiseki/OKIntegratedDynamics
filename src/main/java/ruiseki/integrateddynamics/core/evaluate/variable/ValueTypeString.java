@@ -3,6 +3,7 @@ package ruiseki.integrateddynamics.core.evaluate.variable;
 import net.minecraft.util.EnumChatFormatting;
 
 import lombok.ToString;
+import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeNamed;
 import ruiseki.okcore.helper.Helpers;
 
 /**
@@ -10,7 +11,8 @@ import ruiseki.okcore.helper.Helpers;
  *
  * @author rubensworks
  */
-public class ValueTypeString extends ValueTypeBase<ValueTypeString.ValueString> {
+public class ValueTypeString extends ValueTypeBase<ValueTypeString.ValueString>
+    implements IValueTypeNamed<ValueTypeString.ValueString> {
 
     public ValueTypeString() {
         super("string", Helpers.RGBToInt(250, 10, 13), EnumChatFormatting.RED.toString());
@@ -34,6 +36,11 @@ public class ValueTypeString extends ValueTypeBase<ValueTypeString.ValueString> 
     @Override
     public ValueString deserialize(String value) {
         return ValueString.of(value);
+    }
+
+    @Override
+    public String getName(ValueString a) {
+        return a.getRawValue();
     }
 
     @ToString

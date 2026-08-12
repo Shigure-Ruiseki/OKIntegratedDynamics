@@ -28,10 +28,13 @@ import ruiseki.integrateddynamics.api.evaluate.variable.IValueCastRegistry;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeLightLevelRegistry;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeListProxyFactoryTypeRegistry;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeRegistry;
+import ruiseki.integrateddynamics.api.ingredient.IIngredientComponentHandlerRegistry;
 import ruiseki.integrateddynamics.api.item.IVariableFacadeHandlerRegistry;
 import ruiseki.integrateddynamics.api.logicprogrammer.ILogicProgrammerElementTypeRegistry;
+import ruiseki.integrateddynamics.api.network.INetworkCraftingHandlerRegistry;
 import ruiseki.integrateddynamics.api.part.IPartTypeRegistry;
 import ruiseki.integrateddynamics.api.part.aspect.IAspectRegistry;
+import ruiseki.integrateddynamics.capability.ingredient.IngredientComponentCapabilities;
 import ruiseki.integrateddynamics.capability.network.NetworkCapabilityConstructors;
 import ruiseki.integrateddynamics.client.render.part.PartOverlayRendererRegistry;
 import ruiseki.integrateddynamics.client.render.part.PartOverlayRenderers;
@@ -56,9 +59,12 @@ import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeListProxyFacto
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeListProxyFactoryTypeRegistry;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeRegistry;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
+import ruiseki.integrateddynamics.core.ingredient.IngredientComponentHandlerRegistry;
+import ruiseki.integrateddynamics.core.ingredient.IngredientComponentHandlers;
 import ruiseki.integrateddynamics.core.item.VariableFacadeHandlerRegistry;
 import ruiseki.integrateddynamics.core.logicprogrammer.LogicProgrammerElementTypeRegistry;
 import ruiseki.integrateddynamics.core.logicprogrammer.LogicProgrammerElementTypes;
+import ruiseki.integrateddynamics.core.network.NetworkCraftingHandlerRegistry;
 import ruiseki.integrateddynamics.core.part.PartTypeRegistry;
 import ruiseki.integrateddynamics.core.part.PartTypes;
 import ruiseki.integrateddynamics.core.part.aspect.AspectRegistry;
@@ -157,6 +163,11 @@ public class IntegratedDynamics extends ModBaseVersionable {
                 .addRegistry(IVariableModelProviderRegistry.class, VariableModelProviderRegistry.getInstance());
             getRegistryManager().getRegistry(IVariableFacadeHandlerRegistry.class)
                 .registerHandler(DelayVariableFacadeHandler.getInstance());
+            getRegistryManager().addRegistry(
+                IIngredientComponentHandlerRegistry.class,
+                IngredientComponentHandlerRegistry.getInstance());
+            getRegistryManager()
+                .addRegistry(INetworkCraftingHandlerRegistry.class, NetworkCraftingHandlerRegistry.getInstance());
         }
         getRegistryManager().getRegistry(IVariableFacadeHandlerRegistry.class)
             .registerHandler(ProxyVariableFacadeHandler.getInstance());
@@ -164,6 +175,8 @@ public class IntegratedDynamics extends ModBaseVersionable {
         addInitListeners(getRegistryManager().getRegistry(IPartTypeRegistry.class));
 
         ValueTypes.load();
+        IngredientComponentCapabilities.load();
+        IngredientComponentHandlers.load();
         ValueCastMappings.load();
         ValueTypeLightLevels.load();
         ValueTypeListProxyFactories.load();

@@ -23,6 +23,7 @@ import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
 import ruiseki.okcore.energy.capability.CapabilityEnergy;
 import ruiseki.okcore.helper.BlockStateHelpers;
+import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.persist.nbt.NBTPersist;
 
 public class TileEnergyBattery extends TileCableConnectable
@@ -97,6 +98,17 @@ public class TileEnergyBattery extends TileCableConnectable
     @Override
     protected int getUpdateBackoffTicks() {
         return 20;
+    }
+
+    @Override
+    protected void onSendUpdate() {
+        worldObj.notifyBlocksOfNeighborChange(
+            xCoord,
+            yCoord,
+            zCoord,
+            getBlockType(),
+            MinecraftHelpers.BLOCK_NOTIFY | MinecraftHelpers.BLOCK_NOTIFY_CLIENT
+                | MinecraftHelpers.BLOCK_NOTIFY_NO_RERENDER);
     }
 
     public static int getEnergyPerTick(int capacity) {
