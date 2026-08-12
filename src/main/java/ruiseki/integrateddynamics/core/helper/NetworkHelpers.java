@@ -172,20 +172,38 @@ public class NetworkHelpers {
     /**
      * This MUST be called by blocks having the {@link INetworkElementProvider} capability in
      * when a neighbouring block is updated, more specifically when
-     * {@link net.minecraft.block.Block#onNeighborBlockChange(World, int, int, int, Block)} is called.
+     * {@link net.minecraft.block.Block#onNeighborChange(IBlockAccess, int, int, int, int, int, int)},
+     * {@link Block#onNeighborBlockChange(World, int, int, int, Block)}
      *
-     * @param world         The world in which the neighbour was updated.
-     * @param pos           The position of the center block.
-     * @param neighborBlock The block type of the neighbour that was updated.
-     * @param side          The side at the center block.
+     * @param world          The world in which the neighbour was updated.
+     * @param pos            The position of the center block.
+     * @param side           The side at the center block.
+     * @param neighbourBlock The block type of the neighbour that was updated.
      */
-    public static void onElementProviderBlockNeighborChange(World world, BlockPos pos, Block neighborBlock,
+    public static void onElementProviderBlockNeighborChange(World world, BlockPos pos, Block neighbourBlock,
         @Nullable ForgeDirection side) {
+        onElementProviderBlockNeighborChange(world, pos, neighbourBlock, side, null);
+    }
+
+    /**
+     * This MUST be called by blocks having the {@link INetworkElementProvider} capability in
+     * when a neighbouring block is updated, more specifically when
+     * {@link net.minecraft.block.Block#onNeighborChange(IBlockAccess, int, int, int, int, int, int)},
+     * {@link Block#onNeighborBlockChange(World, int, int, int, Block)}
+     *
+     * @param world             The world in which the neighbour was updated.
+     * @param pos               The position of the center block.
+     * @param side              The side at the center block.
+     * @param neighbourBlock    The block type of the neighbour that was updated.
+     * @param neighbourBlockPos The position of the neighbour that was updated.
+     */
+    public static void onElementProviderBlockNeighborChange(World world, BlockPos pos, Block neighbourBlock,
+        @Nullable ForgeDirection side, BlockPos neighbourBlockPos) {
         if (!world.isRemote) {
             INetwork network = getNetwork(world, pos, side);
             INetworkElementProvider networkElementProvider = getNetworkElementProvider(world, pos, side);
             for (INetworkElement networkElement : networkElementProvider.createNetworkElements(world, pos)) {
-                networkElement.onNeighborBlockChange(network, world, neighborBlock);
+                networkElement.onNeighborBlockChange(network, world, neighbourBlock, neighbourBlockPos);
             }
         }
     }
@@ -200,7 +218,7 @@ public class NetworkHelpers {
     /**
      * Invalidate all network elements at the given position.
      * Warning: this assumes unsided network carrier capabilities, for example full-block network elements.
-     * 
+     *
      * @param world The world.
      * @param pos   The position.
      * @param tile  The tile entity that is unloaded.

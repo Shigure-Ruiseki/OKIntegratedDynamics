@@ -66,8 +66,18 @@ public class ItemPart<P extends IPartType<P, S>, S extends IPartState<P>> extend
     }
 
     @Override
+    public String getUnlocalizedName() {
+        return part.getUnlocalizedName();
+    }
+
+    @Override
+    public String getUnlocalizedName(ItemStack stack) {
+        return part.getUnlocalizedName();
+    }
+
+    @Override
     public String getItemStackDisplayName(ItemStack stack) {
-        return LangHelpers.localize(part.getUnlocalizedName());
+        return LangHelpers.localize(getUnlocalizedName());
     }
 
     @Override

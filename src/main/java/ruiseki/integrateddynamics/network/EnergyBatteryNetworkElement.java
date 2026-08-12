@@ -16,6 +16,7 @@ import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
 import ruiseki.integrateddynamics.core.network.NetworkElementBase;
 import ruiseki.integrateddynamics.tileentity.TileEnergyBattery;
+import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
 import ruiseki.okcore.helper.TileHelpers;
 
@@ -94,7 +95,8 @@ public class EnergyBatteryNetworkElement extends NetworkElementBase {
     }
 
     @Override
-    public void onNeighborBlockChange(INetwork network, IBlockAccess world, Block neighborBlock) {
+    public void onNeighborBlockChange(INetwork network, IBlockAccess world, Block neighbourBlock,
+        BlockPos neighbourPos) {
 
     }
 

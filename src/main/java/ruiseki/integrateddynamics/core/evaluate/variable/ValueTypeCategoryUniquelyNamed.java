@@ -11,13 +11,13 @@ import ruiseki.okcore.helper.Helpers;
 
 /**
  * Value type category with values that have a unique name.
- * 
+ *
  * @author rubensworks
  */
 public class ValueTypeCategoryUniquelyNamed extends ValueTypeCategoryBase<IValue> {
 
     public ValueTypeCategoryUniquelyNamed() {
-        super("uniquely_named", Helpers.RGBToInt(250, 10, 13), EnumChatFormatting.RED.toString());
+        super("uniquely_named", Helpers.RGBToInt(250, 10, 13), EnumChatFormatting.RED.toString(), IValue.class);
     }
 
     public String getUniqueName(IVariable a) throws EvaluationException {

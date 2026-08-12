@@ -28,7 +28,7 @@ public class ValueObjectTypeEntity extends ValueObjectTypeBase<ValueObjectTypeEn
     private static final String DELIMITER = ";";
 
     public ValueObjectTypeEntity() {
-        super("entity");
+        super("entity", ValueObjectTypeEntity.ValueEntity.class);
     }
 
     @Override

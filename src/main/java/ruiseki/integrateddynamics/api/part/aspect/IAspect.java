@@ -4,6 +4,8 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 
+import org.jetbrains.annotations.Nullable;
+
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 import ruiseki.integrateddynamics.api.network.INetwork;
@@ -44,7 +46,7 @@ public interface IAspect<V extends IValue, T extends IValueType<V>> {
 
     /**
      * Called inside part types for updating a part on a block.
-     * 
+     *
      * @param <P>         The part type type.
      * @param <S>         The part state.
      * @param network     The network to update in.
@@ -93,6 +95,7 @@ public interface IAspect<V extends IValue, T extends IValueType<V>> {
     /**
      * @return The default properties for this aspect.
      */
+    @Nullable
     public IAspectProperties getDefaultProperties();
 
     /**

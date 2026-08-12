@@ -3,10 +3,12 @@ package ruiseki.integrateddynamics.core.network;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -53,8 +55,7 @@ public class IngredientObserver<T, M> {
 
     private final Int2ObjectMap<List<PrioritizedPartPos>> lastRemoved;
     private final Map<PartPos, Integer> lastInventoryStates;
-
-    private CountDownLatch lastObserverBarrier;
+    private Future<?> lastObserverBarrier;
 
     public IngredientObserver(IPositionedAddonsNetworkIngredients<T, M> network) {
         this.network = network;
@@ -152,27 +153,30 @@ public class IngredientObserver<T, M> {
         return uniqueChannels.toIntArray();
     }
 
-    protected void observe() {
+    /**
+     * @return If an observation job was successfully started if it was needed.
+     */
+    protected boolean observe() {
         if (!this.changeObservers.isEmpty()) {
             if (GeneralConfig.ingredientNetworkObserverEnableMultithreading) {
                 // If we still have an uncompleted job from the previous tick, wait for it to finish first!
                 if (this.lastObserverBarrier != null) {
                     try {
-                        this.lastObserverBarrier.await(1, TimeUnit.SECONDS);
-                    } catch (InterruptedException e) {
+                        this.lastObserverBarrier.get(1, TimeUnit.SECONDS);
+                    } catch (TimeoutException e) {
+                        return false; // Don't start new jobs when the previous one is still running.
+                    } catch (InterruptedException | ExecutionException e) {
                         e.printStackTrace();
                     }
                 }
 
                 // Schedule the observation job
-                this.lastObserverBarrier = new CountDownLatch(1);
-                WORKER_POOL.execute(() -> {
+                this.lastObserverBarrier = WORKER_POOL.submit(() -> {
+
                     for (int channel : getChannels()) {
                         observe(channel);
                     }
-                    CountDownLatch lastObserverBarrier = this.lastObserverBarrier;
-                    this.lastObserverBarrier = null;
-                    lastObserverBarrier.countDown();
+
                 });
             } else {
                 for (int channel : getChannels()) {
@@ -180,6 +184,7 @@ public class IngredientObserver<T, M> {
                 }
             }
         }
+        return true;
     }
 
     protected synchronized Set<PrioritizedPartPos> getPositionsCopy(int channel) {

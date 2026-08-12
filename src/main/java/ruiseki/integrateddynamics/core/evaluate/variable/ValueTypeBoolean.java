@@ -16,7 +16,11 @@ public class ValueTypeBoolean extends ValueTypeBase<ValueTypeBoolean.ValueBoolea
     private static ValueBoolean FALSE;
 
     public ValueTypeBoolean() {
-        super("boolean", Helpers.RGBToInt(43, 47, 231), EnumChatFormatting.BLUE.toString());
+        super(
+            "boolean",
+            Helpers.RGBToInt(43, 47, 231),
+            EnumChatFormatting.BLUE.toString(),
+            ValueTypeBoolean.ValueBoolean.class);
     }
 
     @Override

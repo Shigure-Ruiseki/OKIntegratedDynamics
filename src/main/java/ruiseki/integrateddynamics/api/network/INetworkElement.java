@@ -9,6 +9,8 @@ import net.minecraft.world.World;
 
 import org.jetbrains.annotations.Nullable;
 
+import ruiseki.okcore.datastructure.BlockPos;
+
 /**
  * Objects that can be an element of a {@link INetwork}.
  * Multiple instances for the same 'element' can be created, so the comparator implementation must
@@ -102,11 +104,13 @@ public interface INetworkElement extends Comparable<INetworkElement> {
      * Called when a neighbouring block is updated, more specifically when
      * {@link net.minecraft.block.Block#onNeighborBlockChange(World, int, int, int, Block)} is called.
      *
-     * @param network       The network to update in.
-     * @param world         The world in which the neighbour was updated.
-     * @param neighborBlock block type of the neighbour that was updated.
+     * @param network           The network to update in.
+     * @param world             The world in which the neighbour was updated.
+     * @param neighbourBlock    block type of the neighbour that was updated.
+     * @param neighbourBlockPos The position of the neighbour that was updated.
      */
-    public void onNeighborBlockChange(@Nullable INetwork network, IBlockAccess world, Block neighborBlock);
+    public void onNeighborBlockChange(@Nullable INetwork network, IBlockAccess world, Block neighbourBlock,
+        BlockPos neighbourBlockPos);
 
     /**
      * Set the priority and channel of this element in the network.

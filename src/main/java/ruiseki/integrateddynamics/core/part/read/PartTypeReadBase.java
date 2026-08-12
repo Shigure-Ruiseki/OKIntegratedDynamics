@@ -32,6 +32,7 @@ import ruiseki.integrateddynamics.client.gui.GuiPartReader;
 import ruiseki.integrateddynamics.core.inventory.container.ContainerPartReader;
 import ruiseki.integrateddynamics.core.part.PartTypeAspects;
 import ruiseki.integrateddynamics.part.aspect.Aspects;
+import ruiseki.okcore.datastructure.BlockPos;
 
 /**
  * An abstract {@link IPartTypeReader}.
@@ -90,8 +91,8 @@ public abstract class PartTypeReadBase<P extends IPartTypeReader<P, S>, S extend
 
     @Override
     public void onBlockNeighborChange(INetwork network, IPartNetwork partNetwork, PartTarget target, S state,
-        IBlockAccess world, Block neighborBlock) {
-        super.onBlockNeighborChange(network, partNetwork, target, state, world, neighborBlock);
+        IBlockAccess world, Block neighbourBlock, BlockPos neighbourBlockPos) {
+        super.onBlockNeighborChange(network, partNetwork, target, state, world, neighbourBlock, neighbourBlockPos);
         for (IAspect aspect : getUpdateAspects(AspectUpdateType.BLOCK_UPDATE)) {
             aspect.update(network, partNetwork, this, target, state);
         }

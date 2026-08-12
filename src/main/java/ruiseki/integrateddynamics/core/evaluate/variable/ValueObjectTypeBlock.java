@@ -29,7 +29,7 @@ public class ValueObjectTypeBlock extends ValueObjectTypeBase<ValueObjectTypeBlo
     IValueTypeUniquelyNamed<ValueObjectTypeBlock.ValueBlock>, IValueTypeNullable<ValueObjectTypeBlock.ValueBlock> {
 
     public ValueObjectTypeBlock() {
-        super("block");
+        super("block", ValueObjectTypeBlock.ValueBlock.class);
     }
 
     public static String getBlockDisplayNameUsSafe(BlockState blockState) throws NoSuchMethodException {

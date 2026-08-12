@@ -25,7 +25,7 @@ import ruiseki.okcore.datastructure.DimPos;
 
 /**
  * An operator that gets the first recipe based on an output.
- * 
+ *
  * @author rubensworks
  */
 public class PositionedOperatorRecipeHandlerRecipeByOutput<T extends IValueType<V>, V extends IValue>
@@ -48,7 +48,8 @@ public class PositionedOperatorRecipeHandlerRecipeByOutput<T extends IValueType<
 
         @Override
         public IValue evaluate(SafeVariablesGetter variables) throws EvaluationException {
-            ValueObjectTypeIngredients.ValueIngredients ingredients = variables.getValue(0);
+            ValueObjectTypeIngredients.ValueIngredients ingredients = variables
+                .getValue(0, ValueTypes.OBJECT_INGREDIENTS);
             IRecipeHandler recipeHandler = this.getOperator()
                 .getRecipeHandler();
             if (recipeHandler != null && ingredients.getRawValue()

@@ -15,7 +15,11 @@ public class ValueTypeDouble extends ValueTypeBase<ValueTypeDouble.ValueDouble>
     implements IValueTypeNumber<ValueTypeDouble.ValueDouble> {
 
     public ValueTypeDouble() {
-        super("double", Helpers.RGBToInt(235, 234, 23), EnumChatFormatting.YELLOW.toString());
+        super(
+            "double",
+            Helpers.RGBToInt(235, 234, 23),
+            EnumChatFormatting.YELLOW.toString(),
+            ValueTypeDouble.ValueDouble.class);
     }
 
     @Override

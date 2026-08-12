@@ -66,6 +66,7 @@ import cpw.mods.fml.common.ModContainer;
 import cpw.mods.fml.common.registry.EntityRegistry;
 import cpw.mods.fml.common.registry.GameData;
 import lombok.Lombok;
+import ruiseki.commoncapabilities.api.capability.itemhandler.ItemMatch;
 import ruiseki.commoncapabilities.api.capability.recipehandler.IPrototypedIngredientAlternatives;
 import ruiseki.commoncapabilities.api.capability.recipehandler.IRecipeDefinition;
 import ruiseki.commoncapabilities.api.capability.recipehandler.PrototypedIngredientAlternativesList;
@@ -127,7 +128,6 @@ import ruiseki.okcore.energy.capability.CapabilityEnergy;
 import ruiseki.okcore.helper.BlockHelpers;
 import ruiseki.okcore.helper.BlockStateHelpers;
 import ruiseki.okcore.helper.CapabilityHelpers;
-import ruiseki.okcore.helper.ItemStackHelpers;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.item.capability.CapabilityItemHandler;
@@ -165,11 +165,11 @@ public final class Operators {
         OperatorBuilders.LOGICAL_2.symbol("&&")
             .operatorName("and")
             .function(variables -> {
-                ValueTypeBoolean.ValueBoolean a = variables.getValue(0);
+                ValueTypeBoolean.ValueBoolean a = variables.getValue(0, ValueTypes.BOOLEAN);
                 if (!a.getRawValue()) {
                     return ValueTypeBoolean.ValueBoolean.of(false);
                 } else {
-                    return variables.getValue(1);
+                    return variables.getValue(1, ValueTypes.BOOLEAN);
 
                 }
             })
@@ -182,11 +182,11 @@ public final class Operators {
         OperatorBuilders.LOGICAL_2.symbol("||")
             .operatorName("or")
             .function(variables -> {
-                ValueTypeBoolean.ValueBoolean a = variables.getValue(0);
+                ValueTypeBoolean.ValueBoolean a = variables.getValue(0, ValueTypes.BOOLEAN);
                 if (a.getRawValue()) {
                     return ValueTypeBoolean.ValueBoolean.of(true);
                 } else {
-                    return variables.getValue(1);
+                    return variables.getValue(1, ValueTypes.BOOLEAN);
 
                 }
             })
@@ -199,7 +199,7 @@ public final class Operators {
         OperatorBuilders.LOGICAL_1_PREFIX.symbol("!")
             .operatorName("not")
             .function(variables -> {
-                ValueTypeBoolean.ValueBoolean valueBoolean = variables.getValue(0);
+                ValueTypeBoolean.ValueBoolean valueBoolean = variables.getValue(0, ValueTypes.BOOLEAN);
                 return ValueTypeBoolean.ValueBoolean.of(!valueBoolean.getRawValue());
             })
             .build());
@@ -298,13 +298,13 @@ public final class Operators {
         OperatorBuilders.INTEGER_2.symbol("%")
             .operatorName("modulus")
             .function(variables -> {
-                ValueTypeInteger.ValueInteger b = variables.getValue(1);
+                ValueTypeInteger.ValueInteger b = variables.getValue(1, ValueTypes.INTEGER);
                 if (b.getRawValue() == 0) { // You can not divide by zero
                     throw new EvaluationException("Division by zero");
                 } else if (b.getRawValue() == 1) { // If b is neutral element for division
                     return ZERO;
                 } else {
-                    ValueTypeInteger.ValueInteger a = variables.getValue(0);
+                    ValueTypeInteger.ValueInteger a = variables.getValue(0, ValueTypes.INTEGER);
                     return ValueTypeInteger.ValueInteger.of(a.getRawValue() % b.getRawValue());
 
                 }
@@ -318,7 +318,7 @@ public final class Operators {
         OperatorBuilders.INTEGER_1_SUFFIX.symbol("++")
             .operatorName("increment")
             .function(variables -> {
-                ValueTypeInteger.ValueInteger a = variables.getValue(0);
+                ValueTypeInteger.ValueInteger a = variables.getValue(0, ValueTypes.INTEGER);
                 return ValueTypeInteger.ValueInteger.of(a.getRawValue() + 1);
 
             })
@@ -331,7 +331,7 @@ public final class Operators {
         OperatorBuilders.INTEGER_1_SUFFIX.symbol("--")
             .operatorName("decrement")
             .function(variables -> {
-                ValueTypeInteger.ValueInteger a = variables.getValue(0);
+                ValueTypeInteger.ValueInteger a = variables.getValue(0, ValueTypes.INTEGER);
                 return ValueTypeInteger.ValueInteger.of(a.getRawValue() - 1);
 
             })
@@ -451,8 +451,8 @@ public final class Operators {
         OperatorBuilders.BINARY_2.symbol("&")
             .operatorName("and")
             .function(variables -> {
-                ValueTypeInteger.ValueInteger a = variables.getValue(0);
-                ValueTypeInteger.ValueInteger b = variables.getValue(1);
+                ValueTypeInteger.ValueInteger a = variables.getValue(0, ValueTypes.INTEGER);
+                ValueTypeInteger.ValueInteger b = variables.getValue(1, ValueTypes.INTEGER);
                 return ValueTypeInteger.ValueInteger.of(a.getRawValue() & b.getRawValue());
 
             })
@@ -465,8 +465,8 @@ public final class Operators {
         OperatorBuilders.BINARY_2.symbol("|")
             .operatorName("or")
             .function(variables -> {
-                ValueTypeInteger.ValueInteger a = variables.getValue(0);
-                ValueTypeInteger.ValueInteger b = variables.getValue(1);
+                ValueTypeInteger.ValueInteger a = variables.getValue(0, ValueTypes.INTEGER);
+                ValueTypeInteger.ValueInteger b = variables.getValue(1, ValueTypes.INTEGER);
                 return ValueTypeInteger.ValueInteger.of(a.getRawValue() | b.getRawValue());
 
             })
@@ -479,8 +479,8 @@ public final class Operators {
         OperatorBuilders.BINARY_2.symbol("^")
             .operatorName("xor")
             .function(variables -> {
-                ValueTypeInteger.ValueInteger a = variables.getValue(0);
-                ValueTypeInteger.ValueInteger b = variables.getValue(1);
+                ValueTypeInteger.ValueInteger a = variables.getValue(0, ValueTypes.INTEGER);
+                ValueTypeInteger.ValueInteger b = variables.getValue(1, ValueTypes.INTEGER);
                 return ValueTypeInteger.ValueInteger.of(a.getRawValue() ^ b.getRawValue());
 
             })
@@ -493,7 +493,7 @@ public final class Operators {
         OperatorBuilders.BINARY_1_PREFIX.symbol("~")
             .operatorName("complement")
             .function(variables -> {
-                ValueTypeInteger.ValueInteger a = variables.getValue(0);
+                ValueTypeInteger.ValueInteger a = variables.getValue(0, ValueTypes.INTEGER);
                 return ValueTypeInteger.ValueInteger.of(~a.getRawValue());
 
             })
@@ -506,8 +506,8 @@ public final class Operators {
         OperatorBuilders.BINARY_2.symbol("<<")
             .operatorName("lshift")
             .function(variables -> {
-                ValueTypeInteger.ValueInteger a = variables.getValue(0);
-                ValueTypeInteger.ValueInteger b = variables.getValue(1);
+                ValueTypeInteger.ValueInteger a = variables.getValue(0, ValueTypes.INTEGER);
+                ValueTypeInteger.ValueInteger b = variables.getValue(1, ValueTypes.INTEGER);
                 return ValueTypeInteger.ValueInteger.of(a.getRawValue() << b.getRawValue());
 
             })
@@ -520,8 +520,8 @@ public final class Operators {
         OperatorBuilders.BINARY_2.symbol(">>")
             .operatorName("rshift")
             .function(variables -> {
-                ValueTypeInteger.ValueInteger a = variables.getValue(0);
-                ValueTypeInteger.ValueInteger b = variables.getValue(1);
+                ValueTypeInteger.ValueInteger a = variables.getValue(0, ValueTypes.INTEGER);
+                ValueTypeInteger.ValueInteger b = variables.getValue(1, ValueTypes.INTEGER);
                 return ValueTypeInteger.ValueInteger.of(a.getRawValue() >> b.getRawValue());
 
             })
@@ -534,8 +534,8 @@ public final class Operators {
         OperatorBuilders.BINARY_2.symbol(">>>")
             .operatorName("rzshift")
             .function(variables -> {
-                ValueTypeInteger.ValueInteger a = variables.getValue(0);
-                ValueTypeInteger.ValueInteger b = variables.getValue(1);
+                ValueTypeInteger.ValueInteger a = variables.getValue(0, ValueTypes.INTEGER);
+                ValueTypeInteger.ValueInteger b = variables.getValue(1, ValueTypes.INTEGER);
                 return ValueTypeInteger.ValueInteger.of(a.getRawValue() >>> b.getRawValue());
 
             })
@@ -553,7 +553,7 @@ public final class Operators {
             .operatorName("length")
             .output(ValueTypes.INTEGER)
             .function(variables -> {
-                ValueTypeString.ValueString a = variables.getValue(0);
+                ValueTypeString.ValueString a = variables.getValue(0, ValueTypes.STRING);
                 return ValueTypeInteger.ValueInteger.of(
                     a.getRawValue()
                         .length());
@@ -568,8 +568,8 @@ public final class Operators {
         OperatorBuilders.STRING_2.symbol("+")
             .operatorName("concat")
             .function(variables -> {
-                ValueTypeString.ValueString a = variables.getValue(0);
-                ValueTypeString.ValueString b = variables.getValue(1);
+                ValueTypeString.ValueString a = variables.getValue(0, ValueTypes.STRING);
+                ValueTypeString.ValueString b = variables.getValue(1, ValueTypes.STRING);
                 return ValueTypeString.ValueString.of(a.getRawValue() + b.getRawValue());
 
             })
@@ -579,8 +579,8 @@ public final class Operators {
         OperatorBuilders.STRING_2.symbolOperator("contains")
             .output(ValueTypes.BOOLEAN)
             .function(variables -> {
-                ValueTypeString.ValueString search = variables.getValue(0);
-                ValueTypeString.ValueString str = variables.getValue(1);
+                ValueTypeString.ValueString search = variables.getValue(0, ValueTypes.STRING);
+                ValueTypeString.ValueString str = variables.getValue(1, ValueTypes.STRING);
                 return ValueTypeBoolean.ValueBoolean.of(
                     str.getRawValue()
                         .contains(search.getRawValue()));
@@ -595,8 +595,8 @@ public final class Operators {
         OperatorBuilders.STRING_2_LONG.symbolOperator("contains_regex")
             .output(ValueTypes.BOOLEAN)
             .function(variables -> {
-                ValueTypeString.ValueString pattern = variables.getValue(0);
-                ValueTypeString.ValueString str = variables.getValue(1);
+                ValueTypeString.ValueString pattern = variables.getValue(0, ValueTypes.STRING);
+                ValueTypeString.ValueString str = variables.getValue(1, ValueTypes.STRING);
                 try {
                     Matcher m = Pattern.compile(pattern.getRawValue())
                         .matcher(str.getRawValue());
@@ -617,8 +617,8 @@ public final class Operators {
         OperatorBuilders.STRING_2.symbolOperator("index_of")
             .output(ValueTypes.INTEGER)
             .function(variables -> {
-                ValueTypeString.ValueString search = variables.getValue(0);
-                ValueTypeString.ValueString str = variables.getValue(1);
+                ValueTypeString.ValueString search = variables.getValue(0, ValueTypes.STRING);
+                ValueTypeString.ValueString str = variables.getValue(1, ValueTypes.STRING);
                 return ValueTypeInteger.ValueInteger.of(
                     str.getRawValue()
                         .indexOf(search.getRawValue()));
@@ -633,8 +633,8 @@ public final class Operators {
         OperatorBuilders.STRING_2_LONG.symbolOperator("matches_regex")
             .output(ValueTypes.BOOLEAN)
             .function(variables -> {
-                ValueTypeString.ValueString pattern = variables.getValue(0);
-                ValueTypeString.ValueString str = variables.getValue(1);
+                ValueTypeString.ValueString pattern = variables.getValue(0, ValueTypes.STRING);
+                ValueTypeString.ValueString str = variables.getValue(1, ValueTypes.STRING);
                 try {
                     Matcher m = Pattern.compile(pattern.getRawValue())
                         .matcher(str.getRawValue());
@@ -678,8 +678,8 @@ public final class Operators {
         OperatorBuilders.STRING_2.symbolOperator("starts_with")
             .output(ValueTypes.BOOLEAN)
             .function(variables -> {
-                ValueTypeString.ValueString search = variables.getValue(0);
-                ValueTypeString.ValueString str = variables.getValue(1);
+                ValueTypeString.ValueString search = variables.getValue(0, ValueTypes.STRING);
+                ValueTypeString.ValueString str = variables.getValue(1, ValueTypes.STRING);
                 return ValueTypeBoolean.ValueBoolean.of(
                     str.getRawValue()
                         .startsWith(search.getRawValue()));
@@ -694,8 +694,8 @@ public final class Operators {
         OperatorBuilders.STRING_2.symbolOperator("ends_with")
             .output(ValueTypes.BOOLEAN)
             .function(variables -> {
-                ValueTypeString.ValueString search = variables.getValue(0);
-                ValueTypeString.ValueString str = variables.getValue(1);
+                ValueTypeString.ValueString search = variables.getValue(0, ValueTypes.STRING);
+                ValueTypeString.ValueString str = variables.getValue(1, ValueTypes.STRING);
                 return ValueTypeBoolean.ValueBoolean.of(
                     str.getRawValue()
                         .endsWith(search.getRawValue()));
@@ -710,8 +710,8 @@ public final class Operators {
         OperatorBuilders.STRING_2.symbolOperator("split_on")
             .output(ValueTypes.LIST)
             .function(variables -> {
-                ValueTypeString.ValueString search = variables.getValue(0);
-                ValueTypeString.ValueString str = variables.getValue(1);
+                ValueTypeString.ValueString search = variables.getValue(0, ValueTypes.STRING);
+                ValueTypeString.ValueString str = variables.getValue(1, ValueTypes.STRING);
                 List<String> pieces = Arrays.asList(
                     str.getRawValue()
                         .split(Pattern.quote(search.getRawValue())));
@@ -731,8 +731,8 @@ public final class Operators {
         OperatorBuilders.STRING_2_LONG.symbolOperator("split_on_regex")
             .output(ValueTypes.LIST)
             .function(variables -> {
-                ValueTypeString.ValueString pattern = variables.getValue(0);
-                ValueTypeString.ValueString str = variables.getValue(1);
+                ValueTypeString.ValueString pattern = variables.getValue(0, ValueTypes.STRING);
+                ValueTypeString.ValueString str = variables.getValue(1, ValueTypes.STRING);
                 try {
                     List<String> pieces = Arrays.asList(
                         str.getRawValue()
@@ -759,9 +759,9 @@ public final class Operators {
             .inputTypes(ValueTypes.INTEGER, ValueTypes.INTEGER, ValueTypes.STRING)
             .output(ValueTypes.STRING)
             .function(variables -> {
-                ValueTypeInteger.ValueInteger from = variables.getValue(0);
-                ValueTypeInteger.ValueInteger to = variables.getValue(1);
-                ValueTypeString.ValueString str = variables.getValue(2);
+                ValueTypeInteger.ValueInteger from = variables.getValue(0, ValueTypes.INTEGER);
+                ValueTypeInteger.ValueInteger to = variables.getValue(1, ValueTypes.INTEGER);
+                ValueTypeString.ValueString str = variables.getValue(2, ValueTypes.STRING);
                 if (from.getRawValue() > to.getRawValue()) {
                     throw new EvaluationException(
                         "The 'to' value must not be greater than the 'from' value in the substring operator.");
@@ -793,9 +793,9 @@ public final class Operators {
             .inputTypes(ValueTypes.STRING, ValueTypes.INTEGER, ValueTypes.STRING)
             .output(ValueTypes.STRING)
             .function(variables -> {
-                ValueTypeString.ValueString pattern = variables.getValue(0);
-                ValueTypeInteger.ValueInteger group = variables.getValue(1);
-                ValueTypeString.ValueString str = variables.getValue(2);
+                ValueTypeString.ValueString pattern = variables.getValue(0, ValueTypes.STRING);
+                ValueTypeInteger.ValueInteger group = variables.getValue(1, ValueTypes.INTEGER);
+                ValueTypeString.ValueString str = variables.getValue(2, ValueTypes.STRING);
                 if (group.getRawValue() < 0) {
                     throw new EvaluationException(
                         "The group index specified in the regex_group operator must not be negative.");
@@ -828,8 +828,8 @@ public final class Operators {
         OperatorBuilders.STRING_2_LONG.symbolOperator("regex_groups")
             .output(ValueTypes.LIST)
             .function(variables -> {
-                ValueTypeString.ValueString pattern = variables.getValue(0);
-                ValueTypeString.ValueString str = variables.getValue(1);
+                ValueTypeString.ValueString pattern = variables.getValue(0, ValueTypes.STRING);
+                ValueTypeString.ValueString str = variables.getValue(1, ValueTypes.STRING);
                 try {
                     Matcher m = Pattern.compile(pattern.getRawValue())
                         .matcher(str.getRawValue());
@@ -860,9 +860,9 @@ public final class Operators {
             .inputTypes(ValueTypes.STRING, ValueTypes.INTEGER, ValueTypes.STRING)
             .output(ValueTypes.LIST)
             .function(variables -> {
-                ValueTypeString.ValueString pattern = variables.getValue(0);
-                ValueTypeInteger.ValueInteger group = variables.getValue(1);
-                ValueTypeString.ValueString str = variables.getValue(2);
+                ValueTypeString.ValueString pattern = variables.getValue(0, ValueTypes.STRING);
+                ValueTypeInteger.ValueInteger group = variables.getValue(1, ValueTypes.INTEGER);
+                ValueTypeString.ValueString str = variables.getValue(2, ValueTypes.STRING);
                 if (group.getRawValue() < 0) {
                     throw new EvaluationException(
                         "The group index specified in the regex_scan operator must not be negative.");
@@ -895,9 +895,9 @@ public final class Operators {
             .inputTypes(3, ValueTypes.STRING)
             .output(ValueTypes.STRING)
             .function(variables -> {
-                ValueTypeString.ValueString search = variables.getValue(0);
-                ValueTypeString.ValueString replacement = variables.getValue(1);
-                ValueTypeString.ValueString str = variables.getValue(2);
+                ValueTypeString.ValueString search = variables.getValue(0, ValueTypes.STRING);
+                ValueTypeString.ValueString replacement = variables.getValue(1, ValueTypes.STRING);
+                ValueTypeString.ValueString str = variables.getValue(2, ValueTypes.STRING);
                 return ValueTypeString.ValueString.of(
                     str.getRawValue()
                         .replaceAll(
@@ -916,9 +916,9 @@ public final class Operators {
             .inputTypes(3, ValueTypes.STRING)
             .output(ValueTypes.STRING)
             .function(variables -> {
-                ValueTypeString.ValueString pattern = variables.getValue(0);
-                ValueTypeString.ValueString replacement = variables.getValue(1);
-                ValueTypeString.ValueString str = variables.getValue(2);
+                ValueTypeString.ValueString pattern = variables.getValue(0, ValueTypes.STRING);
+                ValueTypeString.ValueString replacement = variables.getValue(1, ValueTypes.STRING);
+                ValueTypeString.ValueString str = variables.getValue(2, ValueTypes.STRING);
                 try {
                     return ValueTypeString.ValueString.of(
                         str.getRawValue()
@@ -927,6 +927,56 @@ public final class Operators {
                     throw new EvaluationException(e.getMessage());
                 }
 
+            })
+            .build());
+
+    /**
+     * String operator to join a list using a string delimiter
+     */
+    public static final IOperator STRING_JOIN = REGISTRY.register(
+        OperatorBuilders.STRING.symbolOperator("join")
+            .renderPattern(IConfigRenderPattern.PREFIX_2)
+            .inputTypes(ValueTypes.STRING, ValueTypes.LIST)
+            .output(ValueTypes.STRING)
+            .function(variables -> {
+                // Prepare values
+                ValueTypeString.ValueString delimiter = variables.getValue(0, ValueTypes.STRING);
+                ValueTypeList.ValueList<?, ?> elements = variables.getValue(1, ValueTypes.LIST);
+                if (!ValueHelpers.correspondsTo(
+                    elements.getRawValue()
+                        .getValueType(),
+                    ValueTypes.STRING)) {
+                    LangHelpers.UnlocalizedString error = new LangHelpers.UnlocalizedString(
+                        L10NValues.VALUETYPE_ERROR_INVALIDLISTVALUETYPE,
+                        elements.getRawValue()
+                            .getValueType(),
+                        ValueTypes.STRING);
+                    throw new EvaluationException(error.localize());
+                }
+
+                // Don't allow joining on an infinite list
+                if (elements.getRawValue()
+                    .isInfinite()) {
+                    throw new EvaluationException("Joining elements in an infinite list is not allowed");
+                }
+
+                // Join in O(n), while type-checking each element, as the list may have been of ANY type.
+                StringBuilder sb = new StringBuilder();
+                for (IValue value : elements.getRawValue()) {
+                    if (value.getType() != ValueTypes.STRING) {
+                        LangHelpers.UnlocalizedString error = new LangHelpers.UnlocalizedString(
+                            L10NValues.VALUETYPE_ERROR_INVALIDLISTVALUETYPE,
+                            value.getType(),
+                            ValueTypes.STRING);
+                        throw new EvaluationException(error.localize());
+                    }
+                    if (sb.length() > 0) {
+                        sb.append(delimiter.getRawValue());
+                    }
+                    sb.append(((ValueTypeString.ValueString) value).getRawValue());
+                }
+
+                return ValueTypeString.ValueString.of(sb.toString());
             })
             .build());
 
@@ -1032,7 +1082,7 @@ public final class Operators {
             .symbol("| |")
             .operatorName("length")
             .function(variables -> {
-                ValueTypeList.ValueList valueList = variables.getValue(0);
+                ValueTypeList.ValueList valueList = variables.getValue(0, ValueTypes.LIST);
                 IValueTypeListProxy a = valueList.getRawValue();
                 return ValueTypeInteger.ValueInteger.of(a.getLength());
             })
@@ -1046,7 +1096,7 @@ public final class Operators {
             .symbol("∅")
             .operatorName("empty")
             .function(variables -> {
-                ValueTypeList.ValueList valueList = variables.getValue(0);
+                ValueTypeList.ValueList valueList = variables.getValue(0, ValueTypes.LIST);
                 IValueTypeListProxy a = valueList.getRawValue();
                 return ValueTypeBoolean.ValueBoolean.of(a.getLength() == 0);
             })
@@ -1068,9 +1118,9 @@ public final class Operators {
             .renderPattern(IConfigRenderPattern.INFIX)
             .symbolOperator("get")
             .function(variables -> {
-                ValueTypeList.ValueList valueList = variables.getValue(0);
+                ValueTypeList.ValueList valueList = variables.getValue(0, ValueTypes.LIST);
                 IValueTypeListProxy a = valueList.getRawValue();
-                ValueTypeInteger.ValueInteger b = variables.getValue(1);
+                ValueTypeInteger.ValueInteger b = variables.getValue(1, ValueTypes.INTEGER);
                 if (b.getRawValue() < a.getLength() && b.getRawValue() >= 0) {
                     return a.get(b.getRawValue());
                 } else {
@@ -1101,9 +1151,9 @@ public final class Operators {
             .renderPattern(IConfigRenderPattern.INFIX_2_LONG)
             .symbolOperator("get_or_default")
             .function(variables -> {
-                ValueTypeList.ValueList valueList = variables.getValue(0);
+                ValueTypeList.ValueList valueList = variables.getValue(0, ValueTypes.LIST);
                 IValueTypeListProxy a = valueList.getRawValue();
-                ValueTypeInteger.ValueInteger b = variables.getValue(1);
+                ValueTypeInteger.ValueInteger b = variables.getValue(1, ValueTypes.INTEGER);
                 if (b.getRawValue() < a.getLength() && b.getRawValue() >= 0) {
                     return a.get(b.getRawValue());
                 } else {
@@ -1129,7 +1179,7 @@ public final class Operators {
             .output(ValueTypes.BOOLEAN)
             .symbolOperator("contains")
             .function(variables -> {
-                ValueTypeList.ValueList valueList = variables.getValue(0);
+                ValueTypeList.ValueList valueList = variables.getValue(0, ValueTypes.LIST);
                 IValueTypeListProxy<IValueType<IValue>, IValue> list = valueList.getRawValue();
                 IValue input = variables.getValue(1);
                 for (IValue value : list) {
@@ -1151,9 +1201,9 @@ public final class Operators {
             .output(ValueTypes.BOOLEAN)
             .symbolOperator("contains_p")
             .function(variables -> {
-                ValueTypeList.ValueList valueList = variables.getValue(0);
+                ValueTypeList.ValueList valueList = variables.getValue(0, ValueTypes.LIST);
                 IValueTypeListProxy<IValueType<IValue>, IValue> list = valueList.getRawValue();
-                IOperator operator = OperatorBuilders.getSafePredictate(variables.getValue(1));
+                IOperator operator = OperatorBuilders.getSafePredictate(variables.getValue(1, ValueTypes.OPERATOR));
                 for (IValue value : list) {
                     IValue result = ValueHelpers.evaluateOperator(operator, value);
                     ValueHelpers.validatePredicateOutput(operator, result);
@@ -1174,7 +1224,7 @@ public final class Operators {
             .output(ValueTypes.INTEGER)
             .symbolOperator("count")
             .function(variables -> {
-                ValueTypeList.ValueList valueList = variables.getValue(0);
+                ValueTypeList.ValueList valueList = variables.getValue(0, ValueTypes.LIST);
                 IValueTypeListProxy<IValueType<IValue>, IValue> list = valueList.getRawValue();
                 if (list.isInfinite()) {
                     throw new EvaluationException("Counting elements in an infinite list is not allowed");
@@ -1199,12 +1249,12 @@ public final class Operators {
             .output(ValueTypes.INTEGER)
             .symbolOperator("count_p")
             .function(variables -> {
-                ValueTypeList.ValueList valueList = variables.getValue(0);
+                ValueTypeList.ValueList valueList = variables.getValue(0, ValueTypes.LIST);
                 IValueTypeListProxy<IValueType<IValue>, IValue> list = valueList.getRawValue();
                 if (list.isInfinite()) {
                     throw new EvaluationException("Counting elements in an infinite list is not allowed");
                 }
-                IOperator operator = OperatorBuilders.getSafePredictate(variables.getValue(1));
+                IOperator operator = OperatorBuilders.getSafePredictate(variables.getValue(1, ValueTypes.OPERATOR));
                 int count = 0;
                 for (IValue listValue : list) {
                     IValue result = ValueHelpers.evaluateOperator(operator, listValue);
@@ -1226,7 +1276,7 @@ public final class Operators {
             .output(ValueTypes.LIST)
             .symbolOperator("append")
             .function(variables -> {
-                ValueTypeList.ValueList valueList = variables.getValue(0);
+                ValueTypeList.ValueList valueList = variables.getValue(0, ValueTypes.LIST);
                 IValueTypeListProxy a = valueList.getRawValue();
                 IValue value = variables.getValue(1);
                 if (!ValueHelpers.correspondsTo(a.getValueType(), value.getType())) {
@@ -1249,9 +1299,9 @@ public final class Operators {
             .output(ValueTypes.LIST)
             .symbolOperator("concat")
             .function(variables -> {
-                ValueTypeList.ValueList valueList0 = variables.getValue(0);
+                ValueTypeList.ValueList valueList0 = variables.getValue(0, ValueTypes.LIST);
                 IValueTypeListProxy a = valueList0.getRawValue();
-                ValueTypeList.ValueList valueList1 = variables.getValue(1);
+                ValueTypeList.ValueList valueList1 = variables.getValue(1, ValueTypes.LIST);
                 IValueTypeListProxy b = valueList1.getRawValue();
                 if (!ValueHelpers.correspondsTo(a.getValueType(), b.getValueType())) {
                     LangHelpers.UnlocalizedString error = new LangHelpers.UnlocalizedString(
@@ -1275,7 +1325,8 @@ public final class Operators {
             .symbolOperator("lazybuilt")
             .function(variables -> {
                 IValue a = variables.getValue(0);
-                IOperator operator = OperatorBuilders.getSafeOperator(variables.getValue(1), a.getType());
+                IOperator operator = OperatorBuilders
+                    .getSafeOperator(variables.getValue(1, ValueTypes.OPERATOR), a.getType());
                 return ValueTypeList.ValueList.ofFactory(new ValueTypeListProxyLazyBuilt<>(a, operator));
             })
             .build());
@@ -1289,7 +1340,7 @@ public final class Operators {
             .renderPattern(IConfigRenderPattern.PREFIX_1_LONG)
             .symbolOperator("head")
             .function(variables -> {
-                ValueTypeList.ValueList list = variables.getValue(0);
+                ValueTypeList.ValueList list = variables.getValue(0, ValueTypes.LIST);
                 IValueTypeListProxy a = list.getRawValue();
                 if (a.getLength() > 0) {
                     return a.get(0);
@@ -1319,7 +1370,7 @@ public final class Operators {
             .output(ValueTypes.LIST)
             .symbolOperator("tail")
             .function(variables -> {
-                ValueTypeList.ValueList list = variables.getValue(0);
+                ValueTypeList.ValueList list = variables.getValue(0, ValueTypes.LIST);
                 IValueTypeListProxy a = list.getRawValue();
                 return ValueTypeList.ValueList.ofFactory(new ValueTypeListProxyTail(a));
             })
@@ -1334,9 +1385,10 @@ public final class Operators {
             .output(ValueTypes.LIST)
             .symbolOperator("uniq_p")
             .function(variables -> {
-                ValueTypeList.ValueList valueList = variables.getValue(0);
+                ValueTypeList.ValueList valueList = variables.getValue(0, ValueTypes.LIST);
                 IValueTypeListProxy<IValueType<IValue>, IValue> list = valueList.getRawValue();
-                final IOperator operator = OperatorBuilders.getSafePredictate(variables.getValue(1));
+                final IOperator operator = OperatorBuilders
+                    .getSafePredictate(variables.getValue(1, ValueTypes.OPERATOR));
                 List<IValue> values = new ArrayList<>();
                 outerLoop: for (IValue value : list) {
                     for (IValue existing : values) {
@@ -1364,7 +1416,7 @@ public final class Operators {
             .output(ValueTypes.LIST)
             .symbolOperator("uniq")
             .function(variables -> {
-                ValueTypeList.ValueList valueList = variables.getValue(0);
+                ValueTypeList.ValueList valueList = variables.getValue(0, ValueTypes.LIST);
                 IValueTypeListProxy<IValueType<IValue>, IValue> list = valueList.getRawValue();
                 return ValueTypeList.ValueList
                     .ofList(list.getValueType(), new ArrayList<>(Sets.newLinkedHashSet(list)));
@@ -1380,10 +1432,10 @@ public final class Operators {
             .output(ValueTypes.LIST)
             .symbolOperator("slice")
             .function(variables -> {
-                ValueTypeList.ValueList valueList = variables.getValue(0);
+                ValueTypeList.ValueList valueList = variables.getValue(0, ValueTypes.LIST);
                 IValueTypeListProxy<IValueType<IValue>, IValue> list = valueList.getRawValue();
-                ValueTypeInteger.ValueInteger from = variables.getValue(1);
-                ValueTypeInteger.ValueInteger to = variables.getValue(2);
+                ValueTypeInteger.ValueInteger from = variables.getValue(1, ValueTypes.INTEGER);
+                ValueTypeInteger.ValueInteger to = variables.getValue(2, ValueTypes.INTEGER);
                 if (from.getRawValue() >= to.getRawValue()) {
                     throw new EvaluationException(
                         "The 'from' value must be strictly smaller than the 'to' value in the slice operator.");
@@ -1408,7 +1460,7 @@ public final class Operators {
         OperatorBuilders.BLOCK_1_SUFFIX_LONG.output(ValueTypes.BOOLEAN)
             .symbolOperator("opaque")
             .function(variables -> {
-                ValueObjectTypeBlock.ValueBlock a = variables.getValue(0);
+                ValueObjectTypeBlock.ValueBlock a = variables.getValue(0, ValueTypes.OBJECT_BLOCK);
                 return ValueTypeBoolean.ValueBoolean.of(
                     a.getRawValue()
                         .isPresent()
@@ -1426,7 +1478,7 @@ public final class Operators {
         OperatorBuilders.BLOCK_1_SUFFIX_LONG.output(ValueTypes.OBJECT_ITEMSTACK)
             .symbolOperator("itemstack")
             .function(variables -> {
-                ValueObjectTypeBlock.ValueBlock a = variables.getValue(0);
+                ValueObjectTypeBlock.ValueBlock a = variables.getValue(0, ValueTypes.OBJECT_BLOCK);
                 return ValueObjectTypeItemStack.ValueItemStack.of(
                     a.getRawValue()
                         .isPresent()
@@ -1444,7 +1496,7 @@ public final class Operators {
         OperatorBuilders.BLOCK_1_SUFFIX_LONG.output(ValueTypes.STRING)
             .symbolOperator("mod")
             .function(new IterativeFunction(Lists.newArrayList((OperatorBase.SafeVariablesGetter variables) -> {
-                ValueObjectTypeBlock.ValueBlock a = variables.getValue(0);
+                ValueObjectTypeBlock.ValueBlock a = variables.getValue(0, ValueTypes.OBJECT_BLOCK);
                 return a.getRawValue()
                     .isPresent()
                         ? new ResourceLocation(
@@ -1509,7 +1561,7 @@ public final class Operators {
             .symbol("is_shearable")
             .operatorName("isshearable")
             .function(variables -> {
-                ValueObjectTypeBlock.ValueBlock a = variables.getValue(0);
+                ValueObjectTypeBlock.ValueBlock a = variables.getValue(0, ValueTypes.OBJECT_BLOCK);
                 return ValueTypeBoolean.ValueBoolean.of(
                     a.getRawValue()
                         .isPresent()
@@ -1530,7 +1582,7 @@ public final class Operators {
             .symbol("is_plantable")
             .operatorName("isplantable")
             .function(variables -> {
-                ValueObjectTypeBlock.ValueBlock a = variables.getValue(0);
+                ValueObjectTypeBlock.ValueBlock a = variables.getValue(0, ValueTypes.OBJECT_BLOCK);
                 return ValueTypeBoolean.ValueBoolean.of(
                     a.getRawValue()
                         .isPresent()
@@ -1548,7 +1600,7 @@ public final class Operators {
             .symbol("plant_type")
             .operatorName("planttype")
             .function(variables -> {
-                ValueObjectTypeBlock.ValueBlock a = variables.getValue(0);
+                ValueObjectTypeBlock.ValueBlock a = variables.getValue(0, ValueTypes.OBJECT_BLOCK);
                 String type = "None";
                 if (a.getRawValue()
                     .isPresent()
@@ -1571,7 +1623,7 @@ public final class Operators {
         OperatorBuilders.BLOCK_1_SUFFIX_LONG.output(ValueTypes.OBJECT_BLOCK)
             .symbolOperator("plant")
             .function(variables -> {
-                ValueObjectTypeBlock.ValueBlock a = variables.getValue(0);
+                ValueObjectTypeBlock.ValueBlock a = variables.getValue(0, ValueTypes.OBJECT_BLOCK);
                 BlockState plant = null;
                 if (a.getRawValue()
                     .isPresent()
@@ -1596,7 +1648,7 @@ public final class Operators {
             .symbol("plant_age")
             .operatorName("plantage")
             .function(variables -> {
-                ValueObjectTypeBlock.ValueBlock a = variables.getValue(0);
+                ValueObjectTypeBlock.ValueBlock a = variables.getValue(0, ValueTypes.OBJECT_BLOCK);
                 int age = 0;
                 if (a.getRawValue()
                     .isPresent()
@@ -1743,7 +1795,7 @@ public final class Operators {
         OperatorBuilders.ITEMSTACK_1_SUFFIX_LONG.output(ValueTypes.STRING)
             .symbolOperator("rarity")
             .function(variables -> {
-                ValueObjectTypeItemStack.ValueItemStack a = variables.getValue(0);
+                ValueObjectTypeItemStack.ValueItemStack a = variables.getValue(0, ValueTypes.OBJECT_ITEMSTACK);
                 return ValueTypeString.ValueString.of(
                     a.getRawValue() != null ? a.getRawValue()
                         .getRarity().rarityName : "");
@@ -1759,8 +1811,8 @@ public final class Operators {
             .output(ValueTypes.DOUBLE)
             .symbolOperator("strength")
             .function(variables -> {
-                ValueObjectTypeItemStack.ValueItemStack a = variables.getValue(0);
-                ValueObjectTypeBlock.ValueBlock b = variables.getValue(1);
+                ValueObjectTypeItemStack.ValueItemStack a = variables.getValue(0, ValueTypes.OBJECT_ITEMSTACK);
+                ValueObjectTypeBlock.ValueBlock b = variables.getValue(1, ValueTypes.OBJECT_BLOCK);
                 double strength = 0.0D;
                 if (a.getRawValue() != null && b.getRawValue()
                     .isPresent()) {
@@ -1785,8 +1837,8 @@ public final class Operators {
             .symbol("can_harvest")
             .operatorName("canharvest")
             .function(variables -> {
-                ValueObjectTypeItemStack.ValueItemStack a = variables.getValue(0);
-                ValueObjectTypeBlock.ValueBlock b = variables.getValue(1);
+                ValueObjectTypeItemStack.ValueItemStack a = variables.getValue(0, ValueTypes.OBJECT_ITEMSTACK);
+                ValueObjectTypeBlock.ValueBlock b = variables.getValue(1, ValueTypes.OBJECT_BLOCK);
                 boolean canHarvest = false;
                 if (a.getRawValue() != null && b.getRawValue()
                     .isPresent()) {
@@ -1814,7 +1866,7 @@ public final class Operators {
         OperatorBuilders.ITEMSTACK_1_SUFFIX_LONG.output(ValueTypes.OBJECT_BLOCK)
             .symbolOperator("block")
             .function(variables -> {
-                ValueObjectTypeItemStack.ValueItemStack a = variables.getValue(0);
+                ValueObjectTypeItemStack.ValueItemStack a = variables.getValue(0, ValueTypes.OBJECT_ITEMSTACK);
                 return ValueObjectTypeBlock.ValueBlock.of(
                     (a.getRawValue() != null && a.getRawValue()
                         .getItem() instanceof ItemBlock) ? BlockHelpers.getBlockStateFromItemStack(a.getRawValue())
@@ -1841,7 +1893,7 @@ public final class Operators {
         OperatorBuilders.ITEMSTACK_1_SUFFIX_LONG.output(ValueTypes.OBJECT_FLUIDSTACK)
             .symbolOperator("fluidstack")
             .function(variables -> {
-                ValueObjectTypeItemStack.ValueItemStack a = variables.getValue(0);
+                ValueObjectTypeItemStack.ValueItemStack a = variables.getValue(0, ValueTypes.OBJECT_ITEMSTACK);
                 return ValueObjectTypeFluidStack.ValueFluidStack
                     .of(a.getRawValue() != null ? Helpers.getFluidStack(a.getRawValue()) : null);
             })
@@ -1867,13 +1919,15 @@ public final class Operators {
             .symbol("=NBT=")
             .operatorName("isnbtequal")
             .function(variables -> {
-                ValueObjectTypeItemStack.ValueItemStack valueStack0 = variables.getValue(0);
-                ValueObjectTypeItemStack.ValueItemStack valueStack1 = variables.getValue(1);
+                ValueObjectTypeItemStack.ValueItemStack valueStack0 = variables
+                    .getValue(0, ValueTypes.OBJECT_ITEMSTACK);
+                ValueObjectTypeItemStack.ValueItemStack valueStack1 = variables
+                    .getValue(1, ValueTypes.OBJECT_ITEMSTACK);
                 ItemStack a = valueStack0.getRawValue();
                 ItemStack b = valueStack1.getRawValue();
                 boolean equal = false;
                 if (a != null && b != null) {
-                    equal = a.isItemEqual(b) && ItemStack.areItemStackTagsEqual(a, b);
+                    equal = a.isItemEqual(b) && ItemMatch.areItemStacksEqual(a, b, ItemMatch.NBT);
                 } else if (a == null && a == null) {
                     equal = true;
                 }
@@ -1889,13 +1943,15 @@ public final class Operators {
             .symbol("=NoNBT=")
             .operatorName("isitemequalnonbt")
             .function(variables -> {
-                ValueObjectTypeItemStack.ValueItemStack valueStack0 = variables.getValue(0);
-                ValueObjectTypeItemStack.ValueItemStack valueStack1 = variables.getValue(1);
+                ValueObjectTypeItemStack.ValueItemStack valueStack0 = variables
+                    .getValue(0, ValueTypes.OBJECT_ITEMSTACK);
+                ValueObjectTypeItemStack.ValueItemStack valueStack1 = variables
+                    .getValue(1, ValueTypes.OBJECT_ITEMSTACK);
                 ItemStack a = valueStack0.getRawValue();
                 ItemStack b = valueStack1.getRawValue();
                 boolean equal = false;
                 if (a != null && b != null) {
-                    equal = ItemStackHelpers.areStacksEqual(a, b);
+                    equal = ItemMatch.areItemStacksEqual(a, b, ItemMatch.ITEM | ItemMatch.DAMAGE);
                 } else if (a == null && a == null) {
                     equal = true;
                 }
@@ -1911,13 +1967,15 @@ public final class Operators {
             .symbol("=Raw=")
             .operatorName("israwitemequal")
             .function(variables -> {
-                ValueObjectTypeItemStack.ValueItemStack valueStack0 = variables.getValue(0);
-                ValueObjectTypeItemStack.ValueItemStack valueStack1 = variables.getValue(1);
+                ValueObjectTypeItemStack.ValueItemStack valueStack0 = variables
+                    .getValue(0, ValueTypes.OBJECT_ITEMSTACK);
+                ValueObjectTypeItemStack.ValueItemStack valueStack1 = variables
+                    .getValue(1, ValueTypes.OBJECT_ITEMSTACK);
                 ItemStack a = valueStack0.getRawValue();
                 ItemStack b = valueStack1.getRawValue();
                 boolean equal = false;
                 if (a != null && b != null) {
-                    equal = ItemStackHelpers.areItemsEqualIgnoreDurability(a, b);
+                    equal = ItemMatch.areItemStacksEqual(a, b, ItemMatch.ITEM);
                 } else if (a == null && a == null) {
                     equal = true;
                 }
@@ -1932,7 +1990,7 @@ public final class Operators {
         OperatorBuilders.ITEMSTACK_1_SUFFIX_LONG.output(ValueTypes.STRING)
             .symbolOperator("mod")
             .function(new IterativeFunction(Lists.newArrayList((OperatorBase.SafeVariablesGetter variables) -> {
-                ValueObjectTypeItemStack.ValueItemStack a = variables.getValue(0);
+                ValueObjectTypeItemStack.ValueItemStack a = variables.getValue(0, ValueTypes.OBJECT_ITEMSTACK);
                 return a.getRawValue() != null ? new ResourceLocation(
                     GameData.getItemRegistry()
                         .getNameForObject(
@@ -1987,7 +2045,7 @@ public final class Operators {
             .symbol("oredict_names")
             .operatorName("oredict")
             .function(variables -> {
-                ValueObjectTypeItemStack.ValueItemStack a = variables.getValue(0);
+                ValueObjectTypeItemStack.ValueItemStack a = variables.getValue(0, ValueTypes.OBJECT_ITEMSTACK);
                 ImmutableList.Builder<ValueTypeString.ValueString> builder = ImmutableList.builder();
                 if (a.getRawValue() != null) {
                     for (int i : OreDictionary.getOreIDs(a.getRawValue())) {
@@ -2008,7 +2066,7 @@ public final class Operators {
             .inputType(ValueTypes.STRING)
             .renderPattern(IConfigRenderPattern.SUFFIX_1_LONG)
             .function(variables -> {
-                ValueTypeString.ValueString a = variables.getValue(0);
+                ValueTypeString.ValueString a = variables.getValue(0, ValueTypes.STRING);
                 ImmutableList.Builder<ValueObjectTypeItemStack.ValueItemStack> builder = ImmutableList.builder();
                 if (!StringUtils.isNullOrEmpty(a.getRawValue())) {
                     Helpers.getOresWildcard(a.getRawValue())
@@ -2027,8 +2085,8 @@ public final class Operators {
             .symbol("with_size")
             .operatorName("withsize")
             .function(variables -> {
-                ValueObjectTypeItemStack.ValueItemStack a = variables.getValue(0);
-                ValueTypeInteger.ValueInteger b = variables.getValue(1);
+                ValueObjectTypeItemStack.ValueItemStack a = variables.getValue(0, ValueTypes.OBJECT_ITEMSTACK);
+                ValueTypeInteger.ValueInteger b = variables.getValue(1, ValueTypes.INTEGER);
                 if (a.getRawValue() != null) {
                     ItemStack itemStack = a.getRawValue()
                         .copy();
@@ -2081,7 +2139,7 @@ public final class Operators {
             .symbol("has_inventory")
             .operatorName("hasinventory")
             .function(variables -> {
-                ValueObjectTypeItemStack.ValueItemStack a = variables.getValue(0);
+                ValueObjectTypeItemStack.ValueItemStack a = variables.getValue(0, ValueTypes.OBJECT_ITEMSTACK);
                 return ValueTypeBoolean.ValueBoolean.of(
                     a.getRawValue() != null
                         && CapabilityHelpers.getCapability(a.getRawValue(), CapabilityItemHandler.ITEM_HANDLER)
@@ -2097,7 +2155,7 @@ public final class Operators {
             .symbol("is_plantable")
             .operatorName("isplantable")
             .function(variables -> {
-                ValueObjectTypeItemStack.ValueItemStack a = variables.getValue(0);
+                ValueObjectTypeItemStack.ValueItemStack a = variables.getValue(0, ValueTypes.OBJECT_ITEMSTACK);
                 return ValueTypeBoolean.ValueBoolean.of(
                     a.getRawValue() != null && a.getRawValue()
                         .getItem() instanceof IPlantable);
@@ -2112,7 +2170,7 @@ public final class Operators {
             .symbol("inventory_size")
             .operatorName("inventorysize")
             .function(variables -> {
-                ValueObjectTypeItemStack.ValueItemStack a = variables.getValue(0);
+                ValueObjectTypeItemStack.ValueItemStack a = variables.getValue(0, ValueTypes.OBJECT_ITEMSTACK);
                 int size = 0;
                 if (a.getRawValue() != null
                     && CapabilityHelpers.getCapability(a.getRawValue(), CapabilityItemHandler.ITEM_HANDLER)
@@ -2134,7 +2192,7 @@ public final class Operators {
             .symbol("plant_type")
             .operatorName("planttype")
             .function(variables -> {
-                ValueObjectTypeItemStack.ValueItemStack a = variables.getValue(0);
+                ValueObjectTypeItemStack.ValueItemStack a = variables.getValue(0, ValueTypes.OBJECT_ITEMSTACK);
                 String type = "None";
                 if (a.getRawValue() != null && a.getRawValue()
                     .getItem() instanceof IPlantable) {
@@ -2153,7 +2211,7 @@ public final class Operators {
         OperatorBuilders.ITEMSTACK_1_SUFFIX_LONG.output(ValueTypes.LIST)
             .symbolOperator("inventory")
             .function(variables -> {
-                ValueObjectTypeItemStack.ValueItemStack a = variables.getValue(0);
+                ValueObjectTypeItemStack.ValueItemStack a = variables.getValue(0, ValueTypes.OBJECT_ITEMSTACK);
                 if (a.getRawValue() != null
                     && CapabilityHelpers.getCapability(a.getRawValue(), CapabilityItemHandler.ITEM_HANDLER)
                         .isPresent()) {
@@ -2178,7 +2236,7 @@ public final class Operators {
         OperatorBuilders.ITEMSTACK_1_SUFFIX_LONG.output(ValueTypes.OBJECT_BLOCK)
             .symbolOperator("plant")
             .function(variables -> {
-                ValueObjectTypeItemStack.ValueItemStack a = variables.getValue(0);
+                ValueObjectTypeItemStack.ValueItemStack a = variables.getValue(0, ValueTypes.OBJECT_ITEMSTACK);
                 BlockState plant = null;
                 if (a.getRawValue() != null && a.getRawValue()
                     .getItem() instanceof IPlantable) {
@@ -2219,8 +2277,8 @@ public final class Operators {
             .symbol("item_list_count")
             .operatorName("itemlistcount")
             .function(variables -> {
-                ValueTypeList.ValueList a = variables.getValue(0);
-                ValueObjectTypeItemStack.ValueItemStack b = variables.getValue(1);
+                ValueTypeList.ValueList a = variables.getValue(0, ValueTypes.LIST);
+                ValueObjectTypeItemStack.ValueItemStack b = variables.getValue(1, ValueTypes.OBJECT_ITEMSTACK);
                 if (!ValueHelpers.correspondsTo(
                     a.getRawValue()
                         .getValueType(),
@@ -2263,11 +2321,23 @@ public final class Operators {
             .symbol("NBT()")
             .operatorName("nbt")
             .function(input -> {
-                ValueObjectTypeItemStack.ValueItemStack itemStack = input.getValue(0);
+                ValueObjectTypeItemStack.ValueItemStack itemStack = input.getValue(0, ValueTypes.OBJECT_ITEMSTACK);
                 return ValueTypeNbt.ValueNbt.of(
                     itemStack.getRawValue()
                         .getTagCompound());
             })
+            .build());
+
+    /**
+     * Item Stack has_nbt operator with one input itemstack and one output boolean.
+     */
+    public static final IOperator OBJECT_ITEMSTACK_HASNBT = REGISTRY.register(
+        OperatorBuilders.ITEMSTACK_1_PREFIX_LONG.output(ValueTypes.BOOLEAN)
+            .symbol("has_nbt")
+            .operatorName("hasnbt")
+            .function(
+                OperatorBuilders.FUNCTION_ITEMSTACK_TO_BOOLEAN
+                    .build(itemStack -> itemStack != null && itemStack.hasTagCompound()))
             .build());
 
     /**
@@ -2333,7 +2403,7 @@ public final class Operators {
         OperatorBuilders.ENTITY_1_SUFFIX.output(ValueTypes.OBJECT_ITEMSTACK)
             .symbolOperator("item")
             .function(variables -> {
-                ValueObjectTypeEntity.ValueEntity valueEntity = variables.getValue(0);
+                ValueObjectTypeEntity.ValueEntity valueEntity = variables.getValue(0, ValueTypes.OBJECT_ENTITY);
                 Optional<Entity> a = valueEntity.getRawValue();
                 return ValueObjectTypeItemStack.ValueItemStack.of(
                     (a.isPresent() && a.get() instanceof EntityItem) ? ((EntityItem) a.get()).getEntityItem() : null);
@@ -2418,7 +2488,7 @@ public final class Operators {
             .symbol("armor_inventory")
             .operatorName("armorinventory")
             .function(variables -> {
-                ValueObjectTypeEntity.ValueEntity valueEntity = variables.getValue(0);
+                ValueObjectTypeEntity.ValueEntity valueEntity = variables.getValue(0, ValueTypes.OBJECT_ENTITY);
                 Optional<Entity> a = valueEntity.getRawValue();
                 if (a.isPresent()) {
                     Entity entity = a.get();
@@ -2439,7 +2509,7 @@ public final class Operators {
         OperatorBuilders.ENTITY_1_SUFFIX_LONG.output(ValueTypes.LIST)
             .symbolOperator("inventory")
             .function(variables -> {
-                ValueObjectTypeEntity.ValueEntity valueEntity = variables.getValue(0);
+                ValueObjectTypeEntity.ValueEntity valueEntity = variables.getValue(0, ValueTypes.OBJECT_ENTITY);
                 Optional<Entity> a = valueEntity.getRawValue();
                 if (a.isPresent()) {
                     Entity entity = a.get();
@@ -2460,7 +2530,7 @@ public final class Operators {
         OperatorBuilders.ENTITY_1_SUFFIX_LONG.output(ValueTypes.STRING)
             .symbolOperator("mod")
             .function(variables -> {
-                ValueObjectTypeEntity.ValueEntity a = variables.getValue(0);
+                ValueObjectTypeEntity.ValueEntity a = variables.getValue(0, ValueTypes.OBJECT_ENTITY);
                 String modName = "";
                 if (a.getRawValue()
                     .isPresent()) {
@@ -2483,7 +2553,7 @@ public final class Operators {
             .symbol("target_block")
             .operatorName("targetblock")
             .function(variables -> {
-                ValueObjectTypeEntity.ValueEntity a = variables.getValue(0);
+                ValueObjectTypeEntity.ValueEntity a = variables.getValue(0, ValueTypes.OBJECT_ENTITY);
                 BlockState blockState = null;
                 if (a.getRawValue()
                     .isPresent()
@@ -2523,7 +2593,7 @@ public final class Operators {
             .symbol("target_entity")
             .operatorName("targetentity")
             .function(variables -> {
-                ValueObjectTypeEntity.ValueEntity a = variables.getValue(0);
+                ValueObjectTypeEntity.ValueEntity a = variables.getValue(0, ValueTypes.OBJECT_ENTITY);
                 Entity entityOut = null;
                 if (a.getRawValue()
                     .isPresent()
@@ -2589,7 +2659,7 @@ public final class Operators {
             .symbol("has_gui_open")
             .operatorName("hasguiopen")
             .function(variables -> {
-                ValueObjectTypeEntity.ValueEntity a = variables.getValue(0);
+                ValueObjectTypeEntity.ValueEntity a = variables.getValue(0, ValueTypes.OBJECT_ENTITY);
                 if (a.getRawValue()
                     .isPresent()
                     && a.getRawValue()
@@ -2610,7 +2680,7 @@ public final class Operators {
             .symbol("held_item_1")
             .operatorName("helditem")
             .function(variables -> {
-                ValueObjectTypeEntity.ValueEntity a = variables.getValue(0);
+                ValueObjectTypeEntity.ValueEntity a = variables.getValue(0, ValueTypes.OBJECT_ENTITY);
                 ItemStack itemStack = null;
                 if (a.getRawValue()
                     .isPresent()
@@ -2630,7 +2700,7 @@ public final class Operators {
         OperatorBuilders.ENTITY_1_SUFFIX_LONG.output(ValueTypes.LIST)
             .symbolOperator("mounted")
             .function(variables -> {
-                ValueObjectTypeEntity.ValueEntity a = variables.getValue(0);
+                ValueObjectTypeEntity.ValueEntity a = variables.getValue(0, ValueTypes.OBJECT_ENTITY);
                 Entity entityOut = null;
                 if (a.getRawValue()
                     .isPresent()) {
@@ -2649,7 +2719,7 @@ public final class Operators {
             .symbol("itemframe_contents")
             .operatorName("itemframecontents")
             .function(variables -> {
-                ValueObjectTypeEntity.ValueEntity a = variables.getValue(0);
+                ValueObjectTypeEntity.ValueEntity a = variables.getValue(0, ValueTypes.OBJECT_ENTITY);
                 ItemStack itemStack = null;
                 if (a.getRawValue()
                     .isPresent()
@@ -2670,7 +2740,7 @@ public final class Operators {
             .symbol("itemframe_rotation")
             .operatorName("itemframerotation")
             .function(variables -> {
-                ValueObjectTypeEntity.ValueEntity a = variables.getValue(0);
+                ValueObjectTypeEntity.ValueEntity a = variables.getValue(0, ValueTypes.OBJECT_ENTITY);
                 Integer rotation = 0;
                 if (a.getRawValue()
                     .isPresent()
@@ -2690,7 +2760,7 @@ public final class Operators {
         OperatorBuilders.ENTITY_1_SUFFIX_LONG.output(ValueTypes.STRING)
             .symbolOperator("hurtsound")
             .function(variables -> {
-                ValueObjectTypeEntity.ValueEntity a = variables.getValue(0);
+                ValueObjectTypeEntity.ValueEntity a = variables.getValue(0, ValueTypes.OBJECT_ENTITY);
                 String hurtSound = "";
                 if (a.getRawValue()
                     .isPresent()
@@ -2714,7 +2784,7 @@ public final class Operators {
         OperatorBuilders.ENTITY_1_SUFFIX_LONG.output(ValueTypes.STRING)
             .symbolOperator("deathsound")
             .function(variables -> {
-                ValueObjectTypeEntity.ValueEntity a = variables.getValue(0);
+                ValueObjectTypeEntity.ValueEntity a = variables.getValue(0, ValueTypes.OBJECT_ENTITY);
                 String hurtSound = "";
                 if (a.getRawValue()
                     .isPresent()
@@ -2738,7 +2808,7 @@ public final class Operators {
         OperatorBuilders.ENTITY_1_SUFFIX_LONG.output(ValueTypes.INTEGER)
             .symbolOperator("age")
             .function(variables -> {
-                ValueObjectTypeEntity.ValueEntity a = variables.getValue(0);
+                ValueObjectTypeEntity.ValueEntity a = variables.getValue(0, ValueTypes.OBJECT_ENTITY);
                 int age = 0;
                 if (a.getRawValue()
                     .isPresent()
@@ -2759,7 +2829,7 @@ public final class Operators {
             .symbol("is_child")
             .operatorName("ischild")
             .function(variables -> {
-                ValueObjectTypeEntity.ValueEntity a = variables.getValue(0);
+                ValueObjectTypeEntity.ValueEntity a = variables.getValue(0, ValueTypes.OBJECT_ENTITY);
                 boolean child = false;
                 if (a.getRawValue()
                     .isPresent()
@@ -2780,7 +2850,7 @@ public final class Operators {
             .symbol("canbreed")
             .operatorName("canbreed")
             .function(variables -> {
-                ValueObjectTypeEntity.ValueEntity a = variables.getValue(0);
+                ValueObjectTypeEntity.ValueEntity a = variables.getValue(0, ValueTypes.OBJECT_ENTITY);
                 boolean canBreed = false;
                 if (a.getRawValue()
                     .isPresent()
@@ -2801,7 +2871,7 @@ public final class Operators {
             .symbol("is_in_love")
             .operatorName("isinlove")
             .function(variables -> {
-                ValueObjectTypeEntity.ValueEntity a = variables.getValue(0);
+                ValueObjectTypeEntity.ValueEntity a = variables.getValue(0, ValueTypes.OBJECT_ENTITY);
                 boolean inLove = false;
                 if (a.getRawValue()
                     .isPresent()
@@ -2824,8 +2894,8 @@ public final class Operators {
             .operatorName("canbreedwith")
             .renderPattern(IConfigRenderPattern.INFIX_LONG)
             .function(variables -> {
-                ValueObjectTypeEntity.ValueEntity a = variables.getValue(0);
-                ValueObjectTypeItemStack.ValueItemStack b = variables.getValue(1);
+                ValueObjectTypeEntity.ValueEntity a = variables.getValue(0, ValueTypes.OBJECT_ENTITY);
+                ValueObjectTypeItemStack.ValueItemStack b = variables.getValue(1, ValueTypes.OBJECT_ITEMSTACK);
                 boolean canBreedWith = false;
                 if (a.getRawValue()
                     .isPresent() && b.getRawValue() != null
@@ -2846,7 +2916,7 @@ public final class Operators {
             .symbol("is_shearable")
             .operatorName("isshearable")
             .function(variables -> {
-                ValueObjectTypeEntity.ValueEntity a = variables.getValue(0);
+                ValueObjectTypeEntity.ValueEntity a = variables.getValue(0, ValueTypes.OBJECT_ENTITY);
                 return ValueTypeBoolean.ValueBoolean.of(
                     a.getRawValue()
                         .isPresent()
@@ -2865,7 +2935,7 @@ public final class Operators {
             .symbol("NBT()")
             .operatorName("nbt")
             .function(input -> {
-                ValueObjectTypeEntity.ValueEntity entity = input.getValue(0);
+                ValueObjectTypeEntity.ValueEntity entity = input.getValue(0, ValueTypes.OBJECT_ENTITY);
                 try {
                     if (entity.getRawValue()
                         .isPresent()) {
@@ -2890,7 +2960,7 @@ public final class Operators {
             .symbol("entity_type")
             .operatorName("entitytype")
             .function(input -> {
-                ValueObjectTypeEntity.ValueEntity entity = input.getValue(0);
+                ValueObjectTypeEntity.ValueEntity entity = input.getValue(0, ValueTypes.OBJECT_ENTITY);
                 String entityType = "";
                 if (entity.getRawValue()
                     .isPresent()) {
@@ -2918,7 +2988,7 @@ public final class Operators {
             .symbol("entity_items")
             .operatorName("entityitems")
             .function(input -> {
-                ValueObjectTypeEntity.ValueEntity valueEntity = input.getValue(0);
+                ValueObjectTypeEntity.ValueEntity valueEntity = input.getValue(0, ValueTypes.OBJECT_ENTITY);
                 Optional<Entity> a = valueEntity.getRawValue();
                 if (a.isPresent()) {
                     Entity entity = a.get();
@@ -2938,7 +3008,7 @@ public final class Operators {
             .symbol("entity_fluids")
             .operatorName("entityfluids")
             .function(input -> {
-                ValueObjectTypeEntity.ValueEntity valueEntity = input.getValue(0);
+                ValueObjectTypeEntity.ValueEntity valueEntity = input.getValue(0, ValueTypes.OBJECT_ENTITY);
                 Optional<Entity> a = valueEntity.getRawValue();
                 if (a.isPresent()) {
                     Entity entity = a.get();
@@ -2958,7 +3028,7 @@ public final class Operators {
             .symbol("entity_stored_fe")
             .operatorName("entityenergystored")
             .function(input -> {
-                ValueObjectTypeEntity.ValueEntity valueEntity = input.getValue(0);
+                ValueObjectTypeEntity.ValueEntity valueEntity = input.getValue(0, ValueTypes.OBJECT_ENTITY);
                 Optional<Entity> a = valueEntity.getRawValue();
                 if (a.isPresent()) {
                     Entity entity = a.get();
@@ -2982,7 +3052,7 @@ public final class Operators {
             .symbol("entity_capacity_fe")
             .operatorName("entityenergycapacity")
             .function(input -> {
-                ValueObjectTypeEntity.ValueEntity valueEntity = input.getValue(0);
+                ValueObjectTypeEntity.ValueEntity valueEntity = input.getValue(0, ValueTypes.OBJECT_ENTITY);
                 Optional<Entity> a = valueEntity.getRawValue();
                 if (a.isPresent()) {
                     Entity entity = a.get();
@@ -3020,7 +3090,8 @@ public final class Operators {
         OperatorBuilders.FLUIDSTACK_1_SUFFIX_LONG.output(ValueTypes.OBJECT_BLOCK)
             .symbolOperator("block")
             .function(variables -> {
-                ValueObjectTypeFluidStack.ValueFluidStack valueFluidStack = variables.getValue(0);
+                ValueObjectTypeFluidStack.ValueFluidStack valueFluidStack = variables
+                    .getValue(0, ValueTypes.OBJECT_FLUIDSTACK);
                 Optional<FluidStack> a = valueFluidStack.getRawValue();
                 return ValueObjectTypeBlock.ValueBlock.of(
                     a.isPresent() ? BlockStateHelpers.getState(
@@ -3087,7 +3158,8 @@ public final class Operators {
         OperatorBuilders.FLUIDSTACK_1_SUFFIX_LONG.output(ValueTypes.STRING)
             .symbolOperator("rarity")
             .function(variables -> {
-                ValueObjectTypeFluidStack.ValueFluidStack valueFluidStack = variables.getValue(0);
+                ValueObjectTypeFluidStack.ValueFluidStack valueFluidStack = variables
+                    .getValue(0, ValueTypes.OBJECT_FLUIDSTACK);
                 Optional<FluidStack> a = valueFluidStack.getRawValue();
                 return ValueTypeString.ValueString.of(
                     a.isPresent() ? a.get()
@@ -3104,8 +3176,10 @@ public final class Operators {
             .symbol("=Raw=")
             .operatorName("israwfluidequal")
             .function(variables -> {
-                ValueObjectTypeFluidStack.ValueFluidStack valueFluidStack0 = variables.getValue(0);
-                ValueObjectTypeFluidStack.ValueFluidStack valueFluidStack1 = variables.getValue(1);
+                ValueObjectTypeFluidStack.ValueFluidStack valueFluidStack0 = variables
+                    .getValue(0, ValueTypes.OBJECT_FLUIDSTACK);
+                ValueObjectTypeFluidStack.ValueFluidStack valueFluidStack1 = variables
+                    .getValue(1, ValueTypes.OBJECT_FLUIDSTACK);
                 Optional<FluidStack> a = valueFluidStack0.getRawValue();
                 Optional<FluidStack> b = valueFluidStack1.getRawValue();
                 boolean equal = false;
@@ -3126,7 +3200,7 @@ public final class Operators {
         OperatorBuilders.FLUIDSTACK_1_SUFFIX_LONG.output(ValueTypes.STRING)
             .symbolOperator("mod")
             .function(variables -> {
-                ValueObjectTypeFluidStack.ValueFluidStack a = variables.getValue(0);
+                ValueObjectTypeFluidStack.ValueFluidStack a = variables.getValue(0, ValueTypes.OBJECT_FLUIDSTACK);
                 String modName = "";
 
                 if (a.getRawValue()
@@ -3188,7 +3262,7 @@ public final class Operators {
             .symbol("NBT()")
             .operatorName("nbt")
             .function(input -> {
-                ValueObjectTypeFluidStack.ValueFluidStack fluidStack = input.getValue(0);
+                ValueObjectTypeFluidStack.ValueFluidStack fluidStack = input.getValue(0, ValueTypes.OBJECT_FLUIDSTACK);
                 if (fluidStack.getRawValue()
                     .isPresent()) {
                     return ValueTypeNbt.ValueNbt.of(
@@ -3277,7 +3351,7 @@ public final class Operators {
             .function(OperatorBuilders.FUNCTION_OPERATOR_TAKE_OPERATOR_LIST.build(input -> {
                 final IOperator innerOperator = input.getLeft();
                 OperatorBase.SafeVariablesGetter variables = input.getRight();
-                ValueTypeList.ValueList inputList = variables.getValue(0);
+                ValueTypeList.ValueList inputList = variables.getValue(0, ValueTypes.LIST);
                 return ValueTypeList.ValueList
                     .ofFactory(new ValueTypeListProxyOperatorMapped(innerOperator, inputList.getRawValue()));
             }))
@@ -3299,7 +3373,7 @@ public final class Operators {
                             throws EvaluationException {
                             final IOperator innerOperator = input.getLeft();
                             OperatorBase.SafeVariablesGetter variables = input.getRight();
-                            ValueTypeList.ValueList<?, ?> inputList = variables.getValue(0);
+                            ValueTypeList.ValueList<?, ?> inputList = variables.getValue(0, ValueTypes.LIST);
                             List<IValue> filtered = Lists.newArrayList();
                             for (IValue value : inputList.getRawValue()) {
                                 IValue result = ValueHelpers.evaluateOperator(innerOperator, value);
@@ -3432,8 +3506,8 @@ public final class Operators {
             .function(variables -> {
                 IValue accumulator = variables.getValue(2);
                 final IOperator innerOperator = OperatorBuilders
-                    .getSafeOperator(variables.getValue(0), accumulator.getType());
-                ValueTypeList.ValueList<IValueType<IValue>, IValue> inputList = variables.getValue(1);
+                    .getSafeOperator(variables.getValue(0, ValueTypes.OPERATOR), accumulator.getType());
+                ValueTypeList.ValueList<IValueType<IValue>, IValue> inputList = variables.getValue(1, ValueTypes.LIST);
                 for (IValue listValue : inputList.getRawValue()) {
                     accumulator = ValueHelpers.evaluateOperator(innerOperator, accumulator, listValue);
                 }
@@ -3458,7 +3532,7 @@ public final class Operators {
                 }
             })
             .function(variables -> {
-                ValueTypeList.ValueList valueList = variables.getValue(1);
+                ValueTypeList.ValueList valueList = variables.getValue(1, ValueTypes.LIST);
                 Iterator<IValue> iter = valueList.getRawValue()
                     .iterator();
                 if (!iter.hasNext()) {
@@ -3469,7 +3543,7 @@ public final class Operators {
 
                 IValue accumulator = iter.next();
                 final IOperator innerOperator = OperatorBuilders
-                    .getSafeOperator(variables.getValue(0), accumulator.getType());
+                    .getSafeOperator(variables.getValue(0, ValueTypes.OPERATOR), accumulator.getType());
 
                 while (iter.hasNext()) {
                     IValue listValue = iter.next();
@@ -3488,7 +3562,7 @@ public final class Operators {
             .symbol("op_by_name")
             .operatorName("byName")
             .function(input -> {
-                ValueTypeString.ValueString name = input.getValue(0);
+                ValueTypeString.ValueString name = input.getValue(0, ValueTypes.STRING);
                 IOperator operator = Operators.REGISTRY.getOperator(name.getRawValue());
                 if (operator == null) {
                     throw new EvaluationException("Could not find the operator with name " + name.getRawValue());
@@ -3522,7 +3596,7 @@ public final class Operators {
             .operatorName("keys")
             .symbol("NBT.keys")
             .function(variables -> {
-                ValueTypeNbt.ValueNbt value = variables.getValue(0);
+                ValueTypeNbt.ValueNbt value = variables.getValue(0, ValueTypes.NBT);
                 return ValueTypeList.ValueList.ofFactory(new ValueTypeListProxyNbtKeys(value.getRawValue()));
             })
             .build());
@@ -3638,8 +3712,8 @@ public final class Operators {
             .operatorName("valueListTag")
             .symbol("NBT.list_tag")
             .function(variables -> {
-                ValueTypeNbt.ValueNbt value = variables.getValue(0);
-                ValueTypeString.ValueString key = variables.getValue(1);
+                ValueTypeNbt.ValueNbt value = variables.getValue(0, ValueTypes.NBT);
+                ValueTypeString.ValueString key = variables.getValue(1, ValueTypes.STRING);
                 return ValueTypeList.ValueList
                     .ofFactory(new ValueTypeListProxyNbtValueListTag(key.getRawValue(), value.getRawValue()));
             })
@@ -3653,8 +3727,8 @@ public final class Operators {
             .operatorName("valueListByte")
             .symbol("NBT.list_byte")
             .function(variables -> {
-                ValueTypeNbt.ValueNbt value = variables.getValue(0);
-                ValueTypeString.ValueString key = variables.getValue(1);
+                ValueTypeNbt.ValueNbt value = variables.getValue(0, ValueTypes.NBT);
+                ValueTypeString.ValueString key = variables.getValue(1, ValueTypes.STRING);
                 return ValueTypeList.ValueList
                     .ofFactory(new ValueTypeListProxyNbtValueListByte(key.getRawValue(), value.getRawValue()));
             })
@@ -3668,8 +3742,8 @@ public final class Operators {
             .operatorName("valueListInt")
             .symbol("NBT.list_int")
             .function(variables -> {
-                ValueTypeNbt.ValueNbt value = variables.getValue(0);
-                ValueTypeString.ValueString key = variables.getValue(1);
+                ValueTypeNbt.ValueNbt value = variables.getValue(0, ValueTypes.NBT);
+                ValueTypeString.ValueString key = variables.getValue(1, ValueTypes.STRING);
                 return ValueTypeList.ValueList
                     .ofFactory(new ValueTypeListProxyNbtValueListInt(key.getRawValue(), value.getRawValue()));
             })
@@ -3683,9 +3757,9 @@ public final class Operators {
             .operatorName("without")
             .symbol("NBT.without")
             .function(variables -> {
-                ValueTypeNbt.ValueNbt valueNbt = variables.getValue(0);
+                ValueTypeNbt.ValueNbt valueNbt = variables.getValue(0, ValueTypes.NBT);
                 NBTTagCompound tag = valueNbt.getRawValue();
-                ValueTypeString.ValueString valueString = variables.getValue(1);
+                ValueTypeString.ValueString valueString = variables.getValue(1, ValueTypes.STRING);
                 String key = valueString.getRawValue();
                 if (tag.hasKey(key)) {
                     // Copy the tag to ensure immutability
@@ -3706,7 +3780,7 @@ public final class Operators {
             .symbol("NBT.with_boolean")
             .function(OperatorBuilders.FUNCTION_NBT_COPY_FOR_VALUE_TO_NBT.build(input -> {
                 ValueTypeBoolean.ValueBoolean value = input.getRight()
-                    .getValue(0);
+                    .getValue(0, ValueTypes.BOOLEAN);
                 NBTTagCompound tag = input.getLeft();
                 tag.setBoolean(input.getMiddle(), value.getRawValue());
                 return tag;
@@ -3722,7 +3796,7 @@ public final class Operators {
             .symbol("NBT.with_short")
             .function(OperatorBuilders.FUNCTION_NBT_COPY_FOR_VALUE_TO_NBT.build(input -> {
                 ValueTypeInteger.ValueInteger value = input.getRight()
-                    .getValue(0);
+                    .getValue(0, ValueTypes.INTEGER);
                 NBTTagCompound tag = input.getLeft();
                 tag.setShort(input.getMiddle(), (short) value.getRawValue());
                 return tag;
@@ -3738,7 +3812,7 @@ public final class Operators {
             .symbol("NBT.with_integer")
             .function(OperatorBuilders.FUNCTION_NBT_COPY_FOR_VALUE_TO_NBT.build(input -> {
                 ValueTypeInteger.ValueInteger value = input.getRight()
-                    .getValue(0);
+                    .getValue(0, ValueTypes.INTEGER);
                 NBTTagCompound tag = input.getLeft();
                 tag.setInteger(input.getMiddle(), value.getRawValue());
                 return tag;
@@ -3754,7 +3828,7 @@ public final class Operators {
             .symbol("NBT.with_long")
             .function(OperatorBuilders.FUNCTION_NBT_COPY_FOR_VALUE_TO_NBT.build(input -> {
                 ValueTypeLong.ValueLong value = input.getRight()
-                    .getValue(0);
+                    .getValue(0, ValueTypes.LONG);
                 NBTTagCompound tag = input.getLeft();
                 tag.setLong(input.getMiddle(), value.getRawValue());
                 return tag;
@@ -3770,7 +3844,7 @@ public final class Operators {
             .symbol("NBT.with_double")
             .function(OperatorBuilders.FUNCTION_NBT_COPY_FOR_VALUE_TO_NBT.build(input -> {
                 ValueTypeDouble.ValueDouble value = input.getRight()
-                    .getValue(0);
+                    .getValue(0, ValueTypes.DOUBLE);
                 NBTTagCompound tag = input.getLeft();
                 tag.setDouble(input.getMiddle(), value.getRawValue());
                 return tag;
@@ -3786,7 +3860,7 @@ public final class Operators {
             .symbol("NBT.with_float")
             .function(OperatorBuilders.FUNCTION_NBT_COPY_FOR_VALUE_TO_NBT.build(input -> {
                 ValueTypeDouble.ValueDouble value = input.getRight()
-                    .getValue(0);
+                    .getValue(0, ValueTypes.DOUBLE);
                 NBTTagCompound tag = input.getLeft();
                 tag.setFloat(input.getMiddle(), (float) value.getRawValue());
                 return tag;
@@ -3802,7 +3876,7 @@ public final class Operators {
             .symbol("NBT.with_string")
             .function(OperatorBuilders.FUNCTION_NBT_COPY_FOR_VALUE_TO_NBT.build(input -> {
                 ValueTypeString.ValueString value = input.getRight()
-                    .getValue(0);
+                    .getValue(0, ValueTypes.STRING);
                 NBTTagCompound tag = input.getLeft();
                 tag.setString(input.getMiddle(), value.getRawValue());
                 return tag;
@@ -3818,7 +3892,7 @@ public final class Operators {
             .symbol("NBT.with_tag")
             .function(OperatorBuilders.FUNCTION_NBT_COPY_FOR_VALUE_TO_NBT.build(input -> {
                 ValueTypeNbt.ValueNbt value = input.getRight()
-                    .getValue(0);
+                    .getValue(0, ValueTypes.NBT);
                 NBTTagCompound tag = input.getLeft();
                 tag.setTag(input.getMiddle(), value.getRawValue());
                 return tag;
@@ -3842,7 +3916,7 @@ public final class Operators {
                             Triple<NBTTagCompound, String, OperatorBase.SafeVariablesGetter> input)
                             throws EvaluationException {
                             ValueTypeList.ValueList<?, ?> value = input.getRight()
-                                .getValue(0);
+                                .getValue(0, ValueTypes.LIST);
                             NBTTagCompound tag = input.getLeft();
                             NBTTagList list = new NBTTagList();
                             for (IValue valueNbt : value.getRawValue()) {
@@ -3881,7 +3955,7 @@ public final class Operators {
                             Triple<NBTTagCompound, String, OperatorBase.SafeVariablesGetter> input)
                             throws EvaluationException {
                             ValueTypeList.ValueList<?, ?> value = input.getRight()
-                                .getValue(0);
+                                .getValue(0, ValueTypes.LIST);
                             NBTTagCompound tag = input.getLeft();
                             NBTTagList list = new NBTTagList();
                             for (IValue valueNbt : value.getRawValue()) {
@@ -3921,7 +3995,7 @@ public final class Operators {
                             Triple<NBTTagCompound, String, OperatorBase.SafeVariablesGetter> input)
                             throws EvaluationException {
                             ValueTypeList.ValueList<?, ?> value = input.getRight()
-                                .getValue(0);
+                                .getValue(0, ValueTypes.LIST);
                             NBTTagCompound tag = input.getLeft();
                             NBTTagList list = new NBTTagList();
                             for (IValue valueNbt : value.getRawValue()) {
@@ -3960,7 +4034,7 @@ public final class Operators {
                             Triple<NBTTagCompound, String, OperatorBase.SafeVariablesGetter> input)
                             throws EvaluationException {
                             ValueTypeList.ValueList<?, ?> value = input.getRight()
-                                .getValue(0);
+                                .getValue(0, ValueTypes.LIST);
                             NBTTagCompound tag = input.getLeft();
                             NBTTagList list = new NBTTagList();
                             for (IValue valueNbt : value.getRawValue()) {
@@ -3990,8 +4064,8 @@ public final class Operators {
             .operatorName("subset")
             .symbol("NBT.⊆")
             .function(variables -> {
-                ValueTypeNbt.ValueNbt valueNbt0 = variables.getValue(0);
-                ValueTypeNbt.ValueNbt valueNbt1 = variables.getValue(1);
+                ValueTypeNbt.ValueNbt valueNbt0 = variables.getValue(0, ValueTypes.NBT);
+                ValueTypeNbt.ValueNbt valueNbt1 = variables.getValue(1, ValueTypes.NBT);
                 NBTTagCompound a = valueNbt0.getRawValue();
                 NBTTagCompound b = valueNbt1.getRawValue();
                 return ValueTypeBoolean.ValueBoolean.of(NbtHelpers.nbtMatchesSubset(a, b, true));
@@ -4006,8 +4080,8 @@ public final class Operators {
             .operatorName("union")
             .symbol("NBT.∪")
             .function(variables -> {
-                ValueTypeNbt.ValueNbt valueNbt0 = variables.getValue(0);
-                ValueTypeNbt.ValueNbt valueNbt1 = variables.getValue(1);
+                ValueTypeNbt.ValueNbt valueNbt0 = variables.getValue(0, ValueTypes.NBT);
+                ValueTypeNbt.ValueNbt valueNbt1 = variables.getValue(1, ValueTypes.NBT);
                 NBTTagCompound a = valueNbt0.getRawValue();
                 NBTTagCompound b = valueNbt1.getRawValue();
                 return ValueTypeNbt.ValueNbt.of(NbtHelpers.union(a, b));
@@ -4022,8 +4096,8 @@ public final class Operators {
             .operatorName("intersection")
             .symbol("NBT.∩")
             .function(variables -> {
-                ValueTypeNbt.ValueNbt valueNbt0 = variables.getValue(0);
-                ValueTypeNbt.ValueNbt valueNbt1 = variables.getValue(1);
+                ValueTypeNbt.ValueNbt valueNbt0 = variables.getValue(0, ValueTypes.NBT);
+                ValueTypeNbt.ValueNbt valueNbt1 = variables.getValue(1, ValueTypes.NBT);
                 NBTTagCompound a = valueNbt0.getRawValue();
                 NBTTagCompound b = valueNbt1.getRawValue();
                 return ValueTypeNbt.ValueNbt.of(NbtHelpers.intersection(a, b));
@@ -4038,8 +4112,8 @@ public final class Operators {
             .operatorName("minus")
             .symbol("NBT.∖")
             .function(variables -> {
-                ValueTypeNbt.ValueNbt valueNbt0 = variables.getValue(0);
-                ValueTypeNbt.ValueNbt valueNbt1 = variables.getValue(1);
+                ValueTypeNbt.ValueNbt valueNbt0 = variables.getValue(0, ValueTypes.NBT);
+                ValueTypeNbt.ValueNbt valueNbt1 = variables.getValue(1, ValueTypes.NBT);
                 NBTTagCompound a = valueNbt0.getRawValue();
                 NBTTagCompound b = valueNbt1.getRawValue();
                 return ValueTypeNbt.ValueNbt.of(NbtHelpers.minus(a, b));
@@ -4087,9 +4161,10 @@ public final class Operators {
         OperatorBuilders.INGREDIENTS_3_ITEMSTACK.operatorName("withItem")
             .symbol("Ingr.with_item")
             .function(variables -> {
-                ValueObjectTypeIngredients.ValueIngredients value = variables.getValue(0);
-                ValueTypeInteger.ValueInteger index = variables.getValue(1);
-                ValueObjectTypeItemStack.ValueItemStack itemStack = variables.getValue(2);
+                ValueObjectTypeIngredients.ValueIngredients value = variables
+                    .getValue(0, ValueTypes.OBJECT_INGREDIENTS);
+                ValueTypeInteger.ValueInteger index = variables.getValue(1, ValueTypes.INTEGER);
+                ValueObjectTypeItemStack.ValueItemStack itemStack = variables.getValue(2, ValueTypes.OBJECT_ITEMSTACK);
                 if (!value.getRawValue()
                     .isPresent()) {
                     return value;
@@ -4112,9 +4187,11 @@ public final class Operators {
         OperatorBuilders.INGREDIENTS_3_FLUIDSTACK.operatorName("withFluid")
             .symbol("Ingr.with_fluid")
             .function(variables -> {
-                ValueObjectTypeIngredients.ValueIngredients value = variables.getValue(0);
-                ValueTypeInteger.ValueInteger index = variables.getValue(1);
-                ValueObjectTypeFluidStack.ValueFluidStack fluidStack = variables.getValue(2);
+                ValueObjectTypeIngredients.ValueIngredients value = variables
+                    .getValue(0, ValueTypes.OBJECT_INGREDIENTS);
+                ValueTypeInteger.ValueInteger index = variables.getValue(1, ValueTypes.INTEGER);
+                ValueObjectTypeFluidStack.ValueFluidStack fluidStack = variables
+                    .getValue(2, ValueTypes.OBJECT_FLUIDSTACK);
                 if (!value.getRawValue()
                     .isPresent()) {
                     return value;
@@ -4139,9 +4216,10 @@ public final class Operators {
             .symbol("Ingr.with_energy")
             .symbol("Ingr.withEnergy")
             .function(variables -> {
-                ValueObjectTypeIngredients.ValueIngredients value = variables.getValue(0);
-                ValueTypeInteger.ValueInteger index = variables.getValue(1);
-                ValueTypeInteger.ValueInteger energy = variables.getValue(2);
+                ValueObjectTypeIngredients.ValueIngredients value = variables
+                    .getValue(0, ValueTypes.OBJECT_INGREDIENTS);
+                ValueTypeInteger.ValueInteger index = variables.getValue(1, ValueTypes.INTEGER);
+                ValueTypeInteger.ValueInteger energy = variables.getValue(2, ValueTypes.INTEGER);
                 if (!value.getRawValue()
                     .isPresent()) {
                     return value;
@@ -4164,9 +4242,10 @@ public final class Operators {
         OperatorBuilders.INGREDIENTS_2_LIST.operatorName("withItems")
             .symbol("Ingr.with_items")
             .function(variables -> {
-                ValueObjectTypeIngredients.ValueIngredients valueIngredients = variables.getValue(0);
+                ValueObjectTypeIngredients.ValueIngredients valueIngredients = variables
+                    .getValue(0, ValueTypes.OBJECT_INGREDIENTS);
                 ValueTypeList.ValueList<ValueObjectTypeItemStack, ValueObjectTypeItemStack.ValueItemStack> list = variables
-                    .getValue(1);
+                    .getValue(1, ValueTypes.LIST);
                 if (!valueIngredients.getRawValue()
                     .isPresent()) {
                     return valueIngredients;
@@ -4188,9 +4267,10 @@ public final class Operators {
         OperatorBuilders.INGREDIENTS_2_LIST.operatorName("withFluids")
             .symbol("Ingr.with_fluids")
             .function(variables -> {
-                ValueObjectTypeIngredients.ValueIngredients valueIngredients = variables.getValue(0);
+                ValueObjectTypeIngredients.ValueIngredients valueIngredients = variables
+                    .getValue(0, ValueTypes.OBJECT_INGREDIENTS);
                 ValueTypeList.ValueList<ValueObjectTypeFluidStack, ValueObjectTypeFluidStack.ValueFluidStack> list = variables
-                    .getValue(1);
+                    .getValue(1, ValueTypes.LIST);
                 if (!valueIngredients.getRawValue()
                     .isPresent()) {
                     return valueIngredients;
@@ -4213,8 +4293,10 @@ public final class Operators {
             .operatorName("withEnergies")
             .symbol("Ingr.with_energies")
             .function(variables -> {
-                ValueObjectTypeIngredients.ValueIngredients valueIngredients = variables.getValue(0);
-                ValueTypeList.ValueList<ValueTypeInteger, ValueTypeInteger.ValueInteger> list = variables.getValue(1);
+                ValueObjectTypeIngredients.ValueIngredients valueIngredients = variables
+                    .getValue(0, ValueTypes.OBJECT_INGREDIENTS);
+                ValueTypeList.ValueList<ValueTypeInteger, ValueTypeInteger.ValueInteger> list = variables
+                    .getValue(1, ValueTypes.LIST);
                 if (!valueIngredients.getRawValue()
                     .isPresent()) {
                     return valueIngredients;
@@ -4241,7 +4323,7 @@ public final class Operators {
             .operatorName("input")
             .symbol("recipe_in")
             .function(variables -> {
-                ValueObjectTypeRecipe.ValueRecipe value = variables.getValue(0);
+                ValueObjectTypeRecipe.ValueRecipe value = variables.getValue(0, ValueTypes.OBJECT_RECIPE);
                 if (value.getRawValue()
                     .isPresent()) {
                     return ValueObjectTypeIngredients.ValueIngredients.of(
@@ -4261,7 +4343,7 @@ public final class Operators {
             .operatorName("output")
             .symbol("recipe_out")
             .function(variables -> {
-                ValueObjectTypeRecipe.ValueRecipe value = variables.getValue(0);
+                ValueObjectTypeRecipe.ValueRecipe value = variables.getValue(0, ValueTypes.OBJECT_RECIPE);
                 if (value.getRawValue()
                     .isPresent()) {
                     return ValueObjectTypeIngredients.ValueIngredients.of(
@@ -4281,8 +4363,9 @@ public final class Operators {
             .operatorName("withInput")
             .symbol("Recipe.with_in")
             .function(variables -> {
-                ValueObjectTypeRecipe.ValueRecipe valueRecipe = variables.getValue(0);
-                ValueObjectTypeIngredients.ValueIngredients valueIngredients = variables.getValue(1);
+                ValueObjectTypeRecipe.ValueRecipe valueRecipe = variables.getValue(0, ValueTypes.OBJECT_RECIPE);
+                ValueObjectTypeIngredients.ValueIngredients valueIngredients = variables
+                    .getValue(1, ValueTypes.OBJECT_INGREDIENTS);
                 if (valueRecipe.getRawValue()
                     .isPresent()
                     && valueIngredients.getRawValue()
@@ -4325,8 +4408,9 @@ public final class Operators {
             .operatorName("withOutput")
             .symbol("Recipe.with_out")
             .function(variables -> {
-                ValueObjectTypeRecipe.ValueRecipe valueRecipe = variables.getValue(0);
-                ValueObjectTypeIngredients.ValueIngredients valueIngredients = variables.getValue(1);
+                ValueObjectTypeRecipe.ValueRecipe valueRecipe = variables.getValue(0, ValueTypes.OBJECT_RECIPE);
+                ValueObjectTypeIngredients.ValueIngredients valueIngredients = variables
+                    .getValue(1, ValueTypes.OBJECT_INGREDIENTS);
                 if (valueRecipe.getRawValue()
                     .isPresent()
                     && valueIngredients.getRawValue()
@@ -4356,8 +4440,10 @@ public final class Operators {
             .operatorName("withInputOutput")
             .symbol("Recipe.with_io")
             .function(variables -> {
-                ValueObjectTypeIngredients.ValueIngredients valueIn = variables.getValue(0);
-                ValueObjectTypeIngredients.ValueIngredients valueOut = variables.getValue(1);
+                ValueObjectTypeIngredients.ValueIngredients valueIn = variables
+                    .getValue(0, ValueTypes.OBJECT_INGREDIENTS);
+                ValueObjectTypeIngredients.ValueIngredients valueOut = variables
+                    .getValue(1, ValueTypes.OBJECT_INGREDIENTS);
                 if (valueIn.getRawValue()
                     .isPresent()
                     && valueOut.getRawValue()
@@ -4390,6 +4476,92 @@ public final class Operators {
                 return ValueObjectTypeRecipe.ValueRecipe.of(null);
             })
             .build());
+
+    /**
+     * ------------------------------------ PARSE OPERATORS ------------------------------------
+     */
+
+    /**
+     * Boolean Parse operator which takes a string of form `/(F(alse)?|[+-]?(0x|#)?0+|)/i`.
+     */
+    public static final IOperator PARSE_BOOLEAN = Operators.REGISTRY
+        .register(new ParseOperator<>(ValueTypes.BOOLEAN, v -> {
+            ValueTypeString.ValueString value = v.getValue(0, ValueTypes.STRING);
+            Pattern p = Pattern.compile("\\A(F(alse)?|[+-]?(0x|#)?0+|)\\z", Pattern.CASE_INSENSITIVE);
+            return ValueTypeBoolean.ValueBoolean.of(
+                !p.matcher(
+                    value.getRawValue()
+                        .trim())
+                    .matches());
+        }));
+
+    /**
+     * Double Parse operator which takes a string of a form Double.parseDouble(),
+     * `/([+-]?)(Inf(inity)?|\u221E)/i`, or Long.decode() can consume.
+     */
+    public static final IOperator PARSE_DOUBLE = Operators.REGISTRY
+        .register(new ParseOperator<>(ValueTypes.DOUBLE, v -> {
+            ValueTypeString.ValueString value = v.getValue(0, ValueTypes.STRING);
+            try {
+                return ValueTypeDouble.ValueDouble.of(Double.parseDouble(value.getRawValue()));
+            } catch (NumberFormatException e) {
+                try {
+                    // \u221E = infinity symbol
+                    Pattern p = Pattern.compile("\\A([+-]?)(Inf(inity)?|\u221E)\\z", Pattern.CASE_INSENSITIVE);
+                    Matcher m = p.matcher(
+                        value.getRawValue()
+                            .trim());
+                    if (m.matches()) {
+                        if (m.group(1)
+                            .equals("-")) {
+                            return ValueTypeDouble.ValueDouble.of(Double.NEGATIVE_INFINITY);
+                        }
+                        return ValueTypeDouble.ValueDouble.of(Double.POSITIVE_INFINITY);
+                    }
+                    // Try as a long
+                    return ValueTypeDouble.ValueDouble.of((double) Long.decode(value.getRawValue()));
+                } catch (NumberFormatException e2) {
+                    throw new EvaluationException("'" + value.getRawValue() + "' is not parsable as a 'DOUBLE'");
+                }
+            }
+        }));
+
+    /**
+     * Integer Parse operator which takes a string of a form Integer.decode() can consume.
+     */
+    public static final IOperator PARSE_INTEGER = Operators.REGISTRY
+        .register(new ParseOperator<>(ValueTypes.INTEGER, v -> {
+            ValueTypeString.ValueString value = v.getValue(0, ValueTypes.STRING);
+            try {
+                return ValueTypeInteger.ValueInteger.of(Integer.decode(value.getRawValue()));
+            } catch (NumberFormatException e) {
+                throw new EvaluationException("'" + value.getRawValue() + "' is not parsable as a 'INTEGER'");
+            }
+        }));
+
+    /**
+     * Long Parse operator which takes a string of a form Long.decode() can consume.
+     */
+    public static final IOperator PARSE_LONG = Operators.REGISTRY.register(new ParseOperator<>(ValueTypes.LONG, v -> {
+        ValueTypeString.ValueString value = v.getValue(0, ValueTypes.STRING);
+        try {
+            return ValueTypeLong.ValueLong.of(Long.decode(value.getRawValue()));
+        } catch (NumberFormatException e) {
+            throw new EvaluationException("'" + value.getRawValue() + "' is not parsable as a 'LONG'");
+        }
+    }));
+
+    /**
+     * NBT Parse operator which takes a string of a form ValueTypeNbt().deserialize() can consume.
+     */
+    public static final IOperator PARSE_NBT = Operators.REGISTRY.register(new ParseOperator<>(ValueTypes.NBT, v -> {
+        ValueTypeString.ValueString value = v.getValue(0, ValueTypes.STRING);
+        try {
+            return new ValueTypeNbt().deserialize(value.getRawValue());
+        } catch (IllegalArgumentException e) {
+            throw new EvaluationException("'" + value.getRawValue() + "' is not parsable as a 'NBT'");
+        }
+    }));
 
     /**
      * ----------------------------------- GENERAL OPERATORS -----------------------------------

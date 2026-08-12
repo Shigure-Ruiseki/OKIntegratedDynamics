@@ -164,14 +164,21 @@ public class AspectWriteBuilders {
             ValueTypes.DOUBLE,
             "aspect.aspecttypes.integrateddynamics.double.frequency.name",
             AspectReadBuilders.VALIDATOR_DOUBLE_POSITIVE);
+        public static final IAspectPropertyTypeInstance<ValueTypeInteger, ValueTypeInteger.ValueInteger> PROP_RANGE = new AspectPropertyTypeInstance<>(
+            ValueTypes.INTEGER,
+            "aspect.aspecttypes.integrateddynamics.integer.range.name",
+            AspectReadBuilders.VALIDATOR_INTEGER_POSITIVE);
         public static final IAspectProperties PROPERTIES_NOTE = new AspectProperties(
             Sets.<IAspectPropertyTypeInstance>newHashSet(PROP_VOLUME));
         public static final IAspectProperties PROPERTIES_SOUND = new AspectProperties(
             ImmutableList.<IAspectPropertyTypeInstance>of(PROP_VOLUME, PROP_FREQUENCY));
+        public static final IAspectProperties PROPERTIES_TEXT = new AspectProperties(
+            ImmutableList.<IAspectPropertyTypeInstance>of(PROP_RANGE));
         static {
             PROPERTIES_NOTE.setValue(PROP_VOLUME, ValueTypeDouble.ValueDouble.of(3D));
             PROPERTIES_SOUND.setValue(PROP_VOLUME, ValueTypeDouble.ValueDouble.of(3D));
             PROPERTIES_SOUND.setValue(PROP_FREQUENCY, ValueTypeDouble.ValueDouble.of(1D));
+            PROPERTIES_TEXT.setValue(PROP_RANGE, ValueTypeInteger.ValueInteger.of(32));
         }
 
         private static final List<String> INSTRUMENTS = Lists

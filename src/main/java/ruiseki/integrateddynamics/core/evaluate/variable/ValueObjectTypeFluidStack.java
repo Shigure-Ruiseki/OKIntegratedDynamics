@@ -29,7 +29,7 @@ public class ValueObjectTypeFluidStack extends ValueObjectTypeBase<ValueObjectTy
     IValueTypeNullable<ValueObjectTypeFluidStack.ValueFluidStack> {
 
     public ValueObjectTypeFluidStack() {
-        super("fluidstack");
+        super("fluidstack", ValueObjectTypeFluidStack.ValueFluidStack.class);
     }
 
     @Override

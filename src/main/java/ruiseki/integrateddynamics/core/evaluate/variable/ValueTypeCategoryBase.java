@@ -27,8 +27,9 @@ public abstract class ValueTypeCategoryBase<V extends IValue> extends ValueTypeB
      * @param colorFormat The color format.
      * @param elements    The elements inside this category.
      */
-    public ValueTypeCategoryBase(String typeName, int color, String colorFormat, Set<IValueType<?>> elements) {
-        super(typeName, color, colorFormat);
+    public ValueTypeCategoryBase(String typeName, int color, String colorFormat, Set<IValueType<?>> elements,
+        Class<V> valueClass) {
+        super(typeName, color, colorFormat, valueClass);
         this.elements = Collections.unmodifiableSet(elements);
     }
 
@@ -39,8 +40,8 @@ public abstract class ValueTypeCategoryBase<V extends IValue> extends ValueTypeB
      * @param color       The color.
      * @param colorFormat The color format.
      */
-    public ValueTypeCategoryBase(String typeName, int color, String colorFormat) {
-        super(typeName, color, colorFormat);
+    public ValueTypeCategoryBase(String typeName, int color, String colorFormat, Class<V> valueClass) {
+        super(typeName, color, colorFormat, valueClass);
         this.elements = null;
     }
 

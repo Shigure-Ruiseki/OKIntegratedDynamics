@@ -28,7 +28,9 @@ public class PartTypeBlockReader
                     Aspects.Read.Block.INTEGER_POSY,
                     Aspects.Read.Block.INTEGER_POSZ,
                     Aspects.Read.Block.BLOCK,
-                    Aspects.Read.Block.NBT));
+                    Aspects.Read.Block.NBT,
+                    Aspects.Read.Block.STRING_BIOME,
+                    Aspects.Read.Block.INTEGER_LIGHT));
     }
 
     @Override

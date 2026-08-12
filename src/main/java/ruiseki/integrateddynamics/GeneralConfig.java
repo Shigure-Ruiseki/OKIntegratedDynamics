@@ -213,6 +213,16 @@ public class GeneralConfig extends DummyConfig {
     public static boolean logChangeEvents = false;
 
     /**
+     * How deep the recursion stack on an operator can become. This is to avoid game crashes when building things like
+     * the omega operator.
+     */
+    @ConfigurableProperty(
+        category = ConfigurableTypeCategory.CORE,
+        comment = "How deep the recursion stack on an operator can become. This is to avoid game crashes when building things like the omega operator.",
+        isCommandable = true)
+    public static int operatorRecursionLimit = 256;
+
+    /**
      * Create a new instance.
      */
     public GeneralConfig() {

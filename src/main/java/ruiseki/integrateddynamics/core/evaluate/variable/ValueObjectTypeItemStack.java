@@ -9,6 +9,7 @@ import net.minecraft.nbt.NBTTagCompound;
 
 import cpw.mods.fml.common.registry.GameData;
 import lombok.ToString;
+import ruiseki.commoncapabilities.api.capability.itemhandler.ItemMatch;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeNamed;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeNullable;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeUniquelyNamed;
@@ -28,7 +29,7 @@ public class ValueObjectTypeItemStack extends ValueObjectTypeBase<ValueObjectTyp
     IValueTypeNullable<ValueObjectTypeItemStack.ValueItemStack> {
 
     public ValueObjectTypeItemStack() {
-        super("itemstack");
+        super("itemstack", ValueObjectTypeItemStack.ValueItemStack.class);
     }
 
     public static String getItemStackDisplayNameUsSafe(ItemStack itemStack) throws NoSuchMethodException {
@@ -149,7 +150,7 @@ public class ValueObjectTypeItemStack extends ValueObjectTypeBase<ValueObjectTyp
         @Override
         public boolean equals(Object o) {
             return o instanceof ValueItemStack
-                && ItemStack.areItemStacksEqual(((ValueItemStack) o).itemStack, this.itemStack);
+                && ItemMatch.areItemStacksEqual(((ValueItemStack) o).itemStack, this.itemStack, ItemMatch.EXACT);
         }
 
         @Override

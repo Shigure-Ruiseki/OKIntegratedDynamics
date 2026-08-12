@@ -1,13 +1,11 @@
 package ruiseki.integrateddynamics.core.network.diagnostics;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.AxisAlignedBB;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 
 import org.lwjgl.opengl.GL11;
@@ -20,6 +18,7 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.integrateddynamics.core.helper.PartHelpers;
+import ruiseki.okcore.block.collidable.ImmutableAxisAlignedBB;
 import ruiseki.okcore.client.renderer.GlStateManager;
 
 /**
@@ -76,8 +75,7 @@ public class NetworkDiagnosticsPartOverlayRenderer {
             GlStateManager.depthMask(false);
 
             List<PartPos> partList = Lists.newArrayList(partPositions);
-            for (Iterator<PartPos> it = partList.iterator(); it.hasNext();) {
-                PartPos partPos = it.next();
+            for (PartPos partPos : partList) {
                 if (partPos.getPos()
                     .getDimensionId() == player.worldObj.provider.dimensionId
                     && player.getDistanceSq(
@@ -92,19 +90,22 @@ public class NetworkDiagnosticsPartOverlayRenderer {
                             .getZ())
                         < 10000) {
                     PartHelpers.PartStateHolder<?, ?> partStateHolder = PartHelpers.getPart(partPos);
+                    final ImmutableAxisAlignedBB localPartBB;
                     if (partStateHolder != null) {
-                        AxisAlignedBB bb = partStateHolder.getPart()
+                        localPartBB = partStateHolder.getPart()
                             .getPartRenderPosition()
-                            .getBoundingBox(partPos.getSide())
-                            .offset(
-                                partPos.getPos()
-                                    .getBlockPos())
-                            .offset(-offsetX, -offsetY, -offsetZ)
-                            .expand(0.05, 0.05, 0.05);
-                        RenderGlobal.drawOutlinedBoundingBox(bb, -1);
+                            .getBoundingBox(partPos.getSide());
                     } else {
-                        it.remove();
+                        localPartBB = new ImmutableAxisAlignedBB(0f, 0f, 0f, 1f, 1f, 1f);
                     }
+
+                    final ImmutableAxisAlignedBB globalRenderBB = localPartBB.offset(
+                        partPos.getPos()
+                            .getBlockPos())
+                        .offset(-offsetX, -offsetY, -offsetZ)
+                        .expand(0.05, 0.05, 0.05)
+                        .expand(-0.05, -0.05, -0.05);
+                    RenderGlobal.drawOutlinedBoundingBox(globalRenderBB, -1);
                 }
             }
 

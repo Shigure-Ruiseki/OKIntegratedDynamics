@@ -28,7 +28,11 @@ public class ValueTypeNbt extends ValueTypeBase<ValueTypeNbt.ValueNbt>
     private Set<String> tagBlacklist = Sets.newHashSet();
 
     public ValueTypeNbt() {
-        super("nbt", Helpers.RGBToInt(0, 170, 170), EnumChatFormatting.DARK_AQUA.toString());
+        super(
+            "nbt",
+            Helpers.RGBToInt(0, 170, 170),
+            EnumChatFormatting.DARK_AQUA.toString(),
+            ValueTypeNbt.ValueNbt.class);
     }
 
     @Override

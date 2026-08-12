@@ -25,6 +25,7 @@ import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
 import ruiseki.integrateddynamics.core.helper.PartHelpers;
+import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
 
 /**
@@ -202,14 +203,16 @@ public class PartNetworkElement<P extends IPartType<P, S>, S extends IPartState<
     }
 
     @Override
-    public void onNeighborBlockChange(@Nullable INetwork network, IBlockAccess world, Block neighborBlock) {
+    public void onNeighborBlockChange(@Nullable INetwork network, IBlockAccess world, Block neighbourBlock,
+        BlockPos neighbourBlockPos) {
         part.onBlockNeighborChange(
             network,
             NetworkHelpers.getPartNetwork(network),
             target,
             getPartState(),
             world,
-            neighborBlock);
+            neighbourBlock,
+            neighbourBlockPos);
     }
 
     @Override
@@ -234,12 +237,10 @@ public class PartNetworkElement<P extends IPartType<P, S>, S extends IPartState<
         if (o instanceof IPartNetworkElement) {
             IPartNetworkElement p = (IPartNetworkElement) o;
             int compClass = this.getPart()
-                .getClass()
-                .getCanonicalName()
+                .getName()
                 .compareTo(
                     p.getPart()
-                        .getClass()
-                        .getCanonicalName());
+                        .getName());
             if (compClass == 0) {
                 // If this or the other part is not loaded, we IGNORE the priority,
                 // because that depends on tile entity data, which requires loading the part/chunk.
@@ -267,10 +268,10 @@ public class PartNetworkElement<P extends IPartType<P, S>, S extends IPartState<
             }
         }
         return this.getClass()
-            .getCanonicalName()
+            .getName()
             .compareTo(
                 o.getClass()
-                    .getCanonicalName());
+                    .getName());
     }
 
     @Override

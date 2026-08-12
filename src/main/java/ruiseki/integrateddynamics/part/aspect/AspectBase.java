@@ -1,6 +1,7 @@
 package ruiseki.integrateddynamics.part.aspect;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import net.minecraft.client.gui.GuiScreen;
@@ -116,7 +117,7 @@ public abstract class AspectBase<V extends IValue, T extends IValueType<V>> impl
     @SuppressWarnings("deprecation")
     @Override
     public Collection<IAspectPropertyTypeInstance> getPropertyTypes() {
-        return getDefaultProperties().getTypes();
+        return hasProperties() ? getDefaultProperties().getTypes() : Collections.emptyList();
     }
 
     /**

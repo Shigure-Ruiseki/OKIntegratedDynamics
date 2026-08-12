@@ -294,7 +294,8 @@ public class BlockCable extends ConfigurableBlockContainer
                 (World) world,
                 new BlockPos(x, y, z),
                 world.getBlock(tileX, tileY, tileZ),
-                null);
+                null,
+                new BlockPos(tileX, tileY, tileZ));
         }
     }
 

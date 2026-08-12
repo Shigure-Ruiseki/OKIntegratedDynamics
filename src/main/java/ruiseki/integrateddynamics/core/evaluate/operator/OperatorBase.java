@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.jetbrains.annotations.Nullable;
 
+import ruiseki.integrateddynamics.GeneralConfig;
 import ruiseki.integrateddynamics.Reference;
 import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.evaluate.operator.IOperator;
@@ -32,6 +33,7 @@ public abstract class OperatorBase implements IOperator {
     private final IConfigRenderPattern renderPattern;
 
     private String unlocalizedName = null;
+    private int recursiveInvocations;
 
     protected OperatorBase(String symbol, String operatorName, IValueType[] inputTypes, IValueType outputType,
         IFunction function, @Nullable IConfigRenderPattern renderPattern) {
@@ -144,11 +146,22 @@ public abstract class OperatorBase implements IOperator {
 
     @Override
     public IValue evaluate(IVariable... input) throws EvaluationException {
+        if (this.recursiveInvocations++ > GeneralConfig.operatorRecursionLimit) {
+            this.recursiveInvocations = 0;
+            throw new EvaluationException(
+                new LangHelpers.UnlocalizedString(
+                    L10NValues.OPERATOR_ERROR_RECURSIONLIMIT,
+                    GeneralConfig.operatorRecursionLimit,
+                    new LangHelpers.UnlocalizedString(this.getUnlocalizedName())).localize());
+        }
         LangHelpers.UnlocalizedString error = validateTypes(ValueHelpers.from(input));
         if (error != null) {
+            this.recursiveInvocations--;
             throw new EvaluationException(error.localize());
         }
-        return function.evaluate(new SafeVariablesGetter(input));
+        IValue res = function.evaluate(new SafeVariablesGetter(input));
+        this.recursiveInvocations--;
+        return res;
     }
 
     @Override
@@ -222,6 +235,10 @@ public abstract class OperatorBase implements IOperator {
             } catch (ClassCastException e) {
                 throw new EvaluationException(e.getMessage());
             }
+        }
+
+        public <V extends IValue> V getValue(int i, IValueType<V> valueType) throws EvaluationException {
+            return valueType.cast(variables[i].getValue());
         }
 
         public IVariable[] getVariables() {

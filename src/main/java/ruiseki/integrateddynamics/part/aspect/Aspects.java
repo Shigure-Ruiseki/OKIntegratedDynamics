@@ -183,6 +183,23 @@ public class Aspects {
                 })
                 .handle(AspectReadBuilders.PROP_GET_NBT, "tile")
                 .buildRead();
+            public static final IAspectRead<ValueTypeString.ValueString, ValueTypeString> STRING_BIOME = AspectReadBuilders.Block.BUILDER_STRING
+                .handle(
+                    dimPos -> dimPos.getWorld()
+                        .getBiomeGenForCoords(
+                            dimPos.getBlockPos()
+                                .getX(),
+                            dimPos.getBlockPos()
+                                .getZ()).biomeName)
+                .withUpdateType(AspectUpdateType.BLOCK_UPDATE)
+                .handle(AspectReadBuilders.PROP_GET_STRING, "biome")
+                .buildRead();
+            public static final IAspectRead<ValueTypeInteger.ValueInteger, ValueTypeInteger> INTEGER_LIGHT = AspectReadBuilders.Block.BUILDER_INTEGER
+                .handle(
+                    dimPos -> dimPos.getWorld()
+                        .getBlockLightValue(dimPos.getX(), dimPos.getY(), dimPos.getZ()))
+                .handle(AspectReadBuilders.PROP_GET_INTEGER, "light")
+                .buildRead();
         }
 
         public static final class Entity {
@@ -1069,7 +1086,6 @@ public class Aspects {
                     return null;
                 }, "sound")
                 .buildWrite();
-
         }
 
         public static final class Effect {

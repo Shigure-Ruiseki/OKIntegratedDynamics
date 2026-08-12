@@ -50,7 +50,8 @@ public class PositionedOperatorRecipeHandlerRecipesByOutput<T extends IValueType
 
         @Override
         public IValue evaluate(SafeVariablesGetter variables) throws EvaluationException {
-            ValueObjectTypeIngredients.ValueIngredients ingredients = variables.getValue(0);
+            ValueObjectTypeIngredients.ValueIngredients ingredients = variables
+                .getValue(0, ValueTypes.OBJECT_INGREDIENTS);
             IRecipeHandler recipeHandler = this.getOperator()
                 .getRecipeHandler();
             if (recipeHandler != null && ingredients.getRawValue()

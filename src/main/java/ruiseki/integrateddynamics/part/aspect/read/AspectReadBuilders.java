@@ -230,6 +230,8 @@ public class AspectReadBuilders {
             .handle(PROP_GET, "block");
         public static final AspectBuilder<ValueTypeInteger.ValueInteger, ValueTypeInteger, DimPos> BUILDER_INTEGER = AspectReadBuilders.BUILDER_INTEGER
             .handle(PROP_GET, "block");
+        public static final AspectBuilder<ValueTypeString.ValueString, ValueTypeString, DimPos> BUILDER_STRING = AspectReadBuilders.BUILDER_STRING
+            .handle(PROP_GET, "block");
         public static final AspectBuilder<ValueObjectTypeBlock.ValueBlock, ValueObjectTypeBlock, DimPos> BUILDER_BLOCK = AspectReadBuilders.BUILDER_OBJECT_BLOCK
             .handle(PROP_GET, "block");
         public static final AspectBuilder<ValueTypeNbt.ValueNbt, ValueTypeNbt, DimPos> BUILDER_NBT = AspectReadBuilders.BUILDER_NBT

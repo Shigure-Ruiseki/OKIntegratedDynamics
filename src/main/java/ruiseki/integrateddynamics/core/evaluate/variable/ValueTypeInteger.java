@@ -16,7 +16,11 @@ public class ValueTypeInteger extends ValueTypeBase<ValueTypeInteger.ValueIntege
     implements IValueTypeNumber<ValueTypeInteger.ValueInteger> {
 
     public ValueTypeInteger() {
-        super("integer", Helpers.RGBToInt(243, 150, 4), EnumChatFormatting.GOLD.toString());
+        super(
+            "integer",
+            Helpers.RGBToInt(243, 150, 4),
+            EnumChatFormatting.GOLD.toString(),
+            ValueTypeInteger.ValueInteger.class);
     }
 
     @Override

@@ -5,6 +5,7 @@ import net.minecraft.block.material.Material;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
+import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
@@ -81,7 +82,20 @@ public abstract class BlockContainerGuiCabled extends ConfigurableBlockContainer
     @Override
     public void onNeighborBlockChange(World world, int x, int y, int z, Block neighborBlock) {
         super.onNeighborBlockChange(world, x, y, z, neighborBlock);
-        BlockPos pos = new BlockPos(x, y, z);
-        NetworkHelpers.onElementProviderBlockNeighborChange(world, pos, neighborBlock, null);
+        NetworkHelpers.onElementProviderBlockNeighborChange(world, new BlockPos(x, y, z), neighborBlock, null);
     }
+
+    @Override
+    public void onNeighborChange(IBlockAccess world, int x, int y, int z, int tileX, int tileY, int tileZ) {
+        super.onNeighborChange(world, x, y, z, tileX, tileY, tileZ);
+        if (world instanceof World) {
+            NetworkHelpers.onElementProviderBlockNeighborChange(
+                (World) world,
+                new BlockPos(x, y, z),
+                world.getBlock(tileX, tileY, tileZ),
+                null,
+                new BlockPos(tileX, tileY, tileZ));
+        }
+    }
+
 }

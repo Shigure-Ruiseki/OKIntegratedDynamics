@@ -25,13 +25,15 @@ public abstract class ValueTypeBase<V extends IValue> implements IValueType<V> {
     private final String typeName;
     private final int color;
     private final String colorFormat;
+    private final Class<V> valueClass;
 
     private String unlocalizedName = null;
 
-    public ValueTypeBase(String typeName, int color, String colorFormat) {
+    public ValueTypeBase(String typeName, int color, String colorFormat, @Nullable Class<V> valueClass) {
         this.typeName = typeName;
         this.color = color;
         this.colorFormat = colorFormat;
+        this.valueClass = valueClass;
         if (MinecraftHelpers.isModdedEnvironment() && MinecraftHelpers.isClientSide()) {
             registerModelResourceLocation();
         }
@@ -125,4 +127,20 @@ public abstract class ValueTypeBase<V extends IValue> implements IValueType<V> {
         return Reference.MOD_ID;
     }
 
+    @Override
+    public V cast(IValue value) throws EvaluationException {
+        try {
+            return this.valueClass.cast(value);
+        } catch (ClassCastException e) {
+            throw new EvaluationException(
+                String.format(
+                    "Attempted to cast %s to %s, for value \"%s\"",
+                    LangHelpers.localize(
+                        value.getType()
+                            .getUnlocalizedName()),
+                    LangHelpers.localize(this.getUnlocalizedName()),
+                    value.getType()
+                        .toCompactString(value)));
+        }
+    }
 }

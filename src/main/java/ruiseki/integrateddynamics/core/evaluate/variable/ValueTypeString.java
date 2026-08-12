@@ -15,7 +15,11 @@ public class ValueTypeString extends ValueTypeBase<ValueTypeString.ValueString>
     implements IValueTypeNamed<ValueTypeString.ValueString> {
 
     public ValueTypeString() {
-        super("string", Helpers.RGBToInt(250, 10, 13), EnumChatFormatting.RED.toString());
+        super(
+            "string",
+            Helpers.RGBToInt(250, 10, 13),
+            EnumChatFormatting.RED.toString(),
+            ValueTypeString.ValueString.class);
     }
 
     @Override

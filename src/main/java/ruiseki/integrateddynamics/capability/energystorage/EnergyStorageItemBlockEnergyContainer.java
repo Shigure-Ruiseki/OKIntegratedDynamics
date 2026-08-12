@@ -25,6 +25,10 @@ public class EnergyStorageItemBlockEnergyContainer implements IEnergyStorageCapa
         this.itemBlockEnergyContainer = itemBlockEnergyContainer;
         this.itemStack = itemStack;
         this.rate = rate;
+
+        if (!this.itemStack.hasTagCompound()) {
+            setEnergy(itemStack, 0);
+        }
     }
 
     public EnergyStorageItemBlockEnergyContainer(ItemBlockEnergyContainer itemBlockEnergyContainer,
@@ -88,7 +92,7 @@ public class EnergyStorageItemBlockEnergyContainer implements IEnergyStorageCapa
         return stored - newEnergy;
     }
 
-    protected void setEnergy(ItemStack itemStack, int energy) {
+    public void setEnergy(ItemStack itemStack, int energy) {
         if (isCreative()) return;
         NBTTagCompound tag = ItemNBTHelpers.getNBT(itemStack);
         tag.setInteger(

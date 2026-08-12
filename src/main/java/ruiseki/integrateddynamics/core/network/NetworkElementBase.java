@@ -13,6 +13,7 @@ import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.INetworkCarrier;
 import ruiseki.integrateddynamics.api.network.INetworkElement;
 import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
+import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
 
 /**
@@ -79,7 +80,8 @@ public abstract class NetworkElementBase implements INetworkElement {
     }
 
     @Override
-    public void onNeighborBlockChange(@Nullable INetwork network, IBlockAccess world, Block neighborBlock) {
+    public void onNeighborBlockChange(@Nullable INetwork network, IBlockAccess world, Block neighbourBlock,
+        BlockPos neighbourBlockPos) {
 
     }
 

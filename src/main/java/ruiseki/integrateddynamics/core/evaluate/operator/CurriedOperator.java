@@ -89,7 +89,7 @@ public class CurriedOperator implements IOperator {
     @Override
     public IValueType[] getInputTypes() {
         IValueType[] baseInputTypes = baseOperator.getInputTypes();
-        return Arrays.copyOfRange(baseInputTypes, 1, baseInputTypes.length);
+        return Arrays.copyOfRange(baseInputTypes, appliedVariables.length, baseInputTypes.length);
     }
 
     @Override
@@ -103,7 +103,8 @@ public class CurriedOperator implements IOperator {
         for (int i = 0; i < appliedVariables.length; i++) {
             fullInput[i] = appliedVariables[i];
         }
-        System.arraycopy(partialInput, 0, fullInput, appliedVariables.length, fullInput.length - 1);
+        System
+            .arraycopy(partialInput, 0, fullInput, appliedVariables.length, fullInput.length - appliedVariables.length);
         return fullInput;
     }
 
@@ -113,7 +114,8 @@ public class CurriedOperator implements IOperator {
         for (int i = 0; i < appliedVariables.length; i++) {
             fullInput[i] = appliedVariables[i].getType();
         }
-        System.arraycopy(partialInput, 0, fullInput, appliedVariables.length, fullInput.length - 1);
+        System
+            .arraycopy(partialInput, 0, fullInput, appliedVariables.length, fullInput.length - appliedVariables.length);
         return fullInput;
     }
 
@@ -129,7 +131,7 @@ public class CurriedOperator implements IOperator {
 
     @Override
     public int getRequiredInputLength() {
-        return baseOperator.getRequiredInputLength() - 1;
+        return baseOperator.getRequiredInputLength() - appliedVariables.length;
     }
 
     @Override
@@ -180,7 +182,6 @@ public class CurriedOperator implements IOperator {
                     value = appliedVariable.getType()
                         .getDefault();
                 }
-                i++;
                 NBTTagCompound valueTag = new NBTTagCompound();
                 IValueType valueType = value.getType();
                 valueTag.setString("valueType", valueType.getUnlocalizedName());

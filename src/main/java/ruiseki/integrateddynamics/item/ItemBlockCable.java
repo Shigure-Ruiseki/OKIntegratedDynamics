@@ -66,6 +66,7 @@ public class ItemBlockCable extends ItemBlockMetadata {
             return true;
         }
 
+        // Skips client-side entity collision detection for placing cables.
         Block blockAtTarget = target.getBlock(world);
         return blockAtTarget.isReplaceable(world, target.getX(), target.getY(), target.getZ())
             || blockAtTarget.getMaterial()

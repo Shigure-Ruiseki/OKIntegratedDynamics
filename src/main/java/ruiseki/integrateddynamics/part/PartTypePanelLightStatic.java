@@ -10,6 +10,7 @@ import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.core.part.PartStateEmpty;
 import ruiseki.integrateddynamics.core.part.panel.PartTypePanel;
+import ruiseki.okcore.datastructure.BlockPos;
 
 /**
  * A panel part that simply emits light.
@@ -59,8 +60,9 @@ public class PartTypePanelLightStatic
 
     @Override
     public void onBlockNeighborChange(INetwork network, IPartNetwork partNetwork, PartTarget target,
-        PartStateEmpty<PartTypePanelLightStatic> state, IBlockAccess world, Block neighborBlock) {
-        super.onBlockNeighborChange(network, partNetwork, target, state, world, neighborBlock);
+        PartStateEmpty<PartTypePanelLightStatic> state, IBlockAccess world, Block neighbourBlock,
+        BlockPos neighbourPos) {
+        super.onBlockNeighborChange(network, partNetwork, target, state, world, neighbourBlock, neighbourPos);
         PartTypePanelLightDynamic.setLightLevel(target, LIGHT_LEVEL);
     }
 

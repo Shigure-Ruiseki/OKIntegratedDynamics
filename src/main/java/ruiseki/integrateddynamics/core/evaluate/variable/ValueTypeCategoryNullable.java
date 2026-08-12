@@ -17,7 +17,7 @@ import ruiseki.okcore.helper.Helpers;
 public class ValueTypeCategoryNullable extends ValueTypeCategoryBase<IValue> {
 
     public ValueTypeCategoryNullable() {
-        super("nullable", Helpers.RGBToInt(100, 100, 100), EnumChatFormatting.DARK_GRAY.toString());
+        super("nullable", Helpers.RGBToInt(100, 100, 100), EnumChatFormatting.DARK_GRAY.toString(), IValue.class);
     }
 
     public boolean isNull(IVariable a) throws EvaluationException {

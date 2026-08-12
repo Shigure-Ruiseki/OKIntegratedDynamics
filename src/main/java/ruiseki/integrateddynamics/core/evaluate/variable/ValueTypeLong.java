@@ -15,7 +15,11 @@ public class ValueTypeLong extends ValueTypeBase<ValueTypeLong.ValueLong>
     implements IValueTypeNumber<ValueTypeLong.ValueLong> {
 
     public ValueTypeLong() {
-        super("long", Helpers.RGBToInt(215, 254, 23), EnumChatFormatting.YELLOW.toString());
+        super(
+            "long",
+            Helpers.RGBToInt(215, 254, 23),
+            EnumChatFormatting.YELLOW.toString(),
+            ValueTypeLong.ValueLong.class);
     }
 
     @Override

@@ -25,7 +25,7 @@ public class ValueObjectTypeIngredients extends ValueObjectTypeBase<ValueObjectT
     IValueTypeNullable<ValueObjectTypeIngredients.ValueIngredients> {
 
     public ValueObjectTypeIngredients() {
-        super("ingredients");
+        super("ingredients", ValueObjectTypeIngredients.ValueIngredients.class);
     }
 
     @Override
