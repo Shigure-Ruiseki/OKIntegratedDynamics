@@ -2,6 +2,7 @@ package ruiseki.integrateddynamics.part;
 
 import com.google.common.collect.Lists;
 
+import ruiseki.integrateddynamics.GeneralConfig;
 import ruiseki.integrateddynamics.api.part.aspect.IAspect;
 import ruiseki.integrateddynamics.core.part.aspect.AspectRegistry;
 import ruiseki.integrateddynamics.core.part.read.PartStateReaderBase;
@@ -43,4 +44,8 @@ public class PartTypeWorldReader
         return new PartStateReaderBase<PartTypeWorldReader>();
     }
 
+    @Override
+    public int getConsumptionRate(PartStateReaderBase<PartTypeWorldReader> state) {
+        return GeneralConfig.worldReaderBaseConsumption;
+    }
 }

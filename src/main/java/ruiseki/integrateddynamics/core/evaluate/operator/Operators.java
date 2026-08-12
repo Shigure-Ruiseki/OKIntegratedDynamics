@@ -773,7 +773,7 @@ public final class Operators {
                 }
                 int stringLength = str.getRawValue()
                     .length();
-                if (from.getRawValue() >= stringLength || to.getRawValue() >= stringLength) {
+                if (from.getRawValue() > stringLength || to.getRawValue() > stringLength) {
                     throw new EvaluationException(
                         "The 'from' and 'to' values in the substring operator must not exceed the length of the string.");
                 }
@@ -3370,7 +3370,7 @@ public final class Operators {
      */
     public static final IOperator OPERATOR_APPLY = REGISTRY.register(
         OperatorBuilders.OPERATOR_2_INFIX_LONG
-            .conditionalOutputTypeDeriver(OperatorBuilders.newOperatorConditionalOutputDeriver(1))
+            .conditionalOutputTypeDeriver(OperatorBuilders.OPERATOR_CONDITIONAL_OUTPUT_DERIVER)
             .output(ValueTypes.CATEGORY_ANY)
             .symbolOperator("apply")
             .typeValidator(OperatorBuilders.createOperatorTypeValidator(ValueTypes.CATEGORY_ANY))
@@ -3390,7 +3390,7 @@ public final class Operators {
      */
     public static final IOperator OPERATOR_APPLY_2 = REGISTRY.register(
         OperatorBuilders.OPERATOR.renderPattern(IConfigRenderPattern.INFIX_2)
-            .conditionalOutputTypeDeriver(OperatorBuilders.newOperatorConditionalOutputDeriver(2))
+            .conditionalOutputTypeDeriver(OperatorBuilders.OPERATOR_CONDITIONAL_OUTPUT_DERIVER)
             .inputTypes(ValueTypes.OPERATOR, ValueTypes.CATEGORY_ANY, ValueTypes.CATEGORY_ANY)
             .output(ValueTypes.CATEGORY_ANY)
             .symbolOperator("apply2")
@@ -3410,7 +3410,7 @@ public final class Operators {
      */
     public static final IOperator OPERATOR_APPLY_3 = REGISTRY.register(
         OperatorBuilders.OPERATOR_2_INFIX_LONG.renderPattern(IConfigRenderPattern.INFIX_3)
-            .conditionalOutputTypeDeriver(OperatorBuilders.newOperatorConditionalOutputDeriver(3))
+            .conditionalOutputTypeDeriver(OperatorBuilders.OPERATOR_CONDITIONAL_OUTPUT_DERIVER)
             .inputTypes(ValueTypes.OPERATOR, ValueTypes.CATEGORY_ANY, ValueTypes.CATEGORY_ANY, ValueTypes.CATEGORY_ANY)
             .output(ValueTypes.CATEGORY_ANY)
             .symbolOperator("apply3")

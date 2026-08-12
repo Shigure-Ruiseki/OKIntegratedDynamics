@@ -5,6 +5,7 @@ import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.inventory.Container;
 import net.minecraft.world.IBlockAccess;
 
+import ruiseki.integrateddynamics.GeneralConfig;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.part.PartTarget;
@@ -34,6 +35,11 @@ public class PartTypePanelLightStatic
     @Override
     public PartStateEmpty<PartTypePanelLightStatic> constructDefaultState() {
         return new PartStateEmpty<PartTypePanelLightStatic>();
+    }
+
+    @Override
+    public int getConsumptionRate(PartStateEmpty<PartTypePanelLightStatic> state) {
+        return GeneralConfig.panelLightStaticBaseConsumption;
     }
 
     @Override

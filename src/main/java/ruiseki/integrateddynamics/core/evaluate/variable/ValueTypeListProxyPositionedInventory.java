@@ -4,6 +4,8 @@ import java.util.Iterator;
 
 import net.minecraftforge.common.util.ForgeDirection;
 
+import org.jetbrains.annotations.Nullable;
+
 import ruiseki.okcore.datastructure.DimPos;
 import ruiseki.okcore.helper.CapabilityHelpers;
 import ruiseki.okcore.item.capability.CapabilityItemHandler;
@@ -25,6 +27,7 @@ public class ValueTypeListProxyPositionedInventory
         this(null, null);
     }
 
+    @Nullable
     protected IItemHandler getInventory() {
         return CapabilityHelpers.getCapability(getPos(), CapabilityItemHandler.ITEM_HANDLER, getSide())
             .getOrNull();
@@ -41,7 +44,8 @@ public class ValueTypeListProxyPositionedInventory
 
     @Override
     public ValueObjectTypeItemStack.ValueItemStack get(int index) {
-        return ValueObjectTypeItemStack.ValueItemStack.of(getInventory().getStackInSlot(index));
+        IItemHandler inventory = getInventory();
+        return ValueObjectTypeItemStack.ValueItemStack.of(inventory == null ? null : inventory.getStackInSlot(index));
     }
 
     @Override
@@ -57,7 +61,7 @@ public class ValueTypeListProxyPositionedInventory
         private final IItemHandler itemHandler;
         private int index = 0;
 
-        public ListFactoryIterator(IItemHandler itemHandler) {
+        public ListFactoryIterator(@Nullable IItemHandler itemHandler) {
             this.itemHandler = itemHandler;
         }
 
@@ -68,7 +72,8 @@ public class ValueTypeListProxyPositionedInventory
 
         @Override
         public ValueObjectTypeItemStack.ValueItemStack next() {
-            return ValueObjectTypeItemStack.ValueItemStack.of(this.itemHandler.getStackInSlot(index++));
+            return ValueObjectTypeItemStack.ValueItemStack
+                .of(this.itemHandler == null ? null : this.itemHandler.getStackInSlot(index++));
         }
 
         @Override

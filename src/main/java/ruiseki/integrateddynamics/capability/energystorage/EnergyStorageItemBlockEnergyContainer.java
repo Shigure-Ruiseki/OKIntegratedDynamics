@@ -14,7 +14,7 @@ import ruiseki.okcore.helper.ItemNBTHelpers;
  *
  * @author rubensworks
  */
-public class EnergyStorageItemBlockEnergyContainer implements IEnergyStorageCapacity {
+public class EnergyStorageItemBlockEnergyContainer implements IEnergyStorageCapacity, IEnergyStorageMutable {
 
     private final ItemBlockEnergyContainer itemBlockEnergyContainer;
     private final ItemStack itemStack;
@@ -114,5 +114,10 @@ public class EnergyStorageItemBlockEnergyContainer implements IEnergyStorageCapa
                     .getEneryContainerCapacityNBTName(),
                 capacity);
         }
+    }
+
+    @Override
+    public void setEnergy(int energy) {
+        setEnergy(itemStack, energy);
     }
 }

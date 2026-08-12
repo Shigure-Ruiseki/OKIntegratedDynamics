@@ -368,18 +368,12 @@ public class PartHelpers {
      */
     public static boolean canInteractWith(PartTarget target, EntityPlayer player,
         IPartContainer expectedPartContainer) {
-        BlockPos blockPos = target.getCenter()
-            .getPos()
-            .getBlockPos();
         IPartContainer partContainer = PartHelpers.getPartContainer(
             target.getCenter()
                 .getPos(),
             target.getCenter()
                 .getSide());
-        return partContainer == expectedPartContainer && player.getDistanceSq(
-            (double) blockPos.getX() + 0.5D,
-            (double) blockPos.getY() + 0.5D,
-            (double) blockPos.getZ() + 0.5D) <= 64.0D;
+        return partContainer == expectedPartContainer;
     }
 
     /**

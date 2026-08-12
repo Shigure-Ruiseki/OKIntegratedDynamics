@@ -1,5 +1,6 @@
 package ruiseki.integrateddynamics.part;
 
+import ruiseki.integrateddynamics.GeneralConfig;
 import ruiseki.integrateddynamics.core.part.panel.PartTypePanelVariableDriven;
 
 /**
@@ -26,7 +27,8 @@ public class PartTypePanelDisplay
 
     @Override
     public int getConsumptionRate(State state) {
-        return state.hasVariable() ? 2 : 1;
+        return state.hasVariable() ? GeneralConfig.panelDisplayBaseConsumptionEnabled
+            : GeneralConfig.panelDisplayBaseConsumptionDisabled;
     }
 
     @Override

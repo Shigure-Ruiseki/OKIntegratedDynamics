@@ -2,6 +2,7 @@ package ruiseki.integrateddynamics.part;
 
 import com.google.common.collect.Lists;
 
+import ruiseki.integrateddynamics.GeneralConfig;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.part.PartTarget;
@@ -40,6 +41,11 @@ public class PartTypeRedstoneReader
     @Override
     public PartStateReaderBase<PartTypeRedstoneReader> constructDefaultState() {
         return new PartStateReaderBase<PartTypeRedstoneReader>();
+    }
+
+    @Override
+    public int getConsumptionRate(PartStateReaderBase<PartTypeRedstoneReader> state) {
+        return GeneralConfig.redstoneReaderBaseConsumption;
     }
 
     @Override

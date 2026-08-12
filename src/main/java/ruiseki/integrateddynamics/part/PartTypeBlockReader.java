@@ -2,6 +2,7 @@ package ruiseki.integrateddynamics.part;
 
 import com.google.common.collect.Lists;
 
+import ruiseki.integrateddynamics.GeneralConfig;
 import ruiseki.integrateddynamics.api.part.aspect.IAspect;
 import ruiseki.integrateddynamics.core.part.aspect.AspectRegistry;
 import ruiseki.integrateddynamics.core.part.read.PartStateReaderBase;
@@ -38,4 +39,8 @@ public class PartTypeBlockReader
         return new PartStateReaderBase<PartTypeBlockReader>();
     }
 
+    @Override
+    public int getConsumptionRate(PartStateReaderBase<PartTypeBlockReader> state) {
+        return GeneralConfig.blockReaderBaseConsumption;
+    }
 }

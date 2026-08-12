@@ -5,6 +5,7 @@ import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 
 import ruiseki.integrateddynamics.Configs;
+import ruiseki.integrateddynamics.GeneralConfig;
 import ruiseki.integrateddynamics.api.block.IDynamicLight;
 import ruiseki.integrateddynamics.api.evaluate.InvalidValueTypeException;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
@@ -43,6 +44,11 @@ public class PartTypePanelLightDynamic
     @Override
     public PartTypePanelLightDynamic.State constructDefaultState() {
         return new PartTypePanelLightDynamic.State();
+    }
+
+    @Override
+    public int getConsumptionRate(State state) {
+        return GeneralConfig.panelLightDynamicBaseConsumption;
     }
 
     @Override

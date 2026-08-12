@@ -15,6 +15,8 @@ import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.api.part.aspect.IAspectRead;
 import ruiseki.integrateddynamics.api.part.aspect.IAspectVariable;
 import ruiseki.integrateddynamics.api.part.aspect.property.IAspectProperties;
+import ruiseki.integrateddynamics.core.helper.L10NValues;
+import ruiseki.okcore.helper.LangHelpers;
 
 /**
  * Variable for a specific aspect from a part that calculates its target value only maximum once per ticking interval.
@@ -34,6 +36,8 @@ public abstract class LazyAspectVariable<V extends IValue> extends VariableAdapt
     private V value;
     private IAspectProperties cachedProperties = null;
 
+    private boolean isGettingValue = false;
+
     public LazyAspectVariable(IValueType<V> type, PartTarget target, IAspectRead<V, ?> aspect) {
         this.type = type;
         this.target = target;
@@ -52,7 +56,15 @@ public abstract class LazyAspectVariable<V extends IValue> extends VariableAdapt
     @Override
     public V getValue() throws EvaluationException {
         if (value == null) {
+            if (this.isGettingValue) {
+                throw new EvaluationException(
+                    new LangHelpers.UnlocalizedString(
+                        L10NValues.VARIABLE_ERROR_RECURSION,
+                        new LangHelpers.UnlocalizedString(getAspect().getUnlocalizedName())).localize());
+            }
+            this.isGettingValue = true;
             this.value = getValueLazy();
+            this.isGettingValue = false;
         }
         return this.value;
     }

@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.Nullable;
 
 import com.google.common.collect.Maps;
@@ -36,7 +37,11 @@ public abstract class PositionedAddonsNetwork implements IPositionedAddonsNetwor
     private final Set<PrioritizedPartPos> allPositions = Sets.newTreeSet();
     private final Int2ObjectMap<Set<PrioritizedPartPos>> positions = new Int2ObjectOpenHashMap<>();
     private final Map<PartPos, Integer> positionChannels = Maps.newHashMap();
-    private final Set<PartPos> disabledPositions = Sets.newHashSet();
+    // We store the thread id together with the disabled position.
+    // This is to make sure that different threads can safely iterate over positions in parallel
+    // without clashing with each other, as this could lead to problems such as in #194.
+    // This for example applies to the ingredient observer and in-world ingredient movement.
+    private final Set<Pair<Long, PartPos>> disabledPositions = Sets.newHashSet();
 
     private IPartPosIteratorHandler partPosIteratorHandler = null;
 
@@ -164,17 +169,29 @@ public abstract class PositionedAddonsNetwork implements IPositionedAddonsNetwor
 
     @Override
     public boolean isPositionDisabled(PartPos pos) {
-        return disabledPositions.contains(pos);
+        return disabledPositions.contains(
+            Pair.of(
+                Thread.currentThread()
+                    .getId(),
+                pos));
     }
 
     @Override
     public void disablePosition(PartPos pos) {
-        disabledPositions.add(pos);
+        disabledPositions.add(
+            Pair.of(
+                Thread.currentThread()
+                    .getId(),
+                pos));
     }
 
     @Override
     public void enablePosition(PartPos pos) {
-        disabledPositions.remove(pos);
+        disabledPositions.remove(
+            Pair.of(
+                Thread.currentThread()
+                    .getId(),
+                pos));
     }
 
 }

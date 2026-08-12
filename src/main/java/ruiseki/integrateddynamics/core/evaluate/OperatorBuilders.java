@@ -13,6 +13,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fluids.FluidStack;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.jetbrains.annotations.Nullable;
@@ -398,34 +399,64 @@ public class OperatorBuilders {
                 new OperatorBase.SafeVariablesGetter.Shifted(1, input.getVariables()));
         });
 
-    public static OperatorBuilder.IConditionalOutputTypeDeriver newOperatorConditionalOutputDeriver(
-        final int consumeArguments) {
-        return (operator, input) -> {
-            try {
-                IValue value = input[0].getValue();
-                // In some cases, validation can succeed because of parameters being ANY.
-                // In this case, return a dummy type.
-                if (!(value instanceof ValueTypeOperator.ValueOperator)) {
-                    return ValueTypes.CATEGORY_ANY;
+    /**
+     * Corresponds to {@link ValueHelpers#evaluateOperator(IOperator, IVariable[])}.
+     */
+    public static OperatorBuilder.IConditionalOutputTypeDeriver OPERATOR_CONDITIONAL_OUTPUT_DERIVER = (operator,
+        variablesAll) -> {
+        try {
+            IValue value = variablesAll[0].getValue();
+            // In some cases, validation can succeed because of parameters being ANY.
+            // In this case, return a dummy type.
+            if (!(value instanceof ValueTypeOperator.ValueOperator)) {
+                return ValueTypes.CATEGORY_ANY;
+            }
+            IOperator innerOperator = ((ValueTypeOperator.ValueOperator) value).getRawValue();
+            IVariable[] variables = ArrayUtils.subarray(variablesAll, 1, variablesAll.length);
+            int requiredLength = innerOperator.getRequiredInputLength();
+            if (requiredLength == variables.length) {
+                LangHelpers.UnlocalizedString error = innerOperator.validateTypes(ValueHelpers.from(variables));
+                if (error != null) {
+                    return innerOperator.getOutputType();
                 }
-                IOperator innerOperator = ((ValueTypeOperator.ValueOperator) value).getRawValue();
-                if (innerOperator.getRequiredInputLength() == consumeArguments) {
-                    IVariable[] innerVariables = Arrays.copyOfRange(input, consumeArguments, input.length);
-                    LangHelpers.UnlocalizedString error = innerOperator
-                        .validateTypes(ValueHelpers.from(innerVariables));
-                    if (error != null) {
-                        return innerOperator.getOutputType();
+                return innerOperator.getConditionalOutputType(variables);
+            } else {
+                if (variables.length > requiredLength) { // We have MORE variables as input than the operator accepts
+                    IVariable[] acceptableVariables = ArrayUtils.subarray(variables, 0, requiredLength);
+                    IVariable[] remainingVariables = ArrayUtils.subarray(variables, requiredLength, variables.length);
 
+                    // Pass all required variables to the operator, and forward all remaining ones to the resulting
+                    // operator
+                    IValue result = ValueHelpers.evaluateOperator(innerOperator, acceptableVariables);
+
+                    // Error if the result is NOT an operator
+                    if (result.getType() != ValueTypes.OPERATOR) {
+                        throw new EvaluationException(
+                            String.format(
+                                L10NValues.OPERATOR_ERROR_CURRYINGOVERFLOW,
+                                innerOperator.getUnlocalizedName(),
+                                requiredLength,
+                                variables.length,
+                                result.getType()));
                     }
-                    return innerOperator.getConditionalOutputType(innerVariables);
+
+                    // Pass all remaining variables to the resulting operator
+                    IOperator nextOperator = ((ValueTypeOperator.ValueOperator) result).getRawValue();
+                    LangHelpers.UnlocalizedString error = nextOperator
+                        .validateTypes(ValueHelpers.from(remainingVariables));
+                    if (error != null) {
+                        return nextOperator.getOutputType();
+                    }
+                    return nextOperator.getConditionalOutputType(remainingVariables);
                 } else {
                     return ValueTypes.OPERATOR;
                 }
-            } catch (EvaluationException e) {
-                return ValueTypes.CATEGORY_ANY;
+
             }
-        };
-    }
+        } catch (EvaluationException e) {
+            return ValueTypes.CATEGORY_ANY;
+        }
+    };
 
     public static final OperatorBuilder<OperatorBase.SafeVariablesGetter> OPERATOR = OperatorBuilder
         .forType(ValueTypes.OPERATOR)

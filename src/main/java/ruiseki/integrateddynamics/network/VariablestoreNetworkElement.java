@@ -2,6 +2,7 @@ package ruiseki.integrateddynamics.network;
 
 import org.jetbrains.annotations.Nullable;
 
+import ruiseki.integrateddynamics.GeneralConfig;
 import ruiseki.integrateddynamics.api.network.IEventListenableNetworkElement;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.IPositionedAddonsNetwork;
@@ -51,7 +52,7 @@ public class VariablestoreNetworkElement extends TileNetworkElement<TileVariable
 
     @Override
     public int getConsumptionRate() {
-        return 4;
+        return GeneralConfig.variablestoreBaseConsumption;
     }
 
     @Override

@@ -5,6 +5,7 @@ import net.minecraft.util.ResourceLocation;
 import org.apache.logging.log4j.Level;
 import org.jetbrains.annotations.Nullable;
 
+import ruiseki.integrateddynamics.GeneralConfig;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.Reference;
 import ruiseki.integrateddynamics.api.network.IEventListenableNetworkElement;
@@ -86,7 +87,7 @@ public class ProxyNetworkElement extends TileNetworkElement<TileProxy>
 
     @Override
     public int getConsumptionRate() {
-        return 2;
+        return GeneralConfig.proxyBaseConsumption;
     }
 
     @Nullable

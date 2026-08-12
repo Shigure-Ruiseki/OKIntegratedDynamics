@@ -9,7 +9,7 @@ import ruiseki.okcore.datastructure.BlockPos;
 
 /**
  * Container for the {@link BlockLogicProgrammer}.
- * 
+ *
  * @author rubensworks
  */
 public class ContainerLogicProgrammer extends ContainerLogicProgrammerBase {
@@ -19,7 +19,7 @@ public class ContainerLogicProgrammer extends ContainerLogicProgrammerBase {
 
     /**
      * Make a new instance.
-     * 
+     *
      * @param inventory The player inventory.
      * @param world     The world.
      * @param blockPos  The position.
@@ -32,9 +32,6 @@ public class ContainerLogicProgrammer extends ContainerLogicProgrammerBase {
 
     @Override
     public boolean canInteractWith(EntityPlayer playerIn) {
-        return this.blockPos.getBlock(this.world) == BlockLogicProgrammer.getInstance() && playerIn.getDistanceSq(
-            (double) this.blockPos.getX() + 0.5D,
-            (double) this.blockPos.getY() + 0.5D,
-            (double) this.blockPos.getZ() + 0.5D) <= 64.0D;
+        return true;
     }
 }

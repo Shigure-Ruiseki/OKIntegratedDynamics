@@ -84,6 +84,12 @@ public class ValueTypeListProxyMaterializedFactory implements
                             split[i]));
                 }
                 ++i;
+                if (i >= split.length) {
+                    throw new IValueTypeListProxyFactoryTypeRegistry.SerializationException(
+                        String.format(
+                            "Detected invalid heterogeneous serialized materialized list proxy value for the value '%s'.",
+                            value));
+                }
             }
             String serializedValue = split[i];
             IValue deserializedValue = ValueHelpers.deserializeRaw(

@@ -8,7 +8,7 @@ import ruiseki.okcore.ingredient.collection.diff.IngredientCollectionDiff;
 
 /**
  * An observable ingredient component storage.
- * 
+ *
  * @param <T> The instance type.
  * @param <M> The matching condition parameter, may be Void. Instances MUST properly implement the equals method.
  * @author rubensworks
@@ -22,7 +22,7 @@ public interface IIngredientComponentStorageObservable<T, M> {
 
     /**
      * Add an observer for listing to index change events.
-     * 
+     *
      * @param observer An index change observer.
      */
     public void addObserver(IIndexChangeObserver<T, M> observer);
@@ -30,7 +30,7 @@ public interface IIngredientComponentStorageObservable<T, M> {
     /**
      * Remove the given index change observer.
      * This will silently fail if the given observer was not registered.
-     * 
+     *
      * @param observer An index change observer.
      */
     public void removeObserver(IIndexChangeObserver<T, M> observer);
@@ -56,7 +56,7 @@ public interface IIngredientComponentStorageObservable<T, M> {
      * and can only be done for a single position and channel.
      *
      * This should be called when observer diffs are needed in the next tick for the given position.
-     * 
+     *
      * @param channel The channel to force an observation in.
      * @param pos     The position to force an observation for.
      */
@@ -68,8 +68,14 @@ public interface IIngredientComponentStorageObservable<T, M> {
     public boolean shouldObserve();
 
     /**
+     * @param channel The channel to check for a forced observation in.
+     * @return If the given channel contains a forced observation scheduling that has not been processed yet.
+     */
+    public boolean isObservationForcedPending(int channel);
+
+    /**
      * Get the last indexed storage at the given channel.
-     * 
+     *
      * @param channel A channel id.
      * @return A channel index.
      */
@@ -77,7 +83,7 @@ public interface IIngredientComponentStorageObservable<T, M> {
 
     /**
      * An observer for listening to storage changes.
-     * 
+     *
      * @param <T> The instance type.
      * @param <M> The match condition type.
      */
@@ -85,7 +91,7 @@ public interface IIngredientComponentStorageObservable<T, M> {
 
         /**
          * Called when a change event is emitted.
-         * 
+         *
          * @param event A storage change event.
          */
         public void onChange(StorageChangeEvent<T, M> event);
@@ -95,7 +101,7 @@ public interface IIngredientComponentStorageObservable<T, M> {
      * A storage change event.
      * This is thrown for either additions or deletions,
      * as identified by the change type.
-     * 
+     *
      * @param <T> The instance type.
      * @param <M> The match condition type.
      */

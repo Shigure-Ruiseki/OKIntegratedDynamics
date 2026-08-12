@@ -5,9 +5,12 @@ import net.minecraft.block.material.Material;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
+
+import org.jetbrains.annotations.Nullable;
 
 import ruiseki.integrateddynamics.core.helper.CableHelpers;
 import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
@@ -98,4 +101,17 @@ public abstract class BlockContainerGuiCabled extends ConfigurableBlockContainer
         }
     }
 
+    protected boolean isPickBlockPersistData() {
+        return false;
+    }
+
+    @Override
+    public ItemStack getPickBlock(MovingObjectPosition target, World world, int x, int y, int z,
+        @Nullable EntityPlayer player) {
+        if (isPickBlockPersistData()) {
+            return super.getPickBlock(target, world, x, y, z, player);
+        } else {
+            return new ItemStack(getItem(world, x, y, z));
+        }
+    }
 }

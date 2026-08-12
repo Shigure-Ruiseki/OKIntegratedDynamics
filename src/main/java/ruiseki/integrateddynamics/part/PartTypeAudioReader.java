@@ -2,6 +2,7 @@ package ruiseki.integrateddynamics.part;
 
 import com.google.common.collect.Sets;
 
+import ruiseki.integrateddynamics.GeneralConfig;
 import ruiseki.integrateddynamics.api.part.aspect.IAspect;
 import ruiseki.integrateddynamics.core.part.aspect.AspectRegistry;
 import ruiseki.integrateddynamics.core.part.read.PartStateReaderBase;
@@ -34,4 +35,8 @@ public class PartTypeAudioReader
         return new PartStateReaderBase<PartTypeAudioReader>();
     }
 
+    @Override
+    public int getConsumptionRate(PartStateReaderBase<PartTypeAudioReader> state) {
+        return GeneralConfig.audioReaderBaseConsumption;
+    }
 }

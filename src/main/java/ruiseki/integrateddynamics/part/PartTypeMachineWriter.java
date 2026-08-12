@@ -2,6 +2,7 @@ package ruiseki.integrateddynamics.part;
 
 import com.google.common.collect.Lists;
 
+import ruiseki.integrateddynamics.GeneralConfig;
 import ruiseki.integrateddynamics.api.part.aspect.IAspect;
 import ruiseki.integrateddynamics.core.part.aspect.AspectRegistry;
 import ruiseki.integrateddynamics.core.part.write.PartStateWriterBase;
@@ -10,7 +11,7 @@ import ruiseki.integrateddynamics.part.aspect.Aspects;
 
 /**
  * A machine writer part.
- * 
+ *
  * @author josephcsible
  */
 public class PartTypeMachineWriter
@@ -31,4 +32,8 @@ public class PartTypeMachineWriter
                 .size());
     }
 
+    @Override
+    public int getConsumptionRate(PartStateWriterBase<PartTypeMachineWriter> state) {
+        return GeneralConfig.machineWriterBaseConsumption;
+    }
 }

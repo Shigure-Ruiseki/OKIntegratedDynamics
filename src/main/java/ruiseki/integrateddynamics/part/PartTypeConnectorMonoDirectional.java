@@ -46,7 +46,7 @@ public class PartTypeConnectorMonoDirectional
 
     @Override
     public int getConsumptionRate(State state) {
-        return 32;
+        return GeneralConfig.connectorMonoDirectionalBaseConsumption;
     }
 
     @Override
