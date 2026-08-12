@@ -642,6 +642,7 @@ public class Aspects {
                                 .getTarget()
                                 .getSide())))
                 .appendKind("recipeoutputbyinput")
+                .handleTexture("read/operator/recipehandler/recipeinput")
                 .buildRead();
             static {
                 Operators.REGISTRY.registerSerializer(
@@ -660,6 +661,7 @@ public class Aspects {
                                 .getTarget()
                                 .getSide())))
                 .appendKind("recipeinputsbyoutput")
+                .handleTexture("read/operator/recipehandler/recipeoutput")
                 .buildRead();
             static {
                 Operators.REGISTRY.registerSerializer(
@@ -678,6 +680,7 @@ public class Aspects {
                                 .getTarget()
                                 .getSide())))
                 .appendKind("recipesbyinput")
+                .handleTexture("read/operator/recipehandler/recipeinputlist")
                 .buildRead();
             static {
                 Operators.REGISTRY.registerSerializer(
@@ -696,6 +699,7 @@ public class Aspects {
                                 .getTarget()
                                 .getSide())))
                 .appendKind("recipesbyoutput")
+                .handleTexture("read/operator/recipehandler/recipeoutputlist")
                 .buildRead();
             static {
                 Operators.REGISTRY.registerSerializer(
@@ -714,6 +718,7 @@ public class Aspects {
                                 .getTarget()
                                 .getSide())))
                 .appendKind("recipebyinput")
+                .handleTexture("read/operator/recipehandler/recipeinputsingle")
                 .buildRead();
             static {
                 Operators.REGISTRY.registerSerializer(
@@ -732,6 +737,7 @@ public class Aspects {
                                 .getTarget()
                                 .getSide())))
                 .appendKind("recipebyoutput")
+                .handleTexture("read/operator/recipehandler/recipeoutputsingle")
                 .buildRead();
             static {
                 Operators.REGISTRY.registerSerializer(

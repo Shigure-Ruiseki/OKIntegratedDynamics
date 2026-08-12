@@ -31,8 +31,12 @@ public class ItemValueTypeWorldRenderer implements IValueTypeWorldRenderer {
     public void renderValue(IPartContainer partContainer, double x, double y, double z, float partialTick,
         int destroyStage, ForgeDirection direction, IPartType partType, IValue value,
         TileEntityRendererDispatcher rendererDispatcher, float alpha) {
-        ItemStack itemStack = ((ValueObjectTypeItemStack.ValueItemStack) value).getRawValue();
-        if (itemStack != null) {
+
+        ValueObjectTypeItemStack.ValueItemStack valueItemStack = (ValueObjectTypeItemStack.ValueItemStack) value;
+        if (valueItemStack.getRawValue()
+            .isPresent()) {
+            ItemStack itemStack = valueItemStack.getRawValue()
+                .get();
 
             // ItemStack
             renderItemStack(itemStack, alpha);
@@ -40,6 +44,7 @@ public class ItemValueTypeWorldRenderer implements IValueTypeWorldRenderer {
             // Stack size
             GL11.glPushMatrix();
             GL11.glTranslatef(7.0F, 8.5F, 0.3F);
+
             String stackSize = String.valueOf(itemStack.stackSize);
             float scale = 1.0F / ((float) stackSize.length() + 1.0F);
             GL11.glScalef(scale, scale, 1.0F);

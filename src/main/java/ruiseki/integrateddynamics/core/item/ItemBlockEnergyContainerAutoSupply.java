@@ -58,10 +58,12 @@ public class ItemBlockEnergyContainerAutoSupply extends ItemBlockEnergyContainer
             .isPresent()) {
             IEnergyStorage target = CapabilityHelpers.getCapability(held, CapabilityEnergy.ENERGY)
                 .getOrNull();
-            int moved = target
-                .receiveEnergy(source.extractEnergy(target.receiveEnergy(tickAmount, true), false), false);
-            if (moved > 0) {
-                return held;
+            if (target != null) {
+                int moved = target
+                    .receiveEnergy(source.extractEnergy(target.receiveEnergy(tickAmount, true), false), false);
+                if (moved > 0) {
+                    return held;
+                }
             }
         }
         return null;

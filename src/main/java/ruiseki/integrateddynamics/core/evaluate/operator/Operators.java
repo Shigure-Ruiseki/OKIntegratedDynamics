@@ -1797,8 +1797,12 @@ public final class Operators {
             .function(variables -> {
                 ValueObjectTypeItemStack.ValueItemStack a = variables.getValue(0, ValueTypes.OBJECT_ITEMSTACK);
                 return ValueTypeString.ValueString.of(
-                    a.getRawValue() != null ? a.getRawValue()
-                        .getRarity().rarityName : "");
+                    a.getRawValue()
+                        .isPresent()
+                            ? a.getRawValue()
+                                .get()
+                                .getRarity().rarityName
+                            : "");
             })
             .build());
 
@@ -1814,13 +1818,17 @@ public final class Operators {
                 ValueObjectTypeItemStack.ValueItemStack a = variables.getValue(0, ValueTypes.OBJECT_ITEMSTACK);
                 ValueObjectTypeBlock.ValueBlock b = variables.getValue(1, ValueTypes.OBJECT_BLOCK);
                 double strength = 0.0D;
-                if (a.getRawValue() != null && b.getRawValue()
-                    .isPresent()) {
-                    ItemStack itemStack = a.getRawValue();
+                if (a.getRawValue()
+                    .isPresent()
+                    && b.getRawValue()
+                        .isPresent()) {
+                    ItemStack itemStack = a.getRawValue()
+                        .get();
                     BlockState blockState = b.getRawValue()
                         .get();
                     if (blockState.getBlock() != null) {
-                        strength = itemStack.func_150997_a(blockState.getBlock());
+                        strength = itemStack.func_150997_a(blockState.getBlock()); // hoặc
+                                                                                   // itemStack.getDestroySpeed(blockState)
                     }
                 }
                 return ValueTypeDouble.ValueDouble.of(strength);
@@ -1840,18 +1848,21 @@ public final class Operators {
                 ValueObjectTypeItemStack.ValueItemStack a = variables.getValue(0, ValueTypes.OBJECT_ITEMSTACK);
                 ValueObjectTypeBlock.ValueBlock b = variables.getValue(1, ValueTypes.OBJECT_BLOCK);
                 boolean canHarvest = false;
-                if (a.getRawValue() != null && b.getRawValue()
-                    .isPresent()) {
-                    ItemStack itemStack = a.getRawValue();
+                if (a.getRawValue()
+                    .isPresent()
+                    && b.getRawValue()
+                        .isPresent()) {
+                    ItemStack itemStack = a.getRawValue()
+                        .get();
                     BlockState blockState = b.getRawValue()
                         .get();
-                    if (itemStack != null && blockState != null && blockState.getBlock() != null) {
+                    if (blockState.getBlock() != null) {
                         Block block = blockState.getBlock();
                         if (block.getMaterial()
                             .isToolNotRequired()) {
                             canHarvest = true;
                         } else {
-                            canHarvest = itemStack.func_150998_b(block);
+                            canHarvest = itemStack.func_150998_b(block); // hoặc itemStack.canHarvestBlock(blockState)
                         }
                     }
                 }
@@ -1867,10 +1878,16 @@ public final class Operators {
             .symbolOperator("block")
             .function(variables -> {
                 ValueObjectTypeItemStack.ValueItemStack a = variables.getValue(0, ValueTypes.OBJECT_ITEMSTACK);
-                return ValueObjectTypeBlock.ValueBlock.of(
-                    (a.getRawValue() != null && a.getRawValue()
-                        .getItem() instanceof ItemBlock) ? BlockHelpers.getBlockStateFromItemStack(a.getRawValue())
-                            : null);
+                BlockState blockState = null;
+                if (a.getRawValue()
+                    .isPresent()) {
+                    ItemStack itemStack = a.getRawValue()
+                        .get();
+                    if (itemStack.getItem() instanceof ItemBlock) {
+                        blockState = BlockHelpers.getBlockStateFromItemStack(itemStack);
+                    }
+                }
+                return ValueObjectTypeBlock.ValueBlock.of(blockState);
             })
             .build());
 
@@ -1885,7 +1902,6 @@ public final class Operators {
                 OperatorBuilders.FUNCTION_ITEMSTACK_TO_BOOLEAN
                     .build(itemStack -> itemStack != null && Helpers.getFluidStack(itemStack) != null))
             .build());
-
     /**
      * The fluidstack from the stack
      */
@@ -1894,8 +1910,13 @@ public final class Operators {
             .symbolOperator("fluidstack")
             .function(variables -> {
                 ValueObjectTypeItemStack.ValueItemStack a = variables.getValue(0, ValueTypes.OBJECT_ITEMSTACK);
-                return ValueObjectTypeFluidStack.ValueFluidStack
-                    .of(a.getRawValue() != null ? Helpers.getFluidStack(a.getRawValue()) : null);
+                return ValueObjectTypeFluidStack.ValueFluidStack.of(
+                    a.getRawValue()
+                        .isPresent()
+                            ? Helpers.getFluidStack(
+                                a.getRawValue()
+                                    .get())
+                            : null);
             })
             .build());
 
@@ -1910,7 +1931,6 @@ public final class Operators {
                 OperatorBuilders.FUNCTION_ITEMSTACK_TO_INT
                     .build(itemStack -> itemStack != null ? Helpers.getFluidStackCapacity(itemStack) : 0))
             .build());
-
     /**
      * If the NBT tags of the given stacks are equal.
      */
@@ -1923,18 +1943,27 @@ public final class Operators {
                     .getValue(0, ValueTypes.OBJECT_ITEMSTACK);
                 ValueObjectTypeItemStack.ValueItemStack valueStack1 = variables
                     .getValue(1, ValueTypes.OBJECT_ITEMSTACK);
-                ItemStack a = valueStack0.getRawValue();
-                ItemStack b = valueStack1.getRawValue();
+
                 boolean equal = false;
-                if (a != null && b != null) {
+                if (valueStack0.getRawValue()
+                    .isPresent()
+                    && valueStack1.getRawValue()
+                        .isPresent()) {
+                    ItemStack a = valueStack0.getRawValue()
+                        .get();
+                    ItemStack b = valueStack1.getRawValue()
+                        .get();
                     equal = a.isItemEqual(b) && ItemMatch.areItemStacksEqual(a, b, ItemMatch.NBT);
-                } else if (a == null && a == null) {
-                    equal = true;
-                }
+                } else if (!valueStack0.getRawValue()
+                    .isPresent()
+                    && !valueStack1.getRawValue()
+                        .isPresent()) {
+                            equal = true;
+                        }
+
                 return ValueTypeBoolean.ValueBoolean.of(equal);
             })
             .build());
-
     /**
      * If the raw items of the given stacks are equal, ignoring NBT but including damage value.
      */
@@ -1947,18 +1976,28 @@ public final class Operators {
                     .getValue(0, ValueTypes.OBJECT_ITEMSTACK);
                 ValueObjectTypeItemStack.ValueItemStack valueStack1 = variables
                     .getValue(1, ValueTypes.OBJECT_ITEMSTACK);
-                ItemStack a = valueStack0.getRawValue();
-                ItemStack b = valueStack1.getRawValue();
+
                 boolean equal = false;
-                if (a != null && b != null) {
-                    equal = ItemMatch.areItemStacksEqual(a, b, ItemMatch.ITEM | ItemMatch.DAMAGE);
-                } else if (a == null && a == null) {
-                    equal = true;
-                }
+                if (valueStack0.getRawValue()
+                    .isPresent()
+                    && valueStack1.getRawValue()
+                        .isPresent()) {
+                    equal = ItemMatch.areItemStacksEqual(
+                        valueStack0.getRawValue()
+                            .get(),
+                        valueStack1.getRawValue()
+                            .get(),
+                        ItemMatch.ITEM | ItemMatch.DAMAGE);
+                } else if (!valueStack0.getRawValue()
+                    .isPresent()
+                    && !valueStack1.getRawValue()
+                        .isPresent()) {
+                            equal = true;
+                        }
+
                 return ValueTypeBoolean.ValueBoolean.of(equal);
             })
             .build());
-
     /**
      * If the raw items of the given stacks are equal, ignoring NBT and damage value.
      */
@@ -1971,14 +2010,25 @@ public final class Operators {
                     .getValue(0, ValueTypes.OBJECT_ITEMSTACK);
                 ValueObjectTypeItemStack.ValueItemStack valueStack1 = variables
                     .getValue(1, ValueTypes.OBJECT_ITEMSTACK);
-                ItemStack a = valueStack0.getRawValue();
-                ItemStack b = valueStack1.getRawValue();
+
                 boolean equal = false;
-                if (a != null && b != null) {
-                    equal = ItemMatch.areItemStacksEqual(a, b, ItemMatch.ITEM);
-                } else if (a == null && a == null) {
-                    equal = true;
-                }
+                if (valueStack0.getRawValue()
+                    .isPresent()
+                    && valueStack1.getRawValue()
+                        .isPresent()) {
+                    equal = ItemMatch.areItemStacksEqual(
+                        valueStack0.getRawValue()
+                            .get(),
+                        valueStack1.getRawValue()
+                            .get(),
+                        ItemMatch.ITEM);
+                } else if (!valueStack0.getRawValue()
+                    .isPresent()
+                    && !valueStack1.getRawValue()
+                        .isPresent()) {
+                            equal = true;
+                        }
+
                 return ValueTypeBoolean.ValueBoolean.of(equal);
             })
             .build());
@@ -1991,12 +2041,15 @@ public final class Operators {
             .symbolOperator("mod")
             .function(new IterativeFunction(Lists.newArrayList((OperatorBase.SafeVariablesGetter variables) -> {
                 ValueObjectTypeItemStack.ValueItemStack a = variables.getValue(0, ValueTypes.OBJECT_ITEMSTACK);
-                return a.getRawValue() != null ? new ResourceLocation(
-                    GameData.getItemRegistry()
-                        .getNameForObject(
-                            a.getRawValue()
-                                .getItem()))
-                    : null;
+                return a.getRawValue()
+                    .isPresent()
+                        ? new ResourceLocation(
+                            GameData.getItemRegistry()
+                                .getNameForObject(
+                                    a.getRawValue()
+                                        .get()
+                                        .getItem()))
+                        : null;
             }, OperatorBuilders.PROPAGATOR_RESOURCELOCATION_MODNAME)))
             .build());
 
@@ -2036,7 +2089,6 @@ public final class Operators {
                     itemStack -> itemStack != null && FurnaceRecipes.smelting()
                         .getSmeltingResult(itemStack) != null))
             .build());
-
     /**
      * The oredict entries of the given item
      */
@@ -2047,8 +2099,11 @@ public final class Operators {
             .function(variables -> {
                 ValueObjectTypeItemStack.ValueItemStack a = variables.getValue(0, ValueTypes.OBJECT_ITEMSTACK);
                 ImmutableList.Builder<ValueTypeString.ValueString> builder = ImmutableList.builder();
-                if (a.getRawValue() != null) {
-                    for (int i : OreDictionary.getOreIDs(a.getRawValue())) {
+                if (a.getRawValue()
+                    .isPresent()) {
+                    for (int i : OreDictionary.getOreIDs(
+                        a.getRawValue()
+                            .get())) {
                         builder.add(ValueTypeString.ValueString.of(OreDictionary.getOreName(i)));
                     }
                 }
@@ -2076,7 +2131,6 @@ public final class Operators {
                 return ValueTypeList.ValueList.ofList(ValueTypes.OBJECT_ITEMSTACK, builder.build());
             })
             .build());
-
     /**
      * ItemStack operator that applies the given stacksize to the given itemstack and creates a new ItemStack.
      */
@@ -2087,8 +2141,10 @@ public final class Operators {
             .function(variables -> {
                 ValueObjectTypeItemStack.ValueItemStack a = variables.getValue(0, ValueTypes.OBJECT_ITEMSTACK);
                 ValueTypeInteger.ValueInteger b = variables.getValue(1, ValueTypes.INTEGER);
-                if (a.getRawValue() != null) {
+                if (a.getRawValue()
+                    .isPresent()) {
                     ItemStack itemStack = a.getRawValue()
+                        .get()
                         .copy();
                     itemStack.stackSize = b.getRawValue();
                     return ValueObjectTypeItemStack.ValueItemStack.of(itemStack);
@@ -2130,7 +2186,6 @@ public final class Operators {
                 OperatorBuilders.FUNCTION_CONTAINERITEM_TO_INT
                     .build(input -> input != null ? input.getMaxEnergyStored() : 0))
             .build());
-
     /**
      * If the given item has an inventory.
      */
@@ -2140,10 +2195,14 @@ public final class Operators {
             .operatorName("hasinventory")
             .function(variables -> {
                 ValueObjectTypeItemStack.ValueItemStack a = variables.getValue(0, ValueTypes.OBJECT_ITEMSTACK);
-                return ValueTypeBoolean.ValueBoolean.of(
-                    a.getRawValue() != null
-                        && CapabilityHelpers.getCapability(a.getRawValue(), CapabilityItemHandler.ITEM_HANDLER)
-                            .isPresent());
+                boolean hasInventory = a.getRawValue()
+                    .isPresent()
+                    && CapabilityHelpers.getCapability(
+                        a.getRawValue()
+                            .get(),
+                        CapabilityItemHandler.ITEM_HANDLER)
+                        .isPresent();
+                return ValueTypeBoolean.ValueBoolean.of(hasInventory);
             })
             .build());
 
@@ -2156,9 +2215,12 @@ public final class Operators {
             .operatorName("isplantable")
             .function(variables -> {
                 ValueObjectTypeItemStack.ValueItemStack a = variables.getValue(0, ValueTypes.OBJECT_ITEMSTACK);
-                return ValueTypeBoolean.ValueBoolean.of(
-                    a.getRawValue() != null && a.getRawValue()
-                        .getItem() instanceof IPlantable);
+                boolean isPlantable = a.getRawValue()
+                    .isPresent()
+                    && a.getRawValue()
+                        .get()
+                        .getItem() instanceof IPlantable;
+                return ValueTypeBoolean.ValueBoolean.of(isPlantable);
             })
             .build());
 
@@ -2172,13 +2234,19 @@ public final class Operators {
             .function(variables -> {
                 ValueObjectTypeItemStack.ValueItemStack a = variables.getValue(0, ValueTypes.OBJECT_ITEMSTACK);
                 int size = 0;
-                if (a.getRawValue() != null
-                    && CapabilityHelpers.getCapability(a.getRawValue(), CapabilityItemHandler.ITEM_HANDLER)
+                if (a.getRawValue()
+                    .isPresent()) {
+                    ItemStack itemStack = a.getRawValue()
+                        .get();
+                    if (CapabilityHelpers.getCapability(itemStack, CapabilityItemHandler.ITEM_HANDLER)
                         .isPresent()) {
-                    IItemHandler itemHandler = CapabilityHelpers
-                        .getCapability(a.getRawValue(), CapabilityItemHandler.ITEM_HANDLER)
-                        .getOrNull();
-                    size = itemHandler.getSlots();
+                        IItemHandler itemHandler = CapabilityHelpers
+                            .getCapability(itemStack, CapabilityItemHandler.ITEM_HANDLER)
+                            .getOrNull();
+                        if (itemHandler != null) {
+                            size = itemHandler.getSlots();
+                        }
+                    }
                 }
                 return ValueTypeInteger.ValueInteger.of(size);
             })
@@ -2194,11 +2262,14 @@ public final class Operators {
             .function(variables -> {
                 ValueObjectTypeItemStack.ValueItemStack a = variables.getValue(0, ValueTypes.OBJECT_ITEMSTACK);
                 String type = "None";
-                if (a.getRawValue() != null && a.getRawValue()
-                    .getItem() instanceof IPlantable) {
-                    type = ((IPlantable) a.getRawValue()
-                        .getItem()).getPlantType(null, 0, 0, 0)
+                if (a.getRawValue()
+                    .isPresent()) {
+                    ItemStack itemStack = a.getRawValue()
+                        .get();
+                    if (itemStack.getItem() instanceof IPlantable) {
+                        type = ((IPlantable) itemStack.getItem()).getPlantType(null, 0, 0, 0)
                             .name();
+                    }
                 }
                 return ValueTypeString.ValueString.of(type);
             })
@@ -2212,18 +2283,22 @@ public final class Operators {
             .symbolOperator("inventory")
             .function(variables -> {
                 ValueObjectTypeItemStack.ValueItemStack a = variables.getValue(0, ValueTypes.OBJECT_ITEMSTACK);
-                if (a.getRawValue() != null
-                    && CapabilityHelpers.getCapability(a.getRawValue(), CapabilityItemHandler.ITEM_HANDLER)
+                if (a.getRawValue()
+                    .isPresent()) {
+                    ItemStack itemStack = a.getRawValue()
+                        .get();
+                    if (CapabilityHelpers.getCapability(itemStack, CapabilityItemHandler.ITEM_HANDLER)
                         .isPresent()) {
-                    IItemHandler itemHandler = CapabilityHelpers
-                        .getCapability(a.getRawValue(), CapabilityItemHandler.ITEM_HANDLER)
-                        .getOrNull();
-                    List<ValueObjectTypeItemStack.ValueItemStack> values = Lists
-                        .newArrayListWithCapacity(itemHandler.getSlots());
-                    for (int i = 0; i < itemHandler.getSlots(); i++) {
-                        values.add(ValueObjectTypeItemStack.ValueItemStack.of(itemHandler.getStackInSlot(i)));
+                        IItemHandler itemHandler = CapabilityHelpers
+                            .getCapability(itemStack, CapabilityItemHandler.ITEM_HANDLER)
+                            .getOrNull();
+                        List<ValueObjectTypeItemStack.ValueItemStack> values = Lists
+                            .newArrayListWithCapacity(itemHandler.getSlots());
+                        for (int i = 0; i < itemHandler.getSlots(); i++) {
+                            values.add(ValueObjectTypeItemStack.ValueItemStack.of(itemHandler.getStackInSlot(i)));
+                        }
+                        return ValueTypeList.ValueList.ofList(ValueTypes.OBJECT_ITEMSTACK, values);
                     }
-                    return ValueTypeList.ValueList.ofList(ValueTypes.OBJECT_ITEMSTACK, values);
                 }
                 return ValueTypes.LIST.getDefault();
             })
@@ -2238,12 +2313,14 @@ public final class Operators {
             .function(variables -> {
                 ValueObjectTypeItemStack.ValueItemStack a = variables.getValue(0, ValueTypes.OBJECT_ITEMSTACK);
                 BlockState plant = null;
-                if (a.getRawValue() != null && a.getRawValue()
-                    .getItem() instanceof IPlantable) {
-                    plant = BlockStateHelpers.getState(
-                        ((IPlantable) a.getRawValue()
-                            .getItem()).getPlant(null, 0, 0, 0),
-                        0);
+                if (a.getRawValue()
+                    .isPresent()) {
+                    ItemStack itemStack = a.getRawValue()
+                        .get();
+                    if (itemStack.getItem() instanceof IPlantable) {
+                        IPlantable plantable = (IPlantable) itemStack.getItem();
+                        plant = BlockStateHelpers.getState(plantable.getPlant(null, 0, 0, 0), 0);
+                    }
                 }
                 return ValueObjectTypeBlock.ValueBlock.of(plant);
             })
@@ -2291,19 +2368,22 @@ public final class Operators {
                     throw new EvaluationException(error.localize());
                 }
 
-                ItemStack itemStack = b.getRawValue();
+                if (!b.getRawValue()
+                    .isPresent()) {
+                    return ValueTypeInteger.ValueInteger.of(0);
+                }
+
+                ItemStack itemStack = b.getRawValue()
+                    .get();
                 int count = 0;
+
                 for (ValueObjectTypeItemStack.ValueItemStack listValue : (IValueTypeListProxy<ValueObjectTypeItemStack, ValueObjectTypeItemStack.ValueItemStack>) a
                     .getRawValue()) {
-                    if (listValue.getRawValue() != null) {
-                        ItemStack listItem = listValue.getRawValue();
-                        if (itemStack != null) {
-                            if (itemStack.isItemEqual(listItem)
-                                && ItemStack.areItemStackTagsEqual(itemStack, listItem)) {
-                                count += listItem.stackSize;
-                            }
-
-                        } else {
+                    if (listValue.getRawValue()
+                        .isPresent()) {
+                        ItemStack listItem = listValue.getRawValue()
+                            .get();
+                        if (itemStack.isItemEqual(listItem) && ItemStack.areItemStackTagsEqual(itemStack, listItem)) {
                             count += listItem.stackSize;
                         }
                     }
@@ -2312,9 +2392,8 @@ public final class Operators {
                 return ValueTypeInteger.ValueInteger.of(count);
             })
             .build());
-
     /**
-     * Item Stack size operator with one input itemstack and one output NBT tag.
+     * Item Stack NBT operator with one input itemstack and one output NBT tag.
      */
     public static final IOperator OBJECT_ITEMSTACK_NBT = REGISTRY.register(
         OperatorBuilders.ITEMSTACK_1_SUFFIX_LONG.output(ValueTypes.NBT)
@@ -2322,9 +2401,14 @@ public final class Operators {
             .operatorName("nbt")
             .function(input -> {
                 ValueObjectTypeItemStack.ValueItemStack itemStack = input.getValue(0, ValueTypes.OBJECT_ITEMSTACK);
-                return ValueTypeNbt.ValueNbt.of(
-                    itemStack.getRawValue()
-                        .getTagCompound());
+                NBTTagCompound tag = null;
+                if (itemStack.getRawValue()
+                    .isPresent()) {
+                    tag = itemStack.getRawValue()
+                        .get()
+                        .getTagCompound();
+                }
+                return ValueTypeNbt.ValueNbt.of(tag);
             })
             .build());
 
@@ -2898,11 +2982,15 @@ public final class Operators {
                 ValueObjectTypeItemStack.ValueItemStack b = variables.getValue(1, ValueTypes.OBJECT_ITEMSTACK);
                 boolean canBreedWith = false;
                 if (a.getRawValue()
-                    .isPresent() && b.getRawValue() != null
+                    .isPresent()
+                    && b.getRawValue()
+                        .isPresent()
                     && a.getRawValue()
                         .get() instanceof EntityAnimal) {
                     canBreedWith = ((EntityAnimal) a.getRawValue()
-                        .get()).isBreedingItem(b.getRawValue());
+                        .get()).isBreedingItem(
+                            b.getRawValue()
+                                .get());
                 }
                 return ValueTypeBoolean.ValueBoolean.of(canBreedWith);
             })
@@ -4176,7 +4264,8 @@ public final class Operators {
                         baseIngredients,
                         index.getRawValue(),
                         IngredientComponent.ITEMSTACK,
-                        itemStack.getRawValue()));
+                        itemStack.getRawValue()
+                            .get()));
             })
             .build());
 

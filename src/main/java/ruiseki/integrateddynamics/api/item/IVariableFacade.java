@@ -68,14 +68,6 @@ public interface IVariableFacade {
     @SideOnly(Side.CLIENT)
     public void addInformation(List<String> list, EntityPlayer entityPlayer);
 
-    // /**
-    // * Handle the quads for the given baked model.
-    // * @param variableModelBaked The baked model.
-    // * @param quads The quads that can be added to.
-    // */
-    // @SideOnly(Side.CLIENT)
-    // public void addModelOverlay(IVariableModelBaked variableModelBaked, List<BakedQuad> quads);
-
     public static interface IValidator {
 
         /**

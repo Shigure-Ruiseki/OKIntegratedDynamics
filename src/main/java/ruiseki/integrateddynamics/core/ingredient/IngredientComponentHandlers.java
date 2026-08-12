@@ -65,8 +65,10 @@ public class IngredientComponentHandlers {
                     }
 
                     @Override
+                    @Nullable
                     public ItemStack toInstance(ValueObjectTypeItemStack.ValueItemStack value) {
-                        return value.getRawValue();
+                        return value.getRawValue()
+                            .orNull();
                     }
                 });
         }

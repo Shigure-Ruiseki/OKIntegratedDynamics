@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -16,13 +17,13 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 
-import ruiseki.commoncapabilities.Reference;
 import ruiseki.commoncapabilities.api.capability.itemhandler.ItemMatch;
 import ruiseki.commoncapabilities.api.capability.recipehandler.IPrototypedIngredientAlternatives;
 import ruiseki.commoncapabilities.api.capability.recipehandler.PrototypedIngredientAlternativesItemStackOredictionary;
 import ruiseki.commoncapabilities.api.capability.recipehandler.PrototypedIngredientAlternativesList;
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
 import ruiseki.commoncapabilities.api.ingredient.PrototypedIngredient;
+import ruiseki.integrateddynamics.Reference;
 import ruiseki.okcore.helper.ItemStackHelpers;
 
 /**
@@ -80,8 +81,8 @@ public enum ItemMatchType {
     public ResourceLocation getSlotSpriteName() {
         return new ResourceLocation(
             Reference.MOD_ID,
-            "slots/" + this.name()
-                .toLowerCase(Locale.ENGLISH));
+            "textures/slot/" + this.name()
+                .toLowerCase(Locale.ENGLISH) + ".png");
     }
 
     public IPrototypeHandler getPrototypeHandler() {
@@ -112,6 +113,7 @@ public enum ItemMatchType {
             return new PrototypedIngredientAlternativesList<>(
                 ItemStackHelpers.getVariants(itemStack)
                     .stream()
+                    .filter(Objects::nonNull)
                     .map(stack -> new PrototypedIngredient<>(IngredientComponent.ITEMSTACK, stack, flags))
                     .collect(Collectors.toList()));
         }

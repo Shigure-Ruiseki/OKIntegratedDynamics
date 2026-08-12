@@ -1,13 +1,12 @@
 package ruiseki.integrateddynamics.core.evaluate.variable;
 
-import java.util.Objects;
-
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.JsonToNBT;
 import net.minecraft.nbt.NBTException;
 import net.minecraft.nbt.NBTTagCompound;
 
 import cpw.mods.fml.common.registry.GameData;
+import joptsimple.internal.Strings;
 import lombok.ToString;
 import ruiseki.commoncapabilities.api.capability.itemhandler.ItemMatch;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeNamed;
@@ -39,6 +38,9 @@ public class ValueObjectTypeItemStack extends ValueObjectTypeBase<ValueObjectTyp
     }
 
     public static String getItemStackDisplayNameSafe(ItemStack itemStack) {
+        if (itemStack == null) {
+            return "";
+        }
         // Certain mods may call client-side only methods,
         // so call a server-side-safe fallback method if that fails.
         try {
@@ -55,22 +57,34 @@ public class ValueObjectTypeItemStack extends ValueObjectTypeBase<ValueObjectTyp
 
     @Override
     public String toCompactString(ValueItemStack value) {
-        return ValueObjectTypeItemStack.getItemStackDisplayNameSafe(value.getRawValue());
+        if (value.getRawValue()
+            .isPresent()) {
+            return ValueObjectTypeItemStack.getItemStackDisplayNameSafe(
+                value.getRawValue()
+                    .get());
+        }
+        return "";
     }
 
     @Override
     public String serialize(ValueItemStack value) {
-        NBTTagCompound tag = new NBTTagCompound();
-        ItemStack itemStack = value.getRawValue();
-        if (itemStack != null) {
-            itemStack.writeToNBT(tag);
-            tag.setInteger("Count", itemStack.stackSize);
+        if (!value.getRawValue()
+            .isPresent()) {
+            return "";
         }
+        NBTTagCompound tag = new NBTTagCompound();
+        ItemStack itemStack = value.getRawValue()
+            .get();
+        itemStack.writeToNBT(tag);
+        tag.setInteger("Count", itemStack.stackSize);
         return tag.toString();
     }
 
     @Override
     public ValueItemStack deserialize(String value) {
+        if (Strings.isNullOrEmpty(value)) {
+            return ValueItemStack.of(null);
+        }
         try {
             NBTTagCompound tag = (NBTTagCompound) JsonToNBT.func_150315_a(value);
             // Forge returns air for tags with negative count,
@@ -83,7 +97,7 @@ public class ValueObjectTypeItemStack extends ValueObjectTypeBase<ValueObjectTyp
             }
             return ValueItemStack.of(itemStack);
         } catch (NBTException e) {
-            return null;
+            return ValueItemStack.of(null);
         }
     }
 
@@ -94,7 +108,8 @@ public class ValueObjectTypeItemStack extends ValueObjectTypeBase<ValueObjectTyp
 
     @Override
     public boolean isNull(ValueItemStack a) {
-        return a.getRawValue() == null;
+        return !a.getRawValue()
+            .isPresent();
     }
 
     @Override
@@ -122,40 +137,38 @@ public class ValueObjectTypeItemStack extends ValueObjectTypeBase<ValueObjectTyp
 
     @Override
     public String getUniqueName(ValueItemStack value) {
-        ItemStack itemStack = value.getRawValue();
-        return itemStack != null ? GameData.getItemRegistry()
-            .getNameForObject(itemStack.getItem())
-            + (itemStack.getItemDamage() > 0 ? " " + itemStack.getItemDamage() : "") : "";
+        if (value.getRawValue()
+            .isPresent()) {
+            ItemStack itemStack = value.getRawValue()
+                .get();
+            if (itemStack.getItem() != null) {
+                return GameData.getItemRegistry()
+                    .getNameForObject(itemStack.getItem())
+                    + (itemStack.getItemDamage() > 0 ? " " + itemStack.getItemDamage() : "");
+            }
+        }
+        return "";
     }
 
     @ToString
-    public static class ValueItemStack extends ValueBase {
-
-        private final ItemStack itemStack;
+    public static class ValueItemStack extends ValueOptionalBase<ItemStack> {
 
         private ValueItemStack(ItemStack itemStack) {
-            super(ValueTypes.OBJECT_ITEMSTACK);
-            this.itemStack = Objects
-                .requireNonNull(itemStack, "Attempted to create a ValueItemStack for a null ItemStack.");
+            super(ValueTypes.OBJECT_ITEMSTACK, itemStack);
         }
 
         public static ValueItemStack of(ItemStack itemStack) {
             return new ValueItemStack(itemStack);
         }
 
-        public ItemStack getRawValue() {
-            return itemStack;
-        }
-
         @Override
-        public boolean equals(Object o) {
-            return o instanceof ValueItemStack
-                && ItemMatch.areItemStacksEqual(((ValueItemStack) o).itemStack, this.itemStack, ItemMatch.EXACT);
+        protected boolean isEqual(ItemStack a, ItemStack b) {
+            return ItemMatch.areItemStacksEqual(a, b, ItemMatch.EXACT);
         }
 
         @Override
         public int hashCode() {
-            return 37 + ItemStackHelpers.getItemStackHashCode(itemStack);
+            return 37 + (getRawValue().isPresent() ? ItemStackHelpers.getItemStackHashCode(getRawValue().get()) : 0);
         }
     }
 }

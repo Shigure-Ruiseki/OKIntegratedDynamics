@@ -107,14 +107,13 @@ public class AspectWriteBuilders {
             input.getMiddle(),
             input.getRight()
                 .getRawValue());
-
     public static final IAspectValuePropagator<Triple<PartTarget, IAspectProperties, ValueObjectTypeItemStack.ValueItemStack>, Triple<PartTarget, IAspectProperties, ItemStack>> PROP_GET_ITEMSTACK = input -> Triple
         .of(
             input.getLeft(),
             input.getMiddle(),
             input.getRight()
-                .getRawValue() != null ? input.getRight()
-                    .getRawValue() : null);
+                .getRawValue()
+                .orNull());
 
     public static final IAspectValuePropagator<Triple<PartTarget, IAspectProperties, ValueTypeString.ValueString>, Triple<PartTarget, IAspectProperties, String>> PROP_GET_STRING = input -> Triple
         .of(

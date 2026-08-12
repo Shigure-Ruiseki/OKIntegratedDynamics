@@ -38,11 +38,11 @@ public final class TickHandler {
     }
 
     @SubscribeEvent
-    public void onTick(TickEvent event) {
+    public void onTick(TickEvent.ServerTickEvent event) {
         if (shouldCrash) {
             throw new RuntimeException("Forcefully crashed the server.");
         }
-        if (event.type == TickEvent.Type.SERVER && event.phase == TickEvent.Phase.END && NetworkHelpers.shouldWork()) {
+        if (event.phase == TickEvent.Phase.END && NetworkHelpers.shouldWork()) {
             boolean isBeingDiagnozed = NetworkDiagnostics.getInstance()
                 .isBeingDiagnozed();
             if (isBeingDiagnozed) {

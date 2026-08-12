@@ -37,6 +37,7 @@ public final class Helpers {
      * @return The fluidstack or null.
      */
     public static FluidStack getFluidStack(ItemStack itemStack) {
+        if (itemStack == null) return null;
         FluidStack fluidStack = FluidHelpers.getFluidContained(itemStack);
         if (fluidStack == null && itemStack.getItem() instanceof ItemBlock
             && ((ItemBlock) itemStack.getItem()).field_150939_a instanceof IFluidBlock) {

@@ -229,7 +229,8 @@ public class OperatorBuilders {
         .begin()
         .appendPre(input -> {
             ValueObjectTypeItemStack.ValueItemStack value = input.getValue(0, ValueTypes.OBJECT_ITEMSTACK);
-            return value.getRawValue();
+            return value.getRawValue()
+                .orNull();
         });
     public static final IterativeFunction.PrePostBuilder<ItemStack, Integer> FUNCTION_ITEMSTACK_TO_INT = FUNCTION_ITEMSTACK
         .appendPost(PROPAGATOR_INTEGER_VALUE);
@@ -239,9 +240,17 @@ public class OperatorBuilders {
         .begin()
         .appendPre(input -> {
             ValueObjectTypeItemStack.ValueItemStack a = input.getValue(0, ValueTypes.OBJECT_ITEMSTACK);
-            if (a.getRawValue() != null && CapabilityHelpers.getCapability(a.getRawValue(), CapabilityEnergy.ENERGY)
-                .isPresent()) {
-                return CapabilityHelpers.getCapability(a.getRawValue(), CapabilityEnergy.ENERGY)
+            if (a.getRawValue()
+                .isPresent()
+                && CapabilityHelpers.getCapability(
+                    a.getRawValue()
+                        .get(),
+                    CapabilityEnergy.ENERGY)
+                    .isPresent()) {
+                return CapabilityHelpers.getCapability(
+                    a.getRawValue()
+                        .get(),
+                    CapabilityEnergy.ENERGY)
                     .getOrNull();
             }
             return null;
@@ -683,10 +692,17 @@ public class OperatorBuilders {
         return IterativeFunction.PrePostBuilder.begin()
             .appendPre(input -> {
                 ValueObjectTypeItemStack.ValueItemStack a = input.getValue(0);
-                if (a.getRawValue() != null
-                    && CapabilityHelpers.getCapability(a.getRawValue(), capabilityReference.getReference())
+                if (a.getRawValue()
+                    .isPresent()
+                    && CapabilityHelpers.getCapability(
+                        a.getRawValue()
+                            .get(),
+                        capabilityReference.getReference())
                         .isPresent()) {
-                    return CapabilityHelpers.getCapability(a.getRawValue(), capabilityReference.getReference())
+                    return CapabilityHelpers.getCapability(
+                        a.getRawValue()
+                            .get(),
+                        capabilityReference.getReference())
                         .getOrNull();
                 }
                 return null;

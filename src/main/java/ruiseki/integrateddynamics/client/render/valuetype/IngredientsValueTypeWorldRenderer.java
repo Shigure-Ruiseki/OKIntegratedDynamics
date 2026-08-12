@@ -88,14 +88,19 @@ public class IngredientsValueTypeWorldRenderer implements IValueTypeWorldRendere
                     GlStateManager.pushMatrix();
                     GlStateManager.translate(j * DisplayPartOverlayRenderer.MAX, i * DisplayPartOverlayRenderer.MAX, 0);
 
-                    if (renderValue instanceof ValueObjectTypeItemStack.ValueItemStack
-                        && ((ValueObjectTypeItemStack.ValueItemStack) renderValue).getRawValue()
-                            .getItemDamage() == OreDictionary.WILDCARD_VALUE) {
-                        List<ItemStack> subItems = ItemStackHelpers
-                            .getSubItems(((ValueObjectTypeItemStack.ValueItemStack) renderValue).getRawValue());
-                        int subtick = ((int) Minecraft.getMinecraft().theWorld.getWorldTime()) / 10;
-                        ItemStack itemStack = prepareElementForTick(subItems, subtick, () -> null);
-                        renderValue = ValueObjectTypeItemStack.ValueItemStack.of(itemStack);
+                    if (renderValue instanceof ValueObjectTypeItemStack.ValueItemStack) {
+                        ValueObjectTypeItemStack.ValueItemStack itemValue = (ValueObjectTypeItemStack.ValueItemStack) renderValue;
+                        if (itemValue.getRawValue()
+                            .isPresent()) {
+                            ItemStack itemStackRaw = itemValue.getRawValue()
+                                .get();
+                            if (itemStackRaw.getItemDamage() == OreDictionary.WILDCARD_VALUE) {
+                                List<ItemStack> subItems = ItemStackHelpers.getSubItems(itemStackRaw);
+                                int subtick = ((int) Minecraft.getMinecraft().theWorld.getWorldTime()) / 10;
+                                ItemStack itemStack = prepareElementForTick(subItems, subtick, () -> null);
+                                renderValue = ValueObjectTypeItemStack.ValueItemStack.of(itemStack);
+                            }
+                        }
                     }
 
                     // Call value renderer for each value
