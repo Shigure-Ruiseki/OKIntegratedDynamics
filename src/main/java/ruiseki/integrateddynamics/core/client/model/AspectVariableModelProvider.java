@@ -5,6 +5,7 @@ import java.util.Map;
 
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.util.IIcon;
+import net.minecraft.util.ResourceLocation;
 
 import ruiseki.integrateddynamics.api.client.model.IVariableModelProvider;
 import ruiseki.integrateddynamics.api.part.aspect.IAspect;
@@ -18,10 +19,16 @@ public class AspectVariableModelProvider implements IVariableModelProvider<IAspe
     public void registerIcons(IIconRegister iconRegister) {
         icons.clear();
         for (IAspect aspect : Aspects.REGISTRY.getAspects()) {
-            String iconPath = Aspects.REGISTRY.getAspectIconPath(aspect);
-            if (iconPath != null) {
-                IIcon icon = iconRegister.registerIcon(iconPath);
-                icons.put(aspect, icon);
+            ResourceLocation modelPath = Aspects.REGISTRY.getAspectModel(aspect);
+            if (modelPath != null) {
+                String texturePath = ModelUtils.getLayer0FromModel(modelPath);
+                if (texturePath != null && !texturePath.trim()
+                    .isEmpty()) {
+                    IIcon icon = iconRegister.registerIcon(texturePath);
+                    if (icon != null) {
+                        icons.put(aspect, icon);
+                    }
+                }
             }
         }
     }

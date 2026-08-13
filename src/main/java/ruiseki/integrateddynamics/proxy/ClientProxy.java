@@ -4,10 +4,13 @@ import net.minecraftforge.common.MinecraftForge;
 
 import org.lwjgl.input.Keyboard;
 
+import com.gtnewhorizon.gtnhlib.itemrendering.TexturedItemRenderer;
+
 import cpw.mods.fml.client.registry.ClientRegistry;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.Reference;
 import ruiseki.integrateddynamics.core.network.diagnostics.NetworkDiagnosticsPartOverlayRenderer;
+import ruiseki.integrateddynamics.item.ItemVariable;
 import ruiseki.okcore.client.key.IKeyRegistry;
 import ruiseki.okcore.client.key.KeyBindingOK;
 import ruiseki.okcore.client.key.KeyConflictContext;
@@ -52,5 +55,11 @@ public class ClientProxy extends ClientProxyComponent {
         super.registerKeyBindings(keyRegistry);
         ClientRegistry.registerKeyBinding(FOCUS_LP_SEARCH);
         ClientRegistry.registerKeyBinding(FOCUS_LP_RENAME);
+    }
+
+    @Override
+    public void registerRenderers() {
+        TexturedItemRenderer.register(ItemVariable.getInstance());
+        super.registerRenderers();
     }
 }

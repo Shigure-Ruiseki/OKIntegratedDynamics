@@ -4,6 +4,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import net.minecraft.util.ResourceLocation;
+
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.integrateddynamics.api.item.IAspectVariableFacade;
@@ -95,7 +97,7 @@ public interface IAspectRegistry extends IRegistry, IVariableFacadeHandler<IAspe
      * @param iconPath The icon path (e.g., "integrateddynamics:aspects/read_boolean").
      */
     @SideOnly(Side.CLIENT)
-    public void registerAspectIconPath(IAspect aspect, String iconPath);
+    public void registerAspectModel(IAspect aspect, ResourceLocation iconPath);
 
     /**
      * Get the icon path of the given aspect.
@@ -104,7 +106,7 @@ public interface IAspectRegistry extends IRegistry, IVariableFacadeHandler<IAspe
      * @return The icon path string.
      */
     @SideOnly(Side.CLIENT)
-    public String getAspectIconPath(IAspect aspect);
+    public ResourceLocation getAspectModel(IAspect aspect);
 
     /**
      * Get all registered icon paths for the aspects.
@@ -112,6 +114,6 @@ public interface IAspectRegistry extends IRegistry, IVariableFacadeHandler<IAspe
      * @return All icon paths.
      */
     @SideOnly(Side.CLIENT)
-    public Collection<String> getAspectIconPaths();
+    public Collection<ResourceLocation> getAspectModels();
 
 }

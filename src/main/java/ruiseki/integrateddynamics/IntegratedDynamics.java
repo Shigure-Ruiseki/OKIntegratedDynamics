@@ -87,7 +87,7 @@ import ruiseki.okcore.proxy.ICommonProxy;
     modid = Reference.MOD_ID,
     name = Reference.MOD_NAME,
     version = Reference.MOD_VERSION,
-    dependencies = Reference.DEPENDENCIES,
+    dependencies = Reference.MOD_DEPENDENCIES,
     guiFactory = Reference.GUI_FACTORY)
 public class IntegratedDynamics extends ModBaseVersionable {
 

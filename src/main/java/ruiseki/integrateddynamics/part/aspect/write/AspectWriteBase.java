@@ -1,5 +1,7 @@
 package ruiseki.integrateddynamics.part.aspect.write;
 
+import net.minecraft.util.ResourceLocation;
+
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
@@ -31,13 +33,11 @@ public abstract class AspectWriteBase<V extends IValue, T extends IValueType<V>>
     implements IAspectWrite<V, T> {
 
     protected final String unlocalizedTypeSuffix;
-    private final String customIconPath;
 
     public AspectWriteBase(ModBase mod, ModBase modGui, String unlocalizedTypeSuffix,
-        IAspectProperties defaultProperties, String customIconPath) {
+        IAspectProperties defaultProperties) {
         super(mod, modGui, defaultProperties);
         this.unlocalizedTypeSuffix = unlocalizedTypeSuffix;
-        this.customIconPath = customIconPath;
         if (MinecraftHelpers.isClientSide()) {
             registerModelResourceLocation();
         }
@@ -84,10 +84,9 @@ public abstract class AspectWriteBase<V extends IValue, T extends IValueType<V>>
 
     @SideOnly(Side.CLIENT)
     protected void registerModelResourceLocation() {
-        Aspects.REGISTRY.registerAspectIconPath(
+        Aspects.REGISTRY.registerAspectModel(
             this,
-            getModId() + ":aspects/"
-                + (customIconPath.isEmpty() ? getUnlocalizedType().replaceAll("\\.", "/") : customIconPath));
+            new ResourceLocation(getModId() + ":aspect/" + getUnlocalizedType().replaceAll("\\.", "/")));
     }
 
 }

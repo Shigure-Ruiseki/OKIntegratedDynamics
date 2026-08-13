@@ -6,6 +6,7 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ResourceLocation;
 
 import com.google.common.collect.Maps;
 
@@ -35,7 +36,7 @@ public final class ValueTypeRegistry implements IValueTypeRegistry {
 
     private final Map<String, IValueType> valueTypes = Maps.newHashMap();
     @SideOnly(Side.CLIENT)
-    private Map<IValueType, String> valueTypeIconPaths;
+    private Map<IValueType, ResourceLocation> valueTypeIconPaths;
 
     private ValueTypeRegistry() {
         if (MinecraftHelpers.isClientSide()) {
@@ -73,19 +74,20 @@ public final class ValueTypeRegistry implements IValueTypeRegistry {
 
     @SideOnly(Side.CLIENT)
     @Override
-    public <V extends IValue, T extends IValueType<V>> void registerValueTypeIconPath(T valueType, String iconPath) {
+    public <V extends IValue, T extends IValueType<V>> void registerValueTypeModel(T valueType,
+        ResourceLocation iconPath) {
         valueTypeIconPaths.put(valueType, iconPath);
     }
 
     @SideOnly(Side.CLIENT)
     @Override
-    public <V extends IValue, T extends IValueType<V>> String getValueTypeIconPath(T valueType) {
+    public <V extends IValue, T extends IValueType<V>> ResourceLocation getValueTypeModel(T valueType) {
         return valueTypeIconPaths.get(valueType);
     }
 
     @SideOnly(Side.CLIENT)
     @Override
-    public Collection<String> getValueTypeIconPaths() {
+    public Collection<ResourceLocation> getValueTypeModels() {
         return Collections.unmodifiableCollection(valueTypeIconPaths.values());
     }
 

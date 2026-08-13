@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ResourceLocation;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
@@ -47,7 +48,7 @@ public final class AspectRegistry implements IAspectRegistry {
     private final Map<String, IAspectWrite> unlocalizedWriteAspects = Maps.newHashMap();
 
     @SideOnly(Side.CLIENT)
-    private Map<IAspect, String> aspectIconPaths;
+    private Map<IAspect, ResourceLocation> aspectIconPaths;
 
     private AspectRegistry() {
         IntegratedDynamics._instance.getRegistryManager()
@@ -146,19 +147,19 @@ public final class AspectRegistry implements IAspectRegistry {
 
     @SideOnly(Side.CLIENT)
     @Override
-    public void registerAspectIconPath(IAspect aspect, String iconPath) {
+    public void registerAspectModel(IAspect aspect, ResourceLocation iconPath) {
         aspectIconPaths.put(aspect, iconPath);
     }
 
     @SideOnly(Side.CLIENT)
     @Override
-    public String getAspectIconPath(IAspect aspect) {
+    public ResourceLocation getAspectModel(IAspect aspect) {
         return aspectIconPaths.get(aspect);
     }
 
     @SideOnly(Side.CLIENT)
     @Override
-    public Collection<String> getAspectIconPaths() {
+    public Collection<ResourceLocation> getAspectModels() {
         return Collections.unmodifiableCollection(aspectIconPaths.values());
     }
 

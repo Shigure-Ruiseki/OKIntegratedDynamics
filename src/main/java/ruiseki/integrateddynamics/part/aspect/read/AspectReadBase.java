@@ -1,5 +1,7 @@
 package ruiseki.integrateddynamics.part.aspect.read;
 
+import net.minecraft.util.ResourceLocation;
+
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
@@ -31,14 +33,12 @@ public abstract class AspectReadBase<V extends IValue, T extends IValueType<V>> 
     implements IAspectRead<V, T> {
 
     private final String unlocalizedTypeSuffix;
-    private final String customIconPath;
     private final AspectUpdateType updateType;
 
     public AspectReadBase(ModBase mod, ModBase modGui, String unlocalizedTypeSuffix,
-        IAspectProperties defaultProperties, AspectUpdateType updateType, String customIconPath) {
+        IAspectProperties defaultProperties, AspectUpdateType updateType) {
         super(mod, modGui, defaultProperties);
         this.unlocalizedTypeSuffix = unlocalizedTypeSuffix;
-        this.customIconPath = customIconPath;
         this.updateType = updateType;
         if (MinecraftHelpers.isClientSide()) {
             registerModelResourceLocation();
@@ -59,10 +59,9 @@ public abstract class AspectReadBase<V extends IValue, T extends IValueType<V>> 
 
     @SideOnly(Side.CLIENT)
     protected void registerModelResourceLocation() {
-        Aspects.REGISTRY.registerAspectIconPath(
+        Aspects.REGISTRY.registerAspectModel(
             this,
-            getModId() + ":aspects/"
-                + (customIconPath.isEmpty() ? getUnlocalizedType().replaceAll("\\.", "/") : customIconPath));
+            new ResourceLocation(getModId() + ":aspect/" + getUnlocalizedType().replaceAll("\\.", "/")));
     }
 
     /**

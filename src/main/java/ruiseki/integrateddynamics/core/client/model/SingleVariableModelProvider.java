@@ -9,16 +9,16 @@ import ruiseki.integrateddynamics.api.client.model.IVariableModelProvider;
 public class SingleVariableModelProvider implements IVariableModelProvider<Void> {
 
     private IIcon icon;
+    private final ResourceLocation modelPath;
 
-    private final ResourceLocation model;
-
-    public SingleVariableModelProvider(ResourceLocation model) {
-        this.model = model;
+    public SingleVariableModelProvider(ResourceLocation modelPath) {
+        this.modelPath = modelPath;
     }
 
     @Override
     public void registerIcons(IIconRegister iconRegister) {
-        this.icon = iconRegister.registerIcon(model.toString());
+        String texturePath = ModelUtils.getLayer0FromModel(modelPath);
+        this.icon = iconRegister.registerIcon(texturePath);
     }
 
     @Override

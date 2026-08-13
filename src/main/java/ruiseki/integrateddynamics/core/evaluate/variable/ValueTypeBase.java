@@ -4,6 +4,8 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import net.minecraft.util.ResourceLocation;
+
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.integrateddynamics.Reference;
@@ -84,9 +86,10 @@ public abstract class ValueTypeBase<V extends IValue> implements IValueType<V> {
 
     @SideOnly(Side.CLIENT)
     protected void registerModelResourceLocation() {
-        ValueTypes.REGISTRY.registerValueTypeIconPath(
+        ValueTypes.REGISTRY.registerValueTypeModel(
             this,
-            getModId() + ":valuetypes" + getTypeNamespace().replace('.', '/') + getTypeName().replace('.', '/'));
+            new ResourceLocation(
+                getModId() + ":valuetype" + getTypeNamespace().replace('.', '/') + getTypeName().replace('.', '/')));
     }
 
     @Override

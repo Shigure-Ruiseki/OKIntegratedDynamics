@@ -1,5 +1,6 @@
 package ruiseki.integrateddynamics.item;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import net.minecraft.client.renderer.texture.IIconRegister;
@@ -8,6 +9,11 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IIcon;
+
+import com.gtnewhorizon.gtnhlib.color.RGBColor;
+import com.gtnewhorizon.gtnhlib.itemrendering.IItemTexture;
+import com.gtnewhorizon.gtnhlib.itemrendering.ItemTexture;
+import com.gtnewhorizon.gtnhlib.itemrendering.ItemWithTextures;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -29,7 +35,7 @@ import ruiseki.okcore.helper.CapabilityHelpers;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.modcompat.capabilities.DefaultCapabilityProvider;
 
-public class ItemVariable extends ConfigurableItem {
+public class ItemVariable extends ConfigurableItem implements ItemWithTextures {
 
     private static ItemVariable _instance = null;
 
@@ -41,32 +47,23 @@ public class ItemVariable extends ConfigurableItem {
         super(eConfig);
     }
 
-    @SideOnly(Side.CLIENT)
     @Override
-    public boolean requiresMultipleRenderPasses() {
-        return true;
-    }
-
     @SideOnly(Side.CLIENT)
-    @Override
-    public int getRenderPasses(int metadata) {
-        return 2;
-    }
+    public IItemTexture[] getTextures(ItemStack stack) {
+        List<IItemTexture> textures = new ArrayList<>();
 
-    @SideOnly(Side.CLIENT)
-    @Override
-    public IIcon getIcon(ItemStack stack, int pass) {
-        if (pass == 0) {
-            return itemIcon;
-        }
+        textures.add(new ItemTexture(this.itemIcon, RGBColor.WHITE));
 
+        // Layer 1: Overlay Texture
         IVariableFacade variableFacade = getVariableFacade(stack);
         if (variableFacade != null && variableFacade.isValid()) {
-            IIcon icon = getOverlayIcon(variableFacade);
-            return icon;
+            IIcon overlayIcon = getOverlayIcon(variableFacade);
+            if (overlayIcon != null) {
+                textures.add(new ItemTexture(overlayIcon, RGBColor.WHITE));
+            }
         }
 
-        return itemIcon;
+        return textures.toArray(new IItemTexture[0]);
     }
 
     @SideOnly(Side.CLIENT)

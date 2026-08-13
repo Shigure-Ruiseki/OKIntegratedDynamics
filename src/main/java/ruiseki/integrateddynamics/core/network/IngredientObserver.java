@@ -169,9 +169,6 @@ public class IngredientObserver<T, M> {
                     } catch (TimeoutException e) {
                         return false; // Don't start new jobs when the previous one is still running.
                     } catch (InterruptedException | ExecutionException e) {
-                        // Silently fail on interruptions and concurrent modifications inside the thread.
-                        // Those kinds of errors can happen rarely, but can be safely ignored
-                        // as the whole process will start over again cleanly in the next observation tick.
                         if (e instanceof ExecutionException
                             && !(e.getCause() instanceof ConcurrentModificationException)) {
                             e.printStackTrace();
@@ -179,13 +176,10 @@ public class IngredientObserver<T, M> {
                     }
                 }
 
-                // Schedule the observation job
                 this.lastObserverBarrier = WORKER_POOL.submit(() -> {
-
                     for (int channel : getChannels()) {
                         observe(channel);
                     }
-
                 });
             } else {
                 for (int channel : getChannels()) {
@@ -425,5 +419,4 @@ public class IngredientObserver<T, M> {
             return this.pendingTickResets.containsKey(channel);
         }
     }
-
 }
