@@ -7,7 +7,6 @@ import java.util.Locale;
 
 import javax.annotation.Nullable;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.entity.RenderItem;
@@ -38,6 +37,7 @@ import ruiseki.integratedterminals.capability.ingredient.sorter.ItemStackIdSorte
 import ruiseki.integratedterminals.capability.ingredient.sorter.ItemStackNameSorter;
 import ruiseki.integratedterminals.capability.ingredient.sorter.ItemStackQuantitySorter;
 import ruiseki.integratedterminals.client.gui.container.GuiTerminalStorage;
+import ruiseki.integratedterminals.core.helpers.TerminalClientUtils;
 import ruiseki.integratedterminals.core.terminalstorage.query.SearchMode;
 import ruiseki.okcore.client.gui.RenderItemExtendedSlotCount;
 import ruiseki.okcore.client.renderer.GlStateManager;
@@ -72,8 +72,8 @@ public class IngredientComponentTerminalStorageHandlerItemStack
     @Override
     @SideOnly(Side.CLIENT)
     public void drawInstance(ItemStack instance, long maxQuantity, @Nullable String label, GuiContainer gui,
-        GuiTerminalStorage.DrawLayer layer, float partialTick, int x, int y, int mouseX, int mouseY,
-        @Nullable List<String> additionalTooltipLines) {
+                             GuiTerminalStorage.DrawLayer layer, float partialTick, int x, int y, int mouseX, int mouseY,
+                             @Nullable List<String> additionalTooltipLines) {
         RenderItemExtendedSlotCount renderItem = RenderItemExtendedSlotCount.getInstance();
         GlStateManager.pushMatrix();
         GlStateManager.enableBlend();
@@ -86,16 +86,14 @@ public class IngredientComponentTerminalStorageHandlerItemStack
         if (layer == GuiTerminalStorage.DrawLayer.BACKGROUND) {
             RenderItem.getInstance()
                 .renderItemAndEffectIntoGUI(
-                    Minecraft.getMinecraft().fontRenderer,
-                    Minecraft.getMinecraft()
-                        .getTextureManager(),
+                    TerminalClientUtils.getFontRenderer(),
+                    TerminalClientUtils.getTextureManager(),
                     instance,
                     x,
                     y);
             renderItem.renderItemOverlayIntoGUI(
-                Minecraft.getMinecraft().fontRenderer,
-                Minecraft.getMinecraft()
-                    .getTextureManager(),
+                TerminalClientUtils.getFontRenderer(),
+                TerminalClientUtils.getTextureManager(),
                 instance,
                 x,
                 y,
@@ -111,11 +109,8 @@ public class IngredientComponentTerminalStorageHandlerItemStack
                 mouseX,
                 mouseY,
                 () -> {
-                    @SuppressWarnings("unchecked")
-                    List<String> lines = instance.getTooltip(
-                        Minecraft.getMinecraft().thePlayer,
-                        Minecraft.getMinecraft().gameSettings.advancedItemTooltips);
-                    if (additionalTooltipLines != null) {
+                    List<String> lines = TerminalClientUtils.getTooltip(instance);
+                    if (lines != null && additionalTooltipLines != null) {
                         lines.addAll(additionalTooltipLines);
                     }
                     addQuantityTooltip(lines, instance);
@@ -159,7 +154,7 @@ public class IngredientComponentTerminalStorageHandlerItemStack
 
     @Override
     public int throwIntoWorld(IIngredientComponentStorage<ItemStack, Integer> storage, ItemStack maxInstance,
-        EntityPlayer player) {
+                              EntityPlayer player) {
         ItemStack extracted = storage.extract(maxInstance, ItemMatch.EXACT, false);
         if (extracted != null) {
             player.dropPlayerItemWithRandomChoice(extracted, true);
@@ -170,7 +165,7 @@ public class IngredientComponentTerminalStorageHandlerItemStack
 
     @Override
     public ItemStack insertIntoContainer(IIngredientComponentStorage<ItemStack, Integer> storage, Container container,
-        int containerSlotIndex, ItemStack maxInstance, @Nullable EntityPlayer player, boolean transferFullSelection) {
+                                         int containerSlotIndex, ItemStack maxInstance, @Nullable EntityPlayer player, boolean transferFullSelection) {
         IIngredientMatcher<ItemStack, Integer> matcher = IngredientComponent.ITEMSTACK.getMatcher();
 
         Slot containerSlot = container.getSlot(containerSlotIndex);
@@ -222,7 +217,7 @@ public class IngredientComponentTerminalStorageHandlerItemStack
 
     @Override
     public void extractActiveStackFromPlayerInventory(IIngredientComponentStorage<ItemStack, Integer> storage,
-        InventoryPlayer playerInventory, long moveQuantityPlayerSlot) {
+                                                      InventoryPlayer playerInventory, long moveQuantityPlayerSlot) {
         ItemStack activeStack = playerInventory.getItemStack();
         if (activeStack != null) {
             ItemStack playerStack = IngredientComponent.ITEMSTACK.getMatcher()
@@ -240,7 +235,7 @@ public class IngredientComponentTerminalStorageHandlerItemStack
 
     @Override
     public void extractMaxFromContainerSlot(IIngredientComponentStorage<ItemStack, Integer> storage,
-        Container container, int containerSlot, InventoryPlayer playerInventory) {
+                                            Container container, int containerSlot, InventoryPlayer playerInventory) {
         Slot slot = container.getSlot(containerSlot);
         ItemStack toMove = slot.getStack();
         if (toMove != null) {
@@ -290,8 +285,8 @@ public class IngredientComponentTerminalStorageHandlerItemStack
             case TOOLTIP:
                 return i -> {
                     if (i == null) return false;
-                    @SuppressWarnings("unchecked")
-                    List<String> tooltip = i.getTooltip(Minecraft.getMinecraft().thePlayer, false);
+                    List<String> tooltip = TerminalClientUtils.getTooltip(i);
+                    if (tooltip == null) return false;
                     return tooltip.stream()
                         .anyMatch(
                             s -> s.toLowerCase(Locale.ENGLISH)

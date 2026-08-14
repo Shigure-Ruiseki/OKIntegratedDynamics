@@ -12,7 +12,7 @@ import ruiseki.okcore.network.PacketCodec;
 
 /**
  * Packet for opening network diagnostics at a client.
- * 
+ *
  * @author rubensworks
  *
  */
@@ -30,16 +30,12 @@ public class NetworkDiagnosticsOpenClient extends PacketCodec {
     @Override
     @SideOnly(Side.CLIENT)
     public void actionClient(World world, EntityPlayer player) {
-        new Thread(new Runnable() {
-
-            @Override
-            public void run() {
-                GuiNetworkDiagnostics.clearNetworkData();
-                IntegratedDynamics._instance.getPacketHandler()
-                    .sendToServer(NetworkDiagnosticsSubscribePacket.subscribe());
-                GuiNetworkDiagnostics.start();
-            }
-        }).start();
+        new Thread(() -> {
+            GuiNetworkDiagnostics.clearNetworkData();
+            IntegratedDynamics._instance.getPacketHandler()
+                .sendToServer(NetworkDiagnosticsSubscribePacket.subscribe());
+            GuiNetworkDiagnostics.start();
+        }, "IntegratedDynamics-Diagnostics-Opener").start();
     }
 
     @Override

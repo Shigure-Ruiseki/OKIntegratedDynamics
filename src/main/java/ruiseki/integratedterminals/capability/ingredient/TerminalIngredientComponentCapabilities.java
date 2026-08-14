@@ -24,6 +24,7 @@ public class TerminalIngredientComponentCapabilities {
         ResourceLocation capabilityIngredientComponentViewHandler = new ResourceLocation(
             Reference.MOD_ID,
             "viewHandler");
+
         attacherManager.addAttacher(
             new IngredientComponentCapabilityAttacherAdapter<ItemStack, Integer>(
                 IngredientComponentCapabilities.INGREDIENT_ITEMSTACK_NAME,
@@ -37,6 +38,7 @@ public class TerminalIngredientComponentCapabilities {
                         new IngredientComponentTerminalStorageHandlerItemStack(ingredientComponent));
                 }
             });
+
         attacherManager.addAttacher(
             new IngredientComponentCapabilityAttacherAdapter<FluidStack, Integer>(
                 IngredientComponentCapabilities.INGREDIENT_FLUIDSTACK_NAME,
@@ -50,6 +52,7 @@ public class TerminalIngredientComponentCapabilities {
                         new IngredientComponentTerminalStorageHandlerFluidStack(ingredientComponent));
                 }
             });
+
         attacherManager.addAttacher(
             new IngredientComponentCapabilityAttacherAdapter<Integer, Boolean>(
                 IngredientComponentCapabilities.INGREDIENT_ENERGY_NAME,
@@ -64,5 +67,4 @@ public class TerminalIngredientComponentCapabilities {
                 }
             });
     }
-
 }
