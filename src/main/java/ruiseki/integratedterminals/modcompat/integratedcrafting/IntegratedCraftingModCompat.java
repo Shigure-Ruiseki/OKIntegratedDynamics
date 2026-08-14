@@ -11,9 +11,9 @@ public class IntegratedCraftingModCompat implements IModCompat {
 
     @Override
     public void onInit(Step initStep) {
-        if(initStep == Step.INIT) {
-            TerminalStorageTabIngredientCraftingHandlers.REGISTRY.register(
-                new TerminalStorageTabIngredientCraftingHandlerCraftingNetwork());
+        if (initStep == Step.INIT) {
+            TerminalStorageTabIngredientCraftingHandlers.REGISTRY
+                .register(new TerminalStorageTabIngredientCraftingHandlerCraftingNetwork());
         }
     }
 

@@ -74,7 +74,7 @@ public class IntegratedTerminals extends ModBaseVersionable {
         super.loadModCompats(modCompatLoader);
 
         // Mod compats
-         modCompatLoader.addModCompat(new IntegratedCraftingModCompat());
+        modCompatLoader.addModCompat(new IntegratedCraftingModCompat());
     }
 
     /**

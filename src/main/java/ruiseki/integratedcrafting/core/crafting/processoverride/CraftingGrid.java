@@ -27,7 +27,8 @@ public class CraftingGrid extends InventoryCrafting {
             }
         }, rows, columns);
 
-        if (!ingredients.getComponents().contains(IngredientComponent.ITEMSTACK)) {
+        if (!ingredients.getComponents()
+            .contains(IngredientComponent.ITEMSTACK)) {
             throw new IllegalArgumentException(
                 "Can only craft with items, missing ITEMSTACK component in: " + ingredients.getComponents());
         }

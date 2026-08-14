@@ -1063,6 +1063,12 @@ public class CraftingHelpers {
         List<MissingIngredients.Element<T, M>> missingElements = collectMissingIngredients ? Lists.newArrayList()
             : null;
         for (IPrototypedIngredientAlternatives<T, M> inputPrototypes : inputAlternativePrototypes) {
+            if (inputPrototypes.getAlternatives()
+                .isEmpty()) {
+                inputInstances.add(matcher.getEmptyInstance());
+                continue;
+            }
+
             T firstInputInstance = null;
             boolean setFirstInputInstance = false;
             T inputInstance = null;

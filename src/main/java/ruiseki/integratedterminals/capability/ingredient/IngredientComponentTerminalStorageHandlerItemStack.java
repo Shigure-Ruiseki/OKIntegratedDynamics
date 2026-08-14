@@ -72,8 +72,8 @@ public class IngredientComponentTerminalStorageHandlerItemStack
     @Override
     @SideOnly(Side.CLIENT)
     public void drawInstance(@Nullable ItemStack instance, long maxQuantity, @Nullable String label, GuiContainer gui,
-                             GuiTerminalStorage.DrawLayer layer, float partialTick, int x, int y, int mouseX, int mouseY,
-                             @Nullable List<String> additionalTooltipLines) {
+        GuiTerminalStorage.DrawLayer layer, float partialTick, int x, int y, int mouseX, int mouseY,
+        @Nullable List<String> additionalTooltipLines) {
 
         // GUARD: Early return if instance is null or invalid
         if (instance == null || instance.getItem() == null) {
@@ -164,7 +164,7 @@ public class IngredientComponentTerminalStorageHandlerItemStack
 
     @Override
     public int throwIntoWorld(IIngredientComponentStorage<ItemStack, Integer> storage, ItemStack maxInstance,
-                              EntityPlayer player) {
+        EntityPlayer player) {
         if (maxInstance == null || maxInstance.getItem() == null) {
             return 0;
         }
@@ -178,7 +178,7 @@ public class IngredientComponentTerminalStorageHandlerItemStack
 
     @Override
     public ItemStack insertIntoContainer(IIngredientComponentStorage<ItemStack, Integer> storage, Container container,
-                                         int containerSlotIndex, ItemStack maxInstance, @Nullable EntityPlayer player, boolean transferFullSelection) {
+        int containerSlotIndex, ItemStack maxInstance, @Nullable EntityPlayer player, boolean transferFullSelection) {
         if (maxInstance == null || maxInstance.getItem() == null) {
             return null;
         }
@@ -234,7 +234,7 @@ public class IngredientComponentTerminalStorageHandlerItemStack
 
     @Override
     public void extractActiveStackFromPlayerInventory(IIngredientComponentStorage<ItemStack, Integer> storage,
-                                                      InventoryPlayer playerInventory, long moveQuantityPlayerSlot) {
+        InventoryPlayer playerInventory, long moveQuantityPlayerSlot) {
         ItemStack activeStack = playerInventory.getItemStack();
         if (activeStack != null && activeStack.getItem() != null) {
             ItemStack playerStack = IngredientComponent.ITEMSTACK.getMatcher()
@@ -252,7 +252,7 @@ public class IngredientComponentTerminalStorageHandlerItemStack
 
     @Override
     public void extractMaxFromContainerSlot(IIngredientComponentStorage<ItemStack, Integer> storage,
-                                            Container container, int containerSlot, InventoryPlayer playerInventory) {
+        Container container, int containerSlot, InventoryPlayer playerInventory) {
         Slot slot = container.getSlot(containerSlot);
         ItemStack toMove = slot.getStack();
         if (toMove != null && toMove.getItem() != null) {
@@ -319,9 +319,11 @@ public class IngredientComponentTerminalStorageHandlerItemStack
                                 .contains(lowerQuery));
                 };
             case DEFAULT:
-                return i -> i != null && i.getItem() != null && i.getDisplayName() != null && i.getDisplayName()
-                    .toLowerCase(Locale.ENGLISH)
-                    .contains(lowerQuery);
+                return i -> i != null && i.getItem() != null
+                    && i.getDisplayName() != null
+                    && i.getDisplayName()
+                        .toLowerCase(Locale.ENGLISH)
+                        .contains(lowerQuery);
         }
         return null;
     }

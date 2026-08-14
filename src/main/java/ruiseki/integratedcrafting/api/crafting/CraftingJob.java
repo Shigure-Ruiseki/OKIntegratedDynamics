@@ -38,7 +38,7 @@ public class CraftingJob {
     private String initiatorUuid;
 
     public CraftingJob(int id, int channel, IRecipeDefinition recipe, int amount,
-                       IMixedIngredients ingredientsStorage) {
+        IMixedIngredients ingredientsStorage) {
         this.id = id;
         this.channel = channel;
         this.recipe = recipe;
@@ -244,12 +244,12 @@ public class CraftingJob {
         return this.getId() == that.getId() && this.getChannel() == that.getChannel()
             && Objects.equals(this.getRecipe(), that.getRecipe())
             && this.getDependencyCraftingJobs()
-            .equals(that.getDependencyCraftingJobs())
+                .equals(that.getDependencyCraftingJobs())
             && this.getDependentCraftingJobs()
-            .equals(that.getDependentCraftingJobs())
+                .equals(that.getDependentCraftingJobs())
             && this.getAmount() == that.getAmount()
             && this.getIngredientsStorage()
-            .equals(that.getIngredientsStorage());
+                .equals(that.getIngredientsStorage());
     }
 
     public CraftingJob clone(CraftingHelpers.IIdentifierGenerator identifierGenerator) {

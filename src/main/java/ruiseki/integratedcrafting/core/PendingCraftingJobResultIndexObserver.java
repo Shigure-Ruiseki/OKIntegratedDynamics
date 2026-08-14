@@ -47,6 +47,7 @@ public class PendingCraftingJobResultIndexObserver<T, M>
 
             Int2ObjectMap<Map<IngredientComponent<?, ?>, List<IPrototypedIngredient<?, ?>>>> processingJobs = handler
                 .getProcessingCraftingJobsPendingIngredients();
+            if (processingJobs.isEmpty()) return;
             ObjectIterator<Int2ObjectMap.Entry<Map<IngredientComponent<?, ?>, List<IPrototypedIngredient<?, ?>>>>> jobEntryIt = processingJobs
                 .int2ObjectEntrySet()
                 .iterator();
@@ -68,7 +69,14 @@ public class PendingCraftingJobResultIndexObserver<T, M>
                         ListIterator<IPrototypedIngredient<T, M>> it = pendingIngredients.listIterator();
                         while (it.hasNext()) {
                             IPrototypedIngredient<T, M> prototypedIngredient = it.next();
-                            final long initialQuantity = matcher.getQuantity(prototypedIngredient.getPrototype());
+                            // Allow Empty Ingredient
+                            if (prototypedIngredient == null || prototypedIngredient.getPrototype() == null) {
+                                it.remove();
+                                continue;
+                            }
+
+                            T prototype = prototypedIngredient.getPrototype();
+                            final long initialQuantity = matcher.getQuantity(prototype);
                             long remainingQuantity = initialQuantity;
 
                             // Lazily create ingredientsHayStack only when needed,
@@ -78,26 +86,24 @@ public class PendingCraftingJobResultIndexObserver<T, M>
                             // instances,
                             // so each instance may only be consumed by a single crafting job.
                             if (ingredientsHayStack == null) {
-                                if (addedIngredients.contains(
-                                    prototypedIngredient.getPrototype(),
-                                    prototypedIngredient.getCondition())) {
-                                    IngredientCollectionPrototypeMap<T, M> prototypeMap = new IngredientCollectionPrototypeMap<>(
-                                        ingredientComponent);
-                                    ingredientsHayStack = new IngredientComponentStorageCollectionWrapper<>(
-                                        prototypeMap);
-                                    prototypeMap.addAll(addedIngredients);
-                                } else {
+                                boolean isContained = addedIngredients
+                                    .contains(prototype, prototypedIngredient.getCondition());
+
+                                if (!isContained) {
                                     continue;
                                 }
+
+                                IngredientCollectionPrototypeMap<T, M> prototypeMap = new IngredientCollectionPrototypeMap<>(
+                                    ingredientComponent);
+                                ingredientsHayStack = new IngredientComponentStorageCollectionWrapper<>(prototypeMap);
+                                prototypeMap.addAll(addedIngredients);
                             }
 
                             // Iteratively extract the pending ingredient from the hay stack.
                             T extracted;
                             do {
-                                extracted = ingredientsHayStack.extract(
-                                    prototypedIngredient.getPrototype(),
-                                    prototypedIngredient.getCondition(),
-                                    false);
+                                extracted = ingredientsHayStack
+                                    .extract(prototype, prototypedIngredient.getCondition(), false);
 
                                 if (matcher.isEmpty(extracted)) {
                                     // Quickly break when no matches are available anymore
@@ -114,7 +120,7 @@ public class PendingCraftingJobResultIndexObserver<T, M>
                                 it.set(
                                     new PrototypedIngredient<>(
                                         ingredientComponent,
-                                        matcher.withQuantity(prototypedIngredient.getPrototype(), remainingQuantity),
+                                        matcher.withQuantity(prototype, remainingQuantity),
                                         prototypedIngredient.getCondition()));
                             }
                         }

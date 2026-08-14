@@ -41,7 +41,7 @@ public class GuiPartInterfaceCrafting extends GuiMultipart<PartTypeInterfaceCraf
      * @param partType      The targeted part type.
      */
     public GuiPartInterfaceCrafting(EntityPlayer player, PartTarget partTarget, IPartContainer partContainer,
-                                    PartTypeInterfaceCrafting partType) {
+        PartTypeInterfaceCrafting partType) {
         super(new ContainerPartInterfaceCrafting(player, partTarget, partContainer, partType));
 
         putButtonAction(BUTTON_SETTINGS, (buttonId, gui, container) -> {
@@ -111,9 +111,11 @@ public class GuiPartInterfaceCrafting extends GuiMultipart<PartTypeInterfaceCraf
 
         GlStateManager.color(1, 1, 1, 1);
         int y = guiTop + 42;
-        for (int i = 0; i < state.getInventoryVariables().getSizeInventory(); i++) {
+        for (int i = 0; i < state.getInventoryVariables()
+            .getSizeInventory(); i++) {
             int x = guiLeft + 10 + i * GuiHelpers.SLOT_SIZE;
-            if (state.getInventoryVariables().getStackInSlot(i) != null) {
+            if (state.getInventoryVariables()
+                .getStackInSlot(i) != null) {
                 IImage image = state.isRecipeSlotValid(i) ? Images.OK : Images.ERROR;
                 image.draw(this, x, y);
             }
@@ -136,11 +138,13 @@ public class GuiPartInterfaceCrafting extends GuiMultipart<PartTypeInterfaceCraf
         }
 
         int y = 42;
-        for (int i = 0; i < state.getInventoryVariables().getSizeInventory(); i++) {
+        for (int i = 0; i < state.getInventoryVariables()
+            .getSizeInventory(); i++) {
             int x = 10 + i * GuiHelpers.SLOT_SIZE;
             int slot = i;
             GuiHelpers.renderTooltipOptional(this, x, y, 14, 13, mouseX, mouseY, () -> {
-                if (getContainer().getInventory().get(slot) != null) {
+                if (getContainer().getInventory()
+                    .get(slot) != null) {
                     LangHelpers.UnlocalizedString unlocalizedMessage = state.getRecipeSlotUnlocalizedMessage(slot);
                     if (unlocalizedMessage != null) {
                         return Optional.of(Collections.singletonList(unlocalizedMessage.localize()));
