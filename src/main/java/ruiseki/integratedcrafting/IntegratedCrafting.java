@@ -1,6 +1,7 @@
-package ruiseki.integratedterminals;
+package ruiseki.integratedcrafting;
 
 import net.minecraft.creativetab.CreativeTabs;
+import net.minecraftforge.common.MinecraftForge;
 
 import org.apache.logging.log4j.Level;
 
@@ -12,21 +13,20 @@ import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartedEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import cpw.mods.fml.common.event.FMLServerStoppingEvent;
-import ruiseki.integratedterminals.api.terminalstorage.ITerminalStorageTabRegistry;
-import ruiseki.integratedterminals.api.terminalstorage.crafting.ITerminalStorageTabIngredientCraftingHandlerRegistry;
-import ruiseki.integratedterminals.capability.ingredient.IngredientComponentTerminalStorageHandlerConfig;
-import ruiseki.integratedterminals.capability.ingredient.TerminalIngredientComponentCapabilities;
-import ruiseki.integratedterminals.core.client.gui.ExtendedGuiHandler;
-import ruiseki.integratedterminals.core.terminalstorage.TerminalStorageTabIngredientCraftingHandlerRegistry;
-import ruiseki.integratedterminals.core.terminalstorage.TerminalStorageTabRegistry;
-import ruiseki.integratedterminals.core.terminalstorage.TerminalStorageTabs;
-import ruiseki.integratedterminals.core.terminalstorage.crafting.TerminalStorageTabIngredientCraftingHandlers;
-import ruiseki.integratedterminals.modcompat.integratedcrafting.IntegratedCraftingModCompat;
-import ruiseki.integratedterminals.part.TerminalPartTypes;
-import ruiseki.okcore.client.gui.GuiHandler;
+import ruiseki.integratedcrafting.api.crafting.ICraftingProcessOverrideRegistry;
+import ruiseki.integratedcrafting.capability.network.CraftingInterfaceConfig;
+import ruiseki.integratedcrafting.capability.network.CraftingNetworkCapabilityConstructors;
+import ruiseki.integratedcrafting.capability.network.CraftingNetworkConfig;
+import ruiseki.integratedcrafting.capability.network.NetworkCraftingHandlerCraftingNetwork;
+import ruiseki.integratedcrafting.core.CraftingProcessOverrideRegistry;
+import ruiseki.integratedcrafting.core.CraftingProcessOverrides;
+import ruiseki.integratedcrafting.part.CraftingPartTypes;
+import ruiseki.integratedcrafting.part.aspect.CraftingAspects;
+import ruiseki.integrateddynamics.IntegratedDynamics;
+import ruiseki.integrateddynamics.api.network.INetworkCraftingHandlerRegistry;
 import ruiseki.okcore.config.ConfigHandler;
 import ruiseki.okcore.init.ModBaseVersionable;
-import ruiseki.okcore.modcompat.ModCompatLoader;
+import ruiseki.okcore.persist.world.GlobalCounters;
 import ruiseki.okcore.proxy.ICommonProxy;
 
 /**
@@ -41,8 +41,8 @@ import ruiseki.okcore.proxy.ICommonProxy;
     useMetadata = true,
     version = Reference.MOD_VERSION,
     dependencies = Reference.MOD_DEPENDENCIES,
-    guiFactory = "ruiseki.integratedterminals.GuiConfigOverview$ExtendedConfigGuiFactory")
-public class IntegratedTerminals extends ModBaseVersionable {
+    guiFactory = "ruiseki.integratedcrafting.GuiConfigOverview$ExtendedConfigGuiFactory")
+public class IntegratedCrafting extends ModBaseVersionable {
 
     /**
      * The proxy of this mod, depending on 'side' a different proxy will be inside this field.
@@ -50,31 +50,23 @@ public class IntegratedTerminals extends ModBaseVersionable {
      * @see SidedProxy
      */
     @SidedProxy(
-        clientSide = "ruiseki.integratedterminals.proxy.ClientProxy",
-        serverSide = "ruiseki.integratedterminals.proxy.CommonProxy")
+        clientSide = "ruiseki.integratedcrafting.proxy.ClientProxy",
+        serverSide = "ruiseki.integratedcrafting.proxy.CommonProxy")
     public static ICommonProxy proxy;
 
     /**
      * The unique instance of this mod.
      */
     @Mod.Instance(value = Reference.MOD_ID)
-    public static IntegratedTerminals _instance;
+    public static IntegratedCrafting _instance;
 
-    public IntegratedTerminals() {
+    public static GlobalCounters globalCounters = null;
+
+    public IntegratedCrafting() {
         super(Reference.MOD_ID, Reference.MOD_NAME, Reference.MOD_VERSION);
-    }
 
-    @Override
-    protected GuiHandler constructGuiHandler() {
-        return new ExtendedGuiHandler(this);
-    }
-
-    @Override
-    protected void loadModCompats(ModCompatLoader modCompatLoader) {
-        super.loadModCompats(modCompatLoader);
-
-        // Mod compats
-         modCompatLoader.addModCompat(new IntegratedCraftingModCompat());
+        // Register world storages
+        registerWorldStorage(globalCounters = new GlobalCounters(this));
     }
 
     /**
@@ -85,17 +77,15 @@ public class IntegratedTerminals extends ModBaseVersionable {
     @Mod.EventHandler
     @Override
     public void preInit(FMLPreInitializationEvent event) {
+        CraftingAspects.load();
+        CraftingPartTypes.load();
         super.preInit(event);
 
-        getRegistryManager().addRegistry(ITerminalStorageTabRegistry.class, new TerminalStorageTabRegistry());
-        getRegistryManager().addRegistry(
-            ITerminalStorageTabIngredientCraftingHandlerRegistry.class,
-            TerminalStorageTabIngredientCraftingHandlerRegistry.getInstance());
+        getRegistryManager()
+            .addRegistry(ICraftingProcessOverrideRegistry.class, CraftingProcessOverrideRegistry.getInstance());
 
-        TerminalPartTypes.load();
-        TerminalIngredientComponentCapabilities.load();
-        TerminalStorageTabs.load();
-        TerminalStorageTabIngredientCraftingHandlers.load();
+        MinecraftForge.EVENT_BUS.register(new CraftingNetworkCapabilityConstructors());
+        CraftingProcessOverrides.load();
     }
 
     /**
@@ -107,6 +97,10 @@ public class IntegratedTerminals extends ModBaseVersionable {
     @Override
     public void init(FMLInitializationEvent event) {
         super.init(event);
+
+        IntegratedDynamics._instance.getRegistryManager()
+            .getRegistry(INetworkCraftingHandlerRegistry.class)
+            .register(new NetworkCraftingHandlerCraftingNetwork());
     }
 
     /**
@@ -166,8 +160,8 @@ public class IntegratedTerminals extends ModBaseVersionable {
     @Override
     public void onMainConfigsRegister(ConfigHandler configHandler) {
         super.onMainConfigsRegister(configHandler);
-
-        configHandler.add(new IngredientComponentTerminalStorageHandlerConfig());
+        configHandler.add(new CraftingNetworkConfig());
+        configHandler.add(new CraftingInterfaceConfig());
     }
 
     @Override
@@ -191,11 +185,8 @@ public class IntegratedTerminals extends ModBaseVersionable {
      * @param message The message to show.
      */
     public static void clog(Level level, String message) {
-        IntegratedTerminals._instance.getLoggerHelper()
+        IntegratedCrafting._instance.getLoggerHelper()
             .log(level, message);
     }
 
-    public static void clog(Level level, String message, Object... params) {
-        IntegratedTerminals._instance.log(level, message, params);
-    }
 }

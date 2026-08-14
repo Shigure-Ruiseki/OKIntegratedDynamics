@@ -71,9 +71,15 @@ public class IngredientComponentTerminalStorageHandlerItemStack
 
     @Override
     @SideOnly(Side.CLIENT)
-    public void drawInstance(ItemStack instance, long maxQuantity, @Nullable String label, GuiContainer gui,
+    public void drawInstance(@Nullable ItemStack instance, long maxQuantity, @Nullable String label, GuiContainer gui,
                              GuiTerminalStorage.DrawLayer layer, float partialTick, int x, int y, int mouseX, int mouseY,
                              @Nullable List<String> additionalTooltipLines) {
+
+        // GUARD: Early return if instance is null or invalid
+        if (instance == null || instance.getItem() == null) {
+            return;
+        }
+
         RenderItemExtendedSlotCount renderItem = RenderItemExtendedSlotCount.getInstance();
         GlStateManager.pushMatrix();
         GlStateManager.enableBlend();
@@ -109,8 +115,12 @@ public class IngredientComponentTerminalStorageHandlerItemStack
                 mouseX,
                 mouseY,
                 () -> {
+                    // Safe call to getTooltip
                     List<String> lines = TerminalClientUtils.getTooltip(instance);
-                    if (lines != null && additionalTooltipLines != null) {
+                    if (lines == null) {
+                        lines = Lists.newArrayList();
+                    }
+                    if (additionalTooltipLines != null) {
                         lines.addAll(additionalTooltipLines);
                     }
                     addQuantityTooltip(lines, instance);
@@ -124,12 +134,12 @@ public class IngredientComponentTerminalStorageHandlerItemStack
 
     @Override
     public String formatQuantity(ItemStack instance) {
-        return String.format("%,d", instance != null ? instance.stackSize : 0);
+        return String.format("%,d", (instance != null && instance.getItem() != null) ? instance.stackSize : 0);
     }
 
     @Override
     public boolean isInstance(ItemStack itemStack) {
-        return itemStack != null;
+        return itemStack != null && itemStack.getItem() != null;
     }
 
     @Override
@@ -139,7 +149,7 @@ public class IngredientComponentTerminalStorageHandlerItemStack
 
     @Override
     public long getMaxQuantity(ItemStack itemStack) {
-        return itemStack != null ? itemStack.getMaxStackSize() : 0;
+        return (itemStack != null && itemStack.getItem() != null) ? itemStack.getMaxStackSize() : 0;
     }
 
     @Override
@@ -155,6 +165,9 @@ public class IngredientComponentTerminalStorageHandlerItemStack
     @Override
     public int throwIntoWorld(IIngredientComponentStorage<ItemStack, Integer> storage, ItemStack maxInstance,
                               EntityPlayer player) {
+        if (maxInstance == null || maxInstance.getItem() == null) {
+            return 0;
+        }
         ItemStack extracted = storage.extract(maxInstance, ItemMatch.EXACT, false);
         if (extracted != null) {
             player.dropPlayerItemWithRandomChoice(extracted, true);
@@ -166,6 +179,10 @@ public class IngredientComponentTerminalStorageHandlerItemStack
     @Override
     public ItemStack insertIntoContainer(IIngredientComponentStorage<ItemStack, Integer> storage, Container container,
                                          int containerSlotIndex, ItemStack maxInstance, @Nullable EntityPlayer player, boolean transferFullSelection) {
+        if (maxInstance == null || maxInstance.getItem() == null) {
+            return null;
+        }
+
         IIngredientMatcher<ItemStack, Integer> matcher = IngredientComponent.ITEMSTACK.getMatcher();
 
         Slot containerSlot = container.getSlot(containerSlotIndex);
@@ -219,7 +236,7 @@ public class IngredientComponentTerminalStorageHandlerItemStack
     public void extractActiveStackFromPlayerInventory(IIngredientComponentStorage<ItemStack, Integer> storage,
                                                       InventoryPlayer playerInventory, long moveQuantityPlayerSlot) {
         ItemStack activeStack = playerInventory.getItemStack();
-        if (activeStack != null) {
+        if (activeStack != null && activeStack.getItem() != null) {
             ItemStack playerStack = IngredientComponent.ITEMSTACK.getMatcher()
                 .withQuantity(activeStack, (int) moveQuantityPlayerSlot);
             ItemStack remainingStack = storage.insert(playerStack.copy(), false);
@@ -238,7 +255,7 @@ public class IngredientComponentTerminalStorageHandlerItemStack
                                             Container container, int containerSlot, InventoryPlayer playerInventory) {
         Slot slot = container.getSlot(containerSlot);
         ItemStack toMove = slot.getStack();
-        if (toMove != null) {
+        if (toMove != null && toMove.getItem() != null) {
             slot.putStack(null);
             ItemStack remainingStack = storage.insert(toMove, false);
             if (remainingStack != null) {
@@ -255,13 +272,13 @@ public class IngredientComponentTerminalStorageHandlerItemStack
     @Override
     public long getActivePlayerStackQuantity(InventoryPlayer playerInventory) {
         ItemStack activeStack = playerInventory.getItemStack();
-        return activeStack != null ? activeStack.stackSize : 0;
+        return (activeStack != null && activeStack.getItem() != null) ? activeStack.stackSize : 0;
     }
 
     @Override
     public void drainActivePlayerStackQuantity(InventoryPlayer playerInventory, long quantity) {
         ItemStack activeStack = playerInventory.getItemStack();
-        if (activeStack != null) {
+        if (activeStack != null && activeStack.getItem() != null) {
             activeStack.stackSize -= (int) quantity;
             if (activeStack.stackSize <= 0) {
                 playerInventory.setItemStack(null);
@@ -284,25 +301,25 @@ public class IngredientComponentTerminalStorageHandlerItemStack
                 };
             case TOOLTIP:
                 return i -> {
-                    if (i == null) return false;
+                    if (i == null || i.getItem() == null) return false;
                     List<String> tooltip = TerminalClientUtils.getTooltip(i);
                     if (tooltip == null) return false;
                     return tooltip.stream()
                         .anyMatch(
-                            s -> s.toLowerCase(Locale.ENGLISH)
+                            s -> s != null && s.toLowerCase(Locale.ENGLISH)
                                 .contains(lowerQuery));
                 };
             case DICT:
                 return i -> {
-                    if (i == null) return false;
+                    if (i == null || i.getItem() == null) return false;
                     return Arrays.stream(OreDictionary.getOreIDs(i))
                         .mapToObj(OreDictionary::getOreName)
                         .anyMatch(
-                            name -> name.toLowerCase(Locale.ENGLISH)
+                            name -> name != null && name.toLowerCase(Locale.ENGLISH)
                                 .contains(lowerQuery));
                 };
             case DEFAULT:
-                return i -> i != null && i.getDisplayName()
+                return i -> i != null && i.getItem() != null && i.getDisplayName() != null && i.getDisplayName()
                     .toLowerCase(Locale.ENGLISH)
                     .contains(lowerQuery);
         }

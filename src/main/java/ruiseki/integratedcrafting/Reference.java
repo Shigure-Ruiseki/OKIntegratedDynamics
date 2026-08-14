@@ -1,11 +1,11 @@
-package ruiseki.integratedterminals;
+package ruiseki.integratedcrafting;
 
 import ruiseki.integrateddynamics.Tags;
 
 /**
  * Class that can hold basic static things that are better not hard-coded
  * like mod details, texture paths, ID's...
- *
+ * 
  * @author rubensworks (aka kroeserr)
  *
  */
@@ -13,8 +13,8 @@ import ruiseki.integrateddynamics.Tags;
 public class Reference {
 
     // Mod info
-    public static final String MOD_ID = "integratedterminals";
-    public static final String MOD_NAME = "Integrated Terminals";
+    public static final String MOD_ID = "integratedcrafting";
+    public static final String MOD_NAME = "Integrated Crafting";
     public static final String MOD_VERSION = Tags.VERSION;
     public static final String VERSION_URL = "";
 
@@ -27,12 +27,9 @@ public class Reference {
     public static final String TEXTURE_PATH_ITEMS = "textures/items/";
     public static final String TEXTURE_PATH_PARTICLES = "textures/particles/";
     public static final String MODEL_PATH = "models/";
-
     // Dependencies
     public static final String MOD_DEPENDENCIES = "required-after:okcore;" + "required-after:commoncapabilities;"
         + "required-after:integrateddynamics;"
-        + "required-after:integratedtunnels;"
-        + "required-after:integratedcrafting;"
         + "after:jfmuy;"
         + "after:Waila;";
 }
