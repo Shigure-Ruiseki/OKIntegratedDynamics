@@ -2,6 +2,7 @@ package ruiseki.integrateddynamics.core.evaluate;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
@@ -18,7 +19,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.jetbrains.annotations.Nullable;
 
-import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
 
 import cofh.api.energy.IEnergyStorage;
@@ -204,7 +204,7 @@ public class OperatorBuilders {
                     .get()
                     .getBlock().stepSound);
         }
-        return Optional.absent();
+        return Optional.empty();
     };
 
     // --------------- ItemStack builders ---------------
@@ -231,7 +231,7 @@ public class OperatorBuilders {
         .appendPre(input -> {
             ValueObjectTypeItemStack.ValueItemStack value = input.getValue(0, ValueTypes.OBJECT_ITEMSTACK);
             return value.getRawValue()
-                .orNull();
+                .orElse(null);
         });
     public static final IterativeFunction.PrePostBuilder<ItemStack, Integer> FUNCTION_ITEMSTACK_TO_INT = FUNCTION_ITEMSTACK
         .appendPost(PROPAGATOR_INTEGER_VALUE);
@@ -588,7 +588,7 @@ public class OperatorBuilders {
         .appendPre(input -> {
             ValueTypeNbt.ValueNbt valueNbt = input.getValue(0, ValueTypes.NBT);
             ValueTypeString.ValueString valueString = input.getValue(1, ValueTypes.STRING);
-            return Optional.fromNullable(
+            return Optional.ofNullable(
                 valueNbt.getRawValue()
                     .getTag(valueString.getRawValue()));
         });

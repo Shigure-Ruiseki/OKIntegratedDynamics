@@ -68,7 +68,7 @@ public class IngredientComponentHandlers {
                     @Nullable
                     public ItemStack toInstance(ValueObjectTypeItemStack.ValueItemStack value) {
                         return value.getRawValue()
-                            .orNull();
+                            .orElse(null);
                     }
                 });
         }
@@ -96,7 +96,7 @@ public class IngredientComponentHandlers {
                     @Nullable
                     public FluidStack toInstance(ValueObjectTypeFluidStack.ValueFluidStack value) {
                         return value.getRawValue()
-                            .orNull();
+                            .orElse(null);
                     }
                 });
         }

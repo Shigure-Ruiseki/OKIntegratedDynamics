@@ -1,6 +1,6 @@
 package ruiseki.integrateddynamics.core.evaluate.variable;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 
@@ -15,7 +15,7 @@ public abstract class ValueOptionalBase<T> extends ValueBase {
 
     public ValueOptionalBase(IValueType type, T value) {
         super(type);
-        this.value = Optional.fromNullable(value);
+        this.value = Optional.ofNullable(value);
     }
 
     /**

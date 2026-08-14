@@ -1,12 +1,12 @@
 package ruiseki.integrateddynamics.core.evaluate.variable;
 
+import java.util.Optional;
+
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.JsonToNBT;
 import net.minecraft.nbt.NBTException;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.fluids.FluidStack;
-
-import com.google.common.base.Optional;
 
 import lombok.ToString;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeNamed;

@@ -1,0 +1,22 @@
+package ruiseki.integratedterminals.capability.ingredient.sorter;
+
+import net.minecraftforge.fluids.FluidStack;
+
+import ruiseki.integratedterminals.client.gui.image.Images;
+
+/**
+ * Sorts fluids by amount.
+ * 
+ * @author rubensworks
+ */
+public class FluidStackQuantitySorter extends IngredientInstanceSorterAdapter<FluidStack> {
+
+    public FluidStackQuantitySorter() {
+        super(Images.BUTTON_MIDDLE_QUANTITY, "fluidstack", "quantity");
+    }
+
+    @Override
+    public int compare(FluidStack o1, FluidStack o2) {
+        return -Integer.compare(o2.amount, o1.amount);
+    }
+}

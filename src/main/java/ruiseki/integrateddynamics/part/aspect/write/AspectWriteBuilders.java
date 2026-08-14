@@ -113,7 +113,7 @@ public class AspectWriteBuilders {
             input.getMiddle(),
             input.getRight()
                 .getRawValue()
-                .orNull());
+                .orElse(null));
 
     public static final IAspectValuePropagator<Triple<PartTarget, IAspectProperties, ValueTypeString.ValueString>, Triple<PartTarget, IAspectProperties, String>> PROP_GET_STRING = input -> Triple
         .of(
@@ -128,7 +128,7 @@ public class AspectWriteBuilders {
             input.getMiddle(),
             input.getRight()
                 .getRawValue()
-                .orNull());
+                .orElse(null));
 
     public static final IAspectValuePropagator<Triple<PartTarget, IAspectProperties, ValueObjectTypeFluidStack.ValueFluidStack>, Triple<PartTarget, IAspectProperties, FluidStack>> PROP_GET_FLUIDSTACK = input -> Triple
         .of(
@@ -136,7 +136,7 @@ public class AspectWriteBuilders {
             input.getMiddle(),
             input.getRight()
                 .getRawValue()
-                .orNull());
+                .orElse(null));
 
     public static final IAspectValuePropagator<Triple<PartTarget, IAspectProperties, ValueTypeNbt.ValueNbt>, Triple<PartTarget, IAspectProperties, NBTTagCompound>> PROP_GET_NBT = input -> Triple
         .of(
@@ -151,7 +151,7 @@ public class AspectWriteBuilders {
             input.getMiddle(),
             input.getRight()
                 .getRawValue()
-                .orNull());
+                .orElse(null));
 
     public static final class Audio {
 

@@ -140,10 +140,12 @@ public class NetworkHelpers {
     public static <T, M> IPositionedAddonsNetworkIngredients<T, M> getIngredientNetwork(@Nullable INetwork network,
         IngredientComponent<T, M> ingredientComponent) {
         return network != null
-            && ingredientComponent.hasCapability(PositionedAddonsNetworkIngredientsHandlerConfig.CAPABILITY)
-                ? ingredientComponent.getCapability(PositionedAddonsNetworkIngredientsHandlerConfig.CAPABILITY)
-                    .getStorage(network)
-                : null;
+            && ingredientComponent.getCapability(PositionedAddonsNetworkIngredientsHandlerConfig.CAPABILITY)
+                .isPresent()
+                    ? ingredientComponent.getCapability(PositionedAddonsNetworkIngredientsHandlerConfig.CAPABILITY)
+                        .getOrNull()
+                        .getStorage(network)
+                    : null;
     }
 
     /**

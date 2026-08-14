@@ -1,13 +1,13 @@
 package ruiseki.integrateddynamics.core.evaluate.variable;
 
+import java.util.Optional;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.WorldServer;
-
-import com.google.common.base.Optional;
 
 import lombok.ToString;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeNamed;

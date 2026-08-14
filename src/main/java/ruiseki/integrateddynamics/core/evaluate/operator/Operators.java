@@ -7,6 +7,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -53,7 +54,6 @@ import net.minecraftforge.oredict.OreDictionary;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -3728,7 +3728,8 @@ public final class Operators {
             .symbol("NBT.boolean")
             .function(
                 OperatorBuilders.FUNCTION_NBT_ENTRY_TO_BOOLEAN.build(
-                    tag -> tag.orNull() instanceof NBTPrimitive && ((NBTPrimitive) tag.orNull()).func_150290_f() != 0))
+                    tag -> tag.orElse(null) instanceof NBTPrimitive
+                        && ((NBTPrimitive) tag.orElse(null)).func_150290_f() != 0))
             .build());
 
     /**
@@ -3740,7 +3741,8 @@ public final class Operators {
             .symbol("NBT.integer")
             .function(
                 OperatorBuilders.FUNCTION_NBT_ENTRY_TO_INT.build(
-                    tag -> tag.orNull() instanceof NBTPrimitive ? ((NBTPrimitive) tag.orNull()).func_150287_d() : 0))
+                    tag -> tag.orElse(null) instanceof NBTPrimitive ? ((NBTPrimitive) tag.orElse(null)).func_150287_d()
+                        : 0))
             .build());
 
     /**
@@ -3752,7 +3754,8 @@ public final class Operators {
             .symbol("NBT.long")
             .function(
                 OperatorBuilders.FUNCTION_NBT_ENTRY_TO_LONG.build(
-                    tag -> tag.orNull() instanceof NBTPrimitive ? ((NBTPrimitive) tag.orNull()).func_150291_c() : 0L))
+                    tag -> tag.orElse(null) instanceof NBTPrimitive ? ((NBTPrimitive) tag.orElse(null)).func_150291_c()
+                        : 0L))
             .build());
 
     /**
@@ -3764,7 +3767,8 @@ public final class Operators {
             .symbol("NBT.double")
             .function(
                 OperatorBuilders.FUNCTION_NBT_ENTRY_TO_DOUBLE.build(
-                    tag -> tag.orNull() instanceof NBTPrimitive ? ((NBTPrimitive) tag.orNull()).func_150286_g() : 0D))
+                    tag -> tag.orElse(null) instanceof NBTPrimitive ? ((NBTPrimitive) tag.orElse(null)).func_150286_g()
+                        : 0D))
             .build());
 
     /**
@@ -3776,7 +3780,8 @@ public final class Operators {
             .symbol("NBT.string")
             .function(
                 OperatorBuilders.FUNCTION_NBT_ENTRY_TO_STRING.build(
-                    tag -> tag.orNull() instanceof NBTTagString ? ((NBTTagString) tag.orNull()).func_150285_a_() : ""))
+                    tag -> tag.orElse(null) instanceof NBTTagString ? ((NBTTagString) tag.orElse(null)).func_150285_a_()
+                        : ""))
             .build());
 
     /**
@@ -3788,7 +3793,7 @@ public final class Operators {
             .symbol("NBT.tag")
             .function(
                 OperatorBuilders.FUNCTION_NBT_ENTRY_TO_NBT.build(
-                    tag -> tag.orNull() instanceof NBTTagCompound ? (NBTTagCompound) tag.orNull()
+                    tag -> tag.orElse(null) instanceof NBTTagCompound ? (NBTTagCompound) tag.orElse(null)
                         : new NBTTagCompound()))
             .build());
 
@@ -4293,7 +4298,7 @@ public final class Operators {
                         index.getRawValue(),
                         IngredientComponent.FLUIDSTACK,
                         fluidStack.getRawValue()
-                            .orNull()));
+                            .orElse(null)));
             })
             .build());
 

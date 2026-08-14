@@ -2,6 +2,7 @@ package ruiseki.integrateddynamics.client.render.valuetype;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -10,7 +11,6 @@ import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.util.ForgeDirection;
 
-import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
 
 import ruiseki.commoncapabilities.api.capability.itemhandler.ItemMatch;

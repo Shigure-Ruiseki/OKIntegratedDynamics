@@ -1,6 +1,7 @@
 package ruiseki.integrateddynamics.client.render.valuetype;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import net.minecraft.client.Minecraft;
@@ -11,7 +12,6 @@ import net.minecraftforge.oredict.OreDictionary;
 
 import org.jetbrains.annotations.Nullable;
 
-import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
 
 import ruiseki.commoncapabilities.api.ingredient.IMixedIngredients;

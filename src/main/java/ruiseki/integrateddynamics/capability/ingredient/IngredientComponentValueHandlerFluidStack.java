@@ -39,7 +39,7 @@ public class IngredientComponentValueHandlerFluidStack implements
     @Nullable
     public FluidStack toInstance(ValueObjectTypeFluidStack.ValueFluidStack value) {
         return value.getRawValue()
-            .orNull();
+            .orElse(null);
     }
 
 }

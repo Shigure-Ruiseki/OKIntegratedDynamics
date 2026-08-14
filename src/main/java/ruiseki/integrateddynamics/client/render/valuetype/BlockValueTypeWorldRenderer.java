@@ -1,10 +1,11 @@
 package ruiseki.integrateddynamics.client.render.valuetype;
 
+import java.util.Optional;
+
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.util.ForgeDirection;
 
-import com.google.common.base.Optional;
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 
 import ruiseki.integrateddynamics.api.client.render.valuetype.IValueTypeWorldRenderer;
@@ -16,7 +17,7 @@ import ruiseki.okcore.helper.BlockHelpers;
 
 /**
  * A value type world renderer for blocks.
- * 
+ *
  * @author rubensworks
  */
 public class BlockValueTypeWorldRenderer implements IValueTypeWorldRenderer {
