@@ -26,18 +26,33 @@ import ruiseki.okcore.helper.MinecraftHelpers;
  */
 public class IngredientComponentHandlers {
 
-    public static final IIngredientComponentHandlerRegistry REGISTRY = constructRegistry();
+    public static IIngredientComponentHandlerRegistry REGISTRY = null;
+
+    public static IIngredientComponentHandlerRegistry getRegistry() {
+        if (REGISTRY == null) {
+            REGISTRY = constructRegistry();
+        }
+        return REGISTRY;
+    }
 
     private static IIngredientComponentHandlerRegistry constructRegistry() {
-        if (MinecraftHelpers.isModdedEnvironment()) {
-            return IntegratedDynamics._instance.getRegistryManager()
+        if (MinecraftHelpers.isModdedEnvironment() && IntegratedDynamics._instance != null
+            && IntegratedDynamics._instance.getRegistryManager() != null) {
+
+            IIngredientComponentHandlerRegistry registry = IntegratedDynamics._instance.getRegistryManager()
                 .getRegistry(IIngredientComponentHandlerRegistry.class);
-        } else {
-            return IngredientComponentHandlerRegistry.getInstance();
+
+            if (registry != null) {
+                return registry;
+            }
         }
+
+        return IngredientComponentHandlerRegistry.getInstance();
     }
 
     public static void load() {
+        IIngredientComponentHandlerRegistry registry = getRegistry();
+
         IngredientComponent componentItem = IngredientComponent.REGISTRY
             .get(new ResourceLocation("minecraft:itemstack"));
         IngredientComponent componentFluid = IngredientComponent.REGISTRY
@@ -46,7 +61,7 @@ public class IngredientComponentHandlers {
             .get(new ResourceLocation("minecraft:energy"));
 
         if (componentItem != null) {
-            REGISTRY.register(
+            registry.register(
                 new IIngredientComponentHandler<ValueObjectTypeItemStack, ValueObjectTypeItemStack.ValueItemStack, ItemStack, Integer>() {
 
                     @Override
@@ -74,7 +89,7 @@ public class IngredientComponentHandlers {
         }
 
         if (componentFluid != null) {
-            REGISTRY.register(
+            registry.register(
                 new IIngredientComponentHandler<ValueObjectTypeFluidStack, ValueObjectTypeFluidStack.ValueFluidStack, FluidStack, Integer>() {
 
                     @Override
@@ -102,7 +117,7 @@ public class IngredientComponentHandlers {
         }
 
         if (componentEnergy != null) {
-            REGISTRY.register(
+            registry.register(
                 new IIngredientComponentHandler<ValueTypeInteger, ValueTypeInteger.ValueInteger, Integer, Boolean>() {
 
                     @Override

@@ -65,7 +65,7 @@ public class IngredientComponentTerminalStorageHandlerFluidStack
 
     @Override
     public ItemStack getIcon() {
-        return new ItemStack(Items.wooden_sword);
+        return new ItemStack(Items.water_bucket);
     }
 
     @Override

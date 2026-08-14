@@ -23,7 +23,7 @@ import ruiseki.okcore.helper.LangHelpers;
 
 /**
  * A button for sorting based on a given {@link IIngredientInstanceSorter}.
- * 
+ *
  * @author rubensworks
  */
 public class TerminalButtonSort<T> implements
@@ -128,7 +128,7 @@ public class TerminalButtonSort<T> implements
                         descending ? "gui." + Reference.MOD_ID + ".terminal_storage.sort.order.descending"
                             : "gui." + Reference.MOD_ID + ".terminal_storage.sort.order.ascending")));
         } else {
-            lines.add(EnumChatFormatting.ITALIC + LangHelpers.localize("general.cyclopscore.info.disabled"));
+            lines.add(EnumChatFormatting.ITALIC + LangHelpers.localize("general.okcore.info.disabled"));
         }
     }
 
