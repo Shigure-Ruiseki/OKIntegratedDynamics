@@ -41,7 +41,7 @@ import ruiseki.okcore.proxy.ICommonProxy;
     useMetadata = true,
     version = Reference.MOD_VERSION,
     dependencies = Reference.MOD_DEPENDENCIES,
-    guiFactory = "ruiseki.integratedtunnels.GuiConfigOverview$ExtendedConfigGuiFactory")
+    guiFactory = Reference.GUI_FACTORY)
 public class IntegratedTunnels extends ModBaseVersionable {
 
     /**

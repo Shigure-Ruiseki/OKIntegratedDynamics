@@ -27,6 +27,7 @@ public class Reference {
     public static final String TEXTURE_PATH_ITEMS = "textures/items/";
     public static final String TEXTURE_PATH_PARTICLES = "textures/particles/";
     public static final String MODEL_PATH = "models/";
+    public static final String GUI_FACTORY = "ruiseki.integratedtunnels.GuiConfigOverview$ExtendedConfigGuiFactory";
 
     // Dependencies
     public static final String MOD_DEPENDENCIES = "required-after:okcore;" + "required-after:commoncapabilities;"

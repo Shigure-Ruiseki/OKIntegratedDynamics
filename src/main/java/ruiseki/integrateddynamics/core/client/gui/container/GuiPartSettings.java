@@ -277,10 +277,14 @@ public class GuiPartSettings extends GuiContainerExtended {
     @Override
     protected void keyTyped(char typedChar, int keyCode) {
         if (!this.checkHotbarKeys(keyCode)) {
-            if (!(isFieldUpdateIntervalEnabled() && this.numberFieldUpdateInterval.textboxKeyTyped(typedChar, keyCode))
-                && !(isFieldPriorityEnabled() && this.numberFieldPriority.textboxKeyTyped(typedChar, keyCode))
-                && !(isFieldChannelEnabled() && this.numberFieldChannel.textboxKeyTyped(typedChar, keyCode))
-                && !(isFieldSideEnabled() && this.dropdownFieldSide.textboxKeyTyped(typedChar, keyCode))) {
+            if (!(isFieldUpdateIntervalEnabled() && this.numberFieldUpdateInterval != null
+                && this.numberFieldUpdateInterval.textboxKeyTyped(typedChar, keyCode))
+                && !(isFieldPriorityEnabled() && this.numberFieldPriority != null
+                    && this.numberFieldPriority.textboxKeyTyped(typedChar, keyCode))
+                && !(isFieldChannelEnabled() && this.numberFieldChannel != null
+                    && this.numberFieldChannel.textboxKeyTyped(typedChar, keyCode))
+                && !(isFieldSideEnabled() && this.dropdownFieldSide != null
+                    && this.dropdownFieldSide.textboxKeyTyped(typedChar, keyCode))) {
                 super.keyTyped(typedChar, keyCode);
             }
         }
@@ -288,10 +292,18 @@ public class GuiPartSettings extends GuiContainerExtended {
 
     @Override
     protected void mouseClicked(int mouseX, int mouseY, int mouseButton) {
-        this.numberFieldUpdateInterval.mouseClicked(mouseX, mouseY, mouseButton);
-        this.numberFieldPriority.mouseClicked(mouseX, mouseY, mouseButton);
-        this.numberFieldChannel.mouseClicked(mouseX, mouseY, mouseButton);
-        this.dropdownFieldSide.mouseClicked(mouseX, mouseY, mouseButton);
+        if (isFieldUpdateIntervalEnabled() && this.numberFieldUpdateInterval != null) {
+            this.numberFieldUpdateInterval.mouseClicked(mouseX, mouseY, mouseButton);
+        }
+        if (isFieldPriorityEnabled() && this.numberFieldPriority != null) {
+            this.numberFieldPriority.mouseClicked(mouseX, mouseY, mouseButton);
+        }
+        if (isFieldChannelEnabled() && this.numberFieldChannel != null) {
+            this.numberFieldChannel.mouseClicked(mouseX, mouseY, mouseButton);
+        }
+        if (isFieldSideEnabled() && this.dropdownFieldSide != null) {
+            this.dropdownFieldSide.mouseClicked(mouseX, mouseY, mouseButton);
+        }
         super.mouseClicked(mouseX, mouseY, mouseButton);
     }
 

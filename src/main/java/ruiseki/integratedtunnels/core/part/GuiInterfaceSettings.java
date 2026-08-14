@@ -81,7 +81,8 @@ public class GuiInterfaceSettings extends GuiPartSettings {
     @Override
     protected void keyTyped(char typedChar, int keyCode) {
         if (!this.checkHotbarKeys(keyCode)) {
-            if (!this.numberFieldChannelInterface.textboxKeyTyped(typedChar, keyCode)) {
+            if (this.numberFieldChannelInterface != null
+                && !this.numberFieldChannelInterface.textboxKeyTyped(typedChar, keyCode)) {
                 super.keyTyped(typedChar, keyCode);
             }
         }
@@ -89,7 +90,9 @@ public class GuiInterfaceSettings extends GuiPartSettings {
 
     @Override
     protected void mouseClicked(int mouseX, int mouseY, int mouseButton) {
-        this.numberFieldChannelInterface.mouseClicked(mouseX, mouseY, mouseButton);
+        if (this.numberFieldChannelInterface != null) {
+            this.numberFieldChannelInterface.mouseClicked(mouseX, mouseY, mouseButton);
+        }
         super.mouseClicked(mouseX, mouseY, mouseButton);
     }
 

@@ -166,8 +166,11 @@ public class GuiPartInterfaceCraftingSettings extends GuiPartSettings implements
     @Override
     protected void keyTyped(char typedChar, int keyCode) {
         if (!this.checkHotbarKeys(keyCode)) {
-            if (!this.numberFieldChannelInterfaceCrafting.textboxKeyTyped(typedChar, keyCode)
-                && !this.dropdownFieldSide.textboxKeyTyped(typedChar, keyCode)) {
+            boolean handled = (this.numberFieldChannelInterfaceCrafting != null
+                && this.numberFieldChannelInterfaceCrafting.textboxKeyTyped(typedChar, keyCode))
+                || (this.dropdownFieldSide != null && this.dropdownFieldSide.textboxKeyTyped(typedChar, keyCode));
+
+            if (!handled) {
                 super.keyTyped(typedChar, keyCode);
             }
         }
@@ -175,9 +178,15 @@ public class GuiPartInterfaceCraftingSettings extends GuiPartSettings implements
 
     @Override
     protected void mouseClicked(int mouseX, int mouseY, int mouseButton) {
-        this.ingredientComponentSideSelector.mouseClicked(mouseX, mouseY, mouseButton);
-        this.dropdownFieldSide.mouseClicked(mouseX, mouseY, mouseButton);
-        this.numberFieldChannelInterfaceCrafting.mouseClicked(mouseX, mouseY, mouseButton);
+        if (this.ingredientComponentSideSelector != null) {
+            this.ingredientComponentSideSelector.mouseClicked(mouseX, mouseY, mouseButton);
+        }
+        if (this.dropdownFieldSide != null) {
+            this.dropdownFieldSide.mouseClicked(mouseX, mouseY, mouseButton);
+        }
+        if (this.numberFieldChannelInterfaceCrafting != null) {
+            this.numberFieldChannelInterfaceCrafting.mouseClicked(mouseX, mouseY, mouseButton);
+        }
         super.mouseClicked(mouseX, mouseY, mouseButton);
     }
 
