@@ -2,11 +2,14 @@ package ruiseki.integrateddynamics.core.ingredient;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fluids.FluidStack;
 
 import org.apache.logging.log4j.Level;
 import org.jetbrains.annotations.Nullable;
 
+import cpw.mods.fml.common.eventhandler.EventPriority;
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.ingredient.IIngredientComponentHandler;
@@ -18,6 +21,7 @@ import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
+import ruiseki.okcore.registries.RegistryEvent;
 
 /**
  * Value handlers for ingredient components.
@@ -51,105 +55,112 @@ public class IngredientComponentHandlers {
     }
 
     public static void load() {
-        IIngredientComponentHandlerRegistry registry = getRegistry();
+        MinecraftForge.EVENT_BUS.register(new IngredientComponentHandlers());
+    }
 
-        IngredientComponent componentItem = IngredientComponent.REGISTRY
-            .get(new ResourceLocation("minecraft:itemstack"));
-        IngredientComponent componentFluid = IngredientComponent.REGISTRY
-            .get(new ResourceLocation("minecraft:fluidstack"));
-        IngredientComponent componentEnergy = IngredientComponent.REGISTRY
-            .get(new ResourceLocation("minecraft:energy"));
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public void onIngredientComponentsPopulated(RegistryEvent.Register event) {
+        if (event.getRegistry() == IngredientComponent.REGISTRY) {
+            IIngredientComponentHandlerRegistry registry = getRegistry();
 
-        if (componentItem != null) {
-            registry.register(
-                new IIngredientComponentHandler<ValueObjectTypeItemStack, ValueObjectTypeItemStack.ValueItemStack, ItemStack, Integer>() {
+            IngredientComponent componentItem = IngredientComponent.REGISTRY
+                .getValue(new ResourceLocation("minecraft:itemstack"));
+            IngredientComponent componentFluid = IngredientComponent.REGISTRY
+                .getValue(new ResourceLocation("minecraft:fluidstack"));
+            IngredientComponent componentEnergy = IngredientComponent.REGISTRY
+                .getValue(new ResourceLocation("minecraft:energy"));
 
-                    @Override
-                    public ValueObjectTypeItemStack getValueType() {
-                        return ValueTypes.OBJECT_ITEMSTACK;
-                    }
+            if (componentItem != null) {
+                registry.register(
+                    new IIngredientComponentHandler<ValueObjectTypeItemStack, ValueObjectTypeItemStack.ValueItemStack, ItemStack, Integer>() {
 
-                    @Override
-                    public IngredientComponent<ItemStack, Integer> getComponent() {
-                        return componentItem;
-                    }
+                        @Override
+                        public ValueObjectTypeItemStack getValueType() {
+                            return ValueTypes.OBJECT_ITEMSTACK;
+                        }
 
-                    @Override
-                    public ValueObjectTypeItemStack.ValueItemStack toValue(ItemStack instance) {
-                        return ValueObjectTypeItemStack.ValueItemStack.of(instance);
-                    }
+                        @Override
+                        public IngredientComponent<ItemStack, Integer> getComponent() {
+                            return componentItem;
+                        }
 
-                    @Override
-                    @Nullable
-                    public ItemStack toInstance(ValueObjectTypeItemStack.ValueItemStack value) {
-                        return value.getRawValue()
-                            .orElse(null);
-                    }
-                });
+                        @Override
+                        public ValueObjectTypeItemStack.ValueItemStack toValue(ItemStack instance) {
+                            return ValueObjectTypeItemStack.ValueItemStack.of(instance);
+                        }
+
+                        @Override
+                        @Nullable
+                        public ItemStack toInstance(ValueObjectTypeItemStack.ValueItemStack value) {
+                            return value.getRawValue()
+                                .orElse(null);
+                        }
+                    });
+            }
+
+            if (componentFluid != null) {
+                registry.register(
+                    new IIngredientComponentHandler<ValueObjectTypeFluidStack, ValueObjectTypeFluidStack.ValueFluidStack, FluidStack, Integer>() {
+
+                        @Override
+                        public ValueObjectTypeFluidStack getValueType() {
+                            return ValueTypes.OBJECT_FLUIDSTACK;
+                        }
+
+                        @Override
+                        public IngredientComponent<FluidStack, Integer> getComponent() {
+                            return componentFluid;
+                        }
+
+                        @Override
+                        public ValueObjectTypeFluidStack.ValueFluidStack toValue(@Nullable FluidStack instance) {
+                            return ValueObjectTypeFluidStack.ValueFluidStack.of(instance);
+                        }
+
+                        @Override
+                        @Nullable
+                        public FluidStack toInstance(ValueObjectTypeFluidStack.ValueFluidStack value) {
+                            return value.getRawValue()
+                                .orElse(null);
+                        }
+                    });
+            }
+
+            if (componentEnergy != null) {
+                registry.register(
+                    new IIngredientComponentHandler<ValueTypeInteger, ValueTypeInteger.ValueInteger, Integer, Boolean>() {
+
+                        @Override
+                        public ValueTypeInteger getValueType() {
+                            return ValueTypes.INTEGER;
+                        }
+
+                        @Override
+                        public IngredientComponent<Integer, Boolean> getComponent() {
+                            return componentEnergy;
+                        }
+
+                        @Override
+                        public ValueTypeInteger.ValueInteger toValue(@Nullable Integer instance) {
+                            return ValueTypeInteger.ValueInteger.of(instance == null ? 0 : instance);
+                        }
+
+                        @Nullable
+                        @Override
+                        public Integer toInstance(ValueTypeInteger.ValueInteger value) {
+                            return value.getRawValue();
+                        }
+
+                        @Override
+                        public String toCompactString(ValueTypeInteger.ValueInteger ingredientValue) {
+                            String value = getValueType().toCompactString(ingredientValue);
+                            value += " " + LangHelpers.localize(L10NValues.GENERAL_ENERGY_UNIT);
+                            return value;
+                        }
+                    });
+            }
+
+            IntegratedDynamics.clog(Level.INFO, "Registered IngredientComponentHandlers successfully.");
         }
-
-        if (componentFluid != null) {
-            registry.register(
-                new IIngredientComponentHandler<ValueObjectTypeFluidStack, ValueObjectTypeFluidStack.ValueFluidStack, FluidStack, Integer>() {
-
-                    @Override
-                    public ValueObjectTypeFluidStack getValueType() {
-                        return ValueTypes.OBJECT_FLUIDSTACK;
-                    }
-
-                    @Override
-                    public IngredientComponent<FluidStack, Integer> getComponent() {
-                        return componentFluid;
-                    }
-
-                    @Override
-                    public ValueObjectTypeFluidStack.ValueFluidStack toValue(@Nullable FluidStack instance) {
-                        return ValueObjectTypeFluidStack.ValueFluidStack.of(instance);
-                    }
-
-                    @Override
-                    @Nullable
-                    public FluidStack toInstance(ValueObjectTypeFluidStack.ValueFluidStack value) {
-                        return value.getRawValue()
-                            .orElse(null);
-                    }
-                });
-        }
-
-        if (componentEnergy != null) {
-            registry.register(
-                new IIngredientComponentHandler<ValueTypeInteger, ValueTypeInteger.ValueInteger, Integer, Boolean>() {
-
-                    @Override
-                    public ValueTypeInteger getValueType() {
-                        return ValueTypes.INTEGER;
-                    }
-
-                    @Override
-                    public IngredientComponent<Integer, Boolean> getComponent() {
-                        return componentEnergy;
-                    }
-
-                    @Override
-                    public ValueTypeInteger.ValueInteger toValue(@Nullable Integer instance) {
-                        return ValueTypeInteger.ValueInteger.of(instance == null ? 0 : instance);
-                    }
-
-                    @Nullable
-                    @Override
-                    public Integer toInstance(ValueTypeInteger.ValueInteger value) {
-                        return value.getRawValue();
-                    }
-
-                    @Override
-                    public String toCompactString(ValueTypeInteger.ValueInteger ingredientValue) {
-                        String value = getValueType().toCompactString(ingredientValue);
-                        value += " " + LangHelpers.localize(L10NValues.GENERAL_ENERGY_UNIT);
-                        return value;
-                    }
-                });
-        }
-
-        IntegratedDynamics.clog(Level.INFO, "Registered IngredientComponentHandlers successfully.");
     }
 }

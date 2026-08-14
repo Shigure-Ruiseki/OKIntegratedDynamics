@@ -441,7 +441,7 @@ public class PartTypeInterfaceCrafting
                 NBTTagCompound instanceTag = (NBTTagCompound) instanceTagRaw;
                 String componentName = instanceTag.getString("component");
                 IngredientComponent<?, ?> component = IngredientComponent.REGISTRY
-                    .get(new ResourceLocation(componentName));
+                    .getValue(new ResourceLocation(componentName));
                 this.inventoryOutputBuffer.add(
                     new IngredientInstanceWrapper(
                         component,

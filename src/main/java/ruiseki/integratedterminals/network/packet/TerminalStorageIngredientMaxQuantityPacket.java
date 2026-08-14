@@ -16,7 +16,7 @@ import ruiseki.okcore.network.PacketCodec;
 
 /**
  * Packet for sending a storage's quantity from server to client.
- * 
+ *
  * @author rubensworks
  *
  */
@@ -55,7 +55,7 @@ public class TerminalStorageIngredientMaxQuantityPacket extends PacketCodec {
         if (player.openContainer instanceof ContainerTerminalStorage) {
             ContainerTerminalStorage container = ((ContainerTerminalStorage) player.openContainer);
             IngredientComponent<?, ?> ingredientComponent = IngredientComponent.REGISTRY
-                .get(new ResourceLocation(this.ingredientName));
+                .getValue(new ResourceLocation(this.ingredientName));
             if (ingredientComponent == null) {
                 throw new IllegalArgumentException(
                     "No ingredient component with the given name was found: " + ingredientName);

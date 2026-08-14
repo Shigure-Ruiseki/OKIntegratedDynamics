@@ -18,7 +18,7 @@ import ruiseki.okcore.network.PacketCodec;
 
 /**
  * Packet for sending a storage slot click event from client to server.
- * 
+ *
  * @author rubensworks
  *
  */
@@ -104,7 +104,7 @@ public class TerminalStorageIngredientSlotClickPacket<T> extends PacketCodec {
 
     public IngredientComponent<T, ?> getComponent() {
         IngredientComponent<T, ?> ingredientComponent = (IngredientComponent<T, ?>) IngredientComponent.REGISTRY
-            .get(new ResourceLocation(this.ingredientName));
+            .getValue(new ResourceLocation(this.ingredientName));
         if (ingredientComponent == null) {
             throw new IllegalArgumentException(
                 "No ingredient component with the given name was found: " + ingredientName);

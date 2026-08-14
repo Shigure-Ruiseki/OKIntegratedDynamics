@@ -114,7 +114,7 @@ public class GuiPartInterfaceCraftingSettings extends GuiPartSettings implements
             15,
             true,
             true,
-            Lists.newArrayList(IngredientComponent.REGISTRY.values())) {
+            Lists.newArrayList(IngredientComponent.REGISTRY.getValuesCollection())) {
 
             @Override
             protected String activeElementToString(IngredientComponent<?, ?> element) {
@@ -216,7 +216,7 @@ public class GuiPartInterfaceCraftingSettings extends GuiPartSettings implements
     @Override
     public void onUpdate(int valueId, NBTTagCompound value) {
         super.onUpdate(valueId, value);
-        for (IngredientComponent<?, ?> ingredientComponent : IngredientComponent.REGISTRY.values()) {
+        for (IngredientComponent<?, ?> ingredientComponent : IngredientComponent.REGISTRY.getValuesCollection()) {
             if (valueId == ((ContainerPartInterfaceCraftingSettings) getContainer())
                 .getTargetSideOverrideValueId(ingredientComponent)) {
                 int side = ((ContainerPartInterfaceCraftingSettings) getContainer())

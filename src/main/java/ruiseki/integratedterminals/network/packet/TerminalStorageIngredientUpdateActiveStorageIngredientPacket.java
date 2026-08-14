@@ -17,7 +17,7 @@ import ruiseki.okcore.network.PacketCodec;
 
 /**
  * Packet for sending the currently active storage stack from server to client.
- * 
+ *
  * @author rubensworks
  *
  */
@@ -72,7 +72,7 @@ public class TerminalStorageIngredientUpdateActiveStorageIngredientPacket<T> ext
 
     public IngredientComponent<T, ?> getComponent() {
         IngredientComponent<T, ?> ingredientComponent = (IngredientComponent<T, ?>) IngredientComponent.REGISTRY
-            .get(new ResourceLocation(this.ingredientName));
+            .getValue(new ResourceLocation(this.ingredientName));
         if (ingredientComponent == null) {
             throw new IllegalArgumentException(
                 "No ingredient component with the given name was found: " + ingredientName);

@@ -32,8 +32,8 @@ public class ContainerPartInterfaceCraftingSettings extends ContainerPartSetting
         lastChannelInterfaceCraftingValueId = getNextValueId();
         targetSideOverrideValueIds = Maps.newIdentityHashMap();
 
-        for (ResourceLocation key : IngredientComponent.REGISTRY.keySet()) {
-            IngredientComponent<?, ?> ingredientComponent = IngredientComponent.REGISTRY.get(key);
+        for (ResourceLocation key : IngredientComponent.REGISTRY.getKeys()) {
+            IngredientComponent<?, ?> ingredientComponent = IngredientComponent.REGISTRY.getValue(key);
             targetSideOverrideValueIds.put(ingredientComponent, getNextValueId());
         }
     }
@@ -52,7 +52,7 @@ public class ContainerPartInterfaceCraftingSettings extends ContainerPartSetting
             ((PartTypeInterfaceCrafting.State) getPartState()).getChannelCrafting());
 
         // ĐÃ SỬA: Thay getValuesCollection() thành values()
-        for (IngredientComponent<?, ?> ingredientComponent : IngredientComponent.REGISTRY.values()) {
+        for (IngredientComponent<?, ?> ingredientComponent : IngredientComponent.REGISTRY.getValuesCollection()) {
             ValueNotifierHelpers.setValue(
                 this,
                 getTargetSideOverrideValueId(ingredientComponent),
@@ -89,7 +89,7 @@ public class ContainerPartInterfaceCraftingSettings extends ContainerPartSetting
         super.updatePartSettings();
         ((PartTypeInterfaceCrafting.State) getPartState()).setChannelCrafting(getLastChannelInterfaceValue());
 
-        for (IngredientComponent<?, ?> ingredientComponent : IngredientComponent.REGISTRY.values()) {
+        for (IngredientComponent<?, ?> ingredientComponent : IngredientComponent.REGISTRY.getValuesCollection()) {
             ((PartTypeInterfaceCrafting.State) getPartState()).setIngredientComponentTargetSideOverride(
                 ingredientComponent,
                 getTargetSideOverrideValue(ingredientComponent));

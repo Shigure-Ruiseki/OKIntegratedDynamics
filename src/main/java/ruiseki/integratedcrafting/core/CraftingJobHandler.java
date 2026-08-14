@@ -158,7 +158,7 @@ public class CraftingJobHandler {
                 NBTTagCompound pendingIngredientTag = (NBTTagCompound) pendingIngredient;
                 String componentName = pendingIngredientTag.getString("ingredientComponent");
                 IngredientComponent<?, ?> ingredientComponent = IngredientComponent.REGISTRY
-                    .get(new ResourceLocation(componentName));
+                    .getValue(new ResourceLocation(componentName));
                 if (ingredientComponent == null) {
                     throw new IllegalArgumentException("Could not find the ingredient component type " + componentName);
                 }
@@ -205,7 +205,8 @@ public class CraftingJobHandler {
             NBTTagCompound overrideEntry = (NBTTagCompound) overrideObj;
 
             String componentName = overrideEntry.getString("component");
-            IngredientComponent<?, ?> component = IngredientComponent.REGISTRY.get(new ResourceLocation(componentName));
+            IngredientComponent<?, ?> component = IngredientComponent.REGISTRY
+                .getValue(new ResourceLocation(componentName));
             if (component != null) {
                 int dirIndex = overrideEntry.getInteger("direction");
                 if (dirIndex >= 0 && dirIndex < ForgeDirection.VALID_DIRECTIONS.length) {
