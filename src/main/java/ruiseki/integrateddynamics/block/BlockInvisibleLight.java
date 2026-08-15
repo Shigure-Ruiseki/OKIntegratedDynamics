@@ -15,6 +15,7 @@ import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.okcore.block.property.BlockProperty;
 import ruiseki.okcore.block.property.IntegerProperty;
 import ruiseki.okcore.config.configurable.ConfigurableBlock;
+import ruiseki.okcore.config.extendedconfig.BlockConfig;
 import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 import ruiseki.okcore.helper.BlockStateHelpers;
 
@@ -50,7 +51,7 @@ public class BlockInvisibleLight extends ConfigurableBlock {
      *
      * @param eConfig Config for this block.
      */
-    public BlockInvisibleLight(ExtendedConfig eConfig) {
+    public BlockInvisibleLight(ExtendedConfig<BlockConfig> eConfig) {
         super(eConfig, Material.air);
 
         setHardness(3.0F);

@@ -9,11 +9,12 @@ import ruiseki.integrateddynamics.inventory.container.ContainerDelay;
 import ruiseki.integrateddynamics.tileentity.TileDelay;
 import ruiseki.okcore.block.property.BlockProperty;
 import ruiseki.okcore.block.property.DirectionProperty;
+import ruiseki.okcore.config.extendedconfig.BlockConfig;
 import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 
 /**
  * A block that can delay variables.
- * 
+ *
  * @author rubensworks
  */
 public class BlockDelay extends BlockContainerGuiCabled {
@@ -37,7 +38,7 @@ public class BlockDelay extends BlockContainerGuiCabled {
      *
      * @param eConfig Config for this block.
      */
-    public BlockDelay(ExtendedConfig eConfig) {
+    public BlockDelay(ExtendedConfig<BlockConfig> eConfig) {
         super(eConfig, TileDelay.class);
     }
 

@@ -15,6 +15,7 @@ import lombok.EqualsAndHashCode;
 import ruiseki.integrateddynamics.api.block.IFacadeable;
 import ruiseki.integrateddynamics.capability.facadeable.FacadeableConfig;
 import ruiseki.okcore.config.configurable.ConfigurableItem;
+import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 import ruiseki.okcore.config.extendedconfig.ItemConfig;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.helper.BlockHelpers;
@@ -47,7 +48,7 @@ public class ItemFacade extends ConfigurableItem {
      *
      * @param eConfig Config for this blockState.
      */
-    public ItemFacade(ItemConfig eConfig) {
+    public ItemFacade(ExtendedConfig<ItemConfig> eConfig) {
         super(eConfig);
     }
 

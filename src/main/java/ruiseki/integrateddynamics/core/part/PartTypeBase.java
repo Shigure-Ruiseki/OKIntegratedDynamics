@@ -128,7 +128,7 @@ public abstract class PartTypeBase<P extends IPartType<P, S>, S extends IPartSta
             }
         };
         Block block = createBlock(blockConfig);
-        BlockAction.register(block, null, blockConfig.getSubUniqueName(), blockConfig.getTargetTab());
+        BlockAction.register(block, blockConfig.getSubUniqueName(), blockConfig.getTargetTab());
         return block;
     }
 
@@ -149,7 +149,7 @@ public abstract class PartTypeBase<P extends IPartType<P, S>, S extends IPartSta
      * @return The corresponding item.
      */
     protected Item registerItem() {
-        itemConfig = new ItemConfig(getMod(), true, "part_" + getName() + "Item", null, null) {
+        itemConfig = new ItemConfig(getMod(), true, "part_" + getName(), null, null) {
 
             @Override
             public boolean isDisableable() {

@@ -11,6 +11,7 @@ import ruiseki.commoncapabilities.api.capability.wrench.DefaultWrench;
 import ruiseki.commoncapabilities.capability.wrench.WrenchConfig;
 import ruiseki.okcore.capabilities.ICapabilityProvider;
 import ruiseki.okcore.config.configurable.ConfigurableItem;
+import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 import ruiseki.okcore.config.extendedconfig.ItemConfig;
 import ruiseki.okcore.modcompat.capabilities.DefaultCapabilityProvider;
 
@@ -37,7 +38,7 @@ public class ItemWrench extends ConfigurableItem {
      *
      * @param eConfig Config for this blockState.
      */
-    public ItemWrench(ItemConfig eConfig) {
+    public ItemWrench(ExtendedConfig<ItemConfig> eConfig) {
         super(eConfig);
     }
 

@@ -1,5 +1,5 @@
 {
-    "parent": "integrateddynamics:block/orientable",
+    "parent": "block/orientable",
     "textures": {
         "top": "integrateddynamics:blocks/variablestore_top",
         "front": "integrateddynamics:blocks/variablestore_front",

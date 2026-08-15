@@ -34,8 +34,9 @@ public class ItemVariableTransformerConfig extends ItemConfig {
     }
 
     @Override
-    protected IConfigurable initSubInstance() {
-        return (IConfigurable) new ConfigurableItem(this) {
+    @SuppressWarnings("unchecked")
+    protected IConfigurable<ItemConfig> initSubInstance() {
+        return (IConfigurable<ItemConfig>) new ConfigurableItem(this) {
 
             private IIcon input;
             private IIcon output;

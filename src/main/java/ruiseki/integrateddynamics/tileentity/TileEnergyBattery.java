@@ -88,11 +88,15 @@ public class TileEnergyBattery extends TileCableConnectable
             int lastEnergy = this.energy;
             if (lastEnergy != energy) {
                 this.energy = energy;
-                updateBlockState();
                 markDirty();
                 sendUpdate();
             }
         }
+    }
+
+    @Override
+    public void onUpdateReceived() {
+        super.onUpdateReceived();
     }
 
     @Override

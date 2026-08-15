@@ -2,6 +2,7 @@ package ruiseki.integrateddynamics.block;
 
 import ruiseki.okcore.config.configurable.ConfigurableBlockLog;
 import ruiseki.okcore.config.extendedconfig.BlockConfig;
+import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 
 /**
  * Menril log block.
@@ -26,7 +27,7 @@ public class BlockMenrilLog extends ConfigurableBlockLog {
      *
      * @param eConfig Config for this block.
      */
-    public BlockMenrilLog(BlockConfig eConfig) {
+    public BlockMenrilLog(ExtendedConfig<BlockConfig> eConfig) {
         super(eConfig);
         this.setHardness(2.0F);
         this.setStepSound(soundTypeWood);

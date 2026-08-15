@@ -1,8 +1,6 @@
 package ruiseki.integrateddynamics.block;
 
-import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
 import net.minecraft.util.ChatComponentTranslation;
 import net.minecraft.world.World;
 
@@ -10,6 +8,7 @@ import cofh.api.energy.IEnergyStorage;
 import ruiseki.integrateddynamics.core.block.BlockContainerCabled;
 import ruiseki.integrateddynamics.core.helper.Helpers;
 import ruiseki.integrateddynamics.tileentity.TileEnergyBattery;
+import ruiseki.okcore.config.extendedconfig.BlockConfig;
 import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 import ruiseki.okcore.helper.TileHelpers;
 
@@ -25,15 +24,8 @@ public abstract class BlockEnergyBatteryBase extends BlockContainerCabled implem
      *
      * @param eConfig Config for this block.
      */
-    public BlockEnergyBatteryBase(ExtendedConfig eConfig) {
+    public BlockEnergyBatteryBase(ExtendedConfig<BlockConfig> eConfig) {
         super(eConfig, TileEnergyBattery.class);
-    }
-
-    @Override
-    public void onBlockPlacedBy(World world, int x, int y, int z, EntityLivingBase entity, ItemStack stack) {
-        super.onBlockPlacedBy(world, x, y, z, entity, stack);
-        TileHelpers.getSafeTile(world, x, y, z, TileEnergyBattery.class)
-            .updateBlockState();
     }
 
     @Override
@@ -68,7 +60,7 @@ public abstract class BlockEnergyBatteryBase extends BlockContainerCabled implem
 
     /**
      * Fill an IEnergyStorage with all the energy it can hold
-     * 
+     *
      * @param energyStorage IEnergyStorage that is to be filled
      */
     public static void fill(IEnergyStorage energyStorage) {

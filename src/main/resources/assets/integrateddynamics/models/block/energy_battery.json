@@ -1,5 +1,5 @@
 {
-    "parent": "integrateddynamics:block/orientable",
+    "parent": "block/orientable",
     "textures": {
         "top": "integrateddynamics:blocks/energy_battery_up",
         "front": "integrateddynamics:blocks/energy_battery_side",
