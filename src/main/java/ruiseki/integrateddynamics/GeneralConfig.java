@@ -25,14 +25,6 @@ public class GeneralConfig extends DummyConfig {
     public static String version = Reference.MOD_VERSION;
 
     /**
-     * If an anonymous mod startup analytics request may be sent to our analytics service.
-     */
-    @ConfigurableProperty(
-        category = ConfigurableTypeCategory.CORE,
-        comment = "If an anonymous mod startup analytics request may be sent to our analytics service.")
-    public static boolean analytics = true;
-
-    /**
      * If the version checker should be enabled.
      */
     @ConfigurableProperty(
