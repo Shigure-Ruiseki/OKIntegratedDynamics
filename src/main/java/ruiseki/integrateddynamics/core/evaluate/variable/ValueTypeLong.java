@@ -8,14 +8,18 @@ import ruiseki.okcore.helper.Helpers;
 
 /**
  * Value type with values that are doubles.
- * 
+ *
  * @author rubensworks
  */
 public class ValueTypeLong extends ValueTypeBase<ValueTypeLong.ValueLong>
     implements IValueTypeNumber<ValueTypeLong.ValueLong> {
 
     public ValueTypeLong() {
-        super("long", Helpers.RGBToInt(215, 254, 23), EnumChatFormatting.YELLOW.toString());
+        super(
+            "long",
+            Helpers.RGBToInt(215, 254, 23),
+            EnumChatFormatting.YELLOW.toString(),
+            ValueTypeLong.ValueLong.class);
     }
 
     @Override
@@ -78,6 +82,36 @@ public class ValueTypeLong extends ValueTypeBase<ValueTypeLong.ValueLong>
         return ValueLong.of(Math.min(a.getRawValue(), b.getRawValue()));
     }
 
+    @Override
+    public boolean greaterThan(ValueLong a, ValueLong b) {
+        return a.getRawValue() > b.getRawValue();
+    }
+
+    @Override
+    public boolean lessThan(ValueLong a, ValueLong b) {
+        return a.getRawValue() < b.getRawValue();
+    }
+
+    @Override
+    public ValueTypeInteger.ValueInteger round(ValueLong a) {
+        return ValueTypeInteger.ValueInteger.of((int) a.getRawValue());
+    }
+
+    @Override
+    public ValueTypeInteger.ValueInteger ceil(ValueLong a) {
+        return ValueTypeInteger.ValueInteger.of((int) a.getRawValue());
+    }
+
+    @Override
+    public ValueTypeInteger.ValueInteger floor(ValueLong a) {
+        return ValueTypeInteger.ValueInteger.of((int) a.getRawValue());
+    }
+
+    @Override
+    public String getName(ValueLong a) {
+        return toCompactString(a);
+    }
+
     @ToString
     public static class ValueLong extends ValueBase {
 
@@ -99,6 +133,11 @@ public class ValueTypeLong extends ValueTypeBase<ValueTypeLong.ValueLong>
         @Override
         public boolean equals(Object o) {
             return o instanceof ValueLong && ((ValueLong) o).value == this.value;
+        }
+
+        @Override
+        public int hashCode() {
+            return getType().hashCode() + (int) value;
         }
     }
 

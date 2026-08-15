@@ -3,7 +3,6 @@ package ruiseki.integrateddynamics.client.gui;
 import java.io.IOException;
 
 import net.minecraft.client.gui.GuiButton;
-import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketBuffer;
@@ -20,6 +19,7 @@ import ruiseki.integrateddynamics.core.persist.world.LabelsWorldStorage;
 import ruiseki.integrateddynamics.inventory.container.ContainerLabeller;
 import ruiseki.integrateddynamics.network.packet.ItemStackRenamePacket;
 import ruiseki.okcore.client.gui.component.button.GuiButtonText;
+import ruiseki.okcore.client.gui.component.input.GuiTextFieldExtended;
 import ruiseki.okcore.client.gui.container.GuiContainerConfigurable;
 import ruiseki.okcore.helper.LangHelpers;
 
@@ -32,7 +32,7 @@ public class GuiLabeller extends GuiContainerConfigurable<ContainerLabeller> {
 
     public static final int BUTTON_WRITE = 1;
 
-    private GuiTextField searchField;
+    private GuiTextFieldExtended searchField;
 
     /**
      * Make a new instance.
@@ -42,7 +42,7 @@ public class GuiLabeller extends GuiContainerConfigurable<ContainerLabeller> {
      */
     public GuiLabeller(EntityPlayer player, int itemIndex) {
         super(new ContainerLabeller(player, itemIndex));
-        ContainerLabeller container = ((ContainerLabeller) getContainer());
+        ContainerLabeller container = getContainer();
         container.setGui(this);
     }
 
@@ -60,17 +60,20 @@ public class GuiLabeller extends GuiContainerConfigurable<ContainerLabeller> {
         int searchWidth = 87;
         int searchX = 36;
         int searchY = 11;
-        this.searchField = new GuiTextField(
+        this.searchField = new GuiTextFieldExtended(
+            0,
             this.fontRendererObj,
             this.guiLeft + searchX,
             this.guiTop + searchY,
             searchWidth,
-            this.fontRendererObj.FONT_HEIGHT);
+            this.fontRendererObj.FONT_HEIGHT,
+            true);
         this.searchField.setMaxStringLength(64);
         this.searchField.setEnableBackgroundDrawing(false);
         this.searchField.setVisible(true);
+        this.searchField.setFocused(true);
         this.searchField.setTextColor(16777215);
-        this.searchField.setCanLoseFocus(true);
+        this.searchField.setCanLoseFocus(false);
         this.searchField.setText("");
         this.searchField.width = searchWidth;
         this.searchField.xPosition = this.guiLeft + (searchX + searchWidth) - this.searchField.width;

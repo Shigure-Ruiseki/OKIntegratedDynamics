@@ -3,20 +3,24 @@ package ruiseki.integrateddynamics.item;
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
-import ruiseki.integrateddynamics.api.item.IWrench;
+import ruiseki.commoncapabilities.api.capability.wrench.DefaultWrench;
+import ruiseki.commoncapabilities.capability.wrench.WrenchConfig;
+import ruiseki.okcore.capabilities.ICapabilityProvider;
 import ruiseki.okcore.config.configurable.ConfigurableItem;
 import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
-import ruiseki.okcore.datastructure.BlockPos;
+import ruiseki.okcore.config.extendedconfig.ItemConfig;
+import ruiseki.okcore.modcompat.capabilities.DefaultCapabilityProvider;
 
 /**
  * The default wrench for this mod.
  *
  * @author rubensworks
  */
-public class ItemWrench extends ConfigurableItem implements IWrench {
+public class ItemWrench extends ConfigurableItem {
 
     private static ItemWrench _instance = null;
 
@@ -34,7 +38,7 @@ public class ItemWrench extends ConfigurableItem implements IWrench {
      *
      * @param eConfig Config for this blockState.
      */
-    public ItemWrench(ExtendedConfig eConfig) {
+    public ItemWrench(ExtendedConfig<ItemConfig> eConfig) {
         super(eConfig);
     }
 
@@ -44,29 +48,19 @@ public class ItemWrench extends ConfigurableItem implements IWrench {
     }
 
     @Override
-    public boolean canUse(EntityPlayer player, BlockPos pos) {
-        return true;
-    }
-
-    @Override
-    public void beforeUse(EntityPlayer player, BlockPos pos) {
-
-    }
-
-    @Override
-    public void afterUse(EntityPlayer player, BlockPos pos) {
-
+    public ICapabilityProvider initCapabilities(ItemStack stack, NBTTagCompound nbt) {
+        return new DefaultCapabilityProvider<>(() -> WrenchConfig.CAPABILITY, new DefaultWrench());
     }
 
     @Override
     public boolean onItemUseFirst(ItemStack stack, EntityPlayer player, World world, int x, int y, int z, int side,
         float hitX, float hitY, float hitZ) {
         Block block = world.getBlock(x, y, z);
-        if (block == null || player.isSneaking()) {
+        if (!world.isRemote || player.isSneaking()) {
             return false;
         } else if (block.rotateBlock(world, x, y, z, ForgeDirection.getOrientation(side))) {
             player.swingItem();
-            return !world.isRemote;
+            return true;
         }
         return true;
     }

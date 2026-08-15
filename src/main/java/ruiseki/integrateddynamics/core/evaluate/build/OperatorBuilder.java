@@ -25,7 +25,7 @@ import ruiseki.okcore.helper.LangHelpers;
  *
  * The actual operator function can either be set by calling {@link OperatorBuilder#function} or by
  * doing any number of calls to {@link OperatorBuilder#handle(IOperatorValuePropagator)} with value propagators.
- * 
+ *
  * @author rubensworks
  * @param <O> The current output type for value propagators.
  */
@@ -62,7 +62,7 @@ public class OperatorBuilder<O> {
 
     /**
      * Set the operator output value type.
-     * 
+     *
      * @param outputType The output value type.
      * @return The builder instance.
      */
@@ -83,7 +83,7 @@ public class OperatorBuilder<O> {
 
     /**
      * Set the operator symbol.
-     * 
+     *
      * @param symbol The symbol for the operator.
      * @return The builder instance.
      */
@@ -104,7 +104,7 @@ public class OperatorBuilder<O> {
 
     /**
      * Set the operator name, used for localization.
-     * 
+     *
      * @param operatorName The operator name.
      * @return The builder instance.
      */
@@ -126,7 +126,7 @@ public class OperatorBuilder<O> {
     /**
      * Set the symbol and operator name to the given value.
      * The symbol is used for display while the operator name is used for localization.
-     * 
+     *
      * @param symbolOperator The symbol and operator name.
      * @return The builder instance.
      */
@@ -147,11 +147,11 @@ public class OperatorBuilder<O> {
 
     /**
      * Set the input types for the operator.
-     * 
+     *
      * @param inputTypes Array of value types.
      * @return The builder instance.
      */
-    public OperatorBuilder<O> inputTypes(IValueType[] inputTypes) {
+    public OperatorBuilder<O> inputTypes(IValueType... inputTypes) {
         return new OperatorBuilder<>(
             symbol,
             operatorName,
@@ -168,7 +168,7 @@ public class OperatorBuilder<O> {
 
     /**
      * Set input types to a given amount of the given value type.
-     * 
+     *
      * @param length      The amount of input types.
      * @param defaultType The input type to replicate `length` times.
      * @return The builder instance.
@@ -190,7 +190,7 @@ public class OperatorBuilder<O> {
 
     /**
      * Set a single input type.
-     * 
+     *
      * @param inputType The input type.
      * @return The builder instance.
      */
@@ -200,7 +200,7 @@ public class OperatorBuilder<O> {
 
     /**
      * Set the function the operator should use.
-     * 
+     *
      * @param function The function.
      * @return The builder instance.
      */
@@ -224,7 +224,7 @@ public class OperatorBuilder<O> {
 
     /**
      * Set the render pattern for this operator in guis.
-     * 
+     *
      * @param renderPattern The render pattern.
      * @return The builder instance.
      */
@@ -245,7 +245,7 @@ public class OperatorBuilder<O> {
 
     /**
      * Set the mod id, by default this will be the Integrated Dynamics mod id.
-     * 
+     *
      * @param modId The mod id.
      * @return The builder instance.
      */
@@ -266,7 +266,7 @@ public class OperatorBuilder<O> {
 
     /**
      * Append a localization key element.
-     * 
+     *
      * @param kind The string to append.
      * @return The builder instance.
      */
@@ -287,7 +287,7 @@ public class OperatorBuilder<O> {
 
     /**
      * Set the conditional output type deriver.
-     * 
+     *
      * @param conditionalOutputTypeDeriver The output type deriver based on certain input.
      *                                     This will be used for
      *                                     {@link IOperator#getConditionalOutputType(IVariable[])}.
@@ -310,7 +310,7 @@ public class OperatorBuilder<O> {
 
     /**
      * Set the type validator.
-     * 
+     *
      * @param typeValidator The type validator. This will be used for {@link IOperator#validateTypes(IValueType[])}.
      * @return The builder instance.
      */
@@ -331,7 +331,7 @@ public class OperatorBuilder<O> {
 
     /**
      * Add a value propagator.
-     * 
+     *
      * @param valuePropagator The value propagator.
      * @return The builder instance.
      * @param <O2> The new output type for value propagators.
@@ -356,7 +356,7 @@ public class OperatorBuilder<O> {
 
     /**
      * Build an operator from the current builder state.
-     * 
+     *
      * @return The built operator
      */
     public IOperator build() {
@@ -365,7 +365,7 @@ public class OperatorBuilder<O> {
 
     /**
      * Create a new builder with the given output type.
-     * 
+     *
      * @param outputType The output type.
      * @return The builder instance.
      */
@@ -459,7 +459,7 @@ public class OperatorBuilder<O> {
 
         /**
          * Check the given input value types for this operator.
-         * 
+         *
          * @param operator The operator that is being validated.
          * @param input    The ordered input value types.
          * @return An error or null if valid.

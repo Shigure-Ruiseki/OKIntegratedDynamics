@@ -1,15 +1,14 @@
 package ruiseki.integrateddynamics.core.client.gui;
 
-import net.minecraft.client.gui.FontRenderer;
-
 import ruiseki.integrateddynamics.core.client.gui.container.DisplayErrorsComponent;
 import ruiseki.integrateddynamics.core.inventory.container.ContainerActiveVariableBase;
 import ruiseki.integrateddynamics.core.tileentity.TileActiveVariableBase;
 import ruiseki.okcore.client.gui.container.GuiContainerConfigurable;
 import ruiseki.okcore.client.renderer.GlStateManager;
+import ruiseki.okcore.helper.RenderHelpers;
 
 /**
- * Base gui for tile entities that can hold variables.
+ * Base gui for part entities that can hold variables.
  *
  * @author rubensworks
  */
@@ -31,6 +30,14 @@ public abstract class GuiActiveVariableBase<C extends ContainerActiveVariableBas
 
     protected abstract int getErrorY();
 
+    protected int getValueX() {
+        return 54;
+    }
+
+    protected int getValueY() {
+        return 57;
+    }
+
     @Override
     protected void drawGuiContainerBackgroundLayer(float f, int x, int y) {
         super.drawGuiContainerBackgroundLayer(f, x, y);
@@ -41,13 +48,19 @@ public abstract class GuiActiveVariableBase<C extends ContainerActiveVariableBas
         if (getContainer().getTile()
             .hasVariable() && readValue != null) {
             ok = true;
-            FontRenderer fontRenderer = fontRendererObj;
-            fontRenderer.drawString(readValue, getGuiLeft() + 53, getGuiTop() + 53, readValueColor);
+            RenderHelpers.drawScaledCenteredString(
+                fontRendererObj,
+                readValue,
+                getGuiLeftTotal() + getValueX(),
+                getGuiTopTotal() + getValueY(),
+                70,
+                readValueColor);
         }
 
         GlStateManager.color(1f, 1f, 1f, 1f);
         displayErrors.drawBackground(
             getContainer().getTile()
+                .getEvaluator()
                 .getErrors(),
             getErrorX(),
             getErrorY(),
@@ -64,6 +77,7 @@ public abstract class GuiActiveVariableBase<C extends ContainerActiveVariableBas
         super.drawGuiContainerForegroundLayer(mouseX, mouseY);
         displayErrors.drawForeground(
             getContainer().getTile()
+                .getEvaluator()
                 .getErrors(),
             getErrorX(),
             getErrorY(),

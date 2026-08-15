@@ -1,6 +1,6 @@
 package ruiseki.integrateddynamics.part;
 
-import ruiseki.integrateddynamics.api.part.IPartState;
+import ruiseki.integrateddynamics.GeneralConfig;
 import ruiseki.integrateddynamics.core.part.panel.PartTypePanelVariableDriven;
 
 /**
@@ -27,16 +27,17 @@ public class PartTypePanelDisplay
 
     @Override
     public int getConsumptionRate(State state) {
-        return state.hasVariable() ? 2 : 1;
+        return state.hasVariable() ? GeneralConfig.panelDisplayBaseConsumptionEnabled
+            : GeneralConfig.panelDisplayBaseConsumptionDisabled;
+    }
+
+    @Override
+    public boolean forceLightTransparency(State state) {
+        return true;
     }
 
     public static class State
         extends PartTypePanelVariableDriven.State<PartTypePanelDisplay, PartTypePanelDisplay.State> {
-
-        @Override
-        public Class<? extends IPartState> getPartStateClass() {
-            return PartTypePanelDisplay.State.class;
-        }
 
     }
 

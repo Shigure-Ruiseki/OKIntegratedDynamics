@@ -3,72 +3,90 @@ package ruiseki.integrateddynamics.client.render.valuetype;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.RenderHelper;
+import net.minecraft.client.renderer.entity.RenderItem;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.util.ForgeDirection;
 
-import com.google.common.base.Optional;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL12;
 
 import ruiseki.integrateddynamics.api.client.render.valuetype.IValueTypeWorldRenderer;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueObjectTypeItemStack;
-import ruiseki.okcore.client.renderer.GlStateManager;
 import ruiseki.okcore.helper.Helpers;
-import ruiseki.okcore.helper.RenderHelpers;
 
 /**
- * A value type world renderer for items.
+ * A value type world renderer for items (Minecraft 1.7.10 Port).
  *
  * @author rubensworks
  */
 public class ItemValueTypeWorldRenderer implements IValueTypeWorldRenderer {
 
+    private static final RenderItem RENDER_ITEM = RenderItem.getInstance();
+
     @Override
     public void renderValue(IPartContainer partContainer, double x, double y, double z, float partialTick,
         int destroyStage, ForgeDirection direction, IPartType partType, IValue value,
         TileEntityRendererDispatcher rendererDispatcher, float alpha) {
-        Optional<ItemStack> itemStackOptional = ((ValueObjectTypeItemStack.ValueItemStack) value).getRawValue();
-        if (itemStackOptional.isPresent() && itemStackOptional.get() != null) {
-            ItemStack itemStack = itemStackOptional.get();
 
-            // Render Item
+        ValueObjectTypeItemStack.ValueItemStack valueItemStack = (ValueObjectTypeItemStack.ValueItemStack) value;
+        if (valueItemStack.getRawValue()
+            .isPresent()) {
+            ItemStack itemStack = valueItemStack.getRawValue()
+                .get();
+
+            // ItemStack
             renderItemStack(itemStack, alpha);
 
-            // Render Stack size text
-            GlStateManager.pushMatrix();
-            GlStateManager.translate(7F, 8.5F, 0.1F);
-            GlStateManager.scale(0.5F, 0.5F, 1F);
+            // Stack size
+            GL11.glPushMatrix();
+            GL11.glTranslatef(7.0F, 8.5F, 0.3F);
 
-            FontRenderer fontRenderer = rendererDispatcher != null ? rendererDispatcher.getFontRenderer()
-                : Minecraft.getMinecraft().fontRenderer;
+            String stackSize = String.valueOf(itemStack.stackSize);
+            float scale = 1.0F / ((float) stackSize.length() + 1.0F);
+            GL11.glScalef(scale, scale, 1.0F);
+
+            FontRenderer fontRenderer = rendererDispatcher.getFontRenderer();
             if (fontRenderer == null) {
                 fontRenderer = Minecraft.getMinecraft().fontRenderer;
             }
 
-            fontRenderer.drawString(
-                String.valueOf(itemStack.stackSize),
-                0,
-                0,
-                Helpers.RGBAToInt(200, 200, 200, (int) (alpha * 255F)));
-            GlStateManager.popMatrix();
+            fontRenderer.drawString(stackSize, 0, 0, Helpers.RGBAToInt(200, 200, 200, (int) (alpha * 255.0F)));
+            GL11.glPopMatrix();
         }
     }
 
     public static void renderItemStack(ItemStack itemStack, float alpha) {
-        if (itemStack == null || itemStack.getItem() == null) return;
-
         RenderHelper.enableGUIStandardItemLighting();
-        GlStateManager.pushMatrix();
+        GL11.glPushMatrix();
+        GL11.glTranslatef(0.0F, 0.0F, -1.0F);
+        GL11.glScalef(0.78F, 0.78F, 0.01F);
 
-        GlStateManager.translate(3F, 3F, 0F);
-        GlStateManager.scale(0.4F, 0.4F, 0.01F);
+        GL11.glPushMatrix();
+        GL11.glRotatef(40.0F, 0.0F, 1.0F, 0.0F);
+        GL11.glRotatef(95.0F, 1.0F, 0.0F, 0.0F);
+        RenderHelper.enableGUIStandardItemLighting();
+        GL11.glPopMatrix();
 
-        // Use MC 1.7.10 RenderHelpers.renderItem
-        RenderHelpers.renderItem(Minecraft.getMinecraft().theWorld, itemStack, 0.0D, 0.0D, 0.0D);
+        GL11.glEnable(GL11.GL_POLYGON_OFFSET_FILL);
+        GL11.glPolygonOffset(-1.0F, -1.0F);
 
-        GlStateManager.popMatrix();
+        GL11.glPushAttrib(GL11.GL_ALL_ATTRIB_BITS);
+        GL11.glEnable(GL12.GL_RESCALE_NORMAL);
+        GL11.glPopAttrib();
+
+        Minecraft mc = Minecraft.getMinecraft();
+        RENDER_ITEM.renderItemAndEffectIntoGUI(mc.fontRenderer, mc.getTextureManager(), itemStack, 0, 0);
+
+        GL11.glDisable(GL11.GL_BLEND);
+        GL11.glEnable(GL11.GL_ALPHA_TEST);
+
+        GL11.glDisable(GL11.GL_POLYGON_OFFSET_FILL);
+
+        GL11.glPopMatrix();
         RenderHelper.disableStandardItemLighting();
     }
 }

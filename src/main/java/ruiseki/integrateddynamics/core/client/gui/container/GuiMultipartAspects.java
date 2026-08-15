@@ -17,16 +17,19 @@ import com.google.common.collect.Maps;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartState;
 import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.api.part.aspect.IAspect;
 import ruiseki.integrateddynamics.api.part.aspect.property.IAspectPropertyTypeInstance;
+import ruiseki.integrateddynamics.core.client.gui.ExtendedGuiHandler;
 import ruiseki.integrateddynamics.core.inventory.container.ContainerMultipartAspects;
 import ruiseki.integrateddynamics.core.part.PartTypeConfigurable;
 import ruiseki.okcore.client.gui.component.button.GuiButtonImage;
 import ruiseki.okcore.client.gui.component.button.GuiButtonText;
+import ruiseki.okcore.client.gui.container.GuiContainerExtended;
 import ruiseki.okcore.client.gui.container.ScrollingGuiContainer;
 import ruiseki.okcore.client.gui.image.Images;
 import ruiseki.okcore.helper.Helpers;
@@ -34,6 +37,8 @@ import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.RenderHelpers;
 import ruiseki.okcore.init.ModBase;
 import ruiseki.okcore.inventory.IGuiContainerProvider;
+import ruiseki.okcore.inventory.container.ExtendedInventoryContainer;
+import ruiseki.okcore.inventory.container.button.IButtonActionClient;
 
 /**
  * Gui for parts.
@@ -45,6 +50,7 @@ import ruiseki.okcore.inventory.IGuiContainerProvider;
 public abstract class GuiMultipartAspects<P extends IPartType<P, S> & IGuiContainerProvider, S extends IPartState<P>, A extends IAspect>
     extends ScrollingGuiContainer {
 
+    public static final int BUTTON_SETTINGS = 1;
     private static final Rectangle ITEM_POSITION = new Rectangle(8, 17, 18, 18);
 
     protected final DisplayErrorsComponent displayErrors = new DisplayErrorsComponent();
@@ -64,6 +70,18 @@ public abstract class GuiMultipartAspects<P extends IPartType<P, S> & IGuiContai
         this.target = container.getTarget();
         this.partContainer = container.getPartContainer();
         this.partType = container.getPartType();
+
+        putButtonAction(BUTTON_SETTINGS, new IButtonActionClient<GuiContainerExtended, ExtendedInventoryContainer>() {
+
+            @Override
+            public void onAction(int buttonId, GuiContainerExtended gui, ExtendedInventoryContainer container) {
+                IntegratedDynamics._instance.getGuiHandler()
+                    .setTemporaryData(
+                        ExtendedGuiHandler.PART,
+                        getTarget().getCenter()
+                            .getSide()); // Pass the side as extra data to the gui
+            }
+        });
     }
 
     @Override
@@ -73,7 +91,7 @@ public abstract class GuiMultipartAspects<P extends IPartType<P, S> & IGuiContai
         if (getPartType() instanceof PartTypeConfigurable && ((PartTypeConfigurable) getPartType()).hasSettings()) {
             buttonList.add(
                 new GuiButtonImage(
-                    ContainerMultipartAspects.BUTTON_SETTINGS,
+                    BUTTON_SETTINGS,
                     this.guiLeft + 174,
                     this.guiTop + 4,
                     15,
@@ -102,7 +120,7 @@ public abstract class GuiMultipartAspects<P extends IPartType<P, S> & IGuiContai
     @Override
     public String getGuiTexture() {
         return getContainer().getGuiProvider()
-            .getMod()
+            .getModGui()
             .getReferenceValue(ModBase.REFKEY_TEXTURE_PATH_GUI) + getNameId() + ".png";
     }
 
@@ -165,7 +183,7 @@ public abstract class GuiMultipartAspects<P extends IPartType<P, S> & IGuiContai
                     aspectName,
                     this.guiLeft + offsetX + 26,
                     this.guiTop + offsetY + 25 + aspectBoxHeight * i,
-                    60,
+                    getMaxLabelWidth(),
                     Helpers.RGBToInt(40, 40, 40));
 
                 drawAdditionalElementInfo(container, i, aspect);
@@ -229,4 +247,7 @@ public abstract class GuiMultipartAspects<P extends IPartType<P, S> & IGuiContai
     protected abstract void drawAdditionalElementInfoForeground(ContainerMultipartAspects<P, S, A> container, int index,
         A aspect, int mouseX, int mouseY);
 
+    public int getMaxLabelWidth() {
+        return 63;
+    }
 }

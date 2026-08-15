@@ -1,36 +1,46 @@
 package ruiseki.integrateddynamics.core.network;
 
 import java.util.List;
+import java.util.Objects;
 
 import net.minecraft.block.Block;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.IBlockAccess;
 import net.minecraftforge.common.util.ForgeDirection;
 
+import org.jetbrains.annotations.Nullable;
+
 import lombok.Data;
+import ruiseki.integrateddynamics.api.PartStateException;
 import ruiseki.integrateddynamics.api.network.IEnergyConsumingNetworkElement;
+import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.INetworkElement;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.network.IPartNetworkElement;
+import ruiseki.integrateddynamics.api.network.IPositionedAddonsNetwork;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
-import ruiseki.integrateddynamics.api.part.IPartContainerFacade;
 import ruiseki.integrateddynamics.api.part.IPartState;
 import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartTarget;
-import ruiseki.integrateddynamics.core.helper.CableHelpers;
+import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
+import ruiseki.integrateddynamics.core.helper.PartHelpers;
+import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
 
 /**
  * A network element for parts.
- * 
+ *
  * @author rubensworks
  */
 @Data
-public class PartNetworkElement<P extends IPartType<P, S>, S extends IPartState<P>>
-    implements IPartNetworkElement<P, S>, IEnergyConsumingNetworkElement<IPartNetwork> {
+public class PartNetworkElement<P extends IPartType<P, S>, S extends IPartState<P>> extends NetworkElementBase
+    implements IPartNetworkElement<P, S>, IEnergyConsumingNetworkElement {
 
     private final P part;
     private final PartTarget target;
+
+    private S tempState = null;
 
     protected static DimPos getCenterPos(PartTarget target) {
         return target.getCenter()
@@ -53,29 +63,69 @@ public class PartNetworkElement<P extends IPartType<P, S>, S extends IPartState<
     }
 
     @Override
-    public IPartContainerFacade getPartContainerFacade() {
-        return CableHelpers.getInterface(getCenterPos(getTarget()), IPartContainerFacade.class);
+    public IPartContainer getPartContainer() {
+        return PartHelpers.getPartContainer(
+            getCenterPos(getTarget()),
+            getTarget().getCenter()
+                .getSide());
     }
 
     @Override
-    public S getPartState() {
-        IPartContainerFacade partContainerFacade = getPartContainerFacade();
-        DimPos dimPos = getCenterPos(getTarget());
-        if (partContainerFacade != null) {
-            IPartContainer partContainer = partContainerFacade
-                .getPartContainer(getCenterPos(getTarget()).getWorld(), dimPos.getBlockPos());
-            if (partContainer != null) {
-                return (S) partContainer.getPartState(getCenterSide(getTarget()));
-            } else {
-                throw new IllegalStateException(String.format("The part container at %s could not be found.", dimPos));
-            }
+    public void setPriorityAndChannel(INetwork network, int priority, int channel) {
+        // noinspection deprecation
+        part.setPriorityAndChannel(
+            network,
+            NetworkHelpers.getPartNetwork(network),
+            getTarget(),
+            getPartState(),
+            priority,
+            channel);
+    }
+
+    @Override
+    public int getPriority() {
+        return hasPartState() ? part.getPriority(getPartState()) : 0;
+    }
+
+    @Override
+    public int getChannel() {
+        return hasPartState() ? part.getChannel(getPartState()) : IPositionedAddonsNetwork.DEFAULT_CHANNEL;
+    }
+
+    @Override
+    public boolean canRevalidate(INetwork network) {
+        return canRevalidatePositioned(network, getCenterPos(getTarget()));
+    }
+
+    @Override
+    public void revalidate(INetwork network) {
+        super.revalidate(network);
+        revalidatePositioned(network, getCenterPos(getTarget()));
+    }
+
+    @Override
+    public boolean isLoaded() {
+        return getCenterPos(getTarget()).isLoaded();
+    }
+
+    public boolean hasPartState() {
+        if (isLoaded()) {
+            IPartContainer partContainer = getPartContainer();
+            return partContainer != null && partContainer.hasPart(getCenterSide(getTarget()));
+        }
+        return false;
+    }
+
+    @Override
+    public S getPartState() throws PartStateException {
+        IPartContainer partContainer = getPartContainer();
+        if (partContainer != null) {
+            return (S) partContainer.getPartState(getCenterSide(getTarget()));
         } else {
-            throw new IllegalStateException(
-                String.format(
-                    "The part container facade at %s could not be found, instead %s was found.",
-                    dimPos,
-                    dimPos.getBlockPos()
-                        .getBlock(dimPos.getWorld())));
+            throw new PartStateException(
+                getCenterPos(getTarget()),
+                getTarget().getCenter()
+                    .getSide());
         }
     }
 
@@ -85,8 +135,8 @@ public class PartNetworkElement<P extends IPartType<P, S>, S extends IPartState<
     }
 
     @Override
-    public void postUpdate(IPartNetwork network, boolean updated) {
-        part.postUpdate(network, getTarget(), getPartState(), updated);
+    public void postUpdate(INetwork network, boolean updated) {
+        part.postUpdate(network, NetworkHelpers.getPartNetwork(network), getTarget(), getPartState(), updated);
     }
 
     @Override
@@ -100,53 +150,69 @@ public class PartNetworkElement<P extends IPartType<P, S>, S extends IPartState<
     }
 
     @Override
-    public void update(IPartNetwork network) {
-        part.update(network, getTarget(), getPartState());
+    public void update(INetwork network) {
+        part.update(network, NetworkHelpers.getPartNetwork(network), getTarget(), getPartState());
     }
 
     @Override
-    public void beforeNetworkKill(IPartNetwork network) {
-        part.beforeNetworkKill(network, target, getPartState());
+    public void beforeNetworkKill(INetwork network) {
+        part.beforeNetworkKill(network, NetworkHelpers.getPartNetwork(network), target, getPartState());
     }
 
     @Override
-    public void afterNetworkAlive(IPartNetwork network) {
-        part.afterNetworkAlive(network, target, getPartState());
+    public void afterNetworkAlive(INetwork network) {
+        part.afterNetworkAlive(network, NetworkHelpers.getPartNetwork(network), target, getPartState());
     }
 
     @Override
-    public void afterNetworkReAlive(IPartNetwork network) {
-        part.afterNetworkReAlive(network, target, getPartState());
+    public void afterNetworkReAlive(INetwork network) {
+        part.afterNetworkReAlive(network, NetworkHelpers.getPartNetwork(network), target, getPartState());
     }
 
     @Override
-    public void addDrops(List<ItemStack> itemStacks, boolean dropMainElement) {
-        part.addDrops(getTarget(), getPartState(), itemStacks, dropMainElement);
+    public void addDrops(List<ItemStack> itemStacks, boolean dropMainElement, boolean saveState) {
+        part.addDrops(getTarget(), getPartState(), itemStacks, dropMainElement, saveState);
     }
 
     @Override
-    public boolean onNetworkAddition(IPartNetwork network) {
-        boolean res = network.addPart(getPartState().getId(), getTarget().getCenter());
+    public boolean onNetworkAddition(INetwork network) {
+        IPartNetwork partNetwork = NetworkHelpers.getPartNetwork(network);
+        boolean res = partNetwork.addPart(getPartState().getId(), getTarget().getCenter());
         if (res) {
-            part.onNetworkAddition(network, target, getPartState());
+            part.onNetworkAddition(network, partNetwork, target, getPartState());
         }
         return res;
     }
 
     @Override
-    public void onNetworkRemoval(IPartNetwork network) {
-        network.removePart(getPartState().getId());
-        part.onNetworkRemoval(network, target, getPartState());
+    public void onNetworkRemoval(INetwork network) {
+        IPartNetwork partNetwork = NetworkHelpers.getPartNetwork(network);
+        partNetwork.removePart(getPartState().getId());
+        part.onNetworkRemoval(network, partNetwork, target, getPartState());
     }
 
     @Override
-    public void onPreRemoved(IPartNetwork network) {
-        part.onPreRemoved(network, target, getPartState());
+    public void onPreRemoved(INetwork network) {
+        part.onPreRemoved(network, NetworkHelpers.getPartNetwork(network), target, (tempState = getPartState()));
     }
 
     @Override
-    public void onNeighborBlockChange(IPartNetwork network, IBlockAccess world, Block neighborBlock) {
-        part.onBlockNeighborChange(network, target, getPartState(), world, neighborBlock);
+    public void onPostRemoved(INetwork network) {
+        part.onPostRemoved(network, NetworkHelpers.getPartNetwork(network), target, Objects.requireNonNull(tempState));
+        tempState = null;
+    }
+
+    @Override
+    public void onNeighborBlockChange(@Nullable INetwork network, IBlockAccess world, Block neighbourBlock,
+        BlockPos neighbourBlockPos) {
+        part.onBlockNeighborChange(
+            network,
+            NetworkHelpers.getPartNetwork(network),
+            target,
+            getPartState(),
+            world,
+            neighbourBlock,
+            neighbourBlockPos);
     }
 
     @Override
@@ -169,19 +235,66 @@ public class PartNetworkElement<P extends IPartType<P, S>, S extends IPartState<
     public int compareTo(INetworkElement o) {
         if (o instanceof IPartNetworkElement) {
             IPartNetworkElement p = (IPartNetworkElement) o;
-            int compPart = Integer.compare(
-                part.hashCode(),
-                p.getPart()
-                    .hashCode());
-            if (compPart == 0) {
-                int compPos = getCenterPos(getTarget()).compareTo(getCenterPos(p.getTarget()));
-                if (compPos == 0) {
-                    return getCenterSide(getTarget()).compareTo(getCenterSide(p.getTarget()));
+            int compClass = this.getPart()
+                .getName()
+                .compareTo(
+                    p.getPart()
+                        .getName());
+            if (compClass == 0) {
+                // If this or the other part is not loaded, we IGNORE the priority,
+                // because that depends on tile entity data, which requires loading the part/chunk.
+                int compPriority = !isLoaded() || !p.isLoaded() ? 0
+                    : -Integer.compare(this.getPriority(), p.getPriority());
+                if (compPriority == 0) {
+                    int compPart = getPart().getUnlocalizedName()
+                        .compareTo(
+                            p.getPart()
+                                .getUnlocalizedName());
+                    if (compPart == 0) {
+                        int compPos = getCenterPos(getTarget()).compareTo(getCenterPos(p.getTarget()));
+                        if (compPos == 0) {
+                            return getCenterSide(getTarget()).compareTo(getCenterSide(p.getTarget()));
+                        }
+                        return compPos;
+                    }
+                    return compPart;
+                } else {
+                    return compPriority;
                 }
-                return compPos;
+
+            } else {
+                return compClass;
             }
-            return compPart;
         }
-        return Integer.compare(hashCode(), o.hashCode());
+        return this.getClass()
+            .getName()
+            .compareTo(
+                o.getClass()
+                    .getName());
+    }
+
+    @Override
+    public DimPos getPosition() {
+        return getTarget().getCenter()
+            .getPos();
+    }
+
+    @Override
+    public ForgeDirection getSide() {
+        return getTarget().getCenter()
+            .getSide();
+    }
+
+    @Override
+    public int getId() {
+        if (!hasPartState()) {
+            return -1;
+        }
+        return getPartState().getId();
+    }
+
+    @Override
+    public ResourceLocation getGroup() {
+        return IPartNetworkElement.GROUP;
     }
 }

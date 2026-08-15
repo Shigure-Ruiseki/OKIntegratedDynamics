@@ -5,6 +5,7 @@ import java.util.Map;
 
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.util.IIcon;
+import net.minecraft.util.ResourceLocation;
 
 import ruiseki.integrateddynamics.api.client.model.IVariableModelProvider;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
@@ -18,10 +19,16 @@ public class ValueTypeVariableModelProvider implements IVariableModelProvider<IV
     public void registerIcons(IIconRegister iconRegister) {
         icons.clear();
         for (IValueType valueType : ValueTypes.REGISTRY.getValueTypes()) {
-            String iconPath = ValueTypes.REGISTRY.getValueTypeIconPath(valueType);
-            if (iconPath != null) {
-                IIcon icon = iconRegister.registerIcon(iconPath);
-                icons.put(valueType, icon);
+            ResourceLocation modelPath = ValueTypes.REGISTRY.getValueTypeModel(valueType);
+            if (modelPath != null) {
+                String texturePath = ModelUtils.getLayer0FromModel(modelPath);
+                if (texturePath != null && !texturePath.trim()
+                    .isEmpty()) {
+                    IIcon icon = iconRegister.registerIcon(texturePath);
+                    if (icon != null) {
+                        icons.put(valueType, icon);
+                    }
+                }
             }
         }
     }

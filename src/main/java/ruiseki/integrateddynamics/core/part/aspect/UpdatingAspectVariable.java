@@ -9,7 +9,7 @@ import ruiseki.integrateddynamics.api.part.aspect.IAspectVariable;
 
 /**
  * Variable for a specific aspect from a part that requires updates for value changes.
- * 
+ *
  * @author rubensworks
  */
 @Data
@@ -25,10 +25,4 @@ public abstract class UpdatingAspectVariable<V extends IValue> implements IAspec
         this.target = target;
         this.value = type.getDefault();
     }
-
-    @Override
-    public boolean requiresUpdate() {
-        return true;
-    }
-
 }

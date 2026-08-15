@@ -16,27 +16,39 @@ import net.minecraftforge.common.util.ForgeDirection;
 
 import org.apache.logging.log4j.Level;
 
+import com.google.common.collect.Lists;
+import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
+
 import lombok.Getter;
 import lombok.Setter;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
+import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeListProxy;
 import ruiseki.integrateddynamics.api.evaluate.variable.IVariable;
+import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.network.event.INetworkEvent;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
-import ruiseki.integrateddynamics.api.part.IPartState;
+import ruiseki.integrateddynamics.api.part.IPartTypeActiveVariable;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.client.gui.GuiPartDisplay;
+import ruiseki.integrateddynamics.core.block.IgnoredBlock;
+import ruiseki.integrateddynamics.core.block.IgnoredBlockStatus;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueHelpers;
+import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeList;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
+import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
 import ruiseki.integrateddynamics.core.helper.WrenchHelpers;
+import ruiseki.integrateddynamics.core.network.event.NetworkElementAddEvent;
 import ruiseki.integrateddynamics.core.network.event.VariableContentsUpdatedEvent;
 import ruiseki.integrateddynamics.core.part.PartStateActiveVariableBase;
 import ruiseki.integrateddynamics.inventory.container.ContainerPartDisplay;
 import ruiseki.okcore.datastructure.BlockPos;
+import ruiseki.okcore.helper.BlockHelpers;
+import ruiseki.okcore.helper.BlockStateHelpers;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
 
@@ -46,27 +58,37 @@ import ruiseki.okcore.helper.MinecraftHelpers;
  * @author rubensworks
  */
 public abstract class PartTypePanelVariableDriven<P extends PartTypePanelVariableDriven<P, S>, S extends PartTypePanelVariableDriven.State<P, S>>
-    extends PartTypePanel<P, S> {
+    extends PartTypePanel<P, S> implements IPartTypeActiveVariable<P, S> {
 
     public PartTypePanelVariableDriven(String name) {
         super(name);
     }
 
     @Override
-    protected Map<Class<? extends INetworkEvent<IPartNetwork>>, IEventAction> constructNetworkEventActions() {
-        Map<Class<? extends INetworkEvent<IPartNetwork>>, IEventAction> actions = super.constructNetworkEventActions();
+    protected Map<Class<? extends INetworkEvent>, IEventAction> constructNetworkEventActions() {
+        Map<Class<? extends INetworkEvent>, IEventAction> actions = super.constructNetworkEventActions();
         actions.put(VariableContentsUpdatedEvent.class, new IEventAction<P, S, VariableContentsUpdatedEvent>() {
 
             @Override
-            public void onAction(IPartNetwork network, PartTarget target, S state, VariableContentsUpdatedEvent event) {
-                onVariableContentsUpdated(event.getNetwork(), target, state);
+            public void onAction(INetwork network, PartTarget target, S state, VariableContentsUpdatedEvent event) {
+                IPartNetwork partNetwork = NetworkHelpers.getPartNetwork(network);
+                onVariableContentsUpdated(partNetwork, target, state);
+            }
+        });
+        actions.put(NetworkElementAddEvent.Post.class, new IEventAction<P, S, NetworkElementAddEvent.Post>() {
+
+            @Override
+            public void onAction(INetwork network, PartTarget target, S state, NetworkElementAddEvent.Post event) {
+                IPartNetwork partNetwork = NetworkHelpers.getPartNetwork(network);
+                onVariableContentsUpdated(partNetwork, target, state);
             }
         });
         return actions;
     }
 
     @Override
-    public void addDrops(PartTarget target, S state, List<ItemStack> itemStacks, boolean dropMainElement) {
+    public void addDrops(PartTarget target, S state, List<ItemStack> itemStacks, boolean dropMainElement,
+        boolean saveState) {
         for (int i = 0; i < state.getInventory()
             .getSizeInventory(); i++) {
             ItemStack itemStack = state.getInventory()
@@ -78,18 +100,18 @@ public abstract class PartTypePanelVariableDriven<P extends PartTypePanelVariabl
         state.getInventory()
             .clear();
         state.onVariableContentsUpdated((P) this, target);
-        super.addDrops(target, state, itemStacks, dropMainElement);
+        super.addDrops(target, state, itemStacks, dropMainElement, saveState);
     }
 
     @Override
-    public void beforeNetworkKill(IPartNetwork network, PartTarget target, S state) {
-        super.beforeNetworkKill(network, target, state);
+    public void beforeNetworkKill(INetwork network, IPartNetwork partNetwork, PartTarget target, S state) {
+        super.beforeNetworkKill(network, partNetwork, target, state);
         state.onVariableContentsUpdated((P) this, target);
     }
 
     @Override
-    public void afterNetworkAlive(IPartNetwork network, PartTarget target, S state) {
-        super.afterNetworkAlive(network, target, state);
+    public void afterNetworkAlive(INetwork network, IPartNetwork partNetwork, PartTarget target, S state) {
+        super.afterNetworkAlive(network, partNetwork, target, state);
         state.onVariableContentsUpdated((P) this, target);
     }
 
@@ -99,13 +121,13 @@ public abstract class PartTypePanelVariableDriven<P extends PartTypePanelVariabl
     }
 
     @Override
-    public void update(IPartNetwork network, PartTarget target, S state) {
-        super.update(network, target, state);
+    public void update(INetwork network, IPartNetwork partNetwork, PartTarget target, S state) {
+        super.update(network, partNetwork, target, state);
         IValue lastValue = state.getDisplayValue();
         IValue newValue = null;
         if (state.hasVariable()) {
             try {
-                IVariable variable = state.getVariable(network);
+                IVariable variable = state.getVariable(network, partNetwork);
                 if (variable != null) {
                     newValue = variable.getValue();
                 }
@@ -114,15 +136,67 @@ public abstract class PartTypePanelVariableDriven<P extends PartTypePanelVariabl
             }
         }
         if (!ValueHelpers.areValuesEqual(lastValue, newValue)) {
-            onValueChanged(network, target, state, lastValue, newValue);
-            state.sendUpdate();
+            onValueChanged(network, partNetwork, target, state, lastValue, newValue);
+
+            // We can't call state.sendUpdate() here, so we must trigger a block update manually.
+            // This was the cause of issue #46 which made it so that values that change after one tick are
+            // NOT sent to the client.
+            // This was because in each server tick, all tiles are first updated and then the networks.
+            // Since sendUpdate marks a flag for the tile to update, this caused a loss of one tick.
+            // For example:
+            // tick-0: Tile tick
+            // tick-0: Part tick: update a value, and mark part to invalidate
+            // tick-0: -- send all block updates to client ---
+            // tick-1: Tile tick: notices and update, marks a block invalidate
+            // tick-1: Part tick: update the value again, the old value has still not been sent here!
+            // tick-1: -- send all block updates to client --- This will contain the value that was set in tick-1.
+            state.onDirty();
+            BlockHelpers.markForUpdate(
+                target.getCenter()
+                    .getPos()
+                    .getWorld(),
+                target.getCenter()
+                    .getPos()
+                    .getBlockPos());
         }
     }
 
-    protected void onValueChanged(IPartNetwork network, PartTarget target, S state, IValue lastValue, IValue newValue) {
-        state.setDisplayValue(
-            newValue != null ? newValue.getType()
-                .materialize(newValue) : null);
+    @Override
+    public boolean hasActiveVariable(IPartNetwork network, PartTarget target, S partState) {
+        return partState.hasVariable();
+    }
+
+    @Override
+    public <V extends IValue> IVariable<V> getActiveVariable(INetwork network, IPartNetwork partNetwork,
+        PartTarget target, S partState) {
+        return partState.getVariable(network, partNetwork);
+    }
+
+    protected void onValueChanged(INetwork network, IPartNetwork partNetwork, PartTarget target, S state,
+        IValue lastValue, IValue newValue) {
+        if (newValue == null) {
+            state.setDisplayValue(null);
+        } else {
+            IValue materializedValue = null;
+            try {
+                if (newValue.getType() == ValueTypes.LIST) {
+                    IValueTypeListProxy<IValueType<IValue>, IValue> original = ((ValueTypeList.ValueList) newValue)
+                        .getRawValue();
+                    if (original.getLength() > ValueTypeList.MAX_RENDER_LINES) {
+                        List<IValue> list = Lists.newArrayList();
+                        for (int i = 0; i < ValueTypeList.MAX_RENDER_LINES; i++) {
+                            list.add(original.get(i));
+                        }
+                        newValue = ValueTypeList.ValueList.ofList(original.getValueType(), list);
+                    }
+                }
+                materializedValue = newValue.getType()
+                    .materialize(newValue);
+            } catch (EvaluationException e) {
+                state.addGlobalError(new LangHelpers.UnlocalizedString(e.getLocalizedMessage()));
+            }
+            state.setDisplayValue(materializedValue);
+        }
     }
 
     @Override
@@ -140,40 +214,27 @@ public abstract class PartTypePanelVariableDriven<P extends PartTypePanelVariabl
         return GuiPartDisplay.class;
     }
 
-    protected Status getStatus(PartTypePanelVariableDriven.State state) {
-        Status status = Status.INACTIVE;
+    protected IgnoredBlockStatus.Status getStatus(PartTypePanelVariableDriven.State state) {
+        IgnoredBlockStatus.Status status = IgnoredBlockStatus.Status.INACTIVE;
         if (state != null && !state.getInventory()
             .isEmpty()) {
             if (state.hasVariable() && state.isEnabled()) {
-                status = Status.ACTIVE;
+                status = IgnoredBlockStatus.Status.ACTIVE;
             } else {
-                status = Status.ERROR;
+                status = IgnoredBlockStatus.Status.ERROR;
             }
         }
         return status;
     }
 
     @Override
-    public String getBlockModelPath(IPartContainer partContainer, ForgeDirection side) {
-        String status = "_inactive";
-        if (partContainer != null) {
-            IPartState stateBase = partContainer.getPartState(side);
-            if (stateBase instanceof PartTypePanelVariableDriven.State) {
-                PartTypePanelVariableDriven.State state = (PartTypePanelVariableDriven.State) stateBase;
-                if (state.hasVariable() && state.isEnabled()) {
-                    status = "_active";
-                } else if (!state.getInventory()
-                    .isEmpty()) {
-                        status = "_error";
-                    }
-            }
-        }
-        return super.getBlockModelPath(partContainer, side) + status;
-    }
-
-    @Override
-    public String getItemModelPath() {
-        return super.getItemModelPath() + "_inactive";
+    public BlockState getBlockState(IPartContainer partContainer, ForgeDirection side) {
+        BlockState state = BlockStateHelpers.getState(getBlock(), 0);
+        IgnoredBlockStatus.Status status = getStatus(
+            partContainer != null ? (PartTypePanelVariableDriven.State) partContainer.getPartState(side) : null);
+        state.setPropertyValue(IgnoredBlock.FACING, side);
+        state.setPropertyValue(IgnoredBlockStatus.STATUS, status);
+        return state;
     }
 
     protected void onVariableContentsUpdated(IPartNetwork network, PartTarget target, S state) {
@@ -183,8 +244,8 @@ public abstract class PartTypePanelVariableDriven<P extends PartTypePanelVariabl
     @Override
     public boolean onPartActivated(World world, BlockPos pos, final S partState, EntityPlayer player,
         ItemStack heldItem, ForgeDirection side, float hitX, float hitY, float hitZ) {
-        if (WrenchHelpers.isWrench(player, heldItem, pos)) {
-            WrenchHelpers.wrench(player, heldItem, pos, new WrenchHelpers.IWrenchAction<Void>() {
+        if (WrenchHelpers.isWrench(player, heldItem, world, pos, side)) {
+            WrenchHelpers.wrench(player, heldItem, world, pos, side, new WrenchHelpers.IWrenchAction<Void>() {
 
                 @Override
                 public void onWrench(EntityPlayer player, BlockPos pos, Void parameter) {
@@ -253,10 +314,7 @@ public abstract class PartTypePanelVariableDriven<P extends PartTypePanelVariabl
                     "displayValueType",
                     value.getType()
                         .getUnlocalizedName());
-                tag.setString(
-                    "displayValue",
-                    value.getType()
-                        .serialize(value));
+                tag.setString("displayValue", ValueHelpers.serializeRaw(value));
             }
             tag.setInteger("facingRotation", facingRotation.ordinal());
         }
@@ -271,7 +329,7 @@ public abstract class PartTypePanelVariableDriven<P extends PartTypePanelVariabl
                     String serializedValue = tag.getString("displayValue");
                     LangHelpers.UnlocalizedString deserializationError = valueType.canDeserialize(serializedValue);
                     if (deserializationError == null) {
-                        setDisplayValue(valueType.deserialize(serializedValue));
+                        setDisplayValue(ValueHelpers.deserializeRaw(valueType, serializedValue));
                     } else {
                         IntegratedDynamics.clog(Level.ERROR, deserializationError.localize());
                     }

@@ -4,6 +4,7 @@ import java.util.List;
 
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IVariable;
+import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.part.IPartState;
 import ruiseki.integrateddynamics.api.part.PartTarget;
@@ -32,13 +33,15 @@ public interface IPartStateWriter<P extends IPartTypeWriter> extends IPartState<
 
     /**
      * Get the current target variable.
-     *
+     * 
      * @return The active variable to read from.
-     * @param <V>     The value type.
-     * @param network The network this part belongs to.
+     * @param <V>         The value type.
+     * 
+     * @param network     The network this part belongs to.
+     * @param partNetwork The part network this part belongs to.
      * @return The variable.
      */
-    public <V extends IValue> IVariable<V> getVariable(IPartNetwork network);
+    public <V extends IValue> IVariable<V> getVariable(INetwork network, IPartNetwork partNetwork);
 
     /**
      * Indicate that this state should eventually recheck its aspect info because something might have changed what can

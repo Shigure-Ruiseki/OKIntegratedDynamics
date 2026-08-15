@@ -5,7 +5,7 @@ import ruiseki.okcore.config.extendedconfig.BlockConfig;
 
 /**
  * Config for {@link BlockLogicProgrammer}.
- * 
+ *
  * @author rubensworks
  */
 public class BlockLogicProgrammerConfig extends BlockConfig {
@@ -19,7 +19,7 @@ public class BlockLogicProgrammerConfig extends BlockConfig {
      * Make a new instance.
      */
     public BlockLogicProgrammerConfig() {
-        super(IntegratedDynamics._instance, true, "logicProgrammer", null, BlockLogicProgrammer.class);
+        super(IntegratedDynamics._instance, true, "logic_programmer", null, BlockLogicProgrammer.class);
     }
 
 }

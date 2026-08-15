@@ -15,18 +15,26 @@ import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeListProxy;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeListProxyFactoryTypeRegistry;
+import ruiseki.integrateddynamics.core.logicprogrammer.ValueTypeLPElementBase;
+import ruiseki.integrateddynamics.core.logicprogrammer.ValueTypeListLPElement;
 import ruiseki.okcore.helper.Helpers;
 import ruiseki.okcore.helper.LangHelpers;
 
 /**
  * Value type with values that are strings.
- * 
+ *
  * @author rubensworks
  */
 public class ValueTypeList extends ValueObjectTypeBase<ValueTypeList.ValueList> {
 
+    public static final int MAX_RENDER_LINES = 20;
+
     public ValueTypeList() {
-        super("list", Helpers.RGBToInt(175, 3, 1), EnumChatFormatting.DARK_RED.toString());
+        super(
+            "list",
+            Helpers.RGBToInt(175, 3, 1),
+            EnumChatFormatting.DARK_RED.toString(),
+            ValueTypeList.ValueList.class);
     }
 
     @Override
@@ -74,8 +82,16 @@ public class ValueTypeList extends ValueObjectTypeBase<ValueTypeList.ValueList> 
     }
 
     @Override
-    public ValueList materialize(ValueList value) {
+    public ValueTypeLPElementBase createLogicProgrammerElement() {
+        return new ValueTypeListLPElement();
+    }
+
+    @Override
+    public ValueList materialize(ValueList value) throws EvaluationException {
         IValueTypeListProxy<IValueType<IValue>, IValue> list = value.getRawValue();
+        if (list.isInfinite()) {
+            return ValueList.ofList(list.getValueType(), Lists.newArrayList(list.get(0)));
+        }
         List<IValue> values = ImmutableList.copyOf(list);
         return ValueList.ofList(list.getValueType(), values);
     }
@@ -99,6 +115,10 @@ public class ValueTypeList extends ValueObjectTypeBase<ValueTypeList.ValueList> 
                 : ofList(values[0].getType(), Lists.newArrayList(values));
         }
 
+        public static <V extends IValue> ValueList ofAll(IValueType type, V... values) {
+            return ofList(type, ImmutableList.copyOf(values));
+        }
+
         public static <T extends IValueType<V>, V extends IValue> ValueList ofFactory(IValueTypeListProxy<T, V> proxy) {
             return new ValueList<>(proxy);
         }
@@ -112,24 +132,30 @@ public class ValueTypeList extends ValueObjectTypeBase<ValueTypeList.ValueList> 
             return o instanceof ValueList && ((ValueList) o).value.equals(this.value);
         }
 
+        @Override
+        public int hashCode() {
+            return value.hashCode();
+        }
     }
 
     public static class ListFactoryIterator<T extends IValueType<V>, V extends IValue> implements Iterator<V> {
 
         private final IValueTypeListProxy<T, V> value;
         private int index = 0;
+        private int length;
 
         public ListFactoryIterator(IValueTypeListProxy<T, V> value) {
             this.value = value;
+            try {
+                this.length = this.value.getLength();
+            } catch (EvaluationException e) {
+                this.length = 0;
+            }
         }
 
         @Override
         public boolean hasNext() {
-            try {
-                return index < value.getLength();
-            } catch (EvaluationException e) {
-                return false;
-            }
+            return index < length;
         }
 
         @Override

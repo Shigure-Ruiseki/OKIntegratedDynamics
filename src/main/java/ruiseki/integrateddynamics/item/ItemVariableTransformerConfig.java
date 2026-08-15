@@ -15,7 +15,7 @@ import ruiseki.okcore.config.extendedconfig.ItemConfig;
 
 /**
  * Config for the Input and Output Variable Transformer.
- * 
+ *
  * @author rubensworks
  *
  */
@@ -30,12 +30,13 @@ public class ItemVariableTransformerConfig extends ItemConfig {
      * Make a new instance.
      */
     public ItemVariableTransformerConfig() {
-        super(IntegratedDynamics._instance, true, "variableTransformer", null, null);
+        super(IntegratedDynamics._instance, true, "variable_transformer", null, null);
     }
 
     @Override
-    protected IConfigurable initSubInstance() {
-        return (IConfigurable) new ConfigurableItem(this) {
+    @SuppressWarnings("unchecked")
+    protected IConfigurable<ItemConfig> initSubInstance() {
+        return (IConfigurable<ItemConfig>) new ConfigurableItem(this) {
 
             private IIcon input;
             private IIcon output;

@@ -18,7 +18,7 @@ public interface IValueTypeListProxy<T extends IValueType<V>, V extends IValue> 
 
     /**
      * Get the element at the given index.
-     * 
+     *
      * @param index The index.
      * @return The element at the given index.
      * @throws EvaluationException If something went wrong wile getting an element.
@@ -40,5 +40,10 @@ public interface IValueTypeListProxy<T extends IValueType<V>, V extends IValue> 
      * @return A short string representation used in guis to show the value.
      */
     public String toCompactString();
+
+    /**
+     * @return If this is an infinite list.
+     */
+    public boolean isInfinite();
 
 }

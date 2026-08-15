@@ -3,6 +3,9 @@ package ruiseki.integrateddynamics.core.evaluate.operator;
 import java.util.Arrays;
 import java.util.List;
 
+import org.jetbrains.annotations.Nullable;
+
+import ruiseki.integrateddynamics.GeneralConfig;
 import ruiseki.integrateddynamics.Reference;
 import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.evaluate.operator.IOperator;
@@ -26,19 +29,21 @@ public abstract class OperatorBase implements IOperator {
     private final IValueType[] inputTypes;
     private final IValueType outputType;
     private final IFunction function;
+    @Nullable
     private final IConfigRenderPattern renderPattern;
 
     private String unlocalizedName = null;
+    private int recursiveInvocations;
 
     protected OperatorBase(String symbol, String operatorName, IValueType[] inputTypes, IValueType outputType,
-        IFunction function, IConfigRenderPattern renderPattern) {
+        IFunction function, @Nullable IConfigRenderPattern renderPattern) {
         this.symbol = symbol;
         this.operatorName = operatorName;
         this.inputTypes = inputTypes;
         this.outputType = outputType;
         this.function = function;
         this.renderPattern = renderPattern;
-        if (renderPattern.getSlotPositions().length != inputTypes.length) {
+        if (renderPattern != null && renderPattern.getSlotPositions().length != inputTypes.length) {
             throw new IllegalArgumentException(
                 String.format(
                     "The given config render pattern with %s slots is not "
@@ -140,12 +145,23 @@ public abstract class OperatorBase implements IOperator {
     }
 
     @Override
-    public IValue evaluate(IVariable[] input) throws EvaluationException {
+    public IValue evaluate(IVariable... input) throws EvaluationException {
+        if (this.recursiveInvocations++ > GeneralConfig.operatorRecursionLimit) {
+            this.recursiveInvocations = 0;
+            throw new EvaluationException(
+                new LangHelpers.UnlocalizedString(
+                    L10NValues.OPERATOR_ERROR_RECURSIONLIMIT,
+                    GeneralConfig.operatorRecursionLimit,
+                    new LangHelpers.UnlocalizedString(this.getUnlocalizedName())).localize());
+        }
         LangHelpers.UnlocalizedString error = validateTypes(ValueHelpers.from(input));
         if (error != null) {
+            this.recursiveInvocations--;
             throw new EvaluationException(error.localize());
         }
-        return function.evaluate(new SafeVariablesGetter(input));
+        IValue res = function.evaluate(new SafeVariablesGetter(input));
+        this.recursiveInvocations--;
+        return res;
     }
 
     @Override
@@ -195,8 +211,14 @@ public abstract class OperatorBase implements IOperator {
     }
 
     @Override
+    @Nullable
     public IConfigRenderPattern getRenderPattern() {
         return renderPattern;
+    }
+
+    @Override
+    public IOperator materialize() throws EvaluationException {
+        return this;
     }
 
     public static class SafeVariablesGetter {
@@ -208,7 +230,15 @@ public abstract class OperatorBase implements IOperator {
         }
 
         public <V extends IValue> V getValue(int i) throws EvaluationException {
-            return (V) variables[i].getValue();
+            try {
+                return (V) variables[i].getValue();
+            } catch (ClassCastException e) {
+                throw new EvaluationException(e.getMessage());
+            }
+        }
+
+        public <V extends IValue> V getValue(int i, IValueType<V> valueType) throws EvaluationException {
+            return valueType.cast(variables[i].getValue());
         }
 
         public IVariable[] getVariables() {

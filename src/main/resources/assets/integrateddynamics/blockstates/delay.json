@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "integrateddynamics:block/delay" },
+    "facing=south": { "model": "integrateddynamics:block/delay", "y": 180 },
+    "facing=west":  { "model": "integrateddynamics:block/delay", "y": 270 },
+    "facing=east":  { "model": "integrateddynamics:block/delay", "y": 90 }
+  }
+}

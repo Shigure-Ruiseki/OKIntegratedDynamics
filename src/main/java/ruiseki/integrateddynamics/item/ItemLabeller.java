@@ -8,6 +8,7 @@ import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.integrateddynamics.client.gui.GuiLabeller;
 import ruiseki.integrateddynamics.inventory.container.ContainerLabeller;
 import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
+import ruiseki.okcore.config.extendedconfig.ItemConfig;
 import ruiseki.okcore.item.ItemGui;
 
 /**
@@ -33,7 +34,7 @@ public class ItemLabeller extends ItemGui {
      *
      * @param eConfig Config for this blockState.
      */
-    public ItemLabeller(ExtendedConfig eConfig) {
+    public ItemLabeller(ExtendedConfig<ItemConfig> eConfig) {
         super(eConfig);
     }
 

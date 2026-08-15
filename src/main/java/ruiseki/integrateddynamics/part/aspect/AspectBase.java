@@ -1,6 +1,7 @@
 package ruiseki.integrateddynamics.part.aspect;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import net.minecraft.client.gui.GuiScreen;
@@ -10,7 +11,6 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import lombok.Data;
 import lombok.Getter;
-import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 import ruiseki.integrateddynamics.api.part.IPartState;
@@ -39,18 +39,17 @@ public abstract class AspectBase<V extends IValue, T extends IValueType<V>> impl
     @Getter
     private final IGuiContainerProvider propertiesGuiProvider;
 
+    private final ModBase mod;
+    private final ModBase modGui;
     private String unlocalizedName = null;
 
-    @Deprecated
-    public AspectBase() {
-        this(null);
-    }
-
-    public AspectBase(IAspectProperties defaultProperties) {
+    public AspectBase(ModBase mod, ModBase modGui, IAspectProperties defaultProperties) {
+        this.mod = mod;
+        this.modGui = modGui;
         this.defaultProperties = defaultProperties == null ? createDefaultProperties() : defaultProperties;
         if (hasProperties()) {
-            int guiIDSettings = Helpers.getNewId(getMod(), Helpers.IDType.GUI);
-            getMod().getGuiHandler()
+            int guiIDSettings = Helpers.getNewId(getModGui(), Helpers.IDType.GUI);
+            getModGui().getGuiHandler()
                 .registerGUI(
                     (propertiesGuiProvider = constructSettingsGuiProvider(guiIDSettings)),
                     ExtendedGuiHandler.ASPECT);
@@ -60,7 +59,7 @@ public abstract class AspectBase<V extends IValue, T extends IValueType<V>> impl
     }
 
     protected IGuiContainerProvider constructSettingsGuiProvider(int guiId) {
-        return new GuiProviderSettings(guiId, getMod());
+        return new GuiProviderSettings(guiId, getModGui());
     }
 
     @Override
@@ -99,8 +98,8 @@ public abstract class AspectBase<V extends IValue, T extends IValueType<V>> impl
         IAspectProperties properties = state.getAspectProperties(this);
         if (properties == null) {
             properties = getDefaultProperties().clone();
+            setProperties(partType, target, state, properties);
         }
-        setProperties(partType, target, state, properties);
         return properties;
     }
 
@@ -118,7 +117,7 @@ public abstract class AspectBase<V extends IValue, T extends IValueType<V>> impl
     @SuppressWarnings("deprecation")
     @Override
     public Collection<IAspectPropertyTypeInstance> getPropertyTypes() {
-        return getDefaultProperties().getTypes();
+        return hasProperties() ? getDefaultProperties().getTypes() : Collections.emptyList();
     }
 
     /**
@@ -132,7 +131,11 @@ public abstract class AspectBase<V extends IValue, T extends IValueType<V>> impl
     }
 
     protected ModBase getMod() {
-        return IntegratedDynamics._instance;
+        return mod;
+    }
+
+    protected ModBase getModGui() {
+        return modGui;
     }
 
     protected String getModId() {
@@ -143,7 +146,7 @@ public abstract class AspectBase<V extends IValue, T extends IValueType<V>> impl
     public static class GuiProviderSettings implements IGuiContainerProvider {
 
         private final int guiID;
-        private final ModBase mod;
+        private final ModBase modGui;
 
         @Override
         public Class<? extends Container> getContainer() {

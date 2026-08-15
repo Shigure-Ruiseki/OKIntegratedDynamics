@@ -12,6 +12,7 @@ import lombok.EqualsAndHashCode;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
+import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartState;
 import ruiseki.integrateddynamics.api.part.IPartType;
@@ -21,8 +22,10 @@ import ruiseki.integrateddynamics.api.part.aspect.property.IAspectProperties;
 import ruiseki.integrateddynamics.api.part.aspect.property.IAspectPropertyTypeInstance;
 import ruiseki.integrateddynamics.core.client.gui.ExtendedGuiHandler;
 import ruiseki.integrateddynamics.core.client.gui.container.GuiAspectSettings;
+import ruiseki.integrateddynamics.core.evaluate.variable.ValueHelpers;
+import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
+import ruiseki.integrateddynamics.core.network.event.VariableContentsUpdatedEvent;
 import ruiseki.okcore.datastructure.BlockPos;
-import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.helper.ValueNotifierHelpers;
 import ruiseki.okcore.inventory.IGuiContainerProvider;
 import ruiseki.okcore.inventory.container.ExtendedInventoryContainer;
@@ -88,15 +91,15 @@ public class ContainerAspectSettings extends ExtendedInventoryContainer {
 
             @Override
             public void onAction(int buttonId, InventoryContainer container) {
-                IntegratedDynamics._instance.getGuiHandler()
-                    .setTemporaryData(
-                        ExtendedGuiHandler.PART,
-                        getTarget().getCenter()
-                            .getSide());
-                BlockPos pos = getTarget().getCenter()
-                    .getPos()
-                    .getBlockPos();
-                if (!MinecraftHelpers.isClientSide()) {
+                if (!world.isRemote) {
+                    IntegratedDynamics._instance.getGuiHandler()
+                        .setTemporaryData(
+                            ExtendedGuiHandler.PART,
+                            getTarget().getCenter()
+                                .getSide());
+                    BlockPos pos = getTarget().getCenter()
+                        .getPos()
+                        .getBlockPos();
                     player.openGui(
                         IntegratedDynamics._instance.getModId(),
                         ((IGuiContainerProvider) getPartType()).getGuiID(),
@@ -123,8 +126,7 @@ public class ContainerAspectSettings extends ExtendedInventoryContainer {
             this,
             propertyIds.inverse()
                 .get(property),
-            property.getType()
-                .serialize(value));
+            ValueHelpers.serializeRaw(value));
     }
 
     @SuppressWarnings("unchecked")
@@ -151,8 +153,7 @@ public class ContainerAspectSettings extends ExtendedInventoryContainer {
                 propertyIds.inverse()
                     .get(property));
             if (value != null) {
-                return property.getType()
-                    .deserialize(value);
+                return ValueHelpers.deserializeRaw(property.getType(), value);
             }
         }
         return null;
@@ -161,16 +162,32 @@ public class ContainerAspectSettings extends ExtendedInventoryContainer {
     @Override
     public void onUpdate(int valueId, NBTTagCompound value) {
         super.onUpdate(valueId, value);
-        if (!MinecraftHelpers.isClientSide()) {
+        if (!world.isRemote) {
             IAspectPropertyTypeInstance property = propertyIds.get(valueId);
             if (property != null) {
                 IAspectProperties aspectProperties = getAspect()
                     .getProperties(getPartType(), getTarget(), getPartState());
                 aspectProperties = aspectProperties.clone();
-                IValue trueValue = property.getType()
-                    .deserialize(value.getString(ValueNotifierHelpers.KEY));
+                IValue trueValue = ValueHelpers
+                    .deserializeRaw(property.getType(), value.getString(ValueNotifierHelpers.KEY));
                 aspectProperties.setValue(property, trueValue);
                 getAspect().setProperties(getPartType(), getTarget(), getPartState(), aspectProperties);
+
+                // Changing the properties might cause some erroring variables to become valid again, so trigger an
+                // update.
+                INetwork network = NetworkHelpers.getNetwork(
+                    getTarget().getCenter()
+                        .getPos()
+                        .getWorld(),
+                    getTarget().getCenter()
+                        .getPos()
+                        .getBlockPos(),
+                    getTarget().getCenter()
+                        .getSide());
+                if (network != null) {
+                    network.getEventBus()
+                        .post(new VariableContentsUpdatedEvent(network));
+                }
             }
         }
     }

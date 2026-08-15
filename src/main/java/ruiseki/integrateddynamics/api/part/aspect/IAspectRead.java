@@ -19,4 +19,8 @@ public interface IAspectRead<V extends IValue, T extends IValueType<V>> extends 
      */
     public IAspectVariable<V> createNewVariable(PartTarget target);
 
+    /**
+     * @return The update type on which this aspect should invalidate.
+     */
+    public AspectUpdateType getUpdateType();
 }

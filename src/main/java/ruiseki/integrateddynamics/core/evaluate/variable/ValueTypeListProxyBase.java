@@ -5,13 +5,14 @@ import java.util.Iterator;
 
 import com.google.common.collect.Iterables;
 
+import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeListProxy;
 
 /**
  * A list proxy base implementation.
- * 
+ *
  * @param <T> The value type type.
  * @param <V> The value type.
  */
@@ -46,7 +47,9 @@ public abstract class ValueTypeListProxyBase<T extends IValueType<V>, V extends 
                 sb.append(", ");
             }
             first = false;
-            sb.append(getValueType().toCompactString(value));
+            sb.append(
+                value.getType()
+                    .toCompactString(value));
             if (sb.toString()
                 .length() > 10) {
                 sb.append("...");
@@ -64,16 +67,47 @@ public abstract class ValueTypeListProxyBase<T extends IValueType<V>, V extends 
 
     @Override
     public boolean equals(Object obj) {
+        if (this == obj) return true;
+
         if (obj == null || !(obj instanceof ValueTypeListProxyBase)) {
             return false;
         }
-        ValueTypeListProxyBase other = (ValueTypeListProxyBase) obj;
-        if (!getName().equals(other.getName()) || !(getValueType() == other.getValueType())) {
+        ValueTypeListProxyBase<?, ?> other = (ValueTypeListProxyBase<?, ?>) obj;
+        if (!ValueHelpers.correspondsTo(getValueType(), other.getValueType())) {
+            return false;
+        }
+        // Avoid infinite iteration
+        if (this.isInfinite() || other.isInfinite()) {
+            return false;
+        }
+        // Quickly return if the lengths differ.
+        try {
+            if (getLength() != other.getLength()) {
+                return false;
+            }
+        } catch (EvaluationException e) {
             return false;
         }
 
         Object[] o = Iterables.toArray(this, Object.class);
         Object[] o2 = Iterables.toArray(other, Object.class);
         return Arrays.equals(o, o2);
+    }
+
+    @Override
+    public int hashCode() {
+        if (this.isInfinite()) return System.identityHashCode(this);
+        int result = 1;
+        result = 37 * result + getName().hashCode();
+        result = 37 * result + getValueType().hashCode();
+        for (Object obj : this) {
+            result = 37 * result + (obj != null ? obj.hashCode() : 0);
+        }
+        return result;
+    }
+
+    @Override
+    public boolean isInfinite() {
+        return false;
     }
 }

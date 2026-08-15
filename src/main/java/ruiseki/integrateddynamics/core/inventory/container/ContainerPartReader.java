@@ -4,22 +4,27 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
+import net.minecraftforge.common.MinecraftForge;
 
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 
-import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
-import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
+import ruiseki.integrateddynamics.api.PartStateException;
 import ruiseki.integrateddynamics.api.evaluate.variable.IVariable;
+import ruiseki.integrateddynamics.api.network.INetwork;
+import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.PartTarget;
+import ruiseki.integrateddynamics.api.part.aspect.IAspect;
 import ruiseki.integrateddynamics.api.part.aspect.IAspectRead;
 import ruiseki.integrateddynamics.api.part.read.IPartStateReader;
 import ruiseki.integrateddynamics.api.part.read.IPartTypeReader;
+import ruiseki.integrateddynamics.core.evaluate.variable.ValueHelpers;
+import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
 import ruiseki.integrateddynamics.core.inventory.container.slot.SlotVariable;
-import ruiseki.okcore.helper.Helpers;
+import ruiseki.integrateddynamics.core.part.event.PartReaderAspectEvent;
 import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.helper.ValueNotifierHelpers;
 import ruiseki.okcore.inventory.IGuiContainerProvider;
@@ -28,7 +33,7 @@ import ruiseki.okcore.inventory.slot.SlotRemoveOnly;
 
 /**
  * Container for reader parts.
- * 
+ *
  * @author rubensworks
  */
 public class ContainerPartReader<P extends IPartTypeReader<P, S> & IGuiContainerProvider, S extends IPartStateReader<P>>
@@ -46,7 +51,7 @@ public class ContainerPartReader<P extends IPartTypeReader<P, S> & IGuiContainer
 
     /**
      * Make a new instance.
-     * 
+     *
      * @param partTarget    The target.
      * @param player        The player.
      * @param partContainer The part container.
@@ -156,26 +161,23 @@ public class ContainerPartReader<P extends IPartTypeReader<P, S> & IGuiContainer
     public void detectAndSendChanges() {
         super.detectAndSendChanges();
 
-        if (!MinecraftHelpers.isClientSide()) {
-            for (IAspectRead aspectRead : getUnfilteredItems()) {
-                String readValue = "";
-                int readValueColor = 0;
-                IVariable variable = getPartType().getVariable(getTarget(), getPartState(), aspectRead);
-                if (variable != null) {
-                    try {
-                        IValue value = variable.getValue();
-                        readValue = value.getType()
-                            .toCompactString(value);
-                        readValueColor = variable.getType()
-                            .getDisplayColor();
-                    } catch (EvaluationException | NullPointerException e) {
-                        readValue = "ERROR";
-                        readValueColor = Helpers.RGBToInt(255, 0, 0);
-                    }
-                }
+        try {
+            if (!MinecraftHelpers.isClientSide()) {
+                for (IAspectRead aspectRead : getUnfilteredItems()) {
+                    Pair<String, Integer> readValue;
 
-                setReadValue(aspectRead, Pair.of(readValue, readValueColor));
+                    if (getPartState().isEnabled()) {
+                        IVariable variable = getPartType().getVariable(getTarget(), getPartState(), aspectRead);
+                        readValue = ValueHelpers.getSafeReadableValue(variable);
+                    } else {
+                        readValue = Pair.of("NO POWER", 0);
+                    }
+
+                    setReadValue(aspectRead, readValue);
+                }
             }
+        } catch (PartStateException e) {
+            getPlayer().closeScreen();
         }
     }
 
@@ -202,4 +204,29 @@ public class ContainerPartReader<P extends IPartTypeReader<P, S> & IGuiContainer
         }
     }
 
+    @Override
+    public ItemStack writeAspectInfo(boolean generateId, ItemStack itemStack, final IAspect aspect) {
+        ItemStack resultStack = super.writeAspectInfo(generateId, itemStack, aspect);
+        INetwork network = NetworkHelpers.getNetwork(
+            getTarget().getCenter()
+                .getPos()
+                .getWorld(),
+            getTarget().getCenter()
+                .getPos()
+                .getBlockPos(),
+            getTarget().getCenter()
+                .getSide());
+        IPartNetwork partNetwork = NetworkHelpers.getPartNetwork(network);
+        PartReaderAspectEvent event = new PartReaderAspectEvent<>(
+            network,
+            partNetwork,
+            getTarget(),
+            getPartType(),
+            getPartState(),
+            getPlayer(),
+            (IAspectRead) aspect,
+            resultStack);
+        MinecraftForge.EVENT_BUS.post(event);
+        return event.getItemStack();
+    }
 }

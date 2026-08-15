@@ -1,16 +1,23 @@
 package ruiseki.integrateddynamics.core.evaluate.variable;
 
+import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 
+import cpw.mods.fml.common.registry.GameData;
 import joptsimple.internal.Strings;
 import lombok.ToString;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeNamed;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeNullable;
+import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeUniquelyNamed;
+import ruiseki.integrateddynamics.core.helper.L10NValues;
+import ruiseki.integrateddynamics.core.logicprogrammer.ValueTypeItemStackLPElement;
+import ruiseki.integrateddynamics.core.logicprogrammer.ValueTypeLPElementBase;
 import ruiseki.okcore.helper.BlockHelpers;
+import ruiseki.okcore.helper.LangHelpers;
 
 /**
  * Value type with values that are blocks (these are internally stored as blockstates).
@@ -18,10 +25,28 @@ import ruiseki.okcore.helper.BlockHelpers;
  * @author rubensworks
  */
 public class ValueObjectTypeBlock extends ValueObjectTypeBase<ValueObjectTypeBlock.ValueBlock>
-    implements IValueTypeNamed<ValueObjectTypeBlock.ValueBlock>, IValueTypeNullable<ValueObjectTypeBlock.ValueBlock> {
+    implements IValueTypeNamed<ValueObjectTypeBlock.ValueBlock>,
+    IValueTypeUniquelyNamed<ValueObjectTypeBlock.ValueBlock>, IValueTypeNullable<ValueObjectTypeBlock.ValueBlock> {
 
     public ValueObjectTypeBlock() {
-        super("block");
+        super("block", ValueObjectTypeBlock.ValueBlock.class);
+    }
+
+    public static String getBlockDisplayNameUsSafe(BlockState blockState) throws NoSuchMethodException {
+        return blockState.getBlock()
+            .getLocalizedName();
+    }
+
+    public static String getBlockkDisplayNameSafe(BlockState blockState) {
+        // Certain mods may call client-side only methods,
+        // so call a server-side-safe fallback method if that fails.
+        try {
+            return getBlockDisplayNameUsSafe(blockState);
+        } catch (NoSuchMethodException e) {
+            return LangHelpers.localize(
+                blockState.getBlock()
+                    .getUnlocalizedName() + ".name");
+        }
     }
 
     @Override
@@ -37,10 +62,9 @@ public class ValueObjectTypeBlock extends ValueObjectTypeBase<ValueObjectTypeBlo
                 .get();
             ItemStack itemStack = BlockHelpers.getItemStackFromBlockState(blockState);
             if (itemStack != null) {
-                return itemStack.getDisplayName();
+                return ValueObjectTypeItemStack.getItemStackDisplayNameSafe(itemStack);
             }
-            return blockState.getBlock()
-                .getLocalizedName();
+            return ValueObjectTypeBlock.getBlockkDisplayNameSafe(blockState);
         }
         return "";
     }
@@ -78,6 +102,46 @@ public class ValueObjectTypeBlock extends ValueObjectTypeBase<ValueObjectTypeBlo
             .isPresent();
     }
 
+    @Override
+    public ValueTypeLPElementBase createLogicProgrammerElement() {
+        return new ValueTypeItemStackLPElement<>(
+            this,
+            new ValueTypeItemStackLPElement.IItemStackToValue<ValueObjectTypeBlock.ValueBlock>() {
+
+                @Override
+                public boolean isNullable() {
+                    return true;
+                }
+
+                @Override
+                public LangHelpers.UnlocalizedString validate(ItemStack itemStack) {
+                    if (itemStack != null && !(itemStack.getItem() instanceof ItemBlock)) {
+                        return new LangHelpers.UnlocalizedString(L10NValues.VALUETYPE_OBJECT_BLOCK_ERROR_NOBLOCK);
+                    }
+                    return null;
+                }
+
+                @Override
+                public ValueObjectTypeBlock.ValueBlock getValue(ItemStack itemStack) {
+                    return ValueObjectTypeBlock.ValueBlock
+                        .of(itemStack == null ? null : BlockHelpers.getBlockStateFromItemStack(itemStack));
+                }
+            });
+    }
+
+    @Override
+    public String getUniqueName(ValueBlock value) {
+        if (value.getRawValue()
+            .isPresent()) {
+            BlockState blockState = value.getRawValue()
+                .get();
+            int meta = blockState.getBlockMeta(0);
+            return GameData.getBlockRegistry()
+                .getNameForObject(blockState.getBlock()) + (meta > 0 ? " " + meta : "");
+        }
+        return "";
+    }
+
     @ToString
     public static class ValueBlock extends ValueOptionalBase<BlockState> {
 
@@ -91,7 +155,7 @@ public class ValueObjectTypeBlock extends ValueObjectTypeBase<ValueObjectTypeBlo
 
         @Override
         protected boolean isEqual(BlockState a, BlockState b) {
-            return a.getBlock() == b.getBlock() && a.getPropertyValue("meta") == b.getPropertyValue("meta");
+            return a.getBlock() == b.getBlock() && a.getBlockMeta(0) == b.getBlockMeta(0);
         }
     }
 

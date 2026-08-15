@@ -5,12 +5,15 @@ import java.util.List;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.StatCollector;
 
 import com.google.common.collect.Lists;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.client.gui.subgui.IGuiInputElement;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.logicprogrammer.IConfigRenderPattern;
@@ -19,11 +22,13 @@ import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.api.part.aspect.IAspect;
 import ruiseki.integrateddynamics.api.part.aspect.property.IAspectPropertyTypeInstance;
+import ruiseki.integrateddynamics.core.client.gui.ExtendedGuiHandler;
 import ruiseki.integrateddynamics.core.client.gui.subgui.SubGuiHolder;
-import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeGuiElement;
-import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeSubGuiRenderPattern;
+import ruiseki.integrateddynamics.core.evaluate.variable.GuiElementValueTypeString;
+import ruiseki.integrateddynamics.core.evaluate.variable.GuiElementValueTypeStringRenderPattern;
+import ruiseki.integrateddynamics.core.evaluate.variable.ValueHelpers;
 import ruiseki.integrateddynamics.core.inventory.container.ContainerAspectSettings;
-import ruiseki.integrateddynamics.core.logicprogrammer.SubGuiConfigRenderPattern;
+import ruiseki.integrateddynamics.core.logicprogrammer.RenderPattern;
 import ruiseki.okcore.client.gui.component.button.GuiButtonText;
 import ruiseki.okcore.client.gui.container.GuiContainerExtended;
 import ruiseki.okcore.helper.Helpers;
@@ -47,10 +52,9 @@ public class GuiAspectSettings extends GuiContainerExtended {
     private static final int OK_WIDTH = 14;
     private static final int OK_HEIGHT = 12;
 
-    private static final int BUTTON_SAVE = 0;
-    private static final int BUTTON_LEFT = 1;
-    private static final int BUTTON_RIGHT = 2;
-    public static final int BUTTON_EXIT = 3;
+    private static final int BUTTON_LEFT = 0;
+    private static final int BUTTON_RIGHT = 1;
+    public static final int BUTTON_EXIT = 2;
 
     private final PartTarget target;
     private final IPartContainer partContainer;
@@ -59,9 +63,9 @@ public class GuiAspectSettings extends GuiContainerExtended {
 
     private final List<IAspectPropertyTypeInstance> propertyTypes;
     protected final SubGuiHolder subGuiHolder = new SubGuiHolder();
-    protected ValueTypeGuiElement<GuiAspectSettings, ContainerAspectSettings> guiElement = null;
+    protected GuiElementValueTypeString<GuiAspectSettings, ContainerAspectSettings> guiElement = null;
     protected int activePropertyIndex = 0;
-    protected ValueTypeSubGuiRenderPattern propertyConfigPattern = null;
+    protected GuiElementValueTypeStringRenderPattern propertyConfigPattern = null;
     protected SubGuiValueTypeInfo propertyInfo = null;
     private GuiButtonText buttonLeft = null;
     private GuiButtonText buttonRight = null;
@@ -90,24 +94,11 @@ public class GuiAspectSettings extends GuiContainerExtended {
             aspect.getDefaultProperties()
                 .getTypes());
 
-        putButtonAction(BUTTON_SAVE, new IButtonActionClient<GuiContainerExtended, ExtendedInventoryContainer>() {
-
-            @Override
-            public void onAction(int buttonId, GuiContainerExtended gui, ExtendedInventoryContainer container) {
-                if (guiElement != null && lastError == null) {
-                    ContainerAspectSettings aspectContainer = (ContainerAspectSettings) container;
-                    aspectContainer.setValue(
-                        getActiveProperty(),
-                        guiElement.getValueType()
-                            .deserialize(guiElement.getInputString()));
-                    actionPerformed(buttonExit);
-                }
-            }
-        });
         putButtonAction(BUTTON_LEFT, new IButtonActionClient<GuiContainerExtended, ExtendedInventoryContainer>() {
 
             @Override
             public void onAction(int buttonId, GuiContainerExtended gui, ExtendedInventoryContainer container) {
+                saveSetting();
                 if (getActivePropertyIndex() > 0) {
                     setActiveProperty(getActivePropertyIndex() - 1);
                     refreshButtonEnabled();
@@ -118,12 +109,34 @@ public class GuiAspectSettings extends GuiContainerExtended {
 
             @Override
             public void onAction(int buttonId, GuiContainerExtended gui, ExtendedInventoryContainer container) {
+                saveSetting();
                 if (getActivePropertyIndex() < propertyTypes.size()) {
                     setActiveProperty(getActivePropertyIndex() + 1);
                     refreshButtonEnabled();
                 }
             }
         });
+        putButtonAction(BUTTON_EXIT, new IButtonActionClient<GuiContainerExtended, ExtendedInventoryContainer>() {
+
+            @Override
+            public void onAction(int buttonId, GuiContainerExtended gui, ExtendedInventoryContainer container) {
+                saveSetting();
+                IntegratedDynamics._instance.getGuiHandler()
+                    .setTemporaryData(
+                        ExtendedGuiHandler.PART,
+                        getTarget().getCenter()
+                            .getSide());
+            }
+        });
+    }
+
+    protected void saveSetting() {
+        if (guiElement != null && lastError == null) {
+            ContainerAspectSettings aspectContainer = (ContainerAspectSettings) container;
+            aspectContainer.setValue(
+                getActiveProperty(),
+                ValueHelpers.deserializeRaw(guiElement.getValueType(), guiElement.getInputString()));
+        }
     }
 
     protected void refreshButtonEnabled() {
@@ -139,22 +152,14 @@ public class GuiAspectSettings extends GuiContainerExtended {
     @Override
     public String getGuiTexture() {
         return getContainer().getGuiProvider()
-            .getMod()
-            .getReferenceValue(ModBase.REFKEY_TEXTURE_PATH_GUI) + "aspectSettings.png";
+            .getModGui()
+            .getReferenceValue(ModBase.REFKEY_TEXTURE_PATH_GUI) + "aspect_settings.png";
     }
 
     @Override
     public void initGui() {
         super.initGui();
         subGuiHolder.initGui(this.guiLeft, this.guiTop);
-        GuiButtonText buttonSave;
-        buttonList.add(
-            buttonSave = new GuiButtonText(
-                BUTTON_SAVE,
-                this.guiLeft,
-                this.guiTop + 88,
-                LangHelpers.localize("item.items.integrateddynamics.labeller.button.write")));
-        buttonSave.xPosition += this.getBaseXSize() - buttonSave.width - 9;
         buttonList.add(buttonExit = new GuiButtonText(BUTTON_EXIT, guiLeft + 7, guiTop + 5, 12, 10, "<<", true));
         buttonList.add(buttonLeft = new GuiButtonText(BUTTON_LEFT, guiLeft + 21, guiTop + 5, 10, 10, "<", true));
         buttonList.add(buttonRight = new GuiButtonText(BUTTON_RIGHT, guiLeft + 159, guiTop + 5, 10, 10, ">", true));
@@ -192,6 +197,16 @@ public class GuiAspectSettings extends GuiContainerExtended {
             String label = LangHelpers.localize(activeProperty.getUnlocalizedName());
             RenderHelpers
                 .drawScaledCenteredString(fontRendererObj, label, 88, 10, 0, 1.0F, 140, Helpers.RGBToInt(10, 10, 10));
+            if (RenderHelpers.isPointInRegion(this.guiLeft + 40, this.guiTop, 110, 20, mouseX, mouseY)) {
+                String unlocalizedInfo = activeProperty.getUnlocalizedName()
+                    .replaceFirst("\\.name$", ".info");
+                if (StatCollector.canTranslate(unlocalizedInfo)) {
+                    drawTooltip(
+                        Lists.newArrayList(EnumChatFormatting.GRAY.toString() + LangHelpers.localize(unlocalizedInfo)),
+                        mouseX - this.guiLeft,
+                        mouseY - this.guiTop + 20);
+                }
+            }
         }
     }
 
@@ -199,7 +214,12 @@ public class GuiAspectSettings extends GuiContainerExtended {
     protected void keyTyped(char typedChar, int keyCode) {
         try {
             if (!subGuiHolder.keyTyped(this.checkHotbarKeys(keyCode), typedChar, keyCode)) {
-                super.keyTyped(typedChar, keyCode);
+                if (keyCode == 1 || this.mc.gameSettings.keyBindInventory.getKeyCode() == keyCode) {
+                    saveSetting();
+                    this.mc.thePlayer.closeScreen();
+                } else {
+                    super.keyTyped(typedChar, keyCode);
+                }
             } else {
                 if (guiElement != null) {
                     onValueChanged();
@@ -234,7 +254,8 @@ public class GuiAspectSettings extends GuiContainerExtended {
             subGuiHolder.removeSubGui(propertyConfigPattern);
             subGuiHolder.removeSubGui(propertyInfo);
         }
-        guiElement = new ValueTypeGuiElement<>(property.getType(), IConfigRenderPattern.NONE);
+        guiElement = new GuiElementValueTypeString<>(property.getType(), IConfigRenderPattern.NONE);
+        guiElement.setValidator(property.getValidator());
         subGuiHolder.addSubGui(
             propertyConfigPattern = guiElement
                 .createSubGui(8, 17, 160, 91, this, (ContainerAspectSettings) getContainer()));
@@ -267,10 +288,10 @@ public class GuiAspectSettings extends GuiContainerExtended {
     }
 
     public class SubGuiValueTypeInfo extends
-        ValueTypeGuiElement.SubGuiValueTypeInfo<SubGuiConfigRenderPattern, GuiAspectSettings, ContainerAspectSettings> {
+        GuiElementValueTypeString.SubGuiValueTypeInfo<RenderPattern, GuiAspectSettings, ContainerAspectSettings> {
 
         public SubGuiValueTypeInfo(
-            IGuiInputElement<SubGuiConfigRenderPattern, GuiAspectSettings, ContainerAspectSettings> element) {
+            IGuiInputElement<RenderPattern, GuiAspectSettings, ContainerAspectSettings> element) {
             super(
                 GuiAspectSettings.this,
                 (ContainerAspectSettings) GuiAspectSettings.this.container,

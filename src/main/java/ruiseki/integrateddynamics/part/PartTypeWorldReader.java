@@ -1,7 +1,8 @@
 package ruiseki.integrateddynamics.part;
 
-import com.google.common.collect.Sets;
+import com.google.common.collect.Lists;
 
+import ruiseki.integrateddynamics.GeneralConfig;
 import ruiseki.integrateddynamics.api.part.aspect.IAspect;
 import ruiseki.integrateddynamics.core.part.aspect.AspectRegistry;
 import ruiseki.integrateddynamics.core.part.read.PartStateReaderBase;
@@ -10,7 +11,7 @@ import ruiseki.integrateddynamics.part.aspect.Aspects;
 
 /**
  * An world reader part.
- * 
+ *
  * @author rubensworks
  */
 public class PartTypeWorldReader
@@ -21,7 +22,7 @@ public class PartTypeWorldReader
         AspectRegistry.getInstance()
             .register(
                 this,
-                Sets.<IAspect>newHashSet(
+                Lists.<IAspect>newArrayList(
                     Aspects.Read.World.BOOLEAN_WEATHER_CLEAR,
                     Aspects.Read.World.BOOLEAN_WEATHER_RAINING,
                     Aspects.Read.World.BOOLEAN_WEATHER_THUNDER,
@@ -31,6 +32,7 @@ public class PartTypeWorldReader
                     Aspects.Read.World.INTEGER_TICKTIME,
                     Aspects.Read.World.INTEGER_DAYTIME,
                     Aspects.Read.World.INTEGER_LIGHTLEVEL,
+                    Aspects.Read.World.DOUBLE_TPS,
                     Aspects.Read.World.LONG_TIME,
                     Aspects.Read.World.LONG_TOTALTIME,
                     Aspects.Read.World.STRING_NAME,
@@ -42,4 +44,8 @@ public class PartTypeWorldReader
         return new PartStateReaderBase<PartTypeWorldReader>();
     }
 
+    @Override
+    public int getConsumptionRate(PartStateReaderBase<PartTypeWorldReader> state) {
+        return GeneralConfig.worldReaderBaseConsumption;
+    }
 }

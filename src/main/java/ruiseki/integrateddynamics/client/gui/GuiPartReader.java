@@ -17,6 +17,7 @@ import ruiseki.integrateddynamics.core.client.gui.container.GuiMultipartAspects;
 import ruiseki.integrateddynamics.core.inventory.container.ContainerMultipartAspects;
 import ruiseki.integrateddynamics.core.inventory.container.ContainerPartReader;
 import ruiseki.integrateddynamics.item.ItemVariable;
+import ruiseki.okcore.helper.RenderHelpers;
 import ruiseki.okcore.inventory.IGuiContainerProvider;
 
 /**
@@ -41,7 +42,7 @@ public class GuiPartReader<P extends IPartTypeReader<P, S> & IGuiContainerProvid
 
     @Override
     protected String getNameId() {
-        return "partReader";
+        return "part_reader";
     }
 
     @Override
@@ -51,18 +52,21 @@ public class GuiPartReader<P extends IPartTypeReader<P, S> & IGuiContainerProvid
     }
 
     @Override
-    protected void drawAdditionalElementInfo(ContainerMultipartAspects container, int index, IAspectRead aspect) {
+    protected void drawAdditionalElementInfo(ContainerMultipartAspects<P, S, IAspectRead> container, int index,
+        IAspectRead aspect) {
         FontRenderer fontRenderer = fontRendererObj;
 
         // Get current aspect value
-        ContainerPartReader reader = (ContainerPartReader) container;
+        ContainerPartReader<P, S> reader = (ContainerPartReader<P, S>) container;
 
         Pair<String, Integer> readValues = reader.getReadValue(aspect);
         if (readValues != null) {
-            fontRenderer.drawString(
+            RenderHelpers.drawScaledCenteredString(
+                fontRendererObj,
                 readValues.getLeft(),
                 this.guiLeft + offsetX + 16,
-                this.guiTop + offsetY + 35 + container.getAspectBoxHeight() * index,
+                this.guiTop + offsetY + 39 + container.getAspectBoxHeight() * index,
+                70,
                 readValues.getRight());
         }
 

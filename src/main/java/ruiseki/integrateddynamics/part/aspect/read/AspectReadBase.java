@@ -1,13 +1,18 @@
 package ruiseki.integrateddynamics.part.aspect.read;
 
+import net.minecraft.util.ResourceLocation;
+
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
+import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.part.IPartState;
 import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartTarget;
+import ruiseki.integrateddynamics.api.part.aspect.AspectUpdateType;
 import ruiseki.integrateddynamics.api.part.aspect.IAspectRead;
 import ruiseki.integrateddynamics.api.part.aspect.IAspectVariable;
 import ruiseki.integrateddynamics.api.part.aspect.property.IAspectProperties;
@@ -17,6 +22,7 @@ import ruiseki.integrateddynamics.core.part.aspect.LazyAspectVariable;
 import ruiseki.integrateddynamics.part.aspect.AspectBase;
 import ruiseki.integrateddynamics.part.aspect.Aspects;
 import ruiseki.okcore.helper.MinecraftHelpers;
+import ruiseki.okcore.init.ModBase;
 
 /**
  * Base class for read aspects.
@@ -27,20 +33,13 @@ public abstract class AspectReadBase<V extends IValue, T extends IValueType<V>> 
     implements IAspectRead<V, T> {
 
     private final String unlocalizedTypeSuffix;
-    private final String customIconPath;
+    private final AspectUpdateType updateType;
 
-    @Deprecated
-    public AspectReadBase() {
-        this(null, null, "");
-    }
-
-    public AspectReadBase(String unlocalizedTypeSuffix, IAspectProperties defaultProperties, String customIconPath) {
-        super(defaultProperties);
-        if (unlocalizedTypeSuffix == null) {
-            unlocalizedTypeSuffix = "";
-        }
+    public AspectReadBase(ModBase mod, ModBase modGui, String unlocalizedTypeSuffix,
+        IAspectProperties defaultProperties, AspectUpdateType updateType) {
+        super(mod, modGui, defaultProperties);
         this.unlocalizedTypeSuffix = unlocalizedTypeSuffix;
-        this.customIconPath = customIconPath;
+        this.updateType = updateType;
         if (MinecraftHelpers.isClientSide()) {
             registerModelResourceLocation();
         }
@@ -48,14 +47,10 @@ public abstract class AspectReadBase<V extends IValue, T extends IValueType<V>> 
 
     @SuppressWarnings("unchecked")
     @Override
-    public <P extends IPartType<P, S>, S extends IPartState<P>> void update(IPartNetwork network, P partType,
-        PartTarget target, S state) {
-        if (partType instanceof IPartTypeReader && state instanceof IPartStateReader<?>) {
-            IAspectVariable variable = ((IPartTypeReader) partType).getVariable(target, (IPartStateReader) state, this);
-            if (variable.requiresUpdate()) {
-                variable.update();
-            }
-        }
+    public <P extends IPartType<P, S>, S extends IPartState<P>> void update(INetwork network, IPartNetwork partNetwork,
+        P partType, PartTarget target, S state) {
+        IAspectVariable variable = ((IPartTypeReader) partType).getVariable(target, (IPartStateReader) state, this);
+        variable.invalidate();
     }
 
     protected String getUnlocalizedType() {
@@ -64,10 +59,9 @@ public abstract class AspectReadBase<V extends IValue, T extends IValueType<V>> 
 
     @SideOnly(Side.CLIENT)
     protected void registerModelResourceLocation() {
-        Aspects.REGISTRY.registerAspectIconPath(
+        Aspects.REGISTRY.registerAspectModel(
             this,
-            getModId() + ":aspects/"
-                + (customIconPath.isEmpty() ? getUnlocalizedType().replaceAll("\\.", "/") : customIconPath));
+            new ResourceLocation(getModId() + ":aspect/" + getUnlocalizedType().replaceAll("\\.", "/")));
     }
 
     /**
@@ -76,18 +70,23 @@ public abstract class AspectReadBase<V extends IValue, T extends IValueType<V>> 
      * @param target     The target to get the value for.
      * @param properties The optional properties for this aspect.
      * @return The value that will be inserted into a variable so it can be used elsewhere.
+     * @throws EvaluationException If evaluation has gone wrong.
      */
-    protected abstract V getValue(PartTarget target, IAspectProperties properties);
+    protected abstract V getValue(PartTarget target, IAspectProperties properties) throws EvaluationException;
 
     @Override
     public IAspectVariable<V> createNewVariable(final PartTarget target) {
         return new LazyAspectVariable<V>(getValueType(), target, this) {
 
             @Override
-            public V getValueLazy() {
+            public V getValueLazy() throws EvaluationException {
                 return AspectReadBase.this.getValue(target, getAspectProperties());
             }
         };
     }
 
+    @Override
+    public AspectUpdateType getUpdateType() {
+        return updateType;
+    }
 }

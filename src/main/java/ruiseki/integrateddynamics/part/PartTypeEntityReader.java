@@ -1,7 +1,8 @@
 package ruiseki.integrateddynamics.part;
 
-import com.google.common.collect.Sets;
+import com.google.common.collect.Lists;
 
+import ruiseki.integrateddynamics.GeneralConfig;
 import ruiseki.integrateddynamics.api.part.aspect.IAspect;
 import ruiseki.integrateddynamics.core.part.aspect.AspectRegistry;
 import ruiseki.integrateddynamics.core.part.read.PartStateReaderBase;
@@ -10,7 +11,7 @@ import ruiseki.integrateddynamics.part.aspect.Aspects;
 
 /**
  * An entity reader part.
- * 
+ *
  * @author rubensworks
  */
 public class PartTypeEntityReader
@@ -21,7 +22,7 @@ public class PartTypeEntityReader
         AspectRegistry.getInstance()
             .register(
                 this,
-                Sets.<IAspect>newHashSet(
+                Lists.<IAspect>newArrayList(
                     Aspects.Read.Entity.INTEGER_ITEMFRAMEROTATION,
                     Aspects.Read.Entity.LIST_ENTITIES,
                     Aspects.Read.Entity.LIST_PLAYERS,
@@ -34,4 +35,8 @@ public class PartTypeEntityReader
         return new PartStateReaderBase<PartTypeEntityReader>();
     }
 
+    @Override
+    public int getConsumptionRate(PartStateReaderBase<PartTypeEntityReader> state) {
+        return GeneralConfig.entityReaderBaseConsumption;
+    }
 }

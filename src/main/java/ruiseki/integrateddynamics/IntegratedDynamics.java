@@ -28,19 +28,26 @@ import ruiseki.integrateddynamics.api.evaluate.variable.IValueCastRegistry;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeLightLevelRegistry;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeListProxyFactoryTypeRegistry;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeRegistry;
+import ruiseki.integrateddynamics.api.ingredient.IIngredientComponentHandlerRegistry;
 import ruiseki.integrateddynamics.api.item.IVariableFacadeHandlerRegistry;
 import ruiseki.integrateddynamics.api.logicprogrammer.ILogicProgrammerElementTypeRegistry;
+import ruiseki.integrateddynamics.api.network.INetworkCraftingHandlerRegistry;
 import ruiseki.integrateddynamics.api.part.IPartTypeRegistry;
 import ruiseki.integrateddynamics.api.part.aspect.IAspectRegistry;
+import ruiseki.integrateddynamics.capability.ingredient.IngredientComponentCapabilities;
+import ruiseki.integrateddynamics.capability.network.NetworkCapabilityConstructors;
 import ruiseki.integrateddynamics.client.render.part.PartOverlayRendererRegistry;
 import ruiseki.integrateddynamics.client.render.part.PartOverlayRenderers;
 import ruiseki.integrateddynamics.client.render.valuetype.ValueTypeWorldRendererRegistry;
 import ruiseki.integrateddynamics.client.render.valuetype.ValueTypeWorldRenderers;
+import ruiseki.integrateddynamics.command.CommandCrash;
+import ruiseki.integrateddynamics.command.CommandNetworkDiagnostics;
 import ruiseki.integrateddynamics.core.NoteBlockEventReceiver;
 import ruiseki.integrateddynamics.core.TickHandler;
 import ruiseki.integrateddynamics.core.client.gui.ExtendedGuiHandler;
 import ruiseki.integrateddynamics.core.client.model.VariableModelProviderRegistry;
 import ruiseki.integrateddynamics.core.client.model.VariableModelProviders;
+import ruiseki.integrateddynamics.core.evaluate.DelayVariableFacadeHandler;
 import ruiseki.integrateddynamics.core.evaluate.ProxyVariableFacadeHandler;
 import ruiseki.integrateddynamics.core.evaluate.operator.OperatorRegistry;
 import ruiseki.integrateddynamics.core.evaluate.operator.Operators;
@@ -52,14 +59,19 @@ import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeListProxyFacto
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeListProxyFactoryTypeRegistry;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeRegistry;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
+import ruiseki.integrateddynamics.core.ingredient.IngredientComponentHandlerRegistry;
+import ruiseki.integrateddynamics.core.ingredient.IngredientComponentHandlers;
 import ruiseki.integrateddynamics.core.item.VariableFacadeHandlerRegistry;
 import ruiseki.integrateddynamics.core.logicprogrammer.LogicProgrammerElementTypeRegistry;
 import ruiseki.integrateddynamics.core.logicprogrammer.LogicProgrammerElementTypes;
+import ruiseki.integrateddynamics.core.network.NetworkCraftingHandlerRegistry;
 import ruiseki.integrateddynamics.core.part.PartTypeRegistry;
 import ruiseki.integrateddynamics.core.part.PartTypes;
 import ruiseki.integrateddynamics.core.part.aspect.AspectRegistry;
 import ruiseki.integrateddynamics.core.persist.world.LabelsWorldStorage;
 import ruiseki.integrateddynamics.core.persist.world.NetworkWorldStorage;
+import ruiseki.integrateddynamics.modcompat.nei.NEIModCompat;
+import ruiseki.integrateddynamics.part.PartTypeConnectorOmniDirectional;
 import ruiseki.integrateddynamics.part.aspect.Aspects;
 import ruiseki.okcore.client.gui.GuiHandler;
 import ruiseki.okcore.config.ConfigHandler;
@@ -75,7 +87,7 @@ import ruiseki.okcore.proxy.ICommonProxy;
     modid = Reference.MOD_ID,
     name = Reference.MOD_NAME,
     version = Reference.MOD_VERSION,
-    dependencies = Reference.DEPENDENCIES,
+    dependencies = Reference.MOD_DEPENDENCIES,
     guiFactory = Reference.GUI_FACTORY)
 public class IntegratedDynamics extends ModBaseVersionable {
 
@@ -111,35 +123,23 @@ public class IntegratedDynamics extends ModBaseVersionable {
 
     @Override
     protected LiteralArgumentBuilder<ICommandSender> constructBaseCommand(MinecraftServer server) {
-        return super.constructBaseCommand(server);
+        LiteralArgumentBuilder<ICommandSender> root = super.constructBaseCommand(server);
+        root.then(new CommandNetworkDiagnostics(this).make());
+        root.then(new CommandCrash(this).make());
+        return root;
     }
 
     @Override
     protected void loadModCompats(ModCompatLoader modCompatLoader) {
         super.loadModCompats(modCompatLoader);
+        modCompatLoader.addModCompat(new NEIModCompat());
     }
 
-    @Override
     @Mod.EventHandler
-    public void preInit(FMLPreInitializationEvent event) {
-
-        // Capabilities
-        // ICapabilityCompat.ICapabilityReference<IWorker> workerReference = new
-        // ICapabilityCompat.ICapabilityReference<IWorker>() {
-        // @Override
-        // public Capability<IWorker> getCapability() {
-        // return Capabilities.WORKER;
-        // }
-        // };
-        // ModCompatLoader modCompatLoader = getModCompatLoader();
-        // modCompatLoader.addCapabilityCompat(TileDryingBasin.class, workerReference, new
-        // WorkerDryingBasinTileCompat());
-        // modCompatLoader.addCapabilityCompat(TileSqueezer.class, workerReference, new WorkerSqueezerTileCompat());
-        // modCompatLoader.addCapabilityCompat(TileCoalGenerator.class, workerReference, new
-        // WorkerCoalGeneratorTileCompat());
-
+    @Override
+    public final void preInit(FMLPreInitializationEvent event) {
+        // Registries
         getRegistryManager().addRegistry(IBucketRegistry.class, new BucketRegistry());
-        // getRegistryManager().addRegistry(ISuperRecipeRegistry.class, new SuperRecipeRegistry(this));
 
         getRegistryManager()
             .addRegistry(IVariableFacadeHandlerRegistry.class, VariableFacadeHandlerRegistry.getInstance());
@@ -162,12 +162,21 @@ public class IntegratedDynamics extends ModBaseVersionable {
             getRegistryManager()
                 .addRegistry(IVariableModelProviderRegistry.class, VariableModelProviderRegistry.getInstance());
         }
+
         getRegistryManager().getRegistry(IVariableFacadeHandlerRegistry.class)
             .registerHandler(ProxyVariableFacadeHandler.getInstance());
+        getRegistryManager().getRegistry(IVariableFacadeHandlerRegistry.class)
+            .registerHandler(DelayVariableFacadeHandler.getInstance());
+        getRegistryManager()
+            .addRegistry(IIngredientComponentHandlerRegistry.class, IngredientComponentHandlerRegistry.getInstance());
+        getRegistryManager()
+            .addRegistry(INetworkCraftingHandlerRegistry.class, NetworkCraftingHandlerRegistry.getInstance());
 
         addInitListeners(getRegistryManager().getRegistry(IPartTypeRegistry.class));
 
         ValueTypes.load();
+        IngredientComponentCapabilities.load();
+        IngredientComponentHandlers.load();
         ValueCastMappings.load();
         ValueTypeLightLevels.load();
         ValueTypeListProxyFactories.load();
@@ -190,6 +199,7 @@ public class IntegratedDynamics extends ModBaseVersionable {
             .bus()
             .register(TickHandler.getInstance());
         MinecraftForge.EVENT_BUS.register(NoteBlockEventReceiver.getInstance());
+        MinecraftForge.EVENT_BUS.register(new NetworkCapabilityConstructors());
     }
 
     @Override
@@ -213,6 +223,7 @@ public class IntegratedDynamics extends ModBaseVersionable {
     @Override
     @Mod.EventHandler
     public void onServerStarted(FMLServerStartedEvent event) {
+        PartTypeConnectorOmniDirectional.LOADED_GROUPS.onStartedEvent(event);
         super.onServerStarted(event);
     }
 

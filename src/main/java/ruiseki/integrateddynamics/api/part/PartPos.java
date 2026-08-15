@@ -4,32 +4,31 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.jetbrains.annotations.Nullable;
 
-import ruiseki.integrateddynamics.api.network.IPartNetwork;
-import ruiseki.integrateddynamics.api.tileentity.ITileCableNetwork;
+import ruiseki.integrateddynamics.core.helper.PartHelpers;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
-import ruiseki.okcore.helper.TileHelpers;
 
 /**
  * Object holder to refer to a block side and position.
- * 
+ *
  * @author rubensworks
  */
-public class PartPos {
+public class PartPos implements Comparable<PartPos> {
 
     private final DimPos pos;
     private final ForgeDirection side;
 
-    public static PartPos of(World world, BlockPos pos, ForgeDirection side) {
+    public static PartPos of(World world, BlockPos pos, @Nullable ForgeDirection side) {
         return of(DimPos.of(world, pos), side);
     }
 
-    public static PartPos of(DimPos pos, ForgeDirection side) {
+    public static PartPos of(DimPos pos, @Nullable ForgeDirection side) {
         return new PartPos(pos, side);
     }
 
-    private PartPos(DimPos pos, ForgeDirection side) {
+    private PartPos(DimPos pos, @Nullable ForgeDirection side) {
         this.pos = pos;
         this.side = side;
     }
@@ -38,6 +37,7 @@ public class PartPos {
         return pos;
     }
 
+    @Nullable
     public ForgeDirection getSide() {
         return side;
     }
@@ -56,9 +56,7 @@ public class PartPos {
 
     @Override
     public int hashCode() {
-        int result = pos.hashCode();
-        result = 31 * result + side.hashCode();
-        return result;
+        return 31 * pos.hashCode() + (side != null ? side.hashCode() : 0);
     }
 
     @Override
@@ -68,17 +66,12 @@ public class PartPos {
 
     /**
      * Get part data from the given position.
-     * 
+     *
      * @param pos The part position.
      * @return A pair of part type and part state or null if not found.
      */
     public static Pair<IPartType, IPartState> getPartData(PartPos pos) {
-        IPartContainer partContainer = TileHelpers.getSafeTile(
-            pos.getPos()
-                .getWorld(),
-            pos.getPos()
-                .getBlockPos(),
-            IPartContainer.class);
+        IPartContainer partContainer = PartHelpers.getPartContainer(pos.getPos(), pos.getSide());
         if (partContainer != null) {
             IPartType partType = partContainer.getPart(pos.getSide());
             IPartState partState = partContainer.getPartState(pos.getSide());
@@ -89,20 +82,16 @@ public class PartPos {
         return null;
     }
 
-    /**
-     * Get the network at the given position.
-     * 
-     * @param pos The part position.
-     * @return The network or null if not found.
-     */
-    public static IPartNetwork getNetwork(PartPos pos) {
-        ITileCableNetwork cableNetwork = TileHelpers.getSafeTile(
-            pos.getPos()
-                .getWorld(),
-            pos.getPos()
-                .getBlockPos(),
-            ITileCableNetwork.class);
-        return cableNetwork.getNetwork();
+    @Override
+    public int compareTo(PartPos o) {
+        int pos = this.getPos()
+            .compareTo(o.getPos());
+        if (pos == 0) {
+            ForgeDirection thisSide = this.getSide();
+            ForgeDirection thatSide = o.getSide();
+            return thisSide == null ? (thatSide == null ? 0 : -1)
+                : (thatSide == null ? 1 : thisSide.compareTo(thatSide));
+        }
+        return pos;
     }
-
 }

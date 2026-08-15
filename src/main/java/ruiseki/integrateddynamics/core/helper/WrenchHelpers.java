@@ -1,11 +1,15 @@
 package ruiseki.integrateddynamics.core.helper;
 
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.world.World;
+import net.minecraftforge.common.util.ForgeDirection;
 
-import ruiseki.integrateddynamics.api.item.IWrench;
+import ruiseki.commoncapabilities.api.capability.wrench.IWrench;
+import ruiseki.commoncapabilities.api.capability.wrench.WrenchTarget;
+import ruiseki.commoncapabilities.capability.wrench.WrenchConfig;
 import ruiseki.okcore.datastructure.BlockPos;
+import ruiseki.okcore.helper.CapabilityHelpers;
 
 /**
  * Helper methods related to items.
@@ -19,45 +23,48 @@ public final class WrenchHelpers {
      *
      * @param player   The player.
      * @param heldItem The item the player is holding.
+     * @param world    The world in which the wrenching is happening.
      * @param pos      The position that is being wrenched.
+     * @param side     The side that is being wrenched.
      * @return If the wrenching can continue with the held item.
      */
-    public static boolean isWrench(EntityPlayer player, ItemStack heldItem, BlockPos pos) {
-        if (heldItem == null) {
-            return false;
-        }
-        Item item = heldItem.getItem();
-        // TODO: add support for other mod wrenches, like the one from BC.
-        return item instanceof IWrench && ((IWrench) item).canUse(player, pos);
+    public static boolean isWrench(EntityPlayer player, ItemStack heldItem, World world, BlockPos pos,
+        ForgeDirection side) {
+        if (heldItem == null) return false;
+        return CapabilityHelpers.getCapability(heldItem, WrenchConfig.CAPABILITY)
+            .map(iWrench -> iWrench.canUse(player, WrenchTarget.forBlock(world, pos, side)))
+            .orElse(false);
     }
 
     /**
      * Wrench a given position.
-     * Requires the {@link WrenchHelpers#isWrench(EntityPlayer, ItemStack, BlockPos)}
+     * Requires the {@link WrenchHelpers#isWrench(EntityPlayer, ItemStack, World, BlockPos, ForgeDirection)}
      * to be passed.
      * Takes an extra parameter of any type that is forwarded to the wrench action.
      *
      * @param player    The player.
-     * @param pos       The position that is being wrenched.
-     * @param action    The actual wrench action.
      * @param heldItem  The item the player is holding.
+     * @param world     The world in which the wrenching is happening.
+     * @param pos       The position that is being wrenched.
+     * @param side      The side that is being wrenched.
+     * @param action    The actual wrench action.
      * @param parameter An extra parameter that is forwarded to the action.
      * @param <P>       The type of parameter to pass.
      */
-    public static <P> void wrench(EntityPlayer player, ItemStack heldItem, BlockPos pos, IWrenchAction<P> action,
-        P parameter) {
-        Item item = heldItem.getItem();
-        // TODO: add support for other mod wrenches, like the one from BC.
-        if (item instanceof IWrench) {
-            ((IWrench) item).beforeUse(player, pos);
-            action.onWrench(player, pos, parameter);
-            ((IWrench) item).afterUse(player, pos);
-        }
+    public static <P> void wrench(EntityPlayer player, ItemStack heldItem, World world, BlockPos pos,
+        ForgeDirection side, IWrenchAction<P> action, P parameter) {
+        IWrench wrench = CapabilityHelpers.getCapability(heldItem, WrenchConfig.CAPABILITY)
+            .getOrNull();
+        if (wrench == null) return;
+        WrenchTarget wrenchTarget = WrenchTarget.forBlock(world, pos, side);
+        wrench.beforeUse(player, wrenchTarget);
+        action.onWrench(player, pos, parameter);
+        wrench.afterUse(player, wrenchTarget);
     }
 
     /**
      * Wrench a given position.
-     * Requires the {@link WrenchHelpers#isWrench(EntityPlayer, ItemStack, BlockPos)}
+     * Requires the {@link WrenchHelpers#isWrench(EntityPlayer, ItemStack, World, BlockPos, ForgeDirection)}
      * to be passed.
      *
      * @param player   The player.
@@ -65,8 +72,9 @@ public final class WrenchHelpers {
      * @param pos      The position that is being wrenched.
      * @param action   The actual wrench action.
      */
-    public static void wrench(EntityPlayer player, ItemStack heldItem, BlockPos pos, IWrenchAction<Void> action) {
-        wrench(player, heldItem, pos, action, null);
+    public static void wrench(EntityPlayer player, ItemStack heldItem, World world, BlockPos pos, ForgeDirection side,
+        IWrenchAction<Void> action) {
+        wrench(player, heldItem, world, pos, side, action, null);
     }
 
     /**

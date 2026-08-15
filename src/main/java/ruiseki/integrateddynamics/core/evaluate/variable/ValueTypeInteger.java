@@ -9,14 +9,18 @@ import ruiseki.okcore.helper.Helpers;
 /**
  * Value type with values that are integers.
  * The raw value is nullable.
- * 
+ *
  * @author rubensworks
  */
 public class ValueTypeInteger extends ValueTypeBase<ValueTypeInteger.ValueInteger>
     implements IValueTypeNumber<ValueTypeInteger.ValueInteger> {
 
     public ValueTypeInteger() {
-        super("integer", Helpers.RGBToInt(243, 150, 4), EnumChatFormatting.GOLD.toString());
+        super(
+            "integer",
+            Helpers.RGBToInt(243, 150, 4),
+            EnumChatFormatting.GOLD.toString(),
+            ValueTypeInteger.ValueInteger.class);
     }
 
     @Override
@@ -79,6 +83,36 @@ public class ValueTypeInteger extends ValueTypeBase<ValueTypeInteger.ValueIntege
         return ValueInteger.of(Math.min(a.getRawValue(), b.getRawValue()));
     }
 
+    @Override
+    public boolean greaterThan(ValueInteger a, ValueInteger b) {
+        return a.getRawValue() > b.getRawValue();
+    }
+
+    @Override
+    public boolean lessThan(ValueInteger a, ValueInteger b) {
+        return a.getRawValue() < b.getRawValue();
+    }
+
+    @Override
+    public ValueInteger round(ValueInteger a) {
+        return a;
+    }
+
+    @Override
+    public ValueInteger ceil(ValueInteger a) {
+        return a;
+    }
+
+    @Override
+    public ValueInteger floor(ValueInteger a) {
+        return a;
+    }
+
+    @Override
+    public String getName(ValueInteger a) {
+        return toCompactString(a);
+    }
+
     @ToString
     public static class ValueInteger extends ValueBase {
 
@@ -100,6 +134,11 @@ public class ValueTypeInteger extends ValueTypeBase<ValueTypeInteger.ValueIntege
         @Override
         public boolean equals(Object o) {
             return o instanceof ValueInteger && ((ValueInteger) o).value == this.value;
+        }
+
+        @Override
+        public int hashCode() {
+            return getType().hashCode() + value;
         }
     }
 

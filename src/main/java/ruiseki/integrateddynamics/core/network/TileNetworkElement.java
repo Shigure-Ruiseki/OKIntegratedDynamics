@@ -9,8 +9,9 @@ import net.minecraftforge.common.util.ForgeDirection;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.INetworkElement;
-import ruiseki.integrateddynamics.api.network.IPartNetwork;
+import ruiseki.integrateddynamics.api.network.IPositionedNetworkElement;
 import ruiseki.integrateddynamics.core.tileentity.TileCableConnectableInventory;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
@@ -20,25 +21,25 @@ import ruiseki.okcore.helper.TileHelpers;
 import ruiseki.okcore.item.capability.CapabilityItemHandler;
 
 /**
- * Network element for tile entities.
+ * Network element for part entities.
  *
  * @author rubensworks
  */
 @EqualsAndHashCode(callSuper = false)
 @Data
-public abstract class TileNetworkElement<T extends TileCableConnectableInventory>
-    extends ConsumingNetworkElementBase<IPartNetwork> {
+public abstract class TileNetworkElement<T extends TileCableConnectableInventory> extends ConsumingNetworkElementBase
+    implements IPositionedNetworkElement {
 
     private final DimPos pos;
 
     protected abstract Class<T> getTileClass();
 
     protected T getTile() {
-        return TileHelpers.getSafeTile(getPos().getWorld(), getPos().getBlockPos(), getTileClass());
+        return TileHelpers.getSafeTile(getPos(), getTileClass());
     }
 
     @Override
-    public void addDrops(List<ItemStack> itemStacks, boolean dropMainElement) {
+    public void addDrops(List<ItemStack> itemStacks, boolean dropMainElement, boolean saveState) {
         T tile = getTile();
         TileEntity entity = (TileEntity) (Object) tile;
         World world = getPos().getWorld();
@@ -55,12 +56,32 @@ public abstract class TileNetworkElement<T extends TileCableConnectableInventory
         if (o instanceof TileNetworkElement) {
             return getPos().compareTo(((TileNetworkElement) o).getPos());
         }
-        return Integer.compare(hashCode(), o.hashCode());
+        return this.getClass()
+            .getCanonicalName()
+            .compareTo(
+                o.getClass()
+                    .getCanonicalName());
     }
 
     @Override
-    public void afterNetworkReAlive(IPartNetwork network) {
+    public void afterNetworkReAlive(INetwork network) {
         super.afterNetworkReAlive(network);
         getTile().afterNetworkReAlive();
+    }
+
+    @Override
+    public boolean canRevalidate(INetwork network) {
+        return canRevalidatePositioned(network, pos);
+    }
+
+    @Override
+    public void revalidate(INetwork network) {
+        super.revalidate(network);
+        revalidatePositioned(network, pos);
+    }
+
+    @Override
+    public DimPos getPosition() {
+        return this.pos;
     }
 }

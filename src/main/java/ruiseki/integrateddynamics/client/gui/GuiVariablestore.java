@@ -11,16 +11,16 @@ import ruiseki.okcore.client.gui.container.GuiContainerConfigurable;
 
 /**
  * Gui for the variablestore
- * 
+ *
  * @author rubensworks
  */
 public class GuiVariablestore extends GuiContainerConfigurable<ContainerVariablestore> {
 
     /**
      * Make a new instance.
-     * 
+     *
      * @param inventory The player inventory.
-     * @param tile      The tile.
+     * @param tile      The part.
      */
     public GuiVariablestore(InventoryPlayer inventory, TileVariablestore tile) {
         super(new ContainerVariablestore(inventory, tile));
@@ -61,5 +61,4 @@ public class GuiVariablestore extends GuiContainerConfigurable<ContainerVariable
             this.xSize,
             96);
     }
-
 }

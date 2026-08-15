@@ -4,6 +4,8 @@ import java.util.List;
 
 import net.minecraft.entity.player.EntityPlayer;
 
+import org.jetbrains.annotations.Nullable;
+
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
@@ -25,9 +27,9 @@ public interface IVariableFacade {
     public int getId();
 
     /**
-     * @return The optional onLabelPacket for this facade.
+     * @return The optional label for this facade.
      */
-    public String getLabel();
+    public @Nullable String getLabel();
 
     /**
      * Get the variable.
@@ -65,14 +67,6 @@ public interface IVariableFacade {
      */
     @SideOnly(Side.CLIENT)
     public void addInformation(List<String> list, EntityPlayer entityPlayer);
-
-    // /**
-    // * Handle the quads for the given baked model.
-    // * @param variableModelBaked The baked model.
-    // * @param quads The quads that can be added to.
-    // */
-    // @SideOnly(Side.CLIENT)
-    // public void addModelOverlay(IVariableModelBaked variableModelBaked, List<BakedQuad> quads);
 
     public static interface IValidator {
 

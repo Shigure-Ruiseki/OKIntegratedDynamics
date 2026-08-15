@@ -1,27 +1,42 @@
 package ruiseki.integrateddynamics.item;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IIcon;
+
+import com.gtnewhorizon.gtnhlib.color.RGBColor;
+import com.gtnewhorizon.gtnhlib.itemrendering.IItemTexture;
+import com.gtnewhorizon.gtnhlib.itemrendering.ItemTexture;
+import com.gtnewhorizon.gtnhlib.itemrendering.ItemWithTextures;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.client.model.IVariableModelProviderRegistry;
 import ruiseki.integrateddynamics.api.item.IVariableFacade;
-import ruiseki.integrateddynamics.api.item.IVariableFacadeHandlerRegistry;
+import ruiseki.integrateddynamics.api.item.IVariableFacadeHolder;
+import ruiseki.integrateddynamics.capability.variablefacade.VariableFacadeHolderConfig;
+import ruiseki.integrateddynamics.capability.variablefacade.VariableFacadeHolderDefault;
 import ruiseki.integrateddynamics.core.client.model.VariableModelProviders;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeVariableFacade;
 import ruiseki.integrateddynamics.core.item.AspectVariableFacade;
 import ruiseki.integrateddynamics.core.item.ProxyVariableFacade;
+import ruiseki.integrateddynamics.core.item.VariableFacadeHandlerRegistry;
+import ruiseki.okcore.capabilities.ICapabilityProvider;
 import ruiseki.okcore.config.configurable.ConfigurableItem;
 import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
+import ruiseki.okcore.config.extendedconfig.ItemConfig;
+import ruiseki.okcore.helper.CapabilityHelpers;
+import ruiseki.okcore.helper.LangHelpers;
+import ruiseki.okcore.modcompat.capabilities.DefaultCapabilityProvider;
 
-public class ItemVariable extends ConfigurableItem {
+public class ItemVariable extends ConfigurableItem implements ItemWithTextures {
 
     private static ItemVariable _instance = null;
 
@@ -29,36 +44,27 @@ public class ItemVariable extends ConfigurableItem {
         return _instance;
     }
 
-    public ItemVariable(ExtendedConfig eConfig) {
+    public ItemVariable(ExtendedConfig<ItemConfig> eConfig) {
         super(eConfig);
     }
 
-    @SideOnly(Side.CLIENT)
     @Override
-    public boolean requiresMultipleRenderPasses() {
-        return true;
-    }
-
     @SideOnly(Side.CLIENT)
-    @Override
-    public int getRenderPasses(int metadata) {
-        return 2;
-    }
+    public IItemTexture[] getTextures(ItemStack stack) {
+        List<IItemTexture> textures = new ArrayList<>();
 
-    @SideOnly(Side.CLIENT)
-    @Override
-    public IIcon getIcon(ItemStack stack, int pass) {
-        if (pass == 0) {
-            return itemIcon;
-        }
+        textures.add(new ItemTexture(this.itemIcon, RGBColor.WHITE));
 
+        // Layer 1: Overlay Texture
         IVariableFacade variableFacade = getVariableFacade(stack);
         if (variableFacade != null && variableFacade.isValid()) {
-            IIcon icon = getOverlayIcon(variableFacade);
-            return icon;
+            IIcon overlayIcon = getOverlayIcon(variableFacade);
+            if (overlayIcon != null) {
+                textures.add(new ItemTexture(overlayIcon, RGBColor.WHITE));
+            }
         }
 
-        return itemIcon;
+        return textures.toArray(new IItemTexture[0]);
     }
 
     @SideOnly(Side.CLIENT)
@@ -79,7 +85,11 @@ public class ItemVariable extends ConfigurableItem {
     @SideOnly(Side.CLIENT)
     @Override
     public void addInformation(ItemStack itemStack, EntityPlayer entityPlayer, List list, boolean par4) {
-        getVariableFacade(itemStack).addInformation(list, entityPlayer);
+        IVariableFacade variableFacade = getVariableFacade(itemStack);
+        variableFacade.addInformation(list, entityPlayer);
+        if (variableFacade != VariableFacadeHandlerRegistry.DUMMY_FACADE && entityPlayer.capabilities.isCreativeMode) {
+            list.add(LangHelpers.localize("item.items.integrateddynamics.variable.warning"));
+        }
         super.addInformation(itemStack, entityPlayer, list, par4);
     }
 
@@ -93,13 +103,21 @@ public class ItemVariable extends ConfigurableItem {
         return super.getItemStackDisplayName(itemStack);
     }
 
+    @Override
+    public ICapabilityProvider initCapabilities(ItemStack stack, NBTTagCompound nbt) {
+        return new DefaultCapabilityProvider<>(
+            () -> VariableFacadeHolderConfig.CAPABILITY,
+            new VariableFacadeHolderDefault(stack));
+    }
+
     public IVariableFacade getVariableFacade(ItemStack itemStack) {
-        return IntegratedDynamics._instance.getRegistryManager()
-            .getRegistry(IVariableFacadeHandlerRegistry.class)
-            .handle(itemStack);
+        return CapabilityHelpers.getCapability(itemStack, VariableFacadeHolderConfig.CAPABILITY)
+            .map(IVariableFacadeHolder::getVariableFacade)
+            .orElse(VariableFacadeHandlerRegistry.DUMMY_FACADE);
     }
 
     @Override
+    @SideOnly(Side.CLIENT)
     public void registerIcons(IIconRegister register) {
         super.registerIcons(register);
 

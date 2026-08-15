@@ -11,10 +11,15 @@ import org.apache.commons.lang3.StringUtils;
 import com.google.common.collect.Lists;
 
 import lombok.ToString;
+import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.evaluate.operator.IOperator;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
+import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeNamed;
+import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeUniquelyNamed;
 import ruiseki.integrateddynamics.core.evaluate.operator.Operators;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
+import ruiseki.integrateddynamics.core.logicprogrammer.ValueTypeLPElementBase;
+import ruiseki.integrateddynamics.core.logicprogrammer.ValueTypeOperatorLPElement;
 import ruiseki.okcore.helper.Helpers;
 import ruiseki.okcore.helper.LangHelpers;
 
@@ -23,12 +28,17 @@ import ruiseki.okcore.helper.LangHelpers;
  *
  * @author rubensworks
  */
-public class ValueTypeOperator extends ValueTypeBase<ValueTypeOperator.ValueOperator> {
+public class ValueTypeOperator extends ValueTypeBase<ValueTypeOperator.ValueOperator> implements
+    IValueTypeNamed<ValueTypeOperator.ValueOperator>, IValueTypeUniquelyNamed<ValueTypeOperator.ValueOperator> {
 
     private static final String SIGNATURE_LINK = "->";
 
     public ValueTypeOperator() {
-        super("operator", Helpers.RGBToInt(43, 231, 47), EnumChatFormatting.DARK_GREEN.toString());
+        super(
+            "operator",
+            Helpers.RGBToInt(43, 231, 47),
+            EnumChatFormatting.DARK_GREEN.toString(),
+            ValueTypeOperator.ValueOperator.class);
     }
 
     @Override
@@ -44,13 +54,17 @@ public class ValueTypeOperator extends ValueTypeBase<ValueTypeOperator.ValueOper
 
     @Override
     public String serialize(ValueOperator value) {
-        return value.getRawValue()
-            .getUniqueName();
+        return Operators.REGISTRY.serialize(value.getRawValue());
     }
 
     @Override
     public ValueOperator deserialize(String value) {
-        IOperator operator = Operators.REGISTRY.getOperator(value);
+        IOperator operator;
+        try {
+            operator = Operators.REGISTRY.deserialize(value);
+        } catch (EvaluationException e) {
+            throw new IllegalArgumentException(e.getMessage());
+        }
         if (operator != null) {
             return ValueOperator.of(operator);
         }
@@ -68,8 +82,15 @@ public class ValueTypeOperator extends ValueTypeBase<ValueTypeOperator.ValueOper
     }
 
     @Override
-    public boolean hasDefaultLogicProgrammerElement() {
-        return false;
+    public ValueTypeLPElementBase createLogicProgrammerElement() {
+        return new ValueTypeOperatorLPElement();
+    }
+
+    @Override
+    public ValueOperator materialize(ValueOperator value) throws EvaluationException {
+        return ValueOperator.of(
+            value.getRawValue()
+                .materialize());
     }
 
     /**
@@ -82,6 +103,17 @@ public class ValueTypeOperator extends ValueTypeBase<ValueTypeOperator.ValueOper
         return StringUtils.join(getSignatureLines(operator, false), " ");
     }
 
+    /**
+     * Pretty formatted signature of an operator.
+     *
+     * @param inputTypes The input types.
+     * @param outputType The output types.
+     * @return The signature.
+     */
+    public static String getSignature(IValueType[] inputTypes, IValueType outputType) {
+        return StringUtils.join(getSignatureLines(inputTypes, outputType, false), " ");
+    }
+
     protected static StringBuilder switchSignatureLineContext(List<String> lines, StringBuilder sb) {
         lines.add(sb.toString());
         return new StringBuilder();
@@ -90,16 +122,15 @@ public class ValueTypeOperator extends ValueTypeBase<ValueTypeOperator.ValueOper
     /**
      * Pretty formatted signature of an operator.
      *
-     * @param operator The operator.
-     * @param indent   If the lines should be indented.
+     * @param inputTypes The input types.
+     * @param outputType The output types.
+     * @param indent     If the lines should be indented.
      * @return The signature.
      */
-    public static List<String> getSignatureLines(IOperator operator, boolean indent) {
+    public static List<String> getSignatureLines(IValueType[] inputTypes, IValueType outputType, boolean indent) {
         List<String> lines = Lists.newArrayList();
-        IValueType[] inputTypes = operator.getInputTypes();
-        IValueType outputType = operator.getOutputType();
+
         StringBuilder sb = new StringBuilder();
-        sb.append("(");
         boolean first = true;
         for (IValueType inputType : inputTypes) {
             if (first) {
@@ -115,12 +146,35 @@ public class ValueTypeOperator extends ValueTypeBase<ValueTypeOperator.ValueOper
         sb.append(")");
 
         sb = switchSignatureLineContext(lines, sb);
-        sb.append(SIGNATURE_LINK + " ")
+        sb.append((indent ? "  " : "") + SIGNATURE_LINK + " ")
             .append(outputType.getDisplayColorFormat())
             .append(LangHelpers.localize(outputType.getUnlocalizedName()))
             .append(EnumChatFormatting.RESET);
         switchSignatureLineContext(lines, sb);
         return lines;
+    }
+
+    /**
+     * Pretty formatted signature of an operator.
+     *
+     * @param operator The operator.
+     * @param indent   If the lines should be indented.
+     * @return The signature.
+     */
+    public static List<String> getSignatureLines(IOperator operator, boolean indent) {
+        return getSignatureLines(operator.getInputTypes(), operator.getOutputType(), indent);
+    }
+
+    @Override
+    public String getName(ValueTypeOperator.ValueOperator a) {
+        return a.getRawValue()
+            .getLocalizedNameFull();
+    }
+
+    @Override
+    public String getUniqueName(ValueOperator a) {
+        return a.getRawValue()
+            .getUniqueName();
     }
 
     @ToString
@@ -143,7 +197,12 @@ public class ValueTypeOperator extends ValueTypeBase<ValueTypeOperator.ValueOper
 
         @Override
         public boolean equals(Object o) {
-            return o instanceof ValueOperator && ((ValueOperator) o).value == this.value;
+            return o == this || (o instanceof ValueOperator && value.equals(((ValueOperator) o).value));
+        }
+
+        @Override
+        public int hashCode() {
+            return 37 + value.hashCode();
         }
     }
 

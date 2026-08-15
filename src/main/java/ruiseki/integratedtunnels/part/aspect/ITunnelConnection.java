@@ -1,0 +1,12 @@
+package ruiseki.integratedtunnels.part.aspect;
+
+/**
+ * An object that identifies a connection.
+ * This should implement the hashcode and equals methods.
+ *
+ * This is needed for caching ingredient transfers.
+ *
+ * @author rubensworks
+ */
+public interface ITunnelConnection {
+}

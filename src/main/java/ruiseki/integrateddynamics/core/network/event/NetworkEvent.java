@@ -5,19 +5,19 @@ import ruiseki.integrateddynamics.api.network.event.INetworkEvent;
 
 /**
  * An event posted in the {@link ruiseki.integrateddynamics.api.network.IPartNetwork} event bus.
- * 
+ *
  * @author rubensworks
  */
-public class NetworkEvent<N extends INetwork<N>> implements INetworkEvent<N> {
+public class NetworkEvent implements INetworkEvent {
 
-    private final N network;
+    private final INetwork network;
 
-    public NetworkEvent(N network) {
+    public NetworkEvent(INetwork network) {
         this.network = network;
     }
 
     @Override
-    public N getNetwork() {
+    public INetwork getNetwork() {
         return this.network;
     }
 

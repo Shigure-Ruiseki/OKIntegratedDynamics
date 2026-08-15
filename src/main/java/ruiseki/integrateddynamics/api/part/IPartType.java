@@ -1,7 +1,7 @@
 package ruiseki.integrateddynamics.api.part;
 
-import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 
 import javax.annotation.Nullable;
 
@@ -10,21 +10,19 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
+
+import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.INetworkElement;
 import ruiseki.integrateddynamics.api.network.INetworkEventListener;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.network.IPartNetworkElement;
-import ruiseki.integrateddynamics.client.model.CableModel;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
-import ruiseki.okcore.datastructure.EnumFacingMap;
-import ruiseki.okcore.helper.MatrixHelpers;
 import ruiseki.okcore.init.IInitListener;
 
 /**
@@ -37,15 +35,7 @@ import ruiseki.okcore.init.IInitListener;
  * @author rubensworks
  */
 public interface IPartType<P extends IPartType<P, S>, S extends IPartState<P>>
-    extends INetworkEventListener<IPartNetwork, IPartNetworkElement<P, S>> {
-
-    /**
-     * Get the part type class.
-     * This is used for doing dynamic construction of guis.
-     *
-     * @return The actual class for this part type.
-     */
-    public Class<? super P> getPartTypeClass();
+    extends INetworkEventListener<IPartNetworkElement<P, S>> {
 
     /**
      * @return The unique name for this part type.
@@ -58,19 +48,14 @@ public interface IPartType<P extends IPartType<P, S>, S extends IPartState<P>>
     public String getUnlocalizedNameBase();
 
     /**
-     * @return The unlocalized name of this part. (With the .name suffix)
+     * @return The unlocalized base name of this part. (Without the .name suffix)
      */
     public String getUnlocalizedName();
 
     /**
      * @return JSON model path for the block representation of this part.
      */
-    public String getBlockModelPath(IPartContainer partContainer, ForgeDirection side);
-
-    /**
-     * @return JSON model path for the item representation of this part.
-     */
-    public String getItemModelPath();
+    public String getBlockModelPath();
 
     /**
      * @return The item associated with this part type.
@@ -88,7 +73,7 @@ public interface IPartType<P extends IPartType<P, S>, S extends IPartState<P>>
      *         This part is assumed to be aligned at the edge of the block for the depth, while centered on width and
      *         height.
      */
-    public RenderPosition getRenderPosition();
+    public PartRenderPosition getPartRenderPosition();
 
     /**
      * Called on the Integrated Dynamics mod initialization steps.
@@ -136,50 +121,120 @@ public interface IPartType<P extends IPartType<P, S>, S extends IPartState<P>>
 
     /**
      * @param state The state
+     * @return The minimum allowed tick interval to update this element.
+     */
+    public int getMinimumUpdateInterval(S state);
+
+    /**
+     * Set the priority and channel of this part in the network.
+     *
+     * @deprecated Should only be called from {@link INetwork#setPriorityAndChannel(INetworkElement, int, int)}!
+     * @param network     The network to update in.
+     * @param partNetwork The part network to update in.
+     * @param target      The target block.
+     * @param state       The state
+     * @param priority    The new priority
+     * @param channel     The new channel
+     */
+    @Deprecated
+    public void setPriorityAndChannel(INetwork network, IPartNetwork partNetwork, PartTarget target, S state,
+        int priority, int channel);
+
+    /**
+     * @param state The state
+     * @return The priority of this part in the network.
+     */
+    public int getPriority(S state);
+
+    /**
+     * @param state The state
+     * @return The channel of this part in the network.
+     */
+    public int getChannel(S state);
+
+    /**
+     * Indicate that the given part should interact with the given side of the target.
+     *
+     * @param state The state
+     * @param side  The side of the target block to interact with.
+     *              Null removes the side override.
+     */
+    public void setTargetSideOverride(S state, @Nullable ForgeDirection side);
+
+    /**
+     * @param state The state
+     * @return The overridden side of the target block to interact with. Can be null.
+     */
+    @Nullable
+    public ForgeDirection getTargetSideOverride(S state);
+
+    /**
+     * Get the part target for this part.
+     *
+     * @param pos   The center position of this part.
+     * @param state The state.
+     * @return The part target.
+     */
+    public PartTarget getTarget(PartPos pos, S state);
+
+    /**
+     * @param state The state
      * @return If this element should be updated. This method is only called once during network initialization.
      */
     public boolean isUpdate(S state);
 
     /**
-     * @param network The network to update in.
-     * @param state   The state
-     * @param target  The target block.
-     *                Update at the tick interval specified.
+     * Update at the tick interval specified.
+     *
+     * @param network     The network to update in.
+     * @param partNetwork The part network to update in.
+     *
+     * @param target      The target block.
+     * @param state       The state
      */
-    public void update(IPartNetwork network, PartTarget target, S state);
+    public void update(INetwork network, IPartNetwork partNetwork, PartTarget target, S state);
 
     /**
-     * @param network The network to update in.
-     * @param state   The state
-     * @param target  The target block.
-     *                Called right before the network is terminated or will be reset.
+     * Called right before the network is terminated or will be reset.
+     *
+     * @param network     The network to update in.
+     * @param partNetwork The part network to update in.
+     *
+     * @param target      The target block.
+     * @param state       The state
      */
-    public void beforeNetworkKill(IPartNetwork network, PartTarget target, S state);
+    public void beforeNetworkKill(INetwork network, IPartNetwork partNetwork, PartTarget target, S state);
 
     /**
-     * @param network The network to update in.
-     * @param state   The state
-     * @param target  The target block.
-     *                Called right after this network is initialized.
+     * Called right after this network is initialized.
+     *
+     * @param network     The network to update in.
+     * @param partNetwork The part network to update in.
+     *
+     * @param target      The target block.
+     * @param state       The state
      */
-    public void afterNetworkAlive(IPartNetwork network, PartTarget target, S state);
+    public void afterNetworkAlive(INetwork network, IPartNetwork partNetwork, PartTarget target, S state);
 
     /**
-     * @param network The network to update in.
-     * @param state   The state
-     * @param target  The target block.
-     *                Called right after this network has come alive again,
-     *                for example after a network restart.
+     * Called right after this network has come alive again,
+     * for example after a network restart.
+     *
+     * @param network     The network to update in.
+     * @param partNetwork The part network to update in.
+     * @param target      The target block.
+     * @param state       The state
      */
-    public void afterNetworkReAlive(IPartNetwork network, PartTarget target, S state);
+    public void afterNetworkReAlive(INetwork network, IPartNetwork partNetwork, PartTarget target, S state);
 
     /**
      * Get the itemstack from the given state.
      *
-     * @param state The state
+     * @param state     The state
+     * @param saveState If the part state should be saved in the item.
      * @return The itemstack possibly containing the state information.
      */
-    public ItemStack getItemStack(S state);
+    public ItemStack getItemStack(S state, boolean saveState);
 
     /**
      * Get the itemstack from the given state.
@@ -206,37 +261,40 @@ public interface IPartType<P extends IPartType<P, S>, S extends IPartState<P>>
      * @param state           The state
      * @param itemStacks      The itemstack list to add to.
      * @param dropMainElement If the part itself should also be dropped.
+     * @param saveState       If the part state should be saved in the item.
      */
-    public void addDrops(PartTarget target, S state, List<ItemStack> itemStacks, boolean dropMainElement);
+    public void addDrops(PartTarget target, S state, List<ItemStack> itemStacks, boolean dropMainElement,
+        boolean saveState);
 
     /**
      * Called when this element is added to the network.
      *
-     * @param network The network to update in.
-     * @param state   The state
-     * @param target  The target block.
+     * @param network     The network to update in.
+     * @param partNetwork The part network to update in.
+     * @param target      The target block.
+     * @param state       The state
      */
-    public void onNetworkAddition(IPartNetwork network, PartTarget target, S state);
+    public void onNetworkAddition(INetwork network, IPartNetwork partNetwork, PartTarget target, S state);
 
     /**
      * Called when this element is removed from the network.
      *
-     * @param network The network to update in.
-     * @param state   The state
-     * @param target  The target block.
+     * @param network     The network to update in.
+     * @param partNetwork The part network to update in.
+     * @param target      The target block.
+     * @param state       The state
      */
-    public void onNetworkRemoval(IPartNetwork network, PartTarget target, S state);
+    public void onNetworkRemoval(INetwork network, IPartNetwork partNetwork, PartTarget target, S state);
 
     /**
      * Create a network element for this part type.
      *
-     * @param partContainerFacade The facade for reaching the container this part is/will be part of.
-     * @param pos                 The position this network element is/will be placed at.
-     * @param side                The side this network element is/will be placed at.
+     * @param partContainer The container this part is/will be part of.
+     * @param pos           The position this network element is/will be placed at.
+     * @param side          The side this network element is/will be placed at.
      * @return A new network element instance.
      */
-    public INetworkElement<IPartNetwork> createNetworkElement(IPartContainerFacade partContainerFacade, DimPos pos,
-        ForgeDirection side);
+    public INetworkElement createNetworkElement(IPartContainer partContainer, DimPos pos, ForgeDirection side);
 
     /**
      * Called when a part is right-clicked.
@@ -255,26 +313,58 @@ public interface IPartType<P extends IPartType<P, S>, S extends IPartState<P>>
         ForgeDirection side, float hitX, float hitY, float hitZ);
 
     /**
+     * Get the base block state that will be rendered for this part.
+     * An appropriate {@link ruiseki.integrateddynamics.core.block.IgnoredBlock#FACING} property will be set.
+     *
+     * @param partContainer The part entity.
+     * @param side          The position of the part.
+     * @return The block state to render with.
+     */
+    public BlockState getBlockState(IPartContainer partContainer, ForgeDirection side);
+
+    /**
+     * Called when a block update occurs
+     *
+     * @param world     The world.
+     * @param pos       The position.
+     * @param partState The part state.
+     * @param random    A random instance.
+     */
+    public void updateTick(World world, BlockPos pos, S partState, Random random);
+
+    /**
      * Called when this element is about to be removed.
      *
      * @param network The network.
-     * @param state   The state
      * @param target  The target block.
+     * @param state   The state
      */
-    public void onPreRemoved(IPartNetwork network, PartTarget target, S state);
+    public void onPreRemoved(INetwork network, IPartNetwork partNetwork, PartTarget target, S state);
+
+    /**
+     * Called after this element has been removed.
+     *
+     * @param network The network.
+     *
+     * @param target  The target block.
+     * @param state   The state
+     */
+    public void onPostRemoved(INetwork network, IPartNetwork partNetwork, PartTarget target, S state);
 
     /**
      * Called when a neighbouring block is updated, more specifically when
      * {@link net.minecraft.block.Block#onNeighborChange(IBlockAccess, int, int, int, int, int, int)} is called.
      *
-     * @param network       The network to update in.
-     * @param state         The state
-     * @param target        The target block.
-     * @param world         The world in which the neighbour was updated.
-     * @param neighborBlock The block type of the neighbour that was updated.
+     * @param network           The network to update in.
+     *
+     * @param target            The target block.
+     * @param state             The state
+     * @param world             The world in which the neighbour was updated.
+     * @param neighbourBlock    The block type of the neighbour that was updated.
+     * @param neighbourBlockPos The position of the neighbour that was updated.
      */
-    public void onBlockNeighborChange(IPartNetwork network, PartTarget target, S state, IBlockAccess world,
-        Block neighborBlock);
+    public void onBlockNeighborChange(@Nullable INetwork network, @Nullable IPartNetwork partNetwork, PartTarget target,
+        S state, IBlockAccess world, Block neighbourBlock, BlockPos neighbourBlockPos);
 
     /**
      * @param state The state
@@ -287,12 +377,14 @@ public interface IPartType<P extends IPartType<P, S>, S extends IPartState<P>>
      * If the update was not called, this can be because the network did not contain
      * enough energy to let this element work.
      *
-     * @param network The network to update in.
-     * @param state   The state
-     * @param target  The target block.
-     * @param updated If the {@link INetworkElement#update(INetwork)} was called.
+     * @param partNetwork The network to update in.
+     * @param network     The network to update in.
+     *
+     * @param target      The target block.
+     * @param state       The state
+     * @param updated     If the {@link INetworkElement#update(INetwork)} was called.
      */
-    public void postUpdate(IPartNetwork network, PartTarget target, S state, boolean updated);
+    public void postUpdate(INetwork network, IPartNetwork partNetwork, PartTarget target, S state, boolean updated);
 
     /**
      * @param state The state
@@ -317,6 +409,14 @@ public interface IPartType<P extends IPartType<P, S>, S extends IPartState<P>>
     public void loadTooltip(S state, List<String> lines);
 
     /**
+     * Add tooltip lines for this aspect when this part's item is being hovered.
+     *
+     * @param itemStack The itemstack.
+     * @param lines     The list to add lines to.
+     */
+    public void loadTooltip(ItemStack itemStack, List<String> lines);
+
+    /**
      * Check if the given state change should trigger a block render update.
      * This is only called client-side.
      * The new and old partstates are never both null, at most one will be null.
@@ -327,85 +427,10 @@ public interface IPartType<P extends IPartType<P, S>, S extends IPartState<P>>
      */
     public boolean shouldTriggerBlockRenderUpdate(@Nullable S oldPartState, @Nullable S newPartState);
 
-    public static class RenderPosition {
-
-        public static final RenderPosition NONE = new RenderPosition(-1, -1, -1, -1);
-
-        private final float depthFactor;
-        private final float widthFactor;
-        private final float heightFactor;
-        private final EnumFacingMap<AxisAlignedBB> sidedCableCollisionBoxes;
-        private final EnumFacingMap<AxisAlignedBB> collisionBoxes;
-
-        public RenderPosition(float selectionDepthFactor, float depthFactor, float widthFactor, float heightFactor) {
-            this.depthFactor = depthFactor;
-            this.widthFactor = widthFactor;
-            this.heightFactor = heightFactor;
-            float[][] sidedCableCollisionBoxesRaw = new float[][] {
-                { CableModel.MIN, selectionDepthFactor, CableModel.MIN, CableModel.MAX, CableModel.MIN,
-                    CableModel.MAX }, // DOWN
-                { CableModel.MIN, CableModel.MAX, CableModel.MIN, CableModel.MAX, 1 - selectionDepthFactor,
-                    CableModel.MAX }, // UP
-                { CableModel.MIN, CableModel.MIN, selectionDepthFactor, CableModel.MAX, CableModel.MAX,
-                    CableModel.MIN }, // NORTH
-                { CableModel.MIN, CableModel.MAX, CableModel.MAX, CableModel.MAX, CableModel.MIN,
-                    1 - selectionDepthFactor }, // SOUTH
-                { selectionDepthFactor, CableModel.MIN, CableModel.MIN, CableModel.MIN, CableModel.MAX,
-                    CableModel.MAX }, // WEST
-                { CableModel.MAX, CableModel.MIN, CableModel.MIN, 1 - selectionDepthFactor, CableModel.MAX,
-                    CableModel.MAX }, // EAST
-            };
-
-            sidedCableCollisionBoxes = EnumFacingMap.newMap();
-            for (ForgeDirection side : ForgeDirection.VALID_DIRECTIONS) {
-                float[] b = sidedCableCollisionBoxesRaw[side.ordinal()];
-                sidedCableCollisionBoxes.put(side, AxisAlignedBB.getBoundingBox(b[0], b[1], b[2], b[3], b[4], b[5]));
-            }
-
-            float[][] collisionBoxesRaw = new float[][] { { 0.19F, 0.81F }, { 0.005F, selectionDepthFactor },
-                { 0.19F, 0.81F } };
-            collisionBoxes = EnumFacingMap.newMap();
-            for (ForgeDirection side : ForgeDirection.VALID_DIRECTIONS) {
-                // Copy bounds
-                float[][] bounds = new float[collisionBoxesRaw.length][collisionBoxesRaw[0].length];
-                for (int i = 0; i < bounds.length; i++)
-                    bounds[i] = Arrays.copyOf(collisionBoxesRaw[i], collisionBoxesRaw[i].length);
-
-                // Transform bounds
-                MatrixHelpers.transform(bounds, side);
-                collisionBoxes.put(
-                    side,
-                    AxisAlignedBB.getBoundingBox(
-                        bounds[0][0],
-                        bounds[1][0],
-                        bounds[2][0],
-                        bounds[0][1],
-                        bounds[1][1],
-                        bounds[2][1]));
-            }
-        }
-
-        public float getDepthFactor() {
-            return depthFactor;
-        }
-
-        public float getWidthFactor() {
-            return widthFactor;
-        }
-
-        public float getHeightFactor() {
-            return heightFactor;
-        }
-
-        public AxisAlignedBB getSidedCableBoundingBox(ForgeDirection side) {
-            return sidedCableCollisionBoxes.get(side);
-
-        }
-
-        public AxisAlignedBB getBoundingBox(ForgeDirection side) {
-            return collisionBoxes.get(side);
-        }
-
-    }
+    /**
+     * @param state The state.
+     * @return If this part should force the block to be transparent to light.
+     */
+    public boolean forceLightTransparency(S state);
 
 }

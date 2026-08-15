@@ -17,14 +17,7 @@ public interface IAspectVariable<V extends IValue> extends IVariable<V> {
     public PartTarget getTarget();
 
     /**
-     * @return If this aspect requires updating.
+     * @return The referenced aspect.
      */
-    public boolean requiresUpdate();
-
-    /**
-     * Called when this variable should update.
-     * This is only called when required, so there is no guarantee that this is called in a regular pattern.
-     */
-    public void update();
-
+    public IAspectRead<V, ?> getAspect();
 }

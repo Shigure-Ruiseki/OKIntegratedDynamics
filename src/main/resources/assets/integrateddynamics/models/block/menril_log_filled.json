@@ -1,0 +1,12 @@
+{
+  "parent": "block/cube",
+  "textures": {
+    "north": "integrateddynamics:blocks/menril_log_filled",
+    "up": "integrateddynamics:blocks/menril_log_top",
+    "down": "integrateddynamics:blocks/menril_log_top",
+    "south": "integrateddynamics:blocks/menril_log_filled",
+    "east": "integrateddynamics:blocks/menril_log_filled",
+    "west": "integrateddynamics:blocks/menril_log_filled",
+    "particle": "integrateddynamics:blocks/menril_log_filled"
+  }
+}

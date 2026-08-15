@@ -11,9 +11,11 @@ import net.minecraftforge.common.util.ForgeDirection;
 
 import org.lwjgl.opengl.GL11;
 
+import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 import com.gtnewhorizon.gtnhlib.client.model.ItemContext;
 import com.gtnewhorizon.gtnhlib.client.model.ModelISBRH;
 import com.gtnewhorizon.gtnhlib.client.model.baked.BakedModel;
+import com.gtnewhorizon.gtnhlib.client.model.loading.ModelRegistry;
 import com.gtnewhorizon.gtnhlib.client.renderer.TessellatorManager;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.ModelQuadView;
 import com.gtnewhorizon.gtnhlib.client.renderer.cel.model.quad.properties.ModelQuadFacing;
@@ -41,11 +43,9 @@ public class ItemPartRenderer implements IItemRenderer {
     public void renderItem(ItemRenderType type, ItemStack stack, Object... data) {
         if (!(stack.getItem() instanceof ItemPart<?, ?>itemPart)) return;
 
-        String modelPath = itemPart.getPart()
-            .getItemModelPath();
-        if (modelPath == null || modelPath.isEmpty()) return;
-
-        BakedModel model = CableModel.getBakedPartModel(modelPath, ForgeDirection.SOUTH);
+        BlockState state = itemPart.getPart()
+            .getBlockState(null, ForgeDirection.EAST);
+        BakedModel model = ModelRegistry.getBakedModel(state);
         if (model == null) return;
 
         itemContext.stack = stack;
@@ -73,8 +73,6 @@ public class ItemPartRenderer implements IItemRenderer {
                 isbrh.renderQuad(quad, 0f, 0f, 0f, tessellator, null);
             }
         }
-
-        GL11.glTranslatef(-0.5f, -0.5f, -0.5f);
 
         tessellator.draw();
         GL11.glEnable(GL11.GL_LIGHTING);

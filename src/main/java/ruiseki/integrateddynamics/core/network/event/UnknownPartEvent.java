@@ -2,12 +2,12 @@ package ruiseki.integrateddynamics.core.network.event;
 
 import org.jetbrains.annotations.Nullable;
 
-import ruiseki.integrateddynamics.api.network.IPartNetwork;
+import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.part.IPartType;
 
 /**
  * An event thrown when a network is loaded with invalid parts.
- * 
+ *
  * @author rubensworks
  */
 public class UnknownPartEvent extends NetworkEvent {
@@ -15,7 +15,7 @@ public class UnknownPartEvent extends NetworkEvent {
     private final String partTypeName;
     private IPartType partType;
 
-    public UnknownPartEvent(IPartNetwork network, String partTypeName) {
+    public UnknownPartEvent(INetwork network, String partTypeName) {
         super(network);
         this.partTypeName = partTypeName;
         this.partType = null;
@@ -30,7 +30,7 @@ public class UnknownPartEvent extends NetworkEvent {
 
     /**
      * Set the part type to load instead.
-     * 
+     *
      * @param partType The part type to load.
      */
     public void setPartType(IPartType partType) {

@@ -2,6 +2,7 @@ package ruiseki.integrateddynamics.inventory.container;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -100,8 +101,22 @@ public class ContainerLabeller extends ItemInventoryContainer<ItemLabeller> {
         ItemStack itemStack = getItemStack();
         if (itemStack != null) {
             if (StringUtils.isBlank(name)) {
-                // TODO: clearCustomName
-                // itemStack.clearCustomName();
+                if (itemStack.hasTagCompound() && itemStack.getTagCompound()
+                    .hasKey("display", 10)) {
+                    NBTTagCompound displayTag = itemStack.getTagCompound()
+                        .getCompoundTag("display");
+                    displayTag.removeTag("Name");
+
+                    if (displayTag.hasNoTags()) {
+                        itemStack.getTagCompound()
+                            .removeTag("display");
+                    }
+
+                    if (itemStack.getTagCompound()
+                        .hasNoTags()) {
+                        itemStack.setTagCompound(null);
+                    }
+                }
             } else {
                 itemStack.setStackDisplayName(name);
             }

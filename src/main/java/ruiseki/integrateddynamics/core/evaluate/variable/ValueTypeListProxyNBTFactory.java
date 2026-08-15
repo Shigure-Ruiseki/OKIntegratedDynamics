@@ -12,11 +12,10 @@ import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeListProxy;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeListProxyFactoryTypeRegistry;
 import ruiseki.okcore.persist.nbt.INBTProvider;
-import ruiseki.okcore.persist.nbt.NBTProviderComponent;
 
 /**
  * Factory for list proxies that implement {@link ruiseki.okcore.persist.nbt.INBTProvider}.
- * 
+ *
  * @author rubensworks
  */
 public class ValueTypeListProxyNBTFactory<T extends IValueType<V>, V extends IValue, P extends IValueTypeListProxy<T, V> & INBTProvider>
@@ -24,10 +23,21 @@ public class ValueTypeListProxyNBTFactory<T extends IValueType<V>, V extends IVa
 
     private final String name;
     private final Class<P> proxyClass;
+    private final Constructor<P> proxyClassConstructor;
 
     public ValueTypeListProxyNBTFactory(String name, Class<P> proxyClass) {
         this.name = name;
         this.proxyClass = proxyClass;
+
+        try {
+            this.proxyClassConstructor = this.proxyClass.getConstructor();
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+            throw new RuntimeException(
+                String.format(
+                    "Could not find a default constructor for %s, while this is required for list proxies. This is a developer error.",
+                    proxyClass.getName()));
+        }
     }
 
     @Override
@@ -41,23 +51,20 @@ public class ValueTypeListProxyNBTFactory<T extends IValueType<V>, V extends IVa
 
     @Override
     public String serialize(P values) throws IValueTypeListProxyFactoryTypeRegistry.SerializationException {
-        INBTProvider provider = new NBTProviderComponent(values);
         NBTTagCompound tag = new NBTTagCompound();
-        provider.writeGeneratedFieldsToNBT(tag);
+        values.writeGeneratedFieldsToNBT(tag);
         return tag.toString();
     }
 
     @Override
     public P deserialize(String value) throws IValueTypeListProxyFactoryTypeRegistry.SerializationException {
         try {
-            Constructor<P> constructor = getProxyClass().getConstructor();
-            P proxy = constructor.newInstance();
-            INBTProvider provider = new NBTProviderComponent(proxy);
+            P proxy = this.proxyClassConstructor.newInstance();
+
             NBTTagCompound tag = (NBTTagCompound) JsonToNBT.func_150315_a(value);
-            provider.readGeneratedFieldsFromNBT(tag);
+            proxy.readGeneratedFieldsFromNBT(tag);
             return proxy;
-        } catch (NoSuchMethodException | InvocationTargetException | InstantiationException | NBTException
-            | IllegalAccessException e) {
+        } catch (InvocationTargetException | InstantiationException | NBTException | IllegalAccessException e) {
             e.printStackTrace();
             throw new IValueTypeListProxyFactoryTypeRegistry.SerializationException(e.getMessage());
         }

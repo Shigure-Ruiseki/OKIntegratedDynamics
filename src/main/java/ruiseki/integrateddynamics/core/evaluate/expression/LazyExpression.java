@@ -1,11 +1,9 @@
 package ruiseki.integrateddynamics.core.evaluate.expression;
 
-import org.apache.logging.log4j.Level;
-
-import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.evaluate.expression.IExpression;
 import ruiseki.integrateddynamics.api.evaluate.expression.ILazyExpressionValueCache;
+import ruiseki.integrateddynamics.api.evaluate.expression.VariableAdapter;
 import ruiseki.integrateddynamics.api.evaluate.operator.IOperator;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
@@ -14,10 +12,10 @@ import ruiseki.integrateddynamics.api.evaluate.variable.IVariable;
 /**
  * A generic expression with arbitrarily nested binary operations.
  * This is evaluated in a lazy manner.
- * 
+ *
  * @author rubensworks
  */
-public class LazyExpression<V extends IValue> implements IExpression<V> {
+public class LazyExpression<V extends IValue> extends VariableAdapter<V> implements IExpression<V> {
 
     private final int id;
     private final IOperator op;
@@ -30,6 +28,10 @@ public class LazyExpression<V extends IValue> implements IExpression<V> {
         this.op = op;
         this.input = input;
         this.valueCache = valueCache;
+
+        // Make sure that any previous values become un-cached,
+        // so that the first evaluation of this expression is guaranteed to happen.
+        valueCache.removeValue(id);
     }
 
     @Override
@@ -38,6 +40,9 @@ public class LazyExpression<V extends IValue> implements IExpression<V> {
             return valueCache.getValue(id);
         }
         IValue value = op.evaluate(input);
+        for (IVariable inputVariable : input) {
+            inputVariable.addInvalidationListener(this);
+        }
         valueCache.setValue(id, value);
         return value;
     }
@@ -53,27 +58,38 @@ public class LazyExpression<V extends IValue> implements IExpression<V> {
     }
 
     @Override
-    public V getValue() {
-        IValue value = null;
+    public V getValue() throws EvaluationException {
+        IValue value;
         try {
             value = evaluate();
         } catch (EvaluationException e) {
             errored = true;
-            e.printStackTrace(); // TODO: delegate to some error-log
-            return getType().getDefault();
+            throw new EvaluationException(e.getMessage());
         }
         try {
             return (V) value;
         } catch (ClassCastException e) {
-            IntegratedDynamics.clog(
-                Level.ERROR,
+            errored = true;
+            throw new EvaluationException(
                 String.format(
                     "The evaluation for operator %s returned %s instead of " + "the expected %s.",
                     op,
                     value.getType(),
                     op.getOutputType()));
-            return null;
         }
     }
 
+    @Override
+    public void invalidate() {
+        valueCache.removeValue(id);
+        super.invalidate();
+    }
+
+    public IOperator getOperator() {
+        return op;
+    }
+
+    public IVariable[] getInput() {
+        return input;
+    }
 }

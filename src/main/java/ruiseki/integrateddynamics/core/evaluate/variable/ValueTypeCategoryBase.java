@@ -7,6 +7,7 @@ import ruiseki.integrateddynamics.Reference;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeCategory;
+import ruiseki.integrateddynamics.core.logicprogrammer.ValueTypeLPElementBase;
 
 /**
  * Base implementation of a value type category.
@@ -26,8 +27,9 @@ public abstract class ValueTypeCategoryBase<V extends IValue> extends ValueTypeB
      * @param colorFormat The color format.
      * @param elements    The elements inside this category.
      */
-    public ValueTypeCategoryBase(String typeName, int color, String colorFormat, Set<IValueType<?>> elements) {
-        super(typeName, color, colorFormat);
+    public ValueTypeCategoryBase(String typeName, int color, String colorFormat, Set<IValueType<?>> elements,
+        Class<V> valueClass) {
+        super(typeName, color, colorFormat, valueClass);
         this.elements = Collections.unmodifiableSet(elements);
     }
 
@@ -38,8 +40,8 @@ public abstract class ValueTypeCategoryBase<V extends IValue> extends ValueTypeB
      * @param color       The color.
      * @param colorFormat The color format.
      */
-    public ValueTypeCategoryBase(String typeName, int color, String colorFormat) {
-        super(typeName, color, colorFormat);
+    public ValueTypeCategoryBase(String typeName, int color, String colorFormat, Class<V> valueClass) {
+        super(typeName, color, colorFormat, valueClass);
         this.elements = null;
     }
 
@@ -50,7 +52,8 @@ public abstract class ValueTypeCategoryBase<V extends IValue> extends ValueTypeB
 
     @Override
     public V getDefault() {
-        return null;
+        // Avoid crashes when default values would be used somewhere.
+        return (V) ValueTypeBoolean.ValueBoolean.of(false);
     }
 
     @Override
@@ -64,7 +67,7 @@ public abstract class ValueTypeCategoryBase<V extends IValue> extends ValueTypeB
     }
 
     @Override
-    public boolean correspondsTo(IValueType valueType) {
+    public boolean correspondsTo(IValueType<?> valueType) {
         return valueType == this || elements == null ? true : elements.contains(valueType);
     }
 
@@ -88,7 +91,7 @@ public abstract class ValueTypeCategoryBase<V extends IValue> extends ValueTypeB
     }
 
     @Override
-    public boolean hasDefaultLogicProgrammerElement() {
-        return false;
+    public ValueTypeLPElementBase createLogicProgrammerElement() {
+        return null;
     }
 }

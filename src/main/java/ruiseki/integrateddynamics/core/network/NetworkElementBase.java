@@ -6,17 +6,23 @@ import net.minecraft.block.Block;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.IBlockAccess;
 
+import org.jetbrains.annotations.Nullable;
+
 import lombok.Data;
 import ruiseki.integrateddynamics.api.network.INetwork;
+import ruiseki.integrateddynamics.api.network.INetworkCarrier;
 import ruiseki.integrateddynamics.api.network.INetworkElement;
+import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
+import ruiseki.okcore.datastructure.BlockPos;
+import ruiseki.okcore.datastructure.DimPos;
 
 /**
  * Base implementation for a network element.
- * 
+ *
  * @author rubensworks
  */
 @Data
-public abstract class NetworkElementBase<N extends INetwork> implements INetworkElement<N> {
+public abstract class NetworkElementBase implements INetworkElement {
 
     @Override
     public int getUpdateInterval() {
@@ -29,47 +35,75 @@ public abstract class NetworkElementBase<N extends INetwork> implements INetwork
     }
 
     @Override
-    public void update(N network) {
+    public void update(INetwork network) {
 
     }
 
     @Override
-    public void beforeNetworkKill(N network) {
+    public void beforeNetworkKill(INetwork network) {
 
     }
 
     @Override
-    public void afterNetworkAlive(N network) {
+    public void afterNetworkAlive(INetwork network) {
 
     }
 
     @Override
-    public void afterNetworkReAlive(N network) {
+    public void afterNetworkReAlive(INetwork network) {
 
     }
 
     @Override
-    public void addDrops(List<ItemStack> itemStacks, boolean dropMainElement) {
+    public void addDrops(List<ItemStack> itemStacks, boolean dropMainElement, boolean saveState) {
 
     }
 
     @Override
-    public boolean onNetworkAddition(N network) {
+    public boolean onNetworkAddition(INetwork network) {
         return true;
     }
 
     @Override
-    public void onNetworkRemoval(N network) {
+    public void onNetworkRemoval(INetwork network) {
 
     }
 
     @Override
-    public void onPreRemoved(N network) {
+    public void onPreRemoved(INetwork network) {
 
     }
 
     @Override
-    public void onNeighborBlockChange(N network, IBlockAccess world, Block neighborBlock) {
+    public void onPostRemoved(INetwork network) {
 
+    }
+
+    @Override
+    public void onNeighborBlockChange(@Nullable INetwork network, IBlockAccess world, Block neighbourBlock,
+        BlockPos neighbourBlockPos) {
+
+    }
+
+    @Override
+    public void invalidate(INetwork network) {
+        network.invalidateElement(this);
+    }
+
+    @Override
+    public void revalidate(INetwork network) {
+        network.revalidateElement(this);
+    }
+
+    protected boolean canRevalidatePositioned(INetwork network, DimPos dimPos) {
+        return dimPos.isLoaded();
+    }
+
+    protected void revalidatePositioned(INetwork network, DimPos dimPos) {
+        INetworkCarrier networkCarrier = NetworkHelpers
+            .getNetworkCarrier(dimPos.getWorld(), dimPos.getBlockPos(), null);
+        if (networkCarrier != null) {
+            networkCarrier.setNetwork(network);
+        }
     }
 }

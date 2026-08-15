@@ -1,7 +1,8 @@
 package ruiseki.integrateddynamics.part;
 
-import com.google.common.collect.Sets;
+import com.google.common.collect.Lists;
 
+import ruiseki.integrateddynamics.GeneralConfig;
 import ruiseki.integrateddynamics.api.part.aspect.IAspect;
 import ruiseki.integrateddynamics.core.part.aspect.AspectRegistry;
 import ruiseki.integrateddynamics.core.part.read.PartStateReaderBase;
@@ -10,7 +11,7 @@ import ruiseki.integrateddynamics.part.aspect.Aspects;
 
 /**
  * An fluid reader part.
- * 
+ *
  * @author rubensworks
  */
 public class PartTypeFluidReader
@@ -21,7 +22,7 @@ public class PartTypeFluidReader
         AspectRegistry.getInstance()
             .register(
                 this,
-                Sets.<IAspect>newHashSet(
+                Lists.<IAspect>newArrayList(
                     Aspects.Read.Fluid.BOOLEAN_FULL,
                     Aspects.Read.Fluid.BOOLEAN_EMPTY,
                     Aspects.Read.Fluid.BOOLEAN_NONEMPTY,
@@ -34,7 +35,8 @@ public class PartTypeFluidReader
                     Aspects.Read.Fluid.DOUBLE_FILLRATIO,
                     Aspects.Read.Fluid.LIST_TANKFLUIDS,
                     Aspects.Read.Fluid.LIST_TANKCAPACITIES,
-                    Aspects.Read.Fluid.FLUIDSTACK));
+                    Aspects.Read.Fluid.FLUIDSTACK,
+                    Aspects.Read.Fluid.BLOCK));
     }
 
     @Override
@@ -42,4 +44,8 @@ public class PartTypeFluidReader
         return new PartStateReaderBase<PartTypeFluidReader>();
     }
 
+    @Override
+    public int getConsumptionRate(PartStateReaderBase<PartTypeFluidReader> state) {
+        return GeneralConfig.fluidReaderBaseConsumption;
+    }
 }

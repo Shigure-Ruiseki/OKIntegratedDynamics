@@ -14,6 +14,7 @@ import ruiseki.integrateddynamics.core.client.gui.container.GuiMultipartAspects;
 import ruiseki.integrateddynamics.core.inventory.container.ContainerMultipartAspects;
 import ruiseki.integrateddynamics.inventory.container.ContainerPartWriter;
 import ruiseki.integrateddynamics.item.ItemVariable;
+import ruiseki.okcore.helper.RenderHelpers;
 import ruiseki.okcore.inventory.IGuiContainerProvider;
 
 /**
@@ -43,14 +44,14 @@ public class GuiPartWriter<P extends IPartTypeWriter<P, S> & IGuiContainerProvid
 
     @Override
     protected String getNameId() {
-        return "partWriter";
+        return "part_writer";
     }
 
     @Override
     protected void drawAdditionalElementInfoForeground(ContainerMultipartAspects<P, S, IAspectWrite> container,
         int index, IAspectWrite aspect, int mouseX, int mouseY) {
         // Render error tooltip
-        displayErrors.drawForeground(
+        if (getPartState().isEnabled()) displayErrors.drawForeground(
             getPartState().getErrors(aspect),
             ERROR_X,
             ERROR_Y + container.getAspectBoxHeight() * index,
@@ -62,7 +63,8 @@ public class GuiPartWriter<P extends IPartTypeWriter<P, S> & IGuiContainerProvid
     }
 
     @Override
-    protected void drawAdditionalElementInfo(ContainerMultipartAspects container, int index, IAspectWrite aspect) {
+    protected void drawAdditionalElementInfo(ContainerMultipartAspects<P, S, IAspectWrite> container, int index,
+        IAspectWrite aspect) {
         int aspectBoxHeight = container.getAspectBoxHeight();
 
         // Render dummy target item
@@ -71,7 +73,7 @@ public class GuiPartWriter<P extends IPartTypeWriter<P, S> & IGuiContainerProvid
         itemRender.renderItemAndEffectIntoGUI(mc.fontRenderer, mc.getTextureManager(), itemStack, pos.x, pos.y);
 
         // Render error symbol
-        displayErrors.drawBackground(
+        if (getPartState().isEnabled()) displayErrors.drawBackground(
             getPartState().getErrors(aspect),
             ERROR_X,
             ERROR_Y + aspectBoxHeight * index,
@@ -83,15 +85,16 @@ public class GuiPartWriter<P extends IPartTypeWriter<P, S> & IGuiContainerProvid
             getPartState().getActiveAspect() == aspect);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     protected void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY) {
         super.drawGuiContainerBackgroundLayer(partialTicks, mouseX, mouseY);
-        ContainerPartWriter container = (ContainerPartWriter) getContainer();
-        fontRendererObj.drawString(
+        ContainerPartWriter<?, ?> container = (ContainerPartWriter<?, ?>) getContainer();
+        RenderHelpers.drawScaledCenteredString(
+            fontRendererObj,
             container.getWriteValue(),
             this.guiLeft + offsetX + 53,
-            this.guiTop + offsetY + 128,
+            this.guiTop + offsetY + 132,
+            70,
             container.getWriteValueColor());
     }
 
@@ -103,5 +106,10 @@ public class GuiPartWriter<P extends IPartTypeWriter<P, S> & IGuiContainerProvid
     @Override
     protected int getBaseYSize() {
         return 222;
+    }
+
+    @Override
+    public int getMaxLabelWidth() {
+        return 85;
     }
 }

@@ -23,71 +23,35 @@ public class BiomeMeneglinConfig extends BiomeConfig {
     public static BiomeMeneglinConfig _instance;
 
     /**
-     * The weight of spawning in a cool biome type.
+     * The weight of spawning.
      */
-    @ConfigurableProperty(
-        category = ConfigurableTypeCategory.BIOME,
-        comment = "The weight of spawning in a cool biome type.")
-    public static int spawnWeightCool = 4;
+    @ConfigurableProperty(category = ConfigurableTypeCategory.BIOME, comment = "The weight of spawning.")
+    public static int spawnWeight = 5;
 
     /**
-     * The weight of spawning in a forest biome type.
+     * List of dimension IDs in which the meneglin biome should not generate.
      */
     @ConfigurableProperty(
-        category = ConfigurableTypeCategory.BIOME,
-        comment = "The weight of spawning in a forest biome type.")
-    public static int spawnWeightForest = 6;
-
-    /**
-     * The weight of spawning in a magical biome type.
-     */
-    @ConfigurableProperty(
-        category = ConfigurableTypeCategory.BIOME,
-        comment = "The weight of spawning in a magical biome type.")
-    public static int spawnWeightMagical = 10;
-
-    /**
-     * The weight of spawning in a lush biome type.
-     */
-    @ConfigurableProperty(
-        category = ConfigurableTypeCategory.BIOME,
-        comment = "The weight of spawning in a lush biome type.")
-    public static int spawnWeightLush = 8;
+        category = ConfigurableTypeCategory.WORLDGENERATION,
+        comment = "List of dimension IDs in which the meneglin biome should not generate.")
+    public static int[] meneglinBiomeDimensionBlacklist = new int[] { -1, 1 };
 
     /**
      * Make a new instance.
      */
     public BiomeMeneglinConfig() {
-        super(IntegratedDynamics._instance, Reference.BIOME_MENEGLIN, "biomeMeneglin", null, BiomeMeneglin.class);
+        super(IntegratedDynamics._instance, Reference.BIOME_MENEGLIN, "biome_meneglin", null, BiomeMeneglin.class);
     }
 
     @Override
     public void registerBiomeDictionary() {
-        if (spawnWeightCool > 0) {
-            BiomeManager
-                .addBiome(BiomeManager.BiomeType.COOL, new BiomeManager.BiomeEntry(getBiome(), spawnWeightCool));
-        }
-        if (spawnWeightForest > 0) {
-            BiomeManager
-                .addBiome(BiomeManager.BiomeType.COOL, new BiomeManager.BiomeEntry(getBiome(), spawnWeightForest));
-        }
-        if (spawnWeightMagical > 0) {
-            BiomeManager
-                .addBiome(BiomeManager.BiomeType.COOL, new BiomeManager.BiomeEntry(getBiome(), spawnWeightMagical));
-        }
-        if (spawnWeightLush > 0) {
-            BiomeManager
-                .addBiome(BiomeManager.BiomeType.COOL, new BiomeManager.BiomeEntry(getBiome(), spawnWeightLush));
+        if (spawnWeight > 0) {
+            BiomeManager.addBiome(BiomeManager.BiomeType.COOL, new BiomeManager.BiomeEntry(getBiome(), spawnWeight));
         }
         BiomeManager.addSpawnBiome(getBiome());
         BiomeManager.addStrongholdBiome(getBiome());
         BiomeManager.addVillageBiome(getBiome(), true);
-        BiomeDictionary.registerBiomeType(
-            getBiome(),
-            BiomeDictionary.Type.COLD,
-            BiomeDictionary.Type.FOREST,
-            BiomeDictionary.Type.MAGICAL,
-            BiomeDictionary.Type.LUSH);
+        BiomeDictionary.registerBiomeType(getBiome(), BiomeDictionary.Type.COLD, BiomeDictionary.Type.MAGICAL);
     }
 
 }

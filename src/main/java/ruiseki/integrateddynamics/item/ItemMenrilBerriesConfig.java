@@ -12,7 +12,7 @@ import ruiseki.okcore.config.extendedconfig.ItemConfig;
 
 /**
  * Config for the Menril Berries.
- * 
+ *
  * @author rubensworks
  *
  */
@@ -36,7 +36,7 @@ public class ItemMenrilBerriesConfig extends ItemConfig {
      * Make a new instance.
      */
     public ItemMenrilBerriesConfig() {
-        super(IntegratedDynamics._instance, true, "menrilBerries", null, null);
+        super(IntegratedDynamics._instance, true, "menril_berries", null, null);
     }
 
     @Override

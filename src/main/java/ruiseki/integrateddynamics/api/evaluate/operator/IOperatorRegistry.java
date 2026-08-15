@@ -2,6 +2,7 @@ package ruiseki.integrateddynamics.api.evaluate.operator;
 
 import java.util.Collection;
 
+import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 import ruiseki.integrateddynamics.api.item.IOperatorVariableFacade;
 import ruiseki.integrateddynamics.api.item.IVariableFacadeHandler;
@@ -52,4 +53,35 @@ public interface IOperatorRegistry extends IRegistry, IVariableFacadeHandler<IOp
      */
     public Collection<IOperator> getOperatorsWithOutputType(IValueType valueType);
 
+    /**
+     * Get the operators in the given category.
+     * 
+     * @param categoryName The name of the operator category.
+     * @return The corresponding operators.
+     */
+    public Collection<IOperator> getOperatorsInCategory(String categoryName);
+
+    /**
+     * Register an operator serializer.
+     *
+     * @param serializer The operator serializer.
+     */
+    public void registerSerializer(IOperatorSerializer serializer);
+
+    /**
+     * Serialize the given operator.
+     *
+     * @param value The operator to serialize.
+     * @return The serialized operator value.
+     */
+    public String serialize(IOperator value);
+
+    /**
+     * Deserialize the given operator value.
+     *
+     * @param value The operator value to deserialize.
+     * @return The deserialized operator.
+     * @throws EvaluationException If an error occurs while deserializing.
+     */
+    public IOperator deserialize(String value) throws EvaluationException;
 }

@@ -3,18 +3,27 @@ package ruiseki.integrateddynamics.api.part;
 import java.util.Map;
 
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import org.jetbrains.annotations.Nullable;
 
+import ruiseki.integrateddynamics.api.PartStateException;
+import ruiseki.okcore.capabilities.ICapabilitySerializable;
+import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
 
 /**
  * An interface for containers that can hold {@link IPartType}s.
- * 
+ *
  * @author rubensworks
  */
-public interface IPartContainer {
+public interface IPartContainer extends ICapabilitySerializable {
+
+    /**
+     * Should be called every tick, updates parts.
+     */
+    public void update();
 
     /**
      * @return The position this container is at.
@@ -33,7 +42,7 @@ public interface IPartContainer {
 
     /**
      * Set the part for a side.
-     * 
+     *
      * @param side      The side to place the part on.
      * @param part      The part.
      * @param partState The state for this part.
@@ -45,7 +54,7 @@ public interface IPartContainer {
 
     /**
      * Check if the given part can be added at the given side.
-     * 
+     *
      * @param side The side to place the part on.
      * @param part The part.
      * @param <P>  The type of part.
@@ -57,7 +66,7 @@ public interface IPartContainer {
 
     /**
      * Get the part of a side, can be null.
-     * 
+     *
      * @param side The side.
      * @return The part or null.
      */
@@ -71,28 +80,42 @@ public interface IPartContainer {
 
     /**
      * Remove the part from a side, can return null if there was no part on that side.
-     * 
-     * @param side   The side.
-     * @param player The player removing the part.
+     *
+     * @param side      The side.
+     * @param player    The player removing the part.
+     * @param saveState If the part state should be saved in the item.
      * @return The removed part or null.
      */
-    public IPartType removePart(ForgeDirection side, @Nullable EntityPlayer player);
+    public IPartType removePart(ForgeDirection side, @Nullable EntityPlayer player, boolean dropMainElement,
+        boolean saveState);
 
     /**
      * dz
      * Set the state of a part.
-     * 
+     *
      * @param side      The side.
      * @param partState The part state.
+     * @throws PartStateException If no part at the given position is available.
      */
-    public void setPartState(ForgeDirection side, IPartState partState);
+    public void setPartState(ForgeDirection side, IPartState partState) throws PartStateException;
 
     /**
      * Get the state of a part.
-     * 
+     *
      * @param side The side.
      * @return The part state.
+     * @throws PartStateException If no part at the given position is available.
      */
-    public IPartState getPartState(ForgeDirection side);
+    public IPartState getPartState(ForgeDirection side) throws PartStateException;
 
+    /**
+     * Get the part side the player is watching.
+     * This is used to determine the part the player is looking at.
+     *
+     * @param world  The world.
+     * @param pos    The block position to perform a ray trace for.
+     * @param player The player.
+     * @return The side the player is watching or null.
+     */
+    public @Nullable ForgeDirection getWatchingSide(World world, BlockPos pos, EntityPlayer player);
 }

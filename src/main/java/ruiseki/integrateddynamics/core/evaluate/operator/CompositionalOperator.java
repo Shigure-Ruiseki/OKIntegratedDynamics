@@ -1,17 +1,19 @@
 package ruiseki.integrateddynamics.core.evaluate.operator;
 
 import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
+import ruiseki.integrateddynamics.api.evaluate.expression.VariableAdapter;
 import ruiseki.integrateddynamics.api.evaluate.operator.IOperator;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 import ruiseki.integrateddynamics.api.evaluate.variable.IVariable;
 import ruiseki.integrateddynamics.api.logicprogrammer.IConfigRenderPattern;
+import ruiseki.integrateddynamics.core.evaluate.variable.ValueHelpers;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.okcore.helper.LangHelpers;
 
 /**
  * An operator composed of a number of other operators.
- * 
+ *
  * @author rubensworks
  */
 public class CompositionalOperator extends OperatorBase {
@@ -85,7 +87,7 @@ public class CompositionalOperator extends OperatorBase {
                 for (AppliedOperatorBuilder builder : builders) {
                     IValueType[] subInputTypes = builder.getInputTypes();
                     for (int i = 0; i < subInputTypes.length; i++) {
-                        if (inputTypes[i] != null && !inputTypes[i].correspondsTo(subInputTypes[i])) {
+                        if (inputTypes[i] != null && !ValueHelpers.correspondsTo(inputTypes[i], subInputTypes[i])) {
                             throw new IllegalArgumentException(
                                 String.format(
                                     "An composed operator expected type %s "
@@ -111,7 +113,7 @@ public class CompositionalOperator extends OperatorBase {
                 for (int i = 0; i < builders.length; i++) {
                     final AppliedOperatorBuilder builder = builders[i];
                     // Anonymous class because we want lazy evaluation
-                    subVariablesOut[i] = new IVariable() {
+                    subVariablesOut[i] = new VariableAdapter<IValue>() {
 
                         @Override
                         public IValueType getType() {
@@ -154,7 +156,7 @@ public class CompositionalOperator extends OperatorBase {
 
         /**
          * Make a new operator based on the applied elements.
-         * 
+         *
          * @param symbol          The symbol for the operator.
          * @param operatorName    The operator name.
          * @param renderPattern   The config render pattern.

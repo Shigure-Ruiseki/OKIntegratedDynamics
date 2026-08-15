@@ -2,9 +2,11 @@ package ruiseki.integrateddynamics.core.evaluate.variable;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.Map;
 
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ResourceLocation;
 
 import com.google.common.collect.Maps;
 
@@ -34,11 +36,11 @@ public final class ValueTypeRegistry implements IValueTypeRegistry {
 
     private final Map<String, IValueType> valueTypes = Maps.newHashMap();
     @SideOnly(Side.CLIENT)
-    private Map<IValueType, String> valueTypeIconPaths;
+    private Map<IValueType, ResourceLocation> valueTypeIconPaths;
 
     private ValueTypeRegistry() {
         if (MinecraftHelpers.isClientSide()) {
-            valueTypeIconPaths = Maps.newHashMap();
+            valueTypeIconPaths = new IdentityHashMap<>();
         }
         if (MinecraftHelpers.isModdedEnvironment()) {
             IntegratedDynamics._instance.getRegistryManager()
@@ -72,19 +74,20 @@ public final class ValueTypeRegistry implements IValueTypeRegistry {
 
     @SideOnly(Side.CLIENT)
     @Override
-    public <V extends IValue, T extends IValueType<V>> void registerValueTypeIconPath(T valueType, String iconPath) {
+    public <V extends IValue, T extends IValueType<V>> void registerValueTypeModel(T valueType,
+        ResourceLocation iconPath) {
         valueTypeIconPaths.put(valueType, iconPath);
     }
 
     @SideOnly(Side.CLIENT)
     @Override
-    public <V extends IValue, T extends IValueType<V>> String getValueTypeIconPath(T valueType) {
+    public <V extends IValue, T extends IValueType<V>> ResourceLocation getValueTypeModel(T valueType) {
         return valueTypeIconPaths.get(valueType);
     }
 
     @SideOnly(Side.CLIENT)
     @Override
-    public Collection<String> getValueTypeIconPaths() {
+    public Collection<ResourceLocation> getValueTypeModels() {
         return Collections.unmodifiableCollection(valueTypeIconPaths.values());
     }
 
@@ -108,7 +111,7 @@ public final class ValueTypeRegistry implements IValueTypeRegistry {
         if (type == null) {
             return INVALID_FACADE;
         }
-        IValue value = type.deserialize(tag.getString("value"));
+        IValue value = ValueHelpers.deserializeRaw(type, tag.getString("value"));
         return new ValueTypeVariableFacade(id, type, value);
     }
 
@@ -118,10 +121,6 @@ public final class ValueTypeRegistry implements IValueTypeRegistry {
             "typeName",
             variableFacade.getValueType()
                 .getUnlocalizedName());
-        tag.setString(
-            "value",
-            variableFacade.getValue()
-                .getType()
-                .serialize(variableFacade.getValue()));
+        tag.setString("value", ValueHelpers.serializeRaw(variableFacade.getValue()));
     }
 }

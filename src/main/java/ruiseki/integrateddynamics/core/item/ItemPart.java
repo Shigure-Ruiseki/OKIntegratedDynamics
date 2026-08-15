@@ -19,17 +19,18 @@ import lombok.EqualsAndHashCode;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.block.cable.ICableFakeable;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
-import ruiseki.integrateddynamics.api.part.IPartContainerFacade;
 import ruiseki.integrateddynamics.api.part.IPartState;
 import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.block.BlockCable;
 import ruiseki.integrateddynamics.core.helper.CableHelpers;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
+import ruiseki.integrateddynamics.core.helper.PartHelpers;
 import ruiseki.integrateddynamics.item.ItemBlockCable;
 import ruiseki.okcore.config.configurable.ConfigurableItem;
-import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
+import ruiseki.okcore.config.extendedconfig.ItemConfig;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.helper.LangHelpers;
+import ruiseki.okcore.helper.MinecraftHelpers;
 
 /**
  * An item that can place parts.
@@ -50,7 +51,7 @@ public class ItemPart<P extends IPartType<P, S>, S extends IPartState<P>> extend
      * @param eConfig Config for this blockState.
      * @param part    The part this item will place.
      */
-    public ItemPart(ExtendedConfig eConfig, IPartType<P, S> part) {
+    public ItemPart(ItemConfig eConfig, IPartType<P, S> part) {
         super(eConfig);
         this.part = part;
     }
@@ -65,124 +66,127 @@ public class ItemPart<P extends IPartType<P, S>, S extends IPartState<P>> extend
     }
 
     @Override
+    public String getUnlocalizedName() {
+        return part.getUnlocalizedName();
+    }
+
+    @Override
+    public String getUnlocalizedName(ItemStack stack) {
+        return part.getUnlocalizedName();
+    }
+
+    @Override
     public String getItemStackDisplayName(ItemStack stack) {
-        return LangHelpers.localize(part.getUnlocalizedName());
+        return LangHelpers.localize(getUnlocalizedName());
     }
 
     @Override
     public boolean onItemUse(ItemStack itemStack, EntityPlayer playerIn, World world, int x, int y, int z, int sideInt,
         float hitX, float hitY, float hitZ) {
-        if (!world.isRemote) {
-            ForgeDirection side = ForgeDirection.getOrientation(sideInt);
-            BlockPos pos = new BlockPos(x, y, z);
-            IPartContainerFacade partContainerFacade = CableHelpers
-                .getInterface(world, pos, IPartContainerFacade.class);
-            if (partContainerFacade != null) {
-                // Add part to existing cable
-                IPartContainer partContainer = partContainerFacade.getPartContainer(world, pos);
-                if (addPart(world, pos, side, partContainer, itemStack) && !playerIn.capabilities.isCreativeMode) {
+        BlockPos pos = new BlockPos(x, y, z);
+        ForgeDirection side = ForgeDirection.getOrientation(sideInt);
+        IPartContainer partContainerFirst = PartHelpers.getPartContainer(world, pos, side);
+        if (partContainerFirst != null) {
+            // Add part to existing cable
+            if (PartHelpers.addPart(world, pos, side, getPart(), itemStack)) {
+                if (world.isRemote) {
+                    ItemBlockCable.playPlaceSound(world, pos);
+                }
+                if (!playerIn.capabilities.isCreativeMode) {
                     itemStack.stackSize--;
                 }
-                return true;
-            } else {
-                // Check all third party actions
-                for (IUseAction useAction : USE_ACTIONS) {
-                    if (useAction.attempItemUseTarget(this, itemStack, world, pos, side)) {
-                        return true;
-                    }
-                }
-
-                // Place part at a new position with an unreal cable
-                BlockPos target = pos.offset(side);
-                if (target.getBlock(world)
-                    .isReplaceable(world, target.getX(), target.getY(), target.getZ())) {
-                    ItemBlockCable itemBlockCable = (ItemBlockCable) Item.getItemFromBlock(BlockCable.getInstance());
-                    if (itemBlockCable.onItemUse(
-                        itemStack,
-                        playerIn,
-                        world,
-                        target.getX(),
-                        target.getY(),
-                        target.getZ(),
-                        sideInt,
-                        hitX,
-                        hitY,
-                        hitZ)) {
-                        partContainerFacade = CableHelpers.getInterface(world, target, IPartContainerFacade.class);
-                        if (partContainerFacade != null) {
-                            IPartContainer partContainer = partContainerFacade.getPartContainer(world, target);
-                            addPart(world, pos, side.getOpposite(), partContainer, itemStack);
-                            if (target.getBlock(world) instanceof ICableFakeable) {
-                                BlockCable.getInstance()
-                                    .setRealCable(world, target, false);
+            }
+            return true;
+        } else {
+            // Place part at a new position with an unreal cable
+            BlockPos target = pos.offset(side);
+            ForgeDirection targetSide = side.getOpposite();
+            if (target.getBlock(world)
+                .isReplaceable(world, target.getX(), target.getY(), target.getZ())) {
+                ItemBlockCable itemBlockCable = (ItemBlockCable) Item.getItemFromBlock(BlockCable.getInstance());
+                itemStack.stackSize++; // Temporarily grow, because ItemBlock will shrink it.
+                if (itemBlockCable.onItemUse(
+                    itemStack,
+                    playerIn,
+                    world,
+                    target.getX(),
+                    target.getY(),
+                    target.getZ(),
+                    ForgeDirection.getOrientation(sideInt)
+                        .getOpposite()
+                        .ordinal(),
+                    hitX,
+                    hitY,
+                    hitZ)) {
+                    IPartContainer partContainer = PartHelpers.getPartContainer(world, target, targetSide);
+                    if (partContainer != null) {
+                        ICableFakeable cableFakeable = CableHelpers.getCableFakeable(world, target, targetSide);
+                        if (!world.isRemote) {
+                            PartHelpers.addPart(world, target, side.getOpposite(), getPart(), itemStack);
+                            if (cableFakeable != null) {
+                                CableHelpers.onCableRemoving(world, target, false, false);
+                                cableFakeable.setRealCable(false);
+                                CableHelpers.onCableRemoved(world, target, CableHelpers.ALL_SIDES);
                             } else {
                                 IntegratedDynamics.clog(
                                     Level.WARN,
                                     String.format(
-                                        "Tried to set a fake cable at a block that is not fakeable, got %s",
-                                        target.getBlock(world)));
+                                        "Tried to set a fake cable at a block that is not fakeable at %s",
+                                        target));
                             }
-                            return true;
+                        } else {
+                            cableFakeable.setRealCable(false);
                         }
-                    }
-                } else {
-                    partContainerFacade = CableHelpers.getInterface(world, target, IPartContainerFacade.class);
-                    if (partContainerFacade != null) {
-                        IPartContainer partContainer = partContainerFacade.getPartContainer(world, target);
-                        if (addPart(world, pos, side.getOpposite(), partContainer, itemStack)
-                            && !playerIn.capabilities.isCreativeMode) {
-                            itemStack.stackSize--;
-                        }
+                        itemStack.stackSize--;
                         return true;
                     }
+                }
+                itemStack.stackSize--; // Shrink manually if failed
+            } else {
+                IPartContainer partContainer = PartHelpers.getPartContainer(world, target, targetSide);
+                if (partContainer != null) {
+                    // Add part to existing cable
+                    if (PartHelpers.addPart(world, target, side.getOpposite(), getPart(), itemStack)) {
+                        if (world.isRemote) {
+                            ItemBlockCable.playPlaceSound(world, target);
+                        }
+                        if (!playerIn.capabilities.isCreativeMode) {
+                            itemStack.stackSize--;
+                        }
+                    }
+                    return true;
+                }
+            }
+
+            // Check third party actions if all else fails
+            for (IUseAction useAction : USE_ACTIONS) {
+                if (useAction.attempItemUseTarget(this, itemStack, world, pos, side)) {
+                    return true;
                 }
             }
         }
         return super.onItemUse(itemStack, playerIn, world, x, y, z, sideInt, hitX, hitY, hitZ);
     }
 
-    protected boolean addPart(World world, BlockPos pos, ForgeDirection side, IPartContainer partContainer,
-        ItemStack itemStack) {
-        IPartType partType = getPart();
-        if (partContainer.canAddPart(side, partType)) {
-            partContainer.setPart(side, getPart(), partType.getState(itemStack));
-            System.out.println("Setting part " + getPart());
-            ItemBlockCable.playPlaceSound(world, pos);
-            return true;
-        } else {
-            System.out.println("Side occupied!");
-        }
-        return false;
-    }
-
     @SuppressWarnings("rawtypes")
     @SideOnly(Side.CLIENT)
     @Override
     public void addInformation(ItemStack itemStack, EntityPlayer entityPlayer, List list, boolean par4) {
-        if (itemStack.getTagCompound() != null) {
+        if (itemStack.getTagCompound() != null && itemStack.getTagCompound()
+            .hasKey("id", MinecraftHelpers.NBTTag_Types.NBTTagInt.ordinal())) {
             int id = itemStack.getTagCompound()
                 .getInteger("id");
             list.add(LangHelpers.localize(L10NValues.GENERAL_ITEM_ID, id));
         }
+        getPart().loadTooltip(itemStack, list);
         LangHelpers.addOptionalInfo(list, getPart().getUnlocalizedNameBase());
         super.addInformation(itemStack, entityPlayer, list, par4);
     }
 
     public static interface IUseAction {
 
-        /**
-         * Attempt to use the given item.
-         *
-         * @param itemPart  The part item instance.
-         * @param itemStack The item stack that is being used.
-         * @param world     The world.
-         * @param pos       The position.
-         * @param sideHit   The side that is being hit.
-         * @return If the use action was applied.
-         */
         public boolean attempItemUseTarget(ItemPart itemPart, ItemStack itemStack, World world, BlockPos pos,
             ForgeDirection sideHit);
 
     }
-
 }

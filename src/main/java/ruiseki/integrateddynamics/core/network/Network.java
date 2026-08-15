@@ -1,21 +1,29 @@
 package ruiseki.integrateddynamics.core.network;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.util.ForgeDirection;
 
 import org.apache.logging.log4j.Level;
+import org.jetbrains.annotations.NotNull;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 import ruiseki.integrateddynamics.IntegratedDynamics;
-import ruiseki.integrateddynamics.api.block.cable.ICable;
+import ruiseki.integrateddynamics.api.PartStateException;
+import ruiseki.integrateddynamics.api.network.AttachCapabilitiesEventNetwork;
 import ruiseki.integrateddynamics.api.network.IEventListenableNetworkElement;
+import ruiseki.integrateddynamics.api.network.IFullNetworkListener;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.INetworkCarrier;
 import ruiseki.integrateddynamics.api.network.INetworkElement;
@@ -23,97 +31,164 @@ import ruiseki.integrateddynamics.api.network.INetworkElementProvider;
 import ruiseki.integrateddynamics.api.network.INetworkEventListener;
 import ruiseki.integrateddynamics.api.network.event.INetworkEvent;
 import ruiseki.integrateddynamics.api.network.event.INetworkEventBus;
-import ruiseki.integrateddynamics.api.path.ICablePathElement;
-import ruiseki.integrateddynamics.core.helper.CableHelpers;
+import ruiseki.integrateddynamics.api.path.IPathElement;
+import ruiseki.integrateddynamics.api.path.ISidedPathElement;
+import ruiseki.integrateddynamics.capability.network.NetworkCarrierConfig;
+import ruiseki.integrateddynamics.capability.networkelementprovider.NetworkElementProviderConfig;
+import ruiseki.integrateddynamics.capability.path.SidedPathElement;
+import ruiseki.integrateddynamics.core.network.diagnostics.NetworkDiagnostics;
 import ruiseki.integrateddynamics.core.network.event.NetworkElementAddEvent;
 import ruiseki.integrateddynamics.core.network.event.NetworkElementRemoveEvent;
 import ruiseki.integrateddynamics.core.network.event.NetworkEventBus;
 import ruiseki.integrateddynamics.core.path.Cluster;
+import ruiseki.integrateddynamics.core.path.PathFinder;
 import ruiseki.integrateddynamics.core.persist.world.NetworkWorldStorage;
+import ruiseki.okcore.capabilities.Capability;
+import ruiseki.okcore.capabilities.CapabilityDispatcher;
 import ruiseki.okcore.datastructure.BlockPos;
+import ruiseki.okcore.datastructure.DimPos;
+import ruiseki.okcore.datastructure.LazyOptional;
+import ruiseki.okcore.helper.CapabilityHelpers;
 
 /**
  * A network instance that can hold a set of {@link INetworkElement}s.
  * Note that this network only contains references to the relevant data, it does not contain the actual information.
  *
- * @param <N> The materialized type of the network.
  * @author rubensworks
  */
-public class Network<N extends INetwork<N>> implements INetwork<N> {
+public class Network implements INetwork {
 
-    private Cluster<ICablePathElement> baseCluster;
+    private Cluster baseCluster;
 
-    private final INetworkEventBus<N> eventBus = new NetworkEventBus<>();
-    private final TreeSet<INetworkElement<N>> elements = Sets.newTreeSet();
-    private TreeSet<INetworkElement<N>> updateableElements = null;
-    private TreeMap<INetworkElement<N>, Integer> updateableElementsTicks = null;
+    private final INetworkEventBus eventBus = new NetworkEventBus();
+    private final TreeSet<INetworkElement> elements = Sets.newTreeSet();
+    private TreeSet<INetworkElement> updateableElements = null;
+    private TreeMap<INetworkElement, Integer> updateableElementsTicks = null;
+    private TreeSet<INetworkElement> invalidatedElements = Sets.newTreeSet();
+    private Map<INetworkElement, Long> lastSecondDurations = Maps.newHashMap();
 
+    private final CapabilityDispatcher capabilityDispatcher;
+    private IFullNetworkListener[] fullNetworkListeners;
+
+    private NBTTagCompound toRead = null;
+    private volatile boolean changed = false;
     private volatile boolean killed = false;
+
+    private boolean crashed = false;
+
+    /**
+     * Initiate a full network from the given start position.
+     *
+     * @param sidedPathElement The sided path element to start from.
+     * @return The newly formed network.
+     */
+    public static Network initiateNetworkSetup(ISidedPathElement sidedPathElement) {
+        Network network = new Network(PathFinder.getConnectedCluster(sidedPathElement));
+        NetworkWorldStorage.getInstance(IntegratedDynamics._instance)
+            .addNewNetwork(network);
+        return network;
+    }
+
+    /**
+     * Check if two networks are equal.
+     *
+     * @param networkA A network.
+     * @param networkB Another network.
+     * @return If they are equal.
+     */
+    public static boolean areNetworksEqual(Network networkA, Network networkB) {
+        return networkA.elements.containsAll(networkB.elements) && networkA.elements.size() == networkB.elements.size();
+    }
 
     /**
      * This constructor should not be called, except for the process of constructing networks from NBT.
      */
     public Network() {
-        this.baseCluster = new Cluster<ICablePathElement>();
+        this.baseCluster = new Cluster();
+        this.capabilityDispatcher = gatherCapabilities();
         onConstruct();
     }
 
     /**
-     * Create a new network from a given cluster of cables.
-     * Each cable will be checked if it is an instance of {@link INetworkElementProvider} and will add all its
-     * elements to the network in that case.
-     * Each cable that is an instance of {@link ruiseki.integrateddynamics.api.part.IPartContainerFacade}
+     * Create a new network from a given cluster of path elements.
+     * Each path element will be checked if it has a {@link INetworkElementProvider} capability at its position
+     * and will add all its elements to the network in that case.
+     * Each path element that has an {@link ruiseki.integrateddynamics.api.part.IPartContainer} capability
      * will have the network stored in its part container.
      *
-     * @param cables The cables that make up the connections in the network which can potentially provide network
-     *               elements.
+     * @param pathElements The path elements that make up the connections in the network which can potentially provide
+     *                     network
+     *                     elements.
      */
-    public Network(Cluster<ICablePathElement> cables) {
-        this.baseCluster = cables;
+    public Network(Cluster pathElements) {
+        this.baseCluster = pathElements;
+        this.capabilityDispatcher = gatherCapabilities();
         onConstruct();
         deriveNetworkElements(baseCluster);
+    }
+
+    protected CapabilityDispatcher gatherCapabilities() {
+        AttachCapabilitiesEventNetwork event = new AttachCapabilitiesEventNetwork(this);
+        MinecraftForge.EVENT_BUS.post(event);
+        List<IFullNetworkListener> listeners = event.getFullNetworkListeners();
+        this.fullNetworkListeners = listeners.toArray(new IFullNetworkListener[listeners.size()]);
+        return event.getCapabilities()
+            .size() > 0 ? new CapabilityDispatcher(event.getCapabilities(), event.getListeners()) : null;
+    }
+
+    protected IFullNetworkListener[] gatherFullNetworkListeners() {
+        List<IFullNetworkListener> listeners = Lists.newArrayList();
+
+        return listeners.toArray(new IFullNetworkListener[listeners.size()]);
     }
 
     protected void onConstruct() {
 
     }
 
-    protected N getMaterializedThis() {
-        return (N) this;
-    }
-
-    private void deriveNetworkElements(Cluster<ICablePathElement> cables) {
+    private void deriveNetworkElements(Cluster pathElements) {
         if (!killIfEmpty()) {
-            for (ICablePathElement cable : cables) {
-                World world = cable.getPosition()
+            for (ISidedPathElement sidedPathElement : pathElements) {
+                World world = sidedPathElement.getPathElement()
+                    .getPosition()
                     .getWorld();
-                BlockPos pos = cable.getPosition()
+                BlockPos pos = sidedPathElement.getPathElement()
+                    .getPosition()
                     .getBlockPos();
-                INetworkElementProvider networkElementProvider = CableHelpers
-                    .getInterface(world, pos, INetworkElementProvider.class);
-                if (networkElementProvider != null) {
-                    for (INetworkElement<N> element : ((INetworkElementProvider<N>) networkElementProvider)
-                        .createNetworkElements(world, pos)) {
-                        addNetworkElement(element, true);
-                    }
-                }
-                INetworkCarrier<N> networkCarrier = CableHelpers.getInterface(world, pos, INetworkCarrier.class);
+                ForgeDirection side = sidedPathElement.getSide();
+                INetworkCarrier networkCarrier = CapabilityHelpers
+                    .getCapability(world, pos, NetworkCarrierConfig.CAPABILITY, side)
+                    .getOrNull();
                 if (networkCarrier != null) {
                     // Correctly remove any previously saved network in this carrier
                     // and set the new network to this.
-                    INetwork<N> network = networkCarrier.getNetwork(world, pos);
+                    INetwork network = networkCarrier.getNetwork();
                     if (network != null) {
-                        network.removeCable((ICable) networkCarrier, cable);
+                        network.removePathElement(sidedPathElement.getPathElement(), side);
                     }
-                    networkCarrier.resetCurrentNetwork(world, pos);
-                    networkCarrier.setNetwork(getMaterializedThis(), world, pos);
+                    networkCarrier.setNetwork(null);
+                    networkCarrier.setNetwork(this);
+                }
+                INetworkElementProvider networkElementProvider = CapabilityHelpers
+                    .getCapability(world, pos, NetworkElementProviderConfig.CAPABILITY, side)
+                    .getOrNull();
+                if (networkElementProvider != null) {
+                    for (INetworkElement element : networkElementProvider.createNetworkElements(world, pos)) {
+                        addNetworkElement(element, true);
+                    }
                 }
             }
+            onNetworkChanged();
         }
     }
 
     @Override
-    public INetworkEventBus<N> getEventBus() {
+    public boolean isInitialized() {
+        return updateableElements != null;
+    }
+
+    @Override
+    public INetworkEventBus getEventBus() {
         return this.eventBus;
     }
 
@@ -122,18 +197,6 @@ public class Network<N extends INetwork<N>> implements INetwork<N> {
      */
     public void initialize() {
         initialize(false);
-    }
-
-    /**
-     * Check if two networks are equal.
-     *
-     * @param networkA A network.
-     * @param networkB Another network.
-     * @param <N>      The networkl ty
-     * @return If they are equal.
-     */
-    public static <N extends INetwork<N>> boolean areNetworksEqual(Network<N> networkA, Network<N> networkB) {
-        return networkA.elements.containsAll(networkB.elements) && networkA.elements.size() == networkB.elements.size();
     }
 
     @Override
@@ -145,22 +208,42 @@ public class Network<N extends INetwork<N>> implements INetwork<N> {
     public NBTTagCompound serializeNBT() {
         NBTTagCompound tag = new NBTTagCompound();
         tag.setTag("baseCluster", this.baseCluster.serializeNBT());
+        tag.setBoolean("crashed", this.crashed);
+        if (this.capabilityDispatcher != null) {
+            tag.setTag("OKCaps", this.capabilityDispatcher.serializeNBT());
+        }
         return tag;
     }
 
     @Override
     public void deserializeNBT(NBTTagCompound tag) {
+        // NBT reading is postponed until the first network tick, to ensure that the game is properly initialized.
+        // Because other mods may register things such as dimensions at the same time when networks
+        // are being constructed (as was the case in #349)
+        this.toRead = tag;
+    }
+
+    public void fromNBTEffective(NBTTagCompound tag) {
         this.baseCluster.deserializeNBT(tag.getCompoundTag("baseCluster"));
+        this.crashed = tag.getBoolean("crashed");
+        if (this.capabilityDispatcher != null && tag.hasKey("OKCaps")) {
+            this.capabilityDispatcher.deserializeNBT(tag.getCompoundTag("OKCaps"));
+        }
         deriveNetworkElements(baseCluster);
         initialize(true);
-
     }
 
     @Override
-    public boolean addNetworkElement(INetworkElement<N> element, boolean networkPreinit) {
-        if (getEventBus().postCancelable(new NetworkElementAddEvent.Pre<N>(getMaterializedThis(), element))) {
+    public synchronized boolean addNetworkElement(INetworkElement element, boolean networkPreinit) {
+        for (IFullNetworkListener fullNetworkListener : this.fullNetworkListeners) {
+            if (!fullNetworkListener.addNetworkElement(element, networkPreinit)) {
+                return false;
+            }
+        }
+
+        if (getEventBus().postCancelable(new NetworkElementAddEvent.Pre(this, element))) {
             elements.add(element);
-            if (!element.onNetworkAddition(getMaterializedThis())) {
+            if (!element.onNetworkAddition(this)) {
                 elements.remove(element);
                 return false;
             }
@@ -168,22 +251,23 @@ public class Network<N extends INetwork<N>> implements INetwork<N> {
                 addNetworkElementUpdateable(element);
             }
             if (element instanceof IEventListenableNetworkElement) {
-                IEventListenableNetworkElement<N, ?> listenableElement = (IEventListenableNetworkElement<N, ?>) element;
-                INetworkEventListener<N, ?> listener = listenableElement.getNetworkEventListener();
+                IEventListenableNetworkElement<?> listenableElement = (IEventListenableNetworkElement<?>) element;
+                INetworkEventListener<?> listener = listenableElement.getNetworkEventListener();
                 if (listener != null && listener.hasEventSubscriptions()) {
-                    for (Class<? extends INetworkEvent<N>> eventType : listener.getSubscribedEvents()) {
+                    for (Class<? extends INetworkEvent> eventType : listener.getSubscribedEvents()) {
                         getEventBus().register(listenableElement, eventType);
                     }
                 }
             }
-            getEventBus().post(new NetworkElementAddEvent.Post<N>(getMaterializedThis(), element));
+            getEventBus().post(new NetworkElementAddEvent.Post(this, element));
+            onNetworkChanged();
             return true;
         }
         return false;
     }
 
     @Override
-    public void addNetworkElementUpdateable(INetworkElement<N> element) {
+    public void addNetworkElementUpdateable(INetworkElement element) {
         if (element.isUpdate()) {
             updateableElements.add(element);
             updateableElementsTicks.put(element, 0);
@@ -191,30 +275,64 @@ public class Network<N extends INetwork<N>> implements INetwork<N> {
     }
 
     @Override
-    public boolean removeNetworkElementPre(INetworkElement<N> element) {
-        return getEventBus().postCancelable(new NetworkElementRemoveEvent.Pre<N>(getMaterializedThis(), element));
+    public boolean removeNetworkElementPre(INetworkElement element) {
+        for (IFullNetworkListener fullNetworkListener : this.fullNetworkListeners) {
+            if (!fullNetworkListener.removeNetworkElementPre(element)) {
+                return false;
+            }
+        }
+        return getEventBus().postCancelable(new NetworkElementRemoveEvent.Pre(this, element));
     }
 
     @Override
-    public void removeNetworkElementPost(INetworkElement<N> element) {
+    public synchronized void setPriorityAndChannel(INetworkElement element, int priority, int channel) {
+        elements.remove(element);
+        Integer oldTickValue = null;
+        if (element.isUpdate()) {
+            updateableElements.remove(element);
+            oldTickValue = updateableElementsTicks.remove(element);
+        }
+
+        // noinspection deprecation
+        element.setPriorityAndChannel(this, priority, channel);
+
+        elements.add(element);
+        if (element.isUpdate()) {
+            updateableElements.add(element);
+            if (oldTickValue != null) {
+                updateableElementsTicks.put(element, oldTickValue);
+            }
+        }
+    }
+
+    @Override
+    public void removeNetworkElementPost(INetworkElement element) {
+        for (IFullNetworkListener fullNetworkListener : this.fullNetworkListeners) {
+            fullNetworkListener.removeNetworkElementPost(element);
+        }
         if (element instanceof IEventListenableNetworkElement) {
-            IEventListenableNetworkElement<N, ?> listenableElement = (IEventListenableNetworkElement<N, ?>) element;
-            INetworkEventListener<N, ?> listener = listenableElement.getNetworkEventListener();
+            IEventListenableNetworkElement<?> listenableElement = (IEventListenableNetworkElement<?>) element;
+            INetworkEventListener<?> listener = listenableElement.getNetworkEventListener();
             if (listener != null && listener.hasEventSubscriptions()) {
                 getEventBus().unregister(listenableElement);
             }
         }
-        element.beforeNetworkKill(getMaterializedThis());
-        element.onNetworkRemoval(getMaterializedThis());
+        element.beforeNetworkKill(this);
+        element.onNetworkRemoval(this);
         elements.remove(element);
         removeNetworkElementUpdateable(element);
-        getEventBus().post(new NetworkElementRemoveEvent.Post<N>(getMaterializedThis(), element));
+        invalidatedElements.remove(element); // The element may be invalidated (like in an unloaded chunk) when it is
+                                             // being removed.
+        getEventBus().post(new NetworkElementRemoveEvent.Post(this, element));
+        onNetworkChanged();
     }
 
     @Override
-    public void removeNetworkElementUpdateable(INetworkElement element) {
-        updateableElements.remove(element);
-        updateableElementsTicks.remove(element);
+    public synchronized void removeNetworkElementUpdateable(INetworkElement element) {
+        if (isInitialized()) {
+            updateableElements.remove(element);
+            updateableElementsTicks.remove(element);
+        }
     }
 
     /**
@@ -225,19 +343,22 @@ public class Network<N extends INetwork<N>> implements INetwork<N> {
     protected void initialize(boolean silent) {
         updateableElements = Sets.newTreeSet();
         updateableElementsTicks = Maps.newTreeMap();
-        for (INetworkElement<N> element : elements) {
+        for (INetworkElement element : elements) {
             addNetworkElementUpdateable(element);
             if (!silent) {
-                element.afterNetworkAlive(getMaterializedThis());
+                element.afterNetworkAlive(this);
             }
-            element.afterNetworkReAlive(getMaterializedThis());
+            element.afterNetworkReAlive(this);
         }
     }
 
     @Override
     public void kill() {
-        for (INetworkElement<N> element : elements) {
-            element.beforeNetworkKill(getMaterializedThis());
+        for (IFullNetworkListener fullNetworkListener : this.fullNetworkListeners) {
+            fullNetworkListener.kill();
+        }
+        for (INetworkElement element : elements) {
+            element.beforeNetworkKill(this);
         }
         killed = true;
     }
@@ -246,31 +367,44 @@ public class Network<N extends INetwork<N>> implements INetwork<N> {
     public boolean killIfEmpty() {
         if (baseCluster.isEmpty()) {
             kill();
+            onNetworkChanged();
             return true;
         }
         return false;
     }
 
-    protected boolean canUpdate(INetworkElement<N> element) {
+    @Override
+    public boolean canUpdate(INetworkElement element) {
+        for (IFullNetworkListener fullNetworkListener : this.fullNetworkListeners) {
+            if (!fullNetworkListener.canUpdate(element)) {
+                return false;
+            }
+        }
         return true;
     }
 
-    protected void postUpdate(INetworkElement<N> element) {
-
-    }
-
-    /**
-     * When the given element is not being updated because {@link Network#canUpdate(INetworkElement)}
-     * returned false.
-     *
-     * @param element The element that is not being updated.
-     */
-    protected void onSkipUpdate(INetworkElement<N> element) {
-
+    @Override
+    public void postUpdate(INetworkElement element) {
+        for (IFullNetworkListener fullNetworkListener : this.fullNetworkListeners) {
+            fullNetworkListener.postUpdate(element);
+        }
     }
 
     @Override
-    public final void update() {
+    public void onSkipUpdate(INetworkElement element) {
+        for (IFullNetworkListener fullNetworkListener : this.fullNetworkListeners) {
+            fullNetworkListener.onSkipUpdate(element);
+        }
+    }
+
+    @Override
+    public final synchronized void update() {
+        if (this.toRead != null) {
+            this.fromNBTEffective(this.toRead);
+            this.toRead = null;
+        }
+
+        this.changed = false;
         if (killIfEmpty() || killed) {
             NetworkWorldStorage.getInstance(IntegratedDynamics._instance)
                 .removeInvalidatedNetwork(this);
@@ -278,71 +412,199 @@ public class Network<N extends INetwork<N>> implements INetwork<N> {
             onUpdate();
 
             // Update updateable network elements
-            for (INetworkElement<N> element : updateableElements) {
-                if (canUpdate(element)) {
-                    if (updateableElementsTicks.get(element) <= 0) {
-                        updateableElementsTicks.put(element, element.getUpdateInterval());
-                        element.update(getMaterializedThis());
-                        postUpdate(element);
+            boolean isBeingDiagnozed = NetworkDiagnostics.getInstance()
+                .isBeingDiagnozed();
+            if (!isBeingDiagnozed && !lastSecondDurations.isEmpty()) {
+                // Make sure we aren't using any unnecessary memory.
+                lastSecondDurations.clear();
+            }
+            for (INetworkElement element : updateableElements) {
+                try {
+                    if (isValid(element)) {
+                        long startTime = 0;
+                        if (isBeingDiagnozed) {
+                            startTime = System.nanoTime();
+                        }
+                        int lastElementTick = updateableElementsTicks.getOrDefault(element, 0);
+                        if (canUpdate(element)) {
+                            if (lastElementTick <= 0) {
+                                updateableElementsTicks.put(element, element.getUpdateInterval() - 1);
+                                element.update(this);
+                                postUpdate(element);
+                            } else {
+                                updateableElementsTicks.put(element, lastElementTick - 1);
+                            }
+                        } else {
+                            onSkipUpdate(element);
+                            updateableElementsTicks.put(element, lastElementTick - 1);
+                        }
+                        if (isBeingDiagnozed) {
+                            long duration = System.nanoTime() - startTime;
+                            Long lastDuration = lastSecondDurations.get(element);
+                            if (lastDuration != null) {
+                                duration = duration + lastDuration;
+                            }
+                            lastSecondDurations.put(element, duration);
+                        }
                     }
-                } else {
-                    onSkipUpdate(element);
+                } catch (PartStateException e) {
+                    IntegratedDynamics.clog(
+                        Level.WARN,
+                        "Attempted to tick a part that was not properly unloaded. "
+                            + "Report this to the Integrated Dynamics issue tracker with details on what you did "
+                            + "leading up to this stacktrace. The part was forcefully unloaded");
+                    e.printStackTrace();
+                    element.invalidate(this);
                 }
-                updateableElementsTicks.put(element, updateableElementsTicks.get(element) - 1);
             }
         }
     }
 
     protected void onUpdate() {
-
+        for (IFullNetworkListener fullNetworkListener : this.fullNetworkListeners) {
+            fullNetworkListener.update();
+        }
     }
 
     @Override
-    public boolean removeCable(ICable cable, ICablePathElement cablePathElement) {
-        if (cablePathElement == null) {
-            return false;
+    public synchronized boolean removePathElement(IPathElement pathElement, ForgeDirection side) {
+        for (IFullNetworkListener fullNetworkListener : this.fullNetworkListeners) {
+            if (!fullNetworkListener.removePathElement(pathElement, side)) {
+                return false;
+            }
         }
-
-        if (baseCluster.remove(cablePathElement)) {
-            if (cable instanceof INetworkElementProvider) {
-                Collection<INetworkElement<N>> networkElements = ((INetworkElementProvider<N>) cable)
-                    .createNetworkElements(
-                        cablePathElement.getPosition()
-                            .getWorld(),
-                        cablePathElement.getPosition()
-                            .getBlockPos());
-
-                for (INetworkElement<N> networkElement : networkElements) {
+        if (baseCluster.remove(SidedPathElement.of(pathElement, null))) {
+            DimPos position = pathElement.getPosition();
+            INetworkElementProvider networkElementProvider = (INetworkElementProvider) CapabilityHelpers
+                .getCapability(position, NetworkElementProviderConfig.CAPABILITY, side)
+                .getOrNull();
+            if (networkElementProvider != null) {
+                Collection<INetworkElement> networkElements = networkElementProvider
+                    .createNetworkElements(position.getWorld(), position.getBlockPos());
+                for (INetworkElement networkElement : networkElements) {
                     if (!removeNetworkElementPre(networkElement)) {
                         return false;
                     }
                 }
-                for (INetworkElement<N> networkElement : networkElements) {
+                for (INetworkElement networkElement : networkElements) {
                     removeNetworkElementPost(networkElement);
                 }
+                onNetworkChanged();
                 return true;
             }
         } else {
-            IntegratedDynamics.clog(
-                Level.DEBUG,
-                "Cable element " + cablePathElement + " was already removed or not present in cluster.");
+            Thread.dumpStack();
+            IntegratedDynamics.clog(Level.WARN, "Tried to remove a path element from a network it was not present in.");
+            System.out.println("Cluster: " + baseCluster);
+            System.out.println("Tried removing element: " + pathElement);
         }
         return false;
     }
 
     @Override
     public void afterServerLoad() {
+        for (IFullNetworkListener fullNetworkListener : this.fullNetworkListeners) {
+            fullNetworkListener.afterServerLoad();
+        }
+        // All networks start from an invalidated state at server start
+        for (INetworkElement element : getElements()) {
+            invalidateElement(element);
+        }
 
     }
 
     @Override
     public void beforeServerStop() {
-
+        for (IFullNetworkListener fullNetworkListener : this.fullNetworkListeners) {
+            fullNetworkListener.beforeServerStop();
+        }
     }
 
     @Override
-    public Set<INetworkElement<N>> getElements() {
+    public Set<INetworkElement> getElements() {
         return this.elements;
     }
 
+    @Override
+    public boolean isKilled() {
+        return this.killed;
+    }
+
+    protected void onNetworkChanged() {
+        this.changed = true;
+    }
+
+    @Override
+    public boolean hasChanged() {
+        return this.changed;
+    }
+
+    @Override
+    public int getCablesCount() {
+        return baseCluster.size();
+    }
+
+    @Override
+    public long getLastSecondDuration(INetworkElement networkElement) {
+        Long duration = lastSecondDurations.get(networkElement);
+        return duration == null ? 0 : duration;
+    }
+
+    @Override
+    public void resetLastSecondDurations() {
+        lastSecondDurations.clear();
+    }
+
+    @Override
+    public boolean isCrashed() {
+        return crashed;
+    }
+
+    @Override
+    public void setCrashed(boolean crashed) {
+        this.crashed = crashed;
+    }
+
+    @Override
+    public <T> @NotNull LazyOptional<T> getCapability(@NotNull Capability<T> capability) {
+        return capabilityDispatcher == null ? LazyOptional.empty()
+            : capabilityDispatcher.getCapability(capability, null);
+    }
+
+    @Override
+    public void invalidateElement(INetworkElement element) {
+        for (IFullNetworkListener fullNetworkListener : this.fullNetworkListeners) {
+            fullNetworkListener.invalidateElement(element);
+        }
+        invalidatedElements.add(element);
+    }
+
+    @Override
+    public void revalidateElement(INetworkElement element) {
+        for (IFullNetworkListener fullNetworkListener : this.fullNetworkListeners) {
+            fullNetworkListener.revalidateElement(element);
+        }
+        invalidatedElements.remove(element);
+    }
+
+    @Override
+    public boolean containsSidedPathElement(ISidedPathElement pathElement) {
+        return baseCluster.contains(pathElement);
+    }
+
+    @Override
+    public IFullNetworkListener[] getFullNetworkListeners() {
+        return this.fullNetworkListeners;
+    }
+
+    protected boolean isValid(INetworkElement element) {
+        if (invalidatedElements.contains(element)) {
+            if (element.canRevalidate(this)) {
+                element.revalidate(this);
+                return true;
+            }
+            return false;
+        }
+        return true;
+    }
 }

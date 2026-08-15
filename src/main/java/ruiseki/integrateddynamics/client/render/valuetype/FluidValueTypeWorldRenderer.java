@@ -1,5 +1,7 @@
 package ruiseki.integrateddynamics.client.render.valuetype;
 
+import java.util.Optional;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.Tessellator;
@@ -10,8 +12,6 @@ import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.fluids.FluidStack;
 
 import org.apache.commons.lang3.tuple.Triple;
-
-import com.google.common.base.Optional;
 
 import ruiseki.integrateddynamics.api.client.render.valuetype.IValueTypeWorldRenderer;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
@@ -24,7 +24,7 @@ import ruiseki.okcore.helper.RenderHelpers;
 
 /**
  * A value type world renderer for fluids.
- * 
+ *
  * @author rubensworks
  */
 public class FluidValueTypeWorldRenderer implements IValueTypeWorldRenderer {

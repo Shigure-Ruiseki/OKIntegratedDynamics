@@ -2,15 +2,26 @@ package ruiseki.integrateddynamics.core.evaluate.operator;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
+
+import net.minecraft.nbt.JsonToNBT;
+import net.minecraft.nbt.NBTException;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
 
 import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.evaluate.operator.IOperator;
+import ruiseki.integrateddynamics.api.evaluate.operator.IOperatorSerializer;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 import ruiseki.integrateddynamics.api.evaluate.variable.IVariable;
 import ruiseki.integrateddynamics.api.logicprogrammer.IConfigRenderPattern;
+import ruiseki.integrateddynamics.core.evaluate.variable.ValueHelpers;
+import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
+import ruiseki.integrateddynamics.core.evaluate.variable.Variable;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.okcore.helper.LangHelpers;
+import ruiseki.okcore.helper.MinecraftHelpers;
 
 /**
  * An operator that is partially being applied.
@@ -20,16 +31,20 @@ import ruiseki.okcore.helper.LangHelpers;
 public class CurriedOperator implements IOperator {
 
     private final IOperator baseOperator;
-    private final IVariable appliedVariable;
+    private final IVariable[] appliedVariables;
 
-    public CurriedOperator(IOperator baseOperator, IVariable appliedVariable) {
+    public CurriedOperator(IOperator baseOperator, IVariable... appliedVariables) {
         this.baseOperator = baseOperator;
-        this.appliedVariable = appliedVariable;
+        this.appliedVariables = appliedVariables;
     }
 
     protected String getAppliedSymbol() {
-        return appliedVariable.getType()
-            .getTypeName();
+        String symbol = "";
+        for (IVariable appliedVariable : appliedVariables) {
+            symbol += appliedVariable.getType()
+                .getTypeName() + ";";
+        }
+        return symbol;
     }
 
     @Override
@@ -44,12 +59,7 @@ public class CurriedOperator implements IOperator {
 
     @Override
     public String getUniqueName() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(baseOperator.getUniqueName());
-        sb.append("[");
-        sb.append(getAppliedSymbol());
-        sb.append("]");
-        return sb.toString();
+        return "curriedOperator";
     }
 
     @Override
@@ -79,7 +89,7 @@ public class CurriedOperator implements IOperator {
     @Override
     public IValueType[] getInputTypes() {
         IValueType[] baseInputTypes = baseOperator.getInputTypes();
-        return Arrays.copyOfRange(baseInputTypes, 1, baseInputTypes.length);
+        return Arrays.copyOfRange(baseInputTypes, appliedVariables.length, baseInputTypes.length);
     }
 
     @Override
@@ -88,17 +98,24 @@ public class CurriedOperator implements IOperator {
     }
 
     protected IVariable[] deriveFullInputVariables(IVariable[] partialInput) {
-        IVariable[] fullInput = new IVariable[Math.min(baseOperator.getRequiredInputLength(), partialInput.length + 1)];
-        fullInput[0] = appliedVariable;
-        System.arraycopy(partialInput, 0, fullInput, 1, fullInput.length - 1);
+        IVariable[] fullInput = new IVariable[Math
+            .min(baseOperator.getRequiredInputLength(), partialInput.length + appliedVariables.length)];
+        for (int i = 0; i < appliedVariables.length; i++) {
+            fullInput[i] = appliedVariables[i];
+        }
+        System
+            .arraycopy(partialInput, 0, fullInput, appliedVariables.length, fullInput.length - appliedVariables.length);
         return fullInput;
     }
 
     protected IValueType[] deriveFullInputTypes(IValueType[] partialInput) {
         IValueType[] fullInput = new IValueType[Math
-            .min(baseOperator.getRequiredInputLength(), partialInput.length + 1)];
-        fullInput[0] = appliedVariable.getType();
-        System.arraycopy(partialInput, 0, fullInput, 1, fullInput.length - 1);
+            .min(baseOperator.getRequiredInputLength(), partialInput.length + appliedVariables.length)];
+        for (int i = 0; i < appliedVariables.length; i++) {
+            fullInput[i] = appliedVariables[i].getType();
+        }
+        System
+            .arraycopy(partialInput, 0, fullInput, appliedVariables.length, fullInput.length - appliedVariables.length);
         return fullInput;
     }
 
@@ -114,7 +131,7 @@ public class CurriedOperator implements IOperator {
 
     @Override
     public int getRequiredInputLength() {
-        return baseOperator.getRequiredInputLength() - 1;
+        return baseOperator.getRequiredInputLength() - appliedVariables.length;
     }
 
     @Override
@@ -125,5 +142,95 @@ public class CurriedOperator implements IOperator {
     @Override
     public IConfigRenderPattern getRenderPattern() {
         return IConfigRenderPattern.NONE;
+    }
+
+    @Override
+    public IOperator materialize() throws EvaluationException {
+        IVariable[] variables = new IVariable[appliedVariables.length];
+        for (int i = 0; i < appliedVariables.length; i++) {
+            IVariable appliedVariable = appliedVariables[i];
+            variables[i] = new Variable<>(appliedVariable.getType(), appliedVariable.getValue());
+        }
+        return new CurriedOperator(baseOperator, variables);
+    }
+
+    public IOperator getBaseOperator() {
+        return baseOperator;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof CurriedOperator)) return false;
+        CurriedOperator that = (CurriedOperator) o;
+        return Objects.equals(baseOperator, that.baseOperator)
+            && Arrays.equals(appliedVariables, that.appliedVariables);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hash(baseOperator);
+        result = 31 * result + Arrays.hashCode(appliedVariables);
+        return result;
+    }
+
+    public static class Serializer implements IOperatorSerializer<CurriedOperator> {
+
+        @Override
+        public boolean canHandle(IOperator operator) {
+            return operator instanceof CurriedOperator;
+        }
+
+        @Override
+        public String getUniqueName() {
+            return "curry";
+        }
+
+        @Override
+        public String serialize(CurriedOperator operator) {
+            NBTTagList list = new NBTTagList();
+            for (int i = 0; i < operator.appliedVariables.length; i++) {
+                IVariable appliedVariable = operator.appliedVariables[i];
+                IValue value;
+                try {
+                    value = appliedVariable.getValue();
+                } catch (EvaluationException e) {
+                    value = appliedVariable.getType()
+                        .getDefault();
+                }
+                NBTTagCompound valueTag = new NBTTagCompound();
+                IValueType valueType = value.getType();
+                valueTag.setString("valueType", valueType.getUnlocalizedName());
+                valueTag.setString("value", ValueHelpers.serializeRaw(value));
+                list.appendTag(valueTag);
+            }
+
+            NBTTagCompound tag = new NBTTagCompound();
+            tag.setTag("values", list);
+            tag.setString("baseOperator", Operators.REGISTRY.serialize(operator.baseOperator));
+            return tag.toString();
+        }
+
+        @Override
+        public CurriedOperator deserialize(String valueOperator) throws EvaluationException {
+            NBTTagCompound tag;
+            try {
+                tag = (NBTTagCompound) JsonToNBT.func_150315_a(valueOperator);
+            } catch (NBTException e) {
+                e.printStackTrace();
+                throw new EvaluationException(e.getMessage());
+            }
+            NBTTagList list = tag.getTagList("values", MinecraftHelpers.NBTTag_Types.NBTTagCompound.ordinal());
+            IVariable[] variables = new IVariable[list.tagCount()];
+            for (int i = 0; i < list.tagCount(); i++) {
+                NBTTagCompound valuetag = list.getCompoundTagAt(i);
+                IValueType valueType = ValueTypes.REGISTRY.getValueType(valuetag.getString("valueType"));
+                IValue value = ValueHelpers.deserializeRaw(valueType, valuetag.getString("value"));
+                variables[i] = new Variable(valueType, value);
+            }
+            IOperator baseOperator = Objects
+                .requireNonNull(Operators.REGISTRY.deserialize(tag.getString("baseOperator")));
+            return new CurriedOperator(baseOperator, variables);
+        }
     }
 }

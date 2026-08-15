@@ -5,6 +5,8 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
+import ruiseki.integrateddynamics.api.logicprogrammer.IValueTypeLogicProgrammerElement;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueHelpers;
 import ruiseki.okcore.helper.LangHelpers;
 
@@ -44,7 +46,7 @@ public interface IValueType<V extends IValue> {
 
     /**
      * Add tooltip lines for this aspect when hovered in a gui.
-     * 
+     *
      * @param lines              The list to add lines to.
      * @param appendOptionalInfo If shift-to-show info should be added.
      * @param value              The value to show the tooltip for.
@@ -74,7 +76,7 @@ public interface IValueType<V extends IValue> {
      * @param valueType The value type to check correspondence with.
      * @return If the given value type can be used with this value type.
      */
-    public boolean correspondsTo(IValueType valueType);
+    public boolean correspondsTo(IValueType<?> valueType);
 
     /**
      * Serialize the given value.
@@ -105,18 +107,28 @@ public interface IValueType<V extends IValue> {
      *
      * @param value The value to materialize.
      * @return The materialized value.
+     * @throws EvaluationException if materialization fails because of a variable evaluation.
      */
-    public V materialize(V value);
+    public V materialize(V value) throws EvaluationException;
 
     /**
-     * @return If a default logic programmer element has to be generated.
+     * @return A new logic programmer element for this value type.
      */
-    public boolean hasDefaultLogicProgrammerElement();
+    public IValueTypeLogicProgrammerElement createLogicProgrammerElement();
+
+    /**
+     * Attempt to cast the given value to a value of this value type.
+     * 
+     * @param value A value of unknown type.
+     * @return The casted value.
+     * @throws RuntimeException If the incorrect value type was found.
+     */
+    public V cast(IValue value) throws EvaluationException;
 
     /**
      * Use this comparator for any comparisons with value types.
      */
-    public static class ValueTypeComparator implements Comparator<IValueType> {
+    public static class ValueTypeComparator implements Comparator<IValueType<?>> {
 
         private static ValueTypeComparator INSTANCE = null;
 
@@ -130,7 +142,7 @@ public interface IValueType<V extends IValue> {
         }
 
         @Override
-        public int compare(IValueType o1, IValueType o2) {
+        public int compare(IValueType<?> o1, IValueType<?> o2) {
             return o1.getUnlocalizedName()
                 .compareTo(o2.getUnlocalizedName());
         }

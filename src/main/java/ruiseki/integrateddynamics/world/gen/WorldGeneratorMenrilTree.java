@@ -3,14 +3,15 @@ package ruiseki.integrateddynamics.world.gen;
 import java.util.Random;
 
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockLeaves;
-import net.minecraft.block.BlockLog;
 import net.minecraft.block.BlockSapling;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
+import ruiseki.integrateddynamics.Configs;
 import ruiseki.integrateddynamics.block.BlockMenrilLeavesConfig;
 import ruiseki.integrateddynamics.block.BlockMenrilLogConfig;
+import ruiseki.integrateddynamics.block.BlockMenrilLogFilled;
+import ruiseki.integrateddynamics.block.BlockMenrilLogFilledConfig;
 import ruiseki.integrateddynamics.block.BlockMenrilSaplingConfig;
 import ruiseki.okcore.world.gen.WorldGeneratorTree;
 
@@ -39,13 +40,13 @@ public class WorldGeneratorMenrilTree extends WorldGeneratorTree {
     }
 
     @Override
-    public BlockLeaves getLeaves() {
-        return (BlockLeaves) BlockMenrilLeavesConfig._instance.getBlockInstance();
+    public Block getLeaves() {
+        return BlockMenrilLeavesConfig._instance.getBlockInstance();
     }
 
     @Override
-    public BlockLog getLogs() {
-        return (BlockLog) BlockMenrilLogConfig._instance.getBlockInstance();
+    public Block getLogs() {
+        return BlockMenrilLogConfig._instance.getBlockInstance();
     }
 
     @Override
@@ -125,22 +126,21 @@ public class WorldGeneratorMenrilTree extends WorldGeneratorTree {
 
                 // ===== GENERATE TRUNK =====
                 for (yOffset = 0; yOffset < treeHeight; ++yOffset) {
-                    setLog(world, x, y + yOffset, z, false);
+                    setLog(world, rand, x, y + yOffset, z, false);
 
                     if (yOffset >= 1 + treeHeight - 5 && yOffset <= 1 + treeHeight - 1) {
-
-                        setLog(world, x - 1, y + yOffset, z, false);
-                        setLog(world, x + 1, y + yOffset, z, false);
-                        setLog(world, x, y + yOffset, z - 1, false);
-                        setLog(world, x, y + yOffset, z + 1, false);
+                        setLog(world, rand, x - 1, y + yOffset, z, false);
+                        setLog(world, rand, x + 1, y + yOffset, z, false);
+                        setLog(world, rand, x, y + yOffset, z - 1, false);
+                        setLog(world, rand, x, y + yOffset, z + 1, false);
                     }
                 }
 
                 // ===== STUMP =====
-                setLog(world, x - 1, y, z, true);
-                setLog(world, x + 1, y, z, true);
-                setLog(world, x, y, z - 1, true);
-                setLog(world, x, y, z + 1, true);
+                setLog(world, rand, x - 1, y, z, true);
+                setLog(world, rand, x + 1, y, z, true);
+                setLog(world, rand, x, y, z - 1, true);
+                setLog(world, rand, x, y, z + 1, true);
 
                 return true;
             }
@@ -148,11 +148,15 @@ public class WorldGeneratorMenrilTree extends WorldGeneratorTree {
         return false;
     }
 
-    private void setLog(World world, int x, int y, int z, boolean stump) {
+    private void setLog(World world, Random rand, int x, int y, int z, boolean isStump) {
         Block block = world.getBlock(x, y, z);
 
         if (world.isAirBlock(x, y, z) || block.isLeaves(world, x, y, z) || block.isReplaceable(world, x, y, z)) {
-            setBlockAndNotifyAdequately(world, x, y, z, getLogs(), 0);
+            boolean filled = Configs.isEnabled(BlockMenrilLogFilledConfig.class)
+                && BlockMenrilLogFilledConfig.filledMenrilLogChance > 0
+                && rand.nextInt(BlockMenrilLogFilledConfig.filledMenrilLogChance) == 0;
+            Block log = filled ? BlockMenrilLogFilled.getInstance() : getLogs();
+            setBlockAndNotifyAdequately(world, x, y, z, log, 0);
         }
     }
 }

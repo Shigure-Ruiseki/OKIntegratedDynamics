@@ -5,7 +5,7 @@ import ruiseki.okcore.config.extendedconfig.BlockContainerConfig;
 
 /**
  * Config for {@link BlockVariablestore}.
- * 
+ *
  * @author rubensworks
  */
 public class BlockVariablestoreConfig extends BlockContainerConfig {

@@ -2,6 +2,7 @@ package ruiseki.integrateddynamics.core.inventory.container;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -27,12 +28,13 @@ import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.api.part.aspect.IAspect;
 import ruiseki.integrateddynamics.core.client.gui.ExtendedGuiHandler;
+import ruiseki.integrateddynamics.core.client.gui.container.GuiMultipartAspects;
+import ruiseki.integrateddynamics.core.helper.PartHelpers;
 import ruiseki.integrateddynamics.core.item.AspectVariableFacade;
 import ruiseki.integrateddynamics.core.part.PartTypeConfigurable;
 import ruiseki.integrateddynamics.part.aspect.Aspects;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.helper.LangHelpers;
-import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.inventory.IGuiContainerProvider;
 import ruiseki.okcore.inventory.SimpleInventory;
 import ruiseki.okcore.inventory.container.InventoryContainer;
@@ -82,7 +84,7 @@ public abstract class ContainerMultipartAspects<P extends IPartType<P, S> & IGui
                 // But we have a small amount of aspects, so this shouldn't be a problem.
                 return pattern.matcher(
                     LangHelpers.localize(item.getUnlocalizedName())
-                        .toLowerCase())
+                        .toLowerCase(Locale.ENGLISH))
                     .matches();
             }
         });
@@ -103,24 +105,22 @@ public abstract class ContainerMultipartAspects<P extends IPartType<P, S> & IGui
 
         this.inputSlots = constructInputSlotsInventory();
         this.player = player;
-        putButtonAction(BUTTON_SETTINGS, new IButtonActionServer<InventoryContainer>() {
+        putButtonAction(GuiMultipartAspects.BUTTON_SETTINGS, new IButtonActionServer<InventoryContainer>() {
 
             @Override
             public void onAction(int buttonId, InventoryContainer container) {
-                IGuiContainerProvider gui = ((PartTypeConfigurable) getPartType()).getSettingsGuiProvider();
-                ForgeDirection side = getTarget().getCenter()
-                    .getSide();
-                side = (side != null) ? side : ForgeDirection.UNKNOWN;
-
-                IntegratedDynamics._instance.getGuiHandler()
-                    .setTemporaryData(ExtendedGuiHandler.PART, side);
-
-                if (!MinecraftHelpers.isClientSide()) {
+                if (!world.isRemote) {
+                    IGuiContainerProvider gui = ((PartTypeConfigurable) getPartType()).getSettingsGuiProvider();
+                    IntegratedDynamics._instance.getGuiHandler()
+                        .setTemporaryData(
+                            ExtendedGuiHandler.PART,
+                            getTarget().getCenter()
+                                .getSide());
                     BlockPos cPos = getTarget().getCenter()
                         .getPos()
                         .getBlockPos();
                     ContainerMultipartAspects.this.player
-                        .openGui(gui.getMod(), gui.getGuiID(), world, cPos.getX(), cPos.getY(), cPos.getZ());
+                        .openGui(gui.getModGui(), gui.getGuiID(), world, cPos.getX(), cPos.getY(), cPos.getZ());
                 }
             }
         });
@@ -140,12 +140,12 @@ public abstract class ContainerMultipartAspects<P extends IPartType<P, S> & IGui
                         IntegratedDynamics._instance.getGuiHandler()
                             .setTemporaryData(ExtendedGuiHandler.ASPECT, Pair.of(side, aspect));
 
-                        if (!MinecraftHelpers.isClientSide()) {
+                        if (!world.isRemote) {
                             BlockPos cPos = getTarget().getCenter()
                                 .getPos()
                                 .getBlockPos();
                             ContainerMultipartAspects.this.player
-                                .openGui(gui.getMod(), gui.getGuiID(), world, cPos.getX(), cPos.getY(), cPos.getZ());
+                                .openGui(gui.getModGui(), gui.getGuiID(), world, cPos.getX(), cPos.getY(), cPos.getZ());
                         }
                     }
                 });
@@ -215,7 +215,7 @@ public abstract class ContainerMultipartAspects<P extends IPartType<P, S> & IGui
 
     @Override
     public boolean canInteractWith(EntityPlayer player) {
-        return true;
+        return PartHelpers.canInteractWith(getTarget(), player, this.partContainer);
     }
 
     public ItemStack writeAspectInfo(boolean generateId, ItemStack itemStack, final IAspect aspect) {
@@ -236,7 +236,9 @@ public abstract class ContainerMultipartAspects<P extends IPartType<P, S> & IGui
                 public IAspectVariableFacade create(int id) {
                     return new AspectVariableFacade(id, getPartState().getId(), aspect);
                 }
-            });
+            },
+            null,
+            null);
     }
 
 }

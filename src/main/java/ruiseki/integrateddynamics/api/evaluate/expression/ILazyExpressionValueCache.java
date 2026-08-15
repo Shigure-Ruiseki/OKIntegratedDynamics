@@ -5,7 +5,7 @@ import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 /**
  * Cache object that is responsible for storing values of this expression.
  * This cache object is responsible for determining when the values need to be ejected from the cache.
- * 
+ *
  * @author rubensworks
  */
 public interface ILazyExpressionValueCache {
@@ -16,4 +16,5 @@ public interface ILazyExpressionValueCache {
 
     public IValue getValue(int id);
 
+    public void removeValue(int id);
 }

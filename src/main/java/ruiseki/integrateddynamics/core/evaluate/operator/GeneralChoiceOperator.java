@@ -8,14 +8,13 @@ import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 import ruiseki.integrateddynamics.api.evaluate.variable.IVariable;
 import ruiseki.integrateddynamics.api.logicprogrammer.IConfigRenderPattern;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueHelpers;
-import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeBoolean;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.okcore.helper.LangHelpers;
 
 /**
  * A general choice operator.
- * 
+ *
  * @author rubensworks
  */
 public class GeneralChoiceOperator extends GeneralOperator {
@@ -30,7 +29,8 @@ public class GeneralChoiceOperator extends GeneralOperator {
 
                 @Override
                 public IValue evaluate(SafeVariablesGetter variables) throws EvaluationException {
-                    boolean a = ((ValueTypeBoolean.ValueBoolean) variables.getValue(0)).getRawValue();
+                    boolean a = variables.getValue(0, ValueTypes.BOOLEAN)
+                        .getRawValue();
                     return a ? variables.getValue(1) : variables.getValue(2);
                 }
             },
@@ -62,7 +62,7 @@ public class GeneralChoiceOperator extends GeneralOperator {
                     this.getOperatorName(),
                     Integer.toString(i));
             }
-            if (i == 0 && getInputTypes()[i] != inputType) {
+            if (i == 0 && !ValueHelpers.correspondsTo(getInputTypes()[i], inputType)) {
                 return new LangHelpers.UnlocalizedString(
                     L10NValues.OPERATOR_ERROR_WRONGTYPE,
                     this.getOperatorName(),

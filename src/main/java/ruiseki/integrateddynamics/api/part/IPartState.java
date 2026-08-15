@@ -1,7 +1,13 @@
 package ruiseki.integrateddynamics.api.part;
 
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraftforge.common.util.ForgeDirection;
 
+import org.jetbrains.annotations.Nullable;
+
+import ruiseki.integrateddynamics.api.network.INetwork;
+import ruiseki.integrateddynamics.api.network.INetworkElement;
+import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.part.aspect.IAspect;
 import ruiseki.integrateddynamics.api.part.aspect.property.IAspectProperties;
 import ruiseki.okcore.capabilities.Capability;
@@ -19,14 +25,6 @@ import ruiseki.okcore.datastructure.LazyOptional;
 public interface IPartState<P extends IPartType> {
 
     public static final String GLOBALCOUNTER_KEY = "part";
-
-    /**
-     * Get the part state class.
-     * This is used for doing dynamic construction of guis.
-     *
-     * @return The actual class for this part state.
-     */
-    public Class<? extends IPartState> getPartStateClass();
 
     /**
      * Write a state to NBT.
@@ -67,6 +65,50 @@ public interface IPartState<P extends IPartType> {
     public int getUpdateInterval();
 
     /**
+     * Set the priority of this part in the network.
+     *
+     * @deprecated Should only be called from
+     *             {@link ruiseki.integrateddynamics.api.network.INetwork#setPriorityAndChannel(INetworkElement, int, int)}!
+     * @param priority The new priority
+     */
+    @Deprecated
+    public void setPriority(int priority);
+
+    /**
+     * @return The priority of this part in the network.
+     */
+    public int getPriority();
+
+    /**
+     * Set the channel for this state.
+     *
+     * @deprecated Should only be called from
+     *             {@link ruiseki.integrateddynamics.api.network.INetwork#setPriorityAndChannel(INetworkElement, int, int)}}!
+     * @param channel The new channel
+     */
+    @Deprecated
+    public void setChannel(int channel);
+
+    /**
+     * @return This part's channel.
+     */
+    public int getChannel();
+
+    /**
+     * Indicate that the given part should interact with the given side of the target.
+     *
+     * @param side The side of the target block to interact with.
+     *             Null removes the side override.
+     */
+    public void setTargetSideOverride(@Nullable ForgeDirection side);
+
+    /**
+     * @return The side of the target block to interact with. Can be null.
+     */
+    @Nullable
+    public ForgeDirection getTargetSideOverride();
+
+    /**
      * Check if dirty and reset the dirty state.
      *
      * @return If this state has changed since the last time and needs to be persisted to NBT eventually.
@@ -79,6 +121,27 @@ public interface IPartState<P extends IPartType> {
      * @return If this state has changed since the last time and needs to be updated to the client.
      */
     public boolean isUpdateAndReset();
+
+    /**
+     * Set a flag indicating that the next time that
+     * {@link IPartType#shouldTriggerBlockRenderUpdate(IPartState, IPartState)}
+     * is queried, it should return true.
+     *
+     * This is useful in cases where the player makes changes inside a part,
+     * the state difference checking can not be relied upon,
+     * and a state update should be forced in any case.
+     *
+     * This should only be called client-side.
+     */
+    public void forceBlockRenderUpdate();
+
+    /**
+     * @return If a block render update is forced.
+     *         This flagged will be set to false after this method is called.
+     *
+     *         This should only be called client-side.
+     */
+    public boolean isForceBlockRenderUpdateAndReset();
 
     /**
      * Get the properties for the given aspect.
@@ -121,11 +184,15 @@ public interface IPartState<P extends IPartType> {
     /**
      * Get the given capability.
      *
-     * @param capability The capability to get.
-     * @param <T>        The capability type.
-     * @return The capability instance.
+     * @param capability  The capability to get.
+     * @param <T>         The capability type.
+     * @param network     The network the part belongs to.
+     * @param partNetwork The part network the part belongs to.
+     * @param target      The target.
+     * @return If this has the given capability.
      */
-    <T> LazyOptional<T> getCapability(Capability<T> capability);
+    <T> LazyOptional<T> getCapability(Capability<T> capability, INetwork network, IPartNetwork partNetwork,
+        PartTarget target);
 
     /**
      * Add a capability to this state that will not be automatically persisted to NBT.

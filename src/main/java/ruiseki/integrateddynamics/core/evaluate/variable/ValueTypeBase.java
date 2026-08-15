@@ -4,12 +4,16 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import net.minecraft.util.ResourceLocation;
+
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.integrateddynamics.Reference;
+import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
+import ruiseki.integrateddynamics.core.logicprogrammer.ValueTypeLPElementBase;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
 
@@ -23,13 +27,15 @@ public abstract class ValueTypeBase<V extends IValue> implements IValueType<V> {
     private final String typeName;
     private final int color;
     private final String colorFormat;
+    private final Class<V> valueClass;
 
     private String unlocalizedName = null;
 
-    public ValueTypeBase(String typeName, int color, String colorFormat) {
+    public ValueTypeBase(String typeName, int color, String colorFormat, @Nullable Class<V> valueClass) {
         this.typeName = typeName;
         this.color = color;
         this.colorFormat = colorFormat;
+        this.valueClass = valueClass;
         if (MinecraftHelpers.isModdedEnvironment() && MinecraftHelpers.isClientSide()) {
             registerModelResourceLocation();
         }
@@ -74,15 +80,16 @@ public abstract class ValueTypeBase<V extends IValue> implements IValueType<V> {
     }
 
     @Override
-    public boolean correspondsTo(IValueType valueType) {
+    public boolean correspondsTo(IValueType<?> valueType) {
         return this == valueType;
     }
 
     @SideOnly(Side.CLIENT)
     protected void registerModelResourceLocation() {
-        ValueTypes.REGISTRY.registerValueTypeIconPath(
+        ValueTypes.REGISTRY.registerValueTypeModel(
             this,
-            getModId() + ":valuetypes" + getTypeNamespace().replace('.', '/') + getTypeName().replace('.', '/'));
+            new ResourceLocation(
+                getModId() + ":valuetype" + getTypeNamespace().replace('.', '/') + getTypeName().replace('.', '/')));
     }
 
     @Override
@@ -105,7 +112,7 @@ public abstract class ValueTypeBase<V extends IValue> implements IValueType<V> {
     }
 
     @Override
-    public V materialize(V value) {
+    public V materialize(V value) throws EvaluationException {
         return value;
     }
 
@@ -115,12 +122,28 @@ public abstract class ValueTypeBase<V extends IValue> implements IValueType<V> {
     }
 
     @Override
-    public boolean hasDefaultLogicProgrammerElement() {
-        return !isObject();
+    public ValueTypeLPElementBase createLogicProgrammerElement() {
+        return null;
     }
 
     protected String getModId() {
         return Reference.MOD_ID;
     }
 
+    @Override
+    public V cast(IValue value) throws EvaluationException {
+        try {
+            return this.valueClass.cast(value);
+        } catch (ClassCastException e) {
+            throw new EvaluationException(
+                String.format(
+                    "Attempted to cast %s to %s, for value \"%s\"",
+                    LangHelpers.localize(
+                        value.getType()
+                            .getUnlocalizedName()),
+                    LangHelpers.localize(this.getUnlocalizedName()),
+                    value.getType()
+                        .toCompactString(value)));
+        }
+    }
 }

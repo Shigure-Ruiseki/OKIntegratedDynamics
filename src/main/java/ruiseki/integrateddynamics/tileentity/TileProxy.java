@@ -1,20 +1,30 @@
 package ruiseki.integrateddynamics.tileentity;
 
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
+import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import com.google.common.collect.Sets;
 
 import lombok.Getter;
+import lombok.Setter;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.item.IProxyVariableFacade;
-import ruiseki.integrateddynamics.api.item.IVariableFacade;
 import ruiseki.integrateddynamics.api.item.IVariableFacadeHandlerRegistry;
+import ruiseki.integrateddynamics.api.network.INetworkElement;
+import ruiseki.integrateddynamics.capability.networkelementprovider.NetworkElementProviderConfig;
+import ruiseki.integrateddynamics.capability.networkelementprovider.NetworkElementProviderSingleton;
+import ruiseki.integrateddynamics.core.evaluate.InventoryVariableEvaluator;
 import ruiseki.integrateddynamics.core.evaluate.ProxyVariableFacadeHandler;
+import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.integrateddynamics.core.item.ProxyVariableFacade;
 import ruiseki.integrateddynamics.core.tileentity.TileActiveVariableBase;
 import ruiseki.integrateddynamics.network.ProxyNetworkElement;
+import ruiseki.okcore.capabilities.resolver.BasicCapabilityResolver;
+import ruiseki.okcore.datastructure.BlockPos;
+import ruiseki.okcore.datastructure.DimPos;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.persist.nbt.NBTPersist;
@@ -36,14 +46,50 @@ public class TileProxy extends TileActiveVariableBase<ProxyNetworkElement> {
     @Getter
     private int proxyId = -1;
 
+    @Setter
+    private EntityPlayer lastPlayer = null;
+
     public TileProxy() {
-        super(3, "proxy");
+        this(3);
 
         addSlotsToSide(ForgeDirection.UP, Sets.newHashSet(SLOT_READ));
         addSlotsToSide(ForgeDirection.DOWN, Sets.newHashSet(SLOT_READ));
         addSlotsToSide(ForgeDirection.SOUTH, Sets.newHashSet(SLOT_READ));
         addSlotsToSide(ForgeDirection.WEST, Sets.newHashSet(SLOT_WRITE_OUT));
         addSlotsToSide(ForgeDirection.EAST, Sets.newHashSet(SLOT_WRITE_IN));
+    }
+
+    public TileProxy(int inventorySize) {
+        super(inventorySize, "proxy");
+        this.capabilityCache.addCapabilityResolver(
+            BasicCapabilityResolver
+                .create(NetworkElementProviderConfig.CAPABILITY, () -> new NetworkElementProviderSingleton() {
+
+                    @Override
+                    public INetworkElement createNetworkElement(World world, BlockPos blockPos) {
+                        return new ProxyNetworkElement(DimPos.of(world, blockPos));
+                    }
+                }));
+    }
+
+    @Override
+    protected InventoryVariableEvaluator createEvaluator() {
+        return new InventoryVariableEvaluator(this, getSlotRead(), ValueTypes.CATEGORY_ANY) {
+
+            @Override
+            protected void preValidate() {
+                super.preValidate();
+                // Hard check to make sure the variable is not directly referring to this proxy.
+                if (getVariableFacade() instanceof IProxyVariableFacade) {
+                    if (((IProxyVariableFacade) getVariableFacade()).getProxyId() == getProxyId()) {
+                        addError(
+                            new LangHelpers.UnlocalizedString(
+                                L10NValues.VARIABLE_ERROR_RECURSION,
+                                getVariableFacade().getId()));
+                    }
+                }
+            }
+        };
     }
 
     @Override
@@ -73,17 +119,25 @@ public class TileProxy extends TileActiveVariableBase<ProxyNetworkElement> {
         return SLOT_READ;
     }
 
+    protected int getSlotWriteIn() {
+        return SLOT_WRITE_IN;
+    }
+
+    protected int getSlotWriteOut() {
+        return SLOT_WRITE_OUT;
+    }
+
     @Override
     public void onDirty() {
         super.onDirty();
         if (!worldObj.isRemote) {
-            if (getStackInSlot(SLOT_WRITE_IN) != null && getStackInSlot(SLOT_WRITE_OUT) == null) {
+            if (getStackInSlot(getSlotWriteIn()) != null && getStackInSlot(getSlotWriteOut()) == null) {
                 // Write proxy reference
                 ItemStack outputStack = writeProxyInfo(
                     !getWorldObj().isRemote,
-                    getStackInSlotOnClosing(SLOT_WRITE_IN),
+                    getStackInSlotOnClosing(getSlotWriteIn()),
                     proxyId);
-                setInventorySlotContents(SLOT_WRITE_OUT, outputStack);
+                setInventorySlotContents(getSlotWriteOut(), outputStack);
             }
         }
     }
@@ -106,18 +160,8 @@ public class TileProxy extends TileActiveVariableBase<ProxyNetworkElement> {
                 public IProxyVariableFacade create(int id) {
                     return new ProxyVariableFacade(id, proxyId);
                 }
-            });
-    }
-
-    @Override
-    protected void preValidate(IVariableFacade variableStored) {
-        super.preValidate(variableStored);
-        // Hard check to make sure the variable is not directly referring to this proxy.
-        if (variableStored instanceof IProxyVariableFacade) {
-            if (((IProxyVariableFacade) variableStored).getProxyId() == getProxyId()) {
-                addError(
-                    new LangHelpers.UnlocalizedString(L10NValues.VARIABLE_ERROR_RECURSION, variableStored.getId()));
-            }
-        }
+            },
+            lastPlayer,
+            getBlock());
     }
 }

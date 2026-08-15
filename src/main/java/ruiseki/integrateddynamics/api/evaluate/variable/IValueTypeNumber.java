@@ -1,13 +1,15 @@
 package ruiseki.integrateddynamics.api.evaluate.variable;
 
+import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeInteger;
+
 /**
  * A numerical value type.
  * To allow for a good functioning, this requires all types to have mappings to each other in the
  * {@link IValueCastRegistry}.
- * 
+ *
  * @author rubensworks
  */
-public interface IValueTypeNumber<V extends IValue> extends IValueType<V> {
+public interface IValueTypeNumber<V extends IValue> extends IValueType<V>, IValueTypeNamed<V> {
 
     public boolean isZero(V a);
 
@@ -25,4 +27,13 @@ public interface IValueTypeNumber<V extends IValue> extends IValueType<V> {
 
     public V min(V a, V b);
 
+    public boolean greaterThan(V a, V b);
+
+    public boolean lessThan(V a, V b);
+
+    public ValueTypeInteger.ValueInteger round(V a);
+
+    public ValueTypeInteger.ValueInteger ceil(V a);
+
+    public ValueTypeInteger.ValueInteger floor(V a);
 }

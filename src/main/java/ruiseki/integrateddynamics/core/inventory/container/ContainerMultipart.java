@@ -16,9 +16,10 @@ import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.api.part.aspect.IAspect;
 import ruiseki.integrateddynamics.core.client.gui.ExtendedGuiHandler;
+import ruiseki.integrateddynamics.core.client.gui.container.GuiMultipart;
+import ruiseki.integrateddynamics.core.helper.PartHelpers;
 import ruiseki.integrateddynamics.core.part.PartTypeConfigurable;
 import ruiseki.okcore.datastructure.BlockPos;
-import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.inventory.IGuiContainerProvider;
 import ruiseki.okcore.inventory.container.ExtendedInventoryContainer;
 import ruiseki.okcore.inventory.container.InventoryContainer;
@@ -74,22 +75,22 @@ public abstract class ContainerMultipart<P extends IPartType<P, S> & IGuiContain
 
         this.player = player;
 
-        putButtonAction(BUTTON_SETTINGS, new IButtonActionServer<InventoryContainer>() {
+        putButtonAction(GuiMultipart.BUTTON_SETTINGS, new IButtonActionServer<InventoryContainer>() {
 
             @Override
             public void onAction(int buttonId, InventoryContainer container) {
-                IGuiContainerProvider gui = ((PartTypeConfigurable<?, ?>) getPartType()).getSettingsGuiProvider();
-                IntegratedDynamics._instance.getGuiHandler()
-                    .setTemporaryData(
-                        ExtendedGuiHandler.PART,
-                        getTarget().getCenter()
-                            .getSide()); // Pass the side as extra data to the gui
-                if (!MinecraftHelpers.isClientSide()) {
+                if (!world.isRemote) {
+                    IGuiContainerProvider gui = ((PartTypeConfigurable<?, ?>) getPartType()).getSettingsGuiProvider();
+                    IntegratedDynamics._instance.getGuiHandler()
+                        .setTemporaryData(
+                            ExtendedGuiHandler.PART,
+                            getTarget().getCenter()
+                                .getSide()); // Pass the side as extra data to the gui
                     BlockPos cPos = getTarget().getCenter()
                         .getPos()
                         .getBlockPos();
                     ContainerMultipart.this.player
-                        .openGui(gui.getMod(), gui.getGuiID(), world, cPos.getX(), cPos.getY(), cPos.getZ());
+                        .openGui(gui.getModGui(), gui.getGuiID(), world, cPos.getX(), cPos.getY(), cPos.getZ());
                 }
             }
         });
@@ -102,4 +103,8 @@ public abstract class ContainerMultipart<P extends IPartType<P, S> & IGuiContain
                 .getSide());
     }
 
+    @Override
+    public boolean canInteractWith(EntityPlayer playerIn) {
+        return PartHelpers.canInteractWith(getTarget(), player, this.partContainer);
+    }
 }

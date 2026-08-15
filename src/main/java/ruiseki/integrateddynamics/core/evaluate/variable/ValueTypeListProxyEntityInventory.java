@@ -3,7 +3,6 @@ package ruiseki.integrateddynamics.core.evaluate.variable;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 
 import ruiseki.okcore.persist.nbt.INBTProvider;
@@ -15,12 +14,12 @@ public class ValueTypeListProxyEntityInventory
     extends ValueTypeListProxyEntityBase<ValueObjectTypeItemStack, ValueObjectTypeItemStack.ValueItemStack>
     implements INBTProvider {
 
-    public ValueTypeListProxyEntityInventory() {
-        this(null, null);
-    }
-
     public ValueTypeListProxyEntityInventory(World world, Entity entity) {
         super(ValueTypeListProxyFactories.ENTITY_INVENTORY.getName(), ValueTypes.OBJECT_ITEMSTACK, world, entity);
+    }
+
+    public ValueTypeListProxyEntityInventory() {
+        this(null, null);
     }
 
     protected ItemStack[] getInventory() {
@@ -39,15 +38,5 @@ public class ValueTypeListProxyEntityInventory
     @Override
     public ValueObjectTypeItemStack.ValueItemStack get(int index) {
         return ValueObjectTypeItemStack.ValueItemStack.of(getInventory()[index]);
-    }
-
-    @Override
-    public void writeGeneratedFieldsToNBT(NBTTagCompound tag) {
-
-    }
-
-    @Override
-    public void readGeneratedFieldsFromNBT(NBTTagCompound tag) {
-
     }
 }

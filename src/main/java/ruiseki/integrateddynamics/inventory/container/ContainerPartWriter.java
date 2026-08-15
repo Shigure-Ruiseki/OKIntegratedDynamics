@@ -4,15 +4,19 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.Slot;
 
-import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
-import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
+import org.apache.commons.lang3.tuple.Pair;
+
+import ruiseki.integrateddynamics.api.PartStateException;
 import ruiseki.integrateddynamics.api.evaluate.variable.IVariable;
+import ruiseki.integrateddynamics.api.network.INetwork;
+import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.api.part.aspect.IAspectWrite;
 import ruiseki.integrateddynamics.api.part.write.IPartStateWriter;
 import ruiseki.integrateddynamics.api.part.write.IPartTypeWriter;
-import ruiseki.integrateddynamics.api.tileentity.ITileCableNetwork;
+import ruiseki.integrateddynamics.core.evaluate.variable.ValueHelpers;
+import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
 import ruiseki.integrateddynamics.core.inventory.container.ContainerMultipartAspects;
 import ruiseki.integrateddynamics.core.inventory.container.slot.SlotVariable;
 import ruiseki.okcore.helper.Helpers;
@@ -23,7 +27,7 @@ import ruiseki.okcore.inventory.SimpleInventory;
 
 /**
  * Container for writer parts.
- * 
+ *
  * @author rubensworks
  */
 public class ContainerPartWriter<P extends IPartTypeWriter<P, S> & IGuiContainerProvider, S extends IPartStateWriter<P>>
@@ -38,7 +42,7 @@ public class ContainerPartWriter<P extends IPartTypeWriter<P, S> & IGuiContainer
 
     /**
      * Make a new instance.
-     * 
+     *
      * @param partTarget    The target.
      * @param player        The player.
      * @param partContainer The part container.
@@ -84,34 +88,40 @@ public class ContainerPartWriter<P extends IPartTypeWriter<P, S> & IGuiContainer
     @Override
     public void onDirty() {
         if (!MinecraftHelpers.isClientSide()) {
-            getPartType().updateActivation(getTarget(), getPartState());
+            getPartType().updateActivation(getTarget(), getPartState(), getPlayer());
         }
     }
 
     @Override
     public void detectAndSendChanges() {
         super.detectAndSendChanges();
-        if (!MinecraftHelpers.isClientSide()) {
-            String writeValue = "";
-            int writeValueColor = 0;
-            if (getPartContainer() instanceof ITileCableNetwork && getPartState().hasVariable()) {
-                IVariable variable = getPartState().getVariable(((ITileCableNetwork) getPartContainer()).getNetwork());
-                if (variable != null) {
-                    try {
-                        IValue value = variable.getValue();
-                        writeValue = value.getType()
-                            .toCompactString(value);
-                        writeValueColor = variable.getType()
-                            .getDisplayColor();
-                    } catch (EvaluationException e) {
-                        writeValue = "ERROR";
-                        writeValueColor = Helpers.RGBToInt(255, 0, 0);
+        try {
+            if (!MinecraftHelpers.isClientSide()) {
+                Pair<String, Integer> readValue;
+                if (!getPartState().isEnabled()) {
+                    readValue = Pair.of("NO POWER", 0);
+                } else if (getPartState().hasVariable()) {
+                    INetwork network = NetworkHelpers.getNetwork(
+                        getPartContainer().getPosition()
+                            .getWorld(),
+                        getPartContainer().getPosition()
+                            .getBlockPos(),
+                        getTarget().getCenter()
+                            .getSide());
+                    IPartNetwork partNetwork = NetworkHelpers.getPartNetwork(network);
+                    if (partNetwork != null) {
+                        IVariable variable = getPartState().getVariable(network, partNetwork);
+                        readValue = ValueHelpers.getSafeReadableValue(variable);
+                    } else {
+                        readValue = Pair.of("NETWORK CORRUPTED!", Helpers.RGBToInt(255, 100, 0));
                     }
+                } else {
+                    readValue = Pair.of("", 0);
                 }
-            } else {
-                writeValue = "";
+                setWriteValue(readValue.getLeft(), readValue.getRight());
             }
-            setWriteValue(writeValue, writeValueColor);
+        } catch (PartStateException e) {
+            getPlayer().closeScreen();
         }
     }
 

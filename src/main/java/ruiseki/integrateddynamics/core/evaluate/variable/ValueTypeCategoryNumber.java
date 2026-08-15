@@ -12,16 +12,17 @@ import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueCastRegistry;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
+import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeNamed;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeNumber;
 import ruiseki.integrateddynamics.api.evaluate.variable.IVariable;
 import ruiseki.okcore.helper.Helpers;
 
 /**
  * Value type category with values that are numbers.
- * 
+ *
  * @author rubensworks
  */
-public class ValueTypeCategoryNumber extends ValueTypeCategoryBase<IValue> {
+public class ValueTypeCategoryNumber extends ValueTypeCategoryBase<IValue> implements IValueTypeNamed<IValue> {
 
     private static final IValueTypeNumber[] ELEMENTS = new IValueTypeNumber[] { ValueTypes.INTEGER, ValueTypes.DOUBLE,
         ValueTypes.LONG };
@@ -33,7 +34,8 @@ public class ValueTypeCategoryNumber extends ValueTypeCategoryBase<IValue> {
             "number",
             Helpers.RGBToInt(243, 245, 4),
             EnumChatFormatting.GOLD.toString(),
-            Sets.<IValueType<?>>newHashSet(ELEMENTS));
+            Sets.<IValueType<?>>newHashSet(ELEMENTS),
+            IValue.class);
     }
 
     private static Map<IValueTypeNumber, Integer> constructInvertedArray(IValueTypeNumber[] elements) {
@@ -69,8 +71,16 @@ public class ValueTypeCategoryNumber extends ValueTypeCategoryBase<IValue> {
         }
     }
 
-    protected IValueTypeNumber getType(IVariable v) {
-        return ((IValueTypeNumber) v.getType());
+    protected IValueTypeNumber getType(IVariable v) throws EvaluationException {
+        IValueType valueType = v.getType();
+        // Special case if the type is ANY.
+        if (!(valueType instanceof IValueTypeNumber)) {
+            // Don't evaluate the var if not needed,
+            // as this may be expensive.
+            valueType = v.getValue()
+                .getType();
+        }
+        return ((IValueTypeNumber) valueType);
     }
 
     public IValue add(IVariable a, IVariable b) throws EvaluationException {
@@ -139,4 +149,33 @@ public class ValueTypeCategoryNumber extends ValueTypeCategoryBase<IValue> {
         return type.min(castValue(type, a.getValue()), castValue(type, b.getValue()));
     }
 
+    public boolean greaterThan(IVariable a, IVariable b) throws EvaluationException {
+        IValueTypeNumber type = getLowestType(getType(a), getType(b));
+        return type.greaterThan(castValue(type, a.getValue()), castValue(type, b.getValue()));
+    }
+
+    public boolean lessThan(IVariable a, IVariable b) throws EvaluationException {
+        IValueTypeNumber type = getLowestType(getType(a), getType(b));
+        return type.lessThan(castValue(type, a.getValue()), castValue(type, b.getValue()));
+    }
+
+    public ValueTypeInteger.ValueInteger round(IVariable a) throws EvaluationException {
+        IValueTypeNumber type = getType(a);
+        return type.round(castValue(type, a.getValue()));
+    }
+
+    public ValueTypeInteger.ValueInteger ceil(IVariable a) throws EvaluationException {
+        IValueTypeNumber type = getType(a);
+        return type.ceil(castValue(type, a.getValue()));
+    }
+
+    public ValueTypeInteger.ValueInteger floor(IVariable a) throws EvaluationException {
+        IValueTypeNumber type = getType(a);
+        return type.floor(castValue(type, a.getValue()));
+    }
+
+    @Override
+    public String getName(IValue a) {
+        return ((IValueTypeNamed) a.getType()).getName(a);
+    }
 }

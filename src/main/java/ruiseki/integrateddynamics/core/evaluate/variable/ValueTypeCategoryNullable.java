@@ -11,21 +11,26 @@ import ruiseki.okcore.helper.Helpers;
 
 /**
  * Value type category with values that can be null.
- * 
+ *
  * @author rubensworks
  */
 public class ValueTypeCategoryNullable extends ValueTypeCategoryBase<IValue> {
 
     public ValueTypeCategoryNullable() {
-        super("nullable", Helpers.RGBToInt(100, 100, 100), EnumChatFormatting.DARK_GRAY.toString());
+        super("nullable", Helpers.RGBToInt(100, 100, 100), EnumChatFormatting.DARK_GRAY.toString(), IValue.class);
     }
 
     public boolean isNull(IVariable a) throws EvaluationException {
-        return ((IValueTypeNullable) a.getType()).isNull(a.getValue());
+        try {
+            return ((IValueTypeNullable) a.getType()).isNull(a.getValue());
+        } catch (ClassCastException e) {
+            // This can happen with 'any' types.
+            return false;
+        }
     }
 
     @Override
-    public boolean correspondsTo(IValueType valueType) {
+    public boolean correspondsTo(IValueType<?> valueType) {
         return super.correspondsTo(valueType) && valueType instanceof IValueTypeNullable;
     }
 }

@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.Getter;
 import ruiseki.integrateddynamics.api.part.IPartState;
 import ruiseki.integrateddynamics.api.part.IPartType;
+import ruiseki.integrateddynamics.api.part.PartRenderPosition;
 import ruiseki.integrateddynamics.core.client.gui.ExtendedGuiHandler;
 import ruiseki.integrateddynamics.core.client.gui.container.GuiPartSettings;
 import ruiseki.integrateddynamics.core.inventory.container.ContainerPartSettings;
@@ -25,11 +26,11 @@ public abstract class PartTypeConfigurable<P extends IPartType<P, S>, S extends 
     @Getter
     private final IGuiContainerProvider settingsGuiProvider;
 
-    public PartTypeConfigurable(String name, RenderPosition renderPosition) {
-        super(name, renderPosition);
+    public PartTypeConfigurable(String name, PartRenderPosition partRenderPosition) {
+        super(name, partRenderPosition);
         if (hasSettings()) {
-            int guiIDSettings = Helpers.getNewId(getMod(), Helpers.IDType.GUI);
-            getMod().getGuiHandler()
+            int guiIDSettings = Helpers.getNewId(getModGui(), Helpers.IDType.GUI);
+            getModGui().getGuiHandler()
                 .registerGUI(
                     (settingsGuiProvider = constructSettingsGuiProvider(guiIDSettings)),
                     ExtendedGuiHandler.PART);
@@ -39,7 +40,7 @@ public abstract class PartTypeConfigurable<P extends IPartType<P, S>, S extends 
     }
 
     protected IGuiContainerProvider constructSettingsGuiProvider(int guiId) {
-        return new GuiProviderSettings(guiId, getMod());
+        return new GuiProviderSettings(guiId, getModGui());
     }
 
     public boolean hasSettings() {
@@ -50,7 +51,7 @@ public abstract class PartTypeConfigurable<P extends IPartType<P, S>, S extends 
     public static class GuiProviderSettings implements IGuiContainerProvider {
 
         private final int guiID;
-        private final ModBase mod;
+        private final ModBase modGui;
 
         @Override
         public Class<? extends Container> getContainer() {

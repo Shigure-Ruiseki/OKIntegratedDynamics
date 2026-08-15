@@ -1,48 +1,48 @@
 package ruiseki.integrateddynamics.core.tileentity;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
-import org.apache.commons.lang3.tuple.Pair;
-import org.apache.logging.log4j.Level;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import com.google.common.base.Function;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Delegate;
-import ruiseki.integrateddynamics.IntegratedDynamics;
-import ruiseki.integrateddynamics.api.block.cable.ICable;
+import ruiseki.integrateddynamics.api.block.cable.ICableFakeable;
+import ruiseki.integrateddynamics.api.network.INetwork;
+import ruiseki.integrateddynamics.api.network.INetworkCarrier;
 import ruiseki.integrateddynamics.api.network.INetworkElement;
-import ruiseki.integrateddynamics.api.network.IPartNetwork;
-import ruiseki.integrateddynamics.api.part.IPartContainer;
-import ruiseki.integrateddynamics.api.part.IPartContainerFacade;
-import ruiseki.integrateddynamics.api.part.IPartState;
-import ruiseki.integrateddynamics.api.part.IPartType;
-import ruiseki.integrateddynamics.api.tileentity.ITileCableFacadeable;
-import ruiseki.integrateddynamics.api.tileentity.ITileCableNetwork;
-import ruiseki.integrateddynamics.core.block.cable.CableNetworkComponent;
+import ruiseki.integrateddynamics.capability.cable.CableConfig;
+import ruiseki.integrateddynamics.capability.cable.CableFakeableConfig;
+import ruiseki.integrateddynamics.capability.cable.CableFakeableMultipartTicking;
+import ruiseki.integrateddynamics.capability.cable.CableTileMultipartTicking;
+import ruiseki.integrateddynamics.capability.dynamiclight.DynamicLightConfig;
+import ruiseki.integrateddynamics.capability.dynamiclight.DynamicLightTileMultipartTicking;
+import ruiseki.integrateddynamics.capability.dynamicredstone.DynamicRedstoneConfig;
+import ruiseki.integrateddynamics.capability.dynamicredstone.DynamicRedstoneTileMultipartTicking;
+import ruiseki.integrateddynamics.capability.facadeable.FacadeableConfig;
+import ruiseki.integrateddynamics.capability.facadeable.FacadeableTileMultipartTicking;
+import ruiseki.integrateddynamics.capability.network.NetworkCarrierConfig;
+import ruiseki.integrateddynamics.capability.network.NetworkCarrierDefault;
+import ruiseki.integrateddynamics.capability.networkelementprovider.NetworkElementProviderConfig;
+import ruiseki.integrateddynamics.capability.networkelementprovider.NetworkElementProviderPartContainer;
+import ruiseki.integrateddynamics.capability.partcontainer.PartContainerConfig;
+import ruiseki.integrateddynamics.capability.partcontainer.PartContainerTileMultipartTicking;
+import ruiseki.integrateddynamics.capability.path.PathElementConfig;
+import ruiseki.integrateddynamics.capability.path.PathElementTileMultipartTicking;
 import ruiseki.integrateddynamics.core.helper.CableHelpers;
+import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
 import ruiseki.integrateddynamics.core.helper.PartHelpers;
 import ruiseki.okcore.capabilities.Capability;
+import ruiseki.okcore.capabilities.resolver.BasicCapabilityResolver;
+import ruiseki.okcore.capabilities.resolver.SidedCapabilityResolver;
 import ruiseki.okcore.datastructure.DimPos;
 import ruiseki.okcore.datastructure.EnumFacingMap;
 import ruiseki.okcore.datastructure.LazyOptional;
-import ruiseki.okcore.helper.BlockHelpers;
-import ruiseki.okcore.helper.InventoryHelpers;
-import ruiseki.okcore.helper.ItemStackHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.persist.nbt.NBTPersist;
 import ruiseki.okcore.tileentity.TileEntityOK;
@@ -52,218 +52,119 @@ import ruiseki.okcore.tileentity.TileEntityOK;
  *
  * @author Ruben Taelman
  */
-public class TileMultipartTicking extends TileEntityOK implements TileEntityOK.ITickingTile, IPartContainer,
-    ITileCableNetwork, ITileCableFacadeable, PartHelpers.IPartStateHolderCallback {
+public class TileMultipartTicking extends TileEntityOK
+    implements TileEntityOK.ITickingTile, PartHelpers.IPartStateHolderCallback {
 
     private final EnumFacingMap<PartHelpers.PartStateHolder<?, ?>> partData = EnumFacingMap.newMap();
     @Delegate
     protected final ITickingTile tickingTileComponent = new TickingTileComponent(this);
 
-    @NBTPersist
-    private boolean realCable = true;
+    @Getter
     @NBTPersist
     private EnumFacingMap<Boolean> connected = EnumFacingMap.newMap();
     @NBTPersist
     private EnumFacingMap<Boolean> forceDisconnected = EnumFacingMap.newMap();
+    @Getter
     @NBTPersist
     private EnumFacingMap<Integer> redstoneLevels = EnumFacingMap.newMap();
+    @Getter
     @NBTPersist
     private EnumFacingMap<Boolean> redstoneInputs = EnumFacingMap.newMap();
+    @Getter
+    @NBTPersist
+    private EnumFacingMap<Boolean> redstoneStrong = EnumFacingMap.newMap();
+    @Getter
+    @NBTPersist
+    private EnumFacingMap<Integer> lastRedstonePulses = EnumFacingMap.newMap();
+    @Getter
     @NBTPersist
     private EnumFacingMap<Integer> lightLevels = EnumFacingMap.newMap();
     private EnumFacingMap<Integer> previousLightLevels;
+    @Getter
+    @Setter
     @NBTPersist
     private String facadeBlockName = null;
+    @Getter
+    @Setter
     @NBTPersist
     private int facadeMeta = 0;
 
     @Getter
-    @Setter
-    private IPartNetwork network;
+    private final PartContainerTileMultipartTicking partContainer;
+    @Getter
+    private final CableTileMultipartTicking cable;
+    @Getter
+    private final INetworkCarrier networkCarrier;
+    @Getter
+    private final ICableFakeable cableFakeable;
+
+    public TileMultipartTicking() {
+        partContainer = new PartContainerTileMultipartTicking(this);
+        this.capabilityCache.addCapabilityResolver(
+            BasicCapabilityResolver.create(PartContainerConfig.CAPABILITY, () -> this.partContainer));
+        this.capabilityCache.addCapabilityResolver(
+            BasicCapabilityResolver.create(
+                NetworkElementProviderConfig.CAPABILITY,
+                () -> new NetworkElementProviderPartContainer(partContainer)));
+        this.capabilityCache.addCapabilityResolver(
+            BasicCapabilityResolver
+                .create(FacadeableConfig.CAPABILITY, () -> new FacadeableTileMultipartTicking(this)));
+        cable = new CableTileMultipartTicking(this);
+        this.capabilityCache.addCapabilityResolver(BasicCapabilityResolver.create(CableConfig.CAPABILITY, () -> cable));
+        networkCarrier = new NetworkCarrierDefault();
+        this.capabilityCache.addCapabilityResolver(
+            BasicCapabilityResolver.create(NetworkCarrierConfig.CAPABILITY, () -> networkCarrier));
+        cableFakeable = new CableFakeableMultipartTicking(this);
+        this.capabilityCache
+            .addCapabilityResolver(BasicCapabilityResolver.create(CableFakeableConfig.CAPABILITY, () -> cableFakeable));
+        this.capabilityCache.addCapabilityResolver(
+            BasicCapabilityResolver
+                .create(PathElementConfig.CAPABILITY, () -> new PathElementTileMultipartTicking(this, cable)));
+        this.capabilityCache.addCapabilityResolver(
+            SidedCapabilityResolver
+                .create(DynamicLightConfig.CAPABILITY, side -> new DynamicLightTileMultipartTicking(this, side)));
+        this.capabilityCache.addCapabilityResolver(
+            SidedCapabilityResolver
+                .create(DynamicRedstoneConfig.CAPABILITY, side -> new DynamicRedstoneTileMultipartTicking(this, side)));
+    }
 
     @Override
     public void writeToNBT(NBTTagCompound tag) {
-        this.markDirty();
         super.writeToNBT(tag);
-        PartHelpers.writePartsToNBT(getPos(), tag, this.partData);
+        tag.setTag("partContainer", partContainer.serializeNBT());
+        tag.setBoolean("realCable", cableFakeable.isRealCable());
     }
 
     @Override
     public void readFromNBT(NBTTagCompound tag) {
+        EnumFacingMap<Boolean> lastConnected = EnumFacingMap.newMap(connected);
+        String lastFacadeBlockName = facadeBlockName;
+        int lastFacadeMeta = facadeMeta;
+        boolean lastRealCable = cableFakeable.isRealCable();
         PartHelpers.readPartsFromNBT(getNetwork(), getPos(), tag, this.partData, getWorldObj());
+        if (tag.hasKey("parts", MinecraftHelpers.NBTTag_Types.NBTTagList.ordinal())
+            && !tag.hasKey("partContainer", MinecraftHelpers.NBTTag_Types.NBTTagCompound.ordinal())) {
+            // Backwards compatibility with old part saving.
+            // TODO: remove in next major MC update.
+            PartHelpers.readPartsFromNBT(getNetwork(), getPos(), tag, partContainer.getPartData(), getWorldObj());
+        } else {
+            partContainer.deserializeNBT(tag.getCompoundTag("partContainer"));
+        }
+        boolean wasLightTransparent = getWorldObj() != null
+            && CableHelpers.isLightTransparent(getWorldObj(), getPos(), null);
+
         super.readFromNBT(tag);
-    }
-
-    /**
-     * Indicate that this cable is not a real cable if false and should not allow any connections.
-     * Parts can be added to it though.
-     *
-     * @param realCable If this cable is real and should accept connections.
-     */
-    public void setRealCable(boolean realCable) {
-        this.realCable = realCable;
-        sendUpdate();
-    }
-
-    /**
-     * @return If this cable is real.
-     */
-    public boolean isRealCable() {
-        return this.realCable;
-    }
-
-    @Override
-    public DimPos getPosition() {
-        return DimPos.of(getWorldObj(), getPos());
-    }
-
-    @Override
-    public Map<ForgeDirection, IPartType<?, ?>> getParts() {
-        return Maps.transformValues(partData, new Function<PartHelpers.PartStateHolder<?, ?>, IPartType<?, ?>>() {
-
-            @Nullable
-            @Override
-            public IPartType<?, ?> apply(@Nullable PartHelpers.PartStateHolder<?, ?> input) {
-                return input.getPart();
-            }
-        });
-    }
-
-    @Override
-    public boolean hasParts() {
-        return !partData.isEmpty();
-    }
-
-    @Override
-    public <P extends IPartType<P, S>, S extends IPartState<P>> boolean canAddPart(ForgeDirection side,
-        IPartType<P, S> part) {
-        return !hasPart(side);
-    }
-
-    protected void onPartsChanged() {
-        markDirty();
-        sendUpdate();
-        worldObj.markBlockForUpdate(xCoord, yCoord, zCoord);
-    }
-
-    @Override
-    public void setPart(final ForgeDirection side, final IPartType part, final IPartState partState) {
-        PartHelpers.setPart(
-            getNetwork(),
-            getWorldObj(),
-            getPos(),
-            side,
-            Objects.requireNonNull(part),
-            Objects.requireNonNull(partState),
-            new PartHelpers.IPartStateHolderCallback() {
-
-                @Override
-                public void onSet(PartHelpers.PartStateHolder<?, ?> partStateHolder) {
-                    partData.put(side, PartHelpers.PartStateHolder.of(part, partState));
-                }
-            });
-        onPartsChanged();
-    }
-
-    @Override
-    public IPartType getPart(ForgeDirection side) {
-        if (!partData.containsKey(side)) return null;
-        return partData.get(side)
-            .getPart();
-    }
-
-    @Override
-    public boolean hasPart(ForgeDirection side) {
-        return partData.containsKey(side);
-    }
-
-    @Override
-    public IPartType removePart(ForgeDirection side, EntityPlayer player) {
-        PartHelpers.PartStateHolder<?, ?> partStateHolder = partData.get(side); // Don't remove the state just yet! We
-                                                                                // might need it in network removal.
-        if (partStateHolder == null) {
-            IntegratedDynamics.clog(Level.WARN, "Attempted to remove a part at a side where no part was.");
-            return null;
-        } else {
-            IPartType removed = partStateHolder.getPart();
-            if (getNetwork() != null) {
-                INetworkElement networkElement = removed
-                    .createNetworkElement((IPartContainerFacade) getBlock(), DimPos.of(getWorldObj(), getPos()), side);
-                if (!getNetwork().removeNetworkElementPre(networkElement)) {
-                    return null;
-                }
-
-                // Drop all parts types as item.
-                List<ItemStack> itemStacks = Lists.newLinkedList();
-                networkElement.addDrops(itemStacks, true);
-                for (ItemStack itemStack : itemStacks) {
-                    if (player != null) {
-                        ItemStackHelpers.spawnItemStackToPlayer(getWorldObj(), getPos(), itemStack, player);
-                    } else {
-                        InventoryHelpers.dropItems(getWorldObj(), itemStack, getPos());
-                    }
-                }
-
-                // Remove the element from the network.
-                getNetwork().removeNetworkElementPost(networkElement);
-            } else {
-                IntegratedDynamics.clog(Level.WARN, "Removing a part where no network reference was found.");
-                ItemStackHelpers
-                    .spawnItemStackToPlayer(getWorldObj(), getPos(), new ItemStack(removed.getItem()), player);
-            }
-            // Finally remove the part data from this tile.
-            IPartType ret = partData.remove(side)
-                .getPart();
-            onPartsChanged();
-            return ret;
+        cableFakeable.setRealCable(tag.getBoolean("realCable"));
+        boolean isLightTransparent = getWorldObj() != null
+            && CableHelpers.isLightTransparent(getWorldObj(), getPos(), null);
+        if (getWorldObj() != null && (lastConnected == null || connected == null
+            || !lastConnected.equals(connected)
+            || !Objects.equals(lastFacadeBlockName, facadeBlockName)
+            || lastFacadeMeta != facadeMeta
+            || lastRealCable != cableFakeable.isRealCable()
+            || wasLightTransparent != isLightTransparent)) {
+            getWorldObj().markBlockForUpdate(xCoord, yCoord, zCoord);
         }
-    }
-
-    @Override
-    public void setPartState(ForgeDirection side, IPartState partState) {
-        PartHelpers.PartStateHolder<?, ?> partStateHolder = partData.get(side);
-        if (partStateHolder == null) {
-            throw new IllegalArgumentException(
-                String.format("No part at position %s was found to update the state " + "for.", getPosition()));
-        }
-        partData.put(side, PartHelpers.PartStateHolder.of(partStateHolder.getPart(), partState));
-        onPartsChanged();
-    }
-
-    @Override
-    public IPartState getPartState(ForgeDirection side) {
-        PartHelpers.PartStateHolder<?, ?> partStateHolder = partData.get(side);
-        if (partStateHolder == null) {
-            throw new IllegalArgumentException(
-                String.format("No part at position %s was found to get the state from.", getPosition()));
-        }
-        return partStateHolder.getState();
-    }
-
-    @Override
-    public boolean hasFacade() {
-        return facadeBlockName != null && !facadeBlockName.isEmpty();
-    }
-
-    @Override
-    public BlockState getFacade() {
-        if (!hasFacade()) {
-            return null;
-        }
-        return BlockHelpers.deserializeBlockState(Pair.of(this.facadeBlockName, this.facadeMeta));
-    }
-
-    @Override
-    public void setFacade(@Nullable BlockState blockState) {
-        if (blockState == null) {
-            this.facadeMeta = 0;
-            this.facadeBlockName = null;
-        } else {
-            Pair<String, Integer> serializedBlockState = BlockHelpers.serializeBlockState(blockState);
-            this.facadeMeta = serializedBlockState.getRight();
-            this.facadeBlockName = serializedBlockState.getLeft();
-        }
-        sendUpdate();
     }
 
     @Override
@@ -276,196 +177,45 @@ public class TileMultipartTicking extends TileEntityOK implements TileEntityOK.I
 
     }
 
-    public boolean isForceDisconnected(ForgeDirection side) {
-        if (!isRealCable() || hasPart(side)) return true;
-        if (!forceDisconnected.containsKey(side)) return false;
-        return forceDisconnected.get(side);
-    }
-
     @Override
     protected void updateTileEntity() {
         super.updateTileEntity();
-        // If the connection data were reset, update the cable connections
         if (connected.isEmpty()) {
-            updateConnections();
+            cable.updateConnections();
         }
+        partContainer.update();
 
-        if (!MinecraftHelpers.isClientSide()) {
-            // Loop over all part states to check their dirtiness
-            for (PartHelpers.PartStateHolder<?, ?> partStateHolder : partData.values()) {
-                if (partStateHolder.getState()
-                    .isDirtyAndReset()) {
-                    markDirty();
-                }
-                if (partStateHolder.getState()
-                    .isUpdateAndReset()) {
-                    sendUpdate();
-                }
+        // Revalidate network if that hasn't happened yet
+        if (getNetwork() == null && getWorldObj() != null && !getWorldObj().isRemote) {
+            NetworkHelpers.revalidateNetworkElements(getWorldObj(), getPos());
+        }
+    }
+
+    public INetwork getNetwork() {
+        return networkCarrier.getNetwork();
+    }
+
+    public void updateRedstoneInfo(ForgeDirection side, boolean strongPower) {
+        this.markDirty();
+        int targetX = xCoord + side.offsetX;
+        int targetY = yCoord + side.offsetY;
+        int targetZ = zCoord + side.offsetZ;
+        if (this.worldObj != null && this.worldObj.blockExists(targetX, targetY, targetZ)) {
+            this.worldObj.notifyBlockOfNeighborChange(targetX, targetY, targetZ, getBlockType());
+            if (strongPower) {
+                // When we are emitting a strong power, also update all neighbours of the target
+                this.worldObj.notifyBlockOfNeighborChange(targetX, targetY, targetZ, getBlockType());
             }
         }
     }
 
-    protected void updateRedstoneInfo(ForgeDirection side) {
+    public void updateLightInfo() {
         sendUpdate();
-
-        int x = getPos().getX();
-        int y = getPos().getY();
-        int z = getPos().getZ();
-
-        ForgeDirection opposite = side.getOpposite();
-        int offsetX = x + opposite.offsetX;
-        int offsetY = y + opposite.offsetY;
-        int offsetZ = z + opposite.offsetZ;
-
-        getWorldObj().notifyBlocksOfNeighborChange(x, y, z, getBlock());
-
-        getWorldObj().notifyBlocksOfNeighborChange(offsetX, offsetY, offsetZ, getBlock());
-    }
-
-    public void setRedstoneLevel(ForgeDirection side, int level) {
-        if (!getWorldObj().isRemote) {
-            boolean sendUpdate = false;
-            if (redstoneLevels.containsKey(side)) {
-                if (redstoneLevels.get(side) != level) {
-                    sendUpdate = true;
-                    redstoneLevels.put(side, level);
-                }
-            } else {
-                sendUpdate = true;
-                redstoneLevels.put(side, level);
-            }
-            if (sendUpdate) {
-                updateRedstoneInfo(side);
-            }
-        }
-    }
-
-    public int getRedstoneLevel(ForgeDirection side) {
-        if (redstoneLevels.containsKey(side)) {
-            return redstoneLevels.get(side);
-        }
-        return -1;
-    }
-
-    public void setAllowRedstoneInput(ForgeDirection side, boolean allow) {
-        redstoneInputs.put(side, allow);
-    }
-
-    public boolean isAllowRedstoneInput(ForgeDirection side) {
-        if (redstoneInputs.containsKey(side)) {
-            return redstoneInputs.get(side);
-        }
-        return false;
-    }
-
-    public void disableRedstoneLevel(ForgeDirection side) {
-        if (!getWorldObj().isRemote) {
-            redstoneLevels.remove(side);
-            updateRedstoneInfo(side);
-        }
-    }
-
-    protected void updateLightInfo(ForgeDirection side) {
-        sendUpdate();
-    }
-
-    public void setLightLevel(ForgeDirection side, int level) {
-        if (!getWorldObj().isRemote) {
-            boolean sendUpdate = false;
-            if (lightLevels.containsKey(side)) {
-                if (lightLevels.get(side) != level) {
-                    sendUpdate = true;
-                    lightLevels.put(side, level);
-                }
-            } else {
-                sendUpdate = true;
-                lightLevels.put(side, level);
-            }
-            if (sendUpdate) {
-                updateLightInfo(side);
-            }
-        }
-    }
-
-    public int getLightLevel(ForgeDirection side) {
-        if (lightLevels.containsKey(side)) {
-            return lightLevels.get(side);
-        }
-        return 0;
-    }
-
-    /**
-     * Get the part container at the given position.
-     *
-     * @param pos The position.
-     * @return The container or null.
-     */
-    public static IPartContainer get(DimPos pos) {
-        IPartContainerFacade partContainerFacade = CableHelpers.getInterface(pos, IPartContainerFacade.class);
-        return partContainerFacade.getPartContainer(pos.getWorld(), pos.getBlockPos());
-    }
-
-    @Override
-    public void resetCurrentNetwork() {
-        if (network != null) setNetwork(null);
-    }
-
-    @Override
-    public boolean canConnect(ICable connector, ForgeDirection side) {
-        return !isForceDisconnected(side);
-    }
-
-    @Override
-    public void updateConnections() {
-        World world = getWorldObj();
-        for (ForgeDirection side : ForgeDirection.VALID_DIRECTIONS) {
-            boolean cableConnected = CableNetworkComponent.canSideConnect(world, getPos(), side, (ICable) getBlock());
-            connected.put(side, cableConnected);
-
-            // Remove any already existing force-disconnects for this side.
-            if (!cableConnected) {
-                forceDisconnected.put(side, false);
-            }
-        }
-        markDirty();
-        sendUpdate();
-    }
-
-    @Override
-    public boolean isConnected(ForgeDirection side) {
-        return connected.containsKey(side) && connected.get(side);
-    }
-
-    @Override
-    public void disconnect(ForgeDirection side) {
-        forceDisconnected.put(side, true);
-    }
-
-    @Override
-    public void reconnect(ForgeDirection side) {
-        forceDisconnected.remove(side);
     }
 
     @Override
     public void onSet(PartHelpers.PartStateHolder<?, ?> partStateHolder) {
 
-    }
-
-    /**
-     * @return The raw part data.
-     */
-    public EnumFacingMap<PartHelpers.PartStateHolder<?, ?>> getPartData() {
-        return this.partData;
-    }
-
-    /**
-     * Override the part data.
-     *
-     * @param partData The raw part data.
-     */
-    public void setPartData(EnumFacingMap<PartHelpers.PartStateHolder<?, ?>> partData) {
-        this.partData.clear();
-        this.partData.putAll(partData);
     }
 
     /**
@@ -480,14 +230,6 @@ public class TileMultipartTicking extends TileEntityOK implements TileEntityOK.I
         this.forceDisconnected.putAll(forceDisconnected);
     }
 
-    /**
-     * Reset the part data without signaling any neighbours or the network.
-     * Is used in block conversion.
-     */
-    public void silentResetPartData() {
-        this.partData.clear();
-    }
-
     @Override
     public boolean shouldRenderInPass(int pass) {
         return true;
@@ -496,28 +238,27 @@ public class TileMultipartTicking extends TileEntityOK implements TileEntityOK.I
     @Override
     public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> capability,
         @Nullable ForgeDirection facing) {
-        if (facing == null) {
-            for (Map.Entry<ForgeDirection, PartHelpers.PartStateHolder<?, ?>> entry : partData.entrySet()) {
-                IPartState partState = entry.getValue()
-                    .getState();
-                if (partState != null) {
-                    LazyOptional<T> cap = partState.getCapability(capability);
-                    if (cap.isPresent()) {
-                        return cap;
-                    }
-                }
-            }
-        } else {
-            if (hasPart(facing)) {
-                IPartState partState = getPartState(facing);
-                if (partState != null) {
-                    LazyOptional<T> cap = partState.getCapability(capability);
-                    if (cap.isPresent()) {
-                        return cap;
-                    }
+        return super.getCapability(capability, facing);
+    }
+
+    @Override
+    public void onChunkUnload() {
+        super.onChunkUnload();
+        invalidateParts();
+    }
+
+    protected void invalidateParts() {
+        if (getWorldObj() != null && !getWorldObj().isRemote) {
+            INetwork network = getNetwork();
+            if (network != null) {
+                for (Map.Entry<ForgeDirection, PartHelpers.PartStateHolder<?, ?>> entry : partContainer.getPartData()
+                    .entrySet()) {
+                    INetworkElement element = entry.getValue()
+                        .getPart()
+                        .createNetworkElement(getPartContainer(), DimPos.of(getWorldObj(), getPos()), entry.getKey());
+                    element.invalidate(network);
                 }
             }
         }
-        return super.getCapability(capability, facing);
     }
 }

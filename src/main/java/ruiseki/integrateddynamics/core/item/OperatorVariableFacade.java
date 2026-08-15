@@ -25,7 +25,7 @@ import ruiseki.okcore.helper.LangHelpers;
 /**
  * Variable facade for variables determined for operators based on other variables in the network determined by their
  * id.
- * 
+ *
  * @author rubensworks
  */
 @EqualsAndHashCode(callSuper = true)
@@ -37,16 +37,24 @@ public class OperatorVariableFacade extends VariableFacadeBase implements IOpera
     private IExpression expression = null;
     private int lastNetworkHash = -1;
 
+    // Flags to detect infinite recursion
+    private final boolean[] validatingVariables;
+    private final boolean[] variables;
+
     public OperatorVariableFacade(boolean generateId, IOperator operator, int[] variableIds) {
         super(generateId);
         this.operator = operator;
         this.variableIds = variableIds;
+        this.validatingVariables = this.variableIds != null ? new boolean[this.variableIds.length] : null;
+        this.variables = this.variableIds != null ? new boolean[this.variableIds.length] : null;
     }
 
     public OperatorVariableFacade(int id, IOperator operator, int[] variableIds) {
         super(id);
         this.operator = operator;
         this.variableIds = variableIds;
+        this.validatingVariables = this.variableIds != null ? new boolean[this.variableIds.length] : null;
+        this.variables = this.variableIds != null ? new boolean[this.variableIds.length] : null;
     }
 
     @Override
@@ -65,8 +73,13 @@ public class OperatorVariableFacade extends VariableFacadeBase implements IOpera
                     if (!variableFacade.isValid() || variableFacade == this) {
                         return null;
                     }
+                    if (this.variables[i]) {
+                        return null;
+                    }
+                    this.variables[i] = true;
                     variables[i] = variableFacade.getVariable(network);
-                    if (variables[i] == this /* Cyclic reference */ || variables[i] == null) {
+                    this.variables[i] = false;
+                    if (variables[i] == null) {
                         return null;
                     }
                 }
@@ -114,6 +127,13 @@ public class OperatorVariableFacade extends VariableFacadeBase implements IOpera
                     } else if (variableFacade != null) {
                         IValueType valueType = getOperator().getInputTypes()[i];
                         final Wrapper<Boolean> isValid = new Wrapper<>(true);
+                        if (validatingVariables[i]) {
+                            validator.addError(
+                                new LangHelpers.UnlocalizedString(L10NValues.OPERATOR_ERROR_CYCLICREFERENCE, getId()));
+                            checkFurther = false;
+                            break;
+                        }
+                        validatingVariables[i] = true;
                         variableFacade.validate(network, new IValidator() {
 
                             @Override
@@ -122,6 +142,7 @@ public class OperatorVariableFacade extends VariableFacadeBase implements IOpera
                                 isValid.set(false);
                             }
                         }, valueType);
+                        validatingVariables[i] = false;
                         if (isValid.get()) {
                             IVariable variable = variableFacade.getVariable(network);
                             if (variable != null) {

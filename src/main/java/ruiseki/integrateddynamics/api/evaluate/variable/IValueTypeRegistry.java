@@ -2,6 +2,8 @@ package ruiseki.integrateddynamics.api.evaluate.variable;
 
 import java.util.Collection;
 
+import net.minecraft.util.ResourceLocation;
+
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.integrateddynamics.api.item.IValueTypeVariableFacade;
@@ -50,10 +52,10 @@ public interface IValueTypeRegistry extends IRegistry, IVariableFacadeHandler<IV
      * @param <V>       The value type.
      * @param <T>       The value type type.
      * @param valueType The value type.
-     * @param iconPath  The icon path (e.g., "integrateddynamics:valuetype/boolean").
+     * @param model     The model path (e.g., "integrateddynamics:valuetype/boolean").
      */
     @SideOnly(Side.CLIENT)
-    public <V extends IValue, T extends IValueType<V>> void registerValueTypeIconPath(T valueType, String iconPath);
+    public <V extends IValue, T extends IValueType<V>> void registerValueTypeModel(T valueType, ResourceLocation model);
 
     /**
      * Get the icon path of the given value type.
@@ -61,10 +63,10 @@ public interface IValueTypeRegistry extends IRegistry, IVariableFacadeHandler<IV
      * @param <V>       The value type.
      * @param <T>       The value type type.
      * @param valueType The value type.
-     * @return The icon path string.
+     * @return The model path string.
      */
     @SideOnly(Side.CLIENT)
-    public <V extends IValue, T extends IValueType<V>> String getValueTypeIconPath(T valueType);
+    public <V extends IValue, T extends IValueType<V>> ResourceLocation getValueTypeModel(T valueType);
 
     /**
      * Get all registered icon paths for the value types.
@@ -72,7 +74,7 @@ public interface IValueTypeRegistry extends IRegistry, IVariableFacadeHandler<IV
      * @return All icon paths.
      */
     @SideOnly(Side.CLIENT)
-    public Collection<String> getValueTypeIconPaths();
+    public Collection<ResourceLocation> getValueTypeModels();
 
     /**
      * @return All registered value types.

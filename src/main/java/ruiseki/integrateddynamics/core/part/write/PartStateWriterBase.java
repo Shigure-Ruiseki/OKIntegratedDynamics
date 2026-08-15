@@ -4,11 +4,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import net.minecraft.nbt.NBTTagCompound;
+
 import com.google.common.collect.Maps;
 
 import ruiseki.integrateddynamics.api.item.IVariableFacade;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
-import ruiseki.integrateddynamics.api.part.IPartState;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.api.part.aspect.IAspect;
 import ruiseki.integrateddynamics.api.part.aspect.IAspectWrite;
@@ -18,25 +19,42 @@ import ruiseki.integrateddynamics.core.part.PartStateActiveVariableBase;
 import ruiseki.integrateddynamics.part.aspect.Aspects;
 import ruiseki.okcore.helper.CollectionHelpers;
 import ruiseki.okcore.helper.LangHelpers;
-import ruiseki.okcore.persist.nbt.NBTPersist;
+import ruiseki.okcore.persist.nbt.NBTClassType;
 
 /**
- * A default implementation of the {@link IPartTypeWriter} with auto-persistence
- * of fields annotated with {@link NBTPersist}.
- * 
+ * A default implementation of the {@link IPartTypeWriter}.
+ *
  * @author rubensworks
  */
 public class PartStateWriterBase<P extends IPartTypeWriter> extends PartStateActiveVariableBase<P>
     implements IPartStateWriter<P> {
 
-    @NBTPersist
-    private String activeAspectName = null;
-    @NBTPersist
+    private IAspectWrite activeAspect = null;
     private Map<String, List<LangHelpers.UnlocalizedString>> errorMessages = Maps.newHashMap();
     private boolean firstTick = true;
 
     public PartStateWriterBase(int inventorySize) {
         super(inventorySize);
+    }
+
+    @Override
+    public void writeToNBT(NBTTagCompound tag) {
+        if (this.activeAspect != null) tag.setString("activeAspectName", this.activeAspect.getUnlocalizedName());
+        NBTClassType.getType(Map.class, this.errorMessages)
+            .writePersistedField("errorMessages", this.errorMessages, tag);
+        super.writeToNBT(tag);
+    }
+
+    @Override
+    public void readFromNBT(NBTTagCompound tag) {
+        IAspect aspect = Aspects.REGISTRY.getAspect(tag.getString("activeAspectName"));
+        if (aspect instanceof IAspectWrite) {
+            this.activeAspect = (IAspectWrite) aspect;
+        }
+        this.errorMessages = (Map<String, List<LangHelpers.UnlocalizedString>>) NBTClassType
+            .getType(Map.class, this.errorMessages)
+            .readPersistedField("errorMessages", tag);
+        super.readFromNBT(tag);
     }
 
     @Override
@@ -53,7 +71,7 @@ public class PartStateWriterBase<P extends IPartTypeWriter> extends PartStateAct
     @Override
     protected void onCorruptedState() {
         super.onCorruptedState();
-        this.activeAspectName = null;
+        this.activeAspect = null;
     }
 
     @Override
@@ -71,7 +89,7 @@ public class PartStateWriterBase<P extends IPartTypeWriter> extends PartStateAct
         if (newAspect != null && activeAspect != newAspect) {
             newAspect.onActivate(partType, target, this);
         }
-        this.activeAspectName = newAspect == null ? null : newAspect.getUnlocalizedName();
+        this.activeAspect = newAspect;
     }
 
     @Override
@@ -86,14 +104,7 @@ public class PartStateWriterBase<P extends IPartTypeWriter> extends PartStateAct
 
     @Override
     public IAspectWrite getActiveAspect() {
-        if (this.activeAspectName == null) {
-            return null;
-        }
-        IAspect aspect = Aspects.REGISTRY.getAspect(this.activeAspectName);
-        if (!(aspect instanceof IAspectWrite)) {
-            return null;
-        }
-        return (IAspectWrite) aspect;
+        return activeAspect;
     }
 
     @Override
@@ -117,11 +128,6 @@ public class PartStateWriterBase<P extends IPartTypeWriter> extends PartStateAct
     }
 
     @Override
-    public Class<? extends IPartState> getPartStateClass() {
-        return IPartStateWriter.class;
-    }
-
-    @Override
     public boolean checkAndResetFirstTick() {
         if (firstTick) {
             firstTick = false;
@@ -137,7 +143,7 @@ public class PartStateWriterBase<P extends IPartTypeWriter> extends PartStateAct
 
         /**
          * Make a new instance
-         * 
+         *
          * @param state  The part state.
          * @param aspect The aspect to set the error for.
          */

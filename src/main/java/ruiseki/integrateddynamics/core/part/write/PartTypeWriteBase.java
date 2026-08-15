@@ -5,29 +5,44 @@ import java.util.Map;
 
 import javax.annotation.Nullable;
 
+import net.minecraft.block.Block;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumChatFormatting;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.ForgeDirection;
+
+import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IVariable;
+import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.network.event.INetworkEvent;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
+import ruiseki.integrateddynamics.api.part.PartRenderPosition;
 import ruiseki.integrateddynamics.api.part.PartTarget;
+import ruiseki.integrateddynamics.api.part.aspect.IAspect;
 import ruiseki.integrateddynamics.api.part.aspect.IAspectWrite;
 import ruiseki.integrateddynamics.api.part.write.IPartStateWriter;
 import ruiseki.integrateddynamics.api.part.write.IPartTypeWriter;
 import ruiseki.integrateddynamics.client.gui.GuiPartWriter;
+import ruiseki.integrateddynamics.core.block.IgnoredBlock;
+import ruiseki.integrateddynamics.core.block.IgnoredBlockStatus;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
+import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
+import ruiseki.integrateddynamics.core.network.event.NetworkElementAddEvent;
 import ruiseki.integrateddynamics.core.network.event.VariableContentsUpdatedEvent;
 import ruiseki.integrateddynamics.core.part.PartTypeAspects;
+import ruiseki.integrateddynamics.core.part.event.PartWriterAspectEvent;
 import ruiseki.integrateddynamics.inventory.container.ContainerPartWriter;
 import ruiseki.integrateddynamics.part.aspect.Aspects;
+import ruiseki.okcore.config.extendedconfig.BlockConfig;
+import ruiseki.okcore.helper.BlockStateHelpers;
 import ruiseki.okcore.helper.LangHelpers;
 
 /**
@@ -38,21 +53,41 @@ import ruiseki.okcore.helper.LangHelpers;
 public abstract class PartTypeWriteBase<P extends IPartTypeWriter<P, S>, S extends IPartStateWriter<P>>
     extends PartTypeAspects<P, S> implements IPartTypeWriter<P, S> {
 
+    private List<IAspectWrite> aspectsWrite = null;
+
     public PartTypeWriteBase(String name) {
-        super(name, new RenderPosition(0.3125F, 0.3125F, 0.25F, 0.25F));
+        this(name, new PartRenderPosition(0.3125F, 0.3125F, 0.625F, 0.625F, 0.25F, 0.25F));
+    }
+
+    public PartTypeWriteBase(String name, PartRenderPosition partRenderPosition) {
+        super(name, partRenderPosition);
     }
 
     @Override
-    protected Map<Class<? extends INetworkEvent<IPartNetwork>>, IEventAction> constructNetworkEventActions() {
-        Map<Class<? extends INetworkEvent<IPartNetwork>>, IEventAction> actions = super.constructNetworkEventActions();
+    protected Map<Class<? extends INetworkEvent>, IEventAction> constructNetworkEventActions() {
+        Map<Class<? extends INetworkEvent>, IEventAction> actions = super.constructNetworkEventActions();
         actions.put(VariableContentsUpdatedEvent.class, new IEventAction<P, S, VariableContentsUpdatedEvent>() {
 
             @Override
-            public void onAction(IPartNetwork network, PartTarget target, S state, VariableContentsUpdatedEvent event) {
-                onVariableContentsUpdated(event.getNetwork(), target, state);
+            public void onAction(INetwork network, PartTarget target, S state, VariableContentsUpdatedEvent event) {
+                IPartNetwork partNetwork = NetworkHelpers.getPartNetwork(network);
+                onVariableContentsUpdated(partNetwork, target, state);
+            }
+        });
+        actions.put(NetworkElementAddEvent.Post.class, new IEventAction<P, S, NetworkElementAddEvent.Post>() {
+
+            @Override
+            public void onAction(INetwork network, PartTarget target, S state, NetworkElementAddEvent.Post event) {
+                IPartNetwork partNetwork = NetworkHelpers.getPartNetwork(network);
+                onVariableContentsUpdated(partNetwork, target, state);
             }
         });
         return actions;
+    }
+
+    @Override
+    protected Block createBlock(BlockConfig blockConfig) {
+        return new IgnoredBlockStatus(blockConfig);
     }
 
     @Override
@@ -61,7 +96,17 @@ public abstract class PartTypeWriteBase<P extends IPartTypeWriter<P, S>, S exten
     }
 
     @Override
-    public void addDrops(PartTarget target, S state, List<ItemStack> itemStacks, boolean dropMainElement) {
+    public void update(INetwork network, IPartNetwork partNetwork, PartTarget target, S state) {
+        super.update(network, partNetwork, target, state);
+        IAspect aspect = getActiveAspect(target, state);
+        if (aspect != null) {
+            aspect.update(network, partNetwork, this, target, state);
+        }
+    }
+
+    @Override
+    public void addDrops(PartTarget target, S state, List<ItemStack> itemStacks, boolean dropMainElement,
+        boolean saveState) {
         for (int i = 0; i < state.getInventory()
             .getSizeInventory(); i++) {
             ItemStack itemStack = state.getInventory()
@@ -73,30 +118,38 @@ public abstract class PartTypeWriteBase<P extends IPartTypeWriter<P, S>, S exten
         state.getInventory()
             .clear();
         state.triggerAspectInfoUpdate((P) this, target, null);
-        super.addDrops(target, state, itemStacks, dropMainElement);
+        super.addDrops(target, state, itemStacks, dropMainElement, saveState);
     }
 
     @Override
-    public void beforeNetworkKill(IPartNetwork network, PartTarget target, S state) {
-        super.beforeNetworkKill(network, target, state);
+    public void beforeNetworkKill(INetwork network, IPartNetwork partNetwork, PartTarget target, S state) {
+        super.beforeNetworkKill(network, partNetwork, target, state);
         state.triggerAspectInfoUpdate((P) this, target, null);
     }
 
     @Override
-    public void afterNetworkAlive(IPartNetwork network, PartTarget target, S state) {
-        super.afterNetworkAlive(network, target, state);
-        updateActivation(target, state);
+    public void afterNetworkAlive(INetwork network, IPartNetwork partNetwork, PartTarget target, S state) {
+        super.afterNetworkAlive(network, partNetwork, target, state);
+        updateActivation(target, state, null);
     }
 
     @Override
     public List<IAspectWrite> getWriteAspects() {
-        return Aspects.REGISTRY.getWriteAspects(this);
+        if (aspectsWrite == null) {
+            aspectsWrite = Aspects.REGISTRY.getWriteAspects(this);
+        }
+        return aspectsWrite;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    public <V extends IValue> IVariable<V> getActiveVariable(IPartNetwork network, PartTarget target, S partState) {
-        return partState.getVariable(network);
+    public boolean hasActiveVariable(IPartNetwork network, PartTarget target, S partState) {
+        return partState.hasVariable();
+    }
+
+    @Override
+    public <V extends IValue> IVariable<V> getActiveVariable(INetwork network, IPartNetwork partNetwork,
+        PartTarget target, S partState) {
+        return partState.getVariable(network, partNetwork);
     }
 
     @Override
@@ -105,7 +158,7 @@ public abstract class PartTypeWriteBase<P extends IPartTypeWriter<P, S>, S exten
     }
 
     @Override
-    public void updateActivation(PartTarget target, S partState) {
+    public void updateActivation(PartTarget target, S partState, @Nullable EntityPlayer player) {
         // Check inside the inventory for a variable item and determine everything with that.
         int activeIndex = -1;
         for (int i = 0; i < partState.getInventory()
@@ -118,47 +171,53 @@ public abstract class PartTypeWriteBase<P extends IPartTypeWriter<P, S>, S exten
         }
         IAspectWrite aspect = activeIndex == -1 ? null : getWriteAspects().get(activeIndex);
         partState.triggerAspectInfoUpdate((P) this, target, aspect);
+
+        INetwork network = NetworkHelpers.getNetwork(target.getCenter());
+        if (aspect != null) {
+            IPartNetwork partNetwork = NetworkHelpers.getPartNetwork(network);
+            MinecraftForge.EVENT_BUS.post(
+                new PartWriterAspectEvent<>(
+                    network,
+                    partNetwork,
+                    target,
+                    (P) this,
+                    partState,
+                    player,
+                    aspect,
+                    partState.getInventory()
+                        .getStackInSlot(activeIndex)));
+        }
+        if (network != null) {
+            network.getEventBus()
+                .post(new VariableContentsUpdatedEvent(network));
+        }
     }
 
     protected void onVariableContentsUpdated(IPartNetwork network, PartTarget target, S state) {
         state.onVariableContentsUpdated((P) this, target);
     }
 
-    protected Status getStatus(IPartStateWriter state) {
-        Status status = Status.INACTIVE;
+    protected IgnoredBlockStatus.Status getStatus(IPartStateWriter state) {
+        IgnoredBlockStatus.Status status = IgnoredBlockStatus.Status.INACTIVE;
         if (state != null && !state.getInventory()
             .isEmpty()) {
             if (state.hasVariable() && state.isEnabled()) {
-                status = Status.ACTIVE;
+                status = IgnoredBlockStatus.Status.ACTIVE;
             } else {
-                status = Status.ERROR;
+                status = IgnoredBlockStatus.Status.ERROR;
             }
         }
         return status;
     }
 
     @Override
-    public String getBlockModelPath(IPartContainer partContainer, ForgeDirection side) {
-        String status = "_inactive";
-        if (partContainer != null) {
-            IPartStateWriter state = (IPartStateWriter) partContainer.getPartState(side);
-            if (state != null) {
-                IAspectWrite aspectWrite = state.getActiveAspect();
-                if (aspectWrite != null) {
-                    if (state.hasVariable() && state.isEnabled()) {
-                        status = "_active";
-                    } else {
-                        status = "_error";
-                    }
-                }
-            }
-        }
-        return super.getBlockModelPath(partContainer, side) + status;
-    }
-
-    @Override
-    public String getItemModelPath() {
-        return super.getItemModelPath() + "_inactive";
+    public BlockState getBlockState(IPartContainer partContainer, ForgeDirection side) {
+        BlockState state = BlockStateHelpers.getState(getBlock(), 0);
+        IgnoredBlockStatus.Status status = getStatus(
+            partContainer != null ? (IPartStateWriter) partContainer.getPartState(side) : null);
+        state.setPropertyValue(IgnoredBlock.FACING, side);
+        state.setPropertyValue(IgnoredBlockStatus.STATUS, status);
+        return state;
     }
 
     @Override

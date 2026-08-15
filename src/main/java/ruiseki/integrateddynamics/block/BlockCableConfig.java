@@ -12,7 +12,7 @@ import ruiseki.okcore.config.extendedconfig.BlockContainerConfig;
 import ruiseki.okcore.helper.MinecraftHelpers;
 
 /**
- * Config for {@link BlockMultipartTicking}.
+ * Config for {@link ruiseki.integrateddynamics.core.block.BlockMultipartTicking}.
  *
  * @author rubensworks
  */

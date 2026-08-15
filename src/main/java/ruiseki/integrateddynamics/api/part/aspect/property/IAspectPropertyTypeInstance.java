@@ -1,5 +1,7 @@
 package ruiseki.integrateddynamics.api.part.aspect.property;
 
+import com.google.common.base.Predicate;
+
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 
@@ -19,4 +21,9 @@ public interface IAspectPropertyTypeInstance<T extends IValueType<V>, V extends 
      * @return The unique name of this property, also used for localization.
      */
     String getUnlocalizedName();
+
+    /**
+     * @return The value validator.
+     */
+    Predicate<V> getValidator();
 }

@@ -6,12 +6,13 @@ import net.minecraft.client.gui.FontRenderer;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartState;
 import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartTarget;
+import ruiseki.integrateddynamics.core.client.gui.ExtendedGuiHandler;
 import ruiseki.integrateddynamics.core.inventory.container.ContainerMultipart;
-import ruiseki.integrateddynamics.core.inventory.container.ContainerMultipartAspects;
 import ruiseki.integrateddynamics.core.part.PartTypeConfigurable;
 import ruiseki.okcore.client.gui.component.button.GuiButtonImage;
 import ruiseki.okcore.client.gui.container.GuiContainerExtended;
@@ -20,10 +21,12 @@ import ruiseki.okcore.helper.Helpers;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.init.ModBase;
 import ruiseki.okcore.inventory.IGuiContainerProvider;
+import ruiseki.okcore.inventory.container.ExtendedInventoryContainer;
+import ruiseki.okcore.inventory.container.button.IButtonActionClient;
 
 /**
  * Gui for parts.
- * 
+ *
  * @author rubensworks
  */
 @EqualsAndHashCode(callSuper = false)
@@ -31,6 +34,7 @@ import ruiseki.okcore.inventory.IGuiContainerProvider;
 public abstract class GuiMultipart<P extends IPartType<P, S> & IGuiContainerProvider, S extends IPartState<P>>
     extends GuiContainerExtended {
 
+    public static final int BUTTON_SETTINGS = 1;
     private static final Rectangle ITEM_POSITION = new Rectangle(8, 17, 18, 18);
 
     protected final DisplayErrorsComponent displayErrors = new DisplayErrorsComponent();
@@ -40,7 +44,7 @@ public abstract class GuiMultipart<P extends IPartType<P, S> & IGuiContainerProv
 
     /**
      * Make a new instance.
-     * 
+     *
      * @param container The container to make the GUI for.
      */
     public GuiMultipart(ContainerMultipart<P, S> container) {
@@ -48,6 +52,18 @@ public abstract class GuiMultipart<P extends IPartType<P, S> & IGuiContainerProv
         this.target = container.getTarget();
         this.partContainer = container.getPartContainer();
         this.partType = container.getPartType();
+
+        putButtonAction(BUTTON_SETTINGS, new IButtonActionClient<GuiContainerExtended, ExtendedInventoryContainer>() {
+
+            @Override
+            public void onAction(int buttonId, GuiContainerExtended gui, ExtendedInventoryContainer container) {
+                IntegratedDynamics._instance.getGuiHandler()
+                    .setTemporaryData(
+                        ExtendedGuiHandler.PART,
+                        getTarget().getCenter()
+                            .getSide()); // Pass the side as extra data to the gui
+            }
+        });
     }
 
     @Override
@@ -57,7 +73,7 @@ public abstract class GuiMultipart<P extends IPartType<P, S> & IGuiContainerProv
         if (getPartType() instanceof PartTypeConfigurable && ((PartTypeConfigurable) getPartType()).hasSettings()) {
             buttonList.add(
                 new GuiButtonImage(
-                    ContainerMultipartAspects.BUTTON_SETTINGS,
+                    GuiMultipartAspects.BUTTON_SETTINGS,
                     this.guiLeft + 174,
                     this.guiTop + 4,
                     15,
@@ -79,7 +95,7 @@ public abstract class GuiMultipart<P extends IPartType<P, S> & IGuiContainerProv
     @Override
     public String getGuiTexture() {
         return getContainer().getGuiProvider()
-            .getMod()
+            .getModGui()
             .getReferenceValue(ModBase.REFKEY_TEXTURE_PATH_GUI) + getNameId() + ".png";
     }
 
