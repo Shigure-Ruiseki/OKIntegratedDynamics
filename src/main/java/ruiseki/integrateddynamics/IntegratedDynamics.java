@@ -135,10 +135,10 @@ public class IntegratedDynamics extends ModBaseVersionable {
         modCompatLoader.addModCompat(new NEIModCompat());
     }
 
-    @Override
     @Mod.EventHandler
-    public void preInit(FMLPreInitializationEvent event) {
-
+    @Override
+    public final void preInit(FMLPreInitializationEvent event) {
+        // Registries
         getRegistryManager().addRegistry(IBucketRegistry.class, new BucketRegistry());
 
         getRegistryManager()
@@ -161,16 +161,16 @@ public class IntegratedDynamics extends ModBaseVersionable {
                 .addRegistry(IValueTypeWorldRendererRegistry.class, ValueTypeWorldRendererRegistry.getInstance());
             getRegistryManager()
                 .addRegistry(IVariableModelProviderRegistry.class, VariableModelProviderRegistry.getInstance());
-            getRegistryManager().getRegistry(IVariableFacadeHandlerRegistry.class)
-                .registerHandler(DelayVariableFacadeHandler.getInstance());
-            getRegistryManager().addRegistry(
-                IIngredientComponentHandlerRegistry.class,
-                IngredientComponentHandlerRegistry.getInstance());
-            getRegistryManager()
-                .addRegistry(INetworkCraftingHandlerRegistry.class, NetworkCraftingHandlerRegistry.getInstance());
         }
+
         getRegistryManager().getRegistry(IVariableFacadeHandlerRegistry.class)
             .registerHandler(ProxyVariableFacadeHandler.getInstance());
+        getRegistryManager().getRegistry(IVariableFacadeHandlerRegistry.class)
+            .registerHandler(DelayVariableFacadeHandler.getInstance());
+        getRegistryManager()
+            .addRegistry(IIngredientComponentHandlerRegistry.class, IngredientComponentHandlerRegistry.getInstance());
+        getRegistryManager()
+            .addRegistry(INetworkCraftingHandlerRegistry.class, NetworkCraftingHandlerRegistry.getInstance());
 
         addInitListeners(getRegistryManager().getRegistry(IPartTypeRegistry.class));
 
