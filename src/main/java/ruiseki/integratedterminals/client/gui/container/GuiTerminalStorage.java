@@ -810,7 +810,6 @@ public class GuiTerminalStorage extends GuiContainerExtended {
         Optional<ITerminalStorageTabClient<?>> optionalTab = getClientTab(tabId);
         if (optionalTab.isPresent()) {
             ITerminalStorageTabClient<?> tab = optionalTab.get();
-            // Draw status string
             if (layer == DrawLayer.BACKGROUND) {
                 drawCenteredString(
                     fontRendererObj,
@@ -832,7 +831,6 @@ public class GuiTerminalStorage extends GuiContainerExtended {
             int slotI = 0;
             for (ITerminalStorageSlot slot : slots) {
                 if (layer == DrawLayer.BACKGROUND) {
-                    // highlight slot on hover
                     RenderHelpers.bindTexture(this.texture);
                     if (RenderHelpers.isPointInRegion(
                         slotX,
@@ -851,7 +849,13 @@ public class GuiTerminalStorage extends GuiContainerExtended {
                 }
 
                 this.zLevel = 200F;
+                RenderHelper.enableGUIStandardItemLighting();
+
                 slot.drawGuiContainerLayer(this, layer, partialTick, slotX, slotY, mouseX, mouseY, tab, channel, null);
+
+                GlStateManager.disableLighting();
+                GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+                GlStateManager.enableTexture2D();
                 this.zLevel = 0F;
 
                 if (++slotI >= rowLength) {
@@ -895,6 +899,9 @@ public class GuiTerminalStorage extends GuiContainerExtended {
                         quantityString = EnumChatFormatting.YELLOW + quantityString;
                     }
 
+                    this.zLevel = 300F;
+                    RenderHelper.enableGUIStandardItemLighting();
+
                     slot.drawGuiContainerLayer(
                         this,
                         DrawLayer.BACKGROUND,
@@ -906,6 +913,11 @@ public class GuiTerminalStorage extends GuiContainerExtended {
                         tab,
                         getContainer().getSelectedChannel(),
                         quantityString);
+
+                    RenderHelper.disableStandardItemLighting();
+                    GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+                    GlStateManager.enableTexture2D();
+                    this.zLevel = 0F;
                 }
             }
         });

@@ -45,7 +45,7 @@ import ruiseki.okcore.helper.GuiHelpers;
 import ruiseki.okcore.helper.ItemHandlerHelpers;
 
 /**
- * Terminal storage handler for items (Minecraft 1.7.10 compatible).
+ * Terminal storage handler for items.
  *
  * @author rubensworks
  */

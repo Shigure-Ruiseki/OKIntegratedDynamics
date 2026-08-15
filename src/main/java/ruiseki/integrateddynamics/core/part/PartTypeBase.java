@@ -128,7 +128,7 @@ public abstract class PartTypeBase<P extends IPartType<P, S>, S extends IPartSta
             }
         };
         Block block = createBlock(blockConfig);
-        BlockAction.register(block, blockConfig.getSubUniqueName(), blockConfig.getTargetTab());
+        BlockAction.register(block, blockConfig, blockConfig.getTargetTab());
         return block;
     }
 
