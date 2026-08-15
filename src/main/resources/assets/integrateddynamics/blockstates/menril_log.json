@@ -1,6 +1,5 @@
 {
   "variants": {
-    "": { "model": "integrateddynamics:block/menril_log" },
     "axis=y": { "model": "integrateddynamics:block/menril_log" },
     "axis=z": { "model": "integrateddynamics:block/menril_log", "x": 90 },
     "axis=x": { "model": "integrateddynamics:block/menril_log", "x": 90, "y": 90 }

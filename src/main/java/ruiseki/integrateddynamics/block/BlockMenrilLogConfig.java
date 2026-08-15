@@ -4,8 +4,6 @@ import net.minecraft.init.Blocks;
 
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.Reference;
-import ruiseki.okcore.config.ConfigurableProperty;
-import ruiseki.okcore.config.ConfigurableTypeCategory;
 import ruiseki.okcore.config.extendedconfig.BlockConfig;
 
 /**
@@ -15,18 +13,6 @@ import ruiseki.okcore.config.extendedconfig.BlockConfig;
  *
  */
 public class BlockMenrilLogConfig extends BlockConfig {
-
-    /**
-     * The 1/x chance at which a Menril Log will be filled with Menril Resin when generated, the higher this value, the
-     * lower the chance.
-     * TODO Add filledMenrilLogChance
-     */
-    @ConfigurableProperty(
-        category = ConfigurableTypeCategory.WORLDGENERATION,
-        comment = "The 1/x chance at which a Menril Log will be filled with Menril Resin when generated, the higher this value, the lower the chance.",
-        isCommandable = true,
-        minimalValue = 0)
-    public static int filledMenrilLogChance = 10;
 
     /**
      * The unique instance.
@@ -49,5 +35,4 @@ public class BlockMenrilLogConfig extends BlockConfig {
     public void onRegistered() {
         Blocks.fire.setFireInfo(getBlockInstance(), 5, 20);
     }
-
 }

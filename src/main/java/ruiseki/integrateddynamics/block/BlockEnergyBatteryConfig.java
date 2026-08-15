@@ -5,9 +5,7 @@ import net.minecraft.item.ItemBlock;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.integrateddynamics.IntegratedDynamics;
-import ruiseki.integrateddynamics.client.render.tileentity.RenderTileEntityEnergyBattery;
 import ruiseki.integrateddynamics.core.item.ItemBlockEnergyContainerAutoSupply;
-import ruiseki.integrateddynamics.tileentity.TileEnergyBattery;
 import ruiseki.okcore.config.ConfigurableProperty;
 import ruiseki.okcore.config.ConfigurableTypeCategory;
 import ruiseki.okcore.config.extendedconfig.BlockContainerConfig;
@@ -84,7 +82,5 @@ public class BlockEnergyBatteryConfig extends BlockContainerConfig {
     @SideOnly(Side.CLIENT)
     public void onRegistered() {
         super.onRegistered();
-        getMod().getProxy()
-            .registerRenderer(TileEnergyBattery.class, new RenderTileEntityEnergyBattery());
     }
 }

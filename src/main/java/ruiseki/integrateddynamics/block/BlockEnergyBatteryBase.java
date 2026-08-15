@@ -46,14 +46,17 @@ public abstract class BlockEnergyBatteryBase extends BlockContainerCabled implem
         if (super.onBlockActivated(world, x, y, z, player, sideInt, subX, subY, subZ)) {
             return true;
         }
+
         if (player.getHeldItem() == null) {
-            TileEnergyBattery tile = TileHelpers.getSafeTile(world, x, y, z, TileEnergyBattery.class);
-            if (tile != null) {
-                player.addChatComponentMessage(
-                    new ChatComponentTranslation(
-                        Helpers.getLocalizedEnergyLevel(tile.getEnergyStored(), tile.getMaxEnergyStored())));
-                return true;
+            if (!world.isRemote) {
+                TileEnergyBattery tile = TileHelpers.getSafeTile(world, x, y, z, TileEnergyBattery.class);
+                if (tile != null) {
+                    player.addChatComponentMessage(
+                        new ChatComponentTranslation(
+                            Helpers.getLocalizedEnergyLevel(tile.getEnergyStored(), tile.getMaxEnergyStored())));
+                }
             }
+            return true;
         }
         return false;
     }

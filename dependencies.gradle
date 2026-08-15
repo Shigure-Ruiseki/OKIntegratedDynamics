@@ -35,14 +35,13 @@
  */
 dependencies {
     implementation("com.github.GTNewHorizons:GTNHLib:0.11.37:dev")
-    implementation("com.github.Shigure-Ruiseki:OKCore:c82efd1aa9:dev") { transitive = false }
+    implementation("com.github.Shigure-Ruiseki:OKCore:2e1435c3ca:dev") { transitive = false }
 
     devOnlyNonPublishable('com.github.GTNewHorizons:NotEnoughItems:2.8.119-GTNH:dev')
     devOnlyNonPublishable("com.github.GTNewHorizons:ModularUI2:2.3.85-1.7.10:dev") { transitive = false }
-    devOnlyNonPublishable('com.github.Shigure-Ruiseki:JFMUY:c8bdc6c982:dev') { transitive = false }
+    devOnlyNonPublishable('com.github.Shigure-Ruiseki:JFMUY:7acb33c622:dev') { transitive = false }
     devOnlyNonPublishable("com.github.GTNewHorizons:waila:1.19.31:dev") { transitive = false }
 
-    runtimeOnlyNonPublishable("com.github.GTNewHorizons:EnderIO:2.10.36:dev")
     runtimeOnlyNonPublishable("com.github.GTNewHorizons:Hodgepodge:2.7.181:dev") { transitive = false }
     runtimeOnlyNonPublishable("com.github.GTNewHorizons:BetterCrashes:1.4.5-GTNH:dev")
     runtimeOnlyNonPublishable("com.github.GTNewHorizons:ServerUtilities:2.4.6:dev")
