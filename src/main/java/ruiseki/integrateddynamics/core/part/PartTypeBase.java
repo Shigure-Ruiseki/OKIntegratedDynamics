@@ -162,7 +162,7 @@ public abstract class PartTypeBase<P extends IPartType<P, S>, S extends IPartSta
             }
         };
         Item item = createItem(itemConfig);
-        ItemAction.register(item, itemConfig.getSubUniqueName(), itemConfig.getTargetTab());
+        ItemAction.register(item, itemConfig, itemConfig.getTargetTab());
         return item;
     }
 

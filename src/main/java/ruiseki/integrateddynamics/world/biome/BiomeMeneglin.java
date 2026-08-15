@@ -15,7 +15,6 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.okcore.config.configurable.ConfigurableBiome;
 import ruiseki.okcore.config.extendedconfig.BiomeConfig;
-import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 import ruiseki.okcore.helper.Helpers;
 
 /**
@@ -34,8 +33,8 @@ public class BiomeMeneglin extends ConfigurableBiome {
         return _instance;
     }
 
-    public BiomeMeneglin(ExtendedConfig<BiomeConfig> eConfig) {
-        super(eConfig.downCast());
+    public BiomeMeneglin(BiomeConfig eConfig) {
+        super(eConfig);
 
         this.setHeight(new BiomeGenBase.Height(0.4F, 0.4F));
         this.setTemperatureRainfall(0.75F, 0.25F);

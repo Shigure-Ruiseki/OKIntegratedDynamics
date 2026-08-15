@@ -30,7 +30,7 @@ import ruiseki.integrateddynamics.core.item.ProxyVariableFacade;
 import ruiseki.integrateddynamics.core.item.VariableFacadeHandlerRegistry;
 import ruiseki.okcore.capabilities.ICapabilityProvider;
 import ruiseki.okcore.config.configurable.ConfigurableItem;
-import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
+import ruiseki.okcore.config.extendedconfig.ItemConfig;
 import ruiseki.okcore.helper.CapabilityHelpers;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.modcompat.capabilities.DefaultCapabilityProvider;
@@ -43,7 +43,7 @@ public class ItemVariable extends ConfigurableItem implements ItemWithTextures {
         return _instance;
     }
 
-    public ItemVariable(ExtendedConfig eConfig) {
+    public ItemVariable(ItemConfig eConfig) {
         super(eConfig);
     }
 

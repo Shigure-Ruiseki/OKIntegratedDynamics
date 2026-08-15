@@ -7,7 +7,7 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.integrateddynamics.client.gui.GuiLogicProgrammerPortable;
 import ruiseki.integrateddynamics.inventory.container.ContainerLogicProgrammerPortable;
-import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
+import ruiseki.okcore.config.extendedconfig.ItemConfig;
 import ruiseki.okcore.item.ItemGui;
 
 /**
@@ -33,7 +33,7 @@ public class ItemPortableLogicProgrammer extends ItemGui {
      *
      * @param eConfig Config for this blockState.
      */
-    public ItemPortableLogicProgrammer(ExtendedConfig eConfig) {
+    public ItemPortableLogicProgrammer(ItemConfig eConfig) {
         super(eConfig);
     }
 

@@ -27,7 +27,7 @@ import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.integrateddynamics.core.helper.PartHelpers;
 import ruiseki.integrateddynamics.item.ItemBlockCable;
 import ruiseki.okcore.config.configurable.ConfigurableItem;
-import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
+import ruiseki.okcore.config.extendedconfig.ItemConfig;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
@@ -51,7 +51,7 @@ public class ItemPart<P extends IPartType<P, S>, S extends IPartState<P>> extend
      * @param eConfig Config for this blockState.
      * @param part    The part this item will place.
      */
-    public ItemPart(ExtendedConfig eConfig, IPartType<P, S> part) {
+    public ItemPart(ItemConfig eConfig, IPartType<P, S> part) {
         super(eConfig);
         this.part = part;
     }

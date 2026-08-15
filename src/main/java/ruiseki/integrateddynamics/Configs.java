@@ -105,11 +105,12 @@ public class Configs {
     /**
      * A safe way to check if a {@link ruiseki.okcore.config.configurable.IConfigurable} is enabled. @see
      * ExtendedConfig#isEnabled()
-     * 
+     *
      * @param config The config to check.
      * @return If the given config is enabled.
      */
     public static boolean isEnabled(Class<? extends ExtendedConfig<?>> config) {
-        return ConfigHandler.isEnabled(config);
+        return IntegratedDynamics._instance.getConfigHandler()
+            .isConfigEnabled(config);
     }
 }
