@@ -34,6 +34,7 @@ import ruiseki.integrateddynamics.api.logicprogrammer.ILogicProgrammerElementTyp
 import ruiseki.integrateddynamics.api.network.INetworkCraftingHandlerRegistry;
 import ruiseki.integrateddynamics.api.part.IPartTypeRegistry;
 import ruiseki.integrateddynamics.api.part.aspect.IAspectRegistry;
+import ruiseki.integrateddynamics.block.BlockCableConfig;
 import ruiseki.integrateddynamics.capability.ingredient.IngredientComponentCapabilities;
 import ruiseki.integrateddynamics.capability.network.NetworkCapabilityConstructors;
 import ruiseki.integrateddynamics.client.render.part.PartOverlayRendererRegistry;
@@ -75,7 +76,9 @@ import ruiseki.integrateddynamics.part.PartTypeConnectorOmniDirectional;
 import ruiseki.integrateddynamics.part.aspect.Aspects;
 import ruiseki.okcore.client.gui.GuiHandler;
 import ruiseki.okcore.config.ConfigHandler;
+import ruiseki.okcore.config.extendedconfig.BlockItemConfigReference;
 import ruiseki.okcore.helper.MinecraftHelpers;
+import ruiseki.okcore.init.ItemCreativeTab;
 import ruiseki.okcore.init.ModBaseVersionable;
 import ruiseki.okcore.item.BucketRegistry;
 import ruiseki.okcore.item.IBucketRegistry;
@@ -241,7 +244,7 @@ public class IntegratedDynamics extends ModBaseVersionable {
 
     @Override
     public CreativeTabs constructDefaultCreativeTab() {
-        return null;
+        return new ItemCreativeTab(this, new BlockItemConfigReference(BlockCableConfig.class));
     }
 
     @Override

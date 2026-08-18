@@ -3,6 +3,7 @@ package ruiseki.integrateddynamics.block;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Random;
 
 import net.minecraft.block.Block;
@@ -12,7 +13,6 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.AxisAlignedBB;
-import net.minecraft.util.IIcon;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.IBlockAccess;
@@ -37,6 +37,7 @@ import ruiseki.integrateddynamics.api.block.IDynamicRedstone;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartState;
 import ruiseki.integrateddynamics.api.part.IPartType;
+import ruiseki.integrateddynamics.api.part.PartRenderPosition;
 import ruiseki.integrateddynamics.block.collidable.CollidableComponentCableCenter;
 import ruiseki.integrateddynamics.block.collidable.CollidableComponentCableConnections;
 import ruiseki.integrateddynamics.block.collidable.CollidableComponentFacade;
@@ -44,6 +45,7 @@ import ruiseki.integrateddynamics.block.collidable.CollidableComponentParts;
 import ruiseki.integrateddynamics.capability.dynamiclight.DynamicLightConfig;
 import ruiseki.integrateddynamics.capability.dynamicredstone.DynamicRedstoneConfig;
 import ruiseki.integrateddynamics.client.model.CableModel;
+import ruiseki.integrateddynamics.client.model.CableRenderState;
 import ruiseki.integrateddynamics.core.helper.CableHelpers;
 import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
 import ruiseki.integrateddynamics.core.helper.PartHelpers;
@@ -54,14 +56,15 @@ import ruiseki.okcore.block.collidable.CollidableComponent;
 import ruiseki.okcore.block.collidable.ICollidable;
 import ruiseki.okcore.block.collidable.ICollidableParent;
 import ruiseki.okcore.block.collidable.ImmutableAxisAlignedBB;
-import ruiseki.okcore.client.icon.Icon;
+import ruiseki.okcore.block.property.BlockProperty;
+import ruiseki.okcore.block.property.IProperty;
+import ruiseki.okcore.block.property.UnlistedProperty;
 import ruiseki.okcore.config.configurable.ConfigurableBlockContainer;
 import ruiseki.okcore.config.extendedconfig.BlockConfig;
 import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.EnumFacingMap;
 import ruiseki.okcore.helper.CapabilityHelpers;
-import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.helper.RenderHelpers;
 import ruiseki.okcore.helper.TileHelpers;
 
@@ -70,6 +73,32 @@ public class BlockCable extends ConfigurableBlockContainer
 
     public static final float BLOCK_HARDNESS = 3.0F;
     public static final Material BLOCK_MATERIAL = Material.glass;
+
+    // Properties
+    @BlockProperty
+    public static final IProperty<Boolean> REALCABLE = new UnlistedProperty<>("realcable", Boolean.class);
+    @BlockProperty
+    public static final IProperty<Boolean>[] CONNECTED = new IProperty[6];
+    @BlockProperty
+    public static final IProperty<PartRenderPosition>[] PART_RENDERPOSITIONS = new IProperty[6];
+    @BlockProperty
+    public static final IProperty<Optional> FACADE = new UnlistedProperty<>("facade", Optional.class);
+    static {
+        for (ForgeDirection side : ForgeDirection.VALID_DIRECTIONS) {
+            CONNECTED[side.ordinal()] = new UnlistedProperty<>("connect-" + side.name(), Boolean.class);
+            PART_RENDERPOSITIONS[side.ordinal()] = new UnlistedProperty<>(
+                "partRenderPosition-" + side.name(),
+                PartRenderPosition.class);
+        }
+    }
+    @BlockProperty
+    public static final IProperty<IPartContainer> PARTCONTAINER = new UnlistedProperty<>(
+        "partcontainer",
+        IPartContainer.class);
+    @BlockProperty
+    public static final IProperty<CableRenderState> RENDERSTATE = new UnlistedProperty<>(
+        "renderState",
+        CableRenderState.class);
 
     // Collision boxes
     public final static ImmutableAxisAlignedBB CABLE_CENTER_BOUNDINGBOX = ImmutableAxisAlignedBB
@@ -109,9 +138,6 @@ public class BlockCable extends ConfigurableBlockContainer
 
     public static boolean IS_MCMP_CONVERTING = false;
 
-    @SideOnly(Side.CLIENT)
-    @Icon(location = "blocks/cable")
-    public IIcon texture;
     @Setter
     private boolean disableCollisionBox = false;
 
@@ -134,11 +160,6 @@ public class BlockCable extends ConfigurableBlockContainer
 
         setHardness(BLOCK_HARDNESS);
         setStepSound(soundTypeMetal);
-        if (MinecraftHelpers.isClientSide()) {
-            eConfig.getMod()
-                .getIconProvider()
-                .registerIconHolderObject(this);
-        }
     }
 
     @Override

@@ -3,6 +3,7 @@ package ruiseki.integrateddynamics;
 import ruiseki.integrateddynamics.block.BlockCableConfig;
 import ruiseki.integrateddynamics.block.BlockDelayConfig;
 import ruiseki.integrateddynamics.block.BlockEnergyBatteryConfig;
+import ruiseki.integrateddynamics.block.BlockFluidMenrilResinConfig;
 import ruiseki.integrateddynamics.block.BlockInvisibleLightConfig;
 import ruiseki.integrateddynamics.block.BlockLogicProgrammerConfig;
 import ruiseki.integrateddynamics.block.BlockMenrilLeavesConfig;
@@ -28,6 +29,9 @@ import ruiseki.integrateddynamics.capability.path.PathElementConfig;
 import ruiseki.integrateddynamics.capability.valueinterface.ValueInterfaceConfig;
 import ruiseki.integrateddynamics.capability.variablecontainer.VariableContainerConfig;
 import ruiseki.integrateddynamics.capability.variablefacade.VariableFacadeHolderConfig;
+import ruiseki.integrateddynamics.fluid.FluidLiquidChorusConfig;
+import ruiseki.integrateddynamics.fluid.FluidMenrilResinConfig;
+import ruiseki.integrateddynamics.item.ItemBucketMenrilResinConfig;
 import ruiseki.integrateddynamics.item.ItemCrystalizedMenrilChunkConfig;
 import ruiseki.integrateddynamics.item.ItemFacadeConfig;
 import ruiseki.integrateddynamics.item.ItemLabellerConfig;
@@ -64,7 +68,8 @@ public class Configs {
         configHandler.add(new IngredientComponentValueHandlerConfig());
 
         // Fluids
-        // configHandler.add(new FluidMenrilResinConfig());
+        configHandler.add(new FluidMenrilResinConfig());
+        configHandler.add(new FluidLiquidChorusConfig());
 
         // Blocks
         configHandler.add(new BlockCableConfig());
@@ -83,26 +88,43 @@ public class Configs {
         configHandler.add(new BlockMenrilPlanksConfig());
         // configHandler.add(new BlockCrystalizedMenrilBlockConfig());
         // configHandler.add(new BlockCrystalizedMenrilBrickConfig());
-        // configHandler.add(new BlockFluidMenrilResinConfig());
+        configHandler.add(new BlockFluidMenrilResinConfig());
         // configHandler.add(new BlockDryingBasinConfig());
         // configHandler.add(new BlockSqueezerConfig());
+        // configHandler.add(new BlockMenrilDoorConfig());
         // configHandler.add(new BlockMenrilTorchConfig());
+        // configHandler.add(new BlockMenrilTorchStoneConfig());
+        // configHandler.add(new BlockMenrilPlanksStairsConfig());
+        // configHandler.add(new BlockCrystalizedMenrilBlockStairsConfig());
+        // configHandler.add(new BlockCrystalizedMenrilBrickStairsConfig());
         configHandler.add(new BlockDelayConfig());
+        // configHandler.add(new BlockFluidLiquidChorusConfig());
+        // configHandler.add(new BlockCrystalizedChorusBlockConfig());
+        // configHandler.add(new BlockCrystalizedChorusBrickConfig());
+        // configHandler.add(new BlockCrystalizedChorusBlockStairsConfig());
+        // configHandler.add(new BlockCrystalizedChorusBrickStairsConfig());
+        // configHandler.add(new BlockMechanicalSqueezerConfig());
+        // configHandler.add(new BlockMechanicalDryingBasinConfig());
 
         // Items
         configHandler.add(new ItemWrenchConfig());
         configHandler.add(new ItemVariableConfig());
         configHandler.add(new ItemLabellerConfig());
         configHandler.add(new ItemFacadeConfig());
-        // configHandler.add(new ItemBucketMenrilResinConfig());
+        configHandler.add(new ItemBucketMenrilResinConfig());
         configHandler.add(new ItemCrystalizedMenrilChunkConfig());
         configHandler.add(new ItemVariableTransformerConfig());
         configHandler.add(new ItemMenrilBerriesConfig());
         configHandler.add(new ItemPortableLogicProgrammerConfig());
+        // configHandler.add(new ItemOnTheDynamicsOfIntegrationConfig());
+        // configHandler.add(new ItemCrystalizedChorusChunkConfig());
         configHandler.add(new ItemLogicDirectorConfig());
 
         // Biomes
         configHandler.add(new BiomeMeneglinConfig());
+
+        // Entities
+        // configHandler.add(new EntityItemTargettedConfig());
     }
 
     /**

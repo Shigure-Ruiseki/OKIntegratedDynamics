@@ -2,6 +2,7 @@ package ruiseki.integrateddynamics.client.gui;
 
 import java.awt.Rectangle;
 
+import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 
@@ -70,7 +71,9 @@ public class GuiPartWriter<P extends IPartTypeWriter<P, S> & IGuiContainerProvid
         // Render dummy target item
         ItemStack itemStack = container.writeAspectInfo(false, new ItemStack(ItemVariable.getInstance()), aspect);
         Rectangle pos = getElementPosition(container, index, true);
+        RenderHelper.enableGUIStandardItemLighting();
         itemRender.renderItemAndEffectIntoGUI(mc.fontRenderer, mc.getTextureManager(), itemStack, pos.x, pos.y);
+        RenderHelper.disableStandardItemLighting();
 
         // Render error symbol
         if (getPartState().isEnabled()) displayErrors.drawBackground(

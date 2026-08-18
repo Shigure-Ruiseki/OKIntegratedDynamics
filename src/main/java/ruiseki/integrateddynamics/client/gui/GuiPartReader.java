@@ -3,6 +3,7 @@ package ruiseki.integrateddynamics.client.gui;
 import java.awt.Rectangle;
 
 import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 
@@ -74,7 +75,9 @@ public class GuiPartReader<P extends IPartTypeReader<P, S> & IGuiContainerProvid
         // This could be cached if this would prove to be a bottleneck
         ItemStack itemStack = container.writeAspectInfo(false, new ItemStack(ItemVariable.getInstance()), aspect);
         Rectangle pos = getElementPosition(container, index, true);
+        RenderHelper.enableGUIStandardItemLighting();
         itemRender.renderItemAndEffectIntoGUI(mc.fontRenderer, mc.getTextureManager(), itemStack, pos.x, pos.y);
+        RenderHelper.disableStandardItemLighting();
     }
 
     @Override

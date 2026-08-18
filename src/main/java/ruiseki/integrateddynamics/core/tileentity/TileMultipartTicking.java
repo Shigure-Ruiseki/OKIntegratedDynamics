@@ -2,6 +2,7 @@ package ruiseki.integrateddynamics.core.tileentity;
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.common.util.ForgeDirection;
@@ -9,13 +10,18 @@ import net.minecraftforge.common.util.ForgeDirection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
+
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Delegate;
+import ruiseki.integrateddynamics.api.block.IFacadeable;
 import ruiseki.integrateddynamics.api.block.cable.ICableFakeable;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.INetworkCarrier;
 import ruiseki.integrateddynamics.api.network.INetworkElement;
+import ruiseki.integrateddynamics.api.part.PartRenderPosition;
+import ruiseki.integrateddynamics.block.BlockCable;
 import ruiseki.integrateddynamics.capability.cable.CableConfig;
 import ruiseki.integrateddynamics.capability.cable.CableFakeableConfig;
 import ruiseki.integrateddynamics.capability.cable.CableFakeableMultipartTicking;
@@ -34,9 +40,11 @@ import ruiseki.integrateddynamics.capability.partcontainer.PartContainerConfig;
 import ruiseki.integrateddynamics.capability.partcontainer.PartContainerTileMultipartTicking;
 import ruiseki.integrateddynamics.capability.path.PathElementConfig;
 import ruiseki.integrateddynamics.capability.path.PathElementTileMultipartTicking;
+import ruiseki.integrateddynamics.client.model.CableRenderState;
 import ruiseki.integrateddynamics.core.helper.CableHelpers;
 import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
 import ruiseki.integrateddynamics.core.helper.PartHelpers;
+import ruiseki.okcore.block.property.BlockStateBuilder;
 import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.capabilities.resolver.BasicCapabilityResolver;
 import ruiseki.okcore.capabilities.resolver.SidedCapabilityResolver;
@@ -97,6 +105,11 @@ public class TileMultipartTicking extends TileEntityOK
     private final INetworkCarrier networkCarrier;
     @Getter
     private final ICableFakeable cableFakeable;
+
+    private BlockState cachedState = null;
+
+    @Getter
+    private transient boolean clientDataReady = false;
 
     public TileMultipartTicking() {
         partContainer = new PartContainerTileMultipartTicking(this);
@@ -169,12 +182,58 @@ public class TileMultipartTicking extends TileEntityOK
 
     @Override
     public void onUpdateReceived() {
+        this.clientDataReady = true;
         this.worldObj.markBlockForUpdate(this.xCoord, this.yCoord, this.zCoord);
         if (!lightLevels.equals(previousLightLevels)) {
             previousLightLevels = lightLevels;
             this.worldObj.func_147451_t(this.xCoord, this.yCoord, this.zCoord);
         }
+        cachedState = null;
+    }
 
+    public boolean isReadyForRendering() {
+        if (getWorldObj() != null && getWorldObj().isRemote) {
+            return clientDataReady && partContainer.getPartData() != null;
+        }
+        return true;
+    }
+
+    public BlockState getConnectionState() {
+        if (cachedState != null) {
+            return cachedState;
+        }
+        BlockStateBuilder builder = BlockStateBuilder.builder(
+            BlockCable.getInstance()
+                .getDefaultState(0));
+        if (partContainer.getPartData() != null) { // Can be null in rare cases where rendering happens before data sync
+            builder.withProperty(BlockCable.REALCABLE, cableFakeable.isRealCable());
+            if (connected.isEmpty()) {
+                getCable().updateConnections();
+            }
+            for (ForgeDirection side : ForgeDirection.VALID_DIRECTIONS) {
+                builder.withProperty(
+                    BlockCable.CONNECTED[side.ordinal()],
+                    !cable.isForceDisconnected(side) && connected.get(side));
+                builder.withProperty(
+                    BlockCable.PART_RENDERPOSITIONS[side.ordinal()],
+                    partContainer.hasPart(side) ? partContainer.getPart(side)
+                        .getPartRenderPosition() : PartRenderPosition.NONE);
+            }
+            IFacadeable facadeable = getCapability(FacadeableConfig.CAPABILITY, null).getOrNull();
+            builder.withProperty(
+                BlockCable.FACADE,
+                facadeable.hasFacade() ? Optional.of(facadeable.getFacade()) : Optional.empty());
+            builder.withProperty(BlockCable.PARTCONTAINER, partContainer);
+            builder.withProperty(
+                BlockCable.RENDERSTATE,
+                new CableRenderState(
+                    this.cableFakeable.isRealCable(),
+                    EnumFacingMap.newMap(this.connected),
+                    EnumFacingMap.newMap(this.partContainer.getPartData()),
+                    facadeBlockName,
+                    facadeMeta));
+        }
+        return cachedState = builder.build();
     }
 
     @Override
