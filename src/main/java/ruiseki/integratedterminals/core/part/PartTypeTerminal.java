@@ -8,12 +8,11 @@ import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.core.block.IgnoredBlock;
 import ruiseki.integrateddynamics.core.part.panel.PartTypePanel;
 import ruiseki.integratedterminals.IntegratedTerminals;
-import ruiseki.okcore.config.extendedconfig.BlockConfig;
 import ruiseki.okcore.init.ModBase;
 
 /**
  * Base part for a terminal.
- * 
+ *
  * @author rubensworks
  */
 public abstract class PartTypeTerminal<P extends PartTypeTerminal<P, S>, S extends IPartState<P>>
@@ -24,8 +23,8 @@ public abstract class PartTypeTerminal<P extends PartTypeTerminal<P, S>, S exten
     }
 
     @Override
-    protected Block createBlock(BlockConfig blockConfig) {
-        return new IgnoredBlock(blockConfig);
+    protected Block createBlock() {
+        return new IgnoredBlock();
     }
 
     @Override

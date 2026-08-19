@@ -6,7 +6,6 @@ import ruiseki.integrateddynamics.api.part.IPartState;
 import ruiseki.integrateddynamics.api.part.PartRenderPosition;
 import ruiseki.integrateddynamics.core.block.IgnoredBlockStatus;
 import ruiseki.integrateddynamics.core.part.PartTypeBase;
-import ruiseki.okcore.config.extendedconfig.BlockConfig;
 
 /**
  * A base part that is flat and can be used to render things on.
@@ -20,8 +19,8 @@ public abstract class PartTypePanel<P extends PartTypePanel<P, S>, S extends IPa
     }
 
     @Override
-    protected Block createBlock(BlockConfig blockConfig) {
-        return new IgnoredBlockStatus(blockConfig);
+    protected Block createBlock() {
+        return new IgnoredBlockStatus();
     }
 
 }

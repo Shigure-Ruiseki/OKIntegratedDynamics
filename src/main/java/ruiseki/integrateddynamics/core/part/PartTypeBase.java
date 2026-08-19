@@ -78,7 +78,7 @@ public abstract class PartTypeBase<P extends IPartType<P, S>, S extends IPartSta
         } else {
             this.guiID = -1;
         }
-        this.name = name;;
+        this.name = name;
         this.block = registerBlock();
         this.item = registerItem();
         this.partRenderPosition = partRenderPosition;
@@ -101,11 +101,10 @@ public abstract class PartTypeBase<P extends IPartType<P, S>, S extends IPartSta
     /**
      * Factory method for creating a block instance.
      *
-     * @param blockConfig The config to register the block for.
      * @return The block instance.
      */
-    protected Block createBlock(BlockConfig blockConfig) {
-        return new IgnoredBlock(blockConfig);
+    protected Block createBlock() {
+        return new IgnoredBlock();
     }
 
     /**
@@ -123,11 +122,12 @@ public abstract class PartTypeBase<P extends IPartType<P, S>, S extends IPartSta
             }
 
             @Override
-            public Block getBlockInstance() {
+            public Block getInstance() {
                 return PartTypeBase.this.getBlock();
             }
         };
-        Block block = createBlock(blockConfig);
+        Block block = createBlock();
+        block.setBlockName(blockConfig.getNamedId());
         BlockAction.register(block, blockConfig, blockConfig.getTargetTab());
         return block;
     }
@@ -135,11 +135,10 @@ public abstract class PartTypeBase<P extends IPartType<P, S>, S extends IPartSta
     /**
      * Factory method for creating a item instance.
      *
-     * @param itemConfig The config to register the item for.
      * @return The item instance.
      */
-    protected Item createItem(ItemConfig itemConfig) {
-        return new ItemPart<P, S>(itemConfig, this);
+    protected Item createItem() {
+        return new ItemPart<P, S>(this);
     }
 
     /**
@@ -161,7 +160,8 @@ public abstract class PartTypeBase<P extends IPartType<P, S>, S extends IPartSta
                 return PartTypeBase.this.getUnlocalizedName();
             }
         };
-        Item item = createItem(itemConfig);
+        Item item = createItem();
+        item.setUnlocalizedName(itemConfig.getUnlocalizedName());
         ItemAction.register(item, itemConfig, itemConfig.getTargetTab());
         return item;
     }

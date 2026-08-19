@@ -1,13 +1,13 @@
 package ruiseki.integrateddynamics.item;
 
+import net.minecraft.block.Block;
+import net.minecraftforge.fluids.Fluid;
+
 import ruiseki.integrateddynamics.IntegratedDynamics;
-import ruiseki.integrateddynamics.block.BlockFluidMenrilResin;
-import ruiseki.integrateddynamics.fluid.FluidMenrilResin;
-import ruiseki.okcore.config.configurable.ConfigurableBlockFluidClassic;
-import ruiseki.okcore.config.configurable.ConfigurableFluid;
-import ruiseki.okcore.config.configurable.ConfigurableItemBucket;
-import ruiseki.okcore.config.configurable.IConfigurable;
+import ruiseki.integrateddynamics.block.BlockFluidMenrilResinConfig;
+import ruiseki.integrateddynamics.fluid.FluidMenrilResinConfig;
 import ruiseki.okcore.config.extendedconfig.ItemBucketConfig;
+import ruiseki.okcore.item.ItemBucketBase;
 
 /**
  * Config for the Menril Resin Bucket.
@@ -26,22 +26,22 @@ public class ItemBucketMenrilResinConfig extends ItemBucketConfig {
      * Make a new instance.
      */
     public ItemBucketMenrilResinConfig() {
-        super(IntegratedDynamics._instance, true, "bucket_menril_resin", null, null);
+        super(
+            IntegratedDynamics._instance,
+            true,
+            "bucket_menril_resin",
+            null,
+            config -> new ItemBucketBase(BlockFluidMenrilResinConfig._instance.getInstance()));
     }
 
     @Override
-    protected IConfigurable initSubInstance() {
-        return new ConfigurableItemBucket(this, BlockFluidMenrilResin.getInstance());
+    public Fluid getFluidInstance() {
+        return FluidMenrilResinConfig._instance.getInstance();
     }
 
     @Override
-    public ConfigurableFluid getFluidInstance() {
-        return FluidMenrilResin.getInstance();
-    }
-
-    @Override
-    public ConfigurableBlockFluidClassic getFluidBlockInstance() {
-        return BlockFluidMenrilResin.getInstance();
+    public Block getFluidBlockInstance() {
+        return BlockFluidMenrilResinConfig._instance.getInstance();
     }
 
     @Override

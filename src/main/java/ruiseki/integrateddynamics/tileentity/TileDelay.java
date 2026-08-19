@@ -74,6 +74,11 @@ public class TileDelay extends TileProxy {
                 return list;
             }
         };
+        registerCapabilityResolvers();
+    }
+
+    @Override
+    protected void registerCapabilityResolvers() {
         this.capabilityCache.addCapabilityResolver(
             BasicCapabilityResolver
                 .create(NetworkElementProviderConfig.CAPABILITY, () -> new NetworkElementProviderSingleton() {

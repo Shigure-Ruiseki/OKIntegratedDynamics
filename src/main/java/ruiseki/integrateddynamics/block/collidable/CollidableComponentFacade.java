@@ -18,6 +18,7 @@ import ruiseki.integrateddynamics.block.BlockCable;
 import ruiseki.integrateddynamics.capability.facadeable.FacadeableConfig;
 import ruiseki.integrateddynamics.core.helper.CableHelpers;
 import ruiseki.integrateddynamics.item.ItemFacade;
+import ruiseki.integrateddynamics.item.ItemFacadeConfig;
 import ruiseki.okcore.block.collidable.ICollidable;
 import ruiseki.okcore.block.collidable.ImmutableAxisAlignedBB;
 import ruiseki.okcore.datastructure.BlockPos;
@@ -50,8 +51,8 @@ public class CollidableComponentFacade implements ICollidable.IComponent<ForgeDi
 
     @Override
     public ItemStack getPickBlock(World world, BlockPos pos, ForgeDirection direction) {
-        ItemStack itemStack = new ItemStack(ItemFacade.getInstance());
-        ItemFacade.getInstance()
+        ItemStack itemStack = new ItemStack(ItemFacadeConfig._instance.getInstance());
+        ((ItemFacade) ItemFacadeConfig._instance.getInstance())
             .writeFacadeBlock(itemStack, CableHelpers.getFacade(world, pos));
         return itemStack;
     }
@@ -63,9 +64,8 @@ public class CollidableComponentFacade implements ICollidable.IComponent<ForgeDi
             IFacadeable facadeable = CapabilityHelpers.getCapability(world, pos, FacadeableConfig.CAPABILITY, null)
                 .getOrNull();
             BlockState blockState = facadeable.getFacade();
-            ItemStack itemStack = new ItemStack(ItemFacade.getInstance());
-            ItemFacade.getInstance()
-                .writeFacadeBlock(itemStack, blockState);
+            ItemStack itemStack = new ItemStack(ItemFacadeConfig._instance.getInstance());
+            ((ItemFacade) ItemFacadeConfig._instance.getInstance()).writeFacadeBlock(itemStack, blockState);
             facadeable.setFacade(null);
             if (!player.capabilities.isCreativeMode) {
                 ItemStackHelpers.spawnItemStackToPlayer(world, pos, itemStack, player);

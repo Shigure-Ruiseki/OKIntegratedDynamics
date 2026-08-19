@@ -25,6 +25,7 @@ import ruiseki.integrateddynamics.client.gui.GuiLogicProgrammerBase;
 import ruiseki.integrateddynamics.core.logicprogrammer.LogicProgrammerElementTypes;
 import ruiseki.integrateddynamics.core.persist.world.LabelsWorldStorage;
 import ruiseki.integrateddynamics.item.ItemVariable;
+import ruiseki.integrateddynamics.item.ItemVariableConfig;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.inventory.IGuiContainerProvider;
@@ -103,10 +104,26 @@ public abstract class ContainerLogicProgrammerBase extends ScrollingInventoryCon
     }
 
     protected void initializeSlotsPre() {
-        addSlotToContainer(new SlotSingleItem(writeSlot, 0, OUTPUT_X, OUTPUT_Y, ItemVariable.getInstance()));
-        SlotSingleItem filterSlotIn1 = new SlotSingleItem(filterSlots, 0, 6, 218, ItemVariable.getInstance());
-        SlotSingleItem filterSlotIn2 = new SlotSingleItem(filterSlots, 1, 24, 218, ItemVariable.getInstance());
-        SlotSingleItem filterSlotOut = new SlotSingleItem(filterSlots, 2, 58, 218, ItemVariable.getInstance());
+        addSlotToContainer(
+            new SlotSingleItem(writeSlot, 0, OUTPUT_X, OUTPUT_Y, ItemVariableConfig._instance.getInstance()));
+        SlotSingleItem filterSlotIn1 = new SlotSingleItem(
+            filterSlots,
+            0,
+            6,
+            218,
+            ItemVariableConfig._instance.getInstance());
+        SlotSingleItem filterSlotIn2 = new SlotSingleItem(
+            filterSlots,
+            1,
+            24,
+            218,
+            ItemVariableConfig._instance.getInstance());
+        SlotSingleItem filterSlotOut = new SlotSingleItem(
+            filterSlots,
+            2,
+            58,
+            218,
+            ItemVariableConfig._instance.getInstance());
         filterSlotIn1.setPhantom(true);
         filterSlotIn2.setPhantom(true);
         filterSlotOut.setPhantom(true);
@@ -242,7 +259,7 @@ public abstract class ContainerLogicProgrammerBase extends ScrollingInventoryCon
     protected void labelCurrent() {
         ItemStack itemStack = writeSlot.getStackInSlot(0);
         if (itemStack != null) {
-            IVariableFacade variableFacade = ItemVariable.getInstance()
+            IVariableFacade variableFacade = ((ItemVariable) ItemVariableConfig._instance.getInstance())
                 .getVariableFacade(itemStack);
             if (this.lastLabel != null && variableFacade.isValid()) {
                 LabelsWorldStorage.getInstance(IntegratedDynamics._instance)

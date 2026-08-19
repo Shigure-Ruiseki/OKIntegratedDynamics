@@ -5,7 +5,7 @@ import ruiseki.okcore.config.extendedconfig.BlockConfig;
 
 /**
  * Config for {@link BlockFluidMenrilResin}.
- * 
+ *
  * @author rubensworks
  *
  */
@@ -20,7 +20,7 @@ public class BlockFluidMenrilResinConfig extends BlockConfig {
      * Make a new instance.
      */
     public BlockFluidMenrilResinConfig() {
-        super(IntegratedDynamics._instance, true, "block_menril_resin", null, BlockFluidMenrilResin.class);
+        super(IntegratedDynamics._instance, true, "block_menril_resin", null, config -> new BlockFluidMenrilResin());
     }
 
     @Override

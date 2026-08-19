@@ -21,7 +21,7 @@ public class BlockInvisibleLightConfig extends BlockConfig {
      * Make a new instance.
      */
     public BlockInvisibleLightConfig() {
-        super(IntegratedDynamics._instance, true, "invisible_light", null, BlockInvisibleLight.class);
+        super(IntegratedDynamics._instance, true, "invisible_light", null, config -> new BlockInvisibleLight());
     }
 
     @Override

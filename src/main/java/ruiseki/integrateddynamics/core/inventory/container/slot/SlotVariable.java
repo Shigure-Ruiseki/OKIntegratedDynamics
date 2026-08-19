@@ -4,7 +4,7 @@ import net.minecraft.inventory.IInventory;
 import net.minecraft.util.ResourceLocation;
 
 import ruiseki.integrateddynamics.Reference;
-import ruiseki.integrateddynamics.item.ItemVariable;
+import ruiseki.integrateddynamics.item.ItemVariableConfig;
 import ruiseki.okcore.inventory.slot.SlotSingleItem;
 
 /**
@@ -27,7 +27,7 @@ public class SlotVariable extends SlotSingleItem {
      * @param y         Y coordinate.
      */
     public SlotVariable(IInventory inventory, int index, int x, int y) {
-        super(inventory, index, x, y, ItemVariable.getInstance());
+        super(inventory, index, x, y, ItemVariableConfig._instance.getInstance());
         setBackgroundTexture(SlotVariable.VARIABLE_EMPTY);
     }
 }

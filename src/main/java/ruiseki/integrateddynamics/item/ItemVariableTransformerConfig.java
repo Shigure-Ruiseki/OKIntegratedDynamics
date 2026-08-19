@@ -9,9 +9,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.IIcon;
 
 import ruiseki.integrateddynamics.IntegratedDynamics;
-import ruiseki.okcore.config.configurable.ConfigurableItem;
-import ruiseki.okcore.config.configurable.IConfigurable;
 import ruiseki.okcore.config.extendedconfig.ItemConfig;
+import ruiseki.okcore.item.ItemBase;
 
 /**
  * Config for the Input and Output Variable Transformer.
@@ -30,13 +29,7 @@ public class ItemVariableTransformerConfig extends ItemConfig {
      * Make a new instance.
      */
     public ItemVariableTransformerConfig() {
-        super(IntegratedDynamics._instance, true, "variable_transformer", null, null);
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    protected IConfigurable<ItemConfig> initSubInstance() {
-        return (IConfigurable<ItemConfig>) new ConfigurableItem(this) {
+        super(IntegratedDynamics._instance, true, "variable_transformer", null, config -> new ItemBase() {
 
             private IIcon input;
             private IIcon output;
@@ -60,14 +53,14 @@ public class ItemVariableTransformerConfig extends ItemConfig {
             @Override
             public void registerIcons(IIconRegister register) {
                 output = register.registerIcon(
-                    getConfig().getMod()
-                        .getModId() + ":" + getConfig().getNamedId() + "_output");
+                    ItemVariableTransformerConfig._instance.getMod()
+                        .getModId() + ":" + ItemVariableTransformerConfig._instance.getNamedId() + "_output");
                 input = register.registerIcon(
-                    getConfig().getMod()
-                        .getModId() + ":" + getConfig().getNamedId() + "_input");
+                    ItemVariableTransformerConfig._instance.getMod()
+                        .getModId() + ":" + ItemVariableTransformerConfig._instance.getNamedId() + "_input");
             }
         }.setHasSubtypes(true)
-            .setMaxDamage(0);
+            .setMaxDamage(0));
     }
 
 }

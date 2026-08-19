@@ -15,6 +15,7 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.integrateddynamics.api.block.cable.ICableFakeable;
 import ruiseki.integrateddynamics.block.BlockCable;
+import ruiseki.integrateddynamics.block.BlockCableConfig;
 import ruiseki.integrateddynamics.core.helper.CableHelpers;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.item.ItemBlockMetadata;
@@ -108,7 +109,7 @@ public class ItemBlockCable extends ItemBlockMetadata {
     }
 
     public static void playPlaceSound(World world, BlockPos pos) {
-        Block block = BlockCable.getInstance();
+        Block block = BlockCableConfig._instance.getInstance();
         Block.SoundType stepSound = block.stepSound;
         world.playSoundEffect(
             (double) pos.getX() + 0.5D,

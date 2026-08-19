@@ -11,6 +11,7 @@ import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.Reference;
 import ruiseki.integrateddynamics.core.network.diagnostics.NetworkDiagnosticsPartOverlayRenderer;
 import ruiseki.integrateddynamics.item.ItemVariable;
+import ruiseki.integrateddynamics.item.ItemVariableConfig;
 import ruiseki.okcore.client.key.IKeyRegistry;
 import ruiseki.okcore.client.key.KeyBindingOK;
 import ruiseki.okcore.client.key.KeyConflictContext;
@@ -59,7 +60,7 @@ public class ClientProxy extends ClientProxyComponent {
 
     @Override
     public void registerRenderers() {
-        TexturedItemRenderer.register(ItemVariable.getInstance());
+        TexturedItemRenderer.register((ItemVariable) ItemVariableConfig._instance.getInstance());
         super.registerRenderers();
     }
 }

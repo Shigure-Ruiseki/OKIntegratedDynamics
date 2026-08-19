@@ -5,7 +5,9 @@ import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.world.World;
 
 import ruiseki.integrateddynamics.block.BlockLogicProgrammer;
+import ruiseki.integrateddynamics.block.BlockLogicProgrammerConfig;
 import ruiseki.okcore.datastructure.BlockPos;
+import ruiseki.okcore.inventory.IGuiContainerProvider;
 
 /**
  * Container for the {@link BlockLogicProgrammer}.
@@ -25,7 +27,7 @@ public class ContainerLogicProgrammer extends ContainerLogicProgrammerBase {
      * @param blockPos  The position.
      */
     public ContainerLogicProgrammer(InventoryPlayer inventory, World world, BlockPos blockPos) {
-        super(inventory, BlockLogicProgrammer.getInstance());
+        super(inventory, (IGuiContainerProvider) BlockLogicProgrammerConfig._instance.getInstance());
         this.world = world;
         this.blockPos = blockPos;
     }

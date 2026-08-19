@@ -19,7 +19,7 @@ public class BlockLogicProgrammerConfig extends BlockConfig {
      * Make a new instance.
      */
     public BlockLogicProgrammerConfig() {
-        super(IntegratedDynamics._instance, true, "logic_programmer", null, BlockLogicProgrammer.class);
+        super(IntegratedDynamics._instance, true, "logic_programmer", null, BlockLogicProgrammer::new);
     }
 
 }

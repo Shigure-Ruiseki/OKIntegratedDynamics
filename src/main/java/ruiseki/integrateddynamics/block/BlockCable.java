@@ -52,6 +52,7 @@ import ruiseki.integrateddynamics.core.helper.PartHelpers;
 import ruiseki.integrateddynamics.core.helper.WrenchHelpers;
 import ruiseki.integrateddynamics.core.tileentity.TileMultipartTicking;
 import ruiseki.integrateddynamics.item.ItemBlockCable;
+import ruiseki.okcore.block.BlockTile;
 import ruiseki.okcore.block.collidable.CollidableComponent;
 import ruiseki.okcore.block.collidable.ICollidable;
 import ruiseki.okcore.block.collidable.ICollidableParent;
@@ -59,16 +60,13 @@ import ruiseki.okcore.block.collidable.ImmutableAxisAlignedBB;
 import ruiseki.okcore.block.property.BlockProperty;
 import ruiseki.okcore.block.property.IProperty;
 import ruiseki.okcore.block.property.UnlistedProperty;
-import ruiseki.okcore.config.configurable.ConfigurableBlockContainer;
-import ruiseki.okcore.config.extendedconfig.BlockConfig;
-import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.EnumFacingMap;
 import ruiseki.okcore.helper.CapabilityHelpers;
 import ruiseki.okcore.helper.RenderHelpers;
 import ruiseki.okcore.helper.TileHelpers;
 
-public class BlockCable extends ConfigurableBlockContainer
+public class BlockCable extends BlockTile
     implements ICollidable<ForgeDirection>, ICollidableParent, IBlockModelProvider, BlockModelInfo {
 
     public static final float BLOCK_HARDNESS = 3.0F;
@@ -134,29 +132,16 @@ public class BlockCable extends ConfigurableBlockContainer
     @Delegate
     private ICollidable<ForgeDirection> collidableComponent = new CollidableComponent<>(this, COLLIDABLE_COMPONENTS);
 
-    private static BlockCable _instance = null;
-
     public static boolean IS_MCMP_CONVERTING = false;
 
     @Setter
     private boolean disableCollisionBox = false;
 
     /**
-     * Get the unique instance.
-     *
-     * @return The instance.
-     */
-    public static BlockCable getInstance() {
-        return _instance;
-    }
-
-    /**
      * Make a new block instance.
-     *
-     * @param eConfig Config for this block.
      */
-    public BlockCable(ExtendedConfig<BlockConfig> eConfig) {
-        super(eConfig, BLOCK_MATERIAL, TileMultipartTicking.class);
+    public BlockCable() {
+        super(BLOCK_MATERIAL, TileMultipartTicking.class);
 
         setHardness(BLOCK_HARDNESS);
         setStepSound(soundTypeMetal);

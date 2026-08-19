@@ -40,18 +40,23 @@ public class BiomeMeneglinConfig extends BiomeConfig {
      * Make a new instance.
      */
     public BiomeMeneglinConfig() {
-        super(IntegratedDynamics._instance, Reference.BIOME_MENEGLIN, "biome_meneglin", null, BiomeMeneglin.class);
+        super(
+            IntegratedDynamics._instance,
+            Reference.BIOME_MENEGLIN,
+            "biome_meneglin",
+            null,
+            config -> new BiomeMeneglin(config.getId()));
     }
 
     @Override
     public void registerBiomeDictionary() {
         if (spawnWeight > 0) {
-            BiomeManager.addBiome(BiomeManager.BiomeType.COOL, new BiomeManager.BiomeEntry(getBiome(), spawnWeight));
+            BiomeManager.addBiome(BiomeManager.BiomeType.COOL, new BiomeManager.BiomeEntry(getInstance(), spawnWeight));
         }
-        BiomeManager.addSpawnBiome(getBiome());
-        BiomeManager.addStrongholdBiome(getBiome());
-        BiomeManager.addVillageBiome(getBiome(), true);
-        BiomeDictionary.registerBiomeType(getBiome(), BiomeDictionary.Type.COLD, BiomeDictionary.Type.MAGICAL);
+        BiomeManager.addSpawnBiome(getInstance());
+        BiomeManager.addStrongholdBiome(getInstance());
+        BiomeManager.addVillageBiome(getInstance(), true);
+        BiomeDictionary.registerBiomeType(getInstance(), BiomeDictionary.Type.COLD, BiomeDictionary.Type.MAGICAL);
     }
 
 }

@@ -3,8 +3,7 @@ package ruiseki.integrateddynamics.core.block;
 import net.minecraft.block.material.Material;
 
 import ruiseki.integrateddynamics.core.tileentity.TileMultipartTicking;
-import ruiseki.okcore.config.configurable.ConfigurableBlockContainer;
-import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
+import ruiseki.okcore.block.BlockTile;
 
 /**
  * A block that is buildReader up from different parts.
@@ -12,16 +11,15 @@ import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
  *
  * @author rubensworks
  */
-public abstract class BlockMultipartTicking extends ConfigurableBlockContainer {
+public abstract class BlockMultipartTicking extends BlockTile {
 
     /**
      * Make a new block instance.
      *
-     * @param eConfig  Config for this block.
      * @param material The material for this block.
      */
-    public BlockMultipartTicking(ExtendedConfig eConfig, Material material) {
-        super(eConfig, material, TileMultipartTicking.class);
+    public BlockMultipartTicking(Material material) {
+        super(material, TileMultipartTicking.class);
     }
 
 }

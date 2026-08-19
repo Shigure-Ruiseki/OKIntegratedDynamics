@@ -18,13 +18,13 @@ import ruiseki.integrateddynamics.api.item.IVariableFacadeHandlerRegistry;
 import ruiseki.integrateddynamics.api.logicprogrammer.IConfigRenderPattern;
 import ruiseki.integrateddynamics.api.logicprogrammer.ILogicProgrammerElement;
 import ruiseki.integrateddynamics.api.logicprogrammer.ILogicProgrammerElementType;
-import ruiseki.integrateddynamics.block.BlockLogicProgrammer;
+import ruiseki.integrateddynamics.block.BlockLogicProgrammerConfig;
 import ruiseki.integrateddynamics.client.gui.GuiLogicProgrammerBase;
 import ruiseki.integrateddynamics.core.evaluate.operator.Operators;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueHelpers;
 import ruiseki.integrateddynamics.core.item.OperatorVariableFacade;
 import ruiseki.integrateddynamics.inventory.container.ContainerLogicProgrammerBase;
-import ruiseki.integrateddynamics.item.ItemVariable;
+import ruiseki.integrateddynamics.item.ItemVariableConfig;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
 
@@ -124,7 +124,7 @@ public class OperatorLPElement
             Operators.REGISTRY,
             new OperatorVariableFacadeFactory(operator, variableIds),
             player,
-            BlockLogicProgrammer.getInstance());
+            BlockLogicProgrammerConfig._instance.getInstance());
     }
 
     @Override
@@ -171,7 +171,7 @@ public class OperatorLPElement
 
     @Override
     public boolean isItemValidForSlot(int slotId, ItemStack itemStack) {
-        return itemStack.getItem() == ItemVariable.getInstance();
+        return itemStack.getItem() == ItemVariableConfig._instance.getInstance();
     }
 
     @Override

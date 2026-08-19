@@ -6,8 +6,7 @@ import net.minecraft.init.Blocks;
 
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.Reference;
-import ruiseki.okcore.config.configurable.ConfigurableBlock;
-import ruiseki.okcore.config.configurable.IConfigurable;
+import ruiseki.okcore.block.BlockBase;
 import ruiseki.okcore.config.extendedconfig.BlockConfig;
 
 /**
@@ -27,13 +26,13 @@ public class BlockMenrilPlanksConfig extends BlockConfig {
      * Make a new instance.
      */
     public BlockMenrilPlanksConfig() {
-        super(IntegratedDynamics._instance, true, "menril_planks", null, null);
-    }
-
-    @Override
-    protected IConfigurable initSubInstance() {
-        return (ConfigurableBlock) new ConfigurableBlock(this, Material.wood).setHardness(2.0F)
-            .setStepSound(Block.soundTypeWood);
+        super(
+            IntegratedDynamics._instance,
+            true,
+            "menril_planks",
+            null,
+            config -> new BlockBase(Material.wood).setHardness(2.0F)
+                .setStepSound(Block.soundTypeWood));
     }
 
     @Override
@@ -43,7 +42,7 @@ public class BlockMenrilPlanksConfig extends BlockConfig {
 
     @Override
     public void onRegistered() {
-        Blocks.fire.setFireInfo(getBlockInstance(), 5, 20);
+        Blocks.fire.setFireInfo(getInstance(), 5, 20);
     }
 
 }

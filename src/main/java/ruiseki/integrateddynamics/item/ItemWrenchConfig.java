@@ -5,7 +5,7 @@ import ruiseki.okcore.config.extendedconfig.ItemConfig;
 
 /**
  * Config for a wrench.
- * 
+ *
  * @author rubensworks
  */
 public class ItemWrenchConfig extends ItemConfig {
@@ -19,7 +19,7 @@ public class ItemWrenchConfig extends ItemConfig {
      * Make a new instance.
      */
     public ItemWrenchConfig() {
-        super(IntegratedDynamics._instance, true, "wrench", null, ItemWrench.class);
+        super(IntegratedDynamics._instance, true, "wrench", null, config -> new ItemWrench());
     }
 
 }

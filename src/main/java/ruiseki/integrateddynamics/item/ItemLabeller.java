@@ -2,6 +2,7 @@ package ruiseki.integrateddynamics.item;
 
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.inventory.Container;
+import net.minecraft.item.Item;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -18,23 +19,10 @@ import ruiseki.okcore.item.ItemGui;
  */
 public class ItemLabeller extends ItemGui {
 
-    private static ItemLabeller _instance = null;
-
-    /**
-     * Get the unique instance.
-     *
-     * @return The instance.
-     */
-    public static ItemLabeller getInstance() {
-        return _instance;
-    }
-
     /**
      * Make a new item instance.
-     *
-     * @param eConfig Config for this blockState.
      */
-    public ItemLabeller(ExtendedConfig<ItemConfig> eConfig) {
+    public ItemLabeller(ExtendedConfig<ItemConfig, Item> eConfig) {
         super(eConfig);
     }
 
@@ -48,4 +36,5 @@ public class ItemLabeller extends ItemGui {
     public Class<? extends GuiScreen> getGui() {
         return GuiLabeller.class;
     }
+
 }

@@ -5,7 +5,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import ruiseki.integrateddynamics.api.block.cable.ICable;
-import ruiseki.integrateddynamics.block.BlockCable;
+import ruiseki.integrateddynamics.block.BlockCableConfig;
 import ruiseki.integrateddynamics.core.helper.CableHelpers;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.EnumFacingMap;
@@ -86,6 +86,6 @@ public abstract class CableDefault implements ICable {
 
     @Override
     public ItemStack getItemStack() {
-        return new ItemStack(BlockCable.getInstance());
+        return new ItemStack(BlockCableConfig._instance.getInstance());
     }
 }

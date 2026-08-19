@@ -4,7 +4,9 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 
 import ruiseki.integrateddynamics.item.ItemPortableLogicProgrammer;
+import ruiseki.integrateddynamics.item.ItemPortableLogicProgrammerConfig;
 import ruiseki.okcore.helper.InventoryHelpers;
+import ruiseki.okcore.inventory.IGuiContainerProvider;
 
 /**
  * Container for the {@link ItemPortableLogicProgrammer}.
@@ -16,7 +18,7 @@ public class ContainerLogicProgrammerPortable extends ContainerLogicProgrammerBa
     private final int itemIndex;
 
     public ContainerLogicProgrammerPortable(EntityPlayer player, int itemIndex) {
-        super(player.inventory, ItemPortableLogicProgrammer.getInstance());
+        super(player.inventory, (IGuiContainerProvider) ItemPortableLogicProgrammerConfig._instance.getInstance());
         this.itemIndex = itemIndex;
     }
 
@@ -27,7 +29,7 @@ public class ContainerLogicProgrammerPortable extends ContainerLogicProgrammerBa
     @Override
     public boolean canInteractWith(EntityPlayer playerIn) {
         ItemStack item = getItemStack(player);
-        return item != null && item.getItem() == ItemPortableLogicProgrammer.getInstance();
+        return item != null && item.getItem() == ItemPortableLogicProgrammerConfig._instance.getInstance();
     }
 
 }

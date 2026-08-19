@@ -41,7 +41,6 @@ import ruiseki.integrateddynamics.core.part.PartTypeAspects;
 import ruiseki.integrateddynamics.core.part.event.PartWriterAspectEvent;
 import ruiseki.integrateddynamics.inventory.container.ContainerPartWriter;
 import ruiseki.integrateddynamics.part.aspect.Aspects;
-import ruiseki.okcore.config.extendedconfig.BlockConfig;
 import ruiseki.okcore.helper.BlockStateHelpers;
 import ruiseki.okcore.helper.LangHelpers;
 
@@ -86,8 +85,8 @@ public abstract class PartTypeWriteBase<P extends IPartTypeWriter<P, S>, S exten
     }
 
     @Override
-    protected Block createBlock(BlockConfig blockConfig) {
-        return new IgnoredBlockStatus(blockConfig);
+    protected Block createBlock() {
+        return new IgnoredBlockStatus();
     }
 
     @Override

@@ -5,20 +5,15 @@ import java.util.List;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.IIcon;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.integrateddynamics.capability.energystorage.IEnergyStorageCapacity;
 import ruiseki.okcore.block.property.BlockProperty;
 import ruiseki.okcore.block.property.IntegerProperty;
-import ruiseki.okcore.client.icon.Icon;
-import ruiseki.okcore.config.extendedconfig.BlockConfig;
-import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 import ruiseki.okcore.energy.capability.CapabilityEnergy;
 import ruiseki.okcore.helper.BlockHelpers;
 import ruiseki.okcore.helper.CapabilityHelpers;
-import ruiseki.okcore.helper.MinecraftHelpers;
 
 /**
  * A block that can hold defined variables so that they can be referred to elsewhere in the network.
@@ -29,10 +24,6 @@ public class BlockEnergyBattery extends BlockEnergyBatteryBase {
 
     @BlockProperty
     public static final IntegerProperty.MetaIntegerProperty FILL = IntegerProperty.createMeta("fill", 0, 3);
-
-    @Icon(location = "blocks/energy_battery_overlay_side_2")
-    @SideOnly(Side.CLIENT)
-    public IIcon iconOverlay;
 
     private static BlockEnergyBattery _instance = null;
 
@@ -48,18 +39,11 @@ public class BlockEnergyBattery extends BlockEnergyBatteryBase {
     /**
      * Make a new block instance.
      *
-     * @param eConfig Config for this block.
      */
-    public BlockEnergyBattery(ExtendedConfig<BlockConfig> eConfig) {
-        super(eConfig);
-
+    public BlockEnergyBattery() {
+        super();
         setHardness(5.0F);
         setStepSound(soundTypeMetal);
-        if (MinecraftHelpers.isClientSide()) {
-            eConfig.getMod()
-                .getIconProvider()
-                .registerIconHolderObject(this);
-        }
     }
 
     @Override

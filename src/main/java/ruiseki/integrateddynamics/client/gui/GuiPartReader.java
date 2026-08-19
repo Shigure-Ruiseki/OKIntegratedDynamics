@@ -17,7 +17,7 @@ import ruiseki.integrateddynamics.api.part.read.IPartTypeReader;
 import ruiseki.integrateddynamics.core.client.gui.container.GuiMultipartAspects;
 import ruiseki.integrateddynamics.core.inventory.container.ContainerMultipartAspects;
 import ruiseki.integrateddynamics.core.inventory.container.ContainerPartReader;
-import ruiseki.integrateddynamics.item.ItemVariable;
+import ruiseki.integrateddynamics.item.ItemVariableConfig;
 import ruiseki.okcore.helper.RenderHelpers;
 import ruiseki.okcore.inventory.IGuiContainerProvider;
 
@@ -73,7 +73,8 @@ public class GuiPartReader<P extends IPartTypeReader<P, S> & IGuiContainerProvid
 
         // Render target item
         // This could be cached if this would prove to be a bottleneck
-        ItemStack itemStack = container.writeAspectInfo(false, new ItemStack(ItemVariable.getInstance()), aspect);
+        ItemStack itemStack = container
+            .writeAspectInfo(false, new ItemStack(ItemVariableConfig._instance.getInstance()), aspect);
         Rectangle pos = getElementPosition(container, index, true);
         RenderHelper.enableGUIStandardItemLighting();
         itemRender.renderItemAndEffectIntoGUI(mc.fontRenderer, mc.getTextureManager(), itemStack, pos.x, pos.y);

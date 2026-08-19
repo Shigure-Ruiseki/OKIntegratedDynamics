@@ -1,13 +1,12 @@
 package ruiseki.integrateddynamics.item;
 
+import net.minecraft.item.ItemFood;
 import net.minecraft.item.ItemStack;
 import net.minecraft.potion.Potion;
 
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.okcore.config.ConfigurableProperty;
 import ruiseki.okcore.config.ConfigurableTypeCategory;
-import ruiseki.okcore.config.configurable.ConfigurableItemFood;
-import ruiseki.okcore.config.configurable.IConfigurable;
 import ruiseki.okcore.config.extendedconfig.ItemConfig;
 
 /**
@@ -36,22 +35,22 @@ public class ItemMenrilBerriesConfig extends ItemConfig {
      * Make a new instance.
      */
     public ItemMenrilBerriesConfig() {
-        super(IntegratedDynamics._instance, true, "menril_berries", null, null);
+        super(IntegratedDynamics._instance, true, "menril_berries", null, config -> createFood());
     }
 
-    @Override
-    protected IConfigurable initSubInstance() {
-        ConfigurableItemFood food = new ConfigurableItemFood(this, 4, 0.3F, false) {
+    protected static ItemFood createFood() {
+        ItemFood food = new ItemFood(4, 0.3F, false) {
 
             @Override
             public int getMaxItemUseDuration(ItemStack stack) {
                 return 10;
             }
         };
+
         if (nightVision) {
-            food = (ConfigurableItemFood) food.setPotionEffect(Potion.nightVision.id, 20, 1, 1);
+            food.setPotionEffect(Potion.nightVision.id, 20, 1, 1);
         }
+
         return food;
     }
-
 }

@@ -29,23 +29,15 @@ import ruiseki.integrateddynamics.core.item.AspectVariableFacade;
 import ruiseki.integrateddynamics.core.item.ProxyVariableFacade;
 import ruiseki.integrateddynamics.core.item.VariableFacadeHandlerRegistry;
 import ruiseki.okcore.capabilities.ICapabilityProvider;
-import ruiseki.okcore.config.configurable.ConfigurableItem;
-import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
-import ruiseki.okcore.config.extendedconfig.ItemConfig;
 import ruiseki.okcore.helper.CapabilityHelpers;
 import ruiseki.okcore.helper.LangHelpers;
+import ruiseki.okcore.item.ItemBase;
 import ruiseki.okcore.modcompat.capabilities.DefaultCapabilityProvider;
 
-public class ItemVariable extends ConfigurableItem implements ItemWithTextures {
+public class ItemVariable extends ItemBase implements ItemWithTextures {
 
-    private static ItemVariable _instance = null;
-
-    public static ItemVariable getInstance() {
-        return _instance;
-    }
-
-    public ItemVariable(ExtendedConfig<ItemConfig> eConfig) {
-        super(eConfig);
+    public ItemVariable() {
+        super();
     }
 
     @Override

@@ -20,6 +20,11 @@ public class FluidMenrilResinConfig extends FluidConfig {
      * Make a new instance.
      */
     public FluidMenrilResinConfig() {
-        super(IntegratedDynamics._instance, true, "menril_resin", null, FluidMenrilResin.class);
+        super(
+            IntegratedDynamics._instance,
+            true,
+            "menril_resin",
+            null,
+            config -> new FluidMenrilResin(config.getNamedId()));
     }
 }

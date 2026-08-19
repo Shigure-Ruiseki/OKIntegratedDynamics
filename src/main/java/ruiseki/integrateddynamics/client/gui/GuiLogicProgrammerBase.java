@@ -28,7 +28,7 @@ import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.integrateddynamics.core.logicprogrammer.LogicProgrammerElementTypes;
 import ruiseki.integrateddynamics.core.logicprogrammer.RenderPattern;
 import ruiseki.integrateddynamics.inventory.container.ContainerLogicProgrammerBase;
-import ruiseki.integrateddynamics.item.ItemLabeller;
+import ruiseki.integrateddynamics.item.ItemLabellerConfig;
 import ruiseki.integrateddynamics.network.packet.LogicProgrammerActivateElementPacket;
 import ruiseki.integrateddynamics.network.packet.LogicProgrammerLabelPacket;
 import ruiseki.integrateddynamics.proxy.ClientProxy;
@@ -62,7 +62,7 @@ public class GuiLogicProgrammerBase extends ScrollingGuiContainer {
         super(container);
         container.setGui(this);
 
-        this.hasLabeller = inventoryPlayer.hasItemStack(new ItemStack(ItemLabeller.getInstance()));
+        this.hasLabeller = inventoryPlayer.hasItemStack(new ItemStack(ItemLabellerConfig._instance.getInstance()));
     }
 
     @Override

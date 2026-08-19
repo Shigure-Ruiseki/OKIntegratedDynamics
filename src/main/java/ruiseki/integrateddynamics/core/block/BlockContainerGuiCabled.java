@@ -15,7 +15,8 @@ import org.jetbrains.annotations.Nullable;
 import ruiseki.integrateddynamics.core.helper.CableHelpers;
 import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
 import ruiseki.integrateddynamics.core.helper.WrenchHelpers;
-import ruiseki.okcore.config.configurable.ConfigurableBlockContainerGui;
+import ruiseki.okcore.block.BlockTileGui;
+import ruiseki.okcore.config.extendedconfig.BlockConfig;
 import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.tileentity.TileEntityOK;
@@ -25,15 +26,15 @@ import ruiseki.okcore.tileentity.TileEntityOK;
  *
  * @author rubensworks
  */
-public abstract class BlockContainerGuiCabled extends ConfigurableBlockContainerGui {
+public abstract class BlockContainerGuiCabled extends BlockTileGui {
 
     /**
      * Make a new block instance.
      *
-     * @param eConfig    Config for this block.
      * @param tileEntity The tile class
      */
-    public BlockContainerGuiCabled(ExtendedConfig eConfig, Class<? extends TileEntityOK> tileEntity) {
+    public BlockContainerGuiCabled(ExtendedConfig<BlockConfig, Block> eConfig,
+        Class<? extends TileEntityOK> tileEntity) {
         super(eConfig, Material.anvil, tileEntity);
 
         setHardness(5.0F);

@@ -8,8 +8,6 @@ import cofh.api.energy.IEnergyStorage;
 import ruiseki.integrateddynamics.core.block.BlockContainerCabled;
 import ruiseki.integrateddynamics.core.helper.Helpers;
 import ruiseki.integrateddynamics.tileentity.TileEnergyBattery;
-import ruiseki.okcore.config.extendedconfig.BlockConfig;
-import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 import ruiseki.okcore.helper.TileHelpers;
 
 /**
@@ -21,11 +19,9 @@ public abstract class BlockEnergyBatteryBase extends BlockContainerCabled implem
 
     /**
      * Make a new block instance.
-     *
-     * @param eConfig Config for this block.
      */
-    public BlockEnergyBatteryBase(ExtendedConfig<BlockConfig> eConfig) {
-        super(eConfig, TileEnergyBattery.class);
+    public BlockEnergyBatteryBase() {
+        super(TileEnergyBattery.class);
     }
 
     @Override

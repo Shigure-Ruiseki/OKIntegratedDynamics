@@ -17,6 +17,7 @@ import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
 import ruiseki.integrateddynamics.core.inventory.container.ContainerMultipart;
 import ruiseki.integrateddynamics.core.inventory.container.slot.SlotVariable;
 import ruiseki.integrateddynamics.item.ItemVariable;
+import ruiseki.integrateddynamics.item.ItemVariableConfig;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.inventory.IGuiContainerProvider;
 import ruiseki.okcore.inventory.SimpleInventory;
@@ -25,7 +26,7 @@ import ruiseki.okcore.inventory.container.button.IButtonActionServer;
 
 /**
  * Container for the crafting interface.
- * 
+ *
  * @author rubensworks
  */
 public class ContainerPartInterfaceCrafting
@@ -33,7 +34,7 @@ public class ContainerPartInterfaceCrafting
 
     /**
      * Make a new instance.
-     * 
+     *
      * @param target        The target.
      * @param player        The player.
      * @param partContainer The part container.
@@ -82,7 +83,7 @@ public class ContainerPartInterfaceCrafting
 
                 @Override
                 public boolean isItemValid(ItemStack itemStack) {
-                    IVariableFacade variableFacade = ItemVariable.getInstance()
+                    IVariableFacade variableFacade = ((ItemVariable) ItemVariableConfig._instance.getInstance())
                         .getVariableFacade(itemStack);
                     return variableFacade != null
                         && ValueHelpers.correspondsTo(variableFacade.getOutputType(), ValueTypes.OBJECT_RECIPE)

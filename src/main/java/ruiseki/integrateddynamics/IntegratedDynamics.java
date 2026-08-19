@@ -71,6 +71,7 @@ import ruiseki.integrateddynamics.core.part.PartTypes;
 import ruiseki.integrateddynamics.core.part.aspect.AspectRegistry;
 import ruiseki.integrateddynamics.core.persist.world.LabelsWorldStorage;
 import ruiseki.integrateddynamics.core.persist.world.NetworkWorldStorage;
+import ruiseki.integrateddynamics.modcompat.jjfmuy.JFMUYModCompat;
 import ruiseki.integrateddynamics.modcompat.nei.NEIModCompat;
 import ruiseki.integrateddynamics.part.PartTypeConnectorOmniDirectional;
 import ruiseki.integrateddynamics.part.aspect.Aspects;
@@ -136,6 +137,7 @@ public class IntegratedDynamics extends ModBaseVersionable {
     protected void loadModCompats(ModCompatLoader modCompatLoader) {
         super.loadModCompats(modCompatLoader);
         modCompatLoader.addModCompat(new NEIModCompat());
+        modCompatLoader.addModCompat(new JFMUYModCompat());
     }
 
     @Mod.EventHandler

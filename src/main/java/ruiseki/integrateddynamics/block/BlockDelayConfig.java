@@ -10,7 +10,7 @@ import ruiseki.okcore.config.extendedconfig.BlockContainerConfig;
 
 /**
  * Config for {@link BlockDelay}.
- * 
+ *
  * @author rubensworks
  */
 public class BlockDelayConfig extends BlockContainerConfig {
@@ -33,7 +33,7 @@ public class BlockDelayConfig extends BlockContainerConfig {
      * Make a new instance.
      */
     public BlockDelayConfig() {
-        super(IntegratedDynamics._instance, true, "delay", null, BlockDelay.class);
+        super(IntegratedDynamics._instance, true, "delay", null, BlockDelay::new);
     }
 
     @Override

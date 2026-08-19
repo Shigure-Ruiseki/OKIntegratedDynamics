@@ -41,17 +41,17 @@ public class WorldGeneratorMenrilTree extends WorldGeneratorTree {
 
     @Override
     public Block getLeaves() {
-        return BlockMenrilLeavesConfig._instance.getBlockInstance();
+        return BlockMenrilLeavesConfig._instance.getInstance();
     }
 
     @Override
     public Block getLogs() {
-        return BlockMenrilLogConfig._instance.getBlockInstance();
+        return BlockMenrilLogConfig._instance.getInstance();
     }
 
     @Override
     public BlockSapling getSapling() {
-        return (BlockSapling) BlockMenrilSaplingConfig._instance.getBlockInstance();
+        return (BlockSapling) BlockMenrilSaplingConfig._instance.getInstance();
     }
 
     @Override

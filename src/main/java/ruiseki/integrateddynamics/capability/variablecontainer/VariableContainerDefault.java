@@ -15,6 +15,7 @@ import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
 import ruiseki.integrateddynamics.core.network.event.VariableContentsUpdatedEvent;
 import ruiseki.integrateddynamics.item.ItemVariable;
+import ruiseki.integrateddynamics.item.ItemVariableConfig;
 
 /**
  * Default implementation of {@link IVariableContainer}.
@@ -49,7 +50,7 @@ public class VariableContainerDefault implements IVariableContainer {
         for (int i = 0; i < inventory.getSizeInventory(); i++) {
             ItemStack itemStack = inventory.getStackInSlot(i);
             if (itemStack != null) {
-                IVariableFacade variableFacade = ItemVariable.getInstance()
+                IVariableFacade variableFacade = ((ItemVariable) ItemVariableConfig._instance.getInstance())
                     .getVariableFacade(itemStack);
                 if (variableFacade != null) {
                     if (variableFacade.isValid()) {

@@ -61,6 +61,10 @@ public class TileProxy extends TileActiveVariableBase<ProxyNetworkElement> {
 
     public TileProxy(int inventorySize) {
         super(inventorySize, "proxy");
+        registerCapabilityResolvers();
+    }
+
+    protected void registerCapabilityResolvers() {
         this.capabilityCache.addCapabilityResolver(
             BasicCapabilityResolver
                 .create(NetworkElementProviderConfig.CAPABILITY, () -> new NetworkElementProviderSingleton() {

@@ -19,7 +19,7 @@ public class BlockVariablestoreConfig extends BlockContainerConfig {
      * Make a new instance.
      */
     public BlockVariablestoreConfig() {
-        super(IntegratedDynamics._instance, true, "variablestore", null, BlockVariablestore.class);
+        super(IntegratedDynamics._instance, true, "variablestore", null, BlockVariablestore::new);
     }
 
 }

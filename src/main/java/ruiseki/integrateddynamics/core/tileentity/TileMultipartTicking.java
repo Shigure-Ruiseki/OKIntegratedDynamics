@@ -22,6 +22,7 @@ import ruiseki.integrateddynamics.api.network.INetworkCarrier;
 import ruiseki.integrateddynamics.api.network.INetworkElement;
 import ruiseki.integrateddynamics.api.part.PartRenderPosition;
 import ruiseki.integrateddynamics.block.BlockCable;
+import ruiseki.integrateddynamics.block.BlockCableConfig;
 import ruiseki.integrateddynamics.capability.cable.CableConfig;
 import ruiseki.integrateddynamics.capability.cable.CableFakeableConfig;
 import ruiseki.integrateddynamics.capability.cable.CableFakeableMultipartTicking;
@@ -44,6 +45,7 @@ import ruiseki.integrateddynamics.client.model.CableRenderState;
 import ruiseki.integrateddynamics.core.helper.CableHelpers;
 import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
 import ruiseki.integrateddynamics.core.helper.PartHelpers;
+import ruiseki.okcore.block.IBlockStateAction;
 import ruiseki.okcore.block.property.BlockStateBuilder;
 import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.capabilities.resolver.BasicCapabilityResolver;
@@ -202,9 +204,8 @@ public class TileMultipartTicking extends TileEntityOK
         if (cachedState != null) {
             return cachedState;
         }
-        BlockStateBuilder builder = BlockStateBuilder.builder(
-            BlockCable.getInstance()
-                .getDefaultState(0));
+        BlockStateBuilder builder = BlockStateBuilder
+            .builder(((IBlockStateAction) BlockCableConfig._instance.getInstance()).getDefaultState());
         if (partContainer.getPartData() != null) { // Can be null in rare cases where rendering happens before data sync
             builder.withProperty(BlockCable.REALCABLE, cableFakeable.isRealCable());
             if (connected.isEmpty()) {

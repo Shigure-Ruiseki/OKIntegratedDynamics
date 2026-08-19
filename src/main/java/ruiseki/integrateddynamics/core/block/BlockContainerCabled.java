@@ -12,8 +12,7 @@ import net.minecraftforge.common.util.ForgeDirection;
 import ruiseki.integrateddynamics.core.helper.CableHelpers;
 import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
 import ruiseki.integrateddynamics.core.helper.WrenchHelpers;
-import ruiseki.okcore.config.configurable.ConfigurableBlockContainer;
-import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
+import ruiseki.okcore.block.BlockTile;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.tileentity.TileEntityOK;
 
@@ -22,16 +21,15 @@ import ruiseki.okcore.tileentity.TileEntityOK;
  *
  * @author rubensworks
  */
-public abstract class BlockContainerCabled extends ConfigurableBlockContainer {
+public abstract class BlockContainerCabled extends BlockTile {
 
     /**
      * Make a new block instance.
-     *
-     * @param eConfig    Config for this block.
+     * 
      * @param tileEntity The part class
      */
-    public BlockContainerCabled(ExtendedConfig eConfig, Class<? extends TileEntityOK> tileEntity) {
-        super(eConfig, Material.anvil, tileEntity);
+    public BlockContainerCabled(Class<? extends TileEntityOK> tileEntity) {
+        super(Material.anvil, tileEntity);
 
         setHardness(5.0F);
         setStepSound(soundTypeMetal);

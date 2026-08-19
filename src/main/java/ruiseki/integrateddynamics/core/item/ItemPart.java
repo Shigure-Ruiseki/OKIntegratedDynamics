@@ -3,7 +3,6 @@ package ruiseki.integrateddynamics.core.item;
 import java.util.List;
 
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
@@ -21,16 +20,15 @@ import ruiseki.integrateddynamics.api.block.cable.ICableFakeable;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartState;
 import ruiseki.integrateddynamics.api.part.IPartType;
-import ruiseki.integrateddynamics.block.BlockCable;
+import ruiseki.integrateddynamics.block.BlockCableConfig;
 import ruiseki.integrateddynamics.core.helper.CableHelpers;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.integrateddynamics.core.helper.PartHelpers;
 import ruiseki.integrateddynamics.item.ItemBlockCable;
-import ruiseki.okcore.config.configurable.ConfigurableItem;
-import ruiseki.okcore.config.extendedconfig.ItemConfig;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
+import ruiseki.okcore.item.ItemBase;
 
 /**
  * An item that can place parts.
@@ -39,7 +37,7 @@ import ruiseki.okcore.helper.MinecraftHelpers;
  */
 @EqualsAndHashCode(callSuper = false)
 @Data
-public class ItemPart<P extends IPartType<P, S>, S extends IPartState<P>> extends ConfigurableItem {
+public class ItemPart<P extends IPartType<P, S>, S extends IPartState<P>> extends ItemBase {
 
     private static final List<IUseAction> USE_ACTIONS = Lists.newArrayList();
 
@@ -48,11 +46,10 @@ public class ItemPart<P extends IPartType<P, S>, S extends IPartState<P>> extend
     /**
      * Make a new item instance.
      *
-     * @param eConfig Config for this blockState.
-     * @param part    The part this item will place.
+     * @param part The part this item will place.
      */
-    public ItemPart(ItemConfig eConfig, IPartType<P, S> part) {
-        super(eConfig);
+    public ItemPart(IPartType<P, S> part) {
+        super();
         this.part = part;
     }
 
@@ -103,7 +100,7 @@ public class ItemPart<P extends IPartType<P, S>, S extends IPartState<P>> extend
             ForgeDirection targetSide = side.getOpposite();
             if (target.getBlock(world)
                 .isReplaceable(world, target.getX(), target.getY(), target.getZ())) {
-                ItemBlockCable itemBlockCable = (ItemBlockCable) Item.getItemFromBlock(BlockCable.getInstance());
+                ItemBlockCable itemBlockCable = (ItemBlockCable) BlockCableConfig._instance.getItemInstance();
                 itemStack.stackSize++; // Temporarily grow, because ItemBlock will shrink it.
                 if (itemBlockCable.onItemUse(
                     itemStack,

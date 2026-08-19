@@ -1,5 +1,6 @@
 package ruiseki.integrateddynamics.block;
 
+import net.minecraft.block.Block;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.inventory.Container;
 
@@ -35,10 +36,8 @@ public class BlockDelay extends BlockContainerGuiCabled {
 
     /**
      * Make a new block instance.
-     *
-     * @param eConfig Config for this block.
      */
-    public BlockDelay(ExtendedConfig<BlockConfig> eConfig) {
+    public BlockDelay(ExtendedConfig<BlockConfig, Block> eConfig) {
         super(eConfig, TileDelay.class);
     }
 

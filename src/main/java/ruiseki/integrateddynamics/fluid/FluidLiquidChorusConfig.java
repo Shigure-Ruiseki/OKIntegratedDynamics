@@ -5,7 +5,7 @@ import ruiseki.okcore.config.extendedconfig.FluidConfig;
 
 /**
  * Config for {@link FluidLiquidChorus}.
- * 
+ *
  * @author rubensworks
  *
  */
@@ -20,6 +20,11 @@ public class FluidLiquidChorusConfig extends FluidConfig {
      * Make a new instance.
      */
     public FluidLiquidChorusConfig() {
-        super(IntegratedDynamics._instance, true, "liquidchorus", null, FluidLiquidChorus.class);
+        super(
+            IntegratedDynamics._instance,
+            true,
+            "liquidchorus",
+            null,
+            config -> new FluidLiquidChorus(config.getNamedId()));
     }
 }

@@ -5,7 +5,7 @@ import ruiseki.okcore.config.extendedconfig.ItemConfig;
 
 /**
  * Config for the labeller.
- * 
+ *
  * @author rubensworks
  */
 public class ItemLabellerConfig extends ItemConfig {
@@ -19,7 +19,7 @@ public class ItemLabellerConfig extends ItemConfig {
      * Make a new instance.
      */
     public ItemLabellerConfig() {
-        super(IntegratedDynamics._instance, true, "labeller", null, ItemLabeller.class);
+        super(IntegratedDynamics._instance, true, "labeller", null, ItemLabeller::new);
     }
 
 }

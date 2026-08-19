@@ -19,14 +19,14 @@ import ruiseki.integrateddynamics.api.item.IVariableFacadeHandlerRegistry;
 import ruiseki.integrateddynamics.api.logicprogrammer.IConfigRenderPattern;
 import ruiseki.integrateddynamics.api.logicprogrammer.ILogicProgrammerElementType;
 import ruiseki.integrateddynamics.api.logicprogrammer.IValueTypeLogicProgrammerElement;
-import ruiseki.integrateddynamics.block.BlockLogicProgrammer;
+import ruiseki.integrateddynamics.block.BlockLogicProgrammerConfig;
 import ruiseki.integrateddynamics.client.gui.GuiLogicProgrammerBase;
 import ruiseki.integrateddynamics.core.evaluate.variable.GuiElementValueTypeString;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueHelpers;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeVariableFacade;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
 import ruiseki.integrateddynamics.inventory.container.ContainerLogicProgrammerBase;
-import ruiseki.integrateddynamics.item.ItemVariable;
+import ruiseki.integrateddynamics.item.ItemVariableConfig;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
 
@@ -114,7 +114,7 @@ public abstract class ValueTypeLPElementBase
             ValueTypes.REGISTRY,
             new ValueTypeVariableFacadeFactory(getValueType(), getValue()),
             player,
-            BlockLogicProgrammer.getInstance());
+            BlockLogicProgrammerConfig._instance.getInstance());
     }
 
     @Override
@@ -144,7 +144,7 @@ public abstract class ValueTypeLPElementBase
 
     @Override
     public boolean isItemValidForSlot(int slotId, ItemStack itemStack) {
-        return itemStack.getItem() == ItemVariable.getInstance();
+        return itemStack.getItem() == ItemVariableConfig._instance.getInstance();
     }
 
     @Override
