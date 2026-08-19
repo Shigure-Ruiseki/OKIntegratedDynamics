@@ -1,6 +1,7 @@
 package ruiseki.integrateddynamics;
 
 import ruiseki.integrateddynamics.block.BlockCableConfig;
+import ruiseki.integrateddynamics.block.BlockCreativeEnergyBatteryConfig;
 import ruiseki.integrateddynamics.block.BlockDelayConfig;
 import ruiseki.integrateddynamics.block.BlockEnergyBatteryConfig;
 import ruiseki.integrateddynamics.block.BlockFluidMenrilResinConfig;
@@ -77,7 +78,7 @@ public class Configs {
         configHandler.add(new BlockLogicProgrammerConfig());
         configHandler.add(new BlockInvisibleLightConfig());
         configHandler.add(new BlockEnergyBatteryConfig());
-        // configHandler.add(new BlockCreativeEnergyBatteryConfig());
+        configHandler.add(new BlockCreativeEnergyBatteryConfig());
         // configHandler.add(new BlockCoalGeneratorConfig());
         configHandler.add(new BlockProxyConfig());
         // configHandler.add(new BlockMaterializerConfig());

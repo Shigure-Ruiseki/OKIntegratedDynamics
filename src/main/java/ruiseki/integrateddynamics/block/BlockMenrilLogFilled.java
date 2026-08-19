@@ -17,17 +17,6 @@ import ruiseki.okcore.block.BlockLogBase;
  */
 public class BlockMenrilLogFilled extends BlockLogBase {
 
-    private static BlockMenrilLogFilled _instance = null;
-
-    /**
-     * Get the unique instance.
-     *
-     * @return The instance.
-     */
-    public static BlockMenrilLogFilled getInstance() {
-        return _instance;
-    }
-
     /**
      * Make a new block instance.
      */
@@ -39,7 +28,7 @@ public class BlockMenrilLogFilled extends BlockLogBase {
 
     @Override
     public Item getItemDropped(int meta, Random random, int fortune) {
-        return Item.getItemFromBlock(BlockMenrilLog.getInstance());
+        return Item.getItemFromBlock(BlockMenrilLogConfig._instance.getInstance());
     }
 
     @Override

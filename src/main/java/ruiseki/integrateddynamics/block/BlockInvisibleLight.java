@@ -33,17 +33,6 @@ public class BlockInvisibleLight extends BlockBase {
             }
         });
 
-    private static BlockInvisibleLight _instance = null;
-
-    /**
-     * Get the unique instance.
-     *
-     * @return The instance.
-     */
-    public static BlockInvisibleLight getInstance() {
-        return _instance;
-    }
-
     /**
      * Make a new block instance.
      */

@@ -22,7 +22,7 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
 import ruiseki.commoncapabilities.api.ingredient.storage.IIngredientComponentStorage;
-import ruiseki.integrateddynamics.block.BlockEnergyBattery;
+import ruiseki.integrateddynamics.block.BlockEnergyBatteryConfig;
 import ruiseki.integratedterminals.GeneralConfig;
 import ruiseki.integratedterminals.api.ingredient.IIngredientComponentTerminalStorageHandler;
 import ruiseki.integratedterminals.api.ingredient.IIngredientInstanceSorter;
@@ -60,7 +60,7 @@ public class IngredientComponentTerminalStorageHandlerEnergy
 
     @Override
     public ItemStack getIcon() {
-        return new ItemStack(BlockEnergyBattery.getInstance());
+        return new ItemStack(BlockEnergyBatteryConfig._instance.getInstance());
     }
 
     @Override

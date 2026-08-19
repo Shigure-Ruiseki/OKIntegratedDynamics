@@ -25,12 +25,6 @@ public class BiomeMeneglin extends BiomeGenBase {
 
     private static final int[] FLOWER_METAS = new int[] { 1, 8, 6 };
 
-    private static BiomeGenBase _instance = null;
-
-    public static BiomeGenBase getInstance() {
-        return _instance;
-    }
-
     public BiomeMeneglin(int id) {
         super(id);
 

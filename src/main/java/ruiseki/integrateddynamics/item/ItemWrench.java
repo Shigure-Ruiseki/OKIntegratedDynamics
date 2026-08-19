@@ -20,17 +20,6 @@ import ruiseki.okcore.modcompat.capabilities.DefaultCapabilityProvider;
  */
 public class ItemWrench extends ItemBase {
 
-    private static ItemWrench _instance = null;
-
-    /**
-     * Get the unique instance.
-     *
-     * @return The instance.
-     */
-    public static ItemWrench getInstance() {
-        return _instance;
-    }
-
     /**
      * Make a new item instance.
      *

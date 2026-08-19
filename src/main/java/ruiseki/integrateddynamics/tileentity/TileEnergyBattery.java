@@ -69,7 +69,7 @@ public class TileEnergyBattery extends TileCableConnectable
     public void updateBlockState() {
         if (!isCreative()) {
             BlockState blockState = BlockStateHelpers.getState(worldObj, pos);
-            if (blockState.getBlock() == BlockEnergyBattery.getInstance()) {
+            if (blockState.getBlock() == BlockEnergyBatteryConfig._instance.getInstance()) {
                 int fill = Math.max(
                     0,
                     (int) Math.floor(

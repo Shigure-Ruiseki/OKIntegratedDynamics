@@ -23,17 +23,6 @@ public class BlockDelay extends BlockContainerGuiCabled {
     @BlockProperty
     public static final DirectionProperty FACING = DirectionProperty.facing();
 
-    private static BlockDelay _instance = null;
-
-    /**
-     * Get the unique instance.
-     *
-     * @return The instance.
-     */
-    public static BlockDelay getInstance() {
-        return _instance;
-    }
-
     /**
      * Make a new block instance.
      */

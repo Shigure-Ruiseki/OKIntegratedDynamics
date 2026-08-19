@@ -9,17 +9,6 @@ import ruiseki.okcore.block.BlockLogBase;
  */
 public class BlockMenrilLog extends BlockLogBase {
 
-    private static BlockMenrilLog _instance = null;
-
-    /**
-     * Get the unique instance.
-     *
-     * @return The instance.
-     */
-    public static BlockMenrilLog getInstance() {
-        return _instance;
-    }
-
     /**
      * Make a new block instance.
      */

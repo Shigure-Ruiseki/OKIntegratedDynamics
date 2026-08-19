@@ -155,7 +155,7 @@ public class WorldGeneratorMenrilTree extends WorldGeneratorTree {
             boolean filled = Configs.isEnabled(BlockMenrilLogFilledConfig.class)
                 && BlockMenrilLogFilledConfig.filledMenrilLogChance > 0
                 && rand.nextInt(BlockMenrilLogFilledConfig.filledMenrilLogChance) == 0;
-            Block log = filled ? BlockMenrilLogFilled.getInstance() : getLogs();
+            Block log = filled ? BlockMenrilLogFilledConfig._instance.getInstance() : getLogs();
             setBlockAndNotifyAdequately(world, x, y, z, log, 0);
         }
     }

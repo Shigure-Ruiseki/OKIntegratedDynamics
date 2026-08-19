@@ -129,12 +129,18 @@ public class PartTypePanelLightDynamic
 
             Block currentBlock = world.getBlock(pos.getX(), pos.getY(), pos.getZ());
             boolean isAir = world.isAirBlock(pos.getX(), pos.getY(), pos.getZ());
-            boolean isLightBlock = currentBlock == BlockInvisibleLight.getInstance();
+            boolean isLightBlock = currentBlock == BlockInvisibleLightConfig._instance.getInstance();
 
             if (isAir || isLightBlock) {
                 if (lightLevel > 0) {
                     if (!isLightBlock) {
-                        world.setBlock(pos.getX(), pos.getY(), pos.getZ(), BlockInvisibleLight.getInstance(), 0, 2);
+                        world.setBlock(
+                            pos.getX(),
+                            pos.getY(),
+                            pos.getZ(),
+                            BlockInvisibleLightConfig._instance.getInstance(),
+                            0,
+                            2);
                     }
                     int currentLight = BlockStateHelpers
                         .get(world, pos.getX(), pos.getY(), pos.getZ(), BlockInvisibleLight.LIGHT);
