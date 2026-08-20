@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.minecraft.client.renderer.texture.IIconRegister;
+import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumChatFormatting;
@@ -20,6 +22,7 @@ import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.client.model.IVariableModelProviderRegistry;
 import ruiseki.integrateddynamics.api.item.IVariableFacade;
+import ruiseki.integrateddynamics.api.item.IVariableFacadeHandlerRegistry;
 import ruiseki.integrateddynamics.api.item.IVariableFacadeHolder;
 import ruiseki.integrateddynamics.capability.variablefacade.VariableFacadeHolderConfig;
 import ruiseki.integrateddynamics.capability.variablefacade.VariableFacadeHolderDefault;
@@ -30,11 +33,11 @@ import ruiseki.integrateddynamics.core.item.ProxyVariableFacade;
 import ruiseki.integrateddynamics.core.item.VariableFacadeHandlerRegistry;
 import ruiseki.okcore.capabilities.ICapabilityProvider;
 import ruiseki.okcore.helper.CapabilityHelpers;
-import ruiseki.okcore.helper.LangHelpers;
+import ruiseki.okcore.item.IItemToggle;
 import ruiseki.okcore.item.ItemBase;
 import ruiseki.okcore.modcompat.capabilities.DefaultCapabilityProvider;
 
-public class ItemVariable extends ItemBase implements ItemWithTextures {
+public class ItemVariable extends ItemBase implements ItemWithTextures, IItemToggle {
 
     public ItemVariable() {
         super();
@@ -91,9 +94,6 @@ public class ItemVariable extends ItemBase implements ItemWithTextures {
     public void addInformation(ItemStack itemStack, EntityPlayer entityPlayer, List list, boolean par4) {
         IVariableFacade variableFacade = getVariableFacade(itemStack);
         variableFacade.addInformation(list, entityPlayer);
-        if (variableFacade != VariableFacadeHandlerRegistry.DUMMY_FACADE && entityPlayer.capabilities.isCreativeMode) {
-            list.add(LangHelpers.localize("item.items.integrateddynamics.variable.warning"));
-        }
         super.addInformation(itemStack, entityPlayer, list, par4);
     }
 
@@ -128,5 +128,41 @@ public class ItemVariable extends ItemBase implements ItemWithTextures {
         IVariableModelProviderRegistry registry = IntegratedDynamics._instance.getRegistryManager()
             .getRegistry(IVariableModelProviderRegistry.class);
         registry.registerIcons(register);
+    }
+
+    @Override
+    public void toggle(EntityPlayerMP player, ItemStack slotStack, int button) {
+        if (!player.capabilities.isCreativeMode) return;
+
+        IVariableFacadeHandlerRegistry registry = IntegratedDynamics._instance.getRegistryManager()
+            .getRegistry(IVariableFacadeHandlerRegistry.class);
+        IVariableFacade facade = getVariableFacade(slotStack);
+
+        ItemStack stack;
+        if (facade.isValid()) {
+            stack = registry.copy(true, slotStack);
+            stack.stackSize = 1;
+        } else {
+            stack = slotStack.copy();
+            stack.stackSize = 64;
+        }
+
+        if (!player.inventory.addItemStackToInventory(stack)) {
+            EntityItem entityItem = new EntityItem(player.worldObj, player.posX, player.posY + 0.5D, player.posZ, stack);
+            entityItem.delayBeforeCanPickup = 0;
+            player.worldObj.spawnEntityInWorld(entityItem);
+        } else {
+            player.openContainer.detectAndSendChanges();
+        }
+    }
+
+    @Override
+    public boolean canMouseClicked(ItemStack stack, int button) {
+        return button == 2;
+    }
+
+    @Override
+    public boolean isModifierKeyDown(ItemStack stack) {
+        return true;
     }
 }
