@@ -42,6 +42,9 @@ import ruiseki.integrateddynamics.item.ItemPortableLogicProgrammerConfig;
 import ruiseki.integrateddynamics.item.ItemVariableConfig;
 import ruiseki.integrateddynamics.item.ItemVariableTransformerConfig;
 import ruiseki.integrateddynamics.item.ItemWrenchConfig;
+import ruiseki.integrateddynamics.recipe.ItemVariableCopyRecipeConfig;
+import ruiseki.integrateddynamics.recipe.RecipeSerializerCraftingSpecialShapedOmniDirectionalConfig;
+import ruiseki.integrateddynamics.recipe.RecipeSerializerCraftingSpecialShapelessOmniDirectionalConfig;
 import ruiseki.integrateddynamics.world.biome.BiomeMeneglinConfig;
 import ruiseki.okcore.config.ConfigHandler;
 import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
@@ -126,6 +129,11 @@ public class Configs {
 
         // Entities
         // configHandler.add(new EntityItemTargettedConfig());
+
+        // Recipes
+        configHandler.add(new ItemVariableCopyRecipeConfig());
+        configHandler.add(new RecipeSerializerCraftingSpecialShapedOmniDirectionalConfig());
+        configHandler.add(new RecipeSerializerCraftingSpecialShapelessOmniDirectionalConfig());
     }
 
     /**

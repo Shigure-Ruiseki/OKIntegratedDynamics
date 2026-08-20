@@ -59,6 +59,18 @@ public class ItemVariable extends ItemBase implements ItemWithTextures {
         return textures.toArray(new IItemTexture[0]);
     }
 
+    @Override
+    public boolean hasContainerItem(ItemStack stack) {
+        IVariableFacade variableFacade = getVariableFacade(stack);
+        return variableFacade != null && variableFacade.isValid();
+    }
+
+    @Override
+    public ItemStack getContainerItem(ItemStack itemStack) {
+        if (!hasContainerItem(itemStack)) return null;
+        return itemStack;
+    }
+
     @SideOnly(Side.CLIENT)
     private IIcon getOverlayIcon(IVariableFacade variableFacade) {
         if (variableFacade instanceof AspectVariableFacade) {

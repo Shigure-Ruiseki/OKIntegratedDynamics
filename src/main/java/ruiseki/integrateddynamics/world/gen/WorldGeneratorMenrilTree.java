@@ -10,7 +10,6 @@ import net.minecraftforge.common.util.ForgeDirection;
 import ruiseki.integrateddynamics.Configs;
 import ruiseki.integrateddynamics.block.BlockMenrilLeavesConfig;
 import ruiseki.integrateddynamics.block.BlockMenrilLogConfig;
-import ruiseki.integrateddynamics.block.BlockMenrilLogFilled;
 import ruiseki.integrateddynamics.block.BlockMenrilLogFilledConfig;
 import ruiseki.integrateddynamics.block.BlockMenrilSaplingConfig;
 import ruiseki.okcore.world.gen.WorldGeneratorTree;
