@@ -2,6 +2,7 @@ package ruiseki.integrateddynamics;
 
 import ruiseki.integrateddynamics.block.BlockCableConfig;
 import ruiseki.integrateddynamics.block.BlockCreativeEnergyBatteryConfig;
+import ruiseki.integrateddynamics.block.BlockCrystalizedMenrilBlockConfig;
 import ruiseki.integrateddynamics.block.BlockDelayConfig;
 import ruiseki.integrateddynamics.block.BlockEnergyBatteryConfig;
 import ruiseki.integrateddynamics.block.BlockFluidMenrilResinConfig;
@@ -35,6 +36,7 @@ import ruiseki.integrateddynamics.core.recipe.type.RecipeSerializerNbtClearConfi
 import ruiseki.integrateddynamics.fluid.FluidLiquidChorusConfig;
 import ruiseki.integrateddynamics.fluid.FluidMenrilResinConfig;
 import ruiseki.integrateddynamics.item.ItemBucketMenrilResinConfig;
+import ruiseki.integrateddynamics.item.ItemCrystalizedChorusChunkConfig;
 import ruiseki.integrateddynamics.item.ItemCrystalizedMenrilChunkConfig;
 import ruiseki.integrateddynamics.item.ItemFacadeConfig;
 import ruiseki.integrateddynamics.item.ItemLabellerConfig;
@@ -93,7 +95,7 @@ public class Configs {
         configHandler.add(new BlockMenrilLeavesConfig());
         configHandler.add(new BlockMenrilSaplingConfig());
         configHandler.add(new BlockMenrilPlanksConfig());
-        // configHandler.add(new BlockCrystalizedMenrilBlockConfig());
+        configHandler.add(new BlockCrystalizedMenrilBlockConfig());
         // configHandler.add(new BlockCrystalizedMenrilBrickConfig());
         configHandler.add(new BlockFluidMenrilResinConfig());
         // configHandler.add(new BlockDryingBasinConfig());
@@ -120,11 +122,12 @@ public class Configs {
         configHandler.add(new ItemFacadeConfig());
         configHandler.add(new ItemBucketMenrilResinConfig());
         configHandler.add(new ItemCrystalizedMenrilChunkConfig());
-        configHandler.add(new ItemVariableTransformerConfig());
+        configHandler.add(new ItemVariableTransformerConfig(true));
+        configHandler.add(new ItemVariableTransformerConfig(false));
         configHandler.add(new ItemMenrilBerriesConfig());
         configHandler.add(new ItemPortableLogicProgrammerConfig());
         // configHandler.add(new ItemOnTheDynamicsOfIntegrationConfig());
-        // configHandler.add(new ItemCrystalizedChorusChunkConfig());
+        configHandler.add(new ItemCrystalizedChorusChunkConfig());
         configHandler.add(new ItemLogicDirectorConfig());
 
         // Biomes
