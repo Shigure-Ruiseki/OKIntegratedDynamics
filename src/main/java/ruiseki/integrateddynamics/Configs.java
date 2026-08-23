@@ -30,6 +30,8 @@ import ruiseki.integrateddynamics.capability.path.PathElementConfig;
 import ruiseki.integrateddynamics.capability.valueinterface.ValueInterfaceConfig;
 import ruiseki.integrateddynamics.capability.variablecontainer.VariableContainerConfig;
 import ruiseki.integrateddynamics.capability.variablefacade.VariableFacadeHolderConfig;
+import ruiseki.integrateddynamics.core.recipe.type.RecipeEnergyContainerCombinationConfig;
+import ruiseki.integrateddynamics.core.recipe.type.RecipeSerializerNbtClearConfig;
 import ruiseki.integrateddynamics.fluid.FluidLiquidChorusConfig;
 import ruiseki.integrateddynamics.fluid.FluidMenrilResinConfig;
 import ruiseki.integrateddynamics.item.ItemBucketMenrilResinConfig;
@@ -42,6 +44,7 @@ import ruiseki.integrateddynamics.item.ItemPortableLogicProgrammerConfig;
 import ruiseki.integrateddynamics.item.ItemVariableConfig;
 import ruiseki.integrateddynamics.item.ItemVariableTransformerConfig;
 import ruiseki.integrateddynamics.item.ItemWrenchConfig;
+import ruiseki.integrateddynamics.recipe.ItemFacadeRecipeConfig;
 import ruiseki.integrateddynamics.recipe.ItemVariableCopyRecipeConfig;
 import ruiseki.integrateddynamics.recipe.RecipeSerializerCraftingSpecialShapedOmniDirectionalConfig;
 import ruiseki.integrateddynamics.recipe.RecipeSerializerCraftingSpecialShapelessOmniDirectionalConfig;
@@ -131,6 +134,9 @@ public class Configs {
         // configHandler.add(new EntityItemTargettedConfig());
 
         // Recipes
+        configHandler.add(new RecipeEnergyContainerCombinationConfig());
+        configHandler.add(new RecipeSerializerNbtClearConfig());
+        configHandler.add(new ItemFacadeRecipeConfig());
         configHandler.add(new ItemVariableCopyRecipeConfig());
         configHandler.add(new RecipeSerializerCraftingSpecialShapedOmniDirectionalConfig());
         configHandler.add(new RecipeSerializerCraftingSpecialShapelessOmniDirectionalConfig());

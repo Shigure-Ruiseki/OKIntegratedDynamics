@@ -62,18 +62,6 @@ public class ItemVariable extends ItemBase implements ItemWithTextures, IItemTog
         return textures.toArray(new IItemTexture[0]);
     }
 
-    @Override
-    public boolean hasContainerItem(ItemStack stack) {
-        IVariableFacade variableFacade = getVariableFacade(stack);
-        return variableFacade != null && variableFacade.isValid();
-    }
-
-    @Override
-    public ItemStack getContainerItem(ItemStack itemStack) {
-        if (!hasContainerItem(itemStack)) return null;
-        return itemStack;
-    }
-
     @SideOnly(Side.CLIENT)
     private IIcon getOverlayIcon(IVariableFacade variableFacade) {
         if (variableFacade instanceof AspectVariableFacade) {
@@ -88,7 +76,7 @@ public class ItemVariable extends ItemBase implements ItemWithTextures, IItemTog
         return null;
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @SuppressWarnings({ "unchecked" })
     @SideOnly(Side.CLIENT)
     @Override
     public void addInformation(ItemStack itemStack, EntityPlayer entityPlayer, List list, boolean par4) {
@@ -148,7 +136,12 @@ public class ItemVariable extends ItemBase implements ItemWithTextures, IItemTog
         }
 
         if (!player.inventory.addItemStackToInventory(stack)) {
-            EntityItem entityItem = new EntityItem(player.worldObj, player.posX, player.posY + 0.5D, player.posZ, stack);
+            EntityItem entityItem = new EntityItem(
+                player.worldObj,
+                player.posX,
+                player.posY + 0.5D,
+                player.posZ,
+                stack);
             entityItem.delayBeforeCanPickup = 0;
             player.worldObj.spawnEntityInWorld(entityItem);
         } else {

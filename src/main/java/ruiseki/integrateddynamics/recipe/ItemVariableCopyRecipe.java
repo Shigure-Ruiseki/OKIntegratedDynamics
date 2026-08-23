@@ -57,6 +57,21 @@ public class ItemVariableCopyRecipe extends SpecialRecipe {
     }
 
     @Override
+    public NonNullList<ItemStack> getRemainingItems(InventoryCrafting inv) {
+        NonNullList<ItemStack> remaining = NonNullList.withSize(inv.getSizeInventory(), null);
+        for (int i = 0; i < remaining.size(); ++i) {
+            ItemStack stack = inv.getStackInSlot(i);
+            if (stack != null && stack.getItem() instanceof ItemVariable itemVariable) {
+                IVariableFacade facade = itemVariable.getVariableFacade(stack);
+                if (facade.isValid()) {
+                    remaining.set(i, stack);
+                }
+            }
+        }
+        return remaining;
+    }
+
+    @Override
     public boolean canCraftInDimensions(int width, int height) {
         return width * height >= 2;
     }

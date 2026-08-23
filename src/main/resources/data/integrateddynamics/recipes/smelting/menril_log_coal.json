@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:smelting",
+  "ingredient": {
+    "item": "integrateddynamics:menril_log"
+  },
+  "result": {
+    "item": "minecraft:coal",
+    "meta": 1
+  },
+  "experience": 0.15,
+  "cookingtime": 200
+}

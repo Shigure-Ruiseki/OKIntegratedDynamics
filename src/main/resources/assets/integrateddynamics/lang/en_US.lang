@@ -65,6 +65,7 @@ tile.blocks.integrateddynamics.energy_battery.name=Energy Battery
 tile.blocks.integrateddynamics.energy_battery.info=Place in crafting grid with other Energy Batteries to increase capacity. Shift + Right click to auto-supply.
 tile.blocks.integrateddynamics.energy_battery.info.auto_supply=Auto-supply: %s
 tile.blocks.integrateddynamics.creative_energy_battery.name=Creative Energy Battery
+tile.blocks.integrateddynamics.creative_energy_battery.info.auto_supply=Auto-supply: %s
 tile.blocks.integrateddynamics.logic_programmer.name=Logic Programmer
 tile.blocks.integrateddynamics.coal_generator.name=Generator
 tile.blocks.integrateddynamics.coal_generator.info=Produces energy from fuel items
