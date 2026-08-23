@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=south": { "model": "integrateddynamics:block/materializer" },
+    "facing=east" : { "model": "integrateddynamics:block/materializer", "y": 90 },
+    "facing=north": { "model": "integrateddynamics:block/materializer", "y": 180 },
+    "facing=west" : { "model": "integrateddynamics:block/materializer", "y": 270 }
+  }
+}

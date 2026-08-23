@@ -110,9 +110,6 @@ public class TileMultipartTicking extends TileEntityOK
 
     private BlockState cachedState = null;
 
-    @Getter
-    private transient boolean clientDataReady = false;
-
     public TileMultipartTicking() {
         partContainer = new PartContainerTileMultipartTicking(this);
         this.capabilityCache.addCapabilityResolver(
@@ -178,26 +175,18 @@ public class TileMultipartTicking extends TileEntityOK
             || lastFacadeMeta != facadeMeta
             || lastRealCable != cableFakeable.isRealCable()
             || wasLightTransparent != isLightTransparent)) {
-            getWorldObj().markBlockForUpdate(xCoord, yCoord, zCoord);
+            this.worldObj.markBlockForUpdate(this.xCoord, this.yCoord, this.zCoord);
         }
     }
 
     @Override
     public void onUpdateReceived() {
-        this.clientDataReady = true;
         this.worldObj.markBlockForUpdate(this.xCoord, this.yCoord, this.zCoord);
         if (!lightLevels.equals(previousLightLevels)) {
             previousLightLevels = lightLevels;
             this.worldObj.func_147451_t(this.xCoord, this.yCoord, this.zCoord);
         }
         cachedState = null;
-    }
-
-    public boolean isReadyForRendering() {
-        if (getWorldObj() != null && getWorldObj().isRemote) {
-            return clientDataReady && partContainer.getPartData() != null;
-        }
-        return true;
     }
 
     public BlockState getConnectionState() {

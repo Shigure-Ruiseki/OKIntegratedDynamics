@@ -1,6 +1,7 @@
 package ruiseki.integrateddynamics;
 
 import ruiseki.integrateddynamics.block.BlockCableConfig;
+import ruiseki.integrateddynamics.block.BlockCoalGeneratorConfig;
 import ruiseki.integrateddynamics.block.BlockCreativeEnergyBatteryConfig;
 import ruiseki.integrateddynamics.block.BlockCrystalizedMenrilBlockConfig;
 import ruiseki.integrateddynamics.block.BlockDelayConfig;
@@ -8,6 +9,7 @@ import ruiseki.integrateddynamics.block.BlockEnergyBatteryConfig;
 import ruiseki.integrateddynamics.block.BlockFluidMenrilResinConfig;
 import ruiseki.integrateddynamics.block.BlockInvisibleLightConfig;
 import ruiseki.integrateddynamics.block.BlockLogicProgrammerConfig;
+import ruiseki.integrateddynamics.block.BlockMaterializerConfig;
 import ruiseki.integrateddynamics.block.BlockMenrilLeavesConfig;
 import ruiseki.integrateddynamics.block.BlockMenrilLogConfig;
 import ruiseki.integrateddynamics.block.BlockMenrilLogFilledConfig;
@@ -87,9 +89,9 @@ public class Configs {
         configHandler.add(new BlockInvisibleLightConfig());
         configHandler.add(new BlockEnergyBatteryConfig());
         configHandler.add(new BlockCreativeEnergyBatteryConfig());
-        // configHandler.add(new BlockCoalGeneratorConfig());
+        configHandler.add(new BlockCoalGeneratorConfig());
         configHandler.add(new BlockProxyConfig());
-        // configHandler.add(new BlockMaterializerConfig());
+        configHandler.add(new BlockMaterializerConfig());
         configHandler.add(new BlockMenrilLogConfig());
         configHandler.add(new BlockMenrilLogFilledConfig());
         configHandler.add(new BlockMenrilLeavesConfig());

@@ -105,10 +105,6 @@ public class CableModel implements BakedModel {
 
             if (!(pos.getTileEntity(world) instanceof TileMultipartTicking tile)) return Collections.emptyList();
 
-            if (!tile.isReadyForRendering()) {
-                return Collections.emptyList();
-            }
-
             BlockState blockState = tile.getConnectionState();
             if (blockState == null) return Collections.emptyList();
 

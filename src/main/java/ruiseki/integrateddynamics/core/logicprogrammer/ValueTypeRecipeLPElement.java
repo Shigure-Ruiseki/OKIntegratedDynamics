@@ -57,7 +57,7 @@ import ruiseki.okcore.fluid.handler.IFluidHandlerItem;
 import ruiseki.okcore.helper.CapabilityHelpers;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
-import ruiseki.okcore.inventory.slot.SlotBackground;
+import ruiseki.okcore.inventory.slot.SlotExtended;
 
 /**
  * Element for recipes.
@@ -310,8 +310,8 @@ public class ValueTypeRecipeLPElement extends ValueTypeLPElementBase {
     }
 
     @Override
-    public SlotBackground createSlot(IInventory temporaryInputSlots, int slotId, int x, int y) {
-        SlotBackground slot = ILogicProgrammerElement.createSlotDefault(this, temporaryInputSlots, slotId, x, y);
+    public SlotExtended createSlot(IInventory temporaryInputSlots, int slotId, int x, int y) {
+        SlotExtended slot = ILogicProgrammerElement.createSlotDefault(this, temporaryInputSlots, slotId, x, y);
         if (slotId < 9) {
             slot.setBackgroundTexture(getDefaultItemMatch().getSlotSpriteName());
         }
@@ -332,7 +332,7 @@ public class ValueTypeRecipeLPElement extends ValueTypeLPElementBase {
                     this.inputStacks.get(id)
                         .getRight()
                         .next()));
-            ((SlotBackground) slot).setBackgroundTexture(
+            ((SlotExtended) slot).setBackgroundTexture(
                 this.inputStacks.get(id)
                     .getRight()
                     .getSlotSpriteName());

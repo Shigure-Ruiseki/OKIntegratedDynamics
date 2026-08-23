@@ -95,11 +95,6 @@ public class TileEnergyBattery extends TileCableConnectable
     }
 
     @Override
-    public void onUpdateReceived() {
-        super.onUpdateReceived();
-    }
-
-    @Override
     protected int getUpdateBackoffTicks() {
         return 20;
     }

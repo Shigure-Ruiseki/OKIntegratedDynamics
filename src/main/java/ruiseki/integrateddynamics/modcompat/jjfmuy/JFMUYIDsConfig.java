@@ -10,6 +10,7 @@ public class JFMUYIDsConfig implements IModPlugin {
 
     @Override
     public void register(IModRegistry registry) {
+        if (!JFMUYModCompat.canBeUsed) return;
         registry.addGhostIngredientHandler(GuiLogicProgrammerBase.class, new LPGhostIngredientHandler<>());
     }
 }

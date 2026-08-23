@@ -1,5 +1,5 @@
 {
   "variants": {
-    ""   : { "model": "integrateddynamics:crystalized_menril_block" }
+    ""   : { "model": "integrateddynamics:block/crystalized_menril_block" }
   }
 }

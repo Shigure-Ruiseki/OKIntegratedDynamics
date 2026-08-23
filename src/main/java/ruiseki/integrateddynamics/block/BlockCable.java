@@ -74,19 +74,20 @@ public class BlockCable extends BlockTile
 
     // Properties
     @BlockProperty
-    public static final IProperty<Boolean> REALCABLE = new UnlistedProperty<>("realcable", Boolean.class);
+    public static final IProperty<Boolean> REALCABLE = new UnlistedProperty<>("realcable", Boolean.class, false);
     @BlockProperty
     public static final IProperty<Boolean>[] CONNECTED = new IProperty[6];
     @BlockProperty
     public static final IProperty<PartRenderPosition>[] PART_RENDERPOSITIONS = new IProperty[6];
     @BlockProperty
-    public static final IProperty<Optional> FACADE = new UnlistedProperty<>("facade", Optional.class);
+    public static final IProperty<Optional> FACADE = new UnlistedProperty<>("facade", Optional.class, Optional.empty());
     static {
         for (ForgeDirection side : ForgeDirection.VALID_DIRECTIONS) {
-            CONNECTED[side.ordinal()] = new UnlistedProperty<>("connect-" + side.name(), Boolean.class);
+            CONNECTED[side.ordinal()] = new UnlistedProperty<>("connect-" + side.name(), Boolean.class, false);
             PART_RENDERPOSITIONS[side.ordinal()] = new UnlistedProperty<>(
                 "partRenderPosition-" + side.name(),
-                PartRenderPosition.class);
+                PartRenderPosition.class,
+                PartRenderPosition.NONE);
         }
     }
     @BlockProperty
