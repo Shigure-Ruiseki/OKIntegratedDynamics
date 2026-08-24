@@ -42,7 +42,7 @@ public class RecipeEnergyContainerCombination extends SpecialRecipe {
 
     @Override
     public boolean matchesOK(InventoryCrafting grid, World world) {
-        return getCraftingResult(grid) != null;
+        return assemble(grid) != null;
     }
 
     @Override
@@ -69,7 +69,6 @@ public class RecipeEnergyContainerCombination extends SpecialRecipe {
     public IRecipeSerializer<?> getSerializer() {
         return RecipeEnergyContainerCombinationConfig._instance.getInstance();
     }
-
     @Override
     public ItemStack assemble(InventoryCrafting grid) {
         ItemStack output = getRecipeOutput().copy();
@@ -83,15 +82,19 @@ public class RecipeEnergyContainerCombination extends SpecialRecipe {
 
         // Loop over the grid and count the total contents and capacity + collect energy.
         for (int j = 0; j < grid.getSizeInventory(); j++) {
-            ItemStack element = ItemStackHelpers.split(grid.getStackInSlot(j), 1);
+            ItemStack element = grid.getStackInSlot(j);
+
             if (element != null) {
                 if (this.batteryItem.test(element)) {
                     IEnergyStorageCapacity currentEnergyStorage = (IEnergyStorageCapacity) CapabilityHelpers
                         .getCapability(element, CapabilityEnergy.ENERGY)
                         .getOrNull();
-                    inputItems++;
-                    totalEnergy = Helpers.addSafe(totalEnergy, currentEnergyStorage.getEnergyStored());
-                    totalCapacity = Helpers.addSafe(totalCapacity, currentEnergyStorage.getMaxEnergyStored());
+
+                    if (currentEnergyStorage != null) {
+                        inputItems++;
+                        totalEnergy = Helpers.addSafe(totalEnergy, currentEnergyStorage.getEnergyStored());
+                        totalCapacity = Helpers.addSafe(totalCapacity, currentEnergyStorage.getMaxEnergyStored());
+                    }
                 } else {
                     return null;
                 }
@@ -103,8 +106,10 @@ public class RecipeEnergyContainerCombination extends SpecialRecipe {
         }
 
         // Set capacity and fill fluid into output.
-        energyStorage.setCapacity(totalCapacity);
-        ((IEnergyStorageMutable) energyStorage).setEnergy(totalEnergy);
+        if (energyStorage != null) {
+            energyStorage.setCapacity(totalCapacity);
+            ((IEnergyStorageMutable) energyStorage).setEnergy(totalEnergy);
+        }
 
         return output;
     }
