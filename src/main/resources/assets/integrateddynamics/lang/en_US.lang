@@ -116,6 +116,7 @@ item.items.integrateddynamics.labeller.button.write=Write
 item.items.integrateddynamics.facade.name=Facade (WIP)
 item.items.integrateddynamics.facade.info=Combine with a block in crafting table
 item.items.integrateddynamics.bucket_menril_resin.name=Menril Resin Bucket
+item.items.integrateddynamics.bucket_liquid_chorus.name=Liquid Chorus Bucket
 item.items.integrateddynamics.crystalized_menril_chunk.name=Crystalized Menril Chunk
 item.items.integrateddynamics.variable_transformer_output.name=Output Variable Transformer
 item.items.integrateddynamics.variable_transformer_input.name=Input Variable Transformer
