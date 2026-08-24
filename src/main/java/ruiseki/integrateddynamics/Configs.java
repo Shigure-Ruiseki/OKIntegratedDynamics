@@ -3,6 +3,10 @@ package ruiseki.integrateddynamics;
 import ruiseki.integrateddynamics.block.BlockCableConfig;
 import ruiseki.integrateddynamics.block.BlockCoalGeneratorConfig;
 import ruiseki.integrateddynamics.block.BlockCreativeEnergyBatteryConfig;
+import ruiseki.integrateddynamics.block.BlockCrystalizedChorusBlockConfig;
+import ruiseki.integrateddynamics.block.BlockCrystalizedChorusBlockStairsConfig;
+import ruiseki.integrateddynamics.block.BlockCrystalizedChorusBrickConfig;
+import ruiseki.integrateddynamics.block.BlockCrystalizedChorusBrickStairsConfig;
 import ruiseki.integrateddynamics.block.BlockCrystalizedMenrilBlockConfig;
 import ruiseki.integrateddynamics.block.BlockCrystalizedMenrilBlockStairsConfig;
 import ruiseki.integrateddynamics.block.BlockCrystalizedMenrilBrickConfig;
@@ -106,6 +110,9 @@ public class Configs {
         configHandler.add(new BlockMenrilLeavesConfig());
         configHandler.add(new BlockMenrilSaplingConfig());
         configHandler.add(new BlockMenrilPlanksConfig());
+        // configHandler.add(new BlockMenrilSlabConfig());
+        // configHandler.add(new BlockMenrilFenceConfig());
+        // configHandler.add(new BlockMenrilFenceGateConfig());
         configHandler.add(new BlockCrystalizedMenrilBlockConfig());
         configHandler.add(new BlockCrystalizedMenrilBrickConfig());
         configHandler.add(new BlockFluidMenrilResinConfig());
@@ -119,20 +126,24 @@ public class Configs {
         configHandler.add(new BlockCrystalizedMenrilBrickStairsConfig());
         configHandler.add(new BlockDelayConfig());
         configHandler.add(new BlockFluidLiquidChorusConfig());
-        // configHandler.add(new BlockCrystalizedChorusBlockConfig());
-        // configHandler.add(new BlockCrystalizedChorusBrickConfig());
-        // configHandler.add(new BlockCrystalizedChorusBlockStairsConfig());
-        // configHandler.add(new BlockCrystalizedChorusBrickStairsConfig());
+        configHandler.add(new BlockCrystalizedChorusBlockConfig());
+        configHandler.add(new BlockCrystalizedChorusBrickConfig());
+        configHandler.add(new BlockCrystalizedChorusBlockStairsConfig());
+        configHandler.add(new BlockCrystalizedChorusBrickStairsConfig());
         // configHandler.add(new BlockMechanicalSqueezerConfig());
         // configHandler.add(new BlockMechanicalDryingBasinConfig());
+        // configHandler.add(new BlockCrystalizedMenrilBlockSlabConfig());
+        // configHandler.add(new BlockCrystalizedMenrilBrickSlabConfig());
+        // configHandler.add(new BlockCrystalizedChorusBlockSlabConfig());
+        // configHandler.add(new BlockCrystalizedChorusBrickSlabConfig());
 
         // Items
+        configHandler.add(new ItemBucketLiquidChorusConfig());
+        configHandler.add(new ItemBucketMenrilResinConfig());
         configHandler.add(new ItemWrenchConfig());
         configHandler.add(new ItemVariableConfig());
         configHandler.add(new ItemLabellerConfig());
         configHandler.add(new ItemFacadeConfig());
-        configHandler.add(new ItemBucketMenrilResinConfig());
-        configHandler.add(new ItemBucketLiquidChorusConfig());
         configHandler.add(new ItemCrystalizedMenrilChunkConfig());
         configHandler.add(new ItemVariableTransformerConfig(true));
         configHandler.add(new ItemVariableTransformerConfig(false));
@@ -141,6 +152,7 @@ public class Configs {
         // configHandler.add(new ItemOnTheDynamicsOfIntegrationConfig());
         configHandler.add(new ItemCrystalizedChorusChunkConfig());
         configHandler.add(new ItemLogicDirectorConfig());
+        // configHandler.add(new ItemProtoChorusConfig());
 
         // Biomes
         configHandler.add(new BiomeMeneglinConfig());
@@ -148,11 +160,21 @@ public class Configs {
         // Entities
         // configHandler.add(new EntityItemTargettedConfig());
 
+        // Recipe types
+        // configHandler.add(new RecipeTypeDryingBasinConfig());
+        // configHandler.add(new RecipeTypeMechanicalDryingBasinConfig());
+        // configHandler.add(new RecipeTypeSqueezerConfig());
+        // configHandler.add(new RecipeTypeMechanicalSqueezerConfig());
+
         // Recipes
-        configHandler.add(new RecipeEnergyContainerCombinationConfig());
+        // configHandler.add(new RecipeSerializerDryingBasinConfig());
+        // configHandler.add(new RecipeSerializerMechanicalDryingBasinConfig());
+        // configHandler.add(new RecipeSerializerSqueezerConfig());
+        // configHandler.add(new RecipeSerializerMechanicalSqueezerConfig());
         configHandler.add(new RecipeSerializerNbtClearConfig());
-        configHandler.add(new ItemFacadeRecipeConfig());
+        configHandler.add(new RecipeEnergyContainerCombinationConfig());
         configHandler.add(new ItemVariableCopyRecipeConfig());
+        configHandler.add(new ItemFacadeRecipeConfig());
         configHandler.add(new RecipeSerializerCraftingSpecialShapedOmniDirectionalConfig());
         configHandler.add(new RecipeSerializerCraftingSpecialShapelessOmniDirectionalConfig());
     }
