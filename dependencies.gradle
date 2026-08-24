@@ -4,7 +4,7 @@
  *       Available at runtime and compiletime for mods depending on this mod
  *  - implementation("g:n:v:c"): if you need this for internal implementation details of the mod, but none of it is visible via the public API
  *       Available at runtime but not compiletime for mods depending on this mod
- *  - compileOnly("g:n:v:c"): if the mod you're building doesn't need this dependency during runtime at all, e.g. for optional mods
+ *   - compileOnly("g:n:v:c"): if the mod you're building doesn't need this dependency during runtime at all, e.g. for optional mods
  *       Not available at all for mods depending on this mod, only visible at compiletime for this mod
  *  - compileOnlyApi("g:n:v:c"): like compileOnly, but also visible at compiletime for mods depending on this mod
  *       Available at compiletime but not runtime for mods depending on this mod
@@ -35,7 +35,7 @@
  */
 dependencies {
     implementation("com.github.GTNewHorizons:GTNHLib:0.11.43:dev")
-    implementation("com.github.Shigure-Ruiseki:OKCore:79d70bc05e:dev") { transitive = false }
+    implementation("com.github.Shigure-Ruiseki:OKCore:91474de5ca:dev") { transitive = false }
 
     devOnlyNonPublishable('com.github.GTNewHorizons:NotEnoughItems:2.8.119-GTNH:dev')
     devOnlyNonPublishable("com.github.GTNewHorizons:ModularUI2:2.3.85-1.7.10:dev") { transitive = false }

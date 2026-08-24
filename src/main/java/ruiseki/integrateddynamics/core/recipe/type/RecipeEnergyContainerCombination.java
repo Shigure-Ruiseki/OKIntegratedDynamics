@@ -11,7 +11,6 @@ import ruiseki.okcore.datastructure.NonNullList;
 import ruiseki.okcore.energy.capability.CapabilityEnergy;
 import ruiseki.okcore.helper.CapabilityHelpers;
 import ruiseki.okcore.helper.Helpers;
-import ruiseki.okcore.helper.ItemStackHelpers;
 import ruiseki.okcore.recipe.IRecipeSerializer;
 import ruiseki.okcore.recipe.ingredient.Ingredient;
 import ruiseki.okcore.recipe.type.crafting.SpecialRecipe;
@@ -69,6 +68,7 @@ public class RecipeEnergyContainerCombination extends SpecialRecipe {
     public IRecipeSerializer<?> getSerializer() {
         return RecipeEnergyContainerCombinationConfig._instance.getInstance();
     }
+
     @Override
     public ItemStack assemble(InventoryCrafting grid) {
         ItemStack output = getRecipeOutput().copy();

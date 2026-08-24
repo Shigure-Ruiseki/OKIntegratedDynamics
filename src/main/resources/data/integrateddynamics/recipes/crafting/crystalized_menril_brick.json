@@ -6,11 +6,11 @@
   ],
   "key": {
     "B": {
-      "item": "integrateddynamics:crystalized_chorus_block"
+      "item": "integrateddynamics:crystalized_menril_block"
     }
   },
   "result": {
-    "item": "integrateddynamics:crystalized_chorus_brick",
+    "item": "integrateddynamics:crystalized_menril_brick",
     "count": 4
   }
 }

@@ -204,6 +204,12 @@ public class GeneralConfig extends DummyConfig {
         isCommandable = true)
     public static boolean logChangeEvents = false;
 
+    @ConfigurableProperty(
+        category = ConfigurableTypeCategory.MACHINE,
+        comment = "Priority list of mod id's when determining tag-based recipe outputs.",
+        isCommandable = true)
+    public static String[] recipeTagOutputModPriorities = new String[] {};
+
     /**
      * How deep the recursion stack on an operator can become. This is to avoid game crashes when building things like
      * the omega operator.
