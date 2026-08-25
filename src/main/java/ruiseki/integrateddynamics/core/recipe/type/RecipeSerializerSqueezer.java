@@ -24,7 +24,7 @@ import ruiseki.okcore.recipe.ingredient.Ingredient;
 
 /**
  * Recipe serializer for squeezer recipes
- * 
+ *
  * @author rubensworks
  */
 public class RecipeSerializerSqueezer implements IRecipeSerializer<RecipeSqueezer> {
@@ -80,14 +80,18 @@ public class RecipeSerializerSqueezer implements IRecipeSerializer<RecipeSqueeze
         // Input
         Ingredient inputIngredient = Ingredient.fromNetwork(buffer);
 
-        // Output
+        // Output Items
         NonNullList<RecipeSqueezer.ItemStackChance> outputItemStacks = NonNullList.create();
         int outputItemStacksCount = buffer.readInt();
         for (int i = 0; i < outputItemStacksCount; i++) {
             outputItemStacks
                 .add(new RecipeSqueezer.ItemStackChance(buffer.readItemStackFromBuffer(), buffer.readFloat()));
         }
-        FluidStack outputFluid = buffer.readFluidStack();
+
+        FluidStack outputFluid = null;
+        if (buffer.readBoolean()) {
+            outputFluid = buffer.readFluidStack();
+        }
 
         return new RecipeSqueezer(recipeId, inputIngredient, outputItemStacks, outputFluid);
     }
@@ -98,7 +102,7 @@ public class RecipeSerializerSqueezer implements IRecipeSerializer<RecipeSqueeze
         recipe.getInputIngredient()
             .toNetwork(buffer);
 
-        // Output
+        // Output Items
         buffer.writeInt(
             recipe.getOutputItems()
                 .size());
@@ -106,6 +110,13 @@ public class RecipeSerializerSqueezer implements IRecipeSerializer<RecipeSqueeze
             buffer.writeItemStackToBuffer(outputItem.getItemStack());
             buffer.writeFloat(outputItem.getChance());
         }
-        buffer.writeFluidStack(recipe.getOutputFluid());
+
+        FluidStack outputFluid = recipe.getOutputFluid();
+        if (outputFluid != null) {
+            buffer.writeBoolean(true);
+            buffer.writeFluidStack(outputFluid);
+        } else {
+            buffer.writeBoolean(false);
+        }
     }
 }
