@@ -77,17 +77,25 @@ public class BlockDryingBasin extends BlockTile {
         if (tileStack != null) {
             if (itemStack == null) {
                 player.inventory.setInventorySlotContents(player.inventory.currentItem, tileStack);
-            } else if (!player.inventory.addItemStackToInventory(tileStack)) {
+                tile.setInventorySlotContents(0, null);
+            } else if (player.inventory.addItemStackToInventory(tileStack)) {
+                tile.setInventorySlotContents(0, null);
+            } else {
                 return false;
             }
-            tile.setInventorySlotContents(0, null);
+
+            player.inventoryContainer.detectAndSendChanges();
             tile.sendUpdate();
             return true;
+
         } else if (itemStack != null) {
             tile.setInventorySlotContents(0, itemStack.splitStack(1));
+
             if (itemStack.stackSize <= 0) {
                 player.inventory.setInventorySlotContents(player.inventory.currentItem, null);
             }
+
+            player.inventoryContainer.detectAndSendChanges();
             tile.sendUpdate();
             return true;
         }

@@ -1,0 +1,40 @@
+{
+  "multipart": [
+    {
+      "when": { "axis": "x" },
+      "apply": { "model": "integrateddynamics:block/squeezer" }
+    },
+    {
+      "when": { "axis": "z" },
+      "apply": { "model": "integrateddynamics:block/squeezer", "y": 90 }
+    },
+    {
+      "when": { "height": "1" },
+      "apply": { "model": "integrateddynamics:block/squeezer_top_1" }
+    },
+    {
+      "when": { "height": "2" },
+      "apply": { "model": "integrateddynamics:block/squeezer_top_2" }
+    },
+    {
+      "when": { "height": "3" },
+      "apply": { "model": "integrateddynamics:block/squeezer_top_3" }
+    },
+    {
+      "when": { "height": "4" },
+      "apply": { "model": "integrateddynamics:block/squeezer_top_4" }
+    },
+    {
+      "when": { "height": "5" },
+      "apply": { "model": "integrateddynamics:block/squeezer_top_5" }
+    },
+    {
+      "when": { "height": "6" },
+      "apply": { "model": "integrateddynamics:block/squeezer_top_6" }
+    },
+    {
+      "when": { "height": "7" },
+      "apply": { "model": "integrateddynamics:block/squeezer_top_7" }
+    }
+  ]
+}

@@ -29,6 +29,7 @@ import ruiseki.integrateddynamics.block.BlockMenrilSaplingConfig;
 import ruiseki.integrateddynamics.block.BlockMenrilTorchConfig;
 import ruiseki.integrateddynamics.block.BlockMenrilTorchStoneConfig;
 import ruiseki.integrateddynamics.block.BlockProxyConfig;
+import ruiseki.integrateddynamics.block.BlockSqueezerConfig;
 import ruiseki.integrateddynamics.block.BlockVariablestoreConfig;
 import ruiseki.integrateddynamics.capability.cable.CableConfig;
 import ruiseki.integrateddynamics.capability.cable.CableFakeableConfig;
@@ -49,7 +50,9 @@ import ruiseki.integrateddynamics.capability.variablefacade.VariableFacadeHolder
 import ruiseki.integrateddynamics.core.recipe.type.RecipeEnergyContainerCombinationConfig;
 import ruiseki.integrateddynamics.core.recipe.type.RecipeSerializerDryingBasinConfig;
 import ruiseki.integrateddynamics.core.recipe.type.RecipeSerializerNbtClearConfig;
+import ruiseki.integrateddynamics.core.recipe.type.RecipeSerializerSqueezerConfig;
 import ruiseki.integrateddynamics.core.recipe.type.RecipeTypeDryingBasinConfig;
+import ruiseki.integrateddynamics.core.recipe.type.RecipeTypeSqueezerConfig;
 import ruiseki.integrateddynamics.fluid.FluidLiquidChorusConfig;
 import ruiseki.integrateddynamics.fluid.FluidMenrilResinConfig;
 import ruiseki.integrateddynamics.item.ItemBucketLiquidChorusConfig;
@@ -117,7 +120,7 @@ public class Configs {
         configHandler.add(new BlockCrystalizedMenrilBrickConfig());
         configHandler.add(new BlockFluidMenrilResinConfig());
         configHandler.add(new BlockDryingBasinConfig());
-        // configHandler.add(new BlockSqueezerConfig());
+        configHandler.add(new BlockSqueezerConfig());
         configHandler.add(new BlockMenrilDoorConfig());
         configHandler.add(new BlockMenrilTorchConfig());
         configHandler.add(new BlockMenrilTorchStoneConfig());
@@ -158,13 +161,13 @@ public class Configs {
         // Recipe types
         configHandler.add(new RecipeTypeDryingBasinConfig());
         // configHandler.add(new RecipeTypeMechanicalDryingBasinConfig());
-        // configHandler.add(new RecipeTypeSqueezerConfig());
+        configHandler.add(new RecipeTypeSqueezerConfig());
         // configHandler.add(new RecipeTypeMechanicalSqueezerConfig());
 
         // Recipes
         configHandler.add(new RecipeSerializerDryingBasinConfig());
         // configHandler.add(new RecipeSerializerMechanicalDryingBasinConfig());
-        // configHandler.add(new RecipeSerializerSqueezerConfig());
+        configHandler.add(new RecipeSerializerSqueezerConfig());
         // configHandler.add(new RecipeSerializerMechanicalSqueezerConfig());
         configHandler.add(new RecipeSerializerNbtClearConfig());
         configHandler.add(new RecipeEnergyContainerCombinationConfig());

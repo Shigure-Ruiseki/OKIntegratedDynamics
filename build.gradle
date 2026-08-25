@@ -1,6 +1,7 @@
 
 plugins {
     id 'com.gtnewhorizons.gtnhconvention'
+    id 'org.jetbrains.kotlin.jvm'
 }
 
 minecraft {
@@ -13,4 +14,13 @@ minecraft {
     injectedTags.put("MOD_ID", project.modId)
     injectedTags.put("MOD_NAME", project.modName)
     injectedTags.put("MOD_GROUP", project.modGroup)
+}
+repositories {
+    mavenCentral()
+}
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+}
+kotlin {
+    jvmToolchain(25)
 }

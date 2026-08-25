@@ -52,10 +52,12 @@ public class RenderTileEntityDryingBasin extends TileEntitySpecialRenderer
 
         if (itemStack.getItem() instanceof ItemBlock) {
             GlStateManager.translate((float) x + 0.5F, (float) y + 0.25F, (float) z + 0.5F);
+            GlStateManager.scale(2, 2, 2);
         } else {
             GlStateManager.translate((float) x + 0.5F, (float) y + 0.20F, (float) z + 0.5F);
             GlStateManager.rotate(90F, 1, 0, 0);
             GlStateManager.rotate(rotation, 0, 0, 1);
+            GlStateManager.scale(2, 2, 2);
         }
 
         GlStateManager.pushAttrib();
@@ -75,7 +77,7 @@ public class RenderTileEntityDryingBasin extends TileEntitySpecialRenderer
             return;
         }
 
-        double height = (fluid.amount * 0.55D) / FluidHelpers.BUCKET_VOLUME + 0.23D;
+        double height = (fluid.amount * 0.55D) / FluidHelpers.BUCKET_VOLUME + 0.35D;
 
         int brightness = lastTile.getWorldObj()
             .getLightBrightnessForSkyBlocks(
