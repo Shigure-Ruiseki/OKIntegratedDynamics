@@ -1,0 +1,15 @@
+{
+  "type": "integrateddynamics:drying_basin",
+  "item": {
+    "item": "minecraft:stained_hardened_clay",
+    "meta": 9
+  },
+  "fluid": {
+    "fluid": "minecraft:water",
+    "amount": 250
+  },
+  "duration": 100,
+  "result": {
+    "item": "minecraft:hardened_clay"
+  }
+}

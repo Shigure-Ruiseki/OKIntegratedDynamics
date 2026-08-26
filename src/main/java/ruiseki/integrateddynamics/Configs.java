@@ -19,6 +19,8 @@ import ruiseki.integrateddynamics.block.BlockFluidMenrilResinConfig;
 import ruiseki.integrateddynamics.block.BlockInvisibleLightConfig;
 import ruiseki.integrateddynamics.block.BlockLogicProgrammerConfig;
 import ruiseki.integrateddynamics.block.BlockMaterializerConfig;
+import ruiseki.integrateddynamics.block.BlockMechanicalDryingBasinConfig;
+import ruiseki.integrateddynamics.block.BlockMechanicalSqueezerConfig;
 import ruiseki.integrateddynamics.block.BlockMenrilDoorConfig;
 import ruiseki.integrateddynamics.block.BlockMenrilLeavesConfig;
 import ruiseki.integrateddynamics.block.BlockMenrilLogConfig;
@@ -49,9 +51,13 @@ import ruiseki.integrateddynamics.capability.variablecontainer.VariableContainer
 import ruiseki.integrateddynamics.capability.variablefacade.VariableFacadeHolderConfig;
 import ruiseki.integrateddynamics.core.recipe.type.RecipeEnergyContainerCombinationConfig;
 import ruiseki.integrateddynamics.core.recipe.type.RecipeSerializerDryingBasinConfig;
+import ruiseki.integrateddynamics.core.recipe.type.RecipeSerializerMechanicalDryingBasinConfig;
+import ruiseki.integrateddynamics.core.recipe.type.RecipeSerializerMechanicalSqueezerConfig;
 import ruiseki.integrateddynamics.core.recipe.type.RecipeSerializerNbtClearConfig;
 import ruiseki.integrateddynamics.core.recipe.type.RecipeSerializerSqueezerConfig;
 import ruiseki.integrateddynamics.core.recipe.type.RecipeTypeDryingBasinConfig;
+import ruiseki.integrateddynamics.core.recipe.type.RecipeTypeMechanicalDryingBasinConfig;
+import ruiseki.integrateddynamics.core.recipe.type.RecipeTypeMechanicalSqueezerConfig;
 import ruiseki.integrateddynamics.core.recipe.type.RecipeTypeSqueezerConfig;
 import ruiseki.integrateddynamics.fluid.FluidLiquidChorusConfig;
 import ruiseki.integrateddynamics.fluid.FluidMenrilResinConfig;
@@ -133,8 +139,8 @@ public class Configs {
         configHandler.add(new BlockCrystalizedChorusBrickConfig());
         configHandler.add(new BlockCrystalizedChorusBlockStairsConfig());
         configHandler.add(new BlockCrystalizedChorusBrickStairsConfig());
-        // configHandler.add(new BlockMechanicalSqueezerConfig());
-        // configHandler.add(new BlockMechanicalDryingBasinConfig());
+        configHandler.add(new BlockMechanicalSqueezerConfig());
+        configHandler.add(new BlockMechanicalDryingBasinConfig());
 
         // Items
         configHandler.add(new ItemBucketLiquidChorusConfig());
@@ -160,15 +166,15 @@ public class Configs {
 
         // Recipe types
         configHandler.add(new RecipeTypeDryingBasinConfig());
-        // configHandler.add(new RecipeTypeMechanicalDryingBasinConfig());
+        configHandler.add(new RecipeTypeMechanicalDryingBasinConfig());
         configHandler.add(new RecipeTypeSqueezerConfig());
-        // configHandler.add(new RecipeTypeMechanicalSqueezerConfig());
+        configHandler.add(new RecipeTypeMechanicalSqueezerConfig());
 
         // Recipes
         configHandler.add(new RecipeSerializerDryingBasinConfig());
-        // configHandler.add(new RecipeSerializerMechanicalDryingBasinConfig());
+        configHandler.add(new RecipeSerializerMechanicalDryingBasinConfig());
         configHandler.add(new RecipeSerializerSqueezerConfig());
-        // configHandler.add(new RecipeSerializerMechanicalSqueezerConfig());
+        configHandler.add(new RecipeSerializerMechanicalSqueezerConfig());
         configHandler.add(new RecipeSerializerNbtClearConfig());
         configHandler.add(new RecipeEnergyContainerCombinationConfig());
         configHandler.add(new ItemVariableCopyRecipeConfig());

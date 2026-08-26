@@ -1,0 +1,8 @@
+{
+  "type": "integrateddynamics:mechanical_drying_basin",
+  "item": "minecraft:clay",
+  "duration": 400,
+  "result": {
+    "item": "minecraft:hardened_clay"
+  }
+}

@@ -2,6 +2,8 @@ package ruiseki.integrateddynamics.modcompat.jjfmuy;
 
 import ruiseki.integrateddynamics.client.gui.GuiLogicProgrammerBase;
 import ruiseki.integrateddynamics.modcompat.jjfmuy.dryingbasin.DryingBasinRecipeCategory;
+import ruiseki.integrateddynamics.modcompat.jjfmuy.mechanicaldryingbasin.MechanicalDryingBasinRecipeCategory;
+import ruiseki.integrateddynamics.modcompat.jjfmuy.mechanicalsqueezer.MechanicalSqueezerRecipeCategory;
 import ruiseki.integrateddynamics.modcompat.jjfmuy.squeezer.SqueezerRecipeCategory;
 import ruiseki.jfmuy.api.IModPlugin;
 import ruiseki.jfmuy.api.IModRegistry;
@@ -16,6 +18,8 @@ public class JFMUYIDsConfig implements IModPlugin {
         if (!JFMUYModCompat.canBeUsed) return;
         DryingBasinRecipeCategory.register(registry);
         SqueezerRecipeCategory.register(registry);
+        MechanicalDryingBasinRecipeCategory.register(registry);
+        MechanicalSqueezerRecipeCategory.register(registry);
     }
 
     @Override
@@ -24,5 +28,7 @@ public class JFMUYIDsConfig implements IModPlugin {
         registry.addGhostIngredientHandler(GuiLogicProgrammerBase.class, new LPGhostIngredientHandler<>());
         DryingBasinRecipeCategory.initialize(registry);
         SqueezerRecipeCategory.initialize(registry);
+        MechanicalDryingBasinRecipeCategory.initialize(registry);
+        MechanicalSqueezerRecipeCategory.initialize(registry);
     }
 }
