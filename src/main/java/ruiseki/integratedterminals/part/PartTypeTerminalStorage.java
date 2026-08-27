@@ -7,7 +7,6 @@ import java.util.Map;
 
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.inventory.Container;
-import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
@@ -113,25 +112,6 @@ public class PartTypeTerminalStorage extends PartTypeTerminal<PartTypeTerminalSt
         @Nullable
         public List<ItemStack> getNamedInventory(String name) {
             return this.namedInventories.get(name);
-        }
-
-        @Override
-        public void loadNamedInventory(String name, IInventory inventory) {
-            List<ItemStack> tabItems = this.getNamedInventory(name);
-            if (tabItems != null) {
-                for (int i = 0; i < tabItems.size(); i++) {
-                    inventory.setInventorySlotContents(i, tabItems.get(i));
-                }
-            }
-        }
-
-        @Override
-        public void saveNamedInventory(String name, IInventory inventory) {
-            List<ItemStack> latestItems = new ArrayList<>();
-            for (int i = 0; i < inventory.getSizeInventory(); i++) {
-                latestItems.add(inventory.getStackInSlot(i));
-            }
-            this.setNamedInventory(name, latestItems);
         }
 
         @Override

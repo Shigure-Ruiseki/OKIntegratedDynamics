@@ -3,21 +3,21 @@ package ruiseki.integratedterminals.inventory.container;
 import net.minecraft.entity.player.EntityPlayer;
 
 import ruiseki.integratedterminals.core.client.gui.CraftingOptionGuiData;
-import ruiseki.integratedterminals.proxy.guiprovider.GuiProviders;
+import ruiseki.okcore.inventory.IGuiContainerProvider;
 import ruiseki.okcore.inventory.container.ExtendedInventoryContainer;
 
 /**
  * A container for setting the amount for a given crafting option.
- * 
+ *
  * @author rubensworks
  */
 public class ContainerTerminalStorageCraftingOptionAmountBase<L> extends ExtendedInventoryContainer {
 
     private final CraftingOptionGuiData<?, ?, L> craftingOptionGuiData;
 
-    public ContainerTerminalStorageCraftingOptionAmountBase(final EntityPlayer player,
+    public ContainerTerminalStorageCraftingOptionAmountBase(final EntityPlayer player, IGuiContainerProvider provider,
         CraftingOptionGuiData craftingOptionGuiData) {
-        super(player.inventory, GuiProviders.GUI_TERMINAL_STORAGE_CRAFTNG_OPTION_AMOUNT);
+        super(player.inventory, provider);
 
         addPlayerInventory(player.inventory, 9, 80);
 

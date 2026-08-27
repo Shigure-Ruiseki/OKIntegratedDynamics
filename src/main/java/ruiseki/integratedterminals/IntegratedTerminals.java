@@ -24,6 +24,7 @@ import ruiseki.integratedterminals.core.terminalstorage.TerminalStorageTabs;
 import ruiseki.integratedterminals.core.terminalstorage.crafting.TerminalStorageTabIngredientCraftingHandlers;
 import ruiseki.integratedterminals.core.terminalstorage.location.TerminalStorageLocationRegistry;
 import ruiseki.integratedterminals.core.terminalstorage.location.TerminalStorageLocations;
+import ruiseki.integratedterminals.item.ItemTerminalStoragePortableConfig;
 import ruiseki.integratedterminals.modcompat.integratedcrafting.IntegratedCraftingModCompat;
 import ruiseki.integratedterminals.part.TerminalPartTypes;
 import ruiseki.okcore.client.gui.GuiHandler;
@@ -174,6 +175,7 @@ public class IntegratedTerminals extends ModBaseVersionable {
         super.onMainConfigsRegister(configHandler);
 
         configHandler.add(new IngredientComponentTerminalStorageHandlerConfig());
+        configHandler.add(new ItemTerminalStoragePortableConfig());
     }
 
     @Override

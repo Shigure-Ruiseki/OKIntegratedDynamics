@@ -5,9 +5,11 @@ import ruiseki.integratedterminals.IntegratedTerminals;
 import ruiseki.integratedterminals.network.packet.CancelCraftingJobPacket;
 import ruiseki.integratedterminals.network.packet.OpenCraftingJobsGuiPacket;
 import ruiseki.integratedterminals.network.packet.OpenCraftingJobsPlanGuiPacket;
+import ruiseki.integratedterminals.network.packet.PacketSetCraftingDataItem;
 import ruiseki.integratedterminals.network.packet.PacketSetCraftingDataPart;
 import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientChangeEventPacket;
 import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientCraftingOptionsPacket;
+import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientItemOpenPacket;
 import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientItemStackCraftingGridBalance;
 import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientItemStackCraftingGridClear;
 import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientItemStackCraftingGridSetAutoRefill;
@@ -43,13 +45,15 @@ public class CommonProxy extends CommonProxyComponent {
 
         // Register packets.
         packetHandler.register(TerminalStorageIngredientPartOpenPacket.class);
+        packetHandler.register(TerminalStorageIngredientItemOpenPacket.class);
         packetHandler.register(TerminalStorageIngredientChangeEventPacket.class);
         packetHandler.register(TerminalStorageIngredientCraftingOptionsPacket.class);
         packetHandler.register(TerminalStorageIngredientMaxQuantityPacket.class);
         packetHandler.register(TerminalStorageIngredientSlotClickPacket.class);
+        packetHandler.register(PacketSetCraftingDataPart.class);
+        packetHandler.register(PacketSetCraftingDataItem.class);
         packetHandler.register(TerminalStorageIngredientOpenCraftingPlanGuiPacket.class);
         packetHandler.register(TerminalStorageIngredientOpenCraftingJobAmountGuiPacket.class);
-        packetHandler.register(PacketSetCraftingDataPart.class);
         packetHandler.register(TerminalStorageIngredientUpdateActiveStorageIngredientPacket.class);
         packetHandler.register(TerminalStorageIngredientItemStackCraftingGridClear.class);
         packetHandler.register(TerminalStorageIngredientItemStackCraftingGridBalance.class);

@@ -26,8 +26,6 @@ public class ContainerTerminalCraftingJobsPlan extends ExtendedInventoryContaine
 
     private final World world;
     private final PartTarget target;
-    private final IPartContainer partContainer;
-    private final IPartType partType;
     private final CraftingJobGuiData craftingJobGuiData;
     private final int craftingPlanNotifierId;
 
@@ -48,12 +46,8 @@ public class ContainerTerminalCraftingJobsPlan extends ExtendedInventoryContaine
         IPartType partType, CraftingJobGuiData craftingJobGuiData) {
         super(player.inventory, GuiProviders.GUI_TERMINAL_STORAGE_CRAFTNG_PLAN_PART);
 
-        this.world = target.getCenter()
-            .getPos()
-            .getWorld();
+        this.world = player.worldObj;
         this.target = target;
-        this.partContainer = partContainer;
-        this.partType = partType;
         this.craftingJobGuiData = craftingJobGuiData;
 
         this.craftingPlanNotifierId = getNextValueId();

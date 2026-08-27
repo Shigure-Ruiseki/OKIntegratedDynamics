@@ -22,7 +22,7 @@ import ruiseki.okcore.network.PacketCodec;
 
 /**
  * Packet for opening a live crafting plan gui.
- * 
+ *
  * @author rubensworks
  *
  */
@@ -77,10 +77,10 @@ public class OpenCraftingJobsPlanGuiPacket extends PacketCodec {
             handler,
             handler.deserializeCraftingJobId(craftingJobId.getTag("id")));
         IntegratedTerminals._instance.getGuiHandler()
-            .setTemporaryData(ExtendedGuiHandler.CRAFTING_PLAN, Pair.of(side, data));
+            .setTemporaryData(ExtendedGuiHandler.CRAFTING_PLAN_PART, Pair.of(side, data));
         player.openGui(
             IntegratedTerminals._instance,
-            GuiProviders.ID_GUI_TERMINAL_CRAFTING_JOBS_PLAN,
+            GuiProviders.ID_GUI_TERMINAL_CRAFTING_JOBS_PLAN_PART,
             world,
             pos.getX(),
             pos.getY(),
@@ -102,7 +102,7 @@ public class OpenCraftingJobsPlanGuiPacket extends PacketCodec {
             craftingPlan.getCraftingPlan()
                 .getId());
         IntegratedTerminals._instance.getGuiHandler()
-            .setTemporaryData(ExtendedGuiHandler.CRAFTING_PLAN, Pair.of(side, data));
+            .setTemporaryData(ExtendedGuiHandler.CRAFTING_PLAN_PART, Pair.of(side, data));
         IntegratedTerminals._instance.getPacketHandler()
             .sendToServer(new OpenCraftingJobsPlanGuiPacket(data));
     }

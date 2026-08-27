@@ -1,10 +1,14 @@
 package ruiseki.integratedterminals.inventory.container;
 
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.common.util.Constants;
 
 import org.jetbrains.annotations.Nullable;
+
+import ruiseki.integratedterminals.Reference;
+import ruiseki.okcore.persist.IDirtyMarkListener;
 
 /**
  * @author rubensworks
@@ -15,10 +19,24 @@ public class TerminalStorageState {
     public static final String SETTING_SEARCH = "search";
     public static final String SETTING_BUTTON = "button";
 
-    private final NBTTagCompound tag;
+    public static final String PLAYER_TAG_DEFAULT_KEY = Reference.MOD_ID + ":terminalStorageStateDefault";
+
+    private NBTTagCompound tag;
 
     public TerminalStorageState() {
-        this.tag = new NBTTagCompound();
+        this(new NBTTagCompound());
+    }
+
+    public TerminalStorageState(NBTTagCompound tag) {
+        this.tag = tag;
+    }
+
+    public NBTTagCompound getTag() {
+        return tag;
+    }
+
+    public void setTag(NBTTagCompound tag) {
+        this.tag = tag;
     }
 
     public String getTab() {
@@ -67,5 +85,23 @@ public class TerminalStorageState {
         } else {
             tag.removeTag(SETTING_TAB);
         }
+    }
+
+    public static void setPlayerDefault(EntityPlayer playerEntity, TerminalStorageState state) {
+        playerEntity.getEntityData()
+            .setTag(
+                TerminalStorageState.PLAYER_TAG_DEFAULT_KEY,
+                state.getTag()
+                    .copy());
+    }
+
+    public static TerminalStorageState getPlayerDefault(EntityPlayer playerEntity) {
+        if (playerEntity.getEntityData()
+            .hasKey(TerminalStorageState.PLAYER_TAG_DEFAULT_KEY)) {
+            return new TerminalStorageState(
+                playerEntity.getEntityData()
+                    .getCompoundTag(TerminalStorageState.PLAYER_TAG_DEFAULT_KEY));
+        }
+        return new TerminalStorageState();
     }
 }

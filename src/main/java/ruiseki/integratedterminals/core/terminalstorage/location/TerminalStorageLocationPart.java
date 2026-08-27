@@ -36,6 +36,7 @@ public class TerminalStorageLocationPart implements ITerminalStorageLocation<Par
     @Override
     public <T, M> void openContainerFromClient(CraftingOptionGuiData<T, M, PartPos> craftingOptionGuiData) {
         PartPos partPos = craftingOptionGuiData.getLocationInstance();
+
         TerminalStorageIngredientPartOpenPacket.send(
             partPos.getPos()
                 .getBlockPos(),
@@ -64,7 +65,9 @@ public class TerminalStorageLocationPart implements ITerminalStorageLocation<Par
         World world, EntityPlayerMP player) {
         PartPos partPos = craftingOptionGuiData.getLocationInstance();
         IntegratedTerminals._instance.getGuiHandler()
-            .setTemporaryData(ExtendedGuiHandler.CRAFTING_OPTION, Pair.of(partPos.getSide(), craftingOptionGuiData));
+            .setTemporaryData(
+                ExtendedGuiHandler.CRAFTING_OPTION_PART,
+                Pair.of(partPos.getSide(), craftingOptionGuiData));
 
         IntegratedTerminals._instance.getPacketHandler()
             .sendToPlayer(new PacketSetCraftingDataPart(partPos.getSide(), craftingOptionGuiData), player);
@@ -85,7 +88,9 @@ public class TerminalStorageLocationPart implements ITerminalStorageLocation<Par
         World world, EntityPlayerMP player) {
         PartPos partPos = craftingOptionGuiData.getLocationInstance();
         IntegratedTerminals._instance.getGuiHandler()
-            .setTemporaryData(ExtendedGuiHandler.CRAFTING_OPTION, Pair.of(partPos.getSide(), craftingOptionGuiData));
+            .setTemporaryData(
+                ExtendedGuiHandler.CRAFTING_OPTION_PART,
+                Pair.of(partPos.getSide(), craftingOptionGuiData));
 
         IntegratedTerminals._instance.getPacketHandler()
             .sendToPlayer(new PacketSetCraftingDataPart(partPos.getSide(), craftingOptionGuiData), player);
@@ -94,7 +99,7 @@ public class TerminalStorageLocationPart implements ITerminalStorageLocation<Par
             .getBlockPos();
         player.openGui(
             IntegratedTerminals._instance,
-            GuiProviders.ID_GUI_TERMINAL_STORAGE_CRAFTNG_OPTION_AMOUNT,
+            GuiProviders.ID_GUI_TERMINAL_STORAGE_CRAFTNG_OPTION_AMOUNT_PART,
             world,
             cPos.getX(),
             cPos.getY(),

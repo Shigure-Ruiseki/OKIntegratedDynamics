@@ -31,22 +31,37 @@ import ruiseki.okcore.init.ModBase;
 public class ExtendedGuiHandler extends GuiHandler {
 
     /**
-     * Gui type for guis for selecting crafting options.
+     * Gui type for guis for selecting crafting options (PART).
      */
-    public static final GuiType<Pair<ForgeDirection, CraftingOptionGuiData<?, ?, ?>>> CRAFTING_OPTION = GuiType
+    public static final GuiType<Pair<ForgeDirection, CraftingOptionGuiData<?, ?, ?>>> CRAFTING_OPTION_PART = GuiType
         .create(true);
     /**
-     * Gui type for storage terminals with a preselected tab and channel.
+     * Gui type for storage terminals with a preselected tab and channel (PART).
      */
-    public static final GuiType<Pair<ForgeDirection, ContainerTerminalStorageBase.InitTabData>> TERMINAL_STORAGE = GuiType
+    public static final GuiType<Pair<ForgeDirection, ContainerTerminalStorageBase.InitTabData>> TERMINAL_STORAGE_PART = GuiType
         .create(true);
     /**
-     * Gui type for guis for selecting crafting options.
+     * Gui type for crafting plans (PART).
      */
-    public static final GuiType<Pair<ForgeDirection, CraftingJobGuiData>> CRAFTING_PLAN = GuiType.create(true);
+    public static final GuiType<Pair<ForgeDirection, CraftingJobGuiData>> CRAFTING_PLAN_PART = GuiType.create(true);
+
+    /**
+     * Gui type for guis for selecting crafting options (ITEM).
+     */
+    public static final GuiType<Pair<Integer, CraftingOptionGuiData<?, ?, ?>>> CRAFTING_OPTION_ITEM = GuiType
+        .create(true);
+    /**
+     * Gui type for storage terminals with a preselected tab and channel (ITEM).
+     */
+    public static final GuiType<Pair<Integer, ContainerTerminalStorageBase.InitTabData>> TERMINAL_STORAGE_ITEM = GuiType
+        .create(true);
+    /**
+     * Gui type for crafting plans (ITEM).
+     */
+    public static final GuiType<Pair<Integer, CraftingJobGuiData>> CRAFTING_PLAN_ITEM = GuiType.create(true);
 
     static {
-        CRAFTING_OPTION.setContainerConstructor((id, player, world, x, y, z, containerClass, dataIn) -> {
+        CRAFTING_OPTION_PART.setContainerConstructor((id, player, world, x, y, z, containerClass, dataIn) -> {
             try {
                 Triple<IPartContainer, PartTypeBase, PartTarget> data = getPartConstructionData(
                     world,
@@ -79,7 +94,7 @@ public class ExtendedGuiHandler extends GuiHandler {
             return null;
         });
         if (MinecraftHelpers.isClientSide()) {
-            CRAFTING_OPTION.setGuiConstructor((id, player, world, x, y, z, guiClass, dataIn) -> {
+            CRAFTING_OPTION_PART.setGuiConstructor((id, player, world, x, y, z, guiClass, dataIn) -> {
                 try {
                     Triple<IPartContainer, PartTypeBase, PartTarget> data = getPartConstructionData(
                         world,
@@ -113,7 +128,7 @@ public class ExtendedGuiHandler extends GuiHandler {
             });
         }
 
-        TERMINAL_STORAGE.setContainerConstructor((id, player, world, x, y, z, containerClass, in) -> {
+        TERMINAL_STORAGE_PART.setContainerConstructor((id, player, world, x, y, z, containerClass, in) -> {
             try {
                 Triple<IPartContainer, PartTypeBase, PartTarget> data = getPartConstructionData(
                     world,
@@ -146,7 +161,7 @@ public class ExtendedGuiHandler extends GuiHandler {
             return null;
         });
         if (MinecraftHelpers.isClientSide()) {
-            TERMINAL_STORAGE.setGuiConstructor((id, player, world, x, y, z, guiClass, in) -> {
+            TERMINAL_STORAGE_PART.setGuiConstructor((id, player, world, x, y, z, guiClass, in) -> {
                 try {
                     Triple<IPartContainer, PartTypeBase, PartTarget> data = getPartConstructionData(
                         world,
@@ -180,7 +195,7 @@ public class ExtendedGuiHandler extends GuiHandler {
             });
         }
 
-        CRAFTING_PLAN.setContainerConstructor((id, player, world, x, y, z, containerClass, dataIn) -> {
+        CRAFTING_PLAN_PART.setContainerConstructor((id, player, world, x, y, z, containerClass, dataIn) -> {
             try {
                 Triple<IPartContainer, PartTypeBase, PartTarget> data = getPartConstructionData(
                     world,
@@ -213,7 +228,7 @@ public class ExtendedGuiHandler extends GuiHandler {
             return null;
         });
         if (MinecraftHelpers.isClientSide()) {
-            CRAFTING_PLAN.setGuiConstructor((id, player, world, x, y, z, guiClass, dataIn) -> {
+            CRAFTING_PLAN_PART.setGuiConstructor((id, player, world, x, y, z, guiClass, dataIn) -> {
                 try {
                     Triple<IPartContainer, PartTypeBase, PartTarget> data = getPartConstructionData(
                         world,
@@ -239,6 +254,86 @@ public class ExtendedGuiHandler extends GuiHandler {
                     }
                     return guiConstructor
                         .newInstance(player, data.getRight(), data.getLeft(), data.getMiddle(), dataIn.getRight());
+                } catch (InstantiationException | IllegalAccessException | InvocationTargetException
+                    | NoSuchMethodException e) {
+                    e.printStackTrace();
+                }
+                return null;
+            });
+        }
+
+        CRAFTING_OPTION_ITEM.setContainerConstructor((id, player, world, x, y, z, containerClass, dataIn) -> {
+            try {
+                Constructor<? extends Container> containerConstructor = containerClass
+                    .getConstructor(EntityPlayer.class, Integer.TYPE, CraftingOptionGuiData.class);
+                return containerConstructor.newInstance(player, dataIn.getLeft(), dataIn.getRight());
+            } catch (InstantiationException | IllegalAccessException | InvocationTargetException
+                | NoSuchMethodException e) {
+                e.printStackTrace();
+            }
+            return null;
+        });
+
+        if (MinecraftHelpers.isClientSide()) {
+            CRAFTING_OPTION_ITEM.setGuiConstructor((id, player, world, x, y, z, guiClass, dataIn) -> {
+                try {
+                    Constructor<? extends GuiScreen> guiConstructor = guiClass
+                        .getConstructor(EntityPlayer.class, Integer.TYPE, CraftingOptionGuiData.class);
+                    return guiConstructor.newInstance(player, dataIn.getLeft(), dataIn.getRight());
+                } catch (InstantiationException | IllegalAccessException | InvocationTargetException
+                    | NoSuchMethodException e) {
+                    e.printStackTrace();
+                }
+                return null;
+            });
+        }
+
+        TERMINAL_STORAGE_ITEM.setContainerConstructor((id, player, world, x, y, z, containerClass, dataIn) -> {
+            try {
+                Constructor<? extends Container> containerConstructor = containerClass
+                    .getConstructor(EntityPlayer.class, Integer.TYPE, ContainerTerminalStorageBase.InitTabData.class);
+                return containerConstructor.newInstance(player, dataIn.getLeft(), dataIn.getRight());
+            } catch (InstantiationException | IllegalAccessException | InvocationTargetException
+                | NoSuchMethodException e) {
+                e.printStackTrace();
+            }
+            return null;
+        });
+
+        if (MinecraftHelpers.isClientSide()) {
+            TERMINAL_STORAGE_ITEM.setGuiConstructor((id, player, world, x, y, z, guiClass, dataIn) -> {
+                try {
+                    Constructor<? extends GuiScreen> guiConstructor = guiClass.getConstructor(
+                        EntityPlayer.class,
+                        Integer.TYPE,
+                        ContainerTerminalStorageBase.InitTabData.class);
+                    return guiConstructor.newInstance(player, dataIn.getLeft(), dataIn.getRight());
+                } catch (InstantiationException | IllegalAccessException | InvocationTargetException
+                    | NoSuchMethodException e) {
+                    e.printStackTrace();
+                }
+                return null;
+            });
+        }
+
+        CRAFTING_PLAN_ITEM.setContainerConstructor((id, player, world, x, y, z, containerClass, dataIn) -> {
+            try {
+                Constructor<? extends Container> containerConstructor = containerClass
+                    .getConstructor(EntityPlayer.class, Integer.TYPE, CraftingJobGuiData.class);
+                return containerConstructor.newInstance(player, dataIn.getLeft(), dataIn.getRight());
+            } catch (InstantiationException | IllegalAccessException | InvocationTargetException
+                | NoSuchMethodException e) {
+                e.printStackTrace();
+            }
+            return null;
+        });
+
+        if (MinecraftHelpers.isClientSide()) {
+            CRAFTING_PLAN_ITEM.setGuiConstructor((id, player, world, x, y, z, guiClass, dataIn) -> {
+                try {
+                    Constructor<? extends GuiScreen> guiConstructor = guiClass
+                        .getConstructor(EntityPlayer.class, Integer.TYPE, CraftingJobGuiData.class);
+                    return guiConstructor.newInstance(player, dataIn.getLeft(), dataIn.getRight());
                 } catch (InstantiationException | IllegalAccessException | InvocationTargetException
                     | NoSuchMethodException e) {
                     e.printStackTrace();

@@ -55,7 +55,7 @@ public class TerminalStorageIngredientPartOpenPacket extends PacketCodec {
     public void actionClient(World world, EntityPlayer player) {
         IntegratedTerminals._instance.getGuiHandler()
             .setTemporaryData(
-                ExtendedGuiHandler.TERMINAL_STORAGE,
+                ExtendedGuiHandler.TERMINAL_STORAGE_PART,
                 Pair.of(side, new ContainerTerminalStorageBase.InitTabData(tabName, channel)));
     }
 
@@ -68,7 +68,7 @@ public class TerminalStorageIngredientPartOpenPacket extends PacketCodec {
         int channel) {
         IntegratedTerminals._instance.getGuiHandler()
             .setTemporaryData(
-                ExtendedGuiHandler.TERMINAL_STORAGE,
+                ExtendedGuiHandler.TERMINAL_STORAGE_PART,
                 Pair.of(side, new ContainerTerminalStorageBase.InitTabData(tabName, channel)));
 
         IntegratedTerminals._instance.getPacketHandler()
@@ -76,7 +76,7 @@ public class TerminalStorageIngredientPartOpenPacket extends PacketCodec {
 
         player.openGui(
             IntegratedTerminals._instance,
-            GuiProviders.ID_GUI_TERMINAL_STORAGE_INIT,
+            GuiProviders.ID_GUI_TERMINAL_STORAGE_PART_INIT,
             world,
             pos.getX(),
             pos.getY(),
@@ -86,7 +86,7 @@ public class TerminalStorageIngredientPartOpenPacket extends PacketCodec {
     public static void send(BlockPos pos, ForgeDirection side, String tabName, int channel) {
         IntegratedTerminals._instance.getGuiHandler()
             .setTemporaryData(
-                ExtendedGuiHandler.TERMINAL_STORAGE,
+                ExtendedGuiHandler.TERMINAL_STORAGE_PART,
                 Pair.of(side, new ContainerTerminalStorageBase.InitTabData(tabName, channel)));
 
         IntegratedTerminals._instance.getPacketHandler()
