@@ -32,6 +32,7 @@ public class TerminalButtonSort<T> implements
     private final IIngredientInstanceSorter<T> instanceSorter;
     private final TerminalStorageState state;
     private final String buttonName;
+    private final ITerminalStorageTabClient<?> clientTab;
 
     private Comparator<T> effectiveSorter;
     private boolean active;
@@ -42,9 +43,15 @@ public class TerminalButtonSort<T> implements
         this.instanceSorter = instanceSorter;
         this.state = state;
         this.buttonName = "sort_" + instanceSorter.getTranslationKey();
+        this.clientTab = clientTab;
 
+        reloadFromState();
+    }
+
+    @Override
+    public void reloadFromState() {
         if (state.hasButton(
-            clientTab.getName()
+            clientTab.getTabSettingsName()
                 .toString(),
             this.buttonName)) {
             NBTTagCompound data = (NBTTagCompound) state.getButton(
@@ -90,7 +97,7 @@ public class TerminalButtonSort<T> implements
         data.setBoolean("active", active);
         data.setBoolean("descending", descending);
         state.setButton(
-            clientTab.getName()
+            clientTab.getTabSettingsName()
                 .toString(),
             this.buttonName,
             data);

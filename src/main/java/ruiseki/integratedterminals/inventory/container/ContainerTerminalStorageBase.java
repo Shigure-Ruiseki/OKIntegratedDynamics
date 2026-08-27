@@ -3,6 +3,7 @@ package ruiseki.integratedterminals.inventory.container;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import net.minecraft.entity.player.EntityPlayer;
@@ -18,37 +19,37 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
+import ruiseki.integrateddynamics.api.evaluate.variable.IVariable;
+import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.IPositionedAddonsNetwork;
-import ruiseki.integrateddynamics.api.part.IPartContainer;
-import ruiseki.integrateddynamics.api.part.IPartType;
-import ruiseki.integrateddynamics.api.part.PartTarget;
-import ruiseki.integrateddynamics.core.helper.PartHelpers;
+import ruiseki.integratedterminals.IntegratedTerminals;
 import ruiseki.integratedterminals.api.terminalstorage.ITerminalStorageTab;
 import ruiseki.integratedterminals.api.terminalstorage.ITerminalStorageTabClient;
 import ruiseki.integratedterminals.api.terminalstorage.ITerminalStorageTabCommon;
 import ruiseki.integratedterminals.api.terminalstorage.ITerminalStorageTabServer;
 import ruiseki.integratedterminals.api.terminalstorage.event.TerminalStorageTabCommonLoadSlotsEvent;
+import ruiseki.integratedterminals.api.terminalstorage.location.ITerminalStorageLocation;
+import ruiseki.integratedterminals.core.client.gui.CraftingOptionGuiData;
 import ruiseki.integratedterminals.core.terminalstorage.TerminalStorageTabs;
-import ruiseki.integratedterminals.part.PartTypeTerminalStorage;
-import ruiseki.okcore.helper.LangHelpers;
+import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientOpenCraftingJobAmountGuiPacket;
+import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientOpenCraftingPlanGuiPacket;
 import ruiseki.okcore.helper.ValueNotifierHelpers;
 import ruiseki.okcore.inventory.IGuiContainerProvider;
 import ruiseki.okcore.inventory.container.ExtendedInventoryContainer;
+import ruiseki.okcore.persist.IDirtyMarkListener;
 
 /**
  * @author rubensworks
  */
-public class ContainerTerminalStorage extends ExtendedInventoryContainer {
+public abstract class ContainerTerminalStorageBase<L> extends ExtendedInventoryContainer implements IDirtyMarkListener {
 
     private final World world;
-    private final PartTarget target;
-    private final IPartContainer partContainer;
-    private final IPartType partType;
-    private final PartTypeTerminalStorage.State partState;
     private final Map<String, ITerminalStorageTabClient<?>> tabsClient;
     private final Map<String, ITerminalStorageTabServer> tabsServer;
     private final Map<String, ITerminalStorageTabCommon> tabsCommon;
     private final Map<String, List<Triple<Slot, Integer, Integer>>> tabSlots;
+    private final Optional<INetwork> network;
+    private final Optional<ITerminalStorageTabCommon.IVariableInventory> variableInventory;
 
     private int selectedTabIndexValueId;
     private int selectedChannelValueId;
@@ -59,29 +60,18 @@ public class ContainerTerminalStorage extends ExtendedInventoryContainer {
 
     private static final TerminalStorageState GLOBAL_PLAYER_STATE = new TerminalStorageState();
 
-    /**
-     * Make a new instance.
-     * 
-     * @param target        The target.
-     * @param player        The player.
-     * @param partContainer The part container.
-     * @param partType      The part type.
-     */
-    public ContainerTerminalStorage(final EntityPlayer player, PartTarget target, IPartContainer partContainer,
-        IPartType partType) {
-        super(player.inventory, (IGuiContainerProvider) partType);
+    public ContainerTerminalStorageBase(EntityPlayer player, IGuiContainerProvider provider,
+        ContainerTerminalStorageBase.InitTabData initTabData, Optional<INetwork> network,
+        Optional<ITerminalStorageTabCommon.IVariableInventory> variableInventory) {
+        super(player.inventory, provider);
 
-        this.partState = (PartTypeTerminalStorage.State) partContainer.getPartState(
-            target.getCenter()
-                .getSide());
-
-        this.target = target;
-        this.partContainer = partContainer;
-        this.partType = partType;
+        this.world = player.getEntityWorld();
         this.tabsClient = Maps.newLinkedHashMap();
         this.tabsServer = Maps.newLinkedHashMap();
         this.tabsCommon = Maps.newLinkedHashMap();
         this.tabSlots = Maps.newHashMap();
+        this.network = network;
+        this.variableInventory = variableInventory;
 
         this.selectedTabIndexValueId = getNextValueId();
         this.selectedChannelValueId = getNextValueId();
@@ -89,8 +79,7 @@ public class ContainerTerminalStorage extends ExtendedInventoryContainer {
 
         addPlayerInventory(player.inventory, 31, 143);
 
-        this.world = player.worldObj;
-        this.channelAllLabel = LangHelpers.localize("gui.integratedterminals.terminal_storage.channel_all");
+        this.channelAllLabel = "All";
         this.channelStrings = Lists.newArrayList(this.channelAllLabel);
 
         // Add all tabs from the registry
@@ -98,16 +87,16 @@ public class ContainerTerminalStorage extends ExtendedInventoryContainer {
             String id = tab.getName()
                 .toString();
             if (this.world.isRemote) {
-                this.tabsClient.put(id, tab.createClientTab(this, player, target));
+                this.tabsClient.put(id, tab.createClientTab(this, player));
             } else {
-                this.tabsServer.put(id, tab.createServerTab(this, player, target));
+                this.tabsServer.put(id, tab.createServerTab(this, player, network.get()));
             }
-            ITerminalStorageTabCommon commonTab = tab.createCommonTab(this, player, target);
+            ITerminalStorageTabCommon commonTab = tab.createCommonTab(this, player);
             if (commonTab != null) {
                 this.tabsCommon.put(id, commonTab);
 
                 int slotStartIndex = this.inventorySlots.size();
-                List<Slot> slots = commonTab.loadSlots(this, slotStartIndex, player, partState);
+                List<Slot> slots = commonTab.loadSlots(this, slotStartIndex, player, getVariableInventory());
                 TerminalStorageTabCommonLoadSlotsEvent loadSlotsEvent = new TerminalStorageTabCommonLoadSlotsEvent(
                     commonTab,
                     this,
@@ -149,20 +138,25 @@ public class ContainerTerminalStorage extends ExtendedInventoryContainer {
         }
     }
 
-    /**
-     * Make a new instance.
-     * 
-     * @param target        The target.
-     * @param player        The player.
-     * @param partContainer The part container.
-     * @param partType      The part type.
-     * @param initTabData   The tab and channel to select.
-     */
-    public ContainerTerminalStorage(EntityPlayer player, PartTarget target, IPartContainer partContainer,
-        IPartType partType, ContainerTerminalStorage.InitTabData initTabData) {
-        this(player, target, partContainer, partType);
-        setSelectedTab(initTabData.getTabName());
-        setSelectedChannel(initTabData.getChannel());
+    public Optional<ITerminalStorageTabCommon.IVariableInventory> getVariableInventory() {
+        return this.variableInventory;
+    }
+
+    public Optional<INetwork> getNetwork() {
+        return this.network;
+    }
+
+    public abstract ITerminalStorageLocation<L> getLocation();
+
+    public abstract L getLocationInstance();
+
+    @Override
+    public void onDirty() {
+
+    }
+
+    public World getWorld() {
+        return world;
     }
 
     public TerminalStorageState getGuiState() {
@@ -186,7 +180,7 @@ public class ContainerTerminalStorage extends ExtendedInventoryContainer {
 
         // Update common tabs
         for (ITerminalStorageTabCommon tab : this.tabsCommon.values()) {
-            tab.onUpdate(this, player, partState);
+            tab.onUpdate(this, player, getVariableInventory());
         }
 
         // Update active server tab
@@ -194,6 +188,17 @@ public class ContainerTerminalStorage extends ExtendedInventoryContainer {
         if (activeServerTab != null) {
             activeServerTab.updateActive();
         }
+    }
+
+    public <T, M, L> void sendOpenCraftingPlanGuiPacketToServer(CraftingOptionGuiData<T, M, L> craftingOptionData) {
+        IntegratedTerminals._instance.getPacketHandler()
+            .sendToServer(new TerminalStorageIngredientOpenCraftingPlanGuiPacket<>(craftingOptionData));
+    }
+
+    public <T, M, L> void sendOpenCraftingJobAmountGuiPacketToServer(
+        CraftingOptionGuiData<T, M, L> craftingOptionData) {
+        IntegratedTerminals._instance.getPacketHandler()
+            .sendToServer(new TerminalStorageIngredientOpenCraftingJobAmountGuiPacket<>(craftingOptionData));
     }
 
     @Override
@@ -211,26 +216,9 @@ public class ContainerTerminalStorage extends ExtendedInventoryContainer {
         }
     }
 
-    public PartTarget getTarget() {
-        return target;
-    }
-
-    public PartTypeTerminalStorage.State getPartState() {
-        return partState;
-    }
-
-    public PartTypeTerminalStorage getPartType() {
-        return (PartTypeTerminalStorage) partType;
-    }
-
     @Override
     protected int getSizeInventory() {
         return inventorySlots.size() - player.inventory.mainInventory.length;
-    }
-
-    @Override
-    public boolean canInteractWith(EntityPlayer playerIn) {
-        return PartHelpers.canInteractWith(getTarget(), player, this.partContainer);
     }
 
     public List<Triple<Slot, Integer, Integer>> getTabSlots(String tabName) {
@@ -265,7 +253,15 @@ public class ContainerTerminalStorage extends ExtendedInventoryContainer {
         disableSlots(getSelectedTab());
 
         if (player.worldObj.isRemote) {
+            ITerminalStorageTabClient previousTab = getTabClient(getSelectedTab());
+            if (previousTab != null) {
+                previousTab.onDeselect(getSelectedChannel());
+            }
             getGuiState().setTab(selectedTab);
+            ITerminalStorageTabClient newTab = getTabClient(selectedTab);
+            if (newTab != null) {
+                newTab.onSelect(getSelectedChannel());
+            }
         }
         if (selectedTab != null) {
             ValueNotifierHelpers.setValue(this, selectedTabIndexValueId, selectedTab);
@@ -344,6 +340,8 @@ public class ContainerTerminalStorage extends ExtendedInventoryContainer {
             }
         }
     }
+
+    public abstract void onVariableContentsUpdated(INetwork network, IVariable<?> variable);
 
     public static class InitTabData {
 

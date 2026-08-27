@@ -1,14 +1,12 @@
-package ruiseki.integratedterminals.client.gui.container;
+package ruiseki.integratedterminals.core.client.gui;
 
 import java.util.List;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.ResourceLocation;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.lwjgl.input.Keyboard;
 
 import com.google.common.collect.Lists;
@@ -16,18 +14,12 @@ import com.google.common.collect.Lists;
 import ruiseki.commoncapabilities.api.ingredient.IPrototypedIngredient;
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
 import ruiseki.commoncapabilities.api.ingredient.PrototypedIngredient;
-import ruiseki.integrateddynamics.api.part.IPartContainer;
-import ruiseki.integrateddynamics.api.part.IPartType;
-import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integratedterminals.IntegratedTerminals;
 import ruiseki.integratedterminals.Reference;
 import ruiseki.integratedterminals.api.terminalstorage.crafting.ITerminalCraftingOption;
 import ruiseki.integratedterminals.capability.ingredient.IngredientComponentTerminalStorageHandlerConfig;
-import ruiseki.integratedterminals.core.client.gui.CraftingOptionGuiData;
-import ruiseki.integratedterminals.core.client.gui.ExtendedGuiHandler;
-import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorageCraftingOptionAmount;
+import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorageCraftingOptionAmountBase;
 import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientOpenCraftingPlanGuiPacket;
-import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientOpenPacket;
 import ruiseki.okcore.client.gui.component.GuiScrollBar;
 import ruiseki.okcore.client.gui.component.button.GuiButtonExtended;
 import ruiseki.okcore.client.gui.component.button.GuiButtonText;
@@ -44,12 +36,12 @@ import ruiseki.okcore.init.ModBase;
  *
  * @author rubensworks
  */
-public class GuiTerminalStorageCraftingOptionAmount extends GuiContainerExtended {
+public class GuiTerminalStorageCraftingOptionAmountBase<L, C extends ContainerTerminalStorageCraftingOptionAmountBase<L>>
+    extends GuiContainerExtended {
 
     public static int OUTPUT_SLOT_X = 135;
     public static int OUTPUT_SLOT_Y = 15;
 
-    private final CraftingOptionGuiData craftingOptionGuiData;
     private final List<IPrototypedIngredient<?, ?>> outputs;
 
     private GuiNumberField numberField = null;
@@ -57,20 +49,13 @@ public class GuiTerminalStorageCraftingOptionAmount extends GuiContainerExtended
     private int firstRow;
     private GuiButtonText nextButton;
 
-    public GuiTerminalStorageCraftingOptionAmount(EntityPlayer player, PartTarget target, IPartContainer partContainer,
-        IPartType partType, CraftingOptionGuiData craftingOptionGuiData) {
-        super(
-            new ContainerTerminalStorageCraftingOptionAmount(
-                player,
-                target,
-                partContainer,
-                partType,
-                craftingOptionGuiData));
-
-        this.craftingOptionGuiData = craftingOptionGuiData;
+    public GuiTerminalStorageCraftingOptionAmountBase(C container) {
+        super(container);
 
         this.outputs = Lists.newArrayList();
-        ITerminalCraftingOption<?> option = craftingOptionGuiData.getCraftingOption()
+        ITerminalCraftingOption<?> option = ((ContainerTerminalStorageCraftingOptionAmountBase) getContainer())
+            .getCraftingOptionGuiData()
+            .getCraftingOption()
             .getCraftingOption();
         for (IngredientComponent<?, ?> outputComponent : option.getOutputComponents()) {
             for (Object output : option.getOutputs(outputComponent)) {
@@ -142,7 +127,7 @@ public class GuiTerminalStorageCraftingOptionAmount extends GuiContainerExtended
                     guiTop + 33,
                     50,
                     20,
-                    EnumChatFormatting.BOLD
+                    EnumChatFormatting.YELLOW
                         + LangHelpers.localize("gui.integratedterminals.terminal_storage.step.next"),
                     true)));
     }
@@ -162,11 +147,10 @@ public class GuiTerminalStorageCraftingOptionAmount extends GuiContainerExtended
     }
 
     private void returnToTerminalStorage() {
-        TerminalStorageIngredientOpenPacket.send(
-            craftingOptionGuiData.getPos(),
-            craftingOptionGuiData.getSide(),
-            craftingOptionGuiData.getTabName(),
-            craftingOptionGuiData.getChannel());
+        CraftingOptionGuiData data = ((ContainerTerminalStorageCraftingOptionAmountBase) getContainer())
+            .getCraftingOptionGuiData();
+        data.getLocation()
+            .openContainerFromClient(data);
     }
 
     @Override
@@ -185,22 +169,25 @@ public class GuiTerminalStorageCraftingOptionAmount extends GuiContainerExtended
         super.onButtonClick(buttonId);
         GuiButton button = buttonList.get(buttonId);
         if (button instanceof GuiButtonChangeQuantity) {
-            int diff = ((GuiButtonChangeQuantity) button).getDiff();
-            setAmount(getAmount() + diff);
+            buttonChangeQuantity(button);
         } else if (button instanceof GuiButtonText) {
             calculateCraftingJob();
         }
     }
 
+    public void buttonChangeQuantity(GuiButton button) {
+        if (button instanceof GuiButtonChangeQuantity) {
+            int diff = ((GuiButtonChangeQuantity) button).getDiff();
+            setAmount(getAmount() + diff);
+        }
+    }
+
     private void calculateCraftingJob() {
-        CraftingOptionGuiData craftingOptionData = CraftingOptionGuiData
-            .copyWithAmount(craftingOptionGuiData, getAmount());
-        IntegratedTerminals._instance.getGuiHandler()
-            .setTemporaryData(
-                ExtendedGuiHandler.CRAFTING_OPTION,
-                Pair.of(craftingOptionData.getSide(), craftingOptionData));
+        CraftingOptionGuiData craftingOptionData = ((ContainerTerminalStorageCraftingOptionAmountBase) getContainer())
+            .getCraftingOptionGuiData()
+            .copyWithAmount(getAmount());
         IntegratedTerminals._instance.getPacketHandler()
-            .sendToServer(new TerminalStorageIngredientOpenCraftingPlanGuiPacket<>(craftingOptionData));
+            .sendToServer(new TerminalStorageIngredientOpenCraftingPlanGuiPacket(craftingOptionData));
     }
 
     protected <T, M> void drawInstance(IngredientComponent<T, M> ingredientComponent, T instance, int x, int y,
@@ -293,7 +280,13 @@ public class GuiTerminalStorageCraftingOptionAmount extends GuiContainerExtended
         this.firstRow = firstRow;
     }
 
-    public class GuiButtonChangeQuantity extends GuiButtonExtended {
+    @FunctionalInterface
+    public interface IPressCallback {
+
+        void onPress(GuiButtonChangeQuantity button);
+    }
+
+    public static class GuiButtonChangeQuantity extends GuiButtonExtended {
 
         private final int diff;
 

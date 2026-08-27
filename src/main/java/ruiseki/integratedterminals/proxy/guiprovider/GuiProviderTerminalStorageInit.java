@@ -5,8 +5,8 @@ import net.minecraft.inventory.Container;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-import ruiseki.integratedterminals.client.gui.container.GuiTerminalStorage;
-import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorage;
+import ruiseki.integratedterminals.client.gui.container.GuiTerminalStoragePart;
+import ruiseki.integratedterminals.inventory.container.ContainerTerminalStoragePart;
 import ruiseki.okcore.init.ModBase;
 import ruiseki.okcore.inventory.IGuiContainerProvider;
 
@@ -30,13 +30,13 @@ public class GuiProviderTerminalStorageInit implements IGuiContainerProvider {
 
     @Override
     public Class<? extends Container> getContainer() {
-        return ContainerTerminalStorage.class;
+        return ContainerTerminalStoragePart.class;
     }
 
     @SideOnly(Side.CLIENT)
     @Override
     public Class<? extends GuiScreen> getGui() {
-        return GuiTerminalStorage.class;
+        return GuiTerminalStoragePart.class;
     }
 
     @Override

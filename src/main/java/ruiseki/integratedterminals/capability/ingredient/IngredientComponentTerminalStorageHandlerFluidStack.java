@@ -30,7 +30,7 @@ import ruiseki.integratedterminals.api.ingredient.IIngredientInstanceSorter;
 import ruiseki.integratedterminals.capability.ingredient.sorter.FluidStackIdSorter;
 import ruiseki.integratedterminals.capability.ingredient.sorter.FluidStackNameSorter;
 import ruiseki.integratedterminals.capability.ingredient.sorter.FluidStackQuantitySorter;
-import ruiseki.integratedterminals.client.gui.container.GuiTerminalStorage;
+import ruiseki.integratedterminals.core.client.gui.GuiTerminalStorage;
 import ruiseki.integratedterminals.core.terminalstorage.query.SearchMode;
 import ruiseki.okcore.client.gui.RenderItemExtendedSlotCount;
 import ruiseki.okcore.client.renderer.GlStateManager;

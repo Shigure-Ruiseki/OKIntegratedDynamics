@@ -37,12 +37,12 @@ public class ClientProxy extends ClientProxyComponent {
     public static final KeyBindingOK TERMINAL_CRAFTINGGRID_CLEARPLAYER = new KeyBindingOK(
         "key." + Reference.MOD_ID + ".terminal.craftinggrid.clearplayer",
         KeyConflictContext.GUI,
+        KeyModifier.SHIFT,
         Keyboard.KEY_C,
         KEYBINDING_CATEGORY_NAME);
     public static final KeyBindingOK TERMINAL_CRAFTINGGRID_CLEARSTORAGE = new KeyBindingOK(
         "key." + Reference.MOD_ID + ".terminal.craftinggrid.clearstorage",
         KeyConflictContext.GUI,
-        KeyModifier.SHIFT,
         Keyboard.KEY_C,
         KEYBINDING_CATEGORY_NAME);
     public static final KeyBindingOK TERMINAL_CRAFTINGGRID_BALANCE = new KeyBindingOK(

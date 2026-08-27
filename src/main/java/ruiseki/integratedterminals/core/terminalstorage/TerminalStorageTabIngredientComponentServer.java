@@ -33,7 +33,6 @@ import ruiseki.integrateddynamics.api.ingredient.IIngredientComponentStorageObse
 import ruiseki.integrateddynamics.api.ingredient.IIngredientPositionsIndex;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.IPositionedAddonsNetworkIngredients;
-import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.integrateddynamics.capability.ingredient.IIngredientComponentValueHandler;
 import ruiseki.integrateddynamics.capability.ingredient.IngredientComponentValueHandlerConfig;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueHelpers;
@@ -78,7 +77,6 @@ public class TerminalStorageTabIngredientComponentServer<T, M>
     private final INetwork network;
     private final IngredientComponent<T, M> ingredientComponent;
     private final IPositionedAddonsNetworkIngredients<T, M> ingredientNetwork;
-    private final PartPos pos;
     private final EntityPlayerMP player;
     private final IIngredientComponentValueHandler<?, ?, T, M> valueHandler;
     private final Int2ObjectMap<Collection<HandlerWrappedTerminalCraftingOption<T>>> craftingOptions;
@@ -93,12 +91,11 @@ public class TerminalStorageTabIngredientComponentServer<T, M>
 
     public TerminalStorageTabIngredientComponentServer(ResourceLocation name, INetwork network,
         IngredientComponent<T, M> ingredientComponent, IPositionedAddonsNetworkIngredients<T, M> ingredientNetwork,
-        PartPos pos, EntityPlayerMP player) {
+        EntityPlayerMP player) {
         this.name = name;
         this.network = network;
         this.ingredientComponent = ingredientComponent;
         this.ingredientNetwork = ingredientNetwork;
-        this.pos = pos;
         this.player = player;
         this.valueHandler = Objects.requireNonNull(
             ingredientComponent.getCapability(IngredientComponentValueHandlerConfig.CAPABILITY)
@@ -488,6 +485,14 @@ public class TerminalStorageTabIngredientComponentServer<T, M>
                 break;
             case PLAYER_QUICK_MOVE:
                 viewHandler.extractMaxFromContainerSlot(storage, container, hoveredContainerSlot, player.inventory, -1);
+                break;
+            case PLAYER_QUICK_MOVE_INCREMENTAL:
+                viewHandler.extractMaxFromContainerSlot(
+                    storage,
+                    container,
+                    hoveredContainerSlot,
+                    player.inventory,
+                    viewHandler.getIncrementalInstanceMovementQuantity());
                 break;
         }
 

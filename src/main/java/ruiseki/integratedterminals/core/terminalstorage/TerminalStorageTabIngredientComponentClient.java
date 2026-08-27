@@ -25,9 +25,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.Nullable;
-import org.lwjgl.input.Keyboard;
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
@@ -45,7 +43,6 @@ import ruiseki.commoncapabilities.api.ingredient.IIngredientMatcher;
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
 import ruiseki.integrateddynamics.api.ingredient.IIngredientComponentStorageObservable;
 import ruiseki.integrateddynamics.api.network.IPositionedAddonsNetwork;
-import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.integratedterminals.IntegratedTerminals;
 import ruiseki.integratedterminals.api.ingredient.IIngredientComponentTerminalStorageHandler;
 import ruiseki.integratedterminals.api.ingredient.IIngredientInstanceSorter;
@@ -57,9 +54,8 @@ import ruiseki.integratedterminals.api.terminalstorage.crafting.ITerminalCraftin
 import ruiseki.integratedterminals.api.terminalstorage.event.TerminalStorageTabClientLoadButtonsEvent;
 import ruiseki.integratedterminals.api.terminalstorage.event.TerminalStorageTabClientSearchFieldUpdateEvent;
 import ruiseki.integratedterminals.capability.ingredient.IngredientComponentTerminalStorageHandlerConfig;
-import ruiseki.integratedterminals.client.gui.container.GuiTerminalStorage;
 import ruiseki.integratedterminals.core.client.gui.CraftingOptionGuiData;
-import ruiseki.integratedterminals.core.client.gui.ExtendedGuiHandler;
+import ruiseki.integratedterminals.core.client.gui.GuiTerminalStorage;
 import ruiseki.integratedterminals.core.terminalstorage.button.TerminalButtonFilterCrafting;
 import ruiseki.integratedterminals.core.terminalstorage.button.TerminalButtonSort;
 import ruiseki.integratedterminals.core.terminalstorage.crafting.HandlerWrappedTerminalCraftingOption;
@@ -67,14 +63,13 @@ import ruiseki.integratedterminals.core.terminalstorage.crafting.TerminalStorage
 import ruiseki.integratedterminals.core.terminalstorage.query.IIngredientQuery;
 import ruiseki.integratedterminals.core.terminalstorage.slot.TerminalStorageSlotIngredient;
 import ruiseki.integratedterminals.core.terminalstorage.slot.TerminalStorageSlotIngredientCraftingOption;
-import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorage;
-import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientOpenCraftingJobAmountGuiPacket;
-import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientOpenCraftingPlanGuiPacket;
+import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorageBase;
 import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientSlotClickPacket;
 import ruiseki.okcore.client.gui.image.Images;
 import ruiseki.okcore.helper.GuiHelpers;
 import ruiseki.okcore.helper.Helpers;
 import ruiseki.okcore.helper.LangHelpers;
+import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.helper.RenderHelpers;
 import ruiseki.okcore.helper.StringHelpers;
 import ruiseki.okcore.ingredient.collection.IIngredientListMutable;
@@ -100,7 +95,7 @@ public class TerminalStorageTabIngredientComponentClient<T, M>
     protected final IngredientComponent<T, M> ingredientComponent;
     private final IIngredientComponentTerminalStorageHandler<T, M> ingredientComponentViewHandler;
     private final ItemStack icon;
-    protected final ContainerTerminalStorage container;
+    protected final ContainerTerminalStorageBase container;
     private final List<ITerminalButton<?, ?, ?>> buttons;
 
     private final Int2ObjectMap<List<InstanceWithMetadata<T>>> ingredientsViews;
@@ -118,8 +113,8 @@ public class TerminalStorageTabIngredientComponentClient<T, M>
     @SubscribeEvent
     public static void onToolTip(ItemTooltipEvent event) {
         // If this tab is active, render the quantity in all player inventory item tooltips.
-        if (event.entityPlayer != null && event.entityPlayer.openContainer instanceof ContainerTerminalStorage) {
-            ContainerTerminalStorage container = (ContainerTerminalStorage) event.entityPlayer.openContainer;
+        if (event.entityPlayer != null && event.entityPlayer.openContainer instanceof ContainerTerminalStorageBase) {
+            ContainerTerminalStorageBase<?> container = (ContainerTerminalStorageBase<?>) event.entityPlayer.openContainer;
             ITerminalStorageTabClient<?> tab = container.getTabsClient()
                 .get(container.getSelectedTab());
             if (tab instanceof TerminalStorageTabIngredientComponentClient) {
@@ -132,7 +127,7 @@ public class TerminalStorageTabIngredientComponentClient<T, M>
         }
     }
 
-    public TerminalStorageTabIngredientComponentClient(ContainerTerminalStorage container, ResourceLocation name,
+    public TerminalStorageTabIngredientComponentClient(ContainerTerminalStorageBase<?> container, ResourceLocation name,
         IngredientComponent<?, ?> ingredientComponent) {
         this.name = name;
         this.ingredientComponent = (IngredientComponent<T, M>) ingredientComponent;
@@ -178,6 +173,25 @@ public class TerminalStorageTabIngredientComponentClient<T, M>
 
     public IngredientComponent<T, M> getIngredientComponent() {
         return ingredientComponent;
+    }
+
+    @Override
+    public void onSelect(int channel) {
+        // Reload search box
+        setInstanceFilter(
+            channel,
+            container.getGuiState()
+                .getSearch(getTabSettingsName().toString(), channel));
+
+        // Reload button states
+        for (ITerminalButton<?, ?, ?> button : getButtons()) {
+            button.reloadFromState();
+        }
+    }
+
+    @Override
+    public void onDeselect(int channel) {
+
     }
 
     @Override
@@ -231,7 +245,7 @@ public class TerminalStorageTabIngredientComponentClient<T, M>
         filter = event.getSearchString();
         resetFilteredIngredientsViews(channel);
         container.getGuiState()
-            .setSearch(getName().toString(), channel, filter.toLowerCase(Locale.ENGLISH));
+            .setSearch(getTabSettingsName().toString(), channel, filter.toLowerCase(Locale.ENGLISH));
     }
 
     public List<InstanceWithMetadata<T>> getRawUnfilteredIngredientsView(int channel) {
@@ -561,10 +575,8 @@ public class TerminalStorageTabIngredientComponentClient<T, M>
         boolean validHoveringStorageSlot = hoveringStorageInstance.isPresent();
         boolean isCraftingOption = hoveringStorageSlotObject.isPresent()
             && hoveringStorageSlotObject.get() instanceof TerminalStorageSlotIngredientCraftingOption;
-        IIngredientComponentTerminalStorageHandler<T, M> viewHandler = ingredientComponent
-            .getCapability(IngredientComponentTerminalStorageHandlerConfig.CAPABILITY)
-            .getOrNull();
-        boolean shift = Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT);
+        IIngredientComponentTerminalStorageHandler<T, M> viewHandler = this.getViewHandler();
+        boolean shift = MinecraftHelpers.isShifted();
         boolean transferFullSelection = true;
 
         EntityPlayer player = Minecraft.getMinecraft().thePlayer;
@@ -664,13 +676,8 @@ public class TerminalStorageTabIngredientComponentClient<T, M>
                     }
                 }
             if (initiateCraftingOption) {
-                ContainerTerminalStorage containerTerminalStorage = ((ContainerTerminalStorage) container);
-                PartPos pos = containerTerminalStorage.getTarget()
-                    .getCenter();
-                CraftingOptionGuiData<T, M> craftingOptionData = new CraftingOptionGuiData<>(
-                    pos.getPos()
-                        .getBlockPos(),
-                    pos.getSide(),
+                ContainerTerminalStorageBase<?> containerTerminalStorage = ((ContainerTerminalStorageBase<?>) container);
+                CraftingOptionGuiData<T, M, ?> craftingOptionData = new CraftingOptionGuiData(
                     ingredientComponent,
                     this.getName()
                         .toString(),
@@ -678,22 +685,13 @@ public class TerminalStorageTabIngredientComponentClient<T, M>
                     ((TerminalStorageSlotIngredientCraftingOption<T, M>) hoveringStorageSlotObject.get())
                         .getCraftingOption(),
                     1,
-                    null);
-                IntegratedTerminals._instance.getGuiHandler()
-                    .setTemporaryData(
-                        ExtendedGuiHandler.CRAFTING_OPTION,
-                        Pair.of(
-                            ((ContainerTerminalStorage) container).getTarget()
-                                .getCenter()
-                                .getSide(),
-                            craftingOptionData)); // Pass the side as extra data to the gui
+                    null,
+                    containerTerminalStorage.getLocation(),
+                    containerTerminalStorage.getLocationInstance());
                 if (shift) {
-                    IntegratedTerminals._instance.getPacketHandler()
-                        .sendToServer(new TerminalStorageIngredientOpenCraftingPlanGuiPacket<>(craftingOptionData));
+                    containerTerminalStorage.sendOpenCraftingPlanGuiPacketToServer(craftingOptionData);
                 } else {
-                    IntegratedTerminals._instance.getPacketHandler()
-                        .sendToServer(
-                            new TerminalStorageIngredientOpenCraftingJobAmountGuiPacket<>(craftingOptionData));
+                    containerTerminalStorage.sendOpenCraftingJobAmountGuiPacketToServer(craftingOptionData);
                 }
             } else if (clickType != null) {
                 T activeInstance = matcher.getEmptyInstance();

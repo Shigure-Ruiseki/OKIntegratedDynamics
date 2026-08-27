@@ -5,20 +5,20 @@ import net.minecraft.inventory.Container;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-import ruiseki.integratedterminals.client.gui.container.GuiTerminalStorageCraftingOptionAmount;
-import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorageCraftingOptionAmount;
+import ruiseki.integratedterminals.client.gui.container.GuiTerminalStorageCraftingPlanPart;
+import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorageCraftingPlanPart;
 import ruiseki.okcore.init.ModBase;
 import ruiseki.okcore.inventory.IGuiContainerProvider;
 
 /**
  * @author rubensworks
  */
-public class GuiProviderTerminalStorageCraftingOptionAmount implements IGuiContainerProvider {
+public class GuiProviderTerminalStorageCraftingPlanPart implements IGuiContainerProvider {
 
     private final int guiID;
     private final ModBase modGui;
 
-    public GuiProviderTerminalStorageCraftingOptionAmount(int guiID, ModBase modGui) {
+    public GuiProviderTerminalStorageCraftingPlanPart(int guiID, ModBase modGui) {
         this.guiID = guiID;
         this.modGui = modGui;
     }
@@ -30,13 +30,13 @@ public class GuiProviderTerminalStorageCraftingOptionAmount implements IGuiConta
 
     @Override
     public Class<? extends Container> getContainer() {
-        return ContainerTerminalStorageCraftingOptionAmount.class;
+        return ContainerTerminalStorageCraftingPlanPart.class;
     }
 
     @SideOnly(Side.CLIENT)
     @Override
     public Class<? extends GuiScreen> getGui() {
-        return GuiTerminalStorageCraftingOptionAmount.class;
+        return GuiTerminalStorageCraftingPlanPart.class;
     }
 
     @Override

@@ -12,7 +12,7 @@ import ruiseki.commoncapabilities.api.ingredient.IIngredientSerializer;
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
 import ruiseki.integratedterminals.api.terminalstorage.TerminalClickType;
 import ruiseki.integratedterminals.core.terminalstorage.TerminalStorageTabIngredientComponentServer;
-import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorage;
+import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorageBase;
 import ruiseki.okcore.network.CodecField;
 import ruiseki.okcore.network.PacketCodec;
 
@@ -78,8 +78,8 @@ public class TerminalStorageIngredientSlotClickPacket<T> extends PacketCodec {
 
     @Override
     public void actionServer(World world, EntityPlayerMP player) {
-        if (player.openContainer instanceof ContainerTerminalStorage) {
-            ContainerTerminalStorage container = ((ContainerTerminalStorage) player.openContainer);
+        if (player.openContainer instanceof ContainerTerminalStorageBase) {
+            ContainerTerminalStorageBase container = ((ContainerTerminalStorageBase) player.openContainer);
             TerminalStorageTabIngredientComponentServer<T, ?> tab = (TerminalStorageTabIngredientComponentServer<T, ?>) container
                 .getTabServer(tabId);
             IIngredientSerializer<T, ?> serializer = getComponent().getSerializer();

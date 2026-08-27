@@ -1,39 +1,34 @@
 package ruiseki.integratedterminals.core.terminalstorage;
 
 import java.util.List;
+import java.util.Optional;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.Slot;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.common.MinecraftForge;
 
 import com.google.common.collect.Lists;
 
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
-import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.evaluate.variable.IVariable;
 import ruiseki.integrateddynamics.api.item.IVariableFacade;
 import ruiseki.integrateddynamics.api.network.INetwork;
-import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.core.evaluate.InventoryVariableEvaluator;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeOperator;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
-import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
 import ruiseki.integrateddynamics.core.inventory.container.slot.SlotVariable;
-import ruiseki.integrateddynamics.core.part.event.PartVariableDrivenVariableContentsUpdatedEvent;
 import ruiseki.integratedterminals.api.terminalstorage.ITerminalStorageTabCommon;
-import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorage;
-import ruiseki.integratedterminals.part.PartTypeTerminalStorage;
+import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorageBase;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.inventory.SimpleInventory;
 import ruiseki.okcore.persist.nbt.NBTClassType;
 
 /**
  * A common storage terminal ingredient tab.
- * 
+ *
  * @param <T> The instance type.
  * @param <M> The matching condition parameter.
  * @author rubensworks
@@ -41,7 +36,7 @@ import ruiseki.okcore.persist.nbt.NBTClassType;
 public class TerminalStorageTabIngredientComponentCommon<T, M>
     implements ITerminalStorageTabCommon, IVariableFacade.IValidator {
 
-    private final ContainerTerminalStorage containerTerminalStorage;
+    private final ContainerTerminalStorageBase containerTerminalStorage;
     private final ResourceLocation name;
     protected final IngredientComponent<T, M> ingredientComponent;
 
@@ -56,7 +51,7 @@ public class TerminalStorageTabIngredientComponentCommon<T, M>
     private int variableSlotNumberStart;
     private int variableSlotNumberEnd;
 
-    public TerminalStorageTabIngredientComponentCommon(ContainerTerminalStorage containerTerminalStorage,
+    public TerminalStorageTabIngredientComponentCommon(ContainerTerminalStorageBase<?> containerTerminalStorage,
         ResourceLocation name, IngredientComponent<T, M> ingredientComponent) {
         this.containerTerminalStorage = containerTerminalStorage;
         this.name = name;
@@ -72,12 +67,13 @@ public class TerminalStorageTabIngredientComponentCommon<T, M>
 
     @Override
     public List<Slot> loadSlots(Container container, int startIndex, EntityPlayer player,
-        PartTypeTerminalStorage.State partState) {
+        Optional<IVariableInventory> variableInventoryOptional) {
+        IVariableInventory variableInventory = variableInventoryOptional.get();
         List<Slot> slots = Lists.newArrayList();
 
         variableSlotNumberStart = startIndex;
         inventory = new SimpleInventory(3, "inv", 1);
-        partState.loadNamedInventory(
+        variableInventory.loadNamedInventory(
             this.getName()
                 .toString(),
             inventory);
@@ -116,21 +112,21 @@ public class TerminalStorageTabIngredientComponentCommon<T, M>
     }
 
     @Override
-    public void onUpdate(Container container, EntityPlayer player, PartTypeTerminalStorage.State partState) {
+    public void onUpdate(Container container, EntityPlayer player, Optional<IVariableInventory> variableInventory) {
         if (this.dirtyInv && !player.worldObj.isRemote) {
             this.dirtyInv = false;
 
-            ContainerTerminalStorage containerTerminalStorage = (ContainerTerminalStorage) container;
+            ContainerTerminalStorageBase<?> containerTerminalStorage = (ContainerTerminalStorageBase<?>) container;
 
-            partState.saveNamedInventory(
-                this.getName()
-                    .toString(),
-                inventory);
+            variableInventory.get()
+                .saveNamedInventory(
+                    this.getName()
+                        .toString(),
+                    inventory);
 
             // Update variable facades
-            INetwork network = NetworkHelpers.getNetwork(
-                containerTerminalStorage.getTarget()
-                    .getCenter());
+            INetwork network = containerTerminalStorage.getNetwork()
+                .get();
 
             clearGlobalErrors();
             this.variables.clear();
@@ -147,21 +143,7 @@ public class TerminalStorageTabIngredientComponentCommon<T, M>
                         this.variables.add(variable);
                     }
 
-                    try {
-                        IPartNetwork partNetwork = NetworkHelpers.getPartNetwork(network);
-                        MinecraftForge.EVENT_BUS.post(
-                            new PartVariableDrivenVariableContentsUpdatedEvent<>(
-                                network,
-                                partNetwork,
-                                containerTerminalStorage.getTarget(),
-                                containerTerminalStorage.getPartType(),
-                                partState,
-                                player,
-                                variable,
-                                variable != null ? variable.getValue() : null));
-                    } catch (EvaluationException e) {
-                        // Ignore error
-                    }
+                    containerTerminalStorage.onVariableContentsUpdated(network, variable);
                 }
             }
 

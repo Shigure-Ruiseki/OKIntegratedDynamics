@@ -27,7 +27,7 @@ import ruiseki.integrateddynamics.block.BlockEnergyBatteryConfig;
 import ruiseki.integratedterminals.GeneralConfig;
 import ruiseki.integratedterminals.api.ingredient.IIngredientComponentTerminalStorageHandler;
 import ruiseki.integratedterminals.api.ingredient.IIngredientInstanceSorter;
-import ruiseki.integratedterminals.client.gui.container.GuiTerminalStorage;
+import ruiseki.integratedterminals.core.client.gui.GuiTerminalStorage;
 import ruiseki.integratedterminals.core.terminalstorage.query.SearchMode;
 import ruiseki.okcore.client.gui.RenderItemExtendedSlotCount;
 import ruiseki.okcore.client.gui.image.Images;
@@ -92,6 +92,8 @@ public class IngredientComponentTerminalStorageHandlerEnergy
                     (int) maxQuantity);
 
                 // Draw amount
+                GlStateManager.disableLighting();
+
                 RenderItemExtendedSlotCount.drawSlotText(
                     Minecraft.getMinecraft().fontRenderer,
                     label != null ? label : GuiHelpers.quantityToScaledString(instance),

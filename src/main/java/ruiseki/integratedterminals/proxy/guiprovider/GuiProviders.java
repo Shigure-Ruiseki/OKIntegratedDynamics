@@ -10,10 +10,12 @@ import ruiseki.okcore.inventory.IGuiContainerProvider;
  */
 public class GuiProviders {
 
+    public static int ID_GUI_TERMINAL_STORAGE;
+    public static IGuiContainerProvider GUI_TERMINAL_STORAGE;
     public static int ID_GUI_TERMINAL_STORAGE_CRAFTNG_OPTION_AMOUNT;
     public static IGuiContainerProvider GUI_TERMINAL_STORAGE_CRAFTNG_OPTION_AMOUNT;
-    public static int ID_GUI_TERMINAL_STORAGE_CRAFTNG_PLAN;
-    public static IGuiContainerProvider GUI_TERMINAL_STORAGE_CRAFTNG_PLAN;
+    public static int ID_GUI_TERMINAL_STORAGE_CRAFTNG_PLAN_PART;
+    public static IGuiContainerProvider GUI_TERMINAL_STORAGE_CRAFTNG_PLAN_PART;
     public static int ID_GUI_TERMINAL_CRAFTING_JOBS_PLAN;
     public static IGuiContainerProvider GUI_TERMINAL_CRAFTING_JOBS_PLAN;
     /**
@@ -25,7 +27,13 @@ public class GuiProviders {
     public static void register() {
         IntegratedTerminals._instance.getGuiHandler()
             .registerGUI(
-                GUI_TERMINAL_STORAGE_CRAFTNG_OPTION_AMOUNT = new GuiProviderTerminalStorageCraftingOptionAmount(
+                GUI_TERMINAL_STORAGE = new GuiProviderTerminalStorageCraftingOptionAmountPart(
+                    ID_GUI_TERMINAL_STORAGE = Helpers.getNewId(IntegratedTerminals._instance, Helpers.IDType.GUI),
+                    IntegratedTerminals._instance),
+                ExtendedGuiHandler.TERMINAL_STORAGE);
+        IntegratedTerminals._instance.getGuiHandler()
+            .registerGUI(
+                GUI_TERMINAL_STORAGE_CRAFTNG_OPTION_AMOUNT = new GuiProviderTerminalStorageCraftingOptionAmountPart(
                     ID_GUI_TERMINAL_STORAGE_CRAFTNG_OPTION_AMOUNT = Helpers
                         .getNewId(IntegratedTerminals._instance, Helpers.IDType.GUI),
                     IntegratedTerminals._instance),
@@ -33,8 +41,8 @@ public class GuiProviders {
 
         IntegratedTerminals._instance.getGuiHandler()
             .registerGUI(
-                GUI_TERMINAL_STORAGE_CRAFTNG_PLAN = new GuiProviderTerminalStorageCraftingPlan(
-                    ID_GUI_TERMINAL_STORAGE_CRAFTNG_PLAN = Helpers
+                GUI_TERMINAL_STORAGE_CRAFTNG_PLAN_PART = new GuiProviderTerminalStorageCraftingPlanPart(
+                    ID_GUI_TERMINAL_STORAGE_CRAFTNG_PLAN_PART = Helpers
                         .getNewId(IntegratedTerminals._instance, Helpers.IDType.GUI),
                     IntegratedTerminals._instance),
                 ExtendedGuiHandler.CRAFTING_OPTION);

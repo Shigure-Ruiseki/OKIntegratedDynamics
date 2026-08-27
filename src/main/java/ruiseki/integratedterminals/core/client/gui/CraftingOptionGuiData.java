@@ -1,21 +1,23 @@
 package ruiseki.integratedterminals.core.client.gui;
 
-import net.minecraftforge.common.util.ForgeDirection;
+import java.io.IOException;
+
+import net.minecraft.util.ResourceLocation;
 
 import org.jetbrains.annotations.Nullable;
 
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
+import ruiseki.integratedterminals.api.terminalstorage.location.ITerminalStorageLocation;
 import ruiseki.integratedterminals.core.terminalstorage.crafting.HandlerWrappedTerminalCraftingOption;
 import ruiseki.integratedterminals.core.terminalstorage.crafting.HandlerWrappedTerminalCraftingPlan;
-import ruiseki.okcore.datastructure.BlockPos;
+import ruiseki.integratedterminals.core.terminalstorage.location.TerminalStorageLocations;
+import ruiseki.okcore.network.ExtendedBuffer;
 
 /**
  * @author rubensworks
  */
-public class CraftingOptionGuiData<T, M> {
+public class CraftingOptionGuiData<T, M, L> {
 
-    private final BlockPos pos;
-    private final ForgeDirection side;
     private final IngredientComponent<T, M> component;
     private final String tabName;
     private final int channel;
@@ -24,26 +26,20 @@ public class CraftingOptionGuiData<T, M> {
     private final int amount;
     @Nullable
     private final HandlerWrappedTerminalCraftingPlan craftingPlan;
+    private final ITerminalStorageLocation<L> location;
+    private final L locationInstance;
 
-    public CraftingOptionGuiData(BlockPos pos, ForgeDirection side, IngredientComponent<T, M> component, String tabName,
-        int channel, @Nullable HandlerWrappedTerminalCraftingOption<T> craftingOption, int amount,
-        HandlerWrappedTerminalCraftingPlan craftingPlan) {
-        this.pos = pos;
-        this.side = side;
+    public CraftingOptionGuiData(IngredientComponent<T, M> component, String tabName, int channel,
+        @Nullable HandlerWrappedTerminalCraftingOption<T> craftingOption, int amount,
+        HandlerWrappedTerminalCraftingPlan craftingPlan, ITerminalStorageLocation<L> location, L locationInstance) {
         this.component = component;
         this.tabName = tabName;
         this.channel = channel;
         this.craftingOption = craftingOption;
         this.amount = amount;
         this.craftingPlan = craftingPlan;
-    }
-
-    public BlockPos getPos() {
-        return pos;
-    }
-
-    public ForgeDirection getSide() {
-        return side;
+        this.location = location;
+        this.locationInstance = locationInstance;
     }
 
     public IngredientComponent<T, M> getComponent() {
@@ -72,16 +68,71 @@ public class CraftingOptionGuiData<T, M> {
         return craftingPlan;
     }
 
-    public static <T, M> CraftingOptionGuiData<T, M> copyWithAmount(CraftingOptionGuiData<T, M> craftingOptionGuiData,
-        int amount) {
+    public ITerminalStorageLocation<L> getLocation() {
+        return location;
+    }
+
+    public L getLocationInstance() {
+        return locationInstance;
+    }
+
+    public CraftingOptionGuiData<T, M, L> copyWithAmount(int amount) {
         return new CraftingOptionGuiData<>(
-            craftingOptionGuiData.getPos(),
-            craftingOptionGuiData.getSide(),
-            craftingOptionGuiData.getComponent(),
-            craftingOptionGuiData.getTabName(),
-            craftingOptionGuiData.getChannel(),
-            craftingOptionGuiData.getCraftingOption(),
+            this.getComponent(),
+            this.getTabName(),
+            this.getChannel(),
+            this.getCraftingOption(),
             amount,
-            craftingOptionGuiData.getCraftingPlan());
+            this.getCraftingPlan(),
+            getLocation(),
+            getLocationInstance());
+    }
+
+    public void writeToPacketBuffer(ExtendedBuffer packetBuffer) throws IOException {
+        packetBuffer.writeString(
+            component.getName()
+                .toString());
+        packetBuffer.writeString(tabName);
+        packetBuffer.writeInt(channel);
+        packetBuffer.writeInt(amount);
+        packetBuffer.writeBoolean(craftingOption != null);
+        if (craftingOption != null) {
+            packetBuffer.writeNBTTagCompoundToBuffer(HandlerWrappedTerminalCraftingOption.serialize(craftingOption));
+        }
+        packetBuffer.writeBoolean(craftingPlan != null);
+        if (craftingPlan != null) {
+            packetBuffer.writeNBTTagCompoundToBuffer(HandlerWrappedTerminalCraftingPlan.serialize(craftingPlan));
+        }
+        packetBuffer.writeResourceLocation(location.getName());
+        location.writeToPacketBuffer(packetBuffer, locationInstance);
+    }
+
+    public static CraftingOptionGuiData readFromPacketBuffer(ExtendedBuffer packetBuffer) throws IOException {
+        IngredientComponent component = IngredientComponent.REGISTRY
+            .getValue(new ResourceLocation(packetBuffer.readString()));
+        String tabName = packetBuffer.readString();
+        int channel = packetBuffer.readInt();
+        int amount = packetBuffer.readInt();
+        HandlerWrappedTerminalCraftingOption craftingOption = null;
+        if (packetBuffer.readBoolean()) {
+            craftingOption = HandlerWrappedTerminalCraftingOption
+                .deserialize(component, packetBuffer.readNBTTagCompoundFromBuffer());
+        }
+        HandlerWrappedTerminalCraftingPlan craftingPlan = null;
+        if (packetBuffer.readBoolean()) {
+            craftingPlan = HandlerWrappedTerminalCraftingPlan.deserialize(packetBuffer.readNBTTagCompoundFromBuffer());
+        }
+        ITerminalStorageLocation<?> location = TerminalStorageLocations.REGISTRY
+            .getLocation(packetBuffer.readResourceLocation());
+        Object locationInstance = location.readFromPacketBuffer(packetBuffer);
+        return new CraftingOptionGuiData(
+            component,
+            tabName,
+            channel,
+            craftingOption,
+            amount,
+            craftingPlan,
+            location,
+            locationInstance);
     }
 }

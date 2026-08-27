@@ -32,6 +32,7 @@ public class TerminalButtonItemStackCraftingGridAutoRefill<T> implements
 
     private final TerminalStorageState state;
     private final String buttonName;
+    private final ITerminalStorageTabClient<?> clientTab;
 
     private AutoRefillType active;
 
@@ -39,9 +40,17 @@ public class TerminalButtonItemStackCraftingGridAutoRefill<T> implements
         ITerminalStorageTabClient<?> clientTab) {
         this.state = state;
         this.buttonName = "itemstack_grid_autorefill";
+        this.clientTab = clientTab;
 
+        reloadFromState();
+
+        notifyServer((TerminalStorageTabIngredientComponentClient<T, ?>) clientTab);
+    }
+
+    @Override
+    public void reloadFromState() {
         if (state.hasButton(
-            clientTab.getName()
+            clientTab.getTabSettingsName()
                 .toString(),
             this.buttonName)) {
             NBTTagCompound data = (NBTTagCompound) state.getButton(
@@ -52,8 +61,6 @@ public class TerminalButtonItemStackCraftingGridAutoRefill<T> implements
         } else {
             this.active = AutoRefillType.STORAGE;
         }
-
-        notifyServer((TerminalStorageTabIngredientComponentClient<T, ?>) clientTab);
     }
 
     protected void notifyServer(TerminalStorageTabIngredientComponentClient<T, ?> clientTab) {
@@ -88,7 +95,7 @@ public class TerminalButtonItemStackCraftingGridAutoRefill<T> implements
         NBTTagCompound data = new NBTTagCompound();
         data.setInteger("active", active.ordinal());
         state.setButton(
-            clientTab.getName()
+            clientTab.getTabSettingsName()
                 .toString(),
             this.buttonName,
             data);

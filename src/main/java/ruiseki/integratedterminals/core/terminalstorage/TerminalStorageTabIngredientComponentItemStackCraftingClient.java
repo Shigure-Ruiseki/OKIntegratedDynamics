@@ -15,16 +15,17 @@ import org.lwjgl.input.Keyboard;
 import com.google.common.collect.Lists;
 
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
+import ruiseki.integratedterminals.GeneralConfig;
 import ruiseki.integratedterminals.IntegratedTerminals;
 import ruiseki.integratedterminals.Reference;
 import ruiseki.integratedterminals.api.terminalstorage.ITerminalButton;
 import ruiseki.integratedterminals.api.terminalstorage.ITerminalStorageTabClient;
 import ruiseki.integratedterminals.api.terminalstorage.ITerminalStorageTabCommon;
-import ruiseki.integratedterminals.client.gui.container.GuiTerminalStorage;
+import ruiseki.integratedterminals.core.client.gui.GuiTerminalStorage;
 import ruiseki.integratedterminals.core.terminalstorage.button.TerminalButtonItemStackCraftingGridAutoRefill;
 import ruiseki.integratedterminals.core.terminalstorage.button.TerminalButtonItemStackCraftingGridBalance;
 import ruiseki.integratedterminals.core.terminalstorage.button.TerminalButtonItemStackCraftingGridClear;
-import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorage;
+import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorageBase;
 import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientItemStackCraftingGridShiftClickOutput;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.init.ModBase;
@@ -39,10 +40,15 @@ public class TerminalStorageTabIngredientComponentItemStackCraftingClient
 
     private final ItemStack icon;
 
-    public TerminalStorageTabIngredientComponentItemStackCraftingClient(ContainerTerminalStorage container,
+    public TerminalStorageTabIngredientComponentItemStackCraftingClient(ContainerTerminalStorageBase container,
         ResourceLocation name, IngredientComponent<?, ?> ingredientComponent) {
         super(container, name, ingredientComponent);
         this.icon = new ItemStack(Blocks.crafting_table);
+    }
+
+    @Override
+    public ResourceLocation getTabSettingsName() {
+        return GeneralConfig.syncItemStorageAndCraftingTabStates ? ingredientComponent.getName() : getName();
     }
 
     @Override

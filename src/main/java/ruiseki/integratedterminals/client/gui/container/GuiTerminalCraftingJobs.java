@@ -9,7 +9,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.ResourceLocation;
 
 import ruiseki.commoncapabilities.api.ingredient.IPrototypedIngredient;
@@ -24,6 +23,7 @@ import ruiseki.integratedterminals.api.terminalstorage.crafting.ITerminalCraftin
 import ruiseki.integratedterminals.capability.ingredient.IngredientComponentTerminalStorageHandlerConfig;
 import ruiseki.integratedterminals.client.gui.container.component.GuiCraftingPlan;
 import ruiseki.integratedterminals.core.client.gui.CraftingJobGuiData;
+import ruiseki.integratedterminals.core.client.gui.GuiTerminalStorage;
 import ruiseki.integratedterminals.core.terminalstorage.crafting.HandlerWrappedTerminalCraftingPlan;
 import ruiseki.integratedterminals.inventory.container.ContainerTerminalCraftingJobs;
 import ruiseki.integratedterminals.network.packet.CancelCraftingJobPacket;
@@ -75,8 +75,7 @@ public class GuiTerminalCraftingJobs extends GuiContainerExtended {
                 guiTop + 198,
                 120,
                 20,
-                EnumChatFormatting.BOLD
-                    + LangHelpers.localize("gui.integratedterminals.terminal_crafting_job.craftingplan.cancel_all"),
+                LangHelpers.localize("gui.integratedterminals.terminal_crafting_job.craftingplan.cancel_all"),
                 true));
     }
 
@@ -308,7 +307,7 @@ public class GuiTerminalCraftingJobs extends GuiContainerExtended {
         if (mouseX > OUTPUT_SLOT_X && mouseX < OUTPUT_SLOT_X + LINE_WIDTH
             && mouseY > OUTPUT_SLOT_Y
             && mouseY < OUTPUT_SLOT_Y + GuiHelpers.SLOT_SIZE * scrollBar.getVisibleRows()) {
-            int index = (mouseY - OUTPUT_SLOT_Y) / GuiHelpers.SLOT_SIZE;
+            int index = (((int) mouseY) - OUTPUT_SLOT_Y) / GuiHelpers.SLOT_SIZE;
             List<HandlerWrappedTerminalCraftingPlan> plans = getVisiblePlans();
             if (index >= 0 && index < plans.size()) {
                 return plans.get(index);
@@ -319,7 +318,6 @@ public class GuiTerminalCraftingJobs extends GuiContainerExtended {
 
     @Override
     protected void mouseClicked(int mouseX, int mouseY, int mouseButton) {
-        super.mouseClicked(mouseX, mouseY, mouseButton);
         HandlerWrappedTerminalCraftingPlan plan = getHoveredPlan(mouseX, mouseY);
         if (plan != null) {
             PartPos pos = getContainer().getTarget()
@@ -331,6 +329,7 @@ public class GuiTerminalCraftingJobs extends GuiContainerExtended {
                 getContainer().getChannel(),
                 plan);
         }
+        super.mouseClicked(mouseX, mouseY, mouseButton);
     }
 
     public void setFirstRow(int firstRow) {

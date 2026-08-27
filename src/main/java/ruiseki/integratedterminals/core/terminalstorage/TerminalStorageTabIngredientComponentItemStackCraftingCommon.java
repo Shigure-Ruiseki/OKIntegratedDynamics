@@ -2,6 +2,7 @@ package ruiseki.integratedterminals.core.terminalstorage;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -24,9 +25,8 @@ import ruiseki.integratedterminals.api.terminalstorage.ITerminalStorageTabCommon
 import ruiseki.integratedterminals.core.terminalstorage.button.TerminalButtonItemStackCraftingGridAutoRefill;
 import ruiseki.integratedterminals.inventory.InventoryCraftingDirtyable;
 import ruiseki.integratedterminals.inventory.SlotCraftingAutoRefill;
-import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorage;
+import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorageBase;
 import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientItemStackCraftingGridSetResult;
-import ruiseki.integratedterminals.part.PartTypeTerminalStorage;
 import ruiseki.okcore.persist.IDirtyMarkListener;
 
 /**
@@ -45,24 +45,25 @@ public class TerminalStorageTabIngredientComponentItemStackCraftingCommon
     private TerminalButtonItemStackCraftingGridAutoRefill.AutoRefillType autoRefill = TerminalButtonItemStackCraftingGridAutoRefill.AutoRefillType.STORAGE;
 
     public TerminalStorageTabIngredientComponentItemStackCraftingCommon(
-        ContainerTerminalStorage containerTerminalStorage, ResourceLocation name,
+        ContainerTerminalStorageBase containerTerminalStorage, ResourceLocation name,
         IngredientComponent<ItemStack, Integer> ingredientComponent) {
         super(containerTerminalStorage, name, ingredientComponent);
     }
 
     public static int getCraftingResultSlotIndex(Container container, ResourceLocation name) {
-        ITerminalStorageTabCommon tabCommon = ((ContainerTerminalStorage) container).getTabCommon(name.toString());
+        ITerminalStorageTabCommon tabCommon = ((ContainerTerminalStorageBase) container).getTabCommon(name.toString());
         TerminalStorageTabIngredientComponentItemStackCraftingCommon tabCommonCrafting = (TerminalStorageTabIngredientComponentItemStackCraftingCommon) tabCommon;
         return tabCommonCrafting.getSlotCrafting().slotNumber;
     }
 
     @Override
     public List<Slot> loadSlots(Container container, int startIndex, EntityPlayer player,
-        PartTypeTerminalStorage.State partState) {
+        Optional<IVariableInventory> variableInventoryOptional) {
+        IVariableInventory variableInventory = variableInventoryOptional.get();
         slots = Lists.newArrayListWithCapacity(10);
 
         // Reload the recipe when the input slots are updated
-        IDirtyMarkListener dirtyListener = () -> updateCraftingResult(player, container, partState);
+        IDirtyMarkListener dirtyListener = () -> updateCraftingResult(player, container, variableInventory);
 
         this.inventoryCraftResult = new InventoryCraftResult() {
 
@@ -83,9 +84,9 @@ public class TerminalStorageTabIngredientComponentItemStackCraftingCommon
                 115,
                 76,
                 this,
-                (TerminalStorageTabIngredientComponentServer<ItemStack, Integer>) ((ContainerTerminalStorage) container)
+                (TerminalStorageTabIngredientComponentServer<ItemStack, Integer>) ((ContainerTerminalStorageBase) container)
                     .getTabServer(getName().toString()),
-                (ContainerTerminalStorage) container));
+                (ContainerTerminalStorageBase) container));
         for (int i = 0; i < 3; ++i) {
             for (int j = 0; j < 3; ++j) {
                 slots.add(new Slot(this.inventoryCrafting, j + i * 3, 31 + j * 18, 58 + i * 18));
@@ -93,7 +94,7 @@ public class TerminalStorageTabIngredientComponentItemStackCraftingCommon
         }
 
         // Load the items that were stored in the part state into the crafting grid slots
-        List<ItemStack> tabItems = partState.getNamedInventory(
+        List<ItemStack> tabItems = variableInventory.getNamedInventory(
             this.getName()
                 .toString());
         if (tabItems != null) {
@@ -108,7 +109,7 @@ public class TerminalStorageTabIngredientComponentItemStackCraftingCommon
         }
 
         List<Slot> returnSlots = Lists.newArrayList(slots);
-        for (Triple<Slot, Integer, Integer> slot : ((ContainerTerminalStorage) container).getTabSlots(
+        for (Triple<Slot, Integer, Integer> slot : ((ContainerTerminalStorageBase<?>) container).getTabSlots(
             ingredientComponent.getName()
                 .toString())) {
             returnSlots.add(slot.getLeft());
@@ -137,7 +138,7 @@ public class TerminalStorageTabIngredientComponentItemStackCraftingCommon
     }
 
     public void updateCraftingResult(EntityPlayer player, Container container,
-        PartTypeTerminalStorage.State partState) {
+        ITerminalStorageTabCommon.IVariableInventory variableInventory) {
         if (!player.worldObj.isRemote) {
             ItemStack itemstack = CraftingManager.getInstance()
                 .findMatchingRecipe(inventoryCrafting, player.worldObj);
@@ -154,7 +155,7 @@ public class TerminalStorageTabIngredientComponentItemStackCraftingCommon
         for (Slot slot : slots) {
             latestItems.add(slot.getStack());
         }
-        partState.setNamedInventory(
+        variableInventory.setNamedInventory(
             this.getName()
                 .toString(),
             latestItems);

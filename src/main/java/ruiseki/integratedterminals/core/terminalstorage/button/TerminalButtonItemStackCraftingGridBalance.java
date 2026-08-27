@@ -25,6 +25,11 @@ public class TerminalButtonItemStackCraftingGridBalance<T> implements
     ITerminalButton<TerminalStorageTabIngredientComponentClient<T, ?>, TerminalStorageTabIngredientComponentItemStackCraftingCommon, GuiButtonImage> {
 
     @Override
+    public void reloadFromState() {
+
+    }
+
+    @Override
     public int getX(int guiLeft, int offset) {
         return guiLeft + 85;
     }

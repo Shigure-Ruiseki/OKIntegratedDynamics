@@ -1,4 +1,4 @@
-package ruiseki.integratedterminals.client.gui.container;
+package ruiseki.integratedterminals.core.client.gui;
 
 import java.util.Collection;
 import java.util.List;
@@ -12,7 +12,6 @@ import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.entity.RenderItem;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumChatFormatting;
@@ -26,9 +25,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 import ruiseki.integrateddynamics.api.network.IPositionedAddonsNetwork;
-import ruiseki.integrateddynamics.api.part.IPartContainer;
-import ruiseki.integrateddynamics.api.part.IPartType;
-import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integratedterminals.IntegratedTerminals;
 import ruiseki.integratedterminals.Reference;
 import ruiseki.integratedterminals.api.terminalstorage.ITerminalButton;
@@ -37,7 +33,7 @@ import ruiseki.integratedterminals.api.terminalstorage.ITerminalStorageTabClient
 import ruiseki.integratedterminals.api.terminalstorage.ITerminalStorageTabCommon;
 import ruiseki.integratedterminals.core.terminalstorage.TerminalStorageTabIngredientComponentItemStackCraftingCommon;
 import ruiseki.integratedterminals.core.terminalstorage.button.TerminalButtonItemStackCraftingGridClear;
-import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorage;
+import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorageBase;
 import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientItemStackCraftingGridBalance;
 import ruiseki.integratedterminals.proxy.ClientProxy;
 import ruiseki.okcore.client.gui.RenderItemExtendedSlotCount;
@@ -55,7 +51,7 @@ import ruiseki.okcore.init.ModBase;
 /**
  * @author rubensworks
  */
-public class GuiTerminalStorage extends GuiContainerExtended {
+public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> extends GuiContainerExtended {
 
     private static int TAB_OFFSET_X = 24;
     private static int TAB_WIDTH = 24;
@@ -96,14 +92,8 @@ public class GuiTerminalStorage extends GuiContainerExtended {
     private int terminalDragSplittingRemnant;
     private boolean clicked;
 
-    public GuiTerminalStorage(EntityPlayer player, PartTarget target, IPartContainer partContainer,
-        IPartType partType) {
-        super(new ContainerTerminalStorage(player, target, partContainer, partType));
-    }
-
-    public GuiTerminalStorage(EntityPlayer player, PartTarget target, IPartContainer partContainer, IPartType partType,
-        ContainerTerminalStorage.InitTabData initTabData) {
-        super(new ContainerTerminalStorage(player, target, partContainer, partType, initTabData));
+    public GuiTerminalStorage(C container) {
+        super(container);
     }
 
     @Override
@@ -139,7 +129,7 @@ public class GuiTerminalStorage extends GuiContainerExtended {
 
             @Override
             public int getTotalRows() {
-                ContainerTerminalStorage container = getContainer();
+                ContainerTerminalStorageBase container = getContainer();
                 Optional<ITerminalStorageTabClient<?>> tabOptional = getSelectedClientTab();
                 if (!tabOptional.isPresent()) {
                     return 0;
@@ -380,8 +370,9 @@ public class GuiTerminalStorage extends GuiContainerExtended {
     }
 
     @Override
-    public ContainerTerminalStorage getContainer() {
-        return (ContainerTerminalStorage) super.getContainer();
+    @SuppressWarnings("unchecked")
+    public C getContainer() {
+        return (C) super.getContainer();
     }
 
     @Override
@@ -651,15 +642,16 @@ public class GuiTerminalStorage extends GuiContainerExtended {
         super.mouseMovedOrUp(mouseX, mouseY, mouseButton);
     }
 
-    @Override
-    protected void keyTyped(char typedChar, int keyCode) {
+    protected boolean handleKeyCodeFirst(int keyCode) {
         if (ruiseki.integrateddynamics.proxy.ClientProxy.FOCUS_LP_SEARCH.isActiveAndMatches(keyCode)) {
             fieldSearch.setFocused(true);
+            return true;
         } else if (ClientProxy.TERMINAL_TAB_NEXT.isActiveAndMatches(keyCode)) {
             if (getContainer().getTabsClientCount() > 0) {
                 // Go to next tab
                 setTabByIndex((getSelectedClientTabIndex() + 1) % getContainer().getTabsClientCount());
                 playButtonClickSound();
+                return true;
             }
         } else if (ClientProxy.TERMINAL_TAB_PREVIOUS.isActiveAndMatches(keyCode)) {
             if (getContainer().getTabsClientCount() > 0) {
@@ -668,22 +660,43 @@ public class GuiTerminalStorage extends GuiContainerExtended {
                     (getContainer().getTabsClientCount() + getSelectedClientTabIndex() - 1)
                         % getContainer().getTabsClientCount());
                 playButtonClickSound();
+                return true;
             }
-        } else if (fieldSearch.textboxKeyTyped(typedChar, keyCode)) {
-            getSelectedClientTab()
-                .ifPresent(tab -> tab.setInstanceFilter(getContainer().getSelectedChannel(), fieldSearch.getText()));
-        } else if (ClientProxy.TERMINAL_CRAFTINGGRID_CLEARPLAYER.isActiveAndMatches(keyCode)) {
+        }
+        return false;
+    }
+
+    protected boolean handleKeyCodeLast(int keyCode) {
+        if (ClientProxy.TERMINAL_CRAFTINGGRID_CLEARPLAYER.isActiveAndMatches(keyCode)) {
             clearCraftingGrid(false);
             playButtonClickSound();
+            return true;
         } else if (ClientProxy.TERMINAL_CRAFTINGGRID_CLEARSTORAGE.isActiveAndMatches(keyCode)) {
             clearCraftingGrid(true);
             playButtonClickSound();
+            return true;
         } else if (ClientProxy.TERMINAL_CRAFTINGGRID_BALANCE.isActiveAndMatches(keyCode)) {
             balanceCraftingGrid();
             playButtonClickSound();
-        } else {
-            super.keyTyped(typedChar, keyCode);
+            return true;
         }
+        return false;
+    }
+
+    @Override
+    protected void keyTyped(char typedChar, int keyCode) {
+        if (handleKeyCodeFirst(keyCode)) {
+            return;
+        }
+        if (fieldSearch.isFocused()) {
+            if (fieldSearch.textboxKeyTyped(typedChar, keyCode)) {
+                getSelectedClientTab().ifPresent(
+                    tab -> tab.setInstanceFilter(getContainer().getSelectedChannel(), fieldSearch.getText()));
+                return;
+            }
+        }
+        if (handleKeyCodeLast(keyCode)) return;
+        super.keyTyped(typedChar, keyCode);
     }
 
     protected void clearCraftingGrid(boolean toStorage) {
@@ -721,8 +734,9 @@ public class GuiTerminalStorage extends GuiContainerExtended {
                     < GuiHelpers.SLOT_SIZE_INNER) {
                 int rowLength = getSlotRowLength();
                 int offset = getSelectedFirstRow() * rowLength;
-                return offset + ((mouseX - getGuiLeftTotal() - getSlotsOffsetX()) / GuiHelpers.SLOT_SIZE)
-                    + ((mouseY - getGuiTopTotal() - getSlotsOffsetY()) / GuiHelpers.SLOT_SIZE) * getSlotRowLength();
+                return offset + ((((int) mouseX) - getGuiLeftTotal() - getSlotsOffsetX()) / GuiHelpers.SLOT_SIZE)
+                    + ((((int) mouseY) - getGuiTopTotal() - getSlotsOffsetY()) / GuiHelpers.SLOT_SIZE)
+                        * getSlotRowLength();
             }
         }
 

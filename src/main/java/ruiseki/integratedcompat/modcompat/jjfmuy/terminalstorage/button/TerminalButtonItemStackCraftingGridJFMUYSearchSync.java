@@ -47,6 +47,11 @@ public class TerminalButtonItemStackCraftingGridJFMUYSearchSync implements
     }
 
     @Override
+    public void reloadFromState() {
+
+    }
+
+    @Override
     @SideOnly(Side.CLIENT)
     public GuiButtonImage createButton(int x, int y) {
         return new GuiButtonImage(

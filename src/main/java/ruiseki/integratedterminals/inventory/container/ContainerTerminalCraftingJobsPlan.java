@@ -19,7 +19,7 @@ import ruiseki.okcore.inventory.container.ExtendedInventoryContainer;
 
 /**
  * A container for visualizing a live crafting plan.
- * 
+ *
  * @author rubensworks
  */
 public class ContainerTerminalCraftingJobsPlan extends ExtendedInventoryContainer {
@@ -37,7 +37,7 @@ public class ContainerTerminalCraftingJobsPlan extends ExtendedInventoryContaine
 
     /**
      * Make a new instance.
-     * 
+     *
      * @param target             The target.
      * @param player             The player.
      * @param partContainer      The part container.
@@ -46,7 +46,7 @@ public class ContainerTerminalCraftingJobsPlan extends ExtendedInventoryContaine
      */
     public ContainerTerminalCraftingJobsPlan(final EntityPlayer player, PartTarget target, IPartContainer partContainer,
         IPartType partType, CraftingJobGuiData craftingJobGuiData) {
-        super(player.inventory, GuiProviders.GUI_TERMINAL_STORAGE_CRAFTNG_PLAN);
+        super(player.inventory, GuiProviders.GUI_TERMINAL_STORAGE_CRAFTNG_PLAN_PART);
 
         this.world = target.getCenter()
             .getPos()

@@ -11,17 +11,16 @@ import org.jetbrains.annotations.Nullable;
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.IPositionedAddonsNetworkIngredients;
-import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
 import ruiseki.integratedterminals.api.terminalstorage.ITerminalStorageTab;
 import ruiseki.integratedterminals.api.terminalstorage.ITerminalStorageTabClient;
 import ruiseki.integratedterminals.api.terminalstorage.ITerminalStorageTabCommon;
 import ruiseki.integratedterminals.api.terminalstorage.ITerminalStorageTabServer;
-import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorage;
+import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorageBase;
 
 /**
  * Terminal storage tab for ingredient components.
- * 
+ *
  * @author rubensworks
  */
 public class TerminalStorageTabIngredientComponent<T, M> implements ITerminalStorageTab {
@@ -38,15 +37,13 @@ public class TerminalStorageTabIngredientComponent<T, M> implements ITerminalSto
     }
 
     @Override
-    public ITerminalStorageTabClient<?> createClientTab(ContainerTerminalStorage container, EntityPlayer player,
-        PartTarget target) {
+    public ITerminalStorageTabClient<?> createClientTab(ContainerTerminalStorageBase container, EntityPlayer player) {
         return new TerminalStorageTabIngredientComponentClient<>(container, getName(), ingredientComponent);
     }
 
     @Override
-    public ITerminalStorageTabServer createServerTab(ContainerTerminalStorage container, EntityPlayer player,
-        PartTarget target) {
-        INetwork network = Objects.requireNonNull(NetworkHelpers.getNetwork(target.getCenter()));
+    public ITerminalStorageTabServer createServerTab(ContainerTerminalStorageBase container, EntityPlayer player,
+        INetwork network) {
         IPositionedAddonsNetworkIngredients<T, M> ingredientNetwork = Objects
             .requireNonNull(NetworkHelpers.getIngredientNetwork(network, ingredientComponent));
         return new TerminalStorageTabIngredientComponentServer<>(
@@ -54,14 +51,12 @@ public class TerminalStorageTabIngredientComponent<T, M> implements ITerminalSto
             network,
             ingredientComponent,
             ingredientNetwork,
-            target.getCenter(),
             (EntityPlayerMP) player);
     }
 
     @Nullable
     @Override
-    public ITerminalStorageTabCommon createCommonTab(ContainerTerminalStorage container, EntityPlayer player,
-        PartTarget target) {
+    public ITerminalStorageTabCommon createCommonTab(ContainerTerminalStorageBase container, EntityPlayer player) {
         return new TerminalStorageTabIngredientComponentCommon<>(container, getName(), ingredientComponent);
     }
 }

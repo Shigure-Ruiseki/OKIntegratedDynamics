@@ -17,7 +17,7 @@ import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
 import ruiseki.integratedterminals.api.ingredient.IIngredientComponentTerminalStorageHandler;
 import ruiseki.integratedterminals.api.terminalstorage.ITerminalStorageTabClient;
 import ruiseki.integratedterminals.api.terminalstorage.crafting.ITerminalCraftingOption;
-import ruiseki.integratedterminals.client.gui.container.GuiTerminalStorage;
+import ruiseki.integratedterminals.core.client.gui.GuiTerminalStorage;
 import ruiseki.integratedterminals.core.terminalstorage.TerminalStorageTabIngredientComponentClient;
 import ruiseki.integratedterminals.core.terminalstorage.crafting.HandlerWrappedTerminalCraftingOption;
 import ruiseki.okcore.client.gui.RenderItemExtendedSlotCount;
@@ -26,7 +26,7 @@ import ruiseki.okcore.helper.LangHelpers;
 
 /**
  * An ingredient slot for a crafting option.
- * 
+ *
  * @param <T> The instance type.
  * @param <M> The matching condition parameter.
  * @author rubensworks

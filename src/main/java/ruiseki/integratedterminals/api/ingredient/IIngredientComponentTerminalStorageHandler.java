@@ -19,7 +19,7 @@ import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.commoncapabilities.api.ingredient.IIngredientMatcher;
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
 import ruiseki.commoncapabilities.api.ingredient.storage.IIngredientComponentStorage;
-import ruiseki.integratedterminals.client.gui.container.GuiTerminalStorage;
+import ruiseki.integratedterminals.core.client.gui.GuiTerminalStorage;
 import ruiseki.integratedterminals.core.terminalstorage.query.SearchMode;
 import ruiseki.okcore.helper.LangHelpers;
 

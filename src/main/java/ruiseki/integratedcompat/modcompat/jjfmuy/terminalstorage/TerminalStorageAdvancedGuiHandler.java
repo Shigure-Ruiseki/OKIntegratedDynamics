@@ -5,13 +5,13 @@ import java.util.Optional;
 import org.jetbrains.annotations.Nullable;
 
 import ruiseki.integratedterminals.api.terminalstorage.ITerminalStorageTabClient;
-import ruiseki.integratedterminals.client.gui.container.GuiTerminalStorage;
+import ruiseki.integratedterminals.core.client.gui.GuiTerminalStorage;
 import ruiseki.integratedterminals.core.terminalstorage.TerminalStorageTabIngredientComponentClient;
 import ruiseki.jfmuy.api.gui.IAdvancedGuiHandler;
 
 /**
  * This handler allows JEI to recognise the terminal storage slot contents.
- * 
+ *
  * @author rubensworks
  */
 public class TerminalStorageAdvancedGuiHandler implements IAdvancedGuiHandler<GuiTerminalStorage> {

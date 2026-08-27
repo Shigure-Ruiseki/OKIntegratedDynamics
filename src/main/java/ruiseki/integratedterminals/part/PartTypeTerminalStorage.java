@@ -22,15 +22,16 @@ import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.core.part.PartStateEmpty;
 import ruiseki.integratedterminals.GeneralConfig;
-import ruiseki.integratedterminals.client.gui.container.GuiTerminalStorage;
+import ruiseki.integratedterminals.api.terminalstorage.ITerminalStorageTabCommon;
+import ruiseki.integratedterminals.client.gui.container.GuiTerminalStoragePart;
 import ruiseki.integratedterminals.core.part.PartTypeTerminal;
 import ruiseki.integratedterminals.core.terminalstorage.TerminalStorageTabIngredientComponentItemStackCrafting;
-import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorage;
+import ruiseki.integratedterminals.inventory.container.ContainerTerminalStoragePart;
 import ruiseki.okcore.helper.ItemStackHelpers;
 
 /**
  * A part that exposes a gui using which players can access storage indexes in the network.
- * 
+ *
  * @author rubensworks
  */
 public class PartTypeTerminalStorage extends PartTypeTerminal<PartTypeTerminalStorage, PartTypeTerminalStorage.State> {
@@ -52,12 +53,12 @@ public class PartTypeTerminalStorage extends PartTypeTerminal<PartTypeTerminalSt
     @Override
     @SideOnly(Side.CLIENT)
     public Class<? extends GuiScreen> getGui() {
-        return GuiTerminalStorage.class;
+        return GuiTerminalStoragePart.class;
     }
 
     @Override
     public Class<? extends Container> getContainer() {
-        return ContainerTerminalStorage.class;
+        return ContainerTerminalStoragePart.class;
     }
 
     @Override
@@ -85,7 +86,8 @@ public class PartTypeTerminalStorage extends PartTypeTerminal<PartTypeTerminalSt
         super.addDrops(target, state, itemStacks, dropMainElement, saveState);
     }
 
-    public static class State extends PartStateEmpty<PartTypeTerminalStorage> {
+    public static class State extends PartStateEmpty<PartTypeTerminalStorage>
+        implements ITerminalStorageTabCommon.IVariableInventory {
 
         private final Map<String, List<ItemStack>> namedInventories;
 
@@ -97,6 +99,7 @@ public class PartTypeTerminalStorage extends PartTypeTerminal<PartTypeTerminalSt
             this.namedInventories.clear();
         }
 
+        @Override
         public void setNamedInventory(String name, List<ItemStack> inventory) {
             this.namedInventories.put(name, inventory);
             this.onDirty();
@@ -106,11 +109,13 @@ public class PartTypeTerminalStorage extends PartTypeTerminal<PartTypeTerminalSt
             return namedInventories;
         }
 
+        @Override
         @Nullable
         public List<ItemStack> getNamedInventory(String name) {
             return this.namedInventories.get(name);
         }
 
+        @Override
         public void loadNamedInventory(String name, IInventory inventory) {
             List<ItemStack> tabItems = this.getNamedInventory(name);
             if (tabItems != null) {
@@ -120,6 +125,7 @@ public class PartTypeTerminalStorage extends PartTypeTerminal<PartTypeTerminalSt
             }
         }
 
+        @Override
         public void saveNamedInventory(String name, IInventory inventory) {
             List<ItemStack> latestItems = new ArrayList<>();
             for (int i = 0; i < inventory.getSizeInventory(); i++) {

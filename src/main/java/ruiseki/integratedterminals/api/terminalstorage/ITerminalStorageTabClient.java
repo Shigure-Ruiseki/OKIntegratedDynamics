@@ -13,11 +13,11 @@ import org.jetbrains.annotations.Nullable;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-import ruiseki.integratedterminals.client.gui.container.GuiTerminalStorage;
+import ruiseki.integratedterminals.core.client.gui.GuiTerminalStorage;
 
 /**
  * A client-side terminal storage tab.
- * 
+ *
  * @author rubensworks
  */
 public interface ITerminalStorageTabClient<S extends ITerminalStorageSlot> {
@@ -28,9 +28,31 @@ public interface ITerminalStorageTabClient<S extends ITerminalStorageSlot> {
     public static final int DEFAULT_SLOT_ROW_LENGTH = 9;
 
     /**
+     * When this tab is selected by the player.
+     *
+     * @param channel The channel.
+     */
+    public void onSelect(int channel);
+
+    /**
+     * When this tab is deselected by the player.
+     *
+     * @param channel The channel.
+     */
+    public void onDeselect(int channel);
+
+    /**
      * @return The unique tab name, as inherited from {@link ITerminalStorageTab#getName()}.
      */
     public ResourceLocation getName();
+
+    /**
+     * @return The tab name that will be used to store {@link TerminalStorageState} settings inside a tab.
+     *         This can be used to modify in what tab certain settings are stored.
+     */
+    public default ResourceLocation getTabSettingsName() {
+        return getName();
+    }
 
     /**
      * @return An icon for the tab.
@@ -44,7 +66,7 @@ public interface ITerminalStorageTabClient<S extends ITerminalStorageSlot> {
 
     /**
      * Get the currently active filter.
-     * 
+     *
      * @param channel The channel to get the filter for.
      * @return The active filter.
      */
@@ -52,7 +74,7 @@ public interface ITerminalStorageTabClient<S extends ITerminalStorageSlot> {
 
     /**
      * Set a filter for instances in slots.
-     * 
+     *
      * @param filter  A string-based filter, which could be a regex.
      * @param channel The channel to filter in.
      */
@@ -60,7 +82,7 @@ public interface ITerminalStorageTabClient<S extends ITerminalStorageSlot> {
 
     /**
      * Get a subset of slots.
-     * 
+     *
      * @param channel A channel id.
      * @param offset  A slot offset.
      * @param limit   A slot limit.
@@ -76,7 +98,7 @@ public interface ITerminalStorageTabClient<S extends ITerminalStorageSlot> {
 
     /**
      * Get the total number of slots in the given channel
-     * 
+     *
      * @param channel A channel id.
      * @return A slot count.
      */
@@ -100,7 +122,7 @@ public interface ITerminalStorageTabClient<S extends ITerminalStorageSlot> {
 
     /**
      * Called when a mouse click happens in a gui.
-     * 
+     *
      * @param container            The active container.
      * @param channel              The active channel.
      * @param hoveringStorageSlot  The storage slot id that is being hovered. -1 if none.
@@ -126,7 +148,7 @@ public interface ITerminalStorageTabClient<S extends ITerminalStorageSlot> {
 
     /**
      * Set the active quantity.
-     * 
+     *
      * @param quantity A quantity to set.
      */
     void setActiveSlotQuantity(int quantity);
@@ -167,7 +189,7 @@ public interface ITerminalStorageTabClient<S extends ITerminalStorageSlot> {
 
     /**
      * Check if we can drag over the current slot with an active instance.
-     * 
+     *
      * @param channel The active channel.
      * @param slot    The slot to drag over.
      * @return If we can drag over the slot.
@@ -176,7 +198,7 @@ public interface ITerminalStorageTabClient<S extends ITerminalStorageSlot> {
 
     /**
      * Calculate the quantity that will be added to the given stack based on the drag mode and the given list of slots.
-     * 
+     *
      * @param dragSlots The list of slots to drag over.
      * @param dragMode  The drag mode.
      * @param stack     The stack to calculate the quantity for.
@@ -187,7 +209,7 @@ public interface ITerminalStorageTabClient<S extends ITerminalStorageSlot> {
 
     /**
      * Drag the given quantity into the given slot with the currently active instance.
-     * 
+     *
      * @param container The active container.
      * @param channel   The active channel.
      * @param slot      The slot to drag into.

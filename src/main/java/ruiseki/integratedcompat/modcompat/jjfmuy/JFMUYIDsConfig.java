@@ -26,7 +26,7 @@ import ruiseki.integratedterminals.api.terminalstorage.ITerminalButton;
 import ruiseki.integratedterminals.api.terminalstorage.ITerminalStorageTabClient;
 import ruiseki.integratedterminals.api.terminalstorage.event.TerminalStorageTabClientLoadButtonsEvent;
 import ruiseki.integratedterminals.api.terminalstorage.event.TerminalStorageTabClientSearchFieldUpdateEvent;
-import ruiseki.integratedterminals.client.gui.container.GuiTerminalStorage;
+import ruiseki.integratedterminals.core.client.gui.GuiTerminalStorage;
 import ruiseki.integratedterminals.part.TerminalPartTypes;
 import ruiseki.jfmuy.api.IJFMUYRuntime;
 import ruiseki.jfmuy.api.IModPlugin;
@@ -152,12 +152,12 @@ public class JFMUYIDsConfig implements IModPlugin {
                 .hasKeyboardFocus()) {
                 gui.getSelectedClientTab()
                     .ifPresent(tab -> {
-                        if (isSearchSynced(tab)) {
+                        if (isSearchSynced((ITerminalStorageTabClient<?>) tab)) {
                             GuiTextFieldExtended fieldSearch = gui.getFieldSearch();
                             fieldSearch.setText(
                                 jfmuyRuntime.getIngredientFilter()
                                     .getFilterText());
-                            tab.setInstanceFilter(
+                            ((ITerminalStorageTabClient<?>) tab).setInstanceFilter(
                                 gui.getContainer()
                                     .getSelectedChannel(),
                                 fieldSearch.getText() + "");

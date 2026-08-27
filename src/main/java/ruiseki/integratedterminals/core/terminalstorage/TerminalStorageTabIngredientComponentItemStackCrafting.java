@@ -10,13 +10,12 @@ import org.jetbrains.annotations.Nullable;
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.IPositionedAddonsNetworkIngredients;
-import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
 import ruiseki.integratedterminals.api.terminalstorage.ITerminalStorageTab;
 import ruiseki.integratedterminals.api.terminalstorage.ITerminalStorageTabClient;
 import ruiseki.integratedterminals.api.terminalstorage.ITerminalStorageTabCommon;
 import ruiseki.integratedterminals.api.terminalstorage.ITerminalStorageTabServer;
-import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorage;
+import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorageBase;
 
 /**
  * Terminal storage tab for the item crafting grid.
@@ -47,8 +46,7 @@ public class TerminalStorageTabIngredientComponentItemStackCrafting implements I
     }
 
     @Override
-    public ITerminalStorageTabClient<?> createClientTab(ContainerTerminalStorage container, EntityPlayer player,
-        PartTarget target) {
+    public ITerminalStorageTabClient<?> createClientTab(ContainerTerminalStorageBase container, EntityPlayer player) {
         return new TerminalStorageTabIngredientComponentItemStackCraftingClient(
             container,
             getName(),
@@ -56,9 +54,8 @@ public class TerminalStorageTabIngredientComponentItemStackCrafting implements I
     }
 
     @Override
-    public ITerminalStorageTabServer createServerTab(ContainerTerminalStorage container, EntityPlayer player,
-        PartTarget target) {
-        INetwork network = NetworkHelpers.getNetwork(target.getCenter());
+    public ITerminalStorageTabServer createServerTab(ContainerTerminalStorageBase container, EntityPlayer player,
+        INetwork network) {
         IPositionedAddonsNetworkIngredients<ItemStack, Integer> ingredientNetwork = NetworkHelpers
             .getIngredientNetwork(network, ingredientComponent);
         return new TerminalStorageTabIngredientComponentItemStackCraftingServer(
@@ -66,14 +63,12 @@ public class TerminalStorageTabIngredientComponentItemStackCrafting implements I
             network,
             ingredientComponent,
             ingredientNetwork,
-            target.getCenter(),
             (EntityPlayerMP) player);
     }
 
     @Nullable
     @Override
-    public ITerminalStorageTabCommon createCommonTab(ContainerTerminalStorage container, EntityPlayer player,
-        PartTarget target) {
+    public ITerminalStorageTabCommon createCommonTab(ContainerTerminalStorageBase container, EntityPlayer player) {
         return new TerminalStorageTabIngredientComponentItemStackCraftingCommon(
             container,
             getName(),

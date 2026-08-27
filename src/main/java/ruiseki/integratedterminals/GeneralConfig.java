@@ -9,7 +9,7 @@ import ruiseki.okcore.tracking.Versions;
 
 /**
  * A config with general options for this mod.
- * 
+ *
  * @author rubensworks
  *
  */
@@ -177,6 +177,11 @@ public class GeneralConfig extends DummyConfig {
         minimalValue = 0)
     public static int terminalStorageBaseConsumption = 2;
 
+    @ConfigurableProperty(
+        category = ConfigurableTypeCategory.GENERAL,
+        comment = "If the search box and button states should be synchronized between the item storage and crafting tabs.")
+    public static boolean syncItemStorageAndCraftingTabStates = true;
+
     /**
      * The type of this config.
      */
@@ -186,7 +191,7 @@ public class GeneralConfig extends DummyConfig {
      * Create a new instance.
      */
     public GeneralConfig() {
-        super(IntegratedTerminals._instance, true, "general", null, GeneralConfig.class);
+        super(IntegratedTerminals._instance, true, "general", null);
     }
 
     @Override

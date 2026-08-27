@@ -23,5 +23,9 @@ public enum TerminalClickType {
     /**
      * Max movement from hovered player stack into storage.
      */
-    PLAYER_QUICK_MOVE
+    PLAYER_QUICK_MOVE,
+    /**
+     * Incremental movement from hovered player stack into storage.
+     */
+    PLAYER_QUICK_MOVE_INCREMENTAL
 }

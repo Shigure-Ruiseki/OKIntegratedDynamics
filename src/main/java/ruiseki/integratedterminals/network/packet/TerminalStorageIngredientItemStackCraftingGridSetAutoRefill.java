@@ -9,13 +9,13 @@ import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.integratedterminals.api.terminalstorage.ITerminalStorageTabCommon;
 import ruiseki.integratedterminals.core.terminalstorage.TerminalStorageTabIngredientComponentItemStackCraftingCommon;
 import ruiseki.integratedterminals.core.terminalstorage.button.TerminalButtonItemStackCraftingGridAutoRefill;
-import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorage;
+import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorageBase;
 import ruiseki.okcore.network.CodecField;
 import ruiseki.okcore.network.PacketCodec;
 
 /**
  * Packet for telling the server the new autoRefill value.
- * 
+ *
  * @author rubensworks
  *
  */
@@ -49,8 +49,8 @@ public class TerminalStorageIngredientItemStackCraftingGridSetAutoRefill extends
 
     @Override
     public void actionServer(World world, EntityPlayerMP player) {
-        if (player.openContainer instanceof ContainerTerminalStorage) {
-            ContainerTerminalStorage container = ((ContainerTerminalStorage) player.openContainer);
+        if (player.openContainer instanceof ContainerTerminalStorageBase) {
+            ContainerTerminalStorageBase container = ((ContainerTerminalStorageBase) player.openContainer);
             ITerminalStorageTabCommon tabCommon = container.getTabCommon(tabId);
             if (tabCommon instanceof TerminalStorageTabIngredientComponentItemStackCraftingCommon) {
                 ((TerminalStorageTabIngredientComponentItemStackCraftingCommon) tabCommon).setAutoRefill(

@@ -1,8 +1,7 @@
-package ruiseki.integratedterminals.client.gui.container;
+package ruiseki.integratedterminals.core.client.gui;
 
 import javax.annotation.Nullable;
 
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.ResourceLocation;
@@ -11,16 +10,11 @@ import org.lwjgl.input.Keyboard;
 
 import com.google.common.collect.Lists;
 
-import ruiseki.integrateddynamics.api.part.IPartContainer;
-import ruiseki.integrateddynamics.api.part.IPartType;
-import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integratedterminals.IntegratedTerminals;
 import ruiseki.integratedterminals.Reference;
 import ruiseki.integratedterminals.api.terminalstorage.crafting.ITerminalCraftingPlan;
 import ruiseki.integratedterminals.client.gui.container.component.GuiCraftingPlan;
-import ruiseki.integratedterminals.core.client.gui.CraftingOptionGuiData;
-import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorageCraftingPlan;
-import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientOpenPacket;
+import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorageCraftingPlanBase;
 import ruiseki.okcore.client.gui.component.button.GuiButtonText;
 import ruiseki.okcore.client.gui.container.GuiContainerExtended;
 import ruiseki.okcore.helper.LangHelpers;
@@ -28,23 +22,19 @@ import ruiseki.okcore.init.ModBase;
 
 /**
  * A gui for previewing a crafting plan.
- * 
+ *
  * @author rubensworks
  */
-public class GuiTerminalStorageCraftingPlan extends GuiContainerExtended {
-
-    private final CraftingOptionGuiData<?, ?> craftingOptionGuiData;
+public class GuiTerminalStorageCraftingPlanBase<L, C extends ContainerTerminalStorageCraftingPlanBase<L>>
+    extends GuiContainerExtended {
 
     @Nullable
     private GuiCraftingPlan guiCraftingPlan;
 
     private ITerminalCraftingPlan craftingPlan;
 
-    public GuiTerminalStorageCraftingPlan(EntityPlayer player, PartTarget target, IPartContainer partContainer,
-        IPartType partType, CraftingOptionGuiData craftingOptionGuiData) {
-        super(new ContainerTerminalStorageCraftingPlan(player, target, partContainer, partType, craftingOptionGuiData));
-
-        this.craftingOptionGuiData = craftingOptionGuiData;
+    public GuiTerminalStorageCraftingPlanBase(C container) {
+        super(container);
     }
 
     @Override
@@ -82,12 +72,12 @@ public class GuiTerminalStorageCraftingPlan extends GuiContainerExtended {
         this.buttonList.addAll(
             Lists.newArrayList(
                 button = new GuiButtonText(
-                    ContainerTerminalStorageCraftingPlan.BUTTON_START,
+                    ContainerTerminalStorageCraftingPlanBase.BUTTON_START,
                     guiLeft + 95,
                     guiTop + 198,
                     50,
                     20,
-                    EnumChatFormatting.BOLD
+                    EnumChatFormatting.YELLOW
                         + LangHelpers.localize("gui.integratedterminals.terminal_storage.step.craft"),
                     true)));
         button.enabled = this.guiCraftingPlan != null && this.guiCraftingPlan.isValid();
@@ -108,11 +98,10 @@ public class GuiTerminalStorageCraftingPlan extends GuiContainerExtended {
     }
 
     private void returnToTerminalStorage() {
-        TerminalStorageIngredientOpenPacket.send(
-            craftingOptionGuiData.getPos(),
-            craftingOptionGuiData.getSide(),
-            craftingOptionGuiData.getTabName(),
-            craftingOptionGuiData.getChannel());
+        CraftingOptionGuiData data = ((ContainerTerminalStorageCraftingPlanBase) getContainer())
+            .getCraftingOptionGuiData();
+        data.getLocation()
+            .openContainerFromClient(data);
     }
 
     @Override
@@ -168,11 +157,20 @@ public class GuiTerminalStorageCraftingPlan extends GuiContainerExtended {
     }
 
     @Override
+    protected void mouseClickMove(int mouseX, int mouseY, int mouseButton, long time) {
+        super.mouseClickMove(mouseX, mouseY, mouseButton, time);
+        if (this.guiCraftingPlan != null) {
+            guiCraftingPlan.mouseClicked(mouseX, mouseY, mouseButton);
+        }
+    }
+
+    @Override
     public void onUpdate(int valueId, NBTTagCompound value) {
         super.onUpdate(valueId, value);
 
-        if (((ContainerTerminalStorageCraftingPlan) getContainer()).getCraftingPlanNotifierId() == valueId) {
-            this.craftingPlan = craftingOptionGuiData.getCraftingOption()
+        if (((ContainerTerminalStorageCraftingPlanBase) getContainer()).getCraftingPlanNotifierId() == valueId) {
+            this.craftingPlan = ((ContainerTerminalStorageCraftingPlanBase) getContainer()).getCraftingOptionGuiData()
+                .getCraftingOption()
                 .getHandler()
                 .deserializeCraftingPlan(value);
             this.initGui();

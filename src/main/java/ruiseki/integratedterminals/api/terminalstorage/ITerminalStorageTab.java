@@ -5,8 +5,8 @@ import net.minecraft.util.ResourceLocation;
 
 import org.jetbrains.annotations.Nullable;
 
-import ruiseki.integrateddynamics.api.part.PartTarget;
-import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorage;
+import ruiseki.integrateddynamics.api.network.INetwork;
+import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorageBase;
 
 /**
  * A terminal storage tab.
@@ -23,29 +23,25 @@ public interface ITerminalStorageTab {
     /**
      * @param container The container in which the tab is about to be created.
      * @param player    The player opening the container.
-     * @param target    The terminal storage part target.
      * @return A new client-side tab.
      */
-    public ITerminalStorageTabClient<?> createClientTab(ContainerTerminalStorage container, EntityPlayer player,
-        PartTarget target);
+    public ITerminalStorageTabClient<?> createClientTab(ContainerTerminalStorageBase container, EntityPlayer player);
 
     /**
      * @param container The container in which the tab is about to be created.
      * @param player    The player opening the container.
-     * @param target    The terminal storage part target.
+     * @param network   The network of the storage terminal.
      * @return A new server-side tab.
      */
-    public ITerminalStorageTabServer createServerTab(ContainerTerminalStorage container, EntityPlayer player,
-        PartTarget target);
+    public ITerminalStorageTabServer createServerTab(ContainerTerminalStorageBase container, EntityPlayer player,
+        INetwork network);
 
     /**
      * @param container The container in which the tab is about to be created.
      * @param player    The player opening the container.
-     * @param target    The terminal storage part target.
      * @return A new common tab.
      */
     @Nullable
-    public ITerminalStorageTabCommon createCommonTab(ContainerTerminalStorage container, EntityPlayer player,
-        PartTarget target);
+    public ITerminalStorageTabCommon createCommonTab(ContainerTerminalStorageBase container, EntityPlayer player);
 
 }

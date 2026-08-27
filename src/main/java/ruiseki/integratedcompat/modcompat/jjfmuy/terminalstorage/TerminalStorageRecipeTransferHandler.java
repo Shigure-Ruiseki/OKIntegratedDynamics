@@ -20,7 +20,7 @@ import ruiseki.integratedcompat.IntegratedCompat;
 import ruiseki.integratedcompat.network.packet.TerminalStorageIngredientItemStackCraftingGridSetRecipe;
 import ruiseki.integratedterminals.core.terminalstorage.TerminalStorageTabIngredientComponentClient;
 import ruiseki.integratedterminals.core.terminalstorage.TerminalStorageTabIngredientComponentItemStackCrafting;
-import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorage;
+import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorageBase;
 import ruiseki.jfmuy.api.gui.IGuiIngredient;
 import ruiseki.jfmuy.api.gui.IRecipeLayout;
 import ruiseki.jfmuy.api.recipe.VanillaRecipeCategoryUid;
@@ -33,10 +33,10 @@ import ruiseki.okcore.ingredient.collection.IngredientCollectionPrototypeMap;
 
 /**
  * Handles recipe clicking from JEI.
- * 
+ *
  * @author rubensworks
  */
-public class TerminalStorageRecipeTransferHandler implements IRecipeTransferHandler<ContainerTerminalStorage> {
+public class TerminalStorageRecipeTransferHandler implements IRecipeTransferHandler<ContainerTerminalStorageBase> {
 
     private final IRecipeTransferHandlerHelper recipeTransferHandlerHelper;
 
@@ -45,13 +45,13 @@ public class TerminalStorageRecipeTransferHandler implements IRecipeTransferHand
     }
 
     @Override
-    public Class<ContainerTerminalStorage> getContainerClass() {
-        return ContainerTerminalStorage.class;
+    public Class<ContainerTerminalStorageBase> getContainerClass() {
+        return ContainerTerminalStorageBase.class;
     }
 
     @Nullable
     @Override
-    public IRecipeTransferError transferRecipe(ContainerTerminalStorage container, IRecipeLayout recipeLayout,
+    public IRecipeTransferError transferRecipe(ContainerTerminalStorageBase container, IRecipeLayout recipeLayout,
         EntityPlayer player, boolean maxTransfer, boolean doTransfer) {
         if (!recipeLayout.getRecipeCategory()
             .getUid()

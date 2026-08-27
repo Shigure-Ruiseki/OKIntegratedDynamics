@@ -9,12 +9,12 @@ import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.integratedterminals.api.ingredient.IIngredientComponentTerminalStorageHandler;
 import ruiseki.integratedterminals.api.terminalstorage.ITerminalStorageSlot;
 import ruiseki.integratedterminals.api.terminalstorage.ITerminalStorageTabClient;
-import ruiseki.integratedterminals.client.gui.container.GuiTerminalStorage;
+import ruiseki.integratedterminals.core.client.gui.GuiTerminalStorage;
 import ruiseki.integratedterminals.core.terminalstorage.TerminalStorageTabIngredientComponentClient;
 
 /**
  * An ingredient slot.
- * 
+ *
  * @param <T> The instance type.
  * @param <M> The matching condition parameter.
  * @author rubensworks

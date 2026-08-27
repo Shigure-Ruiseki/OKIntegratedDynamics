@@ -5,7 +5,6 @@ import javax.annotation.Nullable;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.ResourceLocation;
 
 import org.lwjgl.input.Keyboard;
@@ -87,8 +86,7 @@ public class GuiTerminalCraftingJobsPlan extends GuiContainerExtended {
                     guiTop + 198,
                     100,
                     20,
-                    EnumChatFormatting.BOLD
-                        + LangHelpers.localize("gui.integratedterminals.terminal_crafting_job.craftingplan.cancel"),
+                    LangHelpers.localize("gui.integratedterminals.terminal_crafting_job.craftingplan.cancel"),
                     true));
         } else {
             this.guiCraftingPlan = null;

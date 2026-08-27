@@ -36,7 +36,7 @@ import ruiseki.integratedterminals.api.ingredient.IIngredientInstanceSorter;
 import ruiseki.integratedterminals.capability.ingredient.sorter.ItemStackIdSorter;
 import ruiseki.integratedterminals.capability.ingredient.sorter.ItemStackNameSorter;
 import ruiseki.integratedterminals.capability.ingredient.sorter.ItemStackQuantitySorter;
-import ruiseki.integratedterminals.client.gui.container.GuiTerminalStorage;
+import ruiseki.integratedterminals.core.client.gui.GuiTerminalStorage;
 import ruiseki.integratedterminals.core.helpers.TerminalClientUtils;
 import ruiseki.integratedterminals.core.terminalstorage.query.SearchMode;
 import ruiseki.okcore.client.gui.RenderItemExtendedSlotCount;
@@ -185,6 +185,11 @@ public class IngredientComponentTerminalStorageHandlerItemStack
 
         IIngredientMatcher<ItemStack, Integer> matcher = IngredientComponent.ITEMSTACK.getMatcher();
 
+        // Limit transfer to 64 at a time
+        if (maxInstance.stackSize > 64) {
+            maxInstance.stackSize = 64;
+        }
+
         Slot containerSlot = container.getSlot(containerSlotIndex);
         if (transferFullSelection && player != null && player.inventory.getItemStack() == null) {
             // Pick up container slot contents if not empty
@@ -192,6 +197,7 @@ public class IngredientComponentTerminalStorageHandlerItemStack
             if (containerStack != null
                 && !matcher.matches(containerStack, maxInstance, matcher.getExactMatchNoQuantityCondition())
                 && containerSlot.canTakeStack(player)) {
+                containerSlot.onPickupFromSlot(player, containerStack);
                 player.inventory.setItemStack(containerStack);
                 containerSlot.putStack(null);
             }

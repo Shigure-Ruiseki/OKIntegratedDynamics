@@ -1,9 +1,12 @@
 package ruiseki.integrateddynamics;
 
+import java.io.IOException;
+
 import net.minecraft.command.ICommandSender;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.util.ForgeDirection;
 
 import org.apache.logging.log4j.Level;
 
@@ -33,6 +36,7 @@ import ruiseki.integrateddynamics.api.item.IVariableFacadeHandlerRegistry;
 import ruiseki.integrateddynamics.api.logicprogrammer.ILogicProgrammerElementTypeRegistry;
 import ruiseki.integrateddynamics.api.network.INetworkCraftingHandlerRegistry;
 import ruiseki.integrateddynamics.api.part.IPartTypeRegistry;
+import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.integrateddynamics.api.part.aspect.IAspectRegistry;
 import ruiseki.integrateddynamics.block.BlockCableConfig;
 import ruiseki.integrateddynamics.capability.ingredient.IngredientComponentCapabilities;
@@ -76,11 +80,14 @@ import ruiseki.integrateddynamics.part.aspect.Aspects;
 import ruiseki.okcore.client.gui.GuiHandler;
 import ruiseki.okcore.config.ConfigHandler;
 import ruiseki.okcore.config.extendedconfig.BlockItemConfigReference;
+import ruiseki.okcore.datastructure.DimPos;
 import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.init.ItemCreativeTab;
 import ruiseki.okcore.init.ModBaseVersionable;
 import ruiseki.okcore.item.BucketRegistry;
 import ruiseki.okcore.item.IBucketRegistry;
+import ruiseki.okcore.network.ExtendedBuffer;
+import ruiseki.okcore.network.PacketCodec;
 import ruiseki.okcore.persist.world.GlobalCounters;
 import ruiseki.okcore.proxy.ICommonProxy;
 
@@ -184,6 +191,27 @@ public class IntegratedDynamics extends ModBaseVersionable {
             ValueTypeWorldRenderers.load();
             VariableModelProviders.load();
         }
+
+        PacketCodec.registerCodecAction(PartPos.class, new PacketCodec.ICodecAction() {
+
+            @Override
+            public void encode(Object o, ExtendedBuffer extendedBuffer) throws IOException {
+                PartPos partPos = (PartPos) o;
+                PacketCodec.getAction(DimPos.class)
+                    .encode(partPos.getPos(), extendedBuffer);
+                PacketCodec.getAction(ForgeDirection.class)
+                    .encode(partPos.getSide(), extendedBuffer);
+            }
+
+            @Override
+            public Object decode(ExtendedBuffer extendedBuffer) {
+                DimPos pos = (DimPos) PacketCodec.getAction(DimPos.class)
+                    .decode(extendedBuffer);
+                ForgeDirection side = (ForgeDirection) PacketCodec.getAction(ForgeDirection.class)
+                    .decode(extendedBuffer);
+                return PartPos.of(pos, side);
+            }
+        });
 
         super.preInit(event);
         if (MinecraftHelpers.isClientSide()) {

@@ -11,7 +11,7 @@ import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.commoncapabilities.api.ingredient.IIngredientSerializer;
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
 import ruiseki.integratedterminals.core.terminalstorage.TerminalStorageTabIngredientComponentClient;
-import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorage;
+import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorageBase;
 import ruiseki.okcore.network.CodecField;
 import ruiseki.okcore.network.PacketCodec;
 
@@ -55,8 +55,8 @@ public class TerminalStorageIngredientUpdateActiveStorageIngredientPacket<T> ext
     @Override
     @SideOnly(Side.CLIENT)
     public void actionClient(World world, EntityPlayer player) {
-        if (player.openContainer instanceof ContainerTerminalStorage) {
-            ContainerTerminalStorage container = ((ContainerTerminalStorage) player.openContainer);
+        if (player.openContainer instanceof ContainerTerminalStorageBase) {
+            ContainerTerminalStorageBase container = ((ContainerTerminalStorageBase) player.openContainer);
             TerminalStorageTabIngredientComponentClient<T, ?> tab = (TerminalStorageTabIngredientComponentClient<T, ?>) container
                 .getTabClient(tabId);
             IIngredientSerializer<T, ?> serializer = getComponent().getSerializer();

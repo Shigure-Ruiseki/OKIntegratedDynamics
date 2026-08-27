@@ -32,7 +32,7 @@ import ruiseki.commoncapabilities.api.ingredient.PrototypedIngredient;
 import ruiseki.integratedterminals.api.terminalstorage.crafting.ITerminalCraftingPlan;
 import ruiseki.integratedterminals.api.terminalstorage.crafting.TerminalCraftingJobStatus;
 import ruiseki.integratedterminals.capability.ingredient.IngredientComponentTerminalStorageHandlerConfig;
-import ruiseki.integratedterminals.client.gui.container.GuiTerminalStorage;
+import ruiseki.integratedterminals.core.client.gui.GuiTerminalStorage;
 import ruiseki.okcore.client.gui.RenderItemExtendedSlotCount;
 import ruiseki.okcore.client.gui.component.GuiScrollBar;
 import ruiseki.okcore.client.gui.image.Image;

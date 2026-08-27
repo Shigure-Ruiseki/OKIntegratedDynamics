@@ -6,24 +6,24 @@ import net.minecraft.inventory.Slot;
 
 import cpw.mods.fml.common.eventhandler.Event;
 import ruiseki.integratedterminals.api.terminalstorage.ITerminalStorageTabCommon;
-import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorage;
+import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorageBase;
 
 /**
  * An event that is emitted on the Forge event bus after
  * {@link ITerminalStorageTabCommon#loadSlots(Container, int, EntityPlayer, PartTypeTerminalStorage.State)}
  * is called.
- * 
+ *
  * @author rubensworks
  */
 public class TerminalStorageTabCommonLoadSlotsEvent extends Event {
 
     private final ITerminalStorageTabCommon commonTab;
-    private final ContainerTerminalStorage container;
+    private final ContainerTerminalStorageBase container;
 
     private List<Slot> slots;
 
     public TerminalStorageTabCommonLoadSlotsEvent(ITerminalStorageTabCommon commonTab,
-        ContainerTerminalStorage container, List<Slot> slots) {
+        ContainerTerminalStorageBase container, List<Slot> slots) {
         this.commonTab = commonTab;
         this.container = container;
 
@@ -34,7 +34,7 @@ public class TerminalStorageTabCommonLoadSlotsEvent extends Event {
         return commonTab;
     }
 
-    public ContainerTerminalStorage getContainer() {
+    public ContainerTerminalStorageBase getContainer() {
         return container;
     }
 

@@ -18,15 +18,14 @@ import ruiseki.commoncapabilities.api.ingredient.storage.IIngredientComponentSto
 import ruiseki.integratedterminals.api.terminalstorage.ITerminalStorageTabCommon;
 import ruiseki.integratedterminals.core.terminalstorage.TerminalStorageTabIngredientComponentItemStackCraftingCommon;
 import ruiseki.integratedterminals.core.terminalstorage.TerminalStorageTabIngredientComponentServer;
-import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorage;
+import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorageBase;
 import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientItemStackCraftingGridClear;
-import ruiseki.integratedterminals.part.PartTypeTerminalStorage;
 import ruiseki.okcore.network.CodecField;
 import ruiseki.okcore.network.PacketCodec;
 
 /**
  * Packet for setting the crafting grid recipe and filling it with items.
- * 
+ *
  * @author rubensworks
  *
  */
@@ -66,14 +65,13 @@ public class TerminalStorageIngredientItemStackCraftingGridSetRecipe extends Pac
 
     @Override
     public void actionServer(World world, EntityPlayerMP player) {
-        if (player.openContainer instanceof ContainerTerminalStorage) {
-            ContainerTerminalStorage container = ((ContainerTerminalStorage) player.openContainer);
+        if (player.openContainer instanceof ContainerTerminalStorageBase) {
+            ContainerTerminalStorageBase container = ((ContainerTerminalStorageBase) player.openContainer);
             ITerminalStorageTabCommon tabCommon = container.getTabCommon(tabId);
             if (tabCommon instanceof TerminalStorageTabIngredientComponentItemStackCraftingCommon) {
                 TerminalStorageTabIngredientComponentServer<ItemStack, Integer> tabServerCrafting = (TerminalStorageTabIngredientComponentServer<ItemStack, Integer>) container
                     .getTabServer(tabId);
                 TerminalStorageTabIngredientComponentItemStackCraftingCommon tabCommonCrafting = (TerminalStorageTabIngredientComponentItemStackCraftingCommon) tabCommon;
-                PartTypeTerminalStorage.State partState = container.getPartState();
                 int slotOffset = tabCommonCrafting.getSlotCrafting().slotNumber;
 
                 // Clear current grid into storage

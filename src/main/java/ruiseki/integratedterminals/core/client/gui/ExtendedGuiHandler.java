@@ -17,7 +17,7 @@ import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.core.part.PartTypeBase;
-import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorage;
+import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorageBase;
 import ruiseki.okcore.client.gui.GuiHandler;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.helper.MinecraftHelpers;
@@ -25,7 +25,7 @@ import ruiseki.okcore.init.ModBase;
 
 /**
  * An extension of the default cyclops gui handler with support for some more gui types.
- * 
+ *
  * @author rubensworks
  */
 public class ExtendedGuiHandler extends GuiHandler {
@@ -33,12 +33,12 @@ public class ExtendedGuiHandler extends GuiHandler {
     /**
      * Gui type for guis for selecting crafting options.
      */
-    public static final GuiType<Pair<ForgeDirection, CraftingOptionGuiData<?, ?>>> CRAFTING_OPTION = GuiType
+    public static final GuiType<Pair<ForgeDirection, CraftingOptionGuiData<?, ?, ?>>> CRAFTING_OPTION = GuiType
         .create(true);
     /**
      * Gui type for storage terminals with a preselected tab and channel.
      */
-    public static final GuiType<Pair<ForgeDirection, ContainerTerminalStorage.InitTabData>> TERMINAL_STORAGE = GuiType
+    public static final GuiType<Pair<ForgeDirection, ContainerTerminalStorageBase.InitTabData>> TERMINAL_STORAGE = GuiType
         .create(true);
     /**
      * Gui type for guis for selecting crafting options.
@@ -53,12 +53,23 @@ public class ExtendedGuiHandler extends GuiHandler {
                     new BlockPos(x, y, z),
                     dataIn.getLeft());
                 if (data == null) return null;
-                Constructor<? extends Container> containerConstructor = containerClass.getConstructor(
-                    EntityPlayer.class,
-                    PartTarget.class,
-                    IPartContainer.class,
-                    IPartType.class,
-                    CraftingOptionGuiData.class);
+                Constructor<? extends Container> containerConstructor;
+                try {
+                    containerConstructor = containerClass.getConstructor(
+                        EntityPlayer.class,
+                        PartTarget.class,
+                        IPartContainer.class,
+                        data.getMiddle()
+                            .getClass(),
+                        CraftingOptionGuiData.class);
+                } catch (NoSuchMethodException e) {
+                    containerConstructor = containerClass.getConstructor(
+                        EntityPlayer.class,
+                        PartTarget.class,
+                        IPartContainer.class,
+                        IPartType.class,
+                        CraftingOptionGuiData.class);
+                }
                 return containerConstructor
                     .newInstance(player, data.getRight(), data.getLeft(), data.getMiddle(), dataIn.getRight());
             } catch (InstantiationException | IllegalAccessException | InvocationTargetException
@@ -75,12 +86,23 @@ public class ExtendedGuiHandler extends GuiHandler {
                         new BlockPos(x, y, z),
                         dataIn.getLeft());
                     if (data == null) return null;
-                    Constructor<? extends GuiScreen> guiConstructor = guiClass.getConstructor(
-                        EntityPlayer.class,
-                        PartTarget.class,
-                        IPartContainer.class,
-                        IPartType.class,
-                        CraftingOptionGuiData.class);
+                    Constructor<? extends GuiScreen> guiConstructor;
+                    try {
+                        guiConstructor = guiClass.getConstructor(
+                            EntityPlayer.class,
+                            PartTarget.class,
+                            IPartContainer.class,
+                            data.getMiddle()
+                                .getClass(),
+                            CraftingOptionGuiData.class);
+                    } catch (NoSuchMethodException e) {
+                        guiConstructor = guiClass.getConstructor(
+                            EntityPlayer.class,
+                            PartTarget.class,
+                            IPartContainer.class,
+                            IPartType.class,
+                            CraftingOptionGuiData.class);
+                    }
                     return guiConstructor
                         .newInstance(player, data.getRight(), data.getLeft(), data.getMiddle(), dataIn.getRight());
                 } catch (InstantiationException | IllegalAccessException | InvocationTargetException
@@ -105,15 +127,15 @@ public class ExtendedGuiHandler extends GuiHandler {
                         PartTarget.class,
                         IPartContainer.class,
                         data.getMiddle()
-                            .getPartTypeClass(),
-                        ContainerTerminalStorage.InitTabData.class);
+                            .getClass(),
+                        ContainerTerminalStorageBase.InitTabData.class);
                 } catch (NoSuchMethodException e) {
                     containerConstructor = containerClass.getConstructor(
                         EntityPlayer.class,
                         PartTarget.class,
                         IPartContainer.class,
                         IPartType.class,
-                        ContainerTerminalStorage.InitTabData.class);
+                        ContainerTerminalStorageBase.InitTabData.class);
                 }
                 return containerConstructor
                     .newInstance(player, data.getRight(), data.getLeft(), data.getMiddle(), in.getRight());
@@ -138,15 +160,15 @@ public class ExtendedGuiHandler extends GuiHandler {
                             PartTarget.class,
                             IPartContainer.class,
                             data.getMiddle()
-                                .getPartTypeClass(),
-                            ContainerTerminalStorage.InitTabData.class);
+                                .getClass(),
+                            ContainerTerminalStorageBase.InitTabData.class);
                     } catch (NoSuchMethodException e) {
                         guiConstructor = guiClass.getConstructor(
                             EntityPlayer.class,
                             PartTarget.class,
                             IPartContainer.class,
                             IPartType.class,
-                            ContainerTerminalStorage.InitTabData.class);
+                            ContainerTerminalStorageBase.InitTabData.class);
                     }
                     return guiConstructor
                         .newInstance(player, data.getRight(), data.getLeft(), data.getMiddle(), in.getRight());
@@ -165,12 +187,23 @@ public class ExtendedGuiHandler extends GuiHandler {
                     new BlockPos(x, y, z),
                     dataIn.getLeft());
                 if (data == null) return null;
-                Constructor<? extends Container> containerConstructor = containerClass.getConstructor(
-                    EntityPlayer.class,
-                    PartTarget.class,
-                    IPartContainer.class,
-                    IPartType.class,
-                    CraftingJobGuiData.class);
+                Constructor<? extends Container> containerConstructor;
+                try {
+                    containerConstructor = containerClass.getConstructor(
+                        EntityPlayer.class,
+                        PartTarget.class,
+                        IPartContainer.class,
+                        data.getMiddle()
+                            .getClass(),
+                        CraftingJobGuiData.class);
+                } catch (NoSuchMethodException e) {
+                    containerConstructor = containerClass.getConstructor(
+                        EntityPlayer.class,
+                        PartTarget.class,
+                        IPartContainer.class,
+                        IPartType.class,
+                        CraftingJobGuiData.class);
+                }
                 return containerConstructor
                     .newInstance(player, data.getRight(), data.getLeft(), data.getMiddle(), dataIn.getRight());
             } catch (InstantiationException | IllegalAccessException | InvocationTargetException
@@ -187,12 +220,23 @@ public class ExtendedGuiHandler extends GuiHandler {
                         new BlockPos(x, y, z),
                         dataIn.getLeft());
                     if (data == null) return null;
-                    Constructor<? extends GuiScreen> guiConstructor = guiClass.getConstructor(
-                        EntityPlayer.class,
-                        PartTarget.class,
-                        IPartContainer.class,
-                        IPartType.class,
-                        CraftingJobGuiData.class);
+                    Constructor<? extends GuiScreen> guiConstructor;
+                    try {
+                        guiConstructor = guiClass.getConstructor(
+                            EntityPlayer.class,
+                            PartTarget.class,
+                            IPartContainer.class,
+                            data.getMiddle()
+                                .getClass(),
+                            CraftingJobGuiData.class);
+                    } catch (NoSuchMethodException e) {
+                        guiConstructor = guiClass.getConstructor(
+                            EntityPlayer.class,
+                            PartTarget.class,
+                            IPartContainer.class,
+                            IPartType.class,
+                            CraftingJobGuiData.class);
+                    }
                     return guiConstructor
                         .newInstance(player, data.getRight(), data.getLeft(), data.getMiddle(), dataIn.getRight());
                 } catch (InstantiationException | IllegalAccessException | InvocationTargetException
