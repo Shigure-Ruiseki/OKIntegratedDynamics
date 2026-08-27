@@ -165,11 +165,20 @@ public class IngredientComponentTerminalStorageHandlerItemStack
     @Override
     public int throwIntoWorld(IIngredientComponentStorage<ItemStack, Integer> storage, ItemStack maxInstance,
         EntityPlayer player) {
-        if (maxInstance == null || maxInstance.getItem() == null) {
+        if (maxInstance == null || maxInstance.getItem() == null || maxInstance.stackSize <= 0) {
             return 0;
         }
-        ItemStack extracted = storage.extract(maxInstance, ItemMatch.EXACT, false);
-        if (extracted != null) {
+
+        ItemStack targetInstance = maxInstance.copy();
+        int maxStackSize = targetInstance.getMaxStackSize();
+        if (targetInstance.stackSize > maxStackSize) {
+            targetInstance.stackSize = maxStackSize;
+        }
+
+        ItemStack extracted = storage.extract(targetInstance, ItemMatch.EXACT, false);
+        if (extracted != null && extracted.stackSize > 0) {
+            extracted.stackSize = Math.min(extracted.stackSize, maxStackSize);
+
             player.dropPlayerItemWithRandomChoice(extracted, true);
             return extracted.stackSize;
         }
