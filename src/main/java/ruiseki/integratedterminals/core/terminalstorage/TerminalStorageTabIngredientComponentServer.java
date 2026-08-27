@@ -487,7 +487,7 @@ public class TerminalStorageTabIngredientComponentServer<T, M>
                 updateActivePlayerStack = true;
                 break;
             case PLAYER_QUICK_MOVE:
-                viewHandler.extractMaxFromContainerSlot(storage, container, hoveredContainerSlot, player.inventory);
+                viewHandler.extractMaxFromContainerSlot(storage, container, hoveredContainerSlot, player.inventory, -1);
                 break;
         }
 

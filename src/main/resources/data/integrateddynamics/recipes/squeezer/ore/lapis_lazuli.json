@@ -5,20 +5,23 @@
     "items": [
       {
         "item": {
-          "item": "minecraft:lapis_lazuli",
+          "item": "minecraft:dye",
+          "meta": 11,
           "count": 8
         }
       },
       {
         "item": {
-          "item": "minecraft:lapis_lazuli",
+          "item": "minecraft:dye",
+          "meta": 11,
           "count": 2
         },
         "chance": 0.5
       },
       {
         "item": {
-          "item": "minecraft:lapis_lazuli",
+          "item": "minecraft:dye",
+          "meta": 11,
           "count": 2
         },
         "chance": 0.5

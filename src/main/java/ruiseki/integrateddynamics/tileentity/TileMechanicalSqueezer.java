@@ -124,6 +124,7 @@ public class TileMechanicalSqueezer extends TileMechanicalMachine<IInventory, Re
 
         if (!simulate) {
             this.decrStackSize(SLOT_INPUT, 1);
+            this.markDirty();
         }
 
         return true;

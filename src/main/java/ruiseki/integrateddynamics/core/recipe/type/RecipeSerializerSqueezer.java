@@ -29,9 +29,16 @@ import ruiseki.okcore.recipe.ingredient.Ingredient;
  */
 public class RecipeSerializerSqueezer implements IRecipeSerializer<RecipeSqueezer> {
 
+    @Nullable
     protected static RecipeSqueezer.ItemStackChance getJsonItemStackChance(JsonObject json) {
         ItemStack itemStack = RecipeSerializerHelpers
             .getJsonItemStackOrTag(json, true, List.of(GeneralConfig.recipeTagOutputModPriorities));
+
+        // Return null if the tag/item resolution yielded no valid stack
+        if (itemStack == null) {
+            return null;
+        }
+
         float chance = GsonHelpers.getAsFloat(json, "chance", 1.0F);
         return new RecipeSqueezer.ItemStackChance(itemStack, chance);
     }
@@ -44,7 +51,11 @@ public class RecipeSerializerSqueezer implements IRecipeSerializer<RecipeSqueeze
             JsonArray jsonElements = element.getAsJsonArray();
             NonNullList<RecipeSqueezer.ItemStackChance> elements = NonNullList.create();
             for (JsonElement jsonElement : jsonElements) {
-                elements.add(getJsonItemStackChance(jsonElement.getAsJsonObject()));
+                RecipeSqueezer.ItemStackChance chanceStack = getJsonItemStackChance(jsonElement.getAsJsonObject());
+                // Only add valid, non-null result items
+                if (chanceStack != null) {
+                    elements.add(chanceStack);
+                }
             }
             return elements;
         } else {

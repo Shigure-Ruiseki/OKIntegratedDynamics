@@ -22,7 +22,7 @@ import ruiseki.okcore.recipe.RecipeManager;
 
 /**
  * A part entity for the mechanical drying basin.
- * 
+ *
  * @author rubensworks
  */
 public class TileMechanicalDryingBasin extends TileMechanicalMachine<IInventoryFluid, RecipeMechanicalDryingBasin>
@@ -141,6 +141,7 @@ public class TileMechanicalDryingBasin extends TileMechanicalMachine<IInventoryF
             if (!recipe.getInputIngredient()
                 .isEmpty()) {
                 this.decrStackSize(SLOT_INPUT, 1);
+                this.markDirty();
             }
         }
 

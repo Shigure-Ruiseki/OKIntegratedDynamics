@@ -252,20 +252,26 @@ public class IngredientComponentTerminalStorageHandlerItemStack
 
     @Override
     public void extractMaxFromContainerSlot(IIngredientComponentStorage<ItemStack, Integer> storage,
-        Container container, int containerSlot, InventoryPlayer playerInventory) {
+        Container container, int containerSlot, InventoryPlayer playerInventory, int limit) {
         Slot slot = container.getSlot(containerSlot);
-        ItemStack toMove = slot.getStack();
-        if (toMove != null && toMove.getItem() != null) {
-            slot.putStack(null);
-            ItemStack remainingStack = storage.insert(toMove, false);
-            if (remainingStack != null) {
-                if (!slot.getHasStack()) {
-                    slot.putStack(remainingStack);
-                } else {
-                    playerInventory.addItemStackToInventory(remainingStack);
+        if (slot.canTakeStack(playerInventory.player)) {
+            ItemStack toMove = slot.decrStackSize(limit == -1 ? Integer.MAX_VALUE : limit);
+            if (toMove != null) {
+                // The following code is a bit convoluted to handle cases where the container and the storage point to
+                // the same inventory.
+                ItemStack remainingStack = storage.insert(toMove, false);
+                if (remainingStack != null) {
+                    // Check if the slot is still empty, because the storage may be linked to the container in some
+                    // exotic cases (e.g. player interfaces).
+                    if (!slot.getHasStack()) {
+                        slot.putStack(remainingStack);
+                    } else {
+                        // Simply add the remainder to the player's container
+                        playerInventory.addItemStackToInventory(remainingStack);
+                    }
                 }
+                container.detectAndSendChanges();
             }
-            container.detectAndSendChanges();
         }
     }
 

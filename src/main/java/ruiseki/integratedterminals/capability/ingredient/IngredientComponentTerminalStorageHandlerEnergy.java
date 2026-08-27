@@ -10,6 +10,7 @@ import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
+import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 
 import org.jetbrains.annotations.Nullable;
@@ -217,20 +218,25 @@ public class IngredientComponentTerminalStorageHandlerEnergy
 
     @Override
     public void extractMaxFromContainerSlot(IIngredientComponentStorage<Integer, Boolean> storage, Container container,
-        int containerSlot, InventoryPlayer playerInventory) {
-        ItemStack toMoveStack = container.getSlot(containerSlot)
-            .getStack();
-        IEnergyStorage energyStorage = CapabilityHelpers.getCapability(toMoveStack, CapabilityEnergy.ENERGY)
-            .getOrNull();
-        if (energyStorage != null) {
-            IIngredientComponentStorage<Integer, Boolean> itemStorage = getEnergyStorage(
-                storage.getComponent(),
-                energyStorage);
-            try {
-                IngredientStorageHelpers.moveIngredientsIterative(itemStorage, storage, Long.MAX_VALUE, false);
-            } catch (InconsistentIngredientInsertionException e) {
-                // Ignore
-            }
+        int containerSlot, InventoryPlayer playerInventory, int limit) {
+        Slot slot = container.getSlot(containerSlot);
+        if (slot.canTakeStack(playerInventory.player)) {
+            ItemStack toMoveStack = slot.getStack();
+            CapabilityHelpers.getCapability(toMoveStack, CapabilityEnergy.ENERGY)
+                .ifPresent(energyStorage -> {
+                    IIngredientComponentStorage<Integer, Boolean> itemStorage = getEnergyStorage(
+                        storage.getComponent(),
+                        energyStorage);
+                    try {
+                        IngredientStorageHelpers.moveIngredientsIterative(
+                            itemStorage,
+                            storage,
+                            limit == -1 ? Long.MAX_VALUE : limit,
+                            false);
+                    } catch (InconsistentIngredientInsertionException e) {
+                        // Ignore
+                    }
+                });
         }
     }
 

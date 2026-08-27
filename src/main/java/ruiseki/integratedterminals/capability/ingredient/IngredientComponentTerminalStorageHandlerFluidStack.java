@@ -11,6 +11,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.init.Items;
 import net.minecraft.inventory.Container;
+import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.fluids.FluidStack;
 
@@ -228,25 +229,29 @@ public class IngredientComponentTerminalStorageHandlerFluidStack
 
     @Override
     public void extractMaxFromContainerSlot(IIngredientComponentStorage<FluidStack, Integer> storage,
-        Container container, int containerSlot, InventoryPlayer playerInventory) {
-        ItemStack toMoveStack = container.getSlot(containerSlot)
-            .getStack();
-        IFluidHandlerItem fluidHandler = CapabilityHelpers
-            .getCapability(toMoveStack, CapabilityFluidHandler.FLUID_HANDLER_ITEM)
-            .getOrNull();
-        if (fluidHandler != null) {
-            IIngredientComponentStorage<FluidStack, Integer> itemStorage = getFluidStorage(
-                storage.getComponent(),
-                fluidHandler);
-            try {
-                IngredientStorageHelpers.moveIngredientsIterative(itemStorage, storage, Long.MAX_VALUE, false);
-            } catch (InconsistentIngredientInsertionException e) {
-                // Ignore
-            }
+        Container container, int containerSlot, InventoryPlayer playerInventory, int limit) {
+        Slot slot = container.getSlot(containerSlot);
+        if (slot.canTakeStack(playerInventory.player)) {
+            ItemStack toMoveStack = slot.getStack();
+            CapabilityHelpers.getCapability(toMoveStack, CapabilityFluidHandler.FLUID_HANDLER_ITEM)
+                .ifPresent(fluidHandler -> {
+                    IIngredientComponentStorage<FluidStack, Integer> itemStorage = getFluidStorage(
+                        storage.getComponent(),
+                        fluidHandler);
+                    try {
+                        IngredientStorageHelpers.moveIngredientsIterative(
+                            itemStorage,
+                            storage,
+                            limit == -1 ? Long.MAX_VALUE : limit,
+                            false);
+                    } catch (InconsistentIngredientInsertionException e) {
+                        // Ignore
+                    }
 
-            container.getSlot(containerSlot)
-                .putStack(fluidHandler.getContainer());
-            container.detectAndSendChanges();
+                    container.getSlot(containerSlot)
+                        .putStack(fluidHandler.getContainer());
+                    container.detectAndSendChanges();
+                });
         }
     }
 
