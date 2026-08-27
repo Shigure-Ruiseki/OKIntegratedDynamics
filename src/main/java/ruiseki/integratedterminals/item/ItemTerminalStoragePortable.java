@@ -28,13 +28,11 @@ import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 import ruiseki.okcore.config.extendedconfig.ItemConfig;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.NonNullList;
-import ruiseki.okcore.datastructure.Wrapper;
 import ruiseki.okcore.helper.InventoryHelpers;
 import ruiseki.okcore.helper.ItemNBTHelpers;
 import ruiseki.okcore.helper.ItemStackHelpers;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.item.ItemGui;
-import ruiseki.okcore.persist.IDirtyMarkListener;
 
 /**
  * A portable storage terminal.
@@ -90,7 +88,7 @@ public class ItemTerminalStoragePortable extends ItemGui {
 
                 // Gửi actionbar text thông báo tới player
                 player.addChatComponentMessage(
-                    new ChatComponentTranslation("item.integratedterminals.terminal_storage_portable.status.linked"));
+                    new ChatComponentTranslation("item.items.integratedterminals.terminal_storage_portable.status.linked"));
 
                 return true;
             }
@@ -176,8 +174,7 @@ public class ItemTerminalStoragePortable extends ItemGui {
             tagStates.setTag(playerKey, state.getTag());
             return state;
         } else {
-            return new TerminalStorageState(
-                tagStates.getCompoundTag(playerKey));
+            return new TerminalStorageState(tagStates.getCompoundTag(playerKey));
         }
     }
 }

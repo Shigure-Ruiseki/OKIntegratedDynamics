@@ -12,6 +12,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.integratedterminals.IntegratedTerminals;
+import ruiseki.integratedterminals.core.client.gui.CraftingJobGuiData;
 import ruiseki.integratedterminals.core.client.gui.CraftingOptionGuiData;
 import ruiseki.integratedterminals.core.client.gui.ExtendedGuiHandler;
 import ruiseki.okcore.network.CodecField;

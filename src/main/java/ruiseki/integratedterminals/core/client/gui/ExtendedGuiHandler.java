@@ -55,10 +55,6 @@ public class ExtendedGuiHandler extends GuiHandler {
      */
     public static final GuiType<Pair<Integer, ContainerTerminalStorageBase.InitTabData>> TERMINAL_STORAGE_ITEM = GuiType
         .create(true);
-    /**
-     * Gui type for crafting plans (ITEM).
-     */
-    public static final GuiType<Pair<Integer, CraftingJobGuiData>> CRAFTING_PLAN_ITEM = GuiType.create(true);
 
     static {
         CRAFTING_OPTION_PART.setContainerConstructor((id, player, world, x, y, z, containerClass, dataIn) -> {
@@ -307,32 +303,6 @@ public class ExtendedGuiHandler extends GuiHandler {
                         EntityPlayer.class,
                         Integer.TYPE,
                         ContainerTerminalStorageBase.InitTabData.class);
-                    return guiConstructor.newInstance(player, dataIn.getLeft(), dataIn.getRight());
-                } catch (InstantiationException | IllegalAccessException | InvocationTargetException
-                    | NoSuchMethodException e) {
-                    e.printStackTrace();
-                }
-                return null;
-            });
-        }
-
-        CRAFTING_PLAN_ITEM.setContainerConstructor((id, player, world, x, y, z, containerClass, dataIn) -> {
-            try {
-                Constructor<? extends Container> containerConstructor = containerClass
-                    .getConstructor(EntityPlayer.class, Integer.TYPE, CraftingJobGuiData.class);
-                return containerConstructor.newInstance(player, dataIn.getLeft(), dataIn.getRight());
-            } catch (InstantiationException | IllegalAccessException | InvocationTargetException
-                | NoSuchMethodException e) {
-                e.printStackTrace();
-            }
-            return null;
-        });
-
-        if (MinecraftHelpers.isClientSide()) {
-            CRAFTING_PLAN_ITEM.setGuiConstructor((id, player, world, x, y, z, guiClass, dataIn) -> {
-                try {
-                    Constructor<? extends GuiScreen> guiConstructor = guiClass
-                        .getConstructor(EntityPlayer.class, Integer.TYPE, CraftingJobGuiData.class);
                     return guiConstructor.newInstance(player, dataIn.getLeft(), dataIn.getRight());
                 } catch (InstantiationException | IllegalAccessException | InvocationTargetException
                     | NoSuchMethodException e) {

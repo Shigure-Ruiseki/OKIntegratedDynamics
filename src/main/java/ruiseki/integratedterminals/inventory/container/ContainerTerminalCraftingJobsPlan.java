@@ -44,7 +44,7 @@ public class ContainerTerminalCraftingJobsPlan extends ExtendedInventoryContaine
      */
     public ContainerTerminalCraftingJobsPlan(final EntityPlayer player, PartTarget target, IPartContainer partContainer,
         IPartType partType, CraftingJobGuiData craftingJobGuiData) {
-        super(player.inventory, GuiProviders.GUI_TERMINAL_STORAGE_CRAFTNG_PLAN_PART);
+        super(player.inventory, GuiProviders.GUI_TERMINAL_STORAGE_CRAFTING_PLAN_PART);
 
         this.world = player.worldObj;
         this.target = target;

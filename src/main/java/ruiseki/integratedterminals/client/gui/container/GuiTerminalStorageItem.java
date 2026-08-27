@@ -2,7 +2,6 @@ package ruiseki.integratedterminals.client.gui.container;
 
 import net.minecraft.entity.player.EntityPlayer;
 
-import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.integratedterminals.core.client.gui.GuiTerminalStorage;
 import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorageBase;
 import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorageItem;

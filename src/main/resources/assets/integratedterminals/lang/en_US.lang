@@ -112,11 +112,11 @@ tile.blocks.integratedterminals.menril_glass.info=Illuminating glass
 tile.blocks.integratedterminals.chorus_glass.name=Chorus Glass
 tile.blocks.integratedterminals.chorus_glass.info=Passable glass
 # Items
-item.items.integratedterminals.terminal_storage_portable.name=Portable Storage Terminal",
-item.items.integratedterminals.terminal_storage_portable.info=Visually interact with the ingredients stored in the linked network. Right click on Omni-Directional Connector to link.",
-item.items.integratedterminals.terminal_storage_portable.status.no_network=No network has been linked. Right click on Omni-Directional Connector to link.",
-item.items.integratedterminals.terminal_storage_portable.status.invalid_network=The linked network could not be found",
-item.items.integratedterminals.terminal_storage_portable.status.linked=Linked to network",
+item.items.integratedterminals.terminal_storage_portable.name=Portable Storage Terminal
+item.items.integratedterminals.terminal_storage_portable.info=Visually interact with the ingredients stored in the linked network. Right click on Omni-Directional Connector to link.
+item.items.integratedterminals.terminal_storage_portable.status.no_network=No network has been linked. Right click on Omni-Directional Connector to link.
+item.items.integratedterminals.terminal_storage_portable.status.invalid_network=The linked network could not be found
+item.items.integratedterminals.terminal_storage_portable.status.linked=Linked to network
 # Part types
 parttype.parttypes.integratedterminals.terminal_storage.name=Storage Terminal
 parttype.parttypes.integratedterminals.terminal_storage.info=Visually interact with the ingredients stored in the network.

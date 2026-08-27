@@ -38,6 +38,10 @@ public class ContainerTerminalStorageItem extends ContainerTerminalStorageBase<I
         this.itemIndex = itemIndex;
     }
 
+    public ContainerTerminalStorageItem(EntityPlayer player, int itemIndex) {
+        this(player, itemIndex, null);
+    }
+
     public static INetwork getNetworkFromItem(ItemStack itemStack) {
         if (MinecraftHelpers.isClientSide()) {
             return null;

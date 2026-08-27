@@ -79,16 +79,16 @@ public class TerminalButtonItemStackCraftingGridJFMUYSearchSync implements
 
     @Override
     public String getTranslationKey() {
-        return "gui.integratedterminalscompat.terminal_storage.craftinggrid.jeisync";
+        return "gui.integratedcompat.terminal_storage.craftinggrid.jeisync";
     }
 
     @Override
     @SideOnly(Side.CLIENT)
     public void getTooltip(EntityPlayer player, boolean tooltipFlag, List<String> lines) {
-        lines.add(LangHelpers.localize("gui.integratedterminalscompat.terminal_storage.craftinggrid.jeisync.info"));
+        lines.add(LangHelpers.localize("gui.integratedcompat.terminal_storage.craftinggrid.jeisync.info"));
         lines.add(
             EnumChatFormatting.ITALIC + LangHelpers
-                .localize(active ? "general.cyclopscore.info.enabled" : "general.cyclopscore.info.disabled"));
+                .localize(active ? "general.okcore.info.enabled" : "general.okcore.info.disabled"));
     }
 
     public boolean isActive() {

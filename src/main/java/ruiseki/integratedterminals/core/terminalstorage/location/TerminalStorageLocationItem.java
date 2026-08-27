@@ -48,6 +48,19 @@ public class TerminalStorageLocationItem implements ITerminalStorageLocation<Int
         World world, EntityPlayerMP player) {
         Integer location = craftingOptionGuiData.getLocationInstance();
 
+        IntegratedTerminals._instance.getGuiHandler()
+            .setTemporaryData(ExtendedGuiHandler.CRAFTING_OPTION_ITEM, Pair.of(location, craftingOptionGuiData));
+
+        IntegratedTerminals._instance.getPacketHandler()
+            .sendToPlayer(new PacketSetCraftingDataItem(location, craftingOptionGuiData), player);
+
+        player.openGui(
+            IntegratedTerminals._instance,
+            GuiProviders.ID_GUI_TERMINAL_STORAGE_CRAFTING_PLAN_ITEM,
+            world,
+            (int) player.posX,
+            (int) player.posY,
+            (int) player.posZ);
     }
 
     @Override
@@ -63,7 +76,7 @@ public class TerminalStorageLocationItem implements ITerminalStorageLocation<Int
 
         player.openGui(
             IntegratedTerminals._instance,
-            GuiProviders.ID_GUI_TERMINAL_STORAGE_CRAFTNG_PLAN_ITEM,
+            GuiProviders.ID_GUI_TERMINAL_STORAGE_CRAFTING_PLAN_ITEM,
             world,
             (int) player.posX,
             (int) player.posY,
