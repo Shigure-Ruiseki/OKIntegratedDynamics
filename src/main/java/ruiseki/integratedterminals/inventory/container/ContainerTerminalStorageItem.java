@@ -53,7 +53,8 @@ public class ContainerTerminalStorageItem extends ContainerTerminalStorageBase<I
             return null;
         }
         for (PartPos pos : PartTypeConnectorOmniDirectional.LOADED_GROUPS.getPositions(groupId)) {
-            INetwork network = NetworkHelpers.getNetwork(pos);
+            INetwork network = NetworkHelpers.getNetwork(pos)
+                .getOrNull();
             if (network != null) {
                 return network;
             }

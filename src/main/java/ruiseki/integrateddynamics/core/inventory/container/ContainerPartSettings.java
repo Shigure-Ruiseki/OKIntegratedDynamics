@@ -160,7 +160,7 @@ public class ContainerPartSettings extends ExtendedInventoryContainer {
                 getPartType().setUpdateInterval(getPartState(), getLastUpdateValue());
                 DimPos dimPos = getTarget().getCenter()
                     .getPos();
-                INetwork network = NetworkHelpers.getNetwork(
+                INetwork network = NetworkHelpers.getNetworkChecked(
                     dimPos.getWorld(),
                     dimPos.getBlockPos(),
                     getTarget().getCenter()

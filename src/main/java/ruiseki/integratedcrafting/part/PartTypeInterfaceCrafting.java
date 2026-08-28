@@ -184,15 +184,17 @@ public class PartTypeInterfaceCrafting
     }
 
     protected void addTargetToNetwork(INetwork network, PartTarget pos, PartTypeInterfaceCrafting.State state) {
-        if (network.getCapability(getNetworkCapability())
-            .isPresent()) {
-            int channelCrafting = state.getChannelCrafting();
-            ICraftingNetwork craftingNetwork = network.getCapability(getNetworkCapability())
-                .getOrNull();
-            state.setTarget(pos);
-            state.setNetworks(network, craftingNetwork, NetworkHelpers.getPartNetwork(network), channelCrafting);
-            state.setShouldAddToCraftingNetwork(true);
-        }
+        network.getCapability(getNetworkCapability())
+            .ifPresent(craftingNetwork -> {
+                int channelCrafting = state.getChannelCrafting();
+                state.setTarget(pos);
+                state.setNetworks(
+                    network,
+                    craftingNetwork,
+                    NetworkHelpers.getPartNetworkChecked(network),
+                    channelCrafting);
+                state.setShouldAddToCraftingNetwork(true);
+            });
     }
 
     protected void removeTargetFromNetwork(INetwork network, PartPos pos, PartTypeInterfaceCrafting.State state) {
@@ -295,8 +297,10 @@ public class PartTypeInterfaceCrafting
         INetwork network, int channel) {
         IPositionedAddonsNetworkIngredients<T, M> storageNetwork = wrapper.getComponent()
             .getCapability(PositionedAddonsNetworkIngredientsHandlerConfig.CAPABILITY)
-            .getOrNull()
-            .getStorage(network);
+            .map(
+                n -> (IPositionedAddonsNetworkIngredients<T, M>) n.getStorage(network)
+                    .getOrNull())
+            .orElse(null);
         if (storageNetwork != null) {
             IIngredientComponentStorage<T, M> storage = storageNetwork.getChannel(channel);
             T remaining = storage.insert(wrapper.getInstance(), false);
@@ -588,7 +592,7 @@ public class PartTypeInterfaceCrafting
                 }
 
                 try {
-                    IPartNetwork partNetwork = NetworkHelpers.getPartNetwork(network);
+                    IPartNetwork partNetwork = NetworkHelpers.getPartNetworkChecked(network);
                     MinecraftForge.EVENT_BUS.post(
                         new PartVariableDrivenVariableContentsUpdatedEvent<>(
                             network,

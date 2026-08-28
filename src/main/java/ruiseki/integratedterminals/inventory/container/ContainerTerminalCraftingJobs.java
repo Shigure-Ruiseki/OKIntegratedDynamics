@@ -26,7 +26,7 @@ import ruiseki.okcore.inventory.container.ExtendedInventoryContainer;
 
 /**
  * Container for the crafting jobs overview gui.
- * 
+ *
  * @author rubensworks
  */
 public class ContainerTerminalCraftingJobs extends ExtendedInventoryContainer {
@@ -43,7 +43,7 @@ public class ContainerTerminalCraftingJobs extends ExtendedInventoryContainer {
 
     /**
      * Make a new instance.
-     * 
+     *
      * @param target        The target.
      * @param player        The player.
      * @param partContainer The part container.
@@ -57,7 +57,8 @@ public class ContainerTerminalCraftingJobs extends ExtendedInventoryContainer {
         this.partContainer = partContainer;
         this.partType = partType;
         this.world = player.worldObj;
-        this.network = NetworkHelpers.getNetwork(target.getCenter());
+        this.network = NetworkHelpers.getNetwork(target.getCenter())
+            .getOrNull();
 
         this.lastUpdate = 0;
         this.craftingJobs = Lists.newArrayList();

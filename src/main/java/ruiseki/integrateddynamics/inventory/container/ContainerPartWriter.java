@@ -19,6 +19,7 @@ import ruiseki.integrateddynamics.core.evaluate.variable.ValueHelpers;
 import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
 import ruiseki.integrateddynamics.core.inventory.container.ContainerMultipartAspects;
 import ruiseki.integrateddynamics.core.inventory.container.slot.SlotVariable;
+import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.helper.Helpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.helper.ValueNotifierHelpers;
@@ -96,21 +97,25 @@ public class ContainerPartWriter<P extends IPartTypeWriter<P, S> & IGuiContainer
     public void detectAndSendChanges() {
         super.detectAndSendChanges();
         try {
-            if (!MinecraftHelpers.isClientSide()) {
+            if (!player.worldObj.isRemote) {
+                // Update write value
                 Pair<String, Integer> readValue;
-                if (!getPartState().isEnabled()) {
+                S partState = getPartState();
+                if (!partState.isEnabled()) {
                     readValue = Pair.of("NO POWER", 0);
-                } else if (getPartState().hasVariable()) {
-                    INetwork network = NetworkHelpers.getNetwork(
-                        getPartContainer().getPosition()
+                } else if (partState.hasVariable()) {
+                    IPartContainer partContainer = getPartContainer();
+                    LazyOptional<INetwork> optionalNetwork = NetworkHelpers.getNetwork(
+                        partContainer.getPosition()
                             .getWorld(),
-                        getPartContainer().getPosition()
+                        partContainer.getPosition()
                             .getBlockPos(),
                         getTarget().getCenter()
                             .getSide());
-                    IPartNetwork partNetwork = NetworkHelpers.getPartNetwork(network);
+                    IPartNetwork partNetwork = optionalNetwork.map(NetworkHelpers::getPartNetworkChecked)
+                        .orElse(null);
                     if (partNetwork != null) {
-                        IVariable variable = getPartState().getVariable(network, partNetwork);
+                        IVariable variable = partState.getVariable(optionalNetwork.orElse(null), partNetwork);
                         readValue = ValueHelpers.getSafeReadableValue(variable);
                     } else {
                         readValue = Pair.of("NETWORK CORRUPTED!", Helpers.RGBToInt(255, 100, 0));
@@ -121,7 +126,7 @@ public class ContainerPartWriter<P extends IPartTypeWriter<P, S> & IGuiContainer
                 setWriteValue(readValue.getLeft(), readValue.getRight());
             }
         } catch (PartStateException e) {
-            getPlayer().closeScreen();
+            player.closeScreen();
         }
     }
 

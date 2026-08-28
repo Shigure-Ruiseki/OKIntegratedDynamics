@@ -78,7 +78,8 @@ public class ItemBlockCable extends ItemBlockMetadata {
         BlockCable blockCable, EntityLivingBase placer, boolean offsetAdded) {
         Block block = pos.getBlock(world);
         if (!block.isAir(world, pos.getX(), pos.getY(), pos.getZ())) {
-            ICableFakeable cable = CableHelpers.getCableFakeable(world, pos, side);
+            ICableFakeable cable = CableHelpers.getCableFakeable(world, pos, side)
+                .getOrNull();
             if (cable != null && !cable.isRealCable()) {
                 if (!world.isRemote) {
                     cable.setRealCable(true);

@@ -1,8 +1,8 @@
 package ruiseki.integrateddynamics.api;
 
-import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.util.ForgeDirection;
 
+import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.core.helper.PartHelpers;
 import ruiseki.okcore.datastructure.DimPos;
 
@@ -20,13 +20,12 @@ public class PartStateException extends IllegalArgumentException {
                     + "\nWorld loaded: %s\nChunk loaded: %s\nPart container: %s\nParts: %s",
                 dimPos,
                 side,
-                DimensionManager.getWorld(dimPos.getDimensionId()) != null,
+                dimPos.getWorld() != null,
                 dimPos.isLoaded(),
                 dimPos.isLoaded() ? PartHelpers.getPartContainer(dimPos, side) : null,
-                dimPos.isLoaded() && PartHelpers.getPartContainer(dimPos, side) != null
-                    ? PartHelpers.getPartContainer(dimPos, side)
-                        .getParts()
-                    : null));
+                dimPos.isLoaded() ? PartHelpers.getPartContainer(dimPos, side)
+                    .map(IPartContainer::getParts)
+                    .orElse(null) : null));
     }
 
 }

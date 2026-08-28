@@ -569,7 +569,6 @@ public class Aspects {
                 .buildRead();
 
             public static final IAspectRead<ValueObjectTypeItemStack.ValueItemStack, ValueObjectTypeItemStack> OBJECT_ITEM_STACK_SLOT = AspectReadBuilders.Inventory.BUILDER_ITEMSTACK
-                .handleTexture("read/inventory/itemstack")
                 .handle(AspectReadBuilders.PROP_GET_ITEMSTACK)
                 .buildRead();
 
@@ -642,7 +641,6 @@ public class Aspects {
                                 .getTarget()
                                 .getSide())))
                 .appendKind("recipeoutputbyinput")
-                .handleTexture("read/operator/recipehandler/recipeinput")
                 .buildRead();
             static {
                 Operators.REGISTRY.registerSerializer(
@@ -661,7 +659,6 @@ public class Aspects {
                                 .getTarget()
                                 .getSide())))
                 .appendKind("recipeinputsbyoutput")
-                .handleTexture("read/operator/recipehandler/recipeoutput")
                 .buildRead();
             static {
                 Operators.REGISTRY.registerSerializer(
@@ -680,7 +677,6 @@ public class Aspects {
                                 .getTarget()
                                 .getSide())))
                 .appendKind("recipesbyinput")
-                .handleTexture("read/operator/recipehandler/recipeinputlist")
                 .buildRead();
             static {
                 Operators.REGISTRY.registerSerializer(
@@ -699,7 +695,6 @@ public class Aspects {
                                 .getTarget()
                                 .getSide())))
                 .appendKind("recipesbyoutput")
-                .handleTexture("read/operator/recipehandler/recipeoutputlist")
                 .buildRead();
             static {
                 Operators.REGISTRY.registerSerializer(
@@ -718,7 +713,6 @@ public class Aspects {
                                 .getTarget()
                                 .getSide())))
                 .appendKind("recipebyinput")
-                .handleTexture("read/operator/recipehandler/recipeinputsingle")
                 .buildRead();
             static {
                 Operators.REGISTRY.registerSerializer(
@@ -737,7 +731,6 @@ public class Aspects {
                                 .getTarget()
                                 .getSide())))
                 .appendKind("recipebyoutput")
-                .handleTexture("read/operator/recipehandler/recipeoutputsingle")
                 .buildRead();
             static {
                 Operators.REGISTRY.registerSerializer(
@@ -749,7 +742,8 @@ public class Aspects {
             public static final IAspectValuePropagator<Pair<PartTarget, IAspectProperties>, IEnergyStorage> PROP_GET = input -> EnergyHelpers
                 .getEnergyStorage(
                     input.getLeft()
-                        .getTarget());
+                        .getTarget())
+                .getOrNull();
 
             public static final AspectBuilder<ValueTypeBoolean.ValueBoolean, ValueTypeBoolean, IEnergyStorage> BUILDER_BOOLEAN = AspectReadBuilders.BUILDER_BOOLEAN
                 .handle(PROP_GET, "fe");
@@ -1137,7 +1131,6 @@ public class Aspects {
 
                         return null;
                     })
-                    .handleTexture("write/double/effect/particle")
                     .buildWrite();
             }
         }

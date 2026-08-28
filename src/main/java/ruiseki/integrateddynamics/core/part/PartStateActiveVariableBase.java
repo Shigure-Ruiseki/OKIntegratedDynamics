@@ -88,7 +88,7 @@ public abstract class PartStateActiveVariableBase<P extends IPartType> extends P
 
     /**
      * Get the active variable in this state.
-     * 
+     *
      * @param <V>         The variable value type.
      * @param network     The network.
      * @param partNetwork The part network.
@@ -132,13 +132,13 @@ public abstract class PartStateActiveVariableBase<P extends IPartType> extends P
 
         // Refresh any contained variables
         PartPos center = target.getCenter();
-        INetwork network = NetworkHelpers.getNetwork(
+        NetworkHelpers.getNetwork(
             center.getPos()
                 .getWorld(),
             center.getPos()
                 .getBlockPos(),
-            center.getSide());
-        variableContainer.refreshVariables(network, inventory, false);
+            center.getSide())
+            .ifPresent(network -> variableContainer.refreshVariables(network, inventory, false));
     }
 
     /**

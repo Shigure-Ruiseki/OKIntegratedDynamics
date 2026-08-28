@@ -26,13 +26,14 @@ public class VariablestoreNetworkElement extends TileNetworkElement<TileVariable
     @Override
     public boolean onNetworkAddition(INetwork network) {
         return NetworkHelpers.getPartNetwork(network)
-            .addVariableContainer(getPos());
+            .map(partNetwork -> partNetwork.addVariableContainer(getPos()))
+            .orElse(false);
     }
 
     @Override
     public void onNetworkRemoval(INetwork network) {
         NetworkHelpers.getPartNetwork(network)
-            .removeVariableContainer(getPos());
+            .ifPresent(partNetwork -> partNetwork.removeVariableContainer(getPos()));
     }
 
     @Override

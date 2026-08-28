@@ -14,7 +14,7 @@ import ruiseki.integratedtunnels.core.part.PartStateRoundRobin;
 
 /**
  * A helper class for movement targets with a certain network type.
- * 
+ *
  * @author rubensworks
  */
 public interface IChanneledTarget<N extends IPositionedAddonsNetwork> {
@@ -43,7 +43,8 @@ public interface IChanneledTarget<N extends IPositionedAddonsNetwork> {
                 .getWorld(),
             pos.getPos()
                 .getBlockPos(),
-            pos.getSide());
+            pos.getSide())
+            .getOrNull();
         if (network == null) {
             IntegratedDynamics.clog(Level.ERROR, "Could not get the network for transfer as no network was found.");
             throw new PartStateException(pos.getPos(), pos.getSide());

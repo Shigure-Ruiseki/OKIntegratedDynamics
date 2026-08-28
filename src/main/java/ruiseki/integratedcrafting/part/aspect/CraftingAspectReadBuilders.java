@@ -32,7 +32,8 @@ public class CraftingAspectReadBuilders {
                 dimPos.getBlockPos(),
                 input.getLeft()
                     .getTarget()
-                    .getSide());
+                    .getSide())
+                .getOrNull();
             return Pair.of(
                 input.getRight(),
                 network != null ? network.getCapability(CraftingNetworkConfig.CAPABILITY) : LazyOptional.empty());

@@ -1,6 +1,7 @@
 package ruiseki.integrateddynamics.core.helper;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import net.minecraft.item.ItemBlock;
@@ -131,8 +132,8 @@ public final class Helpers {
         addInterfaceRetriever(new IInterfaceRetriever() {
 
             @Override
-            public <C> C getInterface(IBlockAccess world, BlockPos pos, Class<C> clazz) {
-                return TileHelpers.getSafeTile(world, pos, clazz);
+            public <C> Optional<C> getInterface(IBlockAccess world, BlockPos pos, Class<C> clazz) {
+                return Optional.ofNullable(TileHelpers.getSafeTile(world, pos, clazz));
             }
         });
     }
@@ -144,17 +145,16 @@ public final class Helpers {
      * @param pos   The position.
      * @param clazz The class to find.
      * @param <C>   The class type.
-     * @return The instance or null.
+     * @return The optional instance.
      */
-    private static <C> C getInterface(IBlockAccess world, BlockPos pos, Class<C> clazz) {
-        C instance;
+    private static <C> Optional<C> getInterface(IBlockAccess world, BlockPos pos, Class<C> clazz) {
         for (IInterfaceRetriever interfaceRetriever : INTERFACE_RETRIEVERS) {
-            instance = interfaceRetriever.getInterface(world, pos, clazz);
-            if (instance != null) {
-                return instance;
+            Optional<C> optionalInstance = interfaceRetriever.getInterface(world, pos, clazz);
+            if (optionalInstance.isPresent()) {
+                return optionalInstance;
             }
         }
-        return null;
+        return Optional.empty();
     }
 
     /**
@@ -163,11 +163,11 @@ public final class Helpers {
      * @param dimPos The dimensional position.
      * @param clazz  The class to find.
      * @param <C>    The class type.
-     * @return The instance or null.
+     * @return The optional instance.
      */
-    public static <C> C getInterface(DimPos dimPos, Class<C> clazz) {
+    public static <C> Optional<C> getInterface(DimPos dimPos, Class<C> clazz) {
         World world = dimPos.getWorld();
-        return world != null ? getInterface(world, dimPos.getBlockPos(), clazz) : null;
+        return world != null ? getInterface(world, dimPos.getBlockPos(), clazz) : Optional.empty();
     }
 
     /**
@@ -197,10 +197,14 @@ public final class Helpers {
          * @param pos   The position.
          * @param clazz The class to find.
          * @param <C>   The class type.
-         * @return The instance or null.
+         * @return The optional instance.
          */
-        public <C> C getInterface(IBlockAccess world, BlockPos pos, Class<C> clazz);
+        public <C> Optional<C> getInterface(IBlockAccess world, BlockPos pos, Class<C> clazz);
 
     }
 
+    @SuppressWarnings("unchecked")
+    public static <T extends Exception, R> R sneakyThrow(Exception t) throws T {
+        throw (T) t;
+    }
 }

@@ -565,20 +565,17 @@ public class AspectReadBuilders {
                 ValueTypeInteger.ValueInteger.of(IPositionedAddonsNetwork.WILDCARD_CHANNEL));
         }
 
-        public static final IAspectValuePropagator<Pair<PartTarget, IAspectProperties>, INetwork> PROP_GET_NETWORK = new IAspectValuePropagator<Pair<PartTarget, IAspectProperties>, INetwork>() {
-
-            @Override
-            public INetwork getOutput(Pair<PartTarget, IAspectProperties> input) {
-                DimPos dimPos = input.getLeft()
+        public static final IAspectValuePropagator<Pair<PartTarget, IAspectProperties>, INetwork> PROP_GET_NETWORK = input -> {
+            DimPos dimPos = input.getLeft()
+                .getTarget()
+                .getPos();
+            return NetworkHelpers.getNetwork(
+                dimPos.getWorld(),
+                dimPos.getBlockPos(),
+                input.getLeft()
                     .getTarget()
-                    .getPos();
-                return NetworkHelpers.getNetwork(
-                    dimPos.getWorld(),
-                    dimPos.getBlockPos(),
-                    input.getLeft()
-                        .getTarget()
-                        .getSide());
-            }
+                    .getSide())
+                .getOrNull();
         };
 
         public static final AspectBuilder<ValueTypeBoolean.ValueBoolean, ValueTypeBoolean, INetwork> BUILDER_BOOLEAN = AspectReadBuilders.BUILDER_BOOLEAN
@@ -595,14 +592,14 @@ public class AspectReadBuilders {
                 dimPos.getBlockPos(),
                 input.getLeft()
                     .getTarget()
-                    .getSide());
+                    .getSide())
+                .getOrNull();
             int channel = input.getRight()
                 .getValue(PROPERTY_CHANNEL)
                 .getRawValue();
-            return network != null && network.getCapability(EnergyNetworkConfig.CAPABILITY)
-                .isPresent() ? network.getCapability(EnergyNetworkConfig.CAPABILITY)
-                    .getOrNull()
-                    .getChannelExternal(CapabilityEnergy.ENERGY, channel) : null;
+            return network != null ? network.getCapability(EnergyNetworkConfig.CAPABILITY)
+                .map(energyNetwork -> energyNetwork.getChannelExternal(CapabilityEnergy.ENERGY, channel))
+                .orElse(null) : null;
         };
 
         public static final AspectBuilder<ValueTypeInteger.ValueInteger, ValueTypeInteger, IEnergyStorage> ENERGY_BUILDER = AspectReadBuilders.BUILDER_INTEGER

@@ -61,7 +61,8 @@ public class InventoryVariableEvaluator<V extends IValue> implements IVariableFa
      *                                 if the variable has changed.
      */
     public void refreshVariable(INetwork network, boolean sendVariablesUpdateEvent) {
-        IPartNetwork partNetwork = NetworkHelpers.getPartNetwork(network);
+        IPartNetwork partNetwork = NetworkHelpers.getPartNetwork(network)
+            .getOrNull();
 
         int lastVariabledId = this.variableStored == null ? -1 : this.variableStored.getId();
         int variableId = -1;
@@ -94,7 +95,7 @@ public class InventoryVariableEvaluator<V extends IValue> implements IVariableFa
 
     @Nullable
     public IVariable<V> getVariable(INetwork network) {
-        return getVariable(NetworkHelpers.getPartNetwork(network));
+        return getVariable(NetworkHelpers.getPartNetworkChecked(network));
 
     }
 

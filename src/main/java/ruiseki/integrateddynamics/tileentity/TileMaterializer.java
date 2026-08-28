@@ -16,7 +16,6 @@ import ruiseki.integrateddynamics.api.evaluate.variable.IVariable;
 import ruiseki.integrateddynamics.api.item.IValueTypeVariableFacade;
 import ruiseki.integrateddynamics.api.item.IVariableFacadeHandlerRegistry;
 import ruiseki.integrateddynamics.api.network.INetworkElement;
-import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.capability.networkelementprovider.NetworkElementProviderConfig;
 import ruiseki.integrateddynamics.capability.networkelementprovider.NetworkElementProviderSingleton;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeVariableFacade;
@@ -74,10 +73,11 @@ public class TileMaterializer extends TileActiveVariableBase<MaterializerNetwork
     }
 
     protected boolean canWrite() {
-        IPartNetwork partNetwork = NetworkHelpers.getPartNetwork(getNetwork());
-        return partNetwork != null && getVariable(partNetwork) != null
-            && getEvaluator().getErrors()
-                .isEmpty();
+        return NetworkHelpers.getPartNetwork(getNetwork())
+            .map(
+                partNetwork -> getVariable(partNetwork) != null && getEvaluator().getErrors()
+                    .isEmpty())
+            .orElse(false);
     }
 
     @Override
@@ -98,7 +98,7 @@ public class TileMaterializer extends TileActiveVariableBase<MaterializerNetwork
     public ItemStack writeMaterialized(boolean generateId, ItemStack itemStack) {
         IVariableFacadeHandlerRegistry registry = IntegratedDynamics._instance.getRegistryManager()
             .getRegistry(IVariableFacadeHandlerRegistry.class);
-        IVariable variable = getVariable(NetworkHelpers.getPartNetwork(getNetwork()));
+        IVariable variable = getVariable(NetworkHelpers.getPartNetworkChecked(getNetwork()));
         try {
             final IValue value = variable.getType()
                 .materialize(variable.getValue());

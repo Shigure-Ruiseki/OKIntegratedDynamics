@@ -86,7 +86,7 @@ import ruiseki.okcore.item.capability.CapabilityItemHandler;
 
 /**
  * Collection of tunnel aspect write builders and value propagators.
- * 
+ *
  * @author rubensworks
  */
 public class TunnelAspectWriteBuilders {
@@ -2590,7 +2590,8 @@ public class TunnelAspectWriteBuilders {
                     pos.getWorld(),
                     pos.getBlockPos(),
                     target.getCenter()
-                        .getSide());
+                        .getSide())
+                    .getOrNull();
                 if (network != null && network.getCapability(networkCapability.get())
                     .isPresent()) {
                     ((PartStatePositionedAddon<?, N>) state).setPositionedAddonsNetwork(
@@ -2629,7 +2630,8 @@ public class TunnelAspectWriteBuilders {
                     pos.getWorld(),
                     pos.getBlockPos(),
                     target.getCenter()
-                        .getSide());
+                        .getSide())
+                    .getOrNull();
                 if (network != null && network.getCapability(networkCapability.get())
                     .isPresent()) {
                     ((PartStatePositionedAddon<?, N>) state).setPositionedAddonsNetwork(

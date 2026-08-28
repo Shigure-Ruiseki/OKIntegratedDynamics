@@ -35,6 +35,7 @@ public class ContainerTerminalStorageCraftingPlanPart extends ContainerTerminalS
 
     @Override
     public INetwork getNetwork() {
-        return NetworkHelpers.getNetwork(getTarget().getCenter());
+        return NetworkHelpers.getNetwork(getTarget().getCenter())
+            .getOrNull();
     }
 }

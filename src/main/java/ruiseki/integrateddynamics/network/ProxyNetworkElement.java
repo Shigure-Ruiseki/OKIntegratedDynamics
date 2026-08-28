@@ -11,7 +11,6 @@ import ruiseki.integrateddynamics.Reference;
 import ruiseki.integrateddynamics.api.network.IEventListenableNetworkElement;
 import ruiseki.integrateddynamics.api.network.IIdentifiableNetworkElement;
 import ruiseki.integrateddynamics.api.network.INetwork;
-import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.network.IPositionedAddonsNetwork;
 import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
 import ruiseki.integrateddynamics.core.network.TileNetworkElement;
@@ -45,18 +44,19 @@ public class ProxyNetworkElement extends TileNetworkElement<TileProxy>
     @Override
     public boolean onNetworkAddition(INetwork network) {
         if (super.onNetworkAddition(network)) {
-            IPartNetwork partNetwork = NetworkHelpers.getPartNetwork(network);
-            if (partNetwork == null) {
-                return false;
-            }
-            if (!partNetwork.addProxy(getId(), getPos())) {
-                IntegratedDynamics.clog(
-                    Level.WARN,
-                    "A proxy already existed in the network, this is possibly a " + "result from item duplication.");
-                getTile().generateNewProxyId();
-                return partNetwork.addProxy(getId(), getPos());
-            }
-            return true;
+            return NetworkHelpers.getPartNetwork(network)
+                .map(partNetwork -> {
+                    if (!partNetwork.addProxy(getId(), getPos())) {
+                        IntegratedDynamics.clog(
+                            Level.WARN,
+                            "A proxy already existed in the network, this is possibly a "
+                                + "result from item duplication.");
+                        getTile().generateNewProxyId();
+                        return partNetwork.addProxy(getId(), getPos());
+                    }
+                    return true;
+                })
+                .orElse(false);
         }
         return false;
     }
@@ -64,10 +64,8 @@ public class ProxyNetworkElement extends TileNetworkElement<TileProxy>
     @Override
     public void onNetworkRemoval(INetwork network) {
         super.onNetworkRemoval(network);
-        IPartNetwork partNetwork = NetworkHelpers.getPartNetwork(network);
-        if (partNetwork != null) {
-            partNetwork.removeProxy(getId());
-        }
+        NetworkHelpers.getPartNetwork(network)
+            .ifPresent(partNetwork -> partNetwork.removeProxy(getId()));
     }
 
     @Override

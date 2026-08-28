@@ -217,7 +217,8 @@ public class BlockCable extends BlockTile
                         return true;
                     } else if (CableHelpers.isNoFakeCable(world, pos, side)) {
                         // Delegate activated call to part
-                        IPartContainer partContainer = PartHelpers.getPartContainer(world, pos, side);
+                        IPartContainer partContainer = PartHelpers.getPartContainer(world, pos, side)
+                            .getOrNull();
                         return partContainer.getPart(positionHit)
                             .onPartActivated(
                                 world,
@@ -392,7 +393,8 @@ public class BlockCable extends BlockTile
         if (CableHelpers.hasFacade(world, pos)) {
             return true;
         }
-        IPartContainer partContainer = PartHelpers.getPartContainer(world, pos, side);
+        IPartContainer partContainer = PartHelpers.getPartContainer(world, pos, side)
+            .getOrNull();
         if (partContainer != null && partContainer.hasPart(side)) {
             IPartType partType = partContainer.getPart(side);
             return partType.isSolid(partContainer.getPartState(side));

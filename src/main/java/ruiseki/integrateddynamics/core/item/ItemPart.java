@@ -82,7 +82,8 @@ public class ItemPart<P extends IPartType<P, S>, S extends IPartState<P>> extend
         float hitX, float hitY, float hitZ) {
         BlockPos pos = new BlockPos(x, y, z);
         ForgeDirection side = ForgeDirection.getOrientation(sideInt);
-        IPartContainer partContainerFirst = PartHelpers.getPartContainer(world, pos, side);
+        IPartContainer partContainerFirst = PartHelpers.getPartContainer(world, pos, side)
+            .getOrNull();
         if (partContainerFirst != null) {
             // Add part to existing cable
             if (PartHelpers.addPart(world, pos, side, getPart(), itemStack)) {
@@ -115,9 +116,11 @@ public class ItemPart<P extends IPartType<P, S>, S extends IPartState<P>> extend
                     hitX,
                     hitY,
                     hitZ)) {
-                    IPartContainer partContainer = PartHelpers.getPartContainer(world, target, targetSide);
+                    IPartContainer partContainer = PartHelpers.getPartContainer(world, target, targetSide)
+                        .getOrNull();
                     if (partContainer != null) {
-                        ICableFakeable cableFakeable = CableHelpers.getCableFakeable(world, target, targetSide);
+                        ICableFakeable cableFakeable = CableHelpers.getCableFakeable(world, target, targetSide)
+                            .getOrNull();
                         if (!world.isRemote) {
                             PartHelpers.addPart(world, target, side.getOpposite(), getPart(), itemStack);
                             if (cableFakeable != null) {
@@ -140,7 +143,8 @@ public class ItemPart<P extends IPartType<P, S>, S extends IPartState<P>> extend
                 }
                 itemStack.stackSize--; // Shrink manually if failed
             } else {
-                IPartContainer partContainer = PartHelpers.getPartContainer(world, target, targetSide);
+                IPartContainer partContainer = PartHelpers.getPartContainer(world, target, targetSide)
+                    .getOrNull();
                 if (partContainer != null) {
                     // Add part to existing cable
                     if (PartHelpers.addPart(world, target, side.getOpposite(), getPart(), itemStack)) {

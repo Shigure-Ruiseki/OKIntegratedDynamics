@@ -24,8 +24,10 @@ import ruiseki.integrateddynamics.network.CoalGeneratorNetworkElement;
 import ruiseki.okcore.capabilities.resolver.BasicCapabilityResolver;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
+import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.energy.capability.CapabilityEnergy;
 import ruiseki.okcore.energy.component.EnergyProviderComponent;
+import ruiseki.okcore.helper.Helpers;
 import ruiseki.okcore.persist.nbt.NBTPersist;
 
 /**
@@ -69,7 +71,7 @@ public class TileCoalGenerator extends TileCableConnectableInventory implements 
         }
     }
 
-    public IEnergyNetwork getEnergyNetwork() {
+    public LazyOptional<IEnergyNetwork> getEnergyNetwork() {
         return NetworkHelpers.getEnergyNetwork(getNetwork());
     }
 
@@ -96,35 +98,30 @@ public class TileCoalGenerator extends TileCableConnectableInventory implements 
         return currentlyBurning < currentlyBurningMax;
     }
 
-    public boolean canAddEnergy(long energy) {
-        IEnergyNetwork network = getEnergyNetwork();
-        if (network != null) {
-            long remainder = network.getChannel(IPositionedAddonsNetwork.DEFAULT_CHANNEL)
-                .insert(energy, true);
-            if (remainder < energy) {
-                return true;
-            }
+    public boolean canAddEnergy(int energy) {
+        IEnergyNetwork network = getEnergyNetwork().getOrNull();
+        if (network != null && network.getChannel(IPositionedAddonsNetwork.DEFAULT_CHANNEL)
+            .insert((long) energy, true) == 0) {
+            return true;
         }
-        return addEnergyFe(energy, true) > 0;
+        return addEnergyFe(energy, true) == energy;
     }
 
-    protected long addEnergy(long energy) {
-        IEnergyNetwork network = getEnergyNetwork();
-        long remaining = energy;
-
+    protected int addEnergy(int energy) {
+        IEnergyNetwork network = getEnergyNetwork().getOrNull();
+        int toFill = energy;
         if (network != null) {
-            remaining = network.getChannel(IPositionedAddonsNetwork.DEFAULT_CHANNEL)
-                .insert(remaining, false);
+            toFill = Helpers.castSafe(
+                network.getChannel(IPositionedAddonsNetwork.DEFAULT_CHANNEL)
+                    .insert((long) toFill, false));
         }
-
-        if (remaining > 0) {
-            remaining -= addEnergyFe(remaining, false);
+        if (toFill > 0) {
+            toFill -= addEnergyFe(toFill, false);
         }
-
-        return energy - remaining;
+        return energy - toFill;
     }
 
-    protected long addEnergyFe(long energy, boolean simulate) {
+    protected int addEnergyFe(int energy, boolean simulate) {
         return EnergyHelpers.fillNeigbours(getWorldObj(), getPos(), energy, simulate);
     }
 

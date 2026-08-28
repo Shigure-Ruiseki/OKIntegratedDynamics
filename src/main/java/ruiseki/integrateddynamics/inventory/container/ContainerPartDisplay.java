@@ -98,11 +98,11 @@ public class ContainerPartDisplay<P extends PartTypePanelVariableDriven<P, S>, S
     public void onDirty() {
         if (!MinecraftHelpers.isClientSide()) {
             getPartState().onVariableContentsUpdated(getPartType(), getTarget());
-            INetwork network = NetworkHelpers.getNetwork(getTarget().getCenter());
+            INetwork network = NetworkHelpers.getNetworkChecked(getTarget().getCenter());
             if (!getPartState().getInventory()
                 .isEmpty()) {
                 try {
-                    IPartNetwork partNetwork = NetworkHelpers.getPartNetwork(network);
+                    IPartNetwork partNetwork = NetworkHelpers.getPartNetworkChecked(network);
                     IVariable variable = getPartState().getVariable(network, partNetwork);
                     MinecraftForge.EVENT_BUS.post(
                         new PartVariableDrivenVariableContentsUpdatedEvent<>(

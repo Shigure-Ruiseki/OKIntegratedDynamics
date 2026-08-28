@@ -24,6 +24,7 @@ import ruiseki.integrateddynamics.network.MechanicalMachineNetworkElement;
 import ruiseki.okcore.capabilities.resolver.BasicCapabilityResolver;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
+import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.energy.capability.CapabilityEnergy;
 import ruiseki.okcore.energy.component.EnergyHandlerComponent;
 import ruiseki.okcore.energy.component.IEnergyHandlerExclusion;
@@ -136,7 +137,7 @@ public abstract class TileMechanicalMachine<I extends IInventory, R extends IRec
         return this.sleep > 0;
     }
 
-    public IEnergyNetwork getEnergyNetwork() {
+    public LazyOptional<IEnergyNetwork> getEnergyNetwork() {
         return NetworkHelpers.getEnergyNetwork(getNetwork());
     }
 
@@ -272,7 +273,7 @@ public abstract class TileMechanicalMachine<I extends IInventory, R extends IRec
 
         if (toDrain > 0) {
             // If we still need energy, ask it from the network.
-            IEnergyNetwork energyNetwork = getEnergyNetwork();
+            IEnergyNetwork energyNetwork = getEnergyNetwork().getOrNull();
             if (energyNetwork != null) {
                 toDrain -= energyNetwork.getChannel(IPositionedAddonsNetwork.DEFAULT_CHANNEL)
                     .extract(toDrain, simulate);

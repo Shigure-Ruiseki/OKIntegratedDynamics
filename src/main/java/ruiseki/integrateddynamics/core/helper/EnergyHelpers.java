@@ -6,14 +6,13 @@ import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
-import org.jetbrains.annotations.Nullable;
-
 import com.google.common.collect.Lists;
 
 import cofh.api.energy.IEnergyStorage;
 import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
+import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.energy.capability.CapabilityEnergy;
 import ruiseki.okcore.helper.CapabilityHelpers;
 
@@ -30,47 +29,46 @@ public class EnergyHelpers {
         ENERGY_STORAGE_PROXIES.add(energyStorageProxy);
     }
 
-    public static IEnergyStorage getEnergyStorage(PartPos pos) {
+    public static LazyOptional<IEnergyStorage> getEnergyStorage(PartPos pos) {
         return getEnergyStorage(pos.getPos(), pos.getSide());
     }
 
-    public static IEnergyStorage getEnergyStorage(DimPos pos, ForgeDirection facing) {
+    public static LazyOptional<IEnergyStorage> getEnergyStorage(DimPos pos, ForgeDirection facing) {
         World world = pos.getWorld();
-        return world != null ? getEnergyStorage(world, pos.getBlockPos(), facing) : null;
+        return world != null ? getEnergyStorage(world, pos.getBlockPos(), facing) : LazyOptional.empty();
     }
 
-    public static IEnergyStorage getEnergyStorage(IBlockAccess world, BlockPos pos, ForgeDirection facing) {
+    public static LazyOptional<IEnergyStorage> getEnergyStorage(IBlockAccess world, BlockPos pos,
+        ForgeDirection facing) {
         IEnergyStorage energyStorage = CapabilityHelpers.getCapability(world, pos, CapabilityEnergy.ENERGY, facing)
-            .getOrNull();
-        if (energyStorage == null) {
-            for (IEnergyStorageProxy energyStorageProxy : ENERGY_STORAGE_PROXIES) {
-                energyStorage = energyStorageProxy.getEnergyStorageProxy(world, pos, facing);
-                if (energyStorage != null) {
-                    return energyStorage;
+            .orElseGet(() -> {
+                for (IEnergyStorageProxy energyStorageProxy : ENERGY_STORAGE_PROXIES) {
+                    LazyOptional<IEnergyStorage> optionalEnergyStorage = energyStorageProxy
+                        .getEnergyStorageProxy(world, pos, facing);
+                    if (optionalEnergyStorage.isPresent()) {
+                        return optionalEnergyStorage.orElse(null);
+                    }
                 }
-            }
-
-        }
-        return energyStorage;
+                return null;
+            });
+        return energyStorage == null ? LazyOptional.empty() : LazyOptional.of(() -> energyStorage);
     }
 
     /**
      * Attempty to fill the neighbouring tiles with energy.
-     *
+     * 
      * @param world    The world.
      * @param pos      The filler's position.
      * @param energy   The energy to add.
      * @param simulate If the filling should be simulated.
      * @return The amount of energy that was filled somewhere.
      */
-    public static long fillNeigbours(World world, BlockPos pos, long energy, boolean simulate) {
-        long toFill = energy;
+    public static int fillNeigbours(World world, BlockPos pos, int energy, boolean simulate) {
+        int toFill = energy;
         for (ForgeDirection side : ForgeDirection.VALID_DIRECTIONS) {
-            IEnergyStorage energyStorage = getEnergyStorage(world, pos.offset(side), side.getOpposite());
+            IEnergyStorage energyStorage = getEnergyStorage(world, pos.offset(side), side.getOpposite()).orElse(null);
             if (energyStorage != null) {
-                int maxReceive = (int) Math.min(toFill, Integer.MAX_VALUE);
-                int accepted = energyStorage.receiveEnergy(maxReceive, simulate);
-                toFill -= accepted;
+                toFill -= energyStorage.receiveEnergy(toFill, simulate);
                 if (toFill <= 0) {
                     return energy;
                 }
@@ -81,7 +79,8 @@ public class EnergyHelpers {
 
     public static interface IEnergyStorageProxy {
 
-        public @Nullable IEnergyStorage getEnergyStorageProxy(IBlockAccess world, BlockPos pos, ForgeDirection facing);
+        public LazyOptional<IEnergyStorage> getEnergyStorageProxy(IBlockAccess world, BlockPos pos,
+            ForgeDirection facing);
     }
 
 }

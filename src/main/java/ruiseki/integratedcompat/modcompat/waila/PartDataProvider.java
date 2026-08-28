@@ -48,7 +48,8 @@ public class PartDataProvider implements IWailaDataProvider {
         IWailaConfigHandler config) {
         if (config.getConfig(Waila.getPartConfigId())) {
             BlockPos pos = new BlockPos(accessor.getPosition());
-            IPartContainer partContainer = PartHelpers.getPartContainer(accessor.getWorld(), pos, null);
+            IPartContainer partContainer = PartHelpers.getPartContainer(accessor.getWorld(), pos, null)
+                .getOrNull();
             if (partContainer != null) {
                 ForgeDirection side = partContainer.getWatchingSide(accessor.getWorld(), pos, accessor.getPlayer());
                 if (side != null && partContainer.hasPart(side)) {

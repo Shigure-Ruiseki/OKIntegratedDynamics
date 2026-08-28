@@ -12,7 +12,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 import lombok.Getter;
-import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.evaluate.IValueInterface;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IVariable;
@@ -53,18 +52,11 @@ public abstract class TileActiveVariableBase<E> extends TileCableConnectableInve
         inventory.addDirtyMarkListener(this);
         IValueInterface valueInterface = () -> {
             INetwork network = getNetwork();
-            IPartNetwork partNetwork = NetworkHelpers.getPartNetwork(network);
-            if (network == null || partNetwork == null) {
-                return Optional.empty();
-            }
+            IPartNetwork partNetwork = NetworkHelpers.getPartNetworkChecked(network);
             if (hasVariable()) {
                 IVariable<?> variable = getVariable(partNetwork);
                 if (variable != null) {
-                    try {
-                        return Optional.ofNullable(variable.getValue());
-                    } catch (EvaluationException e) {
-                        return Optional.empty();
-                    }
+                    return Optional.of(variable.getValue());
                 }
             }
             return Optional.empty();

@@ -36,14 +36,15 @@ public class ContainerTerminalStoragePart extends ContainerTerminalStorageBase<P
             player,
             (PartTypeTerminalStorage) partType,
             initTabData,
-            Optional.ofNullable(
-                target != null && target.getCenter() != null ? NetworkHelpers.getNetwork(target.getCenter()) : null),
-            Optional.ofNullable(
-                partContainer != null && target != null && target.getCenter() != null
-                    ? (ITerminalStorageTabCommon.IVariableInventory) partContainer.getPartState(
-                        target.getCenter()
-                            .getSide())
-                    : null));
+            NetworkHelpers.getNetwork(target.getCenter())
+                .map(a -> a),
+            Optional
+                .ofNullable(
+                    partContainer != null && target.getCenter() != null
+                        ? (ITerminalStorageTabCommon.IVariableInventory) partContainer.getPartState(
+                            target.getCenter()
+                                .getSide())
+                        : null));
         this.target = target;
         this.partType = (PartTypeTerminalStorage) partType;
         this.partContainer = partContainer;
@@ -91,7 +92,8 @@ public class ContainerTerminalStoragePart extends ContainerTerminalStorageBase<P
     @Override
     public void onVariableContentsUpdated(INetwork network, IVariable<?> variable) {
         try {
-            IPartNetwork partNetwork = NetworkHelpers.getPartNetwork(network);
+            IPartNetwork partNetwork = NetworkHelpers.getPartNetwork(network)
+                .getOrNull();
             MinecraftForge.EVENT_BUS.post(
                 new PartVariableDrivenVariableContentsUpdatedEvent<>(
                     network,

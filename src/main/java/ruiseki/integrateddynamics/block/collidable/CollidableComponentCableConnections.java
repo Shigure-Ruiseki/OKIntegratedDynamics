@@ -21,7 +21,8 @@ public class CollidableComponentCableConnections extends CollidableComponentCabl
         if (side == null) {
             return BlockCable.CABLE_CENTER_BOUNDINGBOX;
         } else {
-            IPartContainer partContainer = PartHelpers.getPartContainer(world, pos, side);
+            IPartContainer partContainer = PartHelpers.getPartContainer(world, pos, side)
+                .getOrNull();
             return partContainer != null ? partContainer.getPart(side)
                 .getPartRenderPosition()
                 .getSidedCableBoundingBox(side) : null;
@@ -37,8 +38,8 @@ public class CollidableComponentCableConnections extends CollidableComponentCabl
     public boolean isActive(BlockCable block, World world, BlockPos pos, ForgeDirection position) {
         IPartContainer partContainer;
         return super.isActive(block, world, pos, position) && (CableHelpers.isCableConnected(world, pos, position)
-            || (partContainer = PartHelpers.getPartContainer(world, pos, position)) != null
-                && partContainer.hasPart(position));
+            || (partContainer = PartHelpers.getPartContainer(world, pos, position)
+                .getOrNull()) != null && partContainer.hasPart(position));
     }
 
     @Override

@@ -1,9 +1,8 @@
 package ruiseki.integrateddynamics.api.ingredient.capability;
 
-import org.jetbrains.annotations.Nullable;
-
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.IPositionedAddonsNetworkIngredients;
+import ruiseki.okcore.datastructure.LazyOptional;
 
 /**
  * A capability that retrieves the {@link IPositionedAddonsNetworkIngredients}
@@ -19,9 +18,8 @@ public interface IPositionedAddonsNetworkIngredientsHandler<T, M> {
      * Get the ingredient network in the given network,
      * 
      * @param network The network.
-     * @return The ingredient component network, or null if it is not available.
+     * @return The optional ingredient component network.
      */
-    @Nullable
-    public IPositionedAddonsNetworkIngredients<T, M> getStorage(INetwork network);
+    public LazyOptional<IPositionedAddonsNetworkIngredients<T, M>> getStorage(INetwork network);
 
 }

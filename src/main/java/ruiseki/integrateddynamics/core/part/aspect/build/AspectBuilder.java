@@ -74,28 +74,6 @@ public class AspectBuilder<V extends IValue, T extends IValueType<V>, O> {
     }
 
     /**
-     * Set a custom icon/texture path for this aspect.
-     *
-     * @param customIconPath Relative path inside textures/items/aspects/ (e.g. "read/block")
-     * @return The new builder instance.
-     */
-    public AspectBuilder<V, T, O> handleTexture(String customIconPath) {
-        return new AspectBuilder<>(
-            this.read,
-            this.valueType,
-            Helpers.joinList(this.kinds, null),
-            this.defaultAspectProperties,
-            Helpers.joinList(this.valuePropagators, null),
-            Helpers.joinList(this.writeActivators, null),
-            Helpers.joinList(this.writeDeactivators, null),
-            mod,
-            modGui,
-            beforeUpdateListeners,
-            afterUpdateListeners,
-            updateType);
-    }
-
-    /**
      * Add the given value propagator.
      */
     public <O2> AspectBuilder<V, T, O2> handle(IAspectValuePropagator<O, O2> valuePropagator) {

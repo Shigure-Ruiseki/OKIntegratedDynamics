@@ -107,7 +107,6 @@ public class TileEnergyBattery extends TileCableConnectable
     @Override
     public int receiveEnergy(int energy, boolean simulate) {
         if (!isCreative()) {
-            energy = Math.min(energy, getEnergyPerTick());
             int stored = getEnergyStored();
             int energyReceived = Math.min(getMaxEnergyStored() - stored, energy);
             if (!simulate) {
@@ -121,23 +120,22 @@ public class TileEnergyBattery extends TileCableConnectable
     @Override
     public int extractEnergy(int energy, boolean simulate) {
         if (isCreative()) return energy;
-        energy = Math.clamp(energy, 0, getEnergyPerTick());
+        energy = Math.max(0, Math.min(energy, getEnergyPerTick()));
         int stored = getEnergyStored();
-        int newEnergy = Math.max(stored - energy, 0);
+        int newEnergy = Math.max(stored - energy, 0);;
         if (!simulate) {
             setEnergy(newEnergy);
         }
         return stored - newEnergy;
     }
 
-    protected long addEnergy(long energy) {
-        long toFill = Math.min(energy, extractEnergy((int) energy, true));
-        long filled = addEnergyFe(toFill, false);
-        extractEnergy((int) filled, false);
+    protected int addEnergy(int energy) {
+        int filled = addEnergyFe(energy, false);
+        extractEnergy(filled, false);
         return filled;
     }
 
-    protected long addEnergyFe(long energy, boolean simulate) {
+    protected int addEnergyFe(int energy, boolean simulate) {
         return EnergyHelpers.fillNeigbours(getWorldObj(), getPos(), energy, simulate);
     }
 

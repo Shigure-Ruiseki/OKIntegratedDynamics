@@ -82,7 +82,8 @@ public class ContainerTerminalCraftingJobsPlan extends ExtendedInventoryContaine
     }
 
     protected void updateCraftingPlan() {
-        INetwork network = NetworkHelpers.getNetwork(target.getCenter());
+        INetwork network = NetworkHelpers.getNetwork(target.getCenter())
+            .getOrNull();
         this.craftingPlan = craftingJobGuiData.getHandler()
             .getCraftingJob(network, this.craftingJobGuiData.getChannel(), craftingJobGuiData.getCraftingJob());
         if (this.craftingPlan != null) {

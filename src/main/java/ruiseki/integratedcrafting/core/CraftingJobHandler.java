@@ -269,7 +269,7 @@ public class CraftingJobHandler {
         int count = ingredientObserverCounters.getInt(ingredientComponent);
         if (count == 0) {
             IPositionedAddonsNetworkIngredients<T, M> ingredientsNetwork = CraftingHelpers
-                .getIngredientsNetwork(network, ingredientComponent);
+                .getIngredientsNetworkChecked(network, ingredientComponent);
             PendingCraftingJobResultIndexObserver<T, M> observer = new PendingCraftingJobResultIndexObserver<>(
                 ingredientComponent,
                 this);
@@ -287,7 +287,7 @@ public class CraftingJobHandler {
         ingredientObserverCounters.put(ingredientComponent, count);
         if (count == 0) {
             IPositionedAddonsNetworkIngredients<T, M> ingredientsNetwork = CraftingHelpers
-                .getIngredientsNetwork(network, ingredientComponent);
+                .getIngredientsNetworkChecked(network, ingredientComponent);
             IIngredientComponentStorageObservable.IIndexChangeObserver<T, M> observer = (IIngredientComponentStorageObservable.IIndexChangeObserver<T, M>) ingredientObservers
                 .remove(ingredientComponent);
             ingredientsNetwork.removeObserver(observer);
@@ -317,7 +317,7 @@ public class CraftingJobHandler {
         for (Map.Entry<IngredientComponent<?, ?>, IIngredientComponentStorageObservable.IIndexChangeObserver<?, ?>> entry : ingredientObservers
             .entrySet()) {
             IPositionedAddonsNetworkIngredients ingredientsNetwork = CraftingHelpers
-                .getIngredientsNetwork(network, entry.getKey());
+                .getIngredientsNetworkChecked(network, entry.getKey());
             ingredientsNetwork.addObserver(entry.getValue());
         }
     }
@@ -363,7 +363,7 @@ public class CraftingJobHandler {
         if (processingJobs > 0) {
             for (IngredientComponent<?, ?> ingredientComponent : ingredientObservers.keySet()) {
                 IPositionedAddonsNetworkIngredients<?, ?> ingredientsNetwork = CraftingHelpers
-                    .getIngredientsNetwork(network, ingredientComponent);
+                    .getIngredientsNetworkChecked(network, ingredientComponent);
                 ingredientsNetwork.scheduleObservation();
             }
         }

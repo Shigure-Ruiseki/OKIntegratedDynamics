@@ -207,23 +207,28 @@ public class ContainerPartReader<P extends IPartTypeReader<P, S> & IGuiContainer
     @Override
     public ItemStack writeAspectInfo(boolean generateId, ItemStack itemStack, final IAspect aspect) {
         ItemStack resultStack = super.writeAspectInfo(generateId, itemStack, aspect);
-        INetwork network = NetworkHelpers.getNetwork(
-            getTarget().getCenter()
+        if (player.worldObj.isRemote) {
+            return resultStack;
+        }
+
+        PartTarget target = getTarget();
+        INetwork network = NetworkHelpers.getNetworkChecked(
+            target.getCenter()
                 .getPos()
                 .getWorld(),
-            getTarget().getCenter()
+            target.getCenter()
                 .getPos()
                 .getBlockPos(),
-            getTarget().getCenter()
+            target.getCenter()
                 .getSide());
-        IPartNetwork partNetwork = NetworkHelpers.getPartNetwork(network);
+        IPartNetwork partNetwork = NetworkHelpers.getPartNetworkChecked(network);
         PartReaderAspectEvent event = new PartReaderAspectEvent<>(
             network,
             partNetwork,
-            getTarget(),
+            target,
             getPartType(),
             getPartState(),
-            getPlayer(),
+            player,
             (IAspectRead) aspect,
             resultStack);
         MinecraftForge.EVENT_BUS.post(event);

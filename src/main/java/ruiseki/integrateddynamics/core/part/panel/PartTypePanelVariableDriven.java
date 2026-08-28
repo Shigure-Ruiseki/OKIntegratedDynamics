@@ -67,22 +67,11 @@ public abstract class PartTypePanelVariableDriven<P extends PartTypePanelVariabl
     @Override
     protected Map<Class<? extends INetworkEvent>, IEventAction> constructNetworkEventActions() {
         Map<Class<? extends INetworkEvent>, IEventAction> actions = super.constructNetworkEventActions();
-        actions.put(VariableContentsUpdatedEvent.class, new IEventAction<P, S, VariableContentsUpdatedEvent>() {
-
-            @Override
-            public void onAction(INetwork network, PartTarget target, S state, VariableContentsUpdatedEvent event) {
-                IPartNetwork partNetwork = NetworkHelpers.getPartNetwork(network);
-                onVariableContentsUpdated(partNetwork, target, state);
-            }
-        });
-        actions.put(NetworkElementAddEvent.Post.class, new IEventAction<P, S, NetworkElementAddEvent.Post>() {
-
-            @Override
-            public void onAction(INetwork network, PartTarget target, S state, NetworkElementAddEvent.Post event) {
-                IPartNetwork partNetwork = NetworkHelpers.getPartNetwork(network);
-                onVariableContentsUpdated(partNetwork, target, state);
-            }
-        });
+        IEventAction<P, S, INetworkEvent> updateEventListener = (network, target, state, event) -> NetworkHelpers
+            .getPartNetwork(network)
+            .ifPresent(partNetwork -> onVariableContentsUpdated(partNetwork, target, state));
+        actions.put(VariableContentsUpdatedEvent.class, updateEventListener);
+        actions.put(NetworkElementAddEvent.Post.class, updateEventListener);
         return actions;
     }
 

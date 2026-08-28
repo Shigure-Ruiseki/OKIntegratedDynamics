@@ -31,6 +31,7 @@ import ruiseki.integrateddynamics.core.network.event.UnknownPartEvent;
 import ruiseki.integrateddynamics.core.part.PartTypes;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
+import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.helper.CapabilityHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
 
@@ -49,10 +50,9 @@ public class PartHelpers {
      * @param side  The side.
      * @return The part container capability, or null if not present.
      */
-    public static @Nullable IPartContainer getPartContainer(IBlockAccess world, BlockPos pos,
+    public static LazyOptional<IPartContainer> getPartContainer(IBlockAccess world, BlockPos pos,
         @Nullable ForgeDirection side) {
-        return CapabilityHelpers.getCapability(world, pos, PartContainerConfig.CAPABILITY, side)
-            .getOrNull();
+        return CapabilityHelpers.getCapability(world, pos, PartContainerConfig.CAPABILITY, side);
     }
 
     /**
@@ -62,9 +62,40 @@ public class PartHelpers {
      * @param side   The side.
      * @return The part container capability, or null if not present.
      */
-    public static @Nullable IPartContainer getPartContainer(DimPos dimPos, @Nullable ForgeDirection side) {
-        return CapabilityHelpers.getCapability(dimPos, PartContainerConfig.CAPABILITY, side)
-            .getOrNull();
+    public static LazyOptional<IPartContainer> getPartContainer(DimPos dimPos, @Nullable ForgeDirection side) {
+        return CapabilityHelpers.getCapability(dimPos, PartContainerConfig.CAPABILITY, side);
+    }
+
+    /**
+     * Get the part container capability at the given position.
+     * If it is not present, then an illegal state exception will be thrown.
+     *
+     * This should only be called if you know for certain that there will be a part container present.
+     *
+     * @param world The world.
+     * @param pos   The position.
+     * @param side  The side.
+     * @return The part container capability.
+     */
+    public static IPartContainer getPartContainerChecked(IBlockAccess world, BlockPos pos,
+        @Nullable ForgeDirection side) {
+        return getPartContainer(world, pos, side)
+            .orElseThrow(() -> new IllegalStateException("Could not get a part container"));
+    }
+
+    /**
+     * Get the part container capability at the given position.
+     * If it is not present, then an illegal state exception will be thrown.
+     *
+     * This should only be called if you know for certain that there will be a part container present.
+     *
+     * @param dimPos The dimensional position.
+     * @param side   The side.
+     * @return The part container capability.
+     */
+    public static IPartContainer getPartContainerChecked(DimPos dimPos, @Nullable ForgeDirection side) {
+        return PartHelpers.getPartContainer(dimPos, side)
+            .orElseThrow(() -> new IllegalStateException("Could not find a part container at " + dimPos.toString()));
     }
 
     /**
@@ -260,8 +291,9 @@ public class PartHelpers {
      */
     public static boolean removePart(World world, BlockPos pos, ForgeDirection side, @Nullable EntityPlayer player,
         boolean destroyIfEmpty, boolean dropMainElement, boolean saveState) {
-        IPartContainer partContainer = getPartContainer(world, pos, side);
-        ICableFakeable cableFakeable = CableHelpers.getCableFakeable(world, pos, side);
+        IPartContainer partContainer = getPartContainerChecked(world, pos, side);
+        ICableFakeable cableFakeable = CableHelpers.getCableFakeable(world, pos, side)
+            .getOrNull();
         partContainer.removePart(side, player, dropMainElement, saveState);
 
         boolean removeCompletely = destroyIfEmpty && (cableFakeable == null || !cableFakeable.isRealCable())
@@ -293,7 +325,7 @@ public class PartHelpers {
      */
     public static boolean addPart(World world, BlockPos pos, ForgeDirection side, IPartType partType,
         ItemStack itemStack) {
-        IPartContainer partContainer = getPartContainer(world, pos, side);
+        IPartContainer partContainer = getPartContainerChecked(world, pos, side);
         if (partContainer.canAddPart(side, partType)) {
             if (!world.isRemote) {
                 partContainer.setPart(side, partType, partType.getState(itemStack));
@@ -315,7 +347,7 @@ public class PartHelpers {
      */
     public static boolean addPart(World world, BlockPos pos, ForgeDirection side, IPartType partType,
         IPartState partState) {
-        IPartContainer partContainer = getPartContainer(world, pos, side);
+        IPartContainer partContainer = getPartContainerChecked(world, pos, side);
         if (partContainer.canAddPart(side, partType)) {
             if (!world.isRemote) {
                 partContainer.setPart(side, partType, partState);
@@ -341,7 +373,7 @@ public class PartHelpers {
         IPartType part, IPartState partState, IPartStateHolderCallback callback) {
         callback.onSet(PartStateHolder.of(part, partState));
         if (network != null) {
-            IPartContainer partContainer = PartHelpers.getPartContainer(world, pos, side);
+            IPartContainer partContainer = PartHelpers.getPartContainerChecked(world, pos, side);
             INetworkElement networkElement = part.createNetworkElement(partContainer, DimPos.of(world, pos), side);
             if (!network.addNetworkElement(networkElement, false)) {
                 // In this case, the addition failed because that part id is already present in the network,
@@ -372,7 +404,8 @@ public class PartHelpers {
             target.getCenter()
                 .getPos(),
             target.getCenter()
-                .getSide());
+                .getSide())
+            .getOrNull();
         return partContainer == expectedPartContainer;
     }
 
@@ -384,7 +417,8 @@ public class PartHelpers {
      */
     public static @Nullable PartStateHolder<?, ?> getPart(PartPos partPos) {
         ForgeDirection side = partPos.getSide();
-        IPartContainer partContainer = PartHelpers.getPartContainer(partPos.getPos(), partPos.getSide());
+        IPartContainer partContainer = PartHelpers.getPartContainer(partPos.getPos(), partPos.getSide())
+            .getOrNull();
         if (partContainer != null && partContainer.hasPart(side)) {
             return PartStateHolder.of(partContainer.getPart(side), partContainer.getPartState(side));
         }

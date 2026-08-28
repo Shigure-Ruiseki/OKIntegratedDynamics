@@ -208,7 +208,7 @@ public abstract class PartContainerDefault implements IPartContainer {
     @Override
     public <T> LazyOptional<T> getCapability(@NotNull Capability<T> capability, @Nullable ForgeDirection facing) {
         INetwork network = getNetwork();
-        IPartNetwork partNetwork = getPartNetwork();
+        IPartNetwork partNetwork = getPartNetwork().getOrNull();
         DimPos pos = getPosition();
         if (facing == null) {
             for (Map.Entry<ForgeDirection, PartHelpers.PartStateHolder<?, ?>> entry : partData.entrySet()) {
@@ -255,7 +255,7 @@ public abstract class PartContainerDefault implements IPartContainer {
 
     protected abstract INetwork getNetwork();
 
-    protected IPartNetwork getPartNetwork() {
+    protected LazyOptional<IPartNetwork> getPartNetwork() {
         return NetworkHelpers.getPartNetwork(getNetwork());
     }
 

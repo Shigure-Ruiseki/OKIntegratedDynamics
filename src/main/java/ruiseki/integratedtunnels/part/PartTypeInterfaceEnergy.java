@@ -12,7 +12,7 @@ import ruiseki.okcore.energy.capability.CapabilityEnergy;
 
 /**
  * Interface for energy storages.
- * 
+ *
  * @author rubensworks
  */
 public class PartTypeInterfaceEnergy extends
@@ -34,7 +34,8 @@ public class PartTypeInterfaceEnergy extends
 
     @Override
     protected IEnergyStorage getTargetCapabilityInstance(PartPos pos) {
-        return EnergyHelpers.getEnergyStorage(pos);
+        return EnergyHelpers.getEnergyStorage(pos)
+            .getOrNull();
     }
 
     @Override

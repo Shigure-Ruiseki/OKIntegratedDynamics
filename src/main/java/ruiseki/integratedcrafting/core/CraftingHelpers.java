@@ -45,6 +45,7 @@ import ruiseki.integratedcrafting.api.recipe.IRecipeIndex;
 import ruiseki.integratedcrafting.capability.network.CraftingNetworkConfig;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.PartStateException;
+import ruiseki.integrateddynamics.api.ingredient.capability.IPositionedAddonsNetworkIngredientsHandler;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.IPositionedAddonsNetworkIngredients;
 import ruiseki.integrateddynamics.api.part.PartPos;
@@ -52,6 +53,7 @@ import ruiseki.integrateddynamics.capability.network.PositionedAddonsNetworkIngr
 import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
 import ruiseki.integrateddynamics.core.network.IngredientChannelAdapter;
 import ruiseki.okcore.capabilities.ICapabilityProvider;
+import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.helper.TileHelpers;
 import ruiseki.okcore.ingredient.collection.IngredientArrayList;
 import ruiseki.okcore.ingredient.collection.IngredientCollectionPrototypeMap;
@@ -78,7 +80,8 @@ public class CraftingHelpers {
                 .getWorld(),
             pos.getPos()
                 .getBlockPos(),
-            pos.getSide());
+            pos.getSide())
+            .getOrNull();
         if (network == null) {
             IntegratedDynamics.clog(Level.ERROR, "Could not get the network for transfer as no network was found.");
             throw new PartStateException(pos.getPos(), pos.getSide());
@@ -108,14 +111,32 @@ public class CraftingHelpers {
      * @param ingredientComponent The ingredient component type of the network.
      * @param <T>                 The instance type.
      * @param <M>                 The matching condition parameter.
-     * @return The storage network or null.
+     * @return The storage network.
      */
-    @Nullable
-    public static <T, M> IPositionedAddonsNetworkIngredients<T, M> getIngredientsNetwork(INetwork network,
+    public static <T, M> LazyOptional<IPositionedAddonsNetworkIngredients<T, M>> getIngredientsNetwork(INetwork network,
         IngredientComponent<T, M> ingredientComponent) {
-        return ingredientComponent.getCapability(PositionedAddonsNetworkIngredientsHandlerConfig.CAPABILITY)
-            .getOrNull()
-            .getStorage(network);
+        IPositionedAddonsNetworkIngredientsHandler<T, M> ingredientsHandler = ingredientComponent
+            .getCapability(PositionedAddonsNetworkIngredientsHandlerConfig.CAPABILITY)
+            .getOrNull();
+        if (ingredientsHandler != null) {
+            return ingredientsHandler.getStorage(network);
+        }
+        return LazyOptional.empty();
+    }
+
+    /**
+     * Get the storage network of the given type in the given network.
+     * 
+     * @param network             A network.
+     * @param ingredientComponent The ingredient component type of the network.
+     * @param <T>                 The instance type.
+     * @param <M>                 The matching condition parameter.
+     * @return The storage network.
+     */
+    public static <T, M> IPositionedAddonsNetworkIngredients<T, M> getIngredientsNetworkChecked(INetwork network,
+        IngredientComponent<T, M> ingredientComponent) {
+        return getIngredientsNetwork(network, ingredientComponent)
+            .orElseThrow(() -> new IllegalStateException("Could not find an ingredients network"));
     }
 
     /**
@@ -133,10 +154,8 @@ public class CraftingHelpers {
         IngredientComponent<T, M> ingredientComponent, boolean scheduleObservation) {
         IPositionedAddonsNetworkIngredients<T, M> ingredientsNetwork = getIngredientsNetwork(
             network,
-            ingredientComponent);
-        // Checking isObservationForcedPending ensures that we don't allow crafting jobs
-        // if the network is guaranteed to have uncommitted changes, such as the one in #48
-        if (ingredientsNetwork != null && !ingredientsNetwork.isObservationForcedPending(channel)) {
+            ingredientComponent).getOrNull();
+        if (ingredientsNetwork != null) {
             if (scheduleObservation) {
                 ingredientsNetwork.scheduleObservation();
             }
@@ -218,6 +237,18 @@ public class CraftingHelpers {
             network,
             channel,
             true);
+
+        // // If the network is guaranteed to have uncommitted changes (such as the one in #48),
+        // // forcefully run observers synchronously, so that we can calculate the job in a consistent network state.
+        // for (IngredientComponent<?, ?> ingredientComponent : IngredientComponent.REGISTRY.getValuesCollection()) {
+        // IPositionedAddonsNetworkIngredients<?, ?> ingredientsNetwork = getIngredientsNetwork(network,
+        // ingredientComponent).orElse(null);
+        // if (ingredientsNetwork != null && (ingredientsNetwork.isObservationForcedPending(channel) || Math.random() >
+        // 0.5)) {
+        // ingredientsNetwork.runObserverSync();
+        // }
+        // }
+
         PartialCraftingJobCalculation result = calculateCraftingJobs(
             recipeIndex,
             channel,

@@ -27,7 +27,6 @@ import ruiseki.jfmuy.api.recipe.transfer.IRecipeTransferError;
 import ruiseki.jfmuy.api.recipe.transfer.IRecipeTransferHandler;
 import ruiseki.jfmuy.gui.TooltipRenderer;
 import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
-import ruiseki.okcore.fluid.handler.IFluidHandlerItem;
 import ruiseki.okcore.helper.CapabilityHelpers;
 import ruiseki.okcore.helper.LangHelpers;
 
@@ -152,12 +151,13 @@ public class LogicProgrammerTransferHandler<T extends ContainerLogicProgrammerBa
         if (focusElement instanceof ItemStack) {
             itemStack = (ItemStack) focusElement;
         } else if (focusElement instanceof FluidStack) {
-            itemStack = new ItemStack(Items.bucket);
-            IFluidHandlerItem fluidHandler = CapabilityHelpers
-                .getCapability(itemStack, CapabilityFluidHandler.FLUID_HANDLER_ITEM)
-                .getOrNull();
-            fluidHandler.fill((FluidStack) focusElement, true);
-            itemStack = fluidHandler.getContainer();
+            ItemStack bucket = new ItemStack(Items.bucket);
+            itemStack = CapabilityHelpers.getCapability(bucket, CapabilityFluidHandler.FLUID_HANDLER_ITEM)
+                .map(fluidHandler -> {
+                    fluidHandler.fill((FluidStack) focusElement, true);
+                    return fluidHandler.getContainer();
+                })
+                .orElse(null);
         }
         if (itemStack != null) {
             if (element.isItemValidForSlot(0, itemStack)) {

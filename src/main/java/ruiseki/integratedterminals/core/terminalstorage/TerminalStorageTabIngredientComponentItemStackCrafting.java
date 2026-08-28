@@ -16,6 +16,7 @@ import ruiseki.integratedterminals.api.terminalstorage.ITerminalStorageTabClient
 import ruiseki.integratedterminals.api.terminalstorage.ITerminalStorageTabCommon;
 import ruiseki.integratedterminals.api.terminalstorage.ITerminalStorageTabServer;
 import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorageBase;
+import ruiseki.okcore.datastructure.LazyOptional;
 
 /**
  * Terminal storage tab for the item crafting grid.
@@ -57,7 +58,8 @@ public class TerminalStorageTabIngredientComponentItemStackCrafting implements I
     public ITerminalStorageTabServer createServerTab(ContainerTerminalStorageBase container, EntityPlayer player,
         INetwork network) {
         IPositionedAddonsNetworkIngredients<ItemStack, Integer> ingredientNetwork = NetworkHelpers
-            .getIngredientNetwork(network, ingredientComponent);
+            .getIngredientNetwork(LazyOptional.of(() -> network), ingredientComponent)
+            .orElseThrow(() -> new IllegalStateException("Could not find an ingredient network"));
         return new TerminalStorageTabIngredientComponentItemStackCraftingServer(
             getName(),
             network,
