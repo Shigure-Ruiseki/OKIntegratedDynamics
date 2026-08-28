@@ -4,21 +4,25 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.Slot;
+import net.minecraft.item.ItemArmor;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.IIcon;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
 
-import org.apache.commons.lang3.tuple.Triple;
+import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.Nullable;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.integrateddynamics.api.evaluate.variable.IVariable;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.IPositionedAddonsNetwork;
@@ -30,9 +34,11 @@ import ruiseki.integratedterminals.api.terminalstorage.ITerminalStorageTabServer
 import ruiseki.integratedterminals.api.terminalstorage.event.TerminalStorageTabCommonLoadSlotsEvent;
 import ruiseki.integratedterminals.api.terminalstorage.location.ITerminalStorageLocation;
 import ruiseki.integratedterminals.core.client.gui.CraftingOptionGuiData;
+import ruiseki.integratedterminals.core.client.gui.GuiTerminalStorage;
 import ruiseki.integratedterminals.core.terminalstorage.TerminalStorageTabs;
 import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientOpenCraftingJobAmountGuiPacket;
 import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientOpenCraftingPlanGuiPacket;
+import ruiseki.okcore.helper.GuiHelpers;
 import ruiseki.okcore.helper.ValueNotifierHelpers;
 import ruiseki.okcore.inventory.IGuiContainerProvider;
 import ruiseki.okcore.inventory.container.ExtendedInventoryContainer;
@@ -47,7 +53,7 @@ public abstract class ContainerTerminalStorageBase<L> extends ExtendedInventoryC
     private final Map<String, ITerminalStorageTabClient<?>> tabsClient;
     private final Map<String, ITerminalStorageTabServer> tabsServer;
     private final Map<String, ITerminalStorageTabCommon> tabsCommon;
-    private final Map<String, List<Triple<Slot, Integer, Integer>>> tabSlots;
+    private final Map<String, List<Pair<Slot, ITerminalStorageTabCommon.ISlotPositionCallback>>> tabSlots;
     private final Optional<INetwork> network;
     private final Optional<ITerminalStorageTabCommon.IVariableInventory> variableInventory;
 
@@ -57,6 +63,9 @@ public abstract class ContainerTerminalStorageBase<L> extends ExtendedInventoryC
 
     private final List<String> channelStrings;
     private String channelAllLabel;
+
+    @SideOnly(Side.CLIENT)
+    public GuiTerminalStorage screen;
 
     private static final TerminalStorageState GLOBAL_PLAYER_STATE = new TerminalStorageState();
 
@@ -78,6 +87,7 @@ public abstract class ContainerTerminalStorageBase<L> extends ExtendedInventoryC
         this.serverTabsInitialized = false;
 
         addPlayerInventory(player.inventory, 31, 143);
+        addInventoryAndOffHand(player);
 
         this.channelAllLabel = "All";
         this.channelStrings = Lists.newArrayList(this.channelAllLabel);
@@ -96,21 +106,19 @@ public abstract class ContainerTerminalStorageBase<L> extends ExtendedInventoryC
                 this.tabsCommon.put(id, commonTab);
 
                 int slotStartIndex = this.inventorySlots.size();
-                List<Slot> slots = commonTab.loadSlots(this, slotStartIndex, player, getVariableInventory());
+                List<Pair<Slot, ITerminalStorageTabCommon.ISlotPositionCallback>> slots = commonTab
+                    .loadSlots(this, slotStartIndex, player, getVariableInventory());
                 TerminalStorageTabCommonLoadSlotsEvent loadSlotsEvent = new TerminalStorageTabCommonLoadSlotsEvent(
                     commonTab,
                     this,
                     slots);
                 MinecraftForge.EVENT_BUS.post(loadSlotsEvent);
                 slots = loadSlotsEvent.getSlots();
-                this.tabSlots.put(
-                    id,
-                    slots.stream()
-                        .map(slot -> Triple.of(slot, slot.xDisplayPosition, slot.yDisplayPosition))
-                        .collect(Collectors.toList()));
-                for (Slot slot : slots) {
-                    if (slot.slotNumber == 0) {
-                        this.addSlotToContainer(slot);
+                this.tabSlots.put(id, slots);
+                for (Pair<Slot, ITerminalStorageTabCommon.ISlotPositionCallback> slot : slots) {
+                    if (slot.getLeft()
+                        .getSlotIndex() == 0) {
+                        this.addSlotToContainer(slot.getLeft());
                     }
                 }
             }
@@ -136,6 +144,41 @@ public abstract class ContainerTerminalStorageBase<L> extends ExtendedInventoryC
             setSelectedTab(null);
             setSelectedChannel(IPositionedAddonsNetwork.WILDCARD_CHANNEL);
         }
+    }
+
+    protected void addInventoryAndOffHand(EntityPlayer player) {
+        for (int k = 0; k < 4; ++k) {
+            final int armorType = k;
+
+            this.addSlotToContainer(
+                new Slot(
+                    player.inventory,
+                    39 - k,
+                    -7 + (k % 2) * GuiHelpers.SLOT_SIZE,
+                    152 + (k / 2) * GuiHelpers.SLOT_SIZE) {
+
+                    @Override
+                    public int getSlotStackLimit() {
+                        return 1;
+                    }
+
+                    @Override
+                    public boolean isItemValid(ItemStack stack) {
+                        if (stack == null || stack.getItem() == null) {
+                            return false;
+                        }
+                        return stack.getItem()
+                            .isValidArmor(stack, armorType, player);
+                    }
+
+                    @Override
+                    @SideOnly(Side.CLIENT)
+                    public IIcon getBackgroundIconIndex() {
+                        return ItemArmor.func_94602_b(armorType);
+                    }
+                });
+        }
+        // TODO Add BackHand Compat
     }
 
     public Optional<ITerminalStorageTabCommon.IVariableInventory> getVariableInventory() {
@@ -221,8 +264,8 @@ public abstract class ContainerTerminalStorageBase<L> extends ExtendedInventoryC
         return inventorySlots.size() - player.inventory.mainInventory.length;
     }
 
-    public List<Triple<Slot, Integer, Integer>> getTabSlots(String tabName) {
-        List<Triple<Slot, Integer, Integer>> slots = this.tabSlots.get(tabName);
+    public List<Pair<Slot, ITerminalStorageTabCommon.ISlotPositionCallback>> getTabSlots(String tabName) {
+        List<Pair<Slot, ITerminalStorageTabCommon.ISlotPositionCallback>> slots = this.tabSlots.get(tabName);
         if (slots == null) {
             return Collections.emptyList();
         }
@@ -230,19 +273,13 @@ public abstract class ContainerTerminalStorageBase<L> extends ExtendedInventoryC
     }
 
     protected void enableSlots(String tabName) {
-        List<Triple<Slot, Integer, Integer>> slots = getTabSlots(tabName);
-        if (slots != null) {
-            for (Triple<Slot, Integer, Integer> slot : slots) {
-                slot.getLeft().xDisplayPosition = slot.getMiddle();
-                slot.getLeft().yDisplayPosition = slot.getRight();
-            }
-        }
+        // Do nothing, they will be placed on the correct location client-side upon init
     }
 
     protected void disableSlots(String tabName) {
-        List<Triple<Slot, Integer, Integer>> slots = getTabSlots(tabName);
+        List<Pair<Slot, ITerminalStorageTabCommon.ISlotPositionCallback>> slots = getTabSlots(tabName);
         if (slots != null) {
-            for (Triple<Slot, Integer, Integer> slot : slots) {
+            for (Pair<Slot, ITerminalStorageTabCommon.ISlotPositionCallback> slot : slots) {
                 slot.getLeft().xDisplayPosition = Integer.MIN_VALUE;
                 slot.getLeft().yDisplayPosition = Integer.MIN_VALUE;
             }

@@ -2,8 +2,6 @@ package ruiseki.integratedterminals.core.terminalstorage;
 
 import java.util.List;
 
-import javax.annotation.Nullable;
-
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.init.Blocks;
 import net.minecraft.inventory.Container;
@@ -17,7 +15,6 @@ import com.google.common.collect.Lists;
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
 import ruiseki.integratedterminals.GeneralConfig;
 import ruiseki.integratedterminals.IntegratedTerminals;
-import ruiseki.integratedterminals.Reference;
 import ruiseki.integratedterminals.api.terminalstorage.ITerminalButton;
 import ruiseki.integratedterminals.api.terminalstorage.ITerminalStorageTabClient;
 import ruiseki.integratedterminals.api.terminalstorage.ITerminalStorageTabCommon;
@@ -27,8 +24,8 @@ import ruiseki.integratedterminals.core.terminalstorage.button.TerminalButtonIte
 import ruiseki.integratedterminals.core.terminalstorage.button.TerminalButtonItemStackCraftingGridClear;
 import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorageBase;
 import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientItemStackCraftingGridShiftClickOutput;
+import ruiseki.okcore.helper.GuiHelpers;
 import ruiseki.okcore.helper.LangHelpers;
-import ruiseki.okcore.init.ModBase;
 
 /**
  * A client-side storage terminal ingredient tab for crafting with {@link ItemStack} instances.
@@ -74,22 +71,13 @@ public class TerminalStorageTabIngredientComponentItemStackCraftingClient
     }
 
     @Override
-    public int getSlotOffsetX() {
-        return ITerminalStorageTabClient.DEFAULT_SLOT_OFFSET_X + 108;
+    public int getSlotVisibleRows() {
+        return Math.max(1, super.getSlotVisibleRows() - 4);
     }
 
     @Override
-    public int getSlotRowLength() {
-        return 3;
-    }
-
-    @Nullable
-    @Override
-    public ResourceLocation getBackgroundTexture() {
-        return new ResourceLocation(
-            Reference.MOD_ID,
-            IntegratedTerminals._instance.getReferenceValue(ModBase.REFKEY_TEXTURE_PATH_GUI)
-                + "part_terminal_storage_crafting.png");
+    public int getPlayerInventoryOffsetY() {
+        return super.getPlayerInventoryOffsetY() + 68;
     }
 
     @Override
@@ -119,6 +107,19 @@ public class TerminalStorageTabIngredientComponentItemStackCraftingClient
             hasClickedOutside,
             hasClickedInStorage,
             hoveredContainerSlot);
+    }
+
+    @Override
+    public void onTabBackgroundRender(GuiTerminalStorage<?, ?> screen, float f, int mouseX, int mouseY) {
+        super.onTabBackgroundRender(screen, f, mouseX, mouseY);
+        // Render crafting grid
+        screen.drawTexturedModalRect(
+            screen.guiLeft + (screen.getGridXSize() / 2) - (9 * GuiHelpers.SLOT_SIZE / 2) + 22 + 29,
+            screen.guiTop + 52 + screen.getGridYSize(),
+            0,
+            117,
+            120,
+            68);
     }
 
     @Override

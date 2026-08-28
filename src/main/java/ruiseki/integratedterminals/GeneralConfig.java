@@ -187,6 +187,52 @@ public class GeneralConfig extends DummyConfig {
         comment = "If shift-clicking on the crafting terminal's crafting result slot should only produce a single result.")
     public static boolean shiftClickCraftingResultLimit = false;
 
+    @ConfigurableProperty(
+        category = ConfigurableTypeCategory.GENERAL,
+        comment = "The number of rows in the small scale of the storage terminal.")
+    public static int guiStorageScaleSmallRows = 5;
+    @ConfigurableProperty(
+        category = ConfigurableTypeCategory.GENERAL,
+        comment = "The number of columns in the small scale of the storage terminal.")
+    public static int guiStorageScaleSmallColumns = 9;
+    @ConfigurableProperty(
+        category = ConfigurableTypeCategory.GENERAL,
+        comment = "The number of rows in the medium scale of the storage terminal.")
+    public static int guiStorageScaleMediumRows = 7;
+    @ConfigurableProperty(
+        category = ConfigurableTypeCategory.GENERAL,
+        comment = "The number of columns in the medium scale of the storage terminal.")
+    public static int guiStorageScaleMediumColumns = 10;
+    @ConfigurableProperty(
+        category = ConfigurableTypeCategory.GENERAL,
+        comment = "The number of rows in the large scale of the storage terminal.")
+    public static int guiStorageScaleLargeRows = 9;
+    @ConfigurableProperty(
+        category = ConfigurableTypeCategory.GENERAL,
+        comment = "The number of columns in the large scale of the storage terminal.")
+    public static int guiStorageScaleLargeColumns = 11;
+    @ConfigurableProperty(
+        category = ConfigurableTypeCategory.GENERAL,
+        comment = "The number of columns in the height-based scale of the storage terminal.")
+    public static int guiStorageScaleHeightColumns = 9;
+    @ConfigurableProperty(
+        category = ConfigurableTypeCategory.GENERAL,
+        comment = "The number of rows in the width-based scale of the storage terminal.")
+    public static int guiStorageScaleWidthRows = 5;
+    @ConfigurableProperty(
+        category = ConfigurableTypeCategory.GENERAL,
+        comment = "The maximum number of rows in when scaling the storage terminal.")
+    public static int guiStorageScaleMaxRows = 20;
+    @ConfigurableProperty(
+        category = ConfigurableTypeCategory.GENERAL,
+        comment = "The maximum number of columns in when scaling the storage terminal.")
+    public static int guiStorageScaleMaxColumns = 32;
+
+    @ConfigurableProperty(
+        category = ConfigurableTypeCategory.GENERAL,
+        comment = "If the crafting grid should always be shown centrally, and not be responsive based on screen size.")
+    public static boolean guiStorageForceCraftingGridCenter = false;
+
     /**
      * The type of this config.
      */

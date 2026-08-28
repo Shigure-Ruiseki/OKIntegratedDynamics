@@ -23,22 +23,26 @@ public interface ITerminalButton<C extends ITerminalStorageTabClient, O extends 
     /**
      * Calculate the final X position for this button.
      *
-     * @param guiLeft Gui left X
-     * @param offset  X offset.
+     * @param guiLeft   Gui left X
+     * @param offset    X offset.
+     * @param gridXSize The X size of the grid.
+     * @param gridYSize The Y size of the grid.
      * @return The final X position.
      */
-    public default int getX(int guiLeft, int offset) {
+    public default int getX(int guiLeft, int offset, int gridXSize, int gridYSize) {
         return guiLeft + offset;
     }
 
     /**
      * Calculate the final Y position for this button.
      *
-     * @param guiTop Gui top Y
-     * @param offset Y offset.
+     * @param guiTop    Gui top Y
+     * @param offset    Y offset.
+     * @param gridXSize The X size of the grid.
+     * @param gridYSize The Y size of the grid.
      * @return The final Y position.
      */
-    public default int getY(int guiTop, int offset) {
+    public default int getY(int guiTop, int offset, int gridXSize, int gridYSize) {
         return guiTop + offset;
     }
 

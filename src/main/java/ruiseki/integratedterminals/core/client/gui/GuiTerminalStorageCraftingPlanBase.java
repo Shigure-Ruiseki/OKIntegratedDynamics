@@ -32,6 +32,7 @@ public class GuiTerminalStorageCraftingPlanBase<L, C extends ContainerTerminalSt
     private GuiCraftingPlan guiCraftingPlan;
 
     private ITerminalCraftingPlan craftingPlan;
+    private GuiButtonText buttonConfirm;
 
     public GuiTerminalStorageCraftingPlanBase(C container) {
         super(container);
@@ -67,11 +68,10 @@ public class GuiTerminalStorageCraftingPlanBase<L, C extends ContainerTerminalSt
             this.guiCraftingPlan = null;
         }
 
-        GuiButtonText button;
         this.buttonList.clear();
         this.buttonList.addAll(
             Lists.newArrayList(
-                button = new GuiButtonText(
+                buttonConfirm = new GuiButtonText(
                     ContainerTerminalStorageCraftingPlanBase.BUTTON_START,
                     guiLeft + 95,
                     guiTop + 198,
@@ -80,7 +80,7 @@ public class GuiTerminalStorageCraftingPlanBase<L, C extends ContainerTerminalSt
                     EnumChatFormatting.YELLOW
                         + LangHelpers.localize("gui.integratedterminals.terminal_storage.step.craft"),
                     true)));
-        button.enabled = this.guiCraftingPlan != null && this.guiCraftingPlan.isValid();
+        buttonConfirm.enabled = this.guiCraftingPlan != null && this.guiCraftingPlan.isValid();
     }
 
     @Override
@@ -90,7 +90,7 @@ public class GuiTerminalStorageCraftingPlanBase<L, C extends ContainerTerminalSt
                 returnToTerminalStorage();
             } else if (this.guiCraftingPlan != null && this.guiCraftingPlan.isValid()
                 && (keyCode == Keyboard.KEY_NUMPADENTER || keyCode == Keyboard.KEY_RETURN)) {
-                    actionPerformed(this.buttonList.get(0));
+                    actionPerformed(this.buttonConfirm);
                 } else {
                     super.keyTyped(typedChar, keyCode);
                 }

@@ -49,15 +49,22 @@ public class TerminalButtonItemStackCraftingGridAutoRefill<T> implements
 
     @Override
     public void reloadFromState() {
-        if (state.hasButton(
-            clientTab.getTabSettingsName()
-                .toString(),
-            this.buttonName)) {
-            NBTTagCompound data = (NBTTagCompound) state.getButton(
-                clientTab.getName()
-                    .toString(),
-                this.buttonName);
-            this.active = AutoRefillType.values()[data.getInteger("active")];
+        String tabName = clientTab.getTabSettingsName()
+            .toString();
+
+        if (state.hasButton(tabName, this.buttonName)) {
+            NBTTagCompound data = (NBTTagCompound) state.getButton(tabName, this.buttonName);
+            if (data != null && data.hasKey("active")) {
+                int activeIndex = data.getInteger("active");
+                AutoRefillType[] values = AutoRefillType.values();
+                if (activeIndex >= 0 && activeIndex < values.length) {
+                    this.active = values[activeIndex];
+                } else {
+                    this.active = AutoRefillType.STORAGE;
+                }
+            } else {
+                this.active = AutoRefillType.STORAGE;
+            }
         } else {
             this.active = AutoRefillType.STORAGE;
         }

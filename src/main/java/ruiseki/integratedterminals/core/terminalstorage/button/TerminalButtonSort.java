@@ -50,16 +50,18 @@ public class TerminalButtonSort<T> implements
 
     @Override
     public void reloadFromState() {
-        if (state.hasButton(
-            clientTab.getTabSettingsName()
-                .toString(),
-            this.buttonName)) {
-            NBTTagCompound data = (NBTTagCompound) state.getButton(
-                clientTab.getName()
-                    .toString(),
-                this.buttonName);
-            this.active = data.getBoolean("active");
-            this.descending = data.getBoolean("descending");
+        String tabName = clientTab.getTabSettingsName()
+            .toString();
+
+        if (state.hasButton(tabName, this.buttonName)) {
+            NBTTagCompound data = (NBTTagCompound) state.getButton(tabName, this.buttonName);
+            if (data != null) {
+                this.active = data.getBoolean("active");
+                this.descending = data.getBoolean("descending");
+            } else {
+                this.active = false;
+                this.descending = true;
+            }
         } else {
             this.active = false;
             this.descending = true;

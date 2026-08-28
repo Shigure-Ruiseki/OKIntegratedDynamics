@@ -11,13 +11,14 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.renderer.RenderHelper;
+import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.entity.RenderItem;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.ResourceLocation;
 
-import org.apache.commons.lang3.tuple.Triple;
+import org.apache.commons.lang3.tuple.Pair;
 import org.lwjgl.opengl.GL11;
 
 import com.google.common.collect.Iterables;
@@ -47,6 +48,7 @@ import ruiseki.okcore.helper.Helpers;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.RenderHelpers;
 import ruiseki.okcore.init.ModBase;
+import ruiseki.okcore.inventory.container.InventoryContainer;
 
 /**
  * @author rubensworks
@@ -58,17 +60,14 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
     private static int TAB_UNSELECTED_HEIGHT = 21;
     private static int TAB_SELECTED_HEIGHT = 24;
     private static int TAB_ICON_OFFSET = 4;
-    private static int TAB_UNSELECTED_TEXTURE_X = 0;
-    private static int TAB_SELECTED_TEXTURE_X = 24;
-    private static int TAB_UNSELECTED_TEXTURE_Y = 225;
-    private static int TAB_SELECTED_TEXTURE_Y = 225;
-    private static int SCROLL_X = 198;
-    private static int SCROLL_Y = 39;
-    private static int SCROLL_HEIGHT = 88;
+    private static int TAB_UNSELECTED_TEXTURE_X = 118;
+    private static int TAB_SELECTED_TEXTURE_X = 142;
+    private static int TAB_UNSELECTED_TEXTURE_Y = 0;
+    private static int TAB_SELECTED_TEXTURE_Y = 0;
+    private static int SCROLL_Y = 40;
 
-    private static int SEARCH_X = 104;
+    private static int SEARCH_X = 103;
     private static int SEARCH_Y = 27;
-    private static int SEARCH_WIDTH = 80;
     private static int SEARCH_HEIGHT = 20;
 
     private static int CHANNEL_X = 58;
@@ -94,10 +93,12 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
 
     public GuiTerminalStorage(C container) {
         super(container);
+        container.screen = this;
     }
 
     @Override
     public void initGui() {
+        this.buttonList.clear();
         super.initGui();
         this.initialized = false;
 
@@ -120,11 +121,12 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
         if (activeChannel != IPositionedAddonsNetwork.WILDCARD_CHANNEL) {
             fieldChannel.setText(Integer.toString(activeChannel));
         }
+        firstRow = 0;
 
         scrollBar = new GuiScrollBar(
-            guiLeft + SCROLL_X,
-            guiTop + SCROLL_Y,
-            SCROLL_HEIGHT,
+            guiLeft + getGridXSize() + 33,
+            guiTop + SCROLL_Y + 1,
+            getScrollHeight() - 2,
             firstRow -> this.firstRow = firstRow,
             0) {
 
@@ -151,7 +153,7 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
             Minecraft.getMinecraft().fontRenderer,
             guiLeft + SEARCH_X,
             guiTop + SEARCH_Y,
-            SEARCH_WIDTH,
+            getSearchWidth() - 10,
             SEARCH_HEIGHT);
         fieldSearch.setMaxStringLength(50);
         fieldSearch.setVisible(true);
@@ -159,6 +161,98 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
         fieldSearch.setCanLoseFocus(true);
         fieldSearch.setEnabled(true);
         fieldSearch.setEnableBackgroundDrawing(false);
+
+        repositionInventorySlots();
+    }
+
+    public void repositionInventorySlots() {
+        int gridXSize = getGridXSize();
+        int gridYSize = getGridYSize();
+        int playerInventoryOffsetY = getPlayerInventoryOffsetY();
+        ITerminalStorageTabCommon.SlotPositionFactors factors = new ITerminalStorageTabCommon.SlotPositionFactors(
+            offsetX,
+            offsetY,
+            gridXSize,
+            gridYSize,
+            playerInventoryOffsetY);
+
+        // Reposition regular inventory slots
+        for (int y = 0; y < 1; y++) {
+            for (int x = 0; x < 9; x++) {
+                Slot slot = this.container.getSlot(x + y * 9 + 0);
+                InventoryContainer.setSlotPosX(
+                    slot,
+                    offsetX + ITerminalStorageTabClient.DEFAULT_SLOT_OFFSET_X
+                        - 1
+                        + (gridXSize / 2)
+                        - (9 * GuiHelpers.SLOT_SIZE / 2)
+                        + 19
+                        + x * GuiHelpers.SLOT_SIZE);
+                InventoryContainer.setSlotPosY(
+                    slot,
+                    offsetY + 58 + 63 + gridYSize + playerInventoryOffsetY + y * GuiHelpers.SLOT_SIZE);
+            }
+        }
+        for (int y = 0; y < 3; y++) {
+            for (int x = 0; x < 9; x++) {
+                Slot slot = this.container.getSlot(x + y * 9 + 9);
+                InventoryContainer.setSlotPosX(
+                    slot,
+                    offsetX + ITerminalStorageTabClient.DEFAULT_SLOT_OFFSET_X
+                        - 1
+                        + (gridXSize / 2)
+                        - (9 * GuiHelpers.SLOT_SIZE / 2)
+                        + 19
+                        + x * GuiHelpers.SLOT_SIZE);
+                InventoryContainer
+                    .setSlotPosY(slot, offsetY + 63 + gridYSize + playerInventoryOffsetY + y * GuiHelpers.SLOT_SIZE);
+            }
+        }
+        for (int y = 0; y < 4; y++) {
+            Slot slot = this.container.getSlot(36 + y);
+            InventoryContainer.setSlotPosX(
+                slot,
+                offsetX + ITerminalStorageTabClient.DEFAULT_SLOT_OFFSET_X
+                    - 1
+                    + (gridXSize / 2)
+                    - (9 * GuiHelpers.SLOT_SIZE / 2)
+                    - 19
+                    + (y % 2) * GuiHelpers.SLOT_SIZE);
+            InventoryContainer.setSlotPosY(
+                slot,
+                offsetY + 63
+                    + gridYSize
+                    + playerInventoryOffsetY
+                    + 9
+                    + ((int) Math.floor(y / 2)) * GuiHelpers.SLOT_SIZE);
+        }
+        {
+            Slot slot = this.container.getSlot(40);
+            InventoryContainer.setSlotPosX(
+                slot,
+                offsetX + ITerminalStorageTabClient.DEFAULT_SLOT_OFFSET_X
+                    - 1
+                    + (gridXSize / 2)
+                    - (9 * GuiHelpers.SLOT_SIZE / 2)
+                    - 10);
+            InventoryContainer.setSlotPosY(slot, offsetY + 63 + gridYSize + playerInventoryOffsetY + 9 + 49);
+        }
+
+        // Reposition tab slots
+        Optional<ITerminalStorageTabClient<?>> tabOptional = getSelectedClientTab();
+        tabOptional.ifPresent(tab -> {
+            String tabName = getContainer().getSelectedTab();
+            Optional<ITerminalStorageTabCommon> tabCommonOptional = getCommonTab(tabName);
+            tabCommonOptional.ifPresent(tabCommon -> {
+                for (Pair<Slot, ITerminalStorageTabCommon.ISlotPositionCallback> slot : getContainer()
+                    .getTabSlots(tabName)) {
+                    Pair<Integer, Integer> slotPos = slot.getRight()
+                        .getSlotPosition(factors);
+                    InventoryContainer.setSlotPosX(slot.getLeft(), slotPos.getLeft());
+                    InventoryContainer.setSlotPosY(slot.getLeft(), slotPos.getRight());
+                }
+            });
+        });
     }
 
     @Override
@@ -184,19 +278,44 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
             + "part_terminal_storage.png";
     }
 
+    public int getGridXSize() {
+        return getSlotRowLength() * GuiHelpers.SLOT_SIZE;
+    }
+
+    public int getGridYSize() {
+        return getSlotVisibleRows() * GuiHelpers.SLOT_SIZE;
+    }
+
+    public int getScrollHeight() {
+        return getGridYSize();
+    }
+
+    public int getSearchWidth() {
+        return getBaseXSize() - 7 * GuiHelpers.SLOT_SIZE - 2;
+    }
+
     @Override
     public int getBaseXSize() {
-        return 218;
+        return 56 + getGridXSize();
     }
 
     @Override
     public int getBaseYSize() {
-        return 225;
+        return 135 + getGridYSize() + getPlayerInventoryOffsetY() + 10;
+    }
+
+    protected int getPlayerInventoryOffsetY() {
+        return getSelectedClientTab().map(ITerminalStorageTabClient::getPlayerInventoryOffsetY)
+            .orElse(0);
     }
 
     @Override
     protected void drawGuiContainerBackgroundLayer(float f, int mouseX, int mouseY) {
-        super.drawGuiContainerBackgroundLayer(f, mouseX, mouseY);
+        // super.drawGuiContainerBackgroundLayer(f, mouseX, mouseY);
+        RenderHelpers.bindTexture(texture);
+        this.renderBgTab(f, mouseX, mouseY);
+        this.renderBgPlayerInventory(f, mouseX, mouseY);
+
         fieldChannel.drawTextBox(Minecraft.getMinecraft(), mouseX, mouseY);
         fieldSearch.drawTextBox(Minecraft.getMinecraft(), mouseX, mouseY);
         drawTabsBackground();
@@ -216,10 +335,19 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
         Optional<ITerminalStorageTabClient<?>> tabOptional = getSelectedClientTab();
         tabOptional.ifPresent(tab -> {
             int offset = 0;
+            int gridXSize = getGridXSize();
+            int gridYSize = getGridYSize();
+            int playerInventoryOffsetY = getPlayerInventoryOffsetY();
+            ITerminalStorageTabCommon.SlotPositionFactors factors = new ITerminalStorageTabCommon.SlotPositionFactors(
+                offsetX,
+                offsetY,
+                gridXSize,
+                gridYSize,
+                playerInventoryOffsetY);
             for (ITerminalButton button : tab.getButtons()) {
                 GuiButton guiButton = button.createButton(
-                    button.getX(guiLeft, BUTTONS_OFFSET_X),
-                    button.getY(guiTop, BUTTONS_OFFSET_Y + offset));
+                    button.getX(guiLeft, BUTTONS_OFFSET_X, gridXSize, gridYSize),
+                    button.getY(guiTop, BUTTONS_OFFSET_Y + offset, gridXSize, gridYSize));
                 guiButton.drawButton(mc, mouseX, mouseY);
                 if (button.isInLeftColumn()) {
                     offset += BUTTONS_OFFSET + guiButton.height;
@@ -229,20 +357,204 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
             String tabName = getContainer().getSelectedTab();
             Optional<ITerminalStorageTabCommon> tabCommonOptional = getCommonTab(tabName);
             tabCommonOptional.ifPresent(tabCommon -> {
-                for (Triple<Slot, Integer, Integer> slot : getContainer().getTabSlots(tabName)) {
+                for (Pair<Slot, ITerminalStorageTabCommon.ISlotPositionCallback> slot : getContainer()
+                    .getTabSlots(tabName)) {
+                    Pair<Integer, Integer> slotPos = slot.getRight()
+                        .getSlotPosition(factors);
                     tab.onCommonSlotRender(
                         this,
                         DrawLayer.BACKGROUND,
                         0,
-                        guiLeft + slot.getMiddle(),
-                        guiTop + slot.getRight(),
+                        guiLeft + slotPos.getLeft(),
+                        guiTop + slotPos.getRight(),
                         mouseX,
                         mouseY,
-                        slot.getLeft().slotNumber,
+                        slot.getLeft()
+                            .getSlotIndex(),
                         tabCommon);
                 }
             });
         });
+    }
+
+    protected void renderBgTab(float f, int mouseX, int mouseY) {
+        int tabWidth = getGridXSize() + 29;
+        int tabHeight = getGridYSize() + 40;
+        int offset = 21;
+        int cornerSize = 7;
+        int columns = getSlotRowLength();
+        int rows = getSlotVisibleRows();
+
+        // Corners
+        drawTexturedModalRect(guiLeft + offset, guiTop + offset, cornerSize, 0, cornerSize, cornerSize); // top-left
+        drawTexturedModalRect(guiLeft + offset + tabWidth - cornerSize, guiTop + offset, 0, 0, cornerSize, cornerSize); // top-right
+        drawTexturedModalRect(
+            guiLeft + offset + tabWidth - cornerSize,
+            guiTop + offset + tabHeight - cornerSize,
+            cornerSize * 2,
+            0,
+            cornerSize,
+            cornerSize); // bottom-right
+        drawTexturedModalRect(
+            guiLeft + offset,
+            guiTop + offset + tabHeight - cornerSize,
+            cornerSize * 3,
+            0,
+            cornerSize,
+            cornerSize); // bottom-left
+
+        // Sides
+        blitRescalable(
+            guiLeft + offset + cornerSize,
+            guiTop + offset,
+            cornerSize + 4,
+            0,
+            1,
+            cornerSize,
+            tabWidth - cornerSize * 2,
+            cornerSize); // top
+        blitRescalable(
+            guiLeft + offset + tabWidth - cornerSize,
+            guiTop + offset + cornerSize,
+            0,
+            4,
+            cornerSize,
+            1,
+            cornerSize,
+            tabHeight - cornerSize * 2); // right
+        blitRescalable(
+            guiLeft + offset + cornerSize,
+            guiTop + offset + tabHeight - cornerSize,
+            25,
+            0,
+            1,
+            cornerSize,
+            tabWidth - cornerSize * 2,
+            cornerSize); // bottom
+        blitRescalable(
+            guiLeft + offset,
+            guiTop + offset + cornerSize,
+            cornerSize,
+            4,
+            cornerSize,
+            1,
+            cornerSize,
+            tabHeight - cornerSize * 2); // left
+
+        // Background
+        blitRescalable(
+            guiLeft + offset + cornerSize,
+            guiTop + offset + cornerSize,
+            0,
+            3,
+            1,
+            1,
+            tabWidth - cornerSize * 2,
+            tabHeight - cornerSize * 2);
+
+        // Slots
+        for (int j = 0; j < rows; j++) {
+            int renderRows = Math.min(3, rows - j); // Try rendering multiple rows for optimizing efficiency (if
+                                                    // possible)
+            for (int i = 0; i < columns; i++) {
+                int renderColumns = Math.min(9, columns - i); // Try rendering multiple columns for optimizing
+                                                              // efficiency (if possible)
+                drawTexturedModalRect(
+                    guiLeft + offset + 10 + i * GuiHelpers.SLOT_SIZE,
+                    guiTop + offset + 18 + j * GuiHelpers.SLOT_SIZE,
+                    80,
+                    34,
+                    GuiHelpers.SLOT_SIZE * renderColumns,
+                    GuiHelpers.SLOT_SIZE * renderRows);
+                i += renderColumns - 1;
+            }
+            j += renderRows - 1;
+        }
+
+        // Scrollbar background
+        drawTexturedModalRect(guiLeft + getGridXSize() + 32, guiTop + SCROLL_Y - 1, 20, 12, 14, 1); // top
+        blitRescalable(guiLeft + getGridXSize() + 32, guiTop + SCROLL_Y, 20, 13, 14, 1, 14, getScrollHeight() - 2); // middle
+        drawTexturedModalRect(guiLeft + getGridXSize() + 32, guiTop + SCROLL_Y + getScrollHeight() - 2, 20, 101, 14, 1); // bottom
+
+        // Textbox background
+        drawTexturedModalRect(guiLeft + SEARCH_X - 1, guiTop + SEARCH_Y - 2, 28, 0, 1, SEARCH_HEIGHT - 8); // left
+        blitRescalable(
+            guiLeft + SEARCH_X,
+            guiTop + SEARCH_Y - 2,
+            29,
+            0,
+            1,
+            SEARCH_HEIGHT - 8,
+            getSearchWidth(),
+            SEARCH_HEIGHT - 8); // middle
+        drawTexturedModalRect(
+            guiLeft + SEARCH_X + getSearchWidth() - 1,
+            guiTop + SEARCH_Y - 2,
+            117,
+            0,
+            1,
+            SEARCH_HEIGHT - 8); // right
+
+        // Render tab-specific things
+        if (getSelectedClientTab().isPresent()) {
+            getSelectedClientTab().get()
+                .onTabBackgroundRender(this, f, mouseX, mouseY);
+        }
+    }
+
+    /**
+     * Phương thức thay thế blitRescalable tương thích với Gui 1.7.10 (texture 256x256 mặc định)
+     */
+    public static void blitRescalable(int x, int y, float u, float v, int uWidth, int vHeight, int width, int height) {
+        drawScaledCustomSizeModalRect(x, y, u, v, uWidth, vHeight, width, height, 256.0F, 256.0F);
+    }
+
+    public static void drawScaledCustomSizeModalRect(int x, int y, float u, float v, int uWidth, int vHeight, int width,
+        int height, float tileWidth, float tileHeight) {
+        float f = 1.0F / tileWidth;
+        float f1 = 1.0F / tileHeight;
+        Tessellator tessellator = Tessellator.instance;
+        tessellator.startDrawingQuads();
+        tessellator.addVertexWithUV(
+            (double) x,
+            (double) (y + height),
+            0.0D,
+            (double) (u * f),
+            (double) ((v + (float) vHeight) * f1));
+        tessellator.addVertexWithUV(
+            (double) (x + width),
+            (double) (y + height),
+            0.0D,
+            (double) ((u + (float) uWidth) * f),
+            (double) ((v + (float) vHeight) * f1));
+        tessellator.addVertexWithUV(
+            (double) (x + width),
+            (double) y,
+            0.0D,
+            (double) ((u + (float) uWidth) * f),
+            (double) (v * f1));
+        tessellator.addVertexWithUV((double) x, (double) y, 0.0D, (double) (u * f), (double) (v * f1));
+        tessellator.draw();
+    }
+
+    protected void renderBgPlayerInventory(float f, int mouseX, int mouseY) {
+        // Render player inventory
+        drawTexturedModalRect(
+            guiLeft + (getGridXSize() / 2) - (9 * GuiHelpers.SLOT_SIZE / 2) + 3,
+            guiTop + 52 + getGridYSize() + getPlayerInventoryOffsetY(),
+            34,
+            24,
+            216,
+            93);
+
+        // Auxiliary slots
+        drawTexturedModalRect(
+            guiLeft + (getGridXSize() / 2) + (9 * GuiHelpers.SLOT_SIZE / 2) + 57,
+            guiTop + 61 + getGridYSize() + getPlayerInventoryOffsetY(),
+            0,
+            12,
+            20,
+            57);
     }
 
     @Override
@@ -268,13 +580,22 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
         Optional<ITerminalStorageTabClient<?>> tabOptional = getSelectedClientTab();
         tabOptional.ifPresent(tab -> {
             int offset = 0;
+            int gridXSize = getGridXSize();
+            int gridYSize = getGridYSize();
+            int playerInventoryOffsetY = getPlayerInventoryOffsetY();
+            ITerminalStorageTabCommon.SlotPositionFactors factors = new ITerminalStorageTabCommon.SlotPositionFactors(
+                offsetX,
+                offsetY,
+                gridXSize,
+                gridYSize,
+                playerInventoryOffsetY);
             for (ITerminalButton button : tab.getButtons()) {
                 GuiButton guiButton = button.createButton(
-                    button.getX(guiLeft, BUTTONS_OFFSET_X),
-                    button.getY(guiTop, BUTTONS_OFFSET_Y + offset));
+                    button.getX(guiLeft, BUTTONS_OFFSET_X, gridXSize, gridYSize),
+                    button.getY(guiTop, BUTTONS_OFFSET_Y + offset, gridXSize, gridYSize));
                 if (func_146978_c(
-                    button.getX(0, BUTTONS_OFFSET_X),
-                    button.getY(0, BUTTONS_OFFSET_Y + offset),
+                    button.getX(0, BUTTONS_OFFSET_X, gridXSize, gridYSize),
+                    button.getY(0, BUTTONS_OFFSET_Y + offset, gridXSize, gridYSize),
                     guiButton.width,
                     guiButton.height,
                     mouseX,
@@ -292,16 +613,20 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
             String tabName = getContainer().getSelectedTab();
             Optional<ITerminalStorageTabCommon> tabCommonOptional = getCommonTab(tabName);
             tabCommonOptional.ifPresent(tabCommon -> {
-                for (Triple<Slot, Integer, Integer> slot : getContainer().getTabSlots(tabName)) {
+                for (Pair<Slot, ITerminalStorageTabCommon.ISlotPositionCallback> slot : getContainer()
+                    .getTabSlots(tabName)) {
+                    Pair<Integer, Integer> slotPos = slot.getRight()
+                        .getSlotPosition(factors);
                     tab.onCommonSlotRender(
                         this,
                         DrawLayer.FOREGROUND,
                         0,
-                        guiLeft + slot.getMiddle(),
-                        guiTop + slot.getRight(),
+                        guiLeft + slotPos.getLeft(),
+                        guiTop + slotPos.getRight(),
                         mouseX,
                         mouseY,
-                        slot.getLeft().slotNumber,
+                        slot.getLeft()
+                            .getSlotIndex(),
                         tabCommon);
                 }
             });
@@ -407,6 +732,9 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
 
         // Reset scrollbar
         scrollBar.scrollTo(0);
+
+        // Re-init screen, as scale might be different in the new tab
+        initGui();
     }
 
     protected void playButtonClickSound() {
@@ -493,19 +821,22 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
             ITerminalStorageTabCommon tabCommon = getContainer().getTabCommon(
                 tab.getName()
                     .toString());
+            int gridXSize = getGridXSize();
+            int gridYSize = getGridYSize();
             for (ITerminalButton button : tab.getButtons()) {
                 GuiButton guiButton = button.createButton(
-                    button.getX(guiLeft, BUTTONS_OFFSET_X),
-                    button.getY(guiTop, BUTTONS_OFFSET_Y + offset));
+                    button.getX(guiLeft, BUTTONS_OFFSET_X, gridXSize, gridYSize),
+                    button.getY(guiTop, BUTTONS_OFFSET_Y + offset, gridXSize, gridYSize));
                 if (func_146978_c(
-                    button.getX(0, BUTTONS_OFFSET_X),
-                    button.getY(0, BUTTONS_OFFSET_Y + offset),
+                    button.getX(0, BUTTONS_OFFSET_X, gridXSize, gridYSize),
+                    button.getY(0, BUTTONS_OFFSET_Y + offset, gridXSize, gridYSize),
                     guiButton.width,
                     guiButton.height,
                     mouseX,
                     mouseY)) {
                     button.onClick(tab, tabCommon, guiButton, getContainer().getSelectedChannel(), mouseButton);
                     playButtonClickSound();
+                    this.clicked = false; // To avoid grid slots being selected on mouse release
                     return;
                 }
                 if (button.isInLeftColumn()) {
@@ -830,7 +1161,9 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
                     fontRendererObj,
                     tab.getStatus(channel),
                     guiLeft + ITerminalStorageTabClient.DEFAULT_SLOT_OFFSET_X
-                        + (GuiHelpers.SLOT_SIZE * ITerminalStorageTabClient.DEFAULT_SLOT_ROW_LENGTH) / 2,
+                        + (GuiHelpers.SLOT_SIZE * tab.getRowColumnProvider()
+                            .getRowsAndColumns()
+                            .columns()) / 2,
                     y + 2 + getSlotVisibleRows() * GuiHelpers.SLOT_SIZE,
                     16777215);
                 GlStateManager.color(1, 1, 1, 1);

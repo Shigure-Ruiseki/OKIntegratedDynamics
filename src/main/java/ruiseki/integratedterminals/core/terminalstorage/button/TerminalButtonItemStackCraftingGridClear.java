@@ -3,6 +3,7 @@ package ruiseki.integratedterminals.core.terminalstorage.button;
 import java.util.List;
 
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.EnumChatFormatting;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -31,13 +32,13 @@ public class TerminalButtonItemStackCraftingGridClear<T> implements
     }
 
     @Override
-    public int getX(int guiLeft, int offset) {
-        return guiLeft + 85;
+    public int getX(int guiLeft, int offset, int gridXSize, int gridYSize) {
+        return guiLeft + (gridXSize / 2) + 32;
     }
 
     @Override
-    public int getY(int guiTop, int offset) {
-        return guiTop + 57;
+    public int getY(int guiTop, int offset, int gridXSize, int gridYSize) {
+        return guiTop + gridYSize + 59;
     }
 
     @Override
@@ -68,7 +69,9 @@ public class TerminalButtonItemStackCraftingGridClear<T> implements
     @Override
     @SideOnly(Side.CLIENT)
     public void getTooltip(EntityPlayer player, boolean tooltipFlag, List<String> lines) {
-        lines.add(LangHelpers.localize("gui." + Reference.MOD_ID + ".terminal_storage.craftinggrid.clear.info"));
+        lines.add(
+            EnumChatFormatting.GRAY
+                + LangHelpers.localize("gui." + Reference.MOD_ID + ".terminal_storage.craftinggrid.clear.info"));
     }
 
     public static void clearGrid(TerminalStorageTabIngredientComponentItemStackCraftingCommon commomTab, int channel,

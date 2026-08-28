@@ -9,6 +9,8 @@ import net.minecraft.inventory.Slot;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 import com.google.common.collect.Lists;
 
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
@@ -66,9 +68,9 @@ public class TerminalStorageTabIngredientComponentCommon<T, M>
     }
 
     @Override
-    public List<Slot> loadSlots(Container container, int startIndex, EntityPlayer player,
+    public List<Pair<Slot, ISlotPositionCallback>> loadSlots(Container container, int startIndex, EntityPlayer player,
         Optional<IVariableInventory> variableInventoryOptional) {
-        List<Slot> slots = Lists.newArrayList();
+        List<Pair<Slot, ITerminalStorageTabCommon.ISlotPositionCallback>> slots = Lists.newArrayList();
 
         variableSlotNumberStart = startIndex;
         inventory = new SimpleInventory(3, "inv", 1);
@@ -98,9 +100,24 @@ public class TerminalStorageTabIngredientComponentCommon<T, M>
 
         inventory.addDirtyMarkListener(() -> dirtyInv = true);
 
-        slots.add(new SlotVariable(inventory, 0, 201, 136));
-        slots.add(new SlotVariable(inventory, 1, 201, 154));
-        slots.add(new SlotVariable(inventory, 2, 201, 172));
+        slots.add(
+            Pair.of(
+                new SlotVariable(inventory, 0, 0, 0),
+                factors -> Pair.of(
+                    factors.offsetX() + (factors.gridXSize() / 2) + 139,
+                    factors.offsetY() + factors.gridYSize() + factors.playerInventoryOffsetY() + 63)));
+        slots.add(
+            Pair.of(
+                new SlotVariable(inventory, 1, 0, 0),
+                factors -> Pair.of(
+                    factors.offsetX() + (factors.gridXSize() / 2) + 139,
+                    factors.offsetY() + factors.gridYSize() + factors.playerInventoryOffsetY() + 81)));
+        slots.add(
+            Pair.of(
+                new SlotVariable(inventory, 2, 0, 0),
+                factors -> Pair.of(
+                    factors.offsetX() + (factors.gridXSize() / 2) + 139,
+                    factors.offsetY() + factors.gridYSize() + factors.playerInventoryOffsetY() + 99)));
 
         dirtyInv = true;
 

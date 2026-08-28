@@ -47,6 +47,7 @@ import ruiseki.integratedterminals.IntegratedTerminals;
 import ruiseki.integratedterminals.api.ingredient.IIngredientComponentTerminalStorageHandler;
 import ruiseki.integratedterminals.api.ingredient.IIngredientInstanceSorter;
 import ruiseki.integratedterminals.api.terminalstorage.ITerminalButton;
+import ruiseki.integratedterminals.api.terminalstorage.ITerminalRowColumnProvider;
 import ruiseki.integratedterminals.api.terminalstorage.ITerminalStorageTabClient;
 import ruiseki.integratedterminals.api.terminalstorage.ITerminalStorageTabCommon;
 import ruiseki.integratedterminals.api.terminalstorage.TerminalClickType;
@@ -57,6 +58,7 @@ import ruiseki.integratedterminals.capability.ingredient.IngredientComponentTerm
 import ruiseki.integratedterminals.core.client.gui.CraftingOptionGuiData;
 import ruiseki.integratedterminals.core.client.gui.GuiTerminalStorage;
 import ruiseki.integratedterminals.core.terminalstorage.button.TerminalButtonFilterCrafting;
+import ruiseki.integratedterminals.core.terminalstorage.button.TerminalButtonScaleGui;
 import ruiseki.integratedterminals.core.terminalstorage.button.TerminalButtonSort;
 import ruiseki.integratedterminals.core.terminalstorage.crafting.HandlerWrappedTerminalCraftingOption;
 import ruiseki.integratedterminals.core.terminalstorage.crafting.TerminalStorageTabIngredientCraftingHandlers;
@@ -169,6 +171,9 @@ public class TerminalStorageTabIngredientComponentClient<T, M>
             .isEmpty()) {
             buttons.add(new TerminalButtonFilterCrafting<>(container.getGuiState(), this));
         }
+
+        // Add other buttons
+        buttons.add(new TerminalButtonScaleGui<>(container.getGuiState(), this));
     }
 
     public IngredientComponent<T, M> getIngredientComponent() {
@@ -381,6 +386,7 @@ public class TerminalStorageTabIngredientComponentClient<T, M>
      */
     public synchronized void onChange(int channel, IIngredientComponentStorageObservable.Change changeType,
         IngredientArrayList<T, M> ingredients, boolean enabled) {
+        boolean wasEnabled = this.enabled;
         this.enabled = enabled || this.craftingOptions.containsKey(channel);
         if (channel != IPositionedAddonsNetwork.WILDCARD_CHANNEL) {
             this.channels.add(channel);
@@ -431,6 +437,11 @@ public class TerminalStorageTabIngredientComponentClient<T, M>
         // Update the active instance by searching for its new position in the slots
         // If this becomes a performance bottleneck, we could search _around_ the previous position.
         updateActiveInstance(lastInstance, channel);
+
+        // Re-init screen if the tab was not yet enabled
+        if (!wasEnabled && enabled) {
+            this.container.screen.initGui();
+        }
     }
 
     protected void updateActiveInstance(Optional<T> lastInstance, int channel) {
@@ -463,6 +474,7 @@ public class TerminalStorageTabIngredientComponentClient<T, M>
                 firstChannel);
         }
 
+        boolean wasEnabled = this.enabled;
         this.enabled = true;
         if (channel != IPositionedAddonsNetwork.WILDCARD_CHANNEL) {
             this.channels.add(channel);
@@ -480,6 +492,11 @@ public class TerminalStorageTabIngredientComponentClient<T, M>
         // Update the active instance by searching for its new position in the slots
         // If this becomes a performance bottleneck, we could search _around_ the previous position.
         updateActiveInstance(lastInstance, channel);
+
+        // Re-init screen if the tab was not yet enabled
+        if (!wasEnabled && enabled) {
+            this.container.screen.initGui();
+        }
     }
 
     protected int findActiveSlotId(int channel, T instance) {
@@ -776,6 +793,17 @@ public class TerminalStorageTabIngredientComponentClient<T, M>
     }
 
     @Override
+    public ITerminalRowColumnProvider getRowColumnProvider() {
+        for (ITerminalButton<?, ?, ?> button : this.buttons) {
+            if (button instanceof TerminalButtonScaleGui) {
+                return ((TerminalButtonScaleGui<?>) button).getRowColumnProvider();
+            }
+        }
+        throw new IllegalStateException(
+            "Could not find a TerminalButtonScaleGui registered on storage tab " + this.getName());
+    }
+
+    @Override
     public void onCommonSlotRender(GuiContainer gui, GuiTerminalStorage.DrawLayer layer, float partialTick, int x,
         int y, int mouseX, int mouseY, int slot, ITerminalStorageTabCommon tabCommon) {
         TerminalStorageTabIngredientComponentCommon tab = (TerminalStorageTabIngredientComponentCommon) tabCommon;
@@ -876,6 +904,11 @@ public class TerminalStorageTabIngredientComponentClient<T, M>
         int maxQuantity = Helpers.castSafe(viewHandler.getMaxQuantity(stack));
         int freeQuantity = maxQuantity - instanceQuantity;
         return Math.min(Math.max(0, quantity), freeQuantity);
+    }
+
+    public void resetScale() {
+        // Re-init screen to enforce new scale
+        container.screen.initGui();
     }
 
     public static class InstanceWithMetadata<T> {

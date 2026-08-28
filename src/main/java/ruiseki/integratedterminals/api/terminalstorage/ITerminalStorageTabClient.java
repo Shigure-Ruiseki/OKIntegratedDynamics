@@ -22,8 +22,8 @@ import ruiseki.integratedterminals.core.client.gui.GuiTerminalStorage;
  */
 public interface ITerminalStorageTabClient<S extends ITerminalStorageSlot> {
 
-    public static final int DEFAULT_SLOT_OFFSET_X = 31;
-    public static final int DEFAULT_SLOT_OFFSET_Y = 39;
+    public static final int DEFAULT_SLOT_OFFSET_X = 32;
+    public static final int DEFAULT_SLOT_OFFSET_Y = 40;
     public static final int DEFAULT_SLOT_VISIBLE_ROWS = 5;
     public static final int DEFAULT_SLOT_ROW_LENGTH = 9;
 
@@ -90,6 +90,11 @@ public interface ITerminalStorageTabClient<S extends ITerminalStorageSlot> {
      */
     @SideOnly(Side.CLIENT)
     public List<S> getSlots(int channel, int offset, int limit);
+
+    /**
+     * @return The current provider of row and column count.
+     */
+    public ITerminalRowColumnProvider getRowColumnProvider();
 
     /**
      * @return If this tab is enabled.
@@ -167,11 +172,17 @@ public interface ITerminalStorageTabClient<S extends ITerminalStorageSlot> {
     }
 
     public default int getSlotVisibleRows() {
-        return DEFAULT_SLOT_VISIBLE_ROWS;
+        return getRowColumnProvider().getRowsAndColumns()
+            .rows();
     }
 
     public default int getSlotRowLength() {
-        return DEFAULT_SLOT_ROW_LENGTH;
+        return getRowColumnProvider().getRowsAndColumns()
+            .columns();
+    }
+
+    public default int getPlayerInventoryOffsetY() {
+        return 0;
     }
 
     /**
@@ -180,6 +191,10 @@ public interface ITerminalStorageTabClient<S extends ITerminalStorageSlot> {
     @Nullable
     public default ResourceLocation getBackgroundTexture() {
         return null;
+    }
+
+    public default void onTabBackgroundRender(GuiTerminalStorage<?, ?> screen, float f, int mouseX, int mouseY) {
+
     }
 
     public default void onCommonSlotRender(GuiContainer gui, GuiTerminalStorage.DrawLayer layer, float partialTick,

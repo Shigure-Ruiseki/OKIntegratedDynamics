@@ -11,6 +11,7 @@ import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.Nullable;
 
 import ruiseki.okcore.datastructure.NonNullList;
@@ -27,8 +28,8 @@ public interface ITerminalStorageTabCommon {
      */
     public ResourceLocation getName();
 
-    public default List<Slot> loadSlots(Container container, int startIndex, EntityPlayer player,
-        Optional<IVariableInventory> variableInventory) {
+    public default List<Pair<Slot, ISlotPositionCallback>> loadSlots(Container container, int startIndex,
+        EntityPlayer player, Optional<IVariableInventory> variableInventory) {
         return Collections.emptyList();
     }
 
@@ -61,5 +62,13 @@ public interface ITerminalStorageTabCommon {
 
         public void setNamedInventory(String name, List<ItemStack> inventory);
     }
+
+    public static interface ISlotPositionCallback {
+
+        public Pair<Integer, Integer> getSlotPosition(SlotPositionFactors factors);
+    }
+
+    public static record SlotPositionFactors(int offsetX, int offsetY, int gridXSize, int gridYSize,
+        int playerInventoryOffsetY) {}
 
 }

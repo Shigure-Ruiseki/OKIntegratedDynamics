@@ -15,7 +15,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.CraftingManager;
 import net.minecraft.util.ResourceLocation;
 
-import org.apache.commons.lang3.tuple.Triple;
+import org.apache.commons.lang3.tuple.Pair;
 
 import com.google.common.collect.Lists;
 
@@ -27,6 +27,7 @@ import ruiseki.integratedterminals.inventory.InventoryCraftingDirtyable;
 import ruiseki.integratedterminals.inventory.SlotCraftingAutoRefill;
 import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorageBase;
 import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientItemStackCraftingGridSetResult;
+import ruiseki.okcore.helper.GuiHelpers;
 import ruiseki.okcore.persist.IDirtyMarkListener;
 
 /**
@@ -41,7 +42,7 @@ public class TerminalStorageTabIngredientComponentItemStackCraftingCommon
     private InventoryCrafting inventoryCrafting;
     private InventoryCraftResult inventoryCraftResult;
     private SlotCrafting slotCrafting;
-    private List<Slot> slots;
+    private List<Pair<Slot, ISlotPositionCallback>> slots;
     private TerminalButtonItemStackCraftingGridAutoRefill.AutoRefillType autoRefill = TerminalButtonItemStackCraftingGridAutoRefill.AutoRefillType.STORAGE;
 
     public TerminalStorageTabIngredientComponentItemStackCraftingCommon(
@@ -57,7 +58,7 @@ public class TerminalStorageTabIngredientComponentItemStackCraftingCommon
     }
 
     @Override
-    public List<Slot> loadSlots(Container container, int startIndex, EntityPlayer player,
+    public List<Pair<Slot, ISlotPositionCallback>> loadSlots(Container container, int startIndex, EntityPlayer player,
         Optional<IVariableInventory> variableInventoryOptional) {
         IVariableInventory variableInventory = variableInventoryOptional.orElse(null);
         slots = Lists.newArrayListWithCapacity(10);
@@ -76,20 +77,34 @@ public class TerminalStorageTabIngredientComponentItemStackCraftingCommon
         this.inventoryCrafting = new InventoryCraftingDirtyable(container, 3, 3, dirtyListener);
 
         slots.add(
-            slotCrafting = new SlotCraftingAutoRefill(
-                player,
-                this.inventoryCrafting,
-                this.inventoryCraftResult,
-                0,
-                115,
-                76,
-                this,
-                (TerminalStorageTabIngredientComponentServer<ItemStack, Integer>) ((ContainerTerminalStorageBase) container)
-                    .getTabServer(getName().toString()),
-                (ContainerTerminalStorageBase) container));
+            Pair.of(
+                slotCrafting = new SlotCraftingAutoRefill(
+                    player,
+                    this.inventoryCrafting,
+                    this.inventoryCraftResult,
+                    0,
+                    0,
+                    0,
+                    this,
+                    (TerminalStorageTabIngredientComponentServer<ItemStack, Integer>) ((ContainerTerminalStorageBase) container)
+                        .getTabServer(getName().toString()),
+                    (ContainerTerminalStorageBase) container),
+                factors -> Pair.of(
+                    factors.offsetX() + (factors.gridXSize() / 2) + 62,
+                    factors.offsetY() + factors.gridYSize() + factors.playerInventoryOffsetY() + 10)));
         for (int i = 0; i < 3; ++i) {
             for (int j = 0; j < 3; ++j) {
-                slots.add(new Slot(this.inventoryCrafting, j + i * 3, 31 + j * 18, 58 + i * 18));
+                int finalJ = j;
+                int finalI = i;
+                slots.add(
+                    Pair.of(
+                        new Slot(this.inventoryCrafting, j + i * 3, 31 + j * 18 + 28, 58 + i * 18 + 7),
+                        factors -> Pair.of(
+                            factors.offsetX() + (factors.gridXSize() / 2) + finalJ * GuiHelpers.SLOT_SIZE - 22,
+                            factors.offsetY() + factors.gridYSize()
+                                + factors.playerInventoryOffsetY()
+                                + finalI * GuiHelpers.SLOT_SIZE
+                                - 8)));
             }
         }
 
@@ -109,15 +124,11 @@ public class TerminalStorageTabIngredientComponentItemStackCraftingCommon
             }
         }
 
-        List<Slot> returnSlots = Lists.newArrayList(slots);
-        for (Triple<Slot, Integer, Integer> slot : ((ContainerTerminalStorageBase<?>) container).getTabSlots(
-            ingredientComponent.getName()
-                .toString())) {
-            returnSlots.add(slot.getLeft());
-        }
-
-        super.loadSlots(container, startIndex + returnSlots.size(), player, variableInventoryOptional);
-
+        List<Pair<Slot, ISlotPositionCallback>> returnSlots = Lists.newArrayList(slots);
+        returnSlots.addAll(
+            ((ContainerTerminalStorageBase<?>) container).getTabSlots(
+                ingredientComponent.getName()
+                    .toString()));
         return returnSlots;
     }
 
@@ -156,8 +167,10 @@ public class TerminalStorageTabIngredientComponentItemStackCraftingCommon
 
         if (variableInventory != null) {
             List<ItemStack> latestItems = new ArrayList<>();
-            for (Slot slot : slots) {
-                latestItems.add(slot.getStack());
+            for (Pair<Slot, ISlotPositionCallback> slot : slots) {
+                latestItems.add(
+                    slot.getLeft()
+                        .getStack());
             }
             variableInventory.setNamedInventory(
                 this.getName()

@@ -4,6 +4,7 @@ import java.util.List;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.EnumChatFormatting;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -98,7 +99,9 @@ public class TerminalButtonFilterCrafting<T> implements
     @Override
     @SideOnly(Side.CLIENT)
     public void getTooltip(EntityPlayer player, boolean tooltipFlag, List<String> lines) {
-        lines.add(LangHelpers.localize("gui." + Reference.MOD_ID + ".terminal_storage.crafting.filter.info"));
+        lines.add(
+            EnumChatFormatting.GRAY
+                + LangHelpers.localize("gui." + Reference.MOD_ID + ".terminal_storage.crafting.filter.info"));
         lines.add(LangHelpers.localize(active.getLabel()));
     }
 
