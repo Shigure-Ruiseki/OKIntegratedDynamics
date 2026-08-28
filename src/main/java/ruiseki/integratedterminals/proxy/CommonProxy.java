@@ -9,6 +9,7 @@ import ruiseki.integratedterminals.network.packet.PacketSetCraftingDataItem;
 import ruiseki.integratedterminals.network.packet.PacketSetCraftingDataPart;
 import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientChangeEventPacket;
 import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientCraftingOptionsPacket;
+import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientItemOpenGenericPacket;
 import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientItemOpenPacket;
 import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientItemStackCraftingGridBalance;
 import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientItemStackCraftingGridClear;
@@ -46,6 +47,7 @@ public class CommonProxy extends CommonProxyComponent {
         // Register packets.
         packetHandler.register(TerminalStorageIngredientPartOpenPacket.class);
         packetHandler.register(TerminalStorageIngredientItemOpenPacket.class);
+        packetHandler.register(TerminalStorageIngredientItemOpenGenericPacket.class);
         packetHandler.register(TerminalStorageIngredientChangeEventPacket.class);
         packetHandler.register(TerminalStorageIngredientCraftingOptionsPacket.class);
         packetHandler.register(TerminalStorageIngredientMaxQuantityPacket.class);

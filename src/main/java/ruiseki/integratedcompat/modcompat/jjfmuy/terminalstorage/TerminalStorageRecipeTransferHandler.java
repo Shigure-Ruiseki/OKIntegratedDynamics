@@ -32,27 +32,31 @@ import ruiseki.okcore.ingredient.collection.IIngredientCollectionMutable;
 import ruiseki.okcore.ingredient.collection.IngredientCollectionPrototypeMap;
 
 /**
- * Handles recipe clicking from JEI.
+ * Handles recipe clicking from JEI / NEI.
  *
  * @author rubensworks
  */
-public class TerminalStorageRecipeTransferHandler implements IRecipeTransferHandler<ContainerTerminalStorageBase> {
+public class TerminalStorageRecipeTransferHandler<C extends ContainerTerminalStorageBase>
+    implements IRecipeTransferHandler<C> {
 
     private final IRecipeTransferHandlerHelper recipeTransferHandlerHelper;
+    private final Class<C> containerClass;
 
-    public TerminalStorageRecipeTransferHandler(IRecipeTransferHandlerHelper recipeTransferHandlerHelper) {
+    public TerminalStorageRecipeTransferHandler(Class<C> containerClass,
+        IRecipeTransferHandlerHelper recipeTransferHandlerHelper) {
+        this.containerClass = containerClass;
         this.recipeTransferHandlerHelper = recipeTransferHandlerHelper;
     }
 
     @Override
-    public Class<ContainerTerminalStorageBase> getContainerClass() {
-        return ContainerTerminalStorageBase.class;
+    public Class<C> getContainerClass() {
+        return containerClass;
     }
 
     @Nullable
     @Override
-    public IRecipeTransferError transferRecipe(ContainerTerminalStorageBase container, IRecipeLayout recipeLayout,
-        EntityPlayer player, boolean maxTransfer, boolean doTransfer) {
+    public IRecipeTransferError transferRecipe(C container, IRecipeLayout recipeLayout, EntityPlayer player,
+        boolean maxTransfer, boolean doTransfer) {
         if (!recipeLayout.getRecipeCategory()
             .getUid()
             .equals(VanillaRecipeCategoryUid.CRAFTING)) {
@@ -102,7 +106,7 @@ public class TerminalStorageRecipeTransferHandler implements IRecipeTransferHand
                 }
 
                 if (!slotsMissingItems.isEmpty()) {
-                    String message = Translator.translateToLocal("jei.tooltip.error.recipe.transfer.missing");
+                    String message = Translator.translateToLocal("jfmuy.tooltip.error.recipe.transfer.missing");
                     return recipeTransferHandlerHelper.createUserErrorForSlots(message, slotsMissingItems);
                 }
 

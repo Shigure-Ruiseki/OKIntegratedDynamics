@@ -4313,7 +4313,7 @@ public final class Operators {
                 ValueObjectTypeIngredients.ValueIngredients value = variables
                     .getValue(0, ValueTypes.OBJECT_INGREDIENTS);
                 ValueTypeInteger.ValueInteger index = variables.getValue(1, ValueTypes.INTEGER);
-                ValueTypeInteger.ValueInteger energy = variables.getValue(2, ValueTypes.INTEGER);
+                ValueTypeLong.ValueLong energy = variables.getValue(2, ValueTypes.LONG);
                 if (!value.getRawValue()
                     .isPresent()) {
                     return value;

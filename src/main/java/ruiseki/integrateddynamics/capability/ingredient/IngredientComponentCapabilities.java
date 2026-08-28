@@ -58,13 +58,13 @@ public class IngredientComponentCapabilities {
                 }
             });
         attacherManager.addAttacher(
-            new IngredientComponentCapabilityAttacherAdapter<Integer, Boolean>(
+            new IngredientComponentCapabilityAttacherAdapter<Long, Boolean>(
                 INGREDIENT_ENERGY_NAME,
                 capabilityIngredientComponentValueHandler) {
 
                 @Override
                 public ICapabilityProvider createCapabilityProvider(
-                    IngredientComponent<Integer, Boolean> ingredientComponent) {
+                    IngredientComponent<Long, Boolean> ingredientComponent) {
                     return new DefaultCapabilityProvider<>(
                         () -> IngredientComponentValueHandlerConfig.CAPABILITY,
                         new IngredientComponentValueHandlerEnergy(ingredientComponent));

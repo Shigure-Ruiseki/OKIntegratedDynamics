@@ -27,6 +27,8 @@ import ruiseki.integratedterminals.api.terminalstorage.ITerminalStorageTabClient
 import ruiseki.integratedterminals.api.terminalstorage.event.TerminalStorageTabClientLoadButtonsEvent;
 import ruiseki.integratedterminals.api.terminalstorage.event.TerminalStorageTabClientSearchFieldUpdateEvent;
 import ruiseki.integratedterminals.core.client.gui.GuiTerminalStorage;
+import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorageItem;
+import ruiseki.integratedterminals.inventory.container.ContainerTerminalStoragePart;
 import ruiseki.integratedterminals.part.TerminalPartTypes;
 import ruiseki.jfmuy.api.IJFMUYRuntime;
 import ruiseki.jfmuy.api.IModPlugin;
@@ -98,10 +100,19 @@ public class JFMUYIDsConfig implements IModPlugin {
         }
 
         registry.getRecipeTransferRegistry()
-            .addUniversalRecipeTransferHandler(
-                new TerminalStorageRecipeTransferHandler(
+            .addRecipeTransferHandler(
+                new TerminalStorageRecipeTransferHandler<>(
+                    ContainerTerminalStorageItem.class,
                     registry.getJFMUYHelpers()
-                        .recipeTransferHandlerHelper()));
+                        .recipeTransferHandlerHelper()),
+                VanillaRecipeCategoryUid.CRAFTING);
+        registry.getRecipeTransferRegistry()
+            .addRecipeTransferHandler(
+                new TerminalStorageRecipeTransferHandler<>(
+                    ContainerTerminalStoragePart.class,
+                    registry.getJFMUYHelpers()
+                        .recipeTransferHandlerHelper()),
+                VanillaRecipeCategoryUid.CRAFTING);
         registry.addAdvancedGuiHandlers(new TerminalStorageAdvancedGuiHandler());
         registry.addRecipeCatalyst(
             new ItemStack(TerminalPartTypes.TERMINAL_STORAGE.getItem()),

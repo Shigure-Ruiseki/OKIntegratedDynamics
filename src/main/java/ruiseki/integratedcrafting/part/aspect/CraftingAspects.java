@@ -25,8 +25,8 @@ import ruiseki.integrateddynamics.core.evaluate.variable.ValueObjectTypeFluidSta
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueObjectTypeIngredients;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueObjectTypeItemStack;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueObjectTypeRecipe;
-import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeInteger;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeList;
+import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeLong;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
 import ruiseki.integrateddynamics.part.aspect.read.AspectReadBuilders;
 
@@ -53,7 +53,7 @@ public class CraftingAspects {
             .handle(CraftingAspectWriteBuilders.PROP_FLUIDSTACK_CRAFTINGDATA)
             .handle(CraftingAspectWriteBuilders.PROP_CRAFT())
             .buildWrite();
-        public static final IAspectWrite<ValueTypeInteger.ValueInteger, ValueTypeInteger> ENERGY_CRAFT = CraftingAspectWriteBuilders.BUILDER_INTEGER
+        public static final IAspectWrite<ValueTypeLong.ValueLong, ValueTypeLong> ENERGY_CRAFT = CraftingAspectWriteBuilders.BUILDER_LONG
             .withProperties(CraftingAspectWriteBuilders.PROPERTIES_CRAFTING)
             .handle(CraftingAspectWriteBuilders.PROP_ENERGY_CRAFTINGDATA)
             .handle(CraftingAspectWriteBuilders.PROP_CRAFT())

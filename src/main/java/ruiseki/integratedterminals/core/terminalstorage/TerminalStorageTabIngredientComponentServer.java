@@ -456,6 +456,15 @@ public class TerminalStorageTabIngredientComponentServer<T, M>
             case STORAGE_PLACE_WORLD:
                 viewHandler.throwIntoWorld(storage, activeStorageInstance, player);
                 break;
+            case STORAGE_QUICK_MOVE_INCREMENTAL:
+                viewHandler.insertMaxIntoContainer(
+                    storage,
+                    container,
+                    0,
+                    4 * 9,
+                    ingredientComponent.getMatcher()
+                        .withQuantity(hoveringStorageInstance, viewHandler.getIncrementalInstanceMovementQuantity()));
+                break;
             case STORAGE_PLACE_PLAYER:
                 T movedInstance = viewHandler.insertIntoContainer(
                     storage,

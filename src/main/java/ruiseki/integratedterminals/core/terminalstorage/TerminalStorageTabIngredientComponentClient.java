@@ -592,8 +592,9 @@ public class TerminalStorageTabIngredientComponentClient<T, M>
                     initiateCraftingOption = true;
                 } else {
                     if (shift) {
-                        // Quick move max quantity from storage to player
-                        clickType = TerminalClickType.STORAGE_QUICK_MOVE;
+                        // Quick move single or max quantity from storage to player
+                        clickType = mouseButton == 2 ? TerminalClickType.STORAGE_QUICK_MOVE_INCREMENTAL
+                            : TerminalClickType.STORAGE_QUICK_MOVE;
                     } else {
                         // Pick up
                         this.activeSlotId = hoveringStorageSlot;
@@ -611,7 +612,8 @@ public class TerminalStorageTabIngredientComponentClient<T, M>
             } else if (hoveredContainerSlot >= 0 && container.getSlot(hoveredContainerSlot)
                 .getStack() != null && shift) {
                     // Quick move max quantity from player to storage
-                    clickType = TerminalClickType.PLAYER_QUICK_MOVE;
+                    clickType = mouseButton == 2 ? TerminalClickType.PLAYER_QUICK_MOVE_INCREMENTAL
+                        : TerminalClickType.PLAYER_QUICK_MOVE;
                 } else if (hasClickedInStorage && player.inventory.getItemStack() != null) {
                     // Move into storage
                     clickType = TerminalClickType.PLAYER_PLACE_STORAGE;
@@ -646,7 +648,7 @@ public class TerminalStorageTabIngredientComponentClient<T, M>
                         }
                         this.activeSlotQuantity -= moveQuantity;
                     } else if (hasClickedInStorage) {
-                        if (mouseButton == 0 && this.activeSlotId == hoveringStorageSlot) {
+                        if ((mouseButton == 0 || mouseButton == 2) && this.activeSlotId == hoveringStorageSlot) {
                             // Increase the active quantity
                             this.activeSlotQuantity = (int) Math.min(
                                 ingredientComponent.getMatcher()

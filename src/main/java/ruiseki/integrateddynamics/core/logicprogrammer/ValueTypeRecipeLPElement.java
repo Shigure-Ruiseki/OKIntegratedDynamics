@@ -348,7 +348,7 @@ public class ValueTypeRecipeLPElement extends ValueTypeLPElementBase {
     }
 
     protected Map<IngredientComponent<?, ?>, List<IPrototypedIngredientAlternatives<?, ?>>> getInputs(
-        List<Pair<ItemStack, ItemMatchType>> itemStacks, ItemStack fluid, int fluidAmount, int energy) {
+        List<Pair<ItemStack, ItemMatchType>> itemStacks, ItemStack fluid, int fluidAmount, long energy) {
 
         // Truncate list up to the last non-empty stack
         int lastNonEmpty = 0;
@@ -386,7 +386,7 @@ public class ValueTypeRecipeLPElement extends ValueTypeLPElementBase {
                             FluidMatch.FLUID | FluidMatch.NBT))))
             : Collections.emptyList();
 
-        List<IPrototypedIngredientAlternatives<Integer, Boolean>> energies = energy > 0
+        List<IPrototypedIngredientAlternatives<Long, Boolean>> energies = energy > 0
             ? Collections.singletonList(
                 new PrototypedIngredientAlternativesList<>(
                     Collections.singletonList(new PrototypedIngredient<>(IngredientComponent.ENERGY, energy, false))))
@@ -406,7 +406,7 @@ public class ValueTypeRecipeLPElement extends ValueTypeLPElementBase {
     }
 
     protected Map<IngredientComponent<?, ?>, List<?>> getOutputs(List<ItemStack> itemStacks, ItemStack fluid,
-        int fluidAmount, int energy) {
+        int fluidAmount, long energy) {
 
         // Truncate list up to the last non-empty stack
         int lastNonEmpty = 0;
@@ -445,13 +445,13 @@ public class ValueTypeRecipeLPElement extends ValueTypeLPElementBase {
                     this.inputStacks,
                     this.inputFluid,
                     Integer.parseInt(this.inputFluidAmount),
-                    Integer.parseInt(this.inputEnergy)),
+                    Long.parseLong(this.inputEnergy)),
                 new MixedIngredients(
                     getOutputs(
                         this.outputStacks,
                         this.outputFluid,
                         Integer.parseInt(this.outputFluidAmount),
-                        Integer.parseInt(this.outputEnergy)))));
+                        Long.parseLong(this.outputEnergy)))));
     }
 
     @Override

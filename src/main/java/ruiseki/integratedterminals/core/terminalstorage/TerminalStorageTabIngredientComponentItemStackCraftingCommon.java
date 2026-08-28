@@ -59,7 +59,7 @@ public class TerminalStorageTabIngredientComponentItemStackCraftingCommon
     @Override
     public List<Slot> loadSlots(Container container, int startIndex, EntityPlayer player,
         Optional<IVariableInventory> variableInventoryOptional) {
-        IVariableInventory variableInventory = variableInventoryOptional.get();
+        IVariableInventory variableInventory = variableInventoryOptional.orElse(null);
         slots = Lists.newArrayListWithCapacity(10);
 
         // Reload the recipe when the input slots are updated
@@ -93,17 +93,18 @@ public class TerminalStorageTabIngredientComponentItemStackCraftingCommon
             }
         }
 
-        // Load the items that were stored in the part state into the crafting grid slots
-        List<ItemStack> tabItems = variableInventory.getNamedInventory(
-            this.getName()
-                .toString());
-        if (tabItems != null) {
-            int i = 0;
-            for (ItemStack tabItem : tabItems) {
-                if (i == 0) {
-                    this.inventoryCraftResult.setInventorySlotContents(i++, tabItem);
-                } else {
-                    this.inventoryCrafting.setInventorySlotContents(i++ - 1, tabItem);
+        if (variableInventory != null) {
+            List<ItemStack> tabItems = variableInventory.getNamedInventory(
+                this.getName()
+                    .toString());
+            if (tabItems != null) {
+                int i = 0;
+                for (ItemStack tabItem : tabItems) {
+                    if (i == 0) {
+                        this.inventoryCraftResult.setInventorySlotContents(i++, tabItem);
+                    } else {
+                        this.inventoryCrafting.setInventorySlotContents(i++ - 1, tabItem);
+                    }
                 }
             }
         }
@@ -114,6 +115,9 @@ public class TerminalStorageTabIngredientComponentItemStackCraftingCommon
                 .toString())) {
             returnSlots.add(slot.getLeft());
         }
+
+        super.loadSlots(container, startIndex + returnSlots.size(), player, variableInventoryOptional);
+
         return returnSlots;
     }
 
@@ -150,14 +154,15 @@ public class TerminalStorageTabIngredientComponentItemStackCraftingCommon
                     (EntityPlayerMP) player);
         }
 
-        // Save changes into the part state
-        List<ItemStack> latestItems = new ArrayList<>();
-        for (Slot slot : slots) {
-            latestItems.add(slot.getStack());
+        if (variableInventory != null) {
+            List<ItemStack> latestItems = new ArrayList<>();
+            for (Slot slot : slots) {
+                latestItems.add(slot.getStack());
+            }
+            variableInventory.setNamedInventory(
+                this.getName()
+                    .toString(),
+                latestItems);
         }
-        variableInventory.setNamedInventory(
-            this.getName()
-                .toString(),
-            latestItems);
     }
 }

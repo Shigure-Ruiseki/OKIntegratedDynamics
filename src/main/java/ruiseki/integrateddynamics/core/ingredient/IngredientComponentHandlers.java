@@ -16,7 +16,7 @@ import ruiseki.integrateddynamics.api.ingredient.IIngredientComponentHandler;
 import ruiseki.integrateddynamics.api.ingredient.IIngredientComponentHandlerRegistry;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueObjectTypeFluidStack;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueObjectTypeItemStack;
-import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeInteger;
+import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeLong;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.okcore.helper.LangHelpers;
@@ -127,32 +127,32 @@ public class IngredientComponentHandlers {
             }
 
             if (componentEnergy != null) {
-                registry.register(
-                    new IIngredientComponentHandler<ValueTypeInteger, ValueTypeInteger.ValueInteger, Integer, Boolean>() {
+                registry
+                    .register(new IIngredientComponentHandler<ValueTypeLong, ValueTypeLong.ValueLong, Long, Boolean>() {
 
                         @Override
-                        public ValueTypeInteger getValueType() {
-                            return ValueTypes.INTEGER;
+                        public ValueTypeLong getValueType() {
+                            return ValueTypes.LONG;
                         }
 
                         @Override
-                        public IngredientComponent<Integer, Boolean> getComponent() {
+                        public IngredientComponent<Long, Boolean> getComponent() {
                             return componentEnergy;
                         }
 
                         @Override
-                        public ValueTypeInteger.ValueInteger toValue(@Nullable Integer instance) {
-                            return ValueTypeInteger.ValueInteger.of(instance == null ? 0 : instance);
+                        public ValueTypeLong.ValueLong toValue(@Nullable Long instance) {
+                            return ValueTypeLong.ValueLong.of(instance == null ? 0 : instance);
                         }
 
                         @Nullable
                         @Override
-                        public Integer toInstance(ValueTypeInteger.ValueInteger value) {
+                        public Long toInstance(ValueTypeLong.ValueLong value) {
                             return value.getRawValue();
                         }
 
                         @Override
-                        public String toCompactString(ValueTypeInteger.ValueInteger ingredientValue) {
+                        public String toCompactString(ValueTypeLong.ValueLong ingredientValue) {
                             String value = getValueType().toCompactString(ingredientValue);
                             value += " " + LangHelpers.localize(L10NValues.GENERAL_ENERGY_UNIT);
                             return value;

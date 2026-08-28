@@ -86,9 +86,9 @@ public class ItemTerminalStoragePortable extends ItemGui {
                     .getState();
                 setGroupId(stack, state.getGroupId());
 
-                // Gửi actionbar text thông báo tới player
                 player.addChatComponentMessage(
-                    new ChatComponentTranslation("item.items.integratedterminals.terminal_storage_portable.status.linked"));
+                    new ChatComponentTranslation(
+                        "item.items.integratedterminals.terminal_storage_portable.status.linked"));
 
                 return true;
             }
@@ -130,6 +130,10 @@ public class ItemTerminalStoragePortable extends ItemGui {
     }
 
     public static ITerminalStorageTabCommon.IVariableInventory getVariableInventory(ItemStack itemStack) {
+        if (itemStack == null) {
+            return null;
+        }
+
         // Navigate to relevant tag in item
         NBTTagCompound tagRoot = ItemNBTHelpers.getNBT(itemStack);
         if (!tagRoot.hasKey(NBT_KEY_NAMED_INVENTORIES, Constants.NBT.TAG_COMPOUND)) {

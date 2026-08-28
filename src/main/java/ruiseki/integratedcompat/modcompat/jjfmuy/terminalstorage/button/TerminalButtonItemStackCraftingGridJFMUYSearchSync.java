@@ -87,8 +87,8 @@ public class TerminalButtonItemStackCraftingGridJFMUYSearchSync implements
     public void getTooltip(EntityPlayer player, boolean tooltipFlag, List<String> lines) {
         lines.add(LangHelpers.localize("gui.integratedcompat.terminal_storage.craftinggrid.jeisync.info"));
         lines.add(
-            EnumChatFormatting.ITALIC + LangHelpers
-                .localize(active ? "general.okcore.info.enabled" : "general.okcore.info.disabled"));
+            EnumChatFormatting.ITALIC
+                + LangHelpers.localize(active ? "general.okcore.info.enabled" : "general.okcore.info.disabled"));
     }
 
     public boolean isActive() {

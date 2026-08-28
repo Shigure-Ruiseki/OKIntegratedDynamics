@@ -61,7 +61,7 @@ public class ContainerTerminalStorageItem extends ContainerTerminalStorageBase<I
 
     public static Optional<ITerminalStorageTabCommon.IVariableInventory> getVariableInventoryFromItem(
         ItemStack itemStack) {
-        return Optional.of(ItemTerminalStoragePortable.getVariableInventory(itemStack));
+        return Optional.ofNullable(ItemTerminalStoragePortable.getVariableInventory(itemStack));
     }
 
     public ItemStack getItemStack(EntityPlayer player) {

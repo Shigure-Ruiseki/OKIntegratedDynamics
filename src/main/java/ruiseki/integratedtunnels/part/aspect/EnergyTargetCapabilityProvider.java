@@ -16,14 +16,14 @@ import ruiseki.okcore.capabilities.ICapabilityProvider;
 /**
  * @author rubensworks
  */
-public class EnergyTargetCapabilityProvider extends ChanneledTargetCapabilityProvider<IEnergyNetwork, Integer, Boolean>
+public class EnergyTargetCapabilityProvider extends ChanneledTargetCapabilityProvider<IEnergyNetwork, Long, Boolean>
     implements IEnergyTarget {
 
-    private final int amount;
+    private final long amount;
     private final boolean exactAmount;
 
     public EnergyTargetCapabilityProvider(@Nullable ICapabilityProvider capabilityProvider, ForgeDirection side,
-        INetwork network, IAspectProperties properties, int amount, @Nullable PartStateRoundRobin<?> partStateEnergy) {
+        INetwork network, IAspectProperties properties, long amount, @Nullable PartStateRoundRobin<?> partStateEnergy) {
         super(
             network,
             capabilityProvider,
@@ -43,12 +43,12 @@ public class EnergyTargetCapabilityProvider extends ChanneledTargetCapabilityPro
     }
 
     @Override
-    public IIngredientComponentStorage<Integer, Boolean> getEnergyChannel() {
+    public IIngredientComponentStorage<Long, Boolean> getEnergyChannel() {
         return getChanneledNetwork().getChannel(getChannel());
     }
 
     @Override
-    public int getAmount() {
+    public long getAmount() {
         return amount;
     }
 
@@ -58,7 +58,7 @@ public class EnergyTargetCapabilityProvider extends ChanneledTargetCapabilityPro
     }
 
     @Override
-    protected IngredientComponent<Integer, Boolean> getComponent() {
+    protected IngredientComponent<Long, Boolean> getComponent() {
         return IngredientComponent.ENERGY;
     }
 }

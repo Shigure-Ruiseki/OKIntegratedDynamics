@@ -63,12 +63,14 @@ public class EnergyHelpers {
      * @param simulate If the filling should be simulated.
      * @return The amount of energy that was filled somewhere.
      */
-    public static int fillNeigbours(World world, BlockPos pos, int energy, boolean simulate) {
-        int toFill = energy;
+    public static long fillNeigbours(World world, BlockPos pos, long energy, boolean simulate) {
+        long toFill = energy;
         for (ForgeDirection side : ForgeDirection.VALID_DIRECTIONS) {
             IEnergyStorage energyStorage = getEnergyStorage(world, pos.offset(side), side.getOpposite());
             if (energyStorage != null) {
-                toFill -= energyStorage.receiveEnergy(toFill, simulate);
+                int maxReceive = (int) Math.min(toFill, Integer.MAX_VALUE);
+                int accepted = energyStorage.receiveEnergy(maxReceive, simulate);
+                toFill -= accepted;
                 if (toFill <= 0) {
                     return energy;
                 }

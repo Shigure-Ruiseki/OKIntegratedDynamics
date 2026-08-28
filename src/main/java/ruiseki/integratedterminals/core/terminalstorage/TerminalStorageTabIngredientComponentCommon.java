@@ -68,15 +68,19 @@ public class TerminalStorageTabIngredientComponentCommon<T, M>
     @Override
     public List<Slot> loadSlots(Container container, int startIndex, EntityPlayer player,
         Optional<IVariableInventory> variableInventoryOptional) {
-        IVariableInventory variableInventory = variableInventoryOptional.get();
         List<Slot> slots = Lists.newArrayList();
 
         variableSlotNumberStart = startIndex;
         inventory = new SimpleInventory(3, "inv", 1);
-        variableInventory.loadNamedInventory(
-            this.getName()
-                .toString(),
-            inventory);
+
+        if (variableInventoryOptional.isPresent()) {
+            variableInventoryOptional.get()
+                .loadNamedInventory(
+                    this.getName()
+                        .toString(),
+                    inventory);
+        }
+
         variableEvaluators.clear();
         for (int i = 0; i < inventory.getSizeInventory(); i++) {
             int slot = i;
@@ -118,15 +122,17 @@ public class TerminalStorageTabIngredientComponentCommon<T, M>
 
             ContainerTerminalStorageBase<?> containerTerminalStorage = (ContainerTerminalStorageBase<?>) container;
 
-            variableInventory.get()
-                .saveNamedInventory(
-                    this.getName()
-                        .toString(),
-                    inventory);
+            if (variableInventory.isPresent()) {
+                variableInventory.get()
+                    .saveNamedInventory(
+                        this.getName()
+                            .toString(),
+                        inventory);
+            }
 
             // Update variable facades
             INetwork network = containerTerminalStorage.getNetwork()
-                .get();
+                .orElse(null);
 
             clearGlobalErrors();
             this.variables.clear();
@@ -150,8 +156,10 @@ public class TerminalStorageTabIngredientComponentCommon<T, M>
             // Tell the container that our filter may have changed
             TerminalStorageTabIngredientComponentServer tabServer = (TerminalStorageTabIngredientComponentServer) containerTerminalStorage
                 .getTabServer(getName().toString());
-            tabServer.updateFilter(this.variables, this);
-            tabServer.reApplyFilter();
+            if (tabServer != null) {
+                tabServer.updateFilter(this.variables, this);
+                tabServer.reApplyFilter();
+            }
         }
     }
 

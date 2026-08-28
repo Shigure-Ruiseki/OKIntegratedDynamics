@@ -101,7 +101,10 @@ public class TerminalStorageTabIngredientComponentItemStackCraftingClient
         if (hoveredContainerSlot == craftingResultSlotIndex && shift) {
             IntegratedTerminals._instance.getPacketHandler()
                 .sendToServer(
-                    new TerminalStorageIngredientItemStackCraftingGridShiftClickOutput(getName().toString(), channel));
+                    new TerminalStorageIngredientItemStackCraftingGridShiftClickOutput(
+                        getName().toString(),
+                        channel,
+                        GeneralConfig.shiftClickCraftingResultLimit));
             return true;
         }
         if (hoveredContainerSlot > craftingResultSlotIndex && hoveredContainerSlot <= craftingResultSlotIndex + 9

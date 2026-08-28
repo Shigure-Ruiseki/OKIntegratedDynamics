@@ -99,6 +99,7 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
     @Override
     public void initGui() {
         super.initGui();
+        this.initialized = false;
 
         fieldChannel = new GuiArrowedListField<>(
             0,

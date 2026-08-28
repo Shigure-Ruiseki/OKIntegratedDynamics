@@ -23,6 +23,7 @@ import ruiseki.integrateddynamics.core.evaluate.variable.ValueObjectTypeItemStac
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueObjectTypeRecipe;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeBoolean;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeInteger;
+import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeLong;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
 import ruiseki.integrateddynamics.core.part.aspect.build.AspectBuilder;
 import ruiseki.integrateddynamics.core.part.aspect.build.IAspectValuePropagator;
@@ -90,10 +91,10 @@ public class CraftingAspectWriteBuilders {
         .byMod(IntegratedCrafting._instance)
         .appendKind("craft")
         .handle(AspectWriteBuilders.PROP_GET_FLUIDSTACK);
-    public static final AspectBuilder<ValueTypeInteger.ValueInteger, ValueTypeInteger, Triple<PartTarget, IAspectProperties, Integer>> BUILDER_INTEGER = AspectWriteBuilders.BUILDER_INTEGER
+    public static final AspectBuilder<ValueTypeLong.ValueLong, ValueTypeLong, Triple<PartTarget, IAspectProperties, Long>> BUILDER_LONG = AspectWriteBuilders.BUILDER_LONG
         .byMod(IntegratedCrafting._instance)
         .appendKind("craft")
-        .handle(AspectWriteBuilders.PROP_GET_INTEGER);
+        .handle(AspectWriteBuilders.PROP_GET_LONG);
 
     public static final IAspectValuePropagator<Triple<PartTarget, IAspectProperties, ItemStack>, CraftingJobData<ItemStack, Integer>> PROP_ITEMSTACK_CRAFTINGDATA = input -> {
         PartTarget partTarget = input.getLeft();
@@ -111,11 +112,11 @@ public class CraftingAspectWriteBuilders {
         return new CraftingJobData<>(properties, ingredientComponent, instance, partTarget.getCenter());
     };
 
-    public static final IAspectValuePropagator<Triple<PartTarget, IAspectProperties, Integer>, CraftingJobData<Integer, Boolean>> PROP_ENERGY_CRAFTINGDATA = input -> {
+    public static final IAspectValuePropagator<Triple<PartTarget, IAspectProperties, Long>, CraftingJobData<Long, Boolean>> PROP_ENERGY_CRAFTINGDATA = input -> {
         PartTarget partTarget = input.getLeft();
         IAspectProperties properties = input.getMiddle();
-        Integer instance = input.getRight();
-        IngredientComponent<Integer, Boolean> ingredientComponent = IngredientComponent.ENERGY;
+        Long instance = input.getRight();
+        IngredientComponent<Long, Boolean> ingredientComponent = IngredientComponent.ENERGY;
         return new CraftingJobData<>(properties, ingredientComponent, instance, partTarget.getCenter());
     };
 

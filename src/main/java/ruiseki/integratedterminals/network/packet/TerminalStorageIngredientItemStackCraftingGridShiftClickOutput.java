@@ -28,14 +28,18 @@ public class TerminalStorageIngredientItemStackCraftingGridShiftClickOutput exte
     private String tabId;
     @CodecField
     private int channel;
+    @CodecField
+    private boolean craftOnce;
 
     public TerminalStorageIngredientItemStackCraftingGridShiftClickOutput() {
 
     }
 
-    public TerminalStorageIngredientItemStackCraftingGridShiftClickOutput(String tabId, int channel) {
+    public TerminalStorageIngredientItemStackCraftingGridShiftClickOutput(String tabId, int channel,
+        boolean craftOnce) {
         this.tabId = tabId;
         this.channel = channel;
+        this.craftOnce = craftOnce;
     }
 
     @Override
@@ -108,7 +112,8 @@ public class TerminalStorageIngredientItemStackCraftingGridShiftClickOutput exte
                         break;
                     }
 
-                } while (slotCrafting.getStack() != null && craftedAmount < currentCraftingItem.getMaxStackSize());
+                } while (!this.craftOnce && slotCrafting.getStack() != null
+                    && craftedAmount < currentCraftingItem.getMaxStackSize());
             }
         }
     }

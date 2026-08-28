@@ -182,6 +182,11 @@ public class GeneralConfig extends DummyConfig {
         comment = "If the search box and button states should be synchronized between the item storage and crafting tabs.")
     public static boolean syncItemStorageAndCraftingTabStates = true;
 
+    @ConfigurableProperty(
+        category = ConfigurableTypeCategory.GENERAL,
+        comment = "If shift-clicking on the crafting terminal's crafting result slot should only produce a single result.")
+    public static boolean shiftClickCraftingResultLimit = false;
+
     /**
      * The type of this config.
      */

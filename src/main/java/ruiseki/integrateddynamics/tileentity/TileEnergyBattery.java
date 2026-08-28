@@ -3,13 +3,10 @@ package ruiseki.integrateddynamics.tileentity;
 import net.minecraft.block.Block;
 import net.minecraft.world.World;
 
-import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
-
 import cofh.api.energy.IEnergyProvider;
 import cofh.api.energy.IEnergyReceiver;
 import lombok.experimental.Delegate;
 import ruiseki.integrateddynamics.api.network.INetworkElement;
-import ruiseki.integrateddynamics.block.BlockEnergyBattery;
 import ruiseki.integrateddynamics.block.BlockEnergyBatteryBase;
 import ruiseki.integrateddynamics.block.BlockEnergyBatteryConfig;
 import ruiseki.integrateddynamics.capability.energystorage.IEnergyStorageCapacity;
@@ -24,7 +21,6 @@ import ruiseki.okcore.datastructure.DimPos;
 import ruiseki.okcore.energy.capability.CapabilityEnergy;
 import ruiseki.okcore.energy.component.EnergyHandlerComponent;
 import ruiseki.okcore.energy.component.IEnergyHandlerExclusion;
-import ruiseki.okcore.helper.BlockStateHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.persist.nbt.NBTPersist;
 
@@ -71,23 +67,6 @@ public class TileEnergyBattery extends TileCableConnectable
         return capacity;
     }
 
-    public void updateBlockState() {
-        if (!isCreative()) {
-            BlockState blockState = BlockStateHelpers.getState(worldObj, pos);
-            if (blockState.getBlock() == BlockEnergyBatteryConfig._instance.getInstance()) {
-                int fill = Math.max(
-                    0,
-                    (int) Math.floor(
-                        ((float) energy * (BlockEnergyBattery.FILL.getAllowedValues() - 1))
-                            / (float) getMaxEnergyStored()));
-                if (blockState.getPropertyValue(BlockEnergyBattery.FILL) != fill) {
-                    BlockStateHelpers.set(worldObj, pos, BlockEnergyBattery.FILL, fill);
-                    sendUpdate();
-                }
-            }
-        }
-    }
-
     protected void setEnergy(int energy) {
         if (!isCreative()) {
             int lastEnergy = this.energy;
@@ -128,6 +107,7 @@ public class TileEnergyBattery extends TileCableConnectable
     @Override
     public int receiveEnergy(int energy, boolean simulate) {
         if (!isCreative()) {
+            energy = Math.min(energy, getEnergyPerTick());
             int stored = getEnergyStored();
             int energyReceived = Math.min(getMaxEnergyStored() - stored, energy);
             if (!simulate) {
@@ -141,22 +121,23 @@ public class TileEnergyBattery extends TileCableConnectable
     @Override
     public int extractEnergy(int energy, boolean simulate) {
         if (isCreative()) return energy;
-        energy = Math.max(0, Math.min(energy, getEnergyPerTick()));
+        energy = Math.clamp(energy, 0, getEnergyPerTick());
         int stored = getEnergyStored();
-        int newEnergy = Math.max(stored - energy, 0);;
+        int newEnergy = Math.max(stored - energy, 0);
         if (!simulate) {
             setEnergy(newEnergy);
         }
         return stored - newEnergy;
     }
 
-    protected int addEnergy(int energy) {
-        int filled = addEnergyFe(energy, false);
-        extractEnergy(filled, false);
+    protected long addEnergy(long energy) {
+        long toFill = Math.min(energy, extractEnergy((int) energy, true));
+        long filled = addEnergyFe(toFill, false);
+        extractEnergy((int) filled, false);
         return filled;
     }
 
-    protected int addEnergyFe(int energy, boolean simulate) {
+    protected long addEnergyFe(long energy, boolean simulate) {
         return EnergyHelpers.fillNeigbours(getWorldObj(), getPos(), energy, simulate);
     }
 

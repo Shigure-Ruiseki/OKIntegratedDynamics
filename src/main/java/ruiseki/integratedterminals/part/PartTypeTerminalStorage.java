@@ -94,6 +94,11 @@ public class PartTypeTerminalStorage extends PartTypeTerminal<PartTypeTerminalSt
             this.namedInventories = Maps.newHashMap();
         }
 
+        @Override
+        public int getUpdateInterval() {
+            return 1; // For enabling energy consumption
+        }
+
         public void clearNamedInventories() {
             this.namedInventories.clear();
         }

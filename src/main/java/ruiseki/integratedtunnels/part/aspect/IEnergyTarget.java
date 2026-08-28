@@ -19,15 +19,15 @@ import ruiseki.okcore.capabilities.ICapabilityProvider;
  */
 public interface IEnergyTarget extends IChanneledTarget<IEnergyNetwork> {
 
-    public IIngredientComponentStorage<Integer, Boolean> getEnergyChannel();
+    public IIngredientComponentStorage<Long, Boolean> getEnergyChannel();
 
-    public IIngredientComponentStorage<Integer, Boolean> getStorage();
+    public IIngredientComponentStorage<Long, Boolean> getStorage();
 
-    public int getAmount();
+    public long getAmount();
 
     public boolean isExactAmount();
 
-    public static IEnergyTarget ofTile(PartTarget partTarget, IAspectProperties properties, int amount) {
+    public static IEnergyTarget ofTile(PartTarget partTarget, IAspectProperties properties, long amount) {
         PartPos center = partTarget.getCenter();
         PartPos target = partTarget.getTarget();
         INetwork network = IChanneledTarget.getNetworkChecked(center);
@@ -47,7 +47,7 @@ public interface IEnergyTarget extends IChanneledTarget<IEnergyNetwork> {
     }
 
     public static IEnergyTarget ofEntity(PartTarget partTarget, @Nullable Entity entity, IAspectProperties properties,
-        int amount) {
+        long amount) {
         PartPos center = partTarget.getCenter();
         PartPos target = partTarget.getTarget();
         INetwork network = IChanneledTarget.getNetworkChecked(center);

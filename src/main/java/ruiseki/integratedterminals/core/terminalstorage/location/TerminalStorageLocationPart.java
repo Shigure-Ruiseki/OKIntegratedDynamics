@@ -12,7 +12,6 @@ import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.integratedterminals.IntegratedTerminals;
 import ruiseki.integratedterminals.Reference;
 import ruiseki.integratedterminals.api.terminalstorage.location.ITerminalStorageLocation;
-import ruiseki.integratedterminals.core.client.gui.CraftingJobGuiData;
 import ruiseki.integratedterminals.core.client.gui.CraftingOptionGuiData;
 import ruiseki.integratedterminals.core.client.gui.ExtendedGuiHandler;
 import ruiseki.integratedterminals.network.packet.PacketSetCraftingDataPart;

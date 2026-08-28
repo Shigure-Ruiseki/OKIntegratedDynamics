@@ -62,6 +62,8 @@ public class AspectWriteBuilders {
         AspectBuilder.forWriteType(ValueTypes.BOOLEAN));
     public static final AspectBuilder<ValueTypeInteger.ValueInteger, ValueTypeInteger, Triple<PartTarget, IAspectProperties, ValueTypeInteger.ValueInteger>> BUILDER_INTEGER = getValue(
         AspectBuilder.forWriteType(ValueTypes.INTEGER));
+    public static final AspectBuilder<ValueTypeLong.ValueLong, ValueTypeLong, Triple<PartTarget, IAspectProperties, ValueTypeLong.ValueLong>> BUILDER_LONG = getValue(
+        AspectBuilder.forWriteType(ValueTypes.LONG));
     public static final AspectBuilder<ValueTypeDouble.ValueDouble, ValueTypeDouble, Triple<PartTarget, IAspectProperties, ValueTypeDouble.ValueDouble>> BUILDER_DOUBLE = getValue(
         AspectBuilder.forWriteType(ValueTypes.DOUBLE));
     public static final AspectBuilder<ValueTypeString.ValueString, ValueTypeString, Triple<PartTarget, IAspectProperties, ValueTypeString.ValueString>> BUILDER_STRING = getValue(

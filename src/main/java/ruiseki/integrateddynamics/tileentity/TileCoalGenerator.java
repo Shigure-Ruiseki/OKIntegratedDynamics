@@ -96,10 +96,10 @@ public class TileCoalGenerator extends TileCableConnectableInventory implements 
         return currentlyBurning < currentlyBurningMax;
     }
 
-    public boolean canAddEnergy(int energy) {
+    public boolean canAddEnergy(long energy) {
         IEnergyNetwork network = getEnergyNetwork();
         if (network != null) {
-            int remainder = network.getChannel(IPositionedAddonsNetwork.DEFAULT_CHANNEL)
+            long remainder = network.getChannel(IPositionedAddonsNetwork.DEFAULT_CHANNEL)
                 .insert(energy, true);
             if (remainder < energy) {
                 return true;
@@ -108,9 +108,9 @@ public class TileCoalGenerator extends TileCableConnectableInventory implements 
         return addEnergyFe(energy, true) > 0;
     }
 
-    protected int addEnergy(int energy) {
+    protected long addEnergy(long energy) {
         IEnergyNetwork network = getEnergyNetwork();
-        int remaining = energy;
+        long remaining = energy;
 
         if (network != null) {
             remaining = network.getChannel(IPositionedAddonsNetwork.DEFAULT_CHANNEL)
@@ -124,7 +124,7 @@ public class TileCoalGenerator extends TileCableConnectableInventory implements 
         return energy - remaining;
     }
 
-    protected int addEnergyFe(int energy, boolean simulate) {
+    protected long addEnergyFe(long energy, boolean simulate) {
         return EnergyHelpers.fillNeigbours(getWorldObj(), getPos(), energy, simulate);
     }
 
