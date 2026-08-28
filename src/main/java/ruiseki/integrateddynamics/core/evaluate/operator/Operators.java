@@ -2354,7 +2354,7 @@ public final class Operators {
             .symbol("item_list_count")
             .operatorName("itemlistcount")
             .function(variables -> {
-                ValueTypeList.ValueList a = variables.getValue(0, ValueTypes.LIST);
+                ValueTypeList.ValueList<IValueType<IValue>, IValue> a = variables.getValue(0, ValueTypes.LIST);
                 ValueObjectTypeItemStack.ValueItemStack b = variables.getValue(1, ValueTypes.OBJECT_ITEMSTACK);
                 if (!ValueHelpers.correspondsTo(
                     a.getRawValue()
@@ -2376,19 +2376,25 @@ public final class Operators {
                 ItemStack itemStack = b.getRawValue()
                     .get();
                 int count = 0;
-
-                for (ValueObjectTypeItemStack.ValueItemStack listValue : (IValueTypeListProxy<ValueObjectTypeItemStack, ValueObjectTypeItemStack.ValueItemStack>) a
-                    .getRawValue()) {
-                    if (listValue.getRawValue()
-                        .isPresent()) {
-                        ItemStack listItem = listValue.getRawValue()
-                            .get();
-                        if (itemStack.isItemEqual(listItem) && ItemStack.areItemStackTagsEqual(itemStack, listItem)) {
-                            count += listItem.stackSize;
+                for (IValue listValueRaw : a.getRawValue()) {
+                    if (listValueRaw.getType()
+                        .correspondsTo(ValueTypes.OBJECT_ITEMSTACK)) {
+                        ValueObjectTypeItemStack.ValueItemStack listValue = (ValueObjectTypeItemStack.ValueItemStack) listValueRaw;
+                        if (!listValue.getRawValue()
+                            .isEmpty()) {
+                            ItemStack listItem = listValue.getRawValue()
+                                .get();
+                            if (itemStack != null) {
+                                if (itemStack.isItemEqual(listItem)
+                                    && ItemStack.areItemStackTagsEqual(itemStack, listItem)) {
+                                    count += listItem.stackSize;
+                                }
+                            } else {
+                                count += listItem.stackSize;
+                            }
                         }
                     }
                 }
-
                 return ValueTypeInteger.ValueInteger.of(count);
             })
             .build());
@@ -3366,7 +3372,7 @@ public final class Operators {
      */
     public static final IOperator OBJECT_FLUIDSTACK_WITH_AMOUNT = REGISTRY.register(
         OperatorBuilders.FLUIDSTACK_2.inputTypes(ValueTypes.OBJECT_FLUIDSTACK, ValueTypes.INTEGER)
-            .output(ValueTypes.BOOLEAN)
+            .output(ValueTypes.OBJECT_FLUIDSTACK)
             .symbolOperator("with_amount")
             .function(variables -> {
                 ValueObjectTypeFluidStack.ValueFluidStack valueFluidStack = variables

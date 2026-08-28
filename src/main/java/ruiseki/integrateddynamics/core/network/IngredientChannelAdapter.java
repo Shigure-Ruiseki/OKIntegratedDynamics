@@ -3,7 +3,6 @@ package ruiseki.integrateddynamics.core.network;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import javax.annotation.Nonnull;
@@ -17,6 +16,7 @@ import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
 import ruiseki.commoncapabilities.api.ingredient.storage.IIngredientComponentStorage;
 import ruiseki.integrateddynamics.api.network.IPartPosIteratorHandler;
 import ruiseki.integrateddynamics.api.network.IPositionedAddonsNetworkIngredients;
+import ruiseki.integrateddynamics.api.network.PositionedAddonsNetworkIngredientsFilter;
 import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.okcore.datastructure.Wrapper;
 import ruiseki.okcore.ingredient.collection.IIngredientMapMutable;
@@ -150,8 +150,8 @@ public abstract class IngredientChannelAdapter<T, M> implements IIngredientCompo
             }
 
             // Skip if a filter was set that doesn't match the ingredient
-            Predicate<T> filter = this.network.getPositionedStorageFilter(pos);
-            if (filter != null && !filter.test(ingredient)) {
+            PositionedAddonsNetworkIngredientsFilter<T> filter = this.network.getPositionedStorageFilter(pos);
+            if (filter != null && !filter.testInsertion(ingredient)) {
                 continue;
             }
 
@@ -211,10 +211,10 @@ public abstract class IngredientChannelAdapter<T, M> implements IIngredientCompo
             IIngredientComponentStorage<T, M> positionedStorage = this.network.getPositionedStorage(pos);
 
             // If we do an effective extraction, first simulate to check if it matches the filter
-            Predicate<T> filter = this.network.getPositionedStorageFilter(pos);
+            PositionedAddonsNetworkIngredientsFilter<T> filter = this.network.getPositionedStorageFilter(pos);
             if (filter != null && !simulate) {
                 T extractedSimulated = positionedStorage.extract(maxQuantity, true);
-                if (!filter.test(extractedSimulated)) {
+                if (!filter.testExtraction(extractedSimulated)) {
                     continue;
                 }
             }
@@ -222,7 +222,7 @@ public abstract class IngredientChannelAdapter<T, M> implements IIngredientCompo
             T extracted = positionedStorage.extract(maxQuantity, simulate);
 
             // If simulating, just check the output
-            if (filter != null && simulate && !filter.test(extracted)) {
+            if (filter != null && simulate && !filter.testExtraction(extracted)) {
                 continue;
             }
 
@@ -308,8 +308,8 @@ public abstract class IngredientChannelAdapter<T, M> implements IIngredientCompo
                 .withQuantity(extractedSimulated, 1);
 
             // Skip if a filter was set that doesn't match the simulated extraction
-            Predicate<T> filter = this.network.getPositionedStorageFilter(pos);
-            if (filter != null && !filter.test(extractedSimulated)) {
+            PositionedAddonsNetworkIngredientsFilter<T> filter = this.network.getPositionedStorageFilter(pos);
+            if (filter != null && !filter.testExtraction(extractedSimulated)) {
                 continue;
             }
 

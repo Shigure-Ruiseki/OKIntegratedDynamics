@@ -1,15 +1,14 @@
 package ruiseki.integrateddynamics.core.network;
 
-import java.util.ConcurrentModificationException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.WorldServer;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -58,6 +57,7 @@ public class IngredientObserver<T, M> {
     private final Int2ObjectMap<List<PrioritizedPartPos>> lastRemoved;
     private final Map<PartPos, Integer> lastInventoryStates;
     private Future<?> lastObserverBarrier;
+    private boolean runningObserverSync;
 
     public IngredientObserver(IPositionedAddonsNetworkIngredients<T, M> network) {
         this.network = network;
@@ -70,6 +70,7 @@ public class IngredientObserver<T, M> {
         this.lastInventoryStates = Maps.newHashMap();
 
         this.lastObserverBarrier = null;
+        this.runningObserverSync = false;
     }
 
     public IPositionedAddonsNetworkIngredients<T, M> getNetwork() {
@@ -157,34 +158,57 @@ public class IngredientObserver<T, M> {
     }
 
     /**
+     * @param forceSync If observation should happen synchronously.
      * @return If an observation job was successfully started if it was needed.
      */
-    protected boolean observe() {
+    protected boolean observe(boolean forceSync) {
         if (!this.changeObservers.isEmpty()) {
-            if (GeneralConfig.ingredientNetworkObserverEnableMultithreading) {
-                // If we still have an uncompleted job from the previous tick, wait for it to finish first!
-                if (this.lastObserverBarrier != null) {
-                    try {
-                        this.lastObserverBarrier.get(1, TimeUnit.SECONDS);
-                    } catch (TimeoutException e) {
-                        return false; // Don't start new jobs when the previous one is still running.
-                    } catch (InterruptedException | ExecutionException e) {
-                        if (e instanceof ExecutionException
-                            && !(e.getCause() instanceof ConcurrentModificationException)) {
-                            e.printStackTrace();
+            // If we forcefully observe sync, make sure that no async observers are still running
+            if (forceSync && GeneralConfig.ingredientNetworkObserverEnableMultithreading
+                && this.lastObserverBarrier != null
+                && !this.lastObserverBarrier.isDone()) {
+
+                // This loop prevents deadlocks between the main thread and worker threads
+                // when worker threads request main-thread chunk operations.
+                do {
+                    MinecraftServer server = MinecraftServer.getServer();
+                    if (server != null && server.worldServers != null) {
+                        for (WorldServer serverWorld : server.worldServers) {
+                            if (serverWorld != null && serverWorld.theChunkProviderServer != null) {
+                                serverWorld.theChunkProviderServer.unloadQueuedChunks();
+                            }
                         }
                     }
+
+                    Thread.yield();
+                } while (!this.lastObserverBarrier.isDone());
+            }
+
+            if (GeneralConfig.ingredientNetworkObserverEnableMultithreading && !forceSync) {
+                // If we still have an uncompleted job (sync or async) from the previous tick, don't start a new one
+                // yet!
+                if ((this.lastObserverBarrier != null && !this.lastObserverBarrier.isDone())
+                    || this.runningObserverSync) {
+                    return false;
                 }
 
+                // Schedule the observation job
                 this.lastObserverBarrier = WORKER_POOL.submit(() -> {
                     for (int channel : getChannels()) {
                         observe(channel);
                     }
                 });
             } else {
+                // If we have an uncompleted sync observer, don't start a new one yet!
+                if (this.runningObserverSync) {
+                    return false;
+                }
+
+                this.runningObserverSync = true;
                 for (int channel : getChannels()) {
                     observe(channel);
                 }
+                this.runningObserverSync = false;
             }
         }
         return true;

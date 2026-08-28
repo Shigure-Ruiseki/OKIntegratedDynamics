@@ -133,8 +133,8 @@ public class LabelsWorldStorage extends WorldStorage {
     @Override
     public void afterLoad() {
         super.afterLoad();
-        // Fix all null labels
-        // TODO: remove in 1.13
+        // Fix all null labels (#1038)
+        // This should not be able to occur, but it does, no idea why...
         labels.entrySet()
             .removeIf(integerStringEntry -> integerStringEntry.getValue() == null);
     }

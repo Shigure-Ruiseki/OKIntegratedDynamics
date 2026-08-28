@@ -2,7 +2,6 @@ package ruiseki.integrateddynamics.core.network;
 
 import java.util.List;
 import java.util.Map;
-import java.util.function.Predicate;
 
 import net.minecraftforge.common.util.ForgeDirection;
 
@@ -22,6 +21,7 @@ import ruiseki.integrateddynamics.api.network.IFullNetworkListener;
 import ruiseki.integrateddynamics.api.network.INetworkElement;
 import ruiseki.integrateddynamics.api.network.IPositionedAddonsNetwork;
 import ruiseki.integrateddynamics.api.network.IPositionedAddonsNetworkIngredients;
+import ruiseki.integrateddynamics.api.network.PositionedAddonsNetworkIngredientsFilter;
 import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.integrateddynamics.api.part.PrioritizedPartPos;
 import ruiseki.integrateddynamics.api.path.IPathElement;
@@ -43,7 +43,7 @@ public abstract class PositionedAddonsNetworkIngredients<T, M> extends Positione
 
     private final IngredientObserver<T, M> ingredientObserver;
     private final Int2ObjectMap<IngredientPositionsIndex<T, M>> indexes;
-    private final Map<PartPos, Predicate<T>> positionFilters = Maps.newHashMap();
+    private final Map<PartPos, PositionedAddonsNetworkIngredientsFilter<T>> positionFilters = Maps.newHashMap();
 
     private boolean observe;
     private Map<PartPos, Long> lastSecondDurations = Maps.newHashMap();
@@ -74,18 +74,17 @@ public abstract class PositionedAddonsNetworkIngredients<T, M> extends Positione
     }
 
     @Override
-    public void setPositionedStorageFilter(PartPos pos, @Nullable Predicate<T> filter) {
+    public void setPositionedStorageFilter(PartPos pos, @Nullable PositionedAddonsNetworkIngredientsFilter<T> filter) {
         if (filter == null) {
             positionFilters.remove(pos);
         } else {
             positionFilters.put(pos, filter);
-            scheduleObservationForced(IPositionedAddonsNetwork.WILDCARD_CHANNEL, pos);
         }
     }
 
     @Nullable
     @Override
-    public Predicate<T> getPositionedStorageFilter(PartPos pos) {
+    public PositionedAddonsNetworkIngredientsFilter<T> getPositionedStorageFilter(PartPos pos) {
         return positionFilters.get(pos);
     }
 
@@ -149,6 +148,13 @@ public abstract class PositionedAddonsNetworkIngredients<T, M> extends Positione
     protected void onPositionRemoved(int channel, PrioritizedPartPos pos) {
         super.onPositionRemoved(channel, pos);
         ingredientObserver.onPositionRemoved(channel, pos);
+    }
+
+    @Override
+    public void runObserverSync() {
+        if (this.ingredientObserver.observe(true)) {
+            this.observe = false;
+        }
     }
 
     @Override
@@ -242,9 +248,15 @@ public abstract class PositionedAddonsNetworkIngredients<T, M> extends Positione
 
     }
 
+    @Override
+    public void updateGuaranteed() {
+
+    }
+
+    @Override
     public void update() {
         if (this.shouldObserve()) {
-            if (this.ingredientObserver.observe()) {
+            if (this.ingredientObserver.observe(false)) {
                 this.observe = false;
             }
         }

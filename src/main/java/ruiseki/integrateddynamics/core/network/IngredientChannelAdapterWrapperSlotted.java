@@ -1,7 +1,6 @@
 package ruiseki.integrateddynamics.core.network;
 
 import java.util.Iterator;
-import java.util.function.Predicate;
 
 import javax.annotation.Nonnull;
 
@@ -13,6 +12,7 @@ import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
 import ruiseki.commoncapabilities.api.ingredient.storage.IIngredientComponentStorage;
 import ruiseki.commoncapabilities.api.ingredient.storage.IIngredientComponentStorageSlotted;
 import ruiseki.integrateddynamics.api.network.IPositionedAddonsNetworkIngredients;
+import ruiseki.integrateddynamics.api.network.PositionedAddonsNetworkIngredientsFilter;
 import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.okcore.helper.Helpers;
 
@@ -102,9 +102,9 @@ public class IngredientChannelAdapterWrapperSlotted<T, M> implements IIngredient
         } else {
             try {
                 T ingredient = Iterators.get(storage.iterator(), slotRelative);
-                Predicate<T> filter = this.channel.getNetwork()
+                PositionedAddonsNetworkIngredientsFilter<T> filter = this.channel.getNetwork()
                     .getPositionedStorageFilter(pos);
-                if (filter != null && !filter.test(ingredient)) {
+                if (filter != null && !filter.testView(ingredient)) {
                     return getComponent().getMatcher()
                         .getEmptyInstance();
                 }
@@ -146,9 +146,9 @@ public class IngredientChannelAdapterWrapperSlotted<T, M> implements IIngredient
             return ingredient;
         }
 
-        Predicate<T> filter = this.channel.getNetwork()
+        PositionedAddonsNetworkIngredientsFilter<T> filter = this.channel.getNetwork()
             .getPositionedStorageFilter(pos);
-        if (filter != null && !filter.test(ingredient)) {
+        if (filter != null && !filter.testInsertion(ingredient)) {
             return ingredient;
         }
 
@@ -172,7 +172,7 @@ public class IngredientChannelAdapterWrapperSlotted<T, M> implements IIngredient
         }
 
         // If we do an effective extraction, first simulate to check if it matches the filter
-        Predicate<T> filter = this.channel.getNetwork()
+        PositionedAddonsNetworkIngredientsFilter<T> filter = this.channel.getNetwork()
             .getPositionedStorageFilter(pos);
         if (filter != null && !simulate) {
             T extractedSimulated;
@@ -182,7 +182,7 @@ public class IngredientChannelAdapterWrapperSlotted<T, M> implements IIngredient
             } else {
                 extractedSimulated = storage.extract(maxQuantity, simulate);
             }
-            if (!filter.test(extractedSimulated)) {
+            if (!filter.testExtraction(extractedSimulated)) {
                 return getComponent().getMatcher()
                     .getEmptyInstance();
             }
@@ -197,7 +197,7 @@ public class IngredientChannelAdapterWrapperSlotted<T, M> implements IIngredient
         }
 
         // If simulating, just check the output
-        if (filter != null && simulate && !filter.test(extracted)) {
+        if (filter != null && simulate && !filter.testExtraction(extracted)) {
             return getComponent().getMatcher()
                 .getEmptyInstance();
         }

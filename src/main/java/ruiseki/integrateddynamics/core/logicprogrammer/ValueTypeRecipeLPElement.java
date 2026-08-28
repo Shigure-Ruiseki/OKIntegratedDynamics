@@ -61,7 +61,7 @@ import ruiseki.okcore.inventory.slot.SlotExtended;
 
 /**
  * Element for recipes.
- * Hardcoded to support items, fluids, and energy.
+ * This is hardcoded to only support items, fluids and energy
  *
  * @author rubensworks
  */
@@ -439,6 +439,9 @@ public class ValueTypeRecipeLPElement extends ValueTypeLPElementBase {
 
     @Override
     public IValue getValue() {
+        if (!isInputValid() && !isOutputValid()) {
+            return ValueObjectTypeRecipe.ValueRecipe.of(null);
+        }
         return ValueObjectTypeRecipe.ValueRecipe.of(
             new RecipeDefinition(
                 getInputs(
@@ -478,6 +481,7 @@ public class ValueTypeRecipeLPElement extends ValueTypeLPElementBase {
                 .setText(this.inputEnergy);
             for (int i = 0; i < this.outputStacks.size(); i++) {
                 slots.setInventorySlotContents(10 + i, this.outputStacks.get(i));
+                // No need to set slot type, as this can't be changed for output stacks
             }
             slots.setInventorySlotContents(13, this.outputFluid);
             gui.getOutputFluidAmountBox()

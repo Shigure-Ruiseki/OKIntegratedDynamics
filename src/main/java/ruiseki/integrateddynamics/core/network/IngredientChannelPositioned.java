@@ -1,13 +1,13 @@
 package ruiseki.integrateddynamics.core.network;
 
 import java.util.Iterator;
-import java.util.function.Predicate;
 
 import javax.annotation.Nonnull;
 
 import com.google.common.collect.Iterators;
 
 import ruiseki.integrateddynamics.api.network.IPositionedAddonsNetworkIngredients;
+import ruiseki.integrateddynamics.api.network.PositionedAddonsNetworkIngredientsFilter;
 import ruiseki.integrateddynamics.api.part.PartPos;
 
 /**
@@ -93,9 +93,9 @@ public class IngredientChannelPositioned<T, M> extends IngredientChannelAdapter<
                     }
                     this.lastPos = this.network.getPositionedStorage(pos)
                         .iterator(prototype, matchFlags);
-                    Predicate<T> filter = this.network.getPositionedStorageFilter(pos);
+                    PositionedAddonsNetworkIngredientsFilter<T> filter = this.network.getPositionedStorageFilter(pos);
                     if (filter != null) {
-                        this.lastPos = Iterators.filter(this.lastPos, filter::test);
+                        this.lastPos = Iterators.filter(this.lastPos, filter::testView);
                     }
                 } else {
                     this.lastPos = null;

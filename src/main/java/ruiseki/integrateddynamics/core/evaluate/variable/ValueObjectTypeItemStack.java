@@ -90,6 +90,8 @@ public class ValueObjectTypeItemStack extends ValueObjectTypeBase<ValueObjectTyp
             // Forge returns air for tags with negative count,
             // so we set it to 1 for deserialization and fix it afterwards.
             int realCount = tag.getInteger("Count");
+            // Consider the tag immutable, to avoid changes elsewhere
+            tag = (NBTTagCompound) tag.copy();
             tag.setByte("Count", (byte) 1);
             ItemStack itemStack = ItemStack.loadItemStackFromNBT(tag);
             if (itemStack != null) {

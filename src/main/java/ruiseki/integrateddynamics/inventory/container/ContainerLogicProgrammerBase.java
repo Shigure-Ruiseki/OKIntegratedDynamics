@@ -286,6 +286,10 @@ public abstract class ContainerLogicProgrammerBase extends ScrollingInventoryCon
 
         ItemStack itemStack = writeSlot.getStackInSlot(0);
         if (canWriteActiveElement() && itemStack != null) {
+            // If the variable has a vanilla custom name, make sure we inherit it as variable label
+            if (itemStack.hasDisplayName()) {
+                this.lastLabel = itemStack.getDisplayName();
+            }
             ItemStack outputStack = writeElementInfo();
             writeSlot.removeDirtyMarkListener(this);
             writeSlot.setInventorySlotContents(0, outputStack);

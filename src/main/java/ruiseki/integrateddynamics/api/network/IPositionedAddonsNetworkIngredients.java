@@ -2,7 +2,6 @@ package ruiseki.integrateddynamics.api.network;
 
 import java.util.Iterator;
 import java.util.Map;
-import java.util.function.Predicate;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -53,18 +52,18 @@ public interface IPositionedAddonsNetworkIngredients<T, M>
     /**
      * Set an ingredient filter for the given storage position.
      * Unsets the filter if null is provided.
-     * 
+     *
      * @param pos    A position.
      * @param filter An ingredient filter.
      */
-    public void setPositionedStorageFilter(PartPos pos, @Nullable Predicate<T> filter);
+    public void setPositionedStorageFilter(PartPos pos, @Nullable PositionedAddonsNetworkIngredientsFilter<T> filter);
 
     /**
      * @param pos A position.
      * @return An optional ingredient filter for the given storage position.
      */
     @Nullable
-    public Predicate<T> getPositionedStorageFilter(PartPos pos);
+    public PositionedAddonsNetworkIngredientsFilter<T> getPositionedStorageFilter(PartPos pos);
 
     /**
      * Get all instances at the target position.
@@ -74,9 +73,9 @@ public interface IPositionedAddonsNetworkIngredients<T, M>
      */
     public default Iterator<T> getRawInstances(PartPos pos) {
         Iterator<T> it = getPositionedStorage(pos).iterator();
-        Predicate<T> filter = getPositionedStorageFilter(pos);
+        PositionedAddonsNetworkIngredientsFilter<T> filter = getPositionedStorageFilter(pos);
         if (filter != null) {
-            it = Iterators.filter(it, filter::test);
+            it = Iterators.filter(it, filter::testView);
         }
         return it;
     }

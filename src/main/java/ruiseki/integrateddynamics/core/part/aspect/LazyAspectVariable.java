@@ -63,7 +63,12 @@ public abstract class LazyAspectVariable<V extends IValue> extends VariableAdapt
                         new LangHelpers.UnlocalizedString(getAspect().getUnlocalizedName())).localize());
             }
             this.isGettingValue = true;
-            this.value = getValueLazy();
+            try {
+                this.value = getValueLazy();
+            } catch (EvaluationException e) {
+                this.isGettingValue = false;
+                throw e;
+            }
             this.isGettingValue = false;
         }
         return this.value;

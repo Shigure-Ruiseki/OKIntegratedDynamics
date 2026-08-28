@@ -25,6 +25,7 @@ import ruiseki.integrateddynamics.core.client.gui.IDropdownEntryListener;
 import ruiseki.integrateddynamics.core.evaluate.operator.Operators;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeOperator;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
+import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.integrateddynamics.inventory.container.ContainerLogicProgrammerBase;
 import ruiseki.integrateddynamics.network.packet.LogicProgrammerValueTypeOperatorValueChangedPacket;
 import ruiseki.okcore.helper.Helpers;
@@ -59,7 +60,12 @@ public class ValueTypeOperatorLPElement extends ValueTypeLPElementBase implement
 
     @Override
     public LangHelpers.UnlocalizedString validate() {
-        return selectedOperator != null ? null : getValueType().canDeserialize(getInnerGuiElement().getInputString());
+        if (selectedOperator == null) {
+            return new LangHelpers.UnlocalizedString(
+                L10NValues.VALUETYPE_ERROR_INVALIDINPUT,
+                getInnerGuiElement().getInputString());
+        }
+        return null;
     }
 
     @Override
