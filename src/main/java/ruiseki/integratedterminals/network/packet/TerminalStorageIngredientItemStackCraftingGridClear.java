@@ -91,6 +91,7 @@ public class TerminalStorageIngredientItemStackCraftingGridClear extends PacketC
                     if (!player.inventory.addItemStackToInventory(itemStack)) {
                         player.dropPlayerItemWithRandomChoice(itemStack, false);
                     }
+                    inventoryCrafting.setInventorySlotContents(i, null);
                 }
             }
         }

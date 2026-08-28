@@ -2,6 +2,7 @@ package ruiseki.integratedterminals.item;
 
 import java.util.List;
 
+import net.minecraft.block.Block;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
@@ -15,6 +16,8 @@ import net.minecraftforge.common.util.ForgeDirection;
 
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.part.PartPos;
+import ruiseki.integrateddynamics.block.BlockCable;
+import ruiseki.integrateddynamics.block.BlockCableConfig;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.integrateddynamics.core.helper.PartHelpers;
 import ruiseki.integrateddynamics.core.part.PartTypes;
@@ -24,6 +27,7 @@ import ruiseki.integratedterminals.client.gui.container.GuiTerminalStorageItem;
 import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorageItem;
 import ruiseki.integratedterminals.inventory.container.TerminalStorageState;
 import ruiseki.okcore.Reference;
+import ruiseki.okcore.block.collidable.ICollidable;
 import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 import ruiseki.okcore.config.extendedconfig.ItemConfig;
 import ruiseki.okcore.datastructure.BlockPos;
@@ -76,21 +80,28 @@ public class ItemTerminalStoragePortable extends ItemGui {
     @Override
     public boolean onItemUseFirst(ItemStack stack, EntityPlayer player, World world, int x, int y, int z, int sideInt,
         float hitX, float hitY, float hitZ) {
-        ForgeDirection side = ForgeDirection.getOrientation(sideInt);
-        if (!world.isRemote) {
-            PartPos partPos = PartPos.of(world, new BlockPos(x, y, z), side);
-            PartHelpers.PartStateHolder<?, ?> partStateHolder = PartHelpers.getPart(partPos);
+        BlockPos pos = new BlockPos(x, y, z);
+        if (!world.isRemote && player != null) {
+            Block block = world.getBlock(x, y, z);
+            if (block == BlockCableConfig._instance.getInstance()) {
+                BlockCable blockCable = (BlockCable) block;
+                ICollidable.RayTraceResult<ForgeDirection> rayTraceResult = blockCable.doRayTrace(world, pos, player);
+                if (rayTraceResult != null) {
+                    ForgeDirection partDirection = rayTraceResult.getPositionHit();
+                    PartPos partPos = PartPos.of(world, pos, partDirection);
 
-            if (partStateHolder != null && partStateHolder.getPart() == PartTypes.CONNECTOR_OMNI) {
-                PartTypeConnectorOmniDirectional.State state = (PartTypeConnectorOmniDirectional.State) partStateHolder
-                    .getState();
-                setGroupId(stack, state.getGroupId());
+                    PartHelpers.PartStateHolder<?, ?> partStateHolder = PartHelpers.getPart(partPos);
+                    if (partStateHolder != null && partStateHolder.getPart() == PartTypes.CONNECTOR_OMNI) {
+                        PartTypeConnectorOmniDirectional.State state = (PartTypeConnectorOmniDirectional.State) partStateHolder
+                            .getState();
 
-                player.addChatComponentMessage(
-                    new ChatComponentTranslation(
-                        "item.items.integratedterminals.terminal_storage_portable.status.linked"));
-
-                return true;
+                        setGroupId(stack, state.getGroupId());
+                        player.addChatMessage(
+                            new ChatComponentTranslation(
+                                "item.items.integratedterminals.terminal_storage_portable.status.linked"));
+                        return true;
+                    }
+                }
             }
         }
         return false;

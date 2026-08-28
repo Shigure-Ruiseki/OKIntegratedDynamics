@@ -18,6 +18,7 @@ import ruiseki.integratedterminals.IntegratedTerminals;
 import ruiseki.integratedterminals.api.terminalstorage.ITerminalButton;
 import ruiseki.integratedterminals.api.terminalstorage.ITerminalStorageTabClient;
 import ruiseki.integratedterminals.api.terminalstorage.ITerminalStorageTabCommon;
+import ruiseki.integratedterminals.api.terminalstorage.event.TerminalStorageScreenSizeEvent;
 import ruiseki.integratedterminals.core.client.gui.GuiTerminalStorage;
 import ruiseki.integratedterminals.core.terminalstorage.button.TerminalButtonItemStackCraftingGridAutoRefill;
 import ruiseki.integratedterminals.core.terminalstorage.button.TerminalButtonItemStackCraftingGridBalance;
@@ -70,14 +71,30 @@ public class TerminalStorageTabIngredientComponentItemStackCraftingClient
                 LangHelpers.localize(this.ingredientComponent.getTranslationKey())));
     }
 
+    protected boolean isCraftingGridCenter() {
+        return TerminalStorageScreenSizeEvent.getWidthHeight()
+            .getLeft() < 374
+            || getRowColumnProvider().getRowsAndColumns()
+                .columns() < 17
+            || GeneralConfig.guiStorageForceCraftingGridCenter;
+    }
+
     @Override
     public int getSlotVisibleRows() {
-        return Math.max(1, super.getSlotVisibleRows() - 4);
+        if (isCraftingGridCenter()) {
+            return Math.max(2, super.getSlotVisibleRows() - 4);
+        }
+        return super.getSlotVisibleRows();
+    }
+
+    @Override
+    public int getPlayerInventoryOffsetX() {
+        return super.getPlayerInventoryOffsetX() + (isCraftingGridCenter() ? 0 : 60);
     }
 
     @Override
     public int getPlayerInventoryOffsetY() {
-        return super.getPlayerInventoryOffsetY() + 68;
+        return super.getPlayerInventoryOffsetY() + (isCraftingGridCenter() ? 68 : 0);
     }
 
     @Override
@@ -114,7 +131,10 @@ public class TerminalStorageTabIngredientComponentItemStackCraftingClient
         super.onTabBackgroundRender(screen, f, mouseX, mouseY);
         // Render crafting grid
         screen.drawTexturedModalRect(
-            screen.guiLeft + (screen.getGridXSize() / 2) - (9 * GuiHelpers.SLOT_SIZE / 2) + 22 + 29,
+            screen.guiLeft + (screen.getGridXSize() / 2)
+                - (9 * GuiHelpers.SLOT_SIZE / 2)
+                + 51
+                - (isCraftingGridCenter() ? 0 : 107),
             screen.guiTop + 52 + screen.getGridYSize(),
             0,
             117,

@@ -2,11 +2,11 @@ package ruiseki.integratedterminals.core.terminalstorage.button;
 
 import java.util.List;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumChatFormatting;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.Nullable;
 
 import ruiseki.integratedterminals.GeneralConfig;
@@ -14,6 +14,7 @@ import ruiseki.integratedterminals.Reference;
 import ruiseki.integratedterminals.api.terminalstorage.ITerminalButton;
 import ruiseki.integratedterminals.api.terminalstorage.ITerminalRowColumnProvider;
 import ruiseki.integratedterminals.api.terminalstorage.ITerminalStorageTabClient;
+import ruiseki.integratedterminals.api.terminalstorage.event.TerminalStorageScreenSizeEvent;
 import ruiseki.integratedterminals.client.gui.image.Images;
 import ruiseki.integratedterminals.core.terminalstorage.TerminalStorageTabIngredientComponentClient;
 import ruiseki.integratedterminals.core.terminalstorage.TerminalStorageTabIngredientComponentCommon;
@@ -101,25 +102,35 @@ public class TerminalButtonScaleGui<T> implements
 
     public static enum GuiScale {
 
-        SCALE_XY(Images.BUTTON_MIDDLE_SCALE_XY, "gui.integratedterminals.terminal_storage.scale.scalexy",
-            () -> new ITerminalRowColumnProvider.RowsAndColumns(
+        SCALE_XY(Images.BUTTON_MIDDLE_SCALE_XY, "gui.integratedterminals.terminal_storage.scale.scalexy", () -> {
+            Pair<Integer, Integer> widthHeight = TerminalStorageScreenSizeEvent.getWidthHeight();
+            return new ITerminalRowColumnProvider.RowsAndColumns(
                 (int) Math.min(
-                    Math.max(1, Math.ceil((Minecraft.getMinecraft().displayHeight - 146) / GuiHelpers.SLOT_SIZE)),
+                    Math.max(1, Math.ceil((widthHeight.getRight() - 146) / GuiHelpers.SLOT_SIZE)),
                     GeneralConfig.guiStorageScaleMaxRows),
                 (int) Math.min(
-                    Math.max(1, Math.ceil((Minecraft.getMinecraft().displayWidth - 56) / GuiHelpers.SLOT_SIZE)),
-                    GeneralConfig.guiStorageScaleMaxColumns))),
+                    Math.max(1, Math.ceil((widthHeight.getLeft() - 56) / GuiHelpers.SLOT_SIZE)),
+                    GeneralConfig.guiStorageScaleMaxColumns));
+        }),
         SCALE_Y(Images.BUTTON_MIDDLE_SCALE_Y, "gui.integratedterminals.terminal_storage.scale.scaley",
             () -> new ITerminalRowColumnProvider.RowsAndColumns(
                 (int) Math.min(
-                    Math.max(1, Math.ceil((Minecraft.getMinecraft().displayHeight - 146) / GuiHelpers.SLOT_SIZE)),
+                    Math.max(
+                        1,
+                        Math.ceil(
+                            (TerminalStorageScreenSizeEvent.getWidthHeight()
+                                .getRight() - 146) / GuiHelpers.SLOT_SIZE)),
                     GeneralConfig.guiStorageScaleMaxRows),
                 GeneralConfig.guiStorageScaleHeightColumns)),
         SCALE_X(Images.BUTTON_MIDDLE_SCALE_X, "gui.integratedterminals.terminal_storage.scale.scalex",
             () -> new ITerminalRowColumnProvider.RowsAndColumns(
                 GeneralConfig.guiStorageScaleWidthRows,
                 (int) Math.min(
-                    Math.max(1, Math.ceil((Minecraft.getMinecraft().displayWidth - 56) / GuiHelpers.SLOT_SIZE)),
+                    Math.max(
+                        1,
+                        Math.ceil(
+                            (TerminalStorageScreenSizeEvent.getWidthHeight()
+                                .getLeft() - 56) / GuiHelpers.SLOT_SIZE)),
                     GeneralConfig.guiStorageScaleMaxColumns))),
         SMALL(Images.BUTTON_MIDDLE_SCALE_SMALL, "gui.integratedterminals.terminal_storage.scale.small",
             () -> new ITerminalRowColumnProvider.RowsAndColumns(

@@ -38,7 +38,6 @@ import ruiseki.integratedterminals.core.client.gui.GuiTerminalStorage;
 import ruiseki.integratedterminals.core.terminalstorage.TerminalStorageTabs;
 import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientOpenCraftingJobAmountGuiPacket;
 import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientOpenCraftingPlanGuiPacket;
-import ruiseki.okcore.helper.GuiHelpers;
 import ruiseki.okcore.helper.ValueNotifierHelpers;
 import ruiseki.okcore.inventory.IGuiContainerProvider;
 import ruiseki.okcore.inventory.container.ExtendedInventoryContainer;
@@ -150,33 +149,28 @@ public abstract class ContainerTerminalStorageBase<L> extends ExtendedInventoryC
         for (int k = 0; k < 4; ++k) {
             final int armorType = k;
 
-            this.addSlotToContainer(
-                new Slot(
-                    player.inventory,
-                    39 - k,
-                    -7 + (k % 2) * GuiHelpers.SLOT_SIZE,
-                    152 + (k / 2) * GuiHelpers.SLOT_SIZE) {
+            this.addSlotToContainer(new Slot(player.inventory, 39 - k, -7 + (k % 2) * 18, 152 + (k / 2) * 18) {
 
-                    @Override
-                    public int getSlotStackLimit() {
-                        return 1;
-                    }
+                @Override
+                public int getSlotStackLimit() {
+                    return 1;
+                }
 
-                    @Override
-                    public boolean isItemValid(ItemStack stack) {
-                        if (stack == null || stack.getItem() == null) {
-                            return false;
-                        }
-                        return stack.getItem()
-                            .isValidArmor(stack, armorType, player);
+                @Override
+                public boolean isItemValid(ItemStack stack) {
+                    if (stack == null || stack.getItem() == null) {
+                        return false;
                     }
+                    return stack.getItem()
+                        .isValidArmor(stack, armorType, player);
+                }
 
-                    @Override
-                    @SideOnly(Side.CLIENT)
-                    public IIcon getBackgroundIconIndex() {
-                        return ItemArmor.func_94602_b(armorType);
-                    }
-                });
+                @Override
+                @SideOnly(Side.CLIENT)
+                public IIcon getBackgroundIconIndex() {
+                    return ItemArmor.func_94602_b(armorType);
+                }
+            });
         }
         // TODO Add BackHand Compat
     }

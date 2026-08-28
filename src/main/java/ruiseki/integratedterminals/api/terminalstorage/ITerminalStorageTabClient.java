@@ -181,6 +181,10 @@ public interface ITerminalStorageTabClient<S extends ITerminalStorageSlot> {
             .columns();
     }
 
+    public default int getPlayerInventoryOffsetX() {
+        return 0;
+    }
+
     public default int getPlayerInventoryOffsetY() {
         return 0;
     }

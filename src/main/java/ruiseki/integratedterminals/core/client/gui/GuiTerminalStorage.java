@@ -168,12 +168,14 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
     public void repositionInventorySlots() {
         int gridXSize = getGridXSize();
         int gridYSize = getGridYSize();
+        int playerInventoryOffsetX = getPlayerInventoryOffsetX();
         int playerInventoryOffsetY = getPlayerInventoryOffsetY();
         ITerminalStorageTabCommon.SlotPositionFactors factors = new ITerminalStorageTabCommon.SlotPositionFactors(
             offsetX,
             offsetY,
             gridXSize,
             gridYSize,
+            playerInventoryOffsetX,
             playerInventoryOffsetY);
 
         // Reposition regular inventory slots
@@ -186,6 +188,7 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
                         - 1
                         + (gridXSize / 2)
                         - (9 * GuiHelpers.SLOT_SIZE / 2)
+                        + playerInventoryOffsetX
                         + 19
                         + x * GuiHelpers.SLOT_SIZE);
                 InventoryContainer.setSlotPosY(
@@ -202,6 +205,7 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
                         - 1
                         + (gridXSize / 2)
                         - (9 * GuiHelpers.SLOT_SIZE / 2)
+                        + playerInventoryOffsetX
                         + 19
                         + x * GuiHelpers.SLOT_SIZE);
                 InventoryContainer
@@ -216,6 +220,7 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
                     - 1
                     + (gridXSize / 2)
                     - (9 * GuiHelpers.SLOT_SIZE / 2)
+                    + playerInventoryOffsetX
                     - 19
                     + (y % 2) * GuiHelpers.SLOT_SIZE);
             InventoryContainer.setSlotPosY(
@@ -234,6 +239,7 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
                     - 1
                     + (gridXSize / 2)
                     - (9 * GuiHelpers.SLOT_SIZE / 2)
+                    + playerInventoryOffsetX
                     - 10);
             InventoryContainer.setSlotPosY(slot, offsetY + 63 + gridYSize + playerInventoryOffsetY + 9 + 49);
         }
@@ -304,6 +310,11 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
         return 135 + getGridYSize() + getPlayerInventoryOffsetY() + 10;
     }
 
+    protected int getPlayerInventoryOffsetX() {
+        return getSelectedClientTab().map(ITerminalStorageTabClient::getPlayerInventoryOffsetX)
+            .orElse(0);
+    }
+
     protected int getPlayerInventoryOffsetY() {
         return getSelectedClientTab().map(ITerminalStorageTabClient::getPlayerInventoryOffsetY)
             .orElse(0);
@@ -337,17 +348,31 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
             int offset = 0;
             int gridXSize = getGridXSize();
             int gridYSize = getGridYSize();
+            int playerInventoryOffsetX = getPlayerInventoryOffsetX();
             int playerInventoryOffsetY = getPlayerInventoryOffsetY();
             ITerminalStorageTabCommon.SlotPositionFactors factors = new ITerminalStorageTabCommon.SlotPositionFactors(
                 offsetX,
                 offsetY,
                 gridXSize,
                 gridYSize,
+                playerInventoryOffsetX,
                 playerInventoryOffsetY);
             for (ITerminalButton button : tab.getButtons()) {
                 GuiButton guiButton = button.createButton(
-                    button.getX(guiLeft, BUTTONS_OFFSET_X, gridXSize, gridYSize),
-                    button.getY(guiTop, BUTTONS_OFFSET_Y + offset, gridXSize, gridYSize));
+                    button.getX(
+                        guiLeft,
+                        BUTTONS_OFFSET_X,
+                        gridXSize,
+                        gridYSize,
+                        playerInventoryOffsetX,
+                        playerInventoryOffsetY),
+                    button.getY(
+                        guiTop,
+                        BUTTONS_OFFSET_Y + offset,
+                        gridXSize,
+                        gridYSize,
+                        playerInventoryOffsetX,
+                        playerInventoryOffsetY));
                 guiButton.drawButton(mc, mouseX, mouseY);
                 if (button.isInLeftColumn()) {
                     offset += BUTTONS_OFFSET + guiButton.height;
@@ -540,7 +565,7 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
     protected void renderBgPlayerInventory(float f, int mouseX, int mouseY) {
         // Render player inventory
         drawTexturedModalRect(
-            guiLeft + (getGridXSize() / 2) - (9 * GuiHelpers.SLOT_SIZE / 2) + 3,
+            guiLeft + (getGridXSize() / 2) - (9 * GuiHelpers.SLOT_SIZE / 2) + getPlayerInventoryOffsetX() + 3,
             guiTop + 52 + getGridYSize() + getPlayerInventoryOffsetY(),
             34,
             24,
@@ -549,7 +574,7 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
 
         // Auxiliary slots
         drawTexturedModalRect(
-            guiLeft + (getGridXSize() / 2) + (9 * GuiHelpers.SLOT_SIZE / 2) + 57,
+            guiLeft + (getGridXSize() / 2) + (9 * GuiHelpers.SLOT_SIZE / 2) + getPlayerInventoryOffsetX() + 57,
             guiTop + 61 + getGridYSize() + getPlayerInventoryOffsetY(),
             0,
             12,
@@ -582,20 +607,46 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
             int offset = 0;
             int gridXSize = getGridXSize();
             int gridYSize = getGridYSize();
+            int playerInventoryOffsetX = getPlayerInventoryOffsetX();
             int playerInventoryOffsetY = getPlayerInventoryOffsetY();
             ITerminalStorageTabCommon.SlotPositionFactors factors = new ITerminalStorageTabCommon.SlotPositionFactors(
                 offsetX,
                 offsetY,
                 gridXSize,
                 gridYSize,
+                playerInventoryOffsetX,
                 playerInventoryOffsetY);
             for (ITerminalButton button : tab.getButtons()) {
                 GuiButton guiButton = button.createButton(
-                    button.getX(guiLeft, BUTTONS_OFFSET_X, gridXSize, gridYSize),
-                    button.getY(guiTop, BUTTONS_OFFSET_Y + offset, gridXSize, gridYSize));
+                    button.getX(
+                        guiLeft,
+                        BUTTONS_OFFSET_X,
+                        gridXSize,
+                        gridYSize,
+                        playerInventoryOffsetX,
+                        playerInventoryOffsetY),
+                    button.getY(
+                        guiTop,
+                        BUTTONS_OFFSET_Y + offset,
+                        gridXSize,
+                        gridYSize,
+                        playerInventoryOffsetX,
+                        playerInventoryOffsetY));
                 if (func_146978_c(
-                    button.getX(0, BUTTONS_OFFSET_X, gridXSize, gridYSize),
-                    button.getY(0, BUTTONS_OFFSET_Y + offset, gridXSize, gridYSize),
+                    button.getX(
+                        0,
+                        BUTTONS_OFFSET_X,
+                        gridXSize,
+                        gridYSize,
+                        playerInventoryOffsetX,
+                        playerInventoryOffsetY),
+                    button.getY(
+                        0,
+                        BUTTONS_OFFSET_Y + offset,
+                        gridXSize,
+                        gridYSize,
+                        playerInventoryOffsetX,
+                        playerInventoryOffsetY),
                     guiButton.width,
                     guiButton.height,
                     mouseX,
@@ -823,13 +874,39 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
                     .toString());
             int gridXSize = getGridXSize();
             int gridYSize = getGridYSize();
+            int playerInventoryOffsetX = getPlayerInventoryOffsetX();
+            int playerInventoryOffsetY = getPlayerInventoryOffsetY();
             for (ITerminalButton button : tab.getButtons()) {
                 GuiButton guiButton = button.createButton(
-                    button.getX(guiLeft, BUTTONS_OFFSET_X, gridXSize, gridYSize),
-                    button.getY(guiTop, BUTTONS_OFFSET_Y + offset, gridXSize, gridYSize));
+                    button.getX(
+                        guiLeft,
+                        BUTTONS_OFFSET_X,
+                        gridXSize,
+                        gridYSize,
+                        playerInventoryOffsetX,
+                        playerInventoryOffsetY),
+                    button.getY(
+                        guiTop,
+                        BUTTONS_OFFSET_Y + offset,
+                        gridXSize,
+                        gridYSize,
+                        playerInventoryOffsetX,
+                        playerInventoryOffsetY));
                 if (func_146978_c(
-                    button.getX(0, BUTTONS_OFFSET_X, gridXSize, gridYSize),
-                    button.getY(0, BUTTONS_OFFSET_Y + offset, gridXSize, gridYSize),
+                    button.getX(
+                        0,
+                        BUTTONS_OFFSET_X,
+                        gridXSize,
+                        gridYSize,
+                        playerInventoryOffsetX,
+                        playerInventoryOffsetY),
+                    button.getY(
+                        0,
+                        BUTTONS_OFFSET_Y + offset,
+                        gridXSize,
+                        gridYSize,
+                        playerInventoryOffsetX,
+                        playerInventoryOffsetY),
                     guiButton.width,
                     guiButton.height,
                     mouseX,
