@@ -17,7 +17,6 @@ import ruiseki.commoncapabilities.api.ingredient.MixedIngredients;
 import ruiseki.integratedcrafting.IntegratedCrafting;
 import ruiseki.integratedcrafting.api.crafting.CraftingJob;
 import ruiseki.integratedcrafting.api.crafting.ICraftingInterface;
-import ruiseki.integratedcrafting.api.network.ICraftingNetwork;
 import ruiseki.integratedcrafting.api.recipe.IRecipeIndex;
 import ruiseki.integrateddynamics.api.part.aspect.IAspectRead;
 import ruiseki.integrateddynamics.api.part.aspect.IAspectWrite;
@@ -95,34 +94,41 @@ public class CraftingAspects {
                         int channel = data.getLeft()
                             .getValue(AspectReadBuilders.Network.PROPERTY_CHANNEL)
                             .getRawValue();
-                        data.getRight().ifPresent(craftingNetwork -> {
-                            Iterator<CraftingJob> it = craftingNetwork.getCraftingJobs(channel);
-                            while (it.hasNext()) {
-                                CraftingJob crafingJob = it.next();
-                                ICraftingInterface craftingInterface = craftingNetwork.getCraftingJobInterface(crafingJob.getChannel(), crafingJob.getId());
-                                if (craftingInterface == null) {
-                                    IntegratedCrafting.clog(Level.WARN, "Removed a zombie crafting job");
-                                    it.remove();
-                                    continue;
-                                }
-                                Map<IngredientComponent<?, ?>, List<IPrototypedIngredient<?, ?>>> pendingPrototypes = craftingInterface
-                                    .getPendingCraftingJobOutputs(crafingJob.getId());
+                        data.getRight()
+                            .ifPresent(craftingNetwork -> {
+                                Iterator<CraftingJob> it = craftingNetwork.getCraftingJobs(channel);
+                                while (it.hasNext()) {
+                                    CraftingJob crafingJob = it.next();
+                                    ICraftingInterface craftingInterface = craftingNetwork
+                                        .getCraftingJobInterface(crafingJob.getChannel(), crafingJob.getId());
+                                    if (craftingInterface == null) {
+                                        IntegratedCrafting.clog(Level.WARN, "Removed a zombie crafting job");
+                                        it.remove();
+                                        continue;
+                                    }
+                                    Map<IngredientComponent<?, ?>, List<IPrototypedIngredient<?, ?>>> pendingPrototypes = craftingInterface
+                                        .getPendingCraftingJobOutputs(crafingJob.getId());
 
-                                if (pendingPrototypes.isEmpty()) {
-                                    continue;
-                                }
+                                    if (pendingPrototypes.isEmpty()) {
+                                        continue;
+                                    }
 
-                                Map<IngredientComponent<?, ?>, List<?>> pendingIngredients = Maps.newIdentityHashMap();
-                                for (IngredientComponent<?, ?> ingredientComponent : pendingPrototypes.keySet()) {
-                                    pendingIngredients.put(ingredientComponent, pendingPrototypes
-                                        .get(ingredientComponent).stream()
-                                        .map(IPrototypedIngredient::getPrototype)
-                                        .collect(Collectors.toList()));
-                                }
+                                    Map<IngredientComponent<?, ?>, List<?>> pendingIngredients = Maps
+                                        .newIdentityHashMap();
+                                    for (IngredientComponent<?, ?> ingredientComponent : pendingPrototypes.keySet()) {
+                                        pendingIngredients.put(
+                                            ingredientComponent,
+                                            pendingPrototypes.get(ingredientComponent)
+                                                .stream()
+                                                .map(IPrototypedIngredient::getPrototype)
+                                                .collect(Collectors.toList()));
+                                    }
 
-                                ingredients.add(ValueObjectTypeIngredients.ValueIngredients.of(new MixedIngredients(pendingIngredients)));
-                            }
-                        });
+                                    ingredients.add(
+                                        ValueObjectTypeIngredients.ValueIngredients
+                                            .of(new MixedIngredients(pendingIngredients)));
+                                }
+                            });
                     }
                     return ValueTypeList.ValueList.ofList(ValueTypes.OBJECT_INGREDIENTS, ingredients);
                 })
@@ -136,12 +142,13 @@ public class CraftingAspects {
                         int channel = data.getLeft()
                             .getValue(AspectReadBuilders.Network.PROPERTY_CHANNEL)
                             .getRawValue();
-                        data.getRight().ifPresent(craftingNetwork -> {
-                            IRecipeIndex recipeIndex = craftingNetwork.getRecipeIndex(channel);
-                            for (IRecipeDefinition recipe : recipeIndex.getRecipes()) {
-                                ingredients.add(ValueObjectTypeRecipe.ValueRecipe.of(recipe));
-                            }
-                        });
+                        data.getRight()
+                            .ifPresent(craftingNetwork -> {
+                                IRecipeIndex recipeIndex = craftingNetwork.getRecipeIndex(channel);
+                                for (IRecipeDefinition recipe : recipeIndex.getRecipes()) {
+                                    ingredients.add(ValueObjectTypeRecipe.ValueRecipe.of(recipe));
+                                }
+                            });
                     }
                     return ValueTypeList.ValueList.ofList(ValueTypes.OBJECT_RECIPE, ingredients);
                 })
