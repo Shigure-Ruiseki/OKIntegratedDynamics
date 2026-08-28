@@ -1,11 +1,14 @@
 package ruiseki.integrateddynamics.core.block;
 
+import java.util.Collection;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.MovingObjectPosition;
+import net.minecraft.world.Explosion;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
@@ -81,6 +84,17 @@ public abstract class BlockContainerGuiCabled extends BlockTileGui {
         super.onPostBlockDestroyed(world, x, y, z);
         BlockPos pos = new BlockPos(x, y, z);
         CableHelpers.onCableRemoved(world, pos, CableHelpers.getExternallyConnectedCables(world, pos));
+    }
+
+    @Override
+    public void onBlockExploded(World world, int x, int y, int z, Explosion explosion) {
+        BlockPos blockPos = new BlockPos(x, y, z);
+        CableHelpers.setRemovingCable(true);
+        CableHelpers.onCableRemoving(world, blockPos, true, false);
+        Collection<ForgeDirection> connectedCables = CableHelpers.getExternallyConnectedCables(world, blockPos);
+        super.onBlockExploded(world, x, y, z, explosion);
+        CableHelpers.onCableRemoved(world, blockPos, connectedCables);
+        CableHelpers.setRemovingCable(false);
     }
 
     @Override

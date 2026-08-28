@@ -1601,7 +1601,7 @@ public final class Operators {
             .operatorName("planttype")
             .function(variables -> {
                 ValueObjectTypeBlock.ValueBlock a = variables.getValue(0, ValueTypes.OBJECT_BLOCK);
-                String type = "None";
+                String type = "none";
                 if (a.getRawValue()
                     .isPresent()
                     && a.getRawValue()
@@ -2261,7 +2261,7 @@ public final class Operators {
             .operatorName("planttype")
             .function(variables -> {
                 ValueObjectTypeItemStack.ValueItemStack a = variables.getValue(0, ValueTypes.OBJECT_ITEMSTACK);
-                String type = "None";
+                String type = "none";
                 if (a.getRawValue()
                     .isPresent()) {
                     ItemStack itemStack = a.getRawValue()
@@ -3358,6 +3358,25 @@ public final class Operators {
                             .get().tag);
                 }
                 return ValueTypes.NBT.getDefault();
+            })
+            .build());
+
+    /**
+     * Create a new fluidstack with the given amount.
+     */
+    public static final IOperator OBJECT_FLUIDSTACK_WITH_AMOUNT = REGISTRY.register(
+        OperatorBuilders.FLUIDSTACK_2.inputTypes(ValueTypes.OBJECT_FLUIDSTACK, ValueTypes.INTEGER)
+            .output(ValueTypes.BOOLEAN)
+            .symbolOperator("with_amount")
+            .function(variables -> {
+                ValueObjectTypeFluidStack.ValueFluidStack valueFluidStack = variables
+                    .getValue(0, ValueTypes.OBJECT_FLUIDSTACK);
+                ValueTypeInteger.ValueInteger valueInteger = variables.getValue(1, ValueTypes.INTEGER);
+                FluidStack fluidStack = valueFluidStack.getRawValue()
+                    .get()
+                    .copy();
+                fluidStack.amount = valueInteger.getRawValue();
+                return ValueObjectTypeFluidStack.ValueFluidStack.of(fluidStack);
             })
             .build());
 

@@ -2,8 +2,11 @@ package ruiseki.integrateddynamics.api.network;
 
 import java.util.Iterator;
 import java.util.Map;
+import java.util.function.Predicate;
 
 import org.jetbrains.annotations.Nullable;
+
+import com.google.common.collect.Iterators;
 
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
 import ruiseki.commoncapabilities.api.ingredient.storage.IIngredientComponentStorage;
@@ -18,7 +21,7 @@ import ruiseki.okcore.helper.TileHelpers;
 
 /**
  * An ingredient network that can hold prioritized positions.
- * 
+ *
  * @param <T> The instance type.
  * @param <M> The matching condition parameter, may be Void. Instances MUST properly implement the equals method.
  * @author rubensworks
@@ -38,7 +41,7 @@ public interface IPositionedAddonsNetworkIngredients<T, M>
 
     /**
      * Get the storage at the given position.
-     * 
+     *
      * @param pos A position.
      * @return The storage, or an empty storage if none is available.
      */
@@ -48,18 +51,39 @@ public interface IPositionedAddonsNetworkIngredients<T, M>
     }
 
     /**
-     * Get all instances at the target position.
+     * Set an ingredient filter for the given storage position.
+     * Unsets the filter if null is provided.
      * 
+     * @param pos    A position.
+     * @param filter An ingredient filter.
+     */
+    public void setPositionedStorageFilter(PartPos pos, @Nullable Predicate<T> filter);
+
+    /**
+     * @param pos A position.
+     * @return An optional ingredient filter for the given storage position.
+     */
+    @Nullable
+    public Predicate<T> getPositionedStorageFilter(PartPos pos);
+
+    /**
+     * Get all instances at the target position.
+     *
      * @param pos A part position.
      * @return A collection of instances. This can not be a view, and must be a deep copy of the target.
      */
     public default Iterator<T> getRawInstances(PartPos pos) {
-        return getPositionedStorage(pos).iterator();
+        Iterator<T> it = getPositionedStorage(pos).iterator();
+        Predicate<T> filter = getPositionedStorageFilter(pos);
+        if (filter != null) {
+            it = Iterators.filter(it, filter::test);
+        }
+        return it;
     }
 
     /**
      * Get the storage at the given position.
-     * 
+     *
      * @param pos A position.
      * @return The storage.
      */
@@ -72,7 +96,7 @@ public interface IPositionedAddonsNetworkIngredients<T, M>
 
     /**
      * Get the storage at the given channel.
-     * 
+     *
      * @param channel A channel id.
      * @return A storage.
      */
@@ -80,7 +104,7 @@ public interface IPositionedAddonsNetworkIngredients<T, M>
 
     /**
      * Get the external storage at the given channel.
-     * 
+     *
      * @param capability A capability to wrap the channel in.
      * @param channel    A channel id.
      * @param <S>        The external storage type.
@@ -95,7 +119,7 @@ public interface IPositionedAddonsNetworkIngredients<T, M>
 
     /**
      * Get the last tick duration of the index observer.
-     * 
+     *
      * @return Duration in nanoseconds
      */
     public Map<PartPos, Long> getLastSecondDurationIndex();

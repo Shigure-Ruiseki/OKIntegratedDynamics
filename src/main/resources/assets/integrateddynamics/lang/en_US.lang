@@ -1100,7 +1100,8 @@ operator.operators.integrateddynamics.fluidstack.israwfluidequal.info=If the raw
 operator.operators.integrateddynamics.fluidstack.mod.name=Mod
 operator.operators.integrateddynamics.fluidstack.mod.info=The name of the mod owning the given fluid
 operator.operators.integrateddynamics.fluidstack.nbt.name=Fluid NBT
-operator.operators.integrateddynamics.fluidstack.nbt.info=Get the NBT tag of the given fluid.
+operator.operators.integrateddynamics.fluidstack.with_amount=Fluid With Amount
+operator.operators.integrateddynamics.fluidstack.with_amount.info=Copy the given fluid with the given amount
 
 operator.operators.integrateddynamics.nbt.name=NBT
 operator.operators.integrateddynamics.nbt.basename=NBT %s

@@ -1,6 +1,7 @@
 package ruiseki.integrateddynamics.block;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -15,6 +16,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
+import net.minecraft.world.Explosion;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
@@ -173,6 +175,17 @@ public class BlockCable extends BlockTile
     @Override
     public ArrayList<ItemStack> getDrops(World world, int x, int y, int z, int meta, int fortune) {
         return Lists.newArrayList();
+    }
+
+    @Override
+    public void onBlockExploded(World world, int x, int y, int z, Explosion explosion) {
+        BlockPos blockPos = new BlockPos(x, y, z);
+        CableHelpers.setRemovingCable(true);
+        CableHelpers.onCableRemoving(world, blockPos, true, false);
+        Collection<ForgeDirection> connectedCables = CableHelpers.getExternallyConnectedCables(world, blockPos);
+        super.onBlockExploded(world, x, y, z, explosion);
+        CableHelpers.onCableRemoved(world, blockPos, connectedCables);
+        CableHelpers.setRemovingCable(false);
     }
 
     @Override
