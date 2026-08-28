@@ -41,6 +41,7 @@ public class TileMaterializer extends TileActiveVariableBase<MaterializerNetwork
 
     @Setter
     private EntityPlayer lastPlayer = null;
+    private boolean writeVariable;
 
     public TileMaterializer() {
         super(3, "materializer");
@@ -84,13 +85,27 @@ public class TileMaterializer extends TileActiveVariableBase<MaterializerNetwork
     public void onDirty() {
         super.onDirty();
         if (!worldObj.isRemote) {
-            if (getStackInSlot(SLOT_WRITE_IN) != null && canWrite() && getStackInSlot(SLOT_WRITE_OUT) == null) {
-                // Write proxy reference
-                ItemStack outputStack = writeMaterialized(!getWorldObj().isRemote, getStackInSlot(SLOT_WRITE_IN));
-                if (outputStack != null) {
-                    setInventorySlotContents(SLOT_WRITE_OUT, outputStack);
-                    getStackInSlotOnClosing(SLOT_WRITE_IN);
-                }
+            this.writeVariable = true;
+        }
+    }
+
+    @Override
+    protected void updateTileEntity() {
+        super.updateTileEntity();
+
+        if (!worldObj.isRemote && this.writeVariable
+            && getInventory().getStackInSlot(SLOT_WRITE_IN) != null
+            && canWrite()
+            && getInventory().getStackInSlot(SLOT_WRITE_OUT) == null) {
+            this.writeVariable = false;
+
+            // Write proxy reference
+            ItemStack outputStack = writeMaterialized(
+                !getWorldObj().isRemote,
+                getInventory().getStackInSlot(SLOT_WRITE_IN));
+            if (outputStack != null) {
+                getInventory().setInventorySlotContents(SLOT_WRITE_OUT, outputStack);
+                getInventory().removeStackFromSlot(SLOT_WRITE_IN);
             }
         }
     }
