@@ -3,6 +3,7 @@ package ruiseki.integratedterminals.capability.ingredient;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.inventory.GuiContainer;
@@ -134,8 +135,9 @@ public class IngredientComponentTerminalStorageHandlerEnergy
 
     @Override
     public String formatQuantity(Long instance) {
-        return LangHelpers
-            .localize("gui.integratedterminals.terminal_storage.tooltip.energy.amount", String.format("%,d", instance));
+        return LangHelpers.localize(
+            "gui.integratedterminals.terminal_storage.tooltip.energy.amount",
+            String.format(Locale.ROOT, "%,d", instance));
     }
 
     @Override

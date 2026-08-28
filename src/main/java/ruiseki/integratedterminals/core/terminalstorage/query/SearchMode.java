@@ -7,5 +7,6 @@ public enum SearchMode {
     DEFAULT,
     MOD,
     TOOLTIP,
-    DICT
+    DICT,
+    TAG
 }

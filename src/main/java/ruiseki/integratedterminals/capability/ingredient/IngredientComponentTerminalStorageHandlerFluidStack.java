@@ -41,6 +41,7 @@ import ruiseki.okcore.fluid.handler.IFluidTankProperties;
 import ruiseki.okcore.helper.CapabilityHelpers;
 import ruiseki.okcore.helper.GuiHelpers;
 import ruiseki.okcore.helper.LangHelpers;
+import ruiseki.okcore.helper.TagHelpers;
 import ruiseki.okcore.ingredient.storage.InconsistentIngredientInsertionException;
 import ruiseki.okcore.ingredient.storage.IngredientStorageHelpers;
 
@@ -114,7 +115,7 @@ public class IngredientComponentTerminalStorageHandlerFluidStack
     public String formatQuantity(FluidStack instance) {
         return LangHelpers.localize(
             "gui.integratedterminals.terminal_storage.tooltip.fluid.amount",
-            String.format("%,d", FluidHelpers.getAmount(instance)));
+            String.format(Locale.ROOT, "%,d", FluidHelpers.getAmount(instance)));
     }
 
     @Override
@@ -301,6 +302,18 @@ public class IngredientComponentTerminalStorageHandlerFluidStack
                 return i -> false; // Fluids have no tooltip
             case DICT:
                 return i -> false; // There is no fluid dictionary
+            case TAG:
+                return i -> {
+                    if (i == null || i.getFluid() == null) return false;
+                    return TagHelpers.getTags(i)
+                        .stream()
+                        .map(
+                            tagKey -> tagKey.location()
+                                .toString())
+                        .anyMatch(
+                            tagName -> tagName != null && tagName.toLowerCase(Locale.ENGLISH)
+                                .contains(query.toLowerCase(Locale.ENGLISH)));
+                };
             case DEFAULT:
                 return i -> i != null && i.getLocalizedName()
                     .toLowerCase(Locale.ENGLISH)

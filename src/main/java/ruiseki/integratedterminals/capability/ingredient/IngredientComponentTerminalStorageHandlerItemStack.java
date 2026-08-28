@@ -43,6 +43,7 @@ import ruiseki.okcore.client.gui.RenderItemExtendedSlotCount;
 import ruiseki.okcore.client.renderer.GlStateManager;
 import ruiseki.okcore.helper.GuiHelpers;
 import ruiseki.okcore.helper.ItemHandlerHelpers;
+import ruiseki.okcore.helper.TagHelpers;
 
 /**
  * Terminal storage handler for items.
@@ -134,7 +135,8 @@ public class IngredientComponentTerminalStorageHandlerItemStack
 
     @Override
     public String formatQuantity(ItemStack instance) {
-        return String.format("%,d", (instance != null && instance.getItem() != null) ? instance.stackSize : 0);
+        return String
+            .format(Locale.ROOT, "%,d", (instance != null && instance.getItem() != null) ? instance.stackSize : 0);
     }
 
     @Override
@@ -335,6 +337,18 @@ public class IngredientComponentTerminalStorageHandlerItemStack
                     if (i == null || i.getItem() == null) return false;
                     return Arrays.stream(OreDictionary.getOreIDs(i))
                         .mapToObj(OreDictionary::getOreName)
+                        .anyMatch(
+                            name -> name != null && name.toLowerCase(Locale.ENGLISH)
+                                .contains(lowerQuery));
+                };
+            case TAG:
+                return i -> {
+                    if (i == null || i.getItem() == null) return false;
+                    return TagHelpers.getTags(i)
+                        .stream()
+                        .map(
+                            tagKey -> tagKey.location()
+                                .toString())
                         .anyMatch(
                             name -> name != null && name.toLowerCase(Locale.ENGLISH)
                                 .contains(lowerQuery));

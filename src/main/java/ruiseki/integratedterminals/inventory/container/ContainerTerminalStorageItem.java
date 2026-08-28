@@ -3,6 +3,8 @@ package ruiseki.integratedterminals.inventory.container;
 import java.util.Optional;
 
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.inventory.IInventory;
+import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 
 import ruiseki.integrateddynamics.api.evaluate.variable.IVariable;
@@ -87,5 +89,16 @@ public class ContainerTerminalStorageItem extends ContainerTerminalStorageBase<I
     @Override
     public void onVariableContentsUpdated(INetwork network, IVariable<?> variable) {
         // We don't have a real part, so don't emit anything here
+    }
+
+    @Override
+    protected Slot createNewSlot(IInventory inventory, int index, int x, int y) {
+        return new Slot(inventory, index, x, y) {
+
+            @Override
+            public boolean canTakeStack(EntityPlayer playerIn) {
+                return super.canTakeStack(playerIn) && itemIndex != index;
+            }
+        };
     }
 }

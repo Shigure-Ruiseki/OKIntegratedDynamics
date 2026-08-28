@@ -25,7 +25,9 @@ public class TerminalCraftingPlanStatic<I> implements ITerminalCraftingPlan<I> {
     private final long craftingQuantity;
     private final List<IPrototypedIngredient<?, ?>> storageIngredients;
     private final List<List<IPrototypedIngredient<?, ?>>> lastMissingIngredients;
-    private String unlocalizedLabel;
+    private TerminalCraftingPlanStatic.Label label;
+    @Nullable
+    private String unlocalizedLabelOverride;
     private final long tickDuration;
     private final int channel;
     @Nullable
@@ -34,8 +36,8 @@ public class TerminalCraftingPlanStatic<I> implements ITerminalCraftingPlan<I> {
     public TerminalCraftingPlanStatic(I id, List<ITerminalCraftingPlan<I>> dependencies,
         List<IPrototypedIngredient<?, ?>> outputs, TerminalCraftingJobStatus status, long craftingQuantity,
         List<IPrototypedIngredient<?, ?>> storageIngredients,
-        List<List<IPrototypedIngredient<?, ?>>> lastMissingIngredients, String unlocalizedLabel, long tickDuration,
-        int channel, @Nullable String initiatorName) {
+        List<List<IPrototypedIngredient<?, ?>>> lastMissingIngredients, TerminalCraftingPlanStatic.Label label,
+        long tickDuration, int channel, @Nullable String initiatorName) {
         this.id = id;
         this.dependencies = dependencies;
         this.outputs = outputs;
@@ -43,7 +45,8 @@ public class TerminalCraftingPlanStatic<I> implements ITerminalCraftingPlan<I> {
         this.craftingQuantity = craftingQuantity;
         this.storageIngredients = storageIngredients;
         this.lastMissingIngredients = lastMissingIngredients;
-        this.unlocalizedLabel = unlocalizedLabel;
+        this.label = label;
+        this.unlocalizedLabelOverride = null;
         this.tickDuration = tickDuration;
         this.channel = channel;
         this.initiatorName = initiatorName;
@@ -84,9 +87,25 @@ public class TerminalCraftingPlanStatic<I> implements ITerminalCraftingPlan<I> {
         return lastMissingIngredients;
     }
 
+    public Label getLabel() {
+        return label;
+    }
+
+    @Nullable
+    public String getUnlocalizedLabelOverride() {
+        return this.unlocalizedLabelOverride;
+    }
+
+    public void setUnlocalizedLabelOverride(@Nullable String unlocalizedLabelOverride) {
+        this.unlocalizedLabelOverride = unlocalizedLabelOverride;
+    }
+
     @Override
     public String getUnlocalizedLabel() {
-        return unlocalizedLabel;
+        if (this.unlocalizedLabelOverride == null) {
+            return this.label.getUnlocalizedMessage();
+        }
+        return this.unlocalizedLabelOverride;
     }
 
     @Override
@@ -108,7 +127,7 @@ public class TerminalCraftingPlanStatic<I> implements ITerminalCraftingPlan<I> {
     @Override
     public void setError(String unlocalizedError) {
         this.status = TerminalCraftingJobStatus.ERROR;
-        this.unlocalizedLabel = unlocalizedError;
+        this.unlocalizedLabelOverride = unlocalizedError;
     }
 
     public static <I> NBTTagCompound serialize(TerminalCraftingPlanStatic<I> plan,
@@ -154,7 +173,10 @@ public class TerminalCraftingPlanStatic<I> implements ITerminalCraftingPlan<I> {
         }
         tag.setTag("lastMissingIngredients", lastMissingIngredients);
 
-        tag.setString("unlocalizedLabel", plan.getUnlocalizedLabel());
+        tag.setInteger("label", plan.label.ordinal());
+        if (plan.unlocalizedLabelOverride != null) {
+            tag.setString("unlocalizedLabelOverride", plan.unlocalizedLabelOverride);
+        }
 
         tag.setLong("tickDuration", plan.getTickDuration());
 
@@ -190,8 +212,8 @@ public class TerminalCraftingPlanStatic<I> implements ITerminalCraftingPlan<I> {
         if (!tag.hasKey("lastMissingIngredients", Constants.NBT.TAG_LIST)) {
             throw new IllegalArgumentException("Could not find a lastMissingIngredients entry in the given tag");
         }
-        if (!tag.hasKey("unlocalizedLabel", Constants.NBT.TAG_STRING)) {
-            throw new IllegalArgumentException("Could not find a unlocalizedLabel entry in the given tag");
+        if (!tag.hasKey("label", Constants.NBT.TAG_INT)) {
+            throw new IllegalArgumentException("Could not find a label entry in the given tag");
         }
         if (!tag.hasKey("tickDuration", Constants.NBT.TAG_LONG)) {
             throw new IllegalArgumentException("Could not find a tickDuration entry in the given tag");
@@ -238,7 +260,12 @@ public class TerminalCraftingPlanStatic<I> implements ITerminalCraftingPlan<I> {
             lastMissingIngredients.add(lastMissingIngredient);
         }
 
-        String unlocalizedLabel = tag.getString("unlocalizedLabel");
+        Label label = Label.values()[tag.getInteger("label")];
+
+        String unlocalizedLabelOverride = null;
+        if (tag.hasKey("unlocalizedLabelOverride")) {
+            unlocalizedLabelOverride = tag.getString("unlocalizedLabelOverride");
+        }
 
         long tickDuration = tag.getLong("tickDuration");
 
@@ -249,7 +276,7 @@ public class TerminalCraftingPlanStatic<I> implements ITerminalCraftingPlan<I> {
             initiatorName = tag.getString("initiatorName");
         }
 
-        return new TerminalCraftingPlanStatic<>(
+        TerminalCraftingPlanStatic<I> plan = new TerminalCraftingPlanStatic<>(
             id,
             dependencies,
             outputs,
@@ -257,9 +284,32 @@ public class TerminalCraftingPlanStatic<I> implements ITerminalCraftingPlan<I> {
             craftingQuantity,
             storageIngredients,
             lastMissingIngredients,
-            unlocalizedLabel,
+            label,
             tickDuration,
             channel,
             initiatorName);
+        if (unlocalizedLabelOverride != null) {
+            plan.unlocalizedLabelOverride = unlocalizedLabelOverride;
+        }
+        return plan;
+    }
+
+    public static enum Label {
+
+        RUNNING("gui.integratedterminals.terminal_storage.craftingplan.label.running"),
+        VALID("gui.integratedterminals.terminal_storage.craftingplan.label.valid"),
+        INCOMPLETE("gui.integratedterminals.terminal_storage.craftingplan.label.failed.incomplete"),
+        RECURSION("gui.integratedterminals.terminal_storage.craftingplan.label.failed.recursion"),
+        ERROR("ERROR");
+
+        private final String unlocalizedMessage;
+
+        Label(String unlocalizedMessage) {
+            this.unlocalizedMessage = unlocalizedMessage;
+        }
+
+        public String getUnlocalizedMessage() {
+            return this.unlocalizedMessage;
+        }
     }
 }
