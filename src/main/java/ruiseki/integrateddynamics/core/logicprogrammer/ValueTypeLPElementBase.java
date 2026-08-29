@@ -2,14 +2,19 @@ package ruiseki.integrateddynamics.core.logicprogrammer;
 
 import java.util.List;
 
+import net.minecraft.client.gui.Gui;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.inventory.Container;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
+
+import org.jetbrains.annotations.Nullable;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import lombok.Getter;
 import ruiseki.integrateddynamics.IntegratedDynamics;
+import ruiseki.integrateddynamics.api.client.gui.subgui.IGuiInputElementValueType;
 import ruiseki.integrateddynamics.api.client.gui.subgui.ISubGuiBox;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
@@ -21,7 +26,6 @@ import ruiseki.integrateddynamics.api.logicprogrammer.ILogicProgrammerElementTyp
 import ruiseki.integrateddynamics.api.logicprogrammer.IValueTypeLogicProgrammerElement;
 import ruiseki.integrateddynamics.block.BlockLogicProgrammerConfig;
 import ruiseki.integrateddynamics.client.gui.GuiLogicProgrammerBase;
-import ruiseki.integrateddynamics.core.evaluate.variable.GuiElementValueTypeString;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueHelpers;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeVariableFacade;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
@@ -40,17 +44,25 @@ public abstract class ValueTypeLPElementBase
 
     @Getter
     private final IValueType<?> valueType;
-    @Getter
-    private GuiElementValueTypeString<GuiLogicProgrammerBase, ContainerLogicProgrammerBase> innerGuiElement;
 
     public ValueTypeLPElementBase(IValueType<?> valueType) {
         this.valueType = valueType;
-        this.innerGuiElement = new GuiElementValueTypeString<>(this.valueType, getRenderPattern());
+    }
+
+    @Nullable
+    @Override
+    public <G2 extends Gui, C2 extends Container> IGuiInputElementValueType<?, G2, C2> createInnerGuiElement() {
+        return null;
+    }
+
+    @Nullable
+    public IGuiInputElementValueType<?, GuiLogicProgrammerBase, ContainerLogicProgrammerBase> getInnerGuiElement() {
+        return null;
     }
 
     @Override
     public void loadTooltip(List<String> lines) {
-        getInnerGuiElement().loadTooltip(lines);
+        getValueType().loadTooltip(lines, true, null);
     }
 
     @Override
@@ -160,8 +172,8 @@ public abstract class ValueTypeLPElementBase
     @Override
     @SideOnly(Side.CLIENT)
     public boolean isFocused(ISubGuiBox subGui) {
-        if (subGui instanceof ValueTypeLPElementRenderPattern) {
-            return ((ValueTypeLPElementRenderPattern) subGui).getSearchField()
+        if (subGui instanceof ValueTypeStringLPElementRenderPattern) {
+            return ((ValueTypeStringLPElementRenderPattern) subGui).getSearchField()
                 .isFocused();
         }
         return false;
@@ -170,8 +182,8 @@ public abstract class ValueTypeLPElementBase
     @Override
     @SideOnly(Side.CLIENT)
     public void setFocused(ISubGuiBox subGui, boolean focused) {
-        if (subGui instanceof ValueTypeLPElementRenderPattern) {
-            ((ValueTypeLPElementRenderPattern) subGui).getSearchField()
+        if (subGui instanceof ValueTypeStringLPElementRenderPattern) {
+            ((ValueTypeStringLPElementRenderPattern) subGui).getSearchField()
                 .setFocused(focused);
         }
     }

@@ -1,4 +1,4 @@
-package ruiseki.integrateddynamics.network.packet;
+package ruiseki.integratedcompat.network.packet;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;

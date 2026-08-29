@@ -3,6 +3,9 @@ package ruiseki.integrateddynamics.api.logicprogrammer;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.inventory.Container;
 
+import org.jetbrains.annotations.Nullable;
+
+import ruiseki.integrateddynamics.api.client.gui.subgui.IGuiInputElementValueType;
 import ruiseki.integrateddynamics.api.client.gui.subgui.ISubGuiBox;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
@@ -36,4 +39,11 @@ public interface IValueTypeLogicProgrammerElement<S extends ISubGuiBox, G extend
      */
     public void setValueInGui(S subGui);
 
+    /**
+     * @return Create an inner gui element for modifying the value, may be null if it doesn't apply.
+     * @param <G2> The type of gui.
+     * @param <C2> The type of container.
+     */
+    @Nullable
+    public <G2 extends Gui, C2 extends Container> IGuiInputElementValueType<?, G2, C2> createInnerGuiElement();
 }

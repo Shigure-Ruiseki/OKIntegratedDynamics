@@ -52,7 +52,7 @@ public class TerminalButtonScaleGui<T> implements
             NBTTagCompound data = (NBTTagCompound) state.getButton("minecraft:itemstack", this.buttonName);
             this.scale = GuiScale.values()[data.getInteger("scale")];
         } else {
-            this.scale = GuiScale.SCALE_XY;
+            this.scale = GuiScale.LARGE;
         }
     }
 

@@ -1,8 +1,6 @@
-package ruiseki.integrateddynamics.core.evaluate.variable;
+package ruiseki.integrateddynamics.core.evaluate.variable.gui;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
@@ -19,15 +17,14 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import lombok.Data;
 import ruiseki.integrateddynamics.api.client.gui.subgui.IGuiInputElement;
+import ruiseki.integrateddynamics.api.client.gui.subgui.IGuiInputElementValueType;
 import ruiseki.integrateddynamics.api.client.gui.subgui.ISubGuiBox;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 import ruiseki.integrateddynamics.api.logicprogrammer.IConfigRenderPattern;
-import ruiseki.integrateddynamics.core.client.gui.IDropdownEntry;
-import ruiseki.integrateddynamics.core.client.gui.IDropdownEntryListener;
 import ruiseki.integrateddynamics.core.client.gui.subgui.SubGuiBox;
+import ruiseki.integrateddynamics.core.evaluate.variable.ValueHelpers;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
-import ruiseki.integrateddynamics.core.logicprogrammer.RenderPattern;
 import ruiseki.okcore.client.gui.container.GuiContainerExtended;
 import ruiseki.okcore.client.gui.image.Images;
 import ruiseki.okcore.helper.Helpers;
@@ -41,21 +38,24 @@ import ruiseki.okcore.helper.StringHelpers;
  */
 @Data
 public class GuiElementValueTypeString<G extends Gui, C extends Container>
-    implements IGuiInputElement<RenderPattern, G, C>, IDropdownEntryListener {
+    implements IGuiInputElementValueType<GuiElementValueTypeStringRenderPattern, G, C> {
 
     private final IValueType valueType;
     private Predicate<IValue> validator;
     private final IConfigRenderPattern renderPattern;
     private String defaultInputString;
     private String inputString;
-    private Set<IDropdownEntry<?>> dropdownPossibilities = Collections.emptySet();
-    private IDropdownEntryListener dropdownEntryListener = null;
 
     public GuiElementValueTypeString(IValueType valueType, IConfigRenderPattern renderPattern) {
         this.valueType = valueType;
         this.validator = Predicates.alwaysTrue();
         this.renderPattern = renderPattern;
         defaultInputString = getValueType().toCompactString(getValueType().getDefault());
+    }
+
+    @Override
+    public void setValue(IValue value, GuiElementValueTypeStringRenderPattern propertyConfigPattern) {
+        setInputString(ValueHelpers.serializeRaw(value), propertyConfigPattern);
     }
 
     public void setInputString(String inputString, GuiElementValueTypeStringRenderPattern subGui) {
@@ -66,8 +66,14 @@ public class GuiElementValueTypeString<G extends Gui, C extends Container>
         }
     }
 
+    @Override
     public void setValidator(Predicate<IValue> validator) {
         this.validator = validator;
+    }
+
+    @Override
+    public IValue getValue() {
+        return ValueHelpers.deserializeRaw(getValueType(), getInputString());
     }
 
     @Override
@@ -112,13 +118,6 @@ public class GuiElementValueTypeString<G extends Gui, C extends Container>
     @Override
     public String getSymbol() {
         return LangHelpers.localize(getValueType().getUnlocalizedName());
-    }
-
-    @Override
-    public void onSetDropdownPossiblity(IDropdownEntry dropdownEntry) {
-        if (dropdownEntryListener != null) {
-            dropdownEntryListener.onSetDropdownPossiblity(dropdownEntry);
-        }
     }
 
     @Override

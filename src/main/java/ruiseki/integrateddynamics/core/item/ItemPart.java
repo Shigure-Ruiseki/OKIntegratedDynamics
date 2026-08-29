@@ -20,9 +20,11 @@ import ruiseki.integrateddynamics.api.block.cable.ICableFakeable;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartState;
 import ruiseki.integrateddynamics.api.part.IPartType;
+import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.integrateddynamics.block.BlockCableConfig;
 import ruiseki.integrateddynamics.core.helper.CableHelpers;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
+import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
 import ruiseki.integrateddynamics.core.helper.PartHelpers;
 import ruiseki.integrateddynamics.item.ItemBlockCable;
 import ruiseki.okcore.datastructure.BlockPos;
@@ -146,6 +148,15 @@ public class ItemPart<P extends IPartType<P, S>, S extends IPartState<P>> extend
                 IPartContainer partContainer = PartHelpers.getPartContainer(world, target, targetSide)
                     .getOrNull();
                 if (partContainer != null) {
+                    // Edge-case: if the pos was a full network block (part of the same network as target), make sure
+                    // that we disconnect this part of the network first
+                    if (!world.isRemote && NetworkHelpers.getNetwork(PartPos.of(world, pos, side))
+                        .isPresent() && partContainer.canAddPart(targetSide, getPart())) {
+                        CableHelpers.getCable(world, target, targetSide)
+                            .ifPresent(
+                                cable -> CableHelpers.disconnectCable(world, target, targetSide, cable, targetSide));
+                    }
+
                     // Add part to existing cable
                     if (PartHelpers.addPart(world, target, side.getOpposite(), getPart(), itemStack)) {
                         if (world.isRemote) {

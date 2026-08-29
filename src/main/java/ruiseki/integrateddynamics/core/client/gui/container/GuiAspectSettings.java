@@ -15,8 +15,9 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.client.gui.subgui.IGuiInputElement;
+import ruiseki.integrateddynamics.api.client.gui.subgui.IGuiInputElementValueType;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
-import ruiseki.integrateddynamics.api.logicprogrammer.IConfigRenderPattern;
+import ruiseki.integrateddynamics.api.logicprogrammer.IValueTypeLogicProgrammerElement;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartTarget;
@@ -24,9 +25,7 @@ import ruiseki.integrateddynamics.api.part.aspect.IAspect;
 import ruiseki.integrateddynamics.api.part.aspect.property.IAspectPropertyTypeInstance;
 import ruiseki.integrateddynamics.core.client.gui.ExtendedGuiHandler;
 import ruiseki.integrateddynamics.core.client.gui.subgui.SubGuiHolder;
-import ruiseki.integrateddynamics.core.evaluate.variable.GuiElementValueTypeString;
-import ruiseki.integrateddynamics.core.evaluate.variable.GuiElementValueTypeStringRenderPattern;
-import ruiseki.integrateddynamics.core.evaluate.variable.ValueHelpers;
+import ruiseki.integrateddynamics.core.evaluate.variable.gui.GuiElementValueTypeString;
 import ruiseki.integrateddynamics.core.inventory.container.ContainerAspectSettings;
 import ruiseki.integrateddynamics.core.logicprogrammer.RenderPattern;
 import ruiseki.okcore.client.gui.component.button.GuiButtonText;
@@ -63,9 +62,9 @@ public class GuiAspectSettings extends GuiContainerExtended {
 
     private final List<IAspectPropertyTypeInstance> propertyTypes;
     protected final SubGuiHolder subGuiHolder = new SubGuiHolder();
-    protected GuiElementValueTypeString<GuiAspectSettings, ContainerAspectSettings> guiElement = null;
+    protected IGuiInputElementValueType<RenderPattern, GuiAspectSettings, ContainerAspectSettings> guiElement = null;
     protected int activePropertyIndex = 0;
-    protected GuiElementValueTypeStringRenderPattern propertyConfigPattern = null;
+    protected RenderPattern propertyConfigPattern = null;
     protected SubGuiValueTypeInfo propertyInfo = null;
     private GuiButtonText buttonLeft = null;
     private GuiButtonText buttonRight = null;
@@ -132,10 +131,7 @@ public class GuiAspectSettings extends GuiContainerExtended {
 
     protected void saveSetting() {
         if (guiElement != null && lastError == null) {
-            ContainerAspectSettings aspectContainer = (ContainerAspectSettings) container;
-            aspectContainer.setValue(
-                getActiveProperty(),
-                ValueHelpers.deserializeRaw(guiElement.getValueType(), guiElement.getInputString()));
+            ((ContainerAspectSettings) container).setValue(getActiveProperty(), guiElement.getValue());
         }
     }
 
@@ -249,12 +245,24 @@ public class GuiAspectSettings extends GuiContainerExtended {
     }
 
     protected void onActivateElement(IAspectPropertyTypeInstance property) {
+        // Deactivate old element
         if (guiElement != null) {
             guiElement.deactivate();
             subGuiHolder.removeSubGui(propertyConfigPattern);
             subGuiHolder.removeSubGui(propertyInfo);
         }
-        guiElement = new GuiElementValueTypeString<>(property.getType(), IConfigRenderPattern.NONE);
+        // Determine element type
+        IValueTypeLogicProgrammerElement lpElement = property.getType()
+            .createLogicProgrammerElement();
+        guiElement = lpElement.createInnerGuiElement();
+        if (guiElement == null) {
+            throw new UnsupportedOperationException(
+                "Tried to invoke createInnerGuiElement on a value type that does not have an inner gui element: "
+                    + property.getType()
+                        .getTypeName());
+        }
+
+        // Create new element
         guiElement.setValidator(property.getValidator());
         subGuiHolder.addSubGui(
             propertyConfigPattern = guiElement
@@ -270,11 +278,9 @@ public class GuiAspectSettings extends GuiContainerExtended {
         IAspectPropertyTypeInstance property = getActiveProperty();
         IValue value = ((ContainerAspectSettings) container).getPropertyValue(property);
         if (value != null) {
-            guiElement.setInputString(
-                property.getType()
-                    .toCompactString(value),
-                propertyConfigPattern);
+            guiElement.setValue(value, propertyConfigPattern);
         }
+        onValueChanged();
     }
 
     @Override

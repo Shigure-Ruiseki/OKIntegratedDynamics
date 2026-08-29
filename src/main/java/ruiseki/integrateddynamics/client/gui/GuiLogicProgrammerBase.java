@@ -23,7 +23,7 @@ import ruiseki.integrateddynamics.api.logicprogrammer.ILogicProgrammerElement;
 import ruiseki.integrateddynamics.api.logicprogrammer.ILogicProgrammerElementType;
 import ruiseki.integrateddynamics.block.BlockLogicProgrammerConfig;
 import ruiseki.integrateddynamics.core.client.gui.subgui.SubGuiHolder;
-import ruiseki.integrateddynamics.core.evaluate.variable.GuiElementValueTypeString;
+import ruiseki.integrateddynamics.core.evaluate.variable.gui.GuiElementValueTypeString;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.integrateddynamics.core.logicprogrammer.LogicProgrammerElementTypes;
 import ruiseki.integrateddynamics.core.logicprogrammer.RenderPattern;

@@ -1,4 +1,4 @@
-package ruiseki.integrateddynamics.core.evaluate.variable;
+package ruiseki.integrateddynamics.core.evaluate.variable.gui;
 
 import java.io.IOException;
 import java.util.Set;
@@ -22,19 +22,21 @@ import ruiseki.integrateddynamics.network.packet.LogicProgrammerValueTypeStringV
 import ruiseki.okcore.persist.IDirtyMarkListener;
 
 /**
+ * A render pattern for value types that can be read from and written to strings.
+ *
  * @author rubensworks
  */
 @SideOnly(Side.CLIENT)
-public class GuiElementValueTypeStringRenderPattern<S extends ISubGuiBox, G extends Gui, C extends Container>
-    extends RenderPattern<GuiElementValueTypeString<G, C>, G, C> implements IDropdownEntryListener {
+public class GuiElementValueTypeDropdownListRenderPattern<T, S extends ISubGuiBox, G extends Gui, C extends Container>
+    extends RenderPattern<GuiElementValueTypeDropdownList<T, G, C>, G, C> implements IDropdownEntryListener<T> {
 
     @Getter
-    protected final GuiElementValueTypeString<G, C> element;
+    protected final GuiElementValueTypeDropdownList<T, G, C> element;
     @Getter
-    private GuiTextFieldDropdown searchField = null;
+    private GuiTextFieldDropdown<T> searchField = null;
 
-    public GuiElementValueTypeStringRenderPattern(GuiElementValueTypeString<G, C> element, int baseX, int baseY,
-        int maxWidth, int maxHeight, G gui, C container) {
+    public GuiElementValueTypeDropdownListRenderPattern(GuiElementValueTypeDropdownList<T, G, C> element, int baseX,
+        int baseY, int maxWidth, int maxHeight, G gui, C container) {
         super(element, baseX, baseY, maxWidth, maxHeight, gui, container);
         this.element = element;
     }
@@ -46,7 +48,7 @@ public class GuiElementValueTypeStringRenderPattern<S extends ISubGuiBox, G exte
             .getWidth() - 28;
         int searchX = getX() + 14;
         int searchY = getY() + 6;
-        this.searchField = new GuiTextFieldDropdown(
+        this.searchField = new GuiTextFieldDropdown<>(
             0,
             fontRenderer,
             guiLeft + searchX,
@@ -56,22 +58,21 @@ public class GuiElementValueTypeStringRenderPattern<S extends ISubGuiBox, G exte
             true,
             getDropdownPossibilities());
         this.searchField.setDropdownEntryListener(this);
-        this.searchField.setMaxStringLength(512);
+        this.searchField.setMaxStringLength(64);
         this.searchField.setEnableBackgroundDrawing(false);
         this.searchField.setVisible(true);
         this.searchField.setTextColor(16777215);
         this.searchField.setCanLoseFocus(true);
         String value = element.getInputString();
         if (value == null) {
-            value = element.getDefaultInputString();
+            value = "";
         }
         this.searchField.setText(value);
         element.setInputString(searchField.getText());
-        this.searchField.width = searchWidth;
-        this.searchField.xPosition = guiLeft + (searchX + searchWidth) - this.searchField.width;
+        this.searchField.xPosition = guiLeft + (searchX + searchWidth) - this.searchField.getWidth();
     }
 
-    protected Set<IDropdownEntry<?>> getDropdownPossibilities() {
+    protected Set<IDropdownEntry<T>> getDropdownPossibilities() {
         return element.getDropdownPossibilities();
     }
 

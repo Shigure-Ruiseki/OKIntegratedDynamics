@@ -25,6 +25,7 @@ import ruiseki.integrateddynamics.core.client.gui.IDropdownEntryListener;
 import ruiseki.integrateddynamics.core.evaluate.operator.Operators;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeOperator;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
+import ruiseki.integrateddynamics.core.evaluate.variable.gui.GuiElementValueTypeDropdownList;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.integrateddynamics.inventory.container.ContainerLogicProgrammerBase;
 import ruiseki.integrateddynamics.network.packet.LogicProgrammerValueTypeOperatorValueChangedPacket;
@@ -41,16 +42,22 @@ public class ValueTypeOperatorLPElement extends ValueTypeLPElementBase implement
 
     @Setter
     private IOperator selectedOperator = null;
+    private GuiElementValueTypeDropdownList<IOperator, GuiLogicProgrammerBase, ContainerLogicProgrammerBase> innerGuiElement;
 
     public ValueTypeOperatorLPElement() {
         super(ValueTypes.OPERATOR);
-        Set<IDropdownEntry<?>> operatorEntries = Sets.newLinkedHashSet();
+        Set<IDropdownEntry<IOperator>> operatorEntries = Sets.newLinkedHashSet();
         for (IOperator operator : Operators.REGISTRY.getOperators()) {
             operatorEntries.add(new OperatorDropdownEntry(operator));
         }
+        this.innerGuiElement = new GuiElementValueTypeDropdownList<>(getValueType(), getRenderPattern());
         getInnerGuiElement().setDropdownPossibilities(operatorEntries);
         getInnerGuiElement().setDropdownEntryListener(this);
-        getInnerGuiElement().setDefaultInputString(""); // We don't want the default one to show up by default.
+    }
+
+    @Override
+    public GuiElementValueTypeDropdownList<IOperator, GuiLogicProgrammerBase, ContainerLogicProgrammerBase> getInnerGuiElement() {
+        return innerGuiElement;
     }
 
     @Override
@@ -104,16 +111,16 @@ public class ValueTypeOperatorLPElement extends ValueTypeLPElementBase implement
     @SideOnly(Side.CLIENT)
     public ISubGuiBox createSubGui(int baseX, int baseY, int maxWidth, int maxHeight, GuiLogicProgrammerBase gui,
         ContainerLogicProgrammerBase container) {
-        return new RenderPattern(this, baseX, baseY, maxWidth, maxHeight, gui, container);
+        return new RenderPatternOperator(this, baseX, baseY, maxWidth, maxHeight, gui, container);
     }
 
-    public static class RenderPattern<S extends ISubGuiBox, G extends Gui, C extends Container>
-        extends ValueTypeLPElementRenderPattern {
+    public static class RenderPatternOperator<S extends ISubGuiBox, G extends Gui, C extends Container>
+        extends ValueTypeOperatorLPElementRenderPattern {
 
         private final ValueTypeOperatorLPElement element;
 
-        public RenderPattern(ValueTypeOperatorLPElement element, int baseX, int baseY, int maxWidth, int maxHeight,
-            GuiLogicProgrammerBase gui, ContainerLogicProgrammerBase container) {
+        public RenderPatternOperator(ValueTypeOperatorLPElement element, int baseX, int baseY, int maxWidth,
+            int maxHeight, GuiLogicProgrammerBase gui, ContainerLogicProgrammerBase container) {
             super(element, baseX, baseY, maxWidth, maxHeight, gui, container);
             this.element = element;
         }

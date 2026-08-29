@@ -10,9 +10,9 @@ import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.fluids.FluidStack;
 
+import ruiseki.integratedcompat.network.packet.LPPacketJEIDragging;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.client.gui.GuiLogicProgrammerBase;
-import ruiseki.integrateddynamics.network.packet.LPPacketJEIDragging;
 import ruiseki.jfmuy.api.gui.IGhostIngredientHandler;
 import ruiseki.okcore.fluid.FluidHelpers;
 import ruiseki.okcore.inventory.SimpleInventory;

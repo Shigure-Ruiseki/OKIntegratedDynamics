@@ -2,6 +2,7 @@ package ruiseki.integratedcompat.proxy;
 
 import ruiseki.integratedcompat.network.packet.CPacketSetSlot;
 import ruiseki.integratedcompat.network.packet.CPacketValueTypeRecipeLPElementSetRecipe;
+import ruiseki.integratedcompat.network.packet.LPPacketJEIDragging;
 import ruiseki.integratedcompat.network.packet.TerminalStorageIngredientItemStackCraftingGridSetRecipe;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integratedterminals.IntegratedTerminals;
@@ -29,6 +30,7 @@ public class CommonProxy extends CommonProxyComponent {
         // Register packets.
         packetHandler.register(CPacketSetSlot.class);
         packetHandler.register(CPacketValueTypeRecipeLPElementSetRecipe.class);
+        packetHandler.register(LPPacketJEIDragging.class);
         packetHandler.register(TerminalStorageIngredientItemStackCraftingGridSetRecipe.class);
 
         IntegratedDynamics.clog("Registered packet handler.");

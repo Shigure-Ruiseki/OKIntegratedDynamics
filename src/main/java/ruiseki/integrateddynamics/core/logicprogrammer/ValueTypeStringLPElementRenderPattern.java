@@ -6,20 +6,20 @@ import net.minecraft.client.renderer.texture.TextureManager;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.integrateddynamics.client.gui.GuiLogicProgrammerBase;
-import ruiseki.integrateddynamics.core.evaluate.variable.GuiElementValueTypeStringRenderPattern;
+import ruiseki.integrateddynamics.core.evaluate.variable.gui.GuiElementValueTypeStringRenderPattern;
 import ruiseki.integrateddynamics.inventory.container.ContainerLogicProgrammerBase;
 
 /**
  * @author rubensworks
  */
 @SideOnly(Side.CLIENT)
-public class ValueTypeLPElementRenderPattern
+public class ValueTypeStringLPElementRenderPattern
     extends GuiElementValueTypeStringRenderPattern<RenderPattern, GuiLogicProgrammerBase, ContainerLogicProgrammerBase>
     implements IRenderPatternValueTypeTooltip {
 
     private boolean renderTooltip = true;
 
-    public ValueTypeLPElementRenderPattern(ValueTypeLPElementBase element, int baseX, int baseY, int maxWidth,
+    public ValueTypeStringLPElementRenderPattern(ValueTypeStringLPElement element, int baseX, int baseY, int maxWidth,
         int maxHeight, GuiLogicProgrammerBase gui, ContainerLogicProgrammerBase container) {
         super(element.getInnerGuiElement(), baseX, baseY, maxWidth, maxHeight, gui, container);
     }
@@ -40,5 +40,4 @@ public class ValueTypeLPElementRenderPattern
     public void setRenderTooltip(boolean renderTooltip) {
         this.renderTooltip = renderTooltip;
     }
-
 }
