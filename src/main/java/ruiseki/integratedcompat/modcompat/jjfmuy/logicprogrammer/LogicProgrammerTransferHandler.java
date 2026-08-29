@@ -148,11 +148,14 @@ public class LogicProgrammerTransferHandler<T extends ContainerLogicProgrammerBa
 
             int slotIndex = entry.getKey();
             ItemStack firstStack = Iterables.getFirst(
-                entry.getValue().getAllIngredients(), null);
+                entry.getValue()
+                    .getAllIngredients(),
+                null);
 
             ItemStack stack = (firstStack != null) ? firstStack.copy() : null;
 
-            if (entry.getValue().isInput()) {
+            if (entry.getValue()
+                .isInput()) {
                 int gridIndex = slotIndex - 1;
 
                 if (gridIndex >= 0 && gridIndex < 9) {

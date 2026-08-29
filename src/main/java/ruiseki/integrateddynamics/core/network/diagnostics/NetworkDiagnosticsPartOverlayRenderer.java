@@ -6,6 +6,7 @@ import java.util.Set;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.world.World;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 
 import org.lwjgl.opengl.GL11;
@@ -20,6 +21,7 @@ import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.integrateddynamics.core.helper.PartHelpers;
 import ruiseki.okcore.block.collidable.ImmutableAxisAlignedBB;
 import ruiseki.okcore.client.renderer.GlStateManager;
+import ruiseki.okcore.datastructure.BlockPos;
 
 /**
  * @author rubensworks
@@ -58,6 +60,9 @@ public class NetworkDiagnosticsPartOverlayRenderer {
     public void onRender(RenderWorldLastEvent event) {
         if (!partPositions.isEmpty()) {
             EntityPlayer player = Minecraft.getMinecraft().thePlayer;
+            World world = player.worldObj;
+            if (world == null) return;
+
             float partialTicks = event.partialTicks;
 
             double offsetX = player.lastTickPosX + (player.posX - player.lastTickPosX) * (double) partialTicks;
@@ -76,37 +81,37 @@ public class NetworkDiagnosticsPartOverlayRenderer {
 
             List<PartPos> partList = Lists.newArrayList(partPositions);
             for (PartPos partPos : partList) {
-                if (partPos.getPos()
-                    .getDimensionId() == player.worldObj.provider.dimensionId
-                    && player.getDistanceSq(
-                        partPos.getPos()
-                            .getBlockPos()
-                            .getX(),
-                        partPos.getPos()
-                            .getBlockPos()
-                            .getY(),
-                        partPos.getPos()
-                            .getBlockPos()
-                            .getZ())
-                        < 10000) {
-                    PartHelpers.PartStateHolder<?, ?> partStateHolder = PartHelpers.getPart(partPos);
-                    final ImmutableAxisAlignedBB localPartBB;
-                    if (partStateHolder != null) {
-                        localPartBB = partStateHolder.getPart()
-                            .getPartRenderPosition()
-                            .getBoundingBox(partPos.getSide());
-                    } else {
-                        localPartBB = new ImmutableAxisAlignedBB(0f, 0f, 0f, 1f, 1f, 1f);
-                    }
+                BlockPos blockPos = partPos.getPos().getBlockPos();
 
-                    final ImmutableAxisAlignedBB globalRenderBB = localPartBB.offset(
-                        partPos.getPos()
-                            .getBlockPos())
-                        .offset(-offsetX, -offsetY, -offsetZ)
-                        .expand(0.05, 0.05, 0.05)
-                        .expand(-0.05, -0.05, -0.05);
-                    RenderGlobal.drawOutlinedBoundingBox(globalRenderBB, -1);
+                if (partPos.getPos().getDimensionId() != world.provider.dimensionId) {
+                    continue;
                 }
+
+                if (player.getDistanceSq(blockPos.getX(), blockPos.getY(), blockPos.getZ()) >= 10000) {
+                    continue;
+                }
+
+                int chunkX = blockPos.getX() >> 4;
+                int chunkZ = blockPos.getZ() >> 4;
+                if (!world.getChunkProvider().chunkExists(chunkX, chunkZ)) {
+                    continue;
+                }
+
+                PartHelpers.PartStateHolder<?, ?> partStateHolder = PartHelpers.getPart(partPos);
+                final ImmutableAxisAlignedBB localPartBB;
+                if (partStateHolder != null) {
+                    localPartBB = partStateHolder.getPart()
+                        .getPartRenderPosition()
+                        .getBoundingBox(partPos.getSide());
+                } else {
+                    localPartBB = new ImmutableAxisAlignedBB(0f, 0f, 0f, 1f, 1f, 1f);
+                }
+
+                final ImmutableAxisAlignedBB globalRenderBB = localPartBB.offset(blockPos)
+                    .offset(-offsetX, -offsetY, -offsetZ)
+                    .expand(0.05, 0.05, 0.05)
+                    .expand(-0.05, -0.05, -0.05);
+                RenderGlobal.drawOutlinedBoundingBox(globalRenderBB, -1);
             }
 
             GlStateManager.depthMask(true);

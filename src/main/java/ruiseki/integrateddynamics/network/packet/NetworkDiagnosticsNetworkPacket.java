@@ -7,7 +7,7 @@ import net.minecraft.world.World;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-import ruiseki.integrateddynamics.core.network.diagnostics.GuiNetworkDiagnostics;
+import ruiseki.integrateddynamics.core.network.diagnostics.NetworkDataClient;
 import ruiseki.integrateddynamics.core.network.diagnostics.RawNetworkData;
 import ruiseki.okcore.network.CodecField;
 import ruiseki.okcore.network.PacketCodec;
@@ -46,7 +46,7 @@ public class NetworkDiagnosticsNetworkPacket extends PacketCodec {
             networkData.getObservers()
                 .clear();
         }
-        GuiNetworkDiagnostics.setNetworkData(networkData.getId(), networkData.isKilled() ? null : networkData);
+        NetworkDataClient.setNetworkData(networkData.getId(), networkData.isKilled() ? null : networkData);
     }
 
     @Override

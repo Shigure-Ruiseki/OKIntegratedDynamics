@@ -14,8 +14,8 @@ import ruiseki.integrateddynamics.network.packet.LogicProgrammerValueTypeOperato
 import ruiseki.integrateddynamics.network.packet.LogicProgrammerValueTypeRecipeSlotPropertiesChangedPacket;
 import ruiseki.integrateddynamics.network.packet.LogicProgrammerValueTypeStringValueChangedPacket;
 import ruiseki.integrateddynamics.network.packet.NetworkDiagnosticsNetworkPacket;
-import ruiseki.integrateddynamics.network.packet.NetworkDiagnosticsOpenClient;
 import ruiseki.integrateddynamics.network.packet.NetworkDiagnosticsSubscribePacket;
+import ruiseki.integrateddynamics.network.packet.NetworkDiagnosticsTriggerClient;
 import ruiseki.integrateddynamics.network.packet.PlayerTeleportPacket;
 import ruiseki.okcore.init.ModBase;
 import ruiseki.okcore.network.PacketHandler;
@@ -43,7 +43,7 @@ public class CommonProxy extends CommonProxyComponent {
         packetHandler.register(LogicProgrammerValueTypeOperatorValueChangedPacket.class);
         packetHandler.register(NetworkDiagnosticsSubscribePacket.class);
         packetHandler.register(NetworkDiagnosticsNetworkPacket.class);
-        packetHandler.register(NetworkDiagnosticsOpenClient.class);
+        packetHandler.register(NetworkDiagnosticsTriggerClient.class);
         packetHandler.register(PlayerTeleportPacket.class);
         packetHandler.register(LogicProgrammerSetElementInventory.class);
         packetHandler.register(LogicProgrammerValueTypeIngredientsValueChangedPacket.class);

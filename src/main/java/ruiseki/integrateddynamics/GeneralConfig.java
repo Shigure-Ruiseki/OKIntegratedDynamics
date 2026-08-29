@@ -450,6 +450,11 @@ public class GeneralConfig extends DummyConfig {
         comment = "If corrupted networks should automatically be restored on first tick.")
     public static boolean recreateCorruptedNetworks = true;
 
+    @ConfigurableProperty(
+        category = ConfigurableTypeCategory.GENERAL,
+        comment = "The default port for running the network diagnostics HTTP server.")
+    public static int diagnosticsWebServerPort = 3030;
+
     /**
      * Create a new instance.
      */
