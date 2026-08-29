@@ -134,6 +134,9 @@ public class LogicProgrammerTransferHandler<T extends ContainerLogicProgrammerBa
     protected IRecipeTransferError handleRecipeElement(ValueTypeRecipeLPElement element, T container,
         IRecipeLayout recipeLayout, boolean doTransfer) {
         List<ItemMatchProperties> itemInputs = Lists.newArrayList();
+        for (int i = 0; i < 9; i++) {
+            itemInputs.add(new ItemMatchProperties(null));
+        }
         List<FluidStack> fluidInputs = Lists.newArrayList();
         List<ItemStack> itemOutputs = Lists.newArrayList();
         List<FluidStack> fluidOutputs = Lists.newArrayList();
@@ -143,24 +146,26 @@ public class LogicProgrammerTransferHandler<T extends ContainerLogicProgrammerBa
             .getGuiIngredients()
             .entrySet()) {
 
+            int slotIndex = entry.getKey();
             ItemStack firstStack = Iterables.getFirst(
-                entry.getValue()
-                    .getAllIngredients(),
-                null);
+                entry.getValue().getAllIngredients(), null);
 
             ItemStack stack = (firstStack != null) ? firstStack.copy() : null;
 
-            if (entry.getValue()
-                .isInput()) {
-                if (stack == null) {
-                    continue;
-                }
+            if (entry.getValue().isInput()) {
+                int gridIndex = slotIndex - 1;
 
-                ResourceLocation heuristicTag = getHeuristicItemsTag(entry.getValue());
-                if (heuristicTag != null) {
-                    itemInputs.add(new ItemMatchProperties(null, false, heuristicTag.toString(), 1));
-                } else {
-                    itemInputs.add(new ItemMatchProperties(stack));
+                if (gridIndex >= 0 && gridIndex < 9) {
+                    if (stack == null) {
+                        continue;
+                    }
+
+                    ResourceLocation heuristicTag = getHeuristicItemsTag(entry.getValue());
+                    if (heuristicTag != null) {
+                        itemInputs.set(gridIndex, new ItemMatchProperties(null, false, heuristicTag.toString(), 1));
+                    } else {
+                        itemInputs.set(gridIndex, new ItemMatchProperties(stack));
+                    }
                 }
             } else {
                 if (stack != null) {

@@ -47,8 +47,6 @@ public class ValueTypeRecipeLPElementPropertiesSubGui
     private GuiTextFieldDropdown<ResourceLocation> inputTagsDropdown;
     private GuiButtonImage inputSave;
 
-    private boolean isLoading = false;
-
     public ValueTypeRecipeLPElementPropertiesSubGui(ValueTypeRecipeLPElement element, int baseX, int baseY,
         int maxWidth, int maxHeight, GuiLogicProgrammerBase gui, ContainerLogicProgrammerBase container, int slotId) {
         super(element, baseX, baseY, maxWidth, maxHeight, gui, container);
@@ -69,16 +67,14 @@ public class ValueTypeRecipeLPElementPropertiesSubGui
             false) {
 
             @Override
-            public void setChecked(boolean checked) {
-                super.setChecked(checked);
+            public boolean mousePressed(Minecraft mc, int mouseX, int mouseY) {
                 // Only allow one checkbox to be true at the same time
-                if (isLoading) return;
-
                 if (inputNbt.isChecked()) {
                     inputTags.setChecked(false);
                 }
                 saveGuiToState();
                 loadStateToGui();
+                return super.mousePressed(mc, mouseX, mouseY);
             }
         };
         this.buttonList.add(this.inputNbt);
@@ -92,11 +88,8 @@ public class ValueTypeRecipeLPElementPropertiesSubGui
             false) {
 
             @Override
-            public void setChecked(boolean checked) {
-                super.setChecked(checked);
+            public boolean mousePressed(Minecraft mc, int mouseX, int mouseY) {
                 // Only allow one checkbox to be true at the same time
-                if (isLoading) return;
-
                 if (inputTags.isChecked()) {
                     inputNbt.setChecked(false);
                 }
@@ -105,6 +98,7 @@ public class ValueTypeRecipeLPElementPropertiesSubGui
                 if (inputTags.isChecked()) {
                     inputTagsDropdown.setFocused(true);
                 }
+                return super.mousePressed(mc, mouseX, mouseY);
             }
         };
         this.buttonList.add(this.inputTags);
@@ -179,43 +173,34 @@ public class ValueTypeRecipeLPElementPropertiesSubGui
     }
 
     public void loadStateToGui() {
-        if (isLoading) {
-            return;
-        }
+        ItemMatchProperties props = getSlotProperties();
+        this.inputNbt.setChecked(props.isNbt());
+        this.inputTags.setChecked(props.getItemTag() != null);
+        this.inputTagsDropdown.setVisible(this.inputTags.isChecked());
 
-        try {
-            isLoading = true;
-            ItemMatchProperties props = getSlotProperties();
-            this.inputNbt.setChecked(props.isNbt());
-            this.inputTags.setChecked(props.getItemTag() != null);
-            this.inputTagsDropdown.setVisible(this.inputTags.isChecked());
-
-            if (this.inputTags.isChecked()) {
-                Set<IDropdownEntry<ResourceLocation>> dropdownEntries = getDropdownEntries();
-                this.inputTagsDropdown.setPossibilities(dropdownEntries);
-                if (props.getItemTag() != null) {
-                    this.inputTagsDropdown.selectPossibility(
-                        dropdownEntries.stream()
-                            .filter(
-                                e -> e.getMatchString()
-                                    .equals(props.getItemTag()))
-                            .findFirst()
-                            .orElse(null));
-                } else {
-                    if (!dropdownEntries.isEmpty()) {
-                        this.inputTagsDropdown.selectPossibility(
-                            dropdownEntries.iterator()
-                                .next());
-                    } else {
-                        this.inputTagsDropdown.selectPossibility(null);
-                    }
-                }
+        if (this.inputTags.isChecked()) {
+            Set<IDropdownEntry<ResourceLocation>> dropdownEntries = getDropdownEntries();
+            this.inputTagsDropdown.setPossibilities(dropdownEntries);
+            if (props.getItemTag() != null) {
+                this.inputTagsDropdown.selectPossibility(
+                    dropdownEntries.stream()
+                        .filter(
+                            e -> e.getMatchString()
+                                .equals(props.getItemTag()))
+                        .findFirst()
+                        .orElse(null));
             } else {
-                this.inputTagsDropdown.setText("");
-                this.inputTagsDropdown.setPossibilities(Collections.emptySet());
+                if (!dropdownEntries.isEmpty()) {
+                    this.inputTagsDropdown.selectPossibility(
+                        dropdownEntries.iterator()
+                            .next());
+                } else {
+                    this.inputTagsDropdown.selectPossibility(null);
+                }
             }
-        } finally {
-            isLoading = false;
+        } else {
+            this.inputTagsDropdown.setText("");
+            this.inputTagsDropdown.setPossibilities(Collections.emptySet());
         }
     }
 
