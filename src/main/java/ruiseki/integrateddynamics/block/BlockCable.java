@@ -265,7 +265,8 @@ public class BlockCable extends BlockTile
     @Override
     public void onBlockAdded(World world, int x, int y, int z) {
         super.onBlockAdded(world, x, y, z);
-        if (!world.isRemote) {
+        if (!world.isRemote && !world.getBlock(x, y, z)
+            .hasTileEntity(world.getBlockMetadata(x, y, z))) {
             CableHelpers.onCableAdded(world, new BlockPos(x, y, z));
         }
     }
