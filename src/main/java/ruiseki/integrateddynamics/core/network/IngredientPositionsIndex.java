@@ -65,6 +65,7 @@ public class IngredientPositionsIndex<T, M> implements IIngredientPositionsIndex
                 ingredientCollection -> ingredientCollection.getAll(getPrototype(instance), matchFlags)
                     .stream())
             .flatMap(Collection::stream)
+            .distinct()
             .iterator();
     }
 

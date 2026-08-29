@@ -11,6 +11,7 @@ import ruiseki.integrateddynamics.network.packet.LogicProgrammerValueTypeBoolean
 import ruiseki.integrateddynamics.network.packet.LogicProgrammerValueTypeIngredientsValueChangedPacket;
 import ruiseki.integrateddynamics.network.packet.LogicProgrammerValueTypeListValueChangedPacket;
 import ruiseki.integrateddynamics.network.packet.LogicProgrammerValueTypeOperatorValueChangedPacket;
+import ruiseki.integrateddynamics.network.packet.LogicProgrammerValueTypeRecipeSlotPropertiesChangedPacket;
 import ruiseki.integrateddynamics.network.packet.LogicProgrammerValueTypeStringValueChangedPacket;
 import ruiseki.integrateddynamics.network.packet.NetworkDiagnosticsNetworkPacket;
 import ruiseki.integrateddynamics.network.packet.NetworkDiagnosticsOpenClient;
@@ -47,6 +48,7 @@ public class CommonProxy extends CommonProxyComponent {
         packetHandler.register(LogicProgrammerSetElementInventory.class);
         packetHandler.register(LogicProgrammerValueTypeIngredientsValueChangedPacket.class);
         packetHandler.register(LogicProgrammerValueTypeBooleanValueChangedPacket.class);
+        packetHandler.register(LogicProgrammerValueTypeRecipeSlotPropertiesChangedPacket.class);
 
         IntegratedDynamics.clog("Registered packet handler.");
     }

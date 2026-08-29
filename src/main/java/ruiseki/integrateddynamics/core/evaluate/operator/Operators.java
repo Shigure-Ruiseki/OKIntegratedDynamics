@@ -805,7 +805,7 @@ public final class Operators {
                         .matcher(str.getRawValue());
                     if (m.find()) {
                         String result = m.group(group.getRawValue());
-                        return ValueTypeString.ValueString.of(result);
+                        return ValueTypeString.ValueString.of(result == null ? "" : result);
                     } else {
                         throw new EvaluationException(
                             "The regular expression in regex_group must match the given string.");
@@ -836,8 +836,8 @@ public final class Operators {
                     if (m.find()) {
                         List<ValueTypeString.ValueString> values = Lists.newArrayList();
                         for (int i = 0; i <= m.groupCount(); i++) {
-                            values.add(ValueTypeString.ValueString.of(m.group(i)));
-
+                            String result = m.group(i);
+                            values.add(ValueTypeString.ValueString.of(result == null ? "" : result));
                         }
                         return ValueTypeList.ValueList.ofList(ValueTypes.STRING, values);
                     } else {
@@ -2413,6 +2413,8 @@ public final class Operators {
                     tag = itemStack.getRawValue()
                         .get()
                         .getTagCompound();
+                } else {
+                    tag = new NBTTagCompound();
                 }
                 return ValueTypeNbt.ValueNbt.of(tag);
             })

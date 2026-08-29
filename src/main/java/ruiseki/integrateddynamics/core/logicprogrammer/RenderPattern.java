@@ -51,6 +51,10 @@ public class RenderPattern<E extends IGuiInputElement, G extends Gui, C extends 
         super.initGui(guiLeft, guiTop);
     }
 
+    protected boolean drawRenderPattern() {
+        return true;
+    }
+
     @Override
     public void drawGuiContainerBackgroundLayer(int guiLeft, int guiTop, TextureManager textureManager,
         FontRenderer fontRenderer, float partialTicks, int mouseX, int mouseY) {
@@ -62,28 +66,30 @@ public class RenderPattern<E extends IGuiInputElement, G extends Gui, C extends 
             partialTicks,
             mouseX,
             mouseY);
-        IConfigRenderPattern configRenderPattern = element.getRenderPattern();
+        if (drawRenderPattern()) {
+            IConfigRenderPattern configRenderPattern = element.getRenderPattern();
 
-        int baseX = getX() + guiLeft;
-        int baseY = getY() + guiTop;
+            int baseX = getX() + guiLeft;
+            int baseY = getY() + guiTop;
 
-        for (Pair<Integer, Integer> slot : configRenderPattern.getSlotPositions()) {
-            drawSlot(baseX + slot.getLeft(), baseY + slot.getRight());
+            for (Pair<Integer, Integer> slot : configRenderPattern.getSlotPositions()) {
+                drawSlot(baseX + slot.getLeft(), baseY + slot.getRight());
+            }
+
+            if (configRenderPattern.getSymbolPosition() != null) {
+                RenderHelpers.drawScaledCenteredString(
+                    fontRenderer,
+                    element.getSymbol(),
+                    baseX + configRenderPattern.getSymbolPosition()
+                        .getLeft(),
+                    baseY + configRenderPattern.getSymbolPosition()
+                        .getRight() + 8,
+                    0,
+                    1,
+                    0);
+            }
+            GlStateManager.color(1, 1, 1, 1);
         }
-
-        if (configRenderPattern.getSymbolPosition() != null) {
-            RenderHelpers.drawScaledCenteredString(
-                fontRenderer,
-                element.getSymbol(),
-                baseX + configRenderPattern.getSymbolPosition()
-                    .getLeft(),
-                baseY + configRenderPattern.getSymbolPosition()
-                    .getRight() + 8,
-                0,
-                1,
-                0);
-        }
-        GlStateManager.color(1, 1, 1, 1);
     }
 
     @Override

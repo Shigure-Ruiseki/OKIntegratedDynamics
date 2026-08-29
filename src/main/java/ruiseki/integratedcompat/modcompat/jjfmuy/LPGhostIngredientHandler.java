@@ -10,8 +10,8 @@ import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.fluids.FluidStack;
 
+import ruiseki.integratedcompat.IntegratedCompat;
 import ruiseki.integratedcompat.network.packet.LPPacketJEIDragging;
-import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.client.gui.GuiLogicProgrammerBase;
 import ruiseki.jfmuy.api.gui.IGhostIngredientHandler;
 import ruiseki.okcore.fluid.FluidHelpers;
@@ -41,11 +41,11 @@ public class LPGhostIngredientHandler<T extends GuiLogicProgrammerBase> implemen
                         @Override
                         public void accept(@Nonnull I ingredient) {
                             if (ingredient instanceof ItemStack) {
-                                IntegratedDynamics._instance.getPacketHandler()
+                                IntegratedCompat._instance.getPacketHandler()
                                     .sendToServer(new LPPacketJEIDragging(slot.getSlotIndex(), (ItemStack) ingredient));
                             } else if (ingredient instanceof FluidStack) {
                                 ItemStack s = FluidHelpers.getFilledBucket((FluidStack) ingredient);
-                                IntegratedDynamics._instance.getPacketHandler()
+                                IntegratedCompat._instance.getPacketHandler()
                                     .sendToServer(new LPPacketJEIDragging(slot.getSlotIndex(), s));
                             }
                         }

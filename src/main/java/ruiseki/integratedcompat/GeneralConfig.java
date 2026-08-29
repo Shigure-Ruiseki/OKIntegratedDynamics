@@ -10,7 +10,7 @@ import ruiseki.okcore.init.ModBase;
 
 /**
  * A config with general options for this mod.
- * 
+ *
  * @author rubensworks
  *
  */
@@ -51,6 +51,12 @@ public class GeneralConfig extends DummyConfig {
         comment = "If mod compatibility loader should crash hard if errors occur in that process.",
         requiresMcRestart = true)
     public static boolean crashOnModCompatCrash = false;
+
+    @ConfigurableProperty(
+        category = ConfigurableTypeCategory.CORE,
+        comment = "If JEI recipe filling should heuristically try to determine item tags from recipes.",
+        requiresMcRestart = true)
+    public static boolean jeiHeuristicTags = false;
 
     /**
      * The type of this config.

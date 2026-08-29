@@ -1,0 +1,144 @@
+package ruiseki.integrateddynamics.core.ingredient;
+
+import java.io.IOException;
+import java.util.Collections;
+
+import net.minecraft.item.ItemStack;
+import net.minecraftforge.common.util.ForgeDirection;
+
+import org.jetbrains.annotations.Nullable;
+
+import ruiseki.commoncapabilities.api.capability.itemhandler.ItemMatch;
+import ruiseki.commoncapabilities.api.capability.recipehandler.IPrototypedIngredientAlternatives;
+import ruiseki.commoncapabilities.api.capability.recipehandler.PrototypedIngredientAlternativesItemStackOredictionary;
+import ruiseki.commoncapabilities.api.capability.recipehandler.PrototypedIngredientAlternativesItemStackTag;
+import ruiseki.commoncapabilities.api.capability.recipehandler.PrototypedIngredientAlternativesList;
+import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
+import ruiseki.commoncapabilities.api.ingredient.PrototypedIngredient;
+import ruiseki.integrateddynamics.api.part.PartPos;
+import ruiseki.okcore.datastructure.DimPos;
+import ruiseki.okcore.network.ExtendedBuffer;
+import ruiseki.okcore.network.PacketCodec;
+
+/**
+ * @author rubensworks
+ */
+public class ItemMatchProperties {
+
+    static {
+        PacketCodec.addCodedAction(ItemMatchProperties.class, new PacketCodec.ICodecAction() {
+
+            @Override
+            public void encode(Object o, ExtendedBuffer packetBuffer) throws IOException {
+                ItemMatchProperties props = ((ItemMatchProperties) o);
+                PacketCodec.getAction(ItemStack.class)
+                    .encode(props.itemStack, packetBuffer);
+                packetBuffer.writeBoolean(props.nbt);
+                packetBuffer.writeString(props.itemTag != null ? props.itemTag : "");
+                packetBuffer.writeInt(props.tagQuantity);
+            }
+
+            @Override
+            public Object decode(ExtendedBuffer packetBuffer) {
+                ItemStack itemStack = (ItemStack) PacketCodec.getAction(ItemStack.class)
+                    .decode(packetBuffer);
+                boolean nbt = packetBuffer.readBoolean();
+                String itemTag = packetBuffer.readString();
+                int tagQuantity = packetBuffer.readInt();
+                return new ItemMatchProperties(itemStack, nbt, itemTag.isEmpty() ? null : itemTag, tagQuantity);
+            }
+        });
+
+        PacketCodec.addCodedAction(PartPos.class, new PacketCodec.ICodecAction() {
+
+            @Override
+            public void encode(Object o, ExtendedBuffer extendedBuffer) throws IOException {
+                PacketCodec.getAction(DimPos.class)
+                    .encode(((PartPos) o).getPos(), extendedBuffer);
+                PacketCodec.getAction(ForgeDirection.class)
+                    .encode(((PartPos) o).getSide(), extendedBuffer);
+            }
+
+            @Override
+            public Object decode(ExtendedBuffer extendedBuffer) {
+                DimPos pos = (DimPos) PacketCodec.getAction(DimPos.class)
+                    .decode(extendedBuffer);
+                ForgeDirection side = (ForgeDirection) PacketCodec.getAction(ForgeDirection.class)
+                    .decode(extendedBuffer);
+                return PartPos.of(pos, side);
+            }
+        });
+    }
+
+    private final ItemStack itemStack;
+    private boolean nbt;
+    @Nullable
+    private String itemTag;
+    private int tagQuantity;
+
+    public ItemMatchProperties(ItemStack itemStack) {
+        this(itemStack, false, null, 1);
+    }
+
+    public ItemMatchProperties(ItemStack itemStack, boolean nbt, @Nullable String itemTag, int tagQuantity) {
+        this.itemStack = itemStack;
+        this.nbt = nbt;
+        this.itemTag = itemTag;
+        this.tagQuantity = tagQuantity;
+    }
+
+    public ItemStack getItemStack() {
+        return itemStack;
+    }
+
+    public boolean isNbt() {
+        return nbt;
+    }
+
+    public void setNbt(boolean nbt) {
+        this.nbt = nbt;
+    }
+
+    @Nullable
+    public String getItemTag() {
+        return itemTag;
+    }
+
+    public void setItemTag(@Nullable String itemTag) {
+        this.itemTag = itemTag;
+    }
+
+    public int getTagQuantity() {
+        return tagQuantity;
+    }
+
+    public void setTagQuantity(int tagQuantity) {
+        this.tagQuantity = tagQuantity;
+    }
+
+    public boolean isValid() {
+        return getItemTag() != null || getItemStack() != null;
+    }
+
+    public IPrototypedIngredientAlternatives<ItemStack, Integer> createPrototypedIngredient() {
+        if (getItemTag() == null) {
+            int flags = isNbt() ? ItemMatch.ITEM | ItemMatch.NBT : ItemMatch.ITEM;
+            return new PrototypedIngredientAlternativesList<>(
+                Collections.singletonList(new PrototypedIngredient<>(IngredientComponent.ITEMSTACK, itemStack, flags)));
+        } else {
+            String tag = getItemTag();
+            int matchFlags = ItemMatch.ITEM | (isNbt() ? ItemMatch.NBT : 0);
+            if (tag.contains(":")) {
+                return new PrototypedIngredientAlternativesItemStackTag(
+                    Collections.singletonList(tag),
+                    matchFlags,
+                    getTagQuantity());
+            } else {
+                return new PrototypedIngredientAlternativesItemStackOredictionary(
+                    Collections.singletonList(tag),
+                    matchFlags,
+                    getTagQuantity());
+            }
+        }
+    }
+}
