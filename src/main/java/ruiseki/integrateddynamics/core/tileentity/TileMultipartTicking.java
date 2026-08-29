@@ -53,6 +53,7 @@ import ruiseki.okcore.capabilities.resolver.SidedCapabilityResolver;
 import ruiseki.okcore.datastructure.DimPos;
 import ruiseki.okcore.datastructure.EnumFacingMap;
 import ruiseki.okcore.datastructure.LazyOptional;
+import ruiseki.okcore.helper.BlockHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.persist.nbt.NBTPersist;
 import ruiseki.okcore.tileentity.TileEntityOK;
@@ -107,6 +108,9 @@ public class TileMultipartTicking extends TileEntityOK
     private final INetworkCarrier networkCarrier;
     @Getter
     private final ICableFakeable cableFakeable;
+    @NBTPersist
+    @Setter
+    private boolean forceLightCheckAtClient;
 
     private BlockState cachedState = null;
 
@@ -143,6 +147,7 @@ public class TileMultipartTicking extends TileEntityOK
     @Override
     public void writeToNBT(NBTTagCompound tag) {
         super.writeToNBT(tag);
+        forceLightCheckAtClient = false;
         tag.setTag("partContainer", partContainer.serializeNBT());
         tag.setBoolean("realCable", cableFakeable.isRealCable());
     }
@@ -187,6 +192,11 @@ public class TileMultipartTicking extends TileEntityOK
             this.worldObj.func_147451_t(this.xCoord, this.yCoord, this.zCoord);
         }
         cachedState = null;
+        BlockHelpers.markForUpdate(getWorldObj(), getPos());
+
+        if (forceLightCheckAtClient) {
+            getWorldObj().func_147451_t(this.xCoord, this.yCoord, this.zCoord);
+        }
     }
 
     public BlockState getConnectionState() {

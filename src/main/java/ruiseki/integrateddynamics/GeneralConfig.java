@@ -445,6 +445,11 @@ public class GeneralConfig extends DummyConfig {
         minimalValue = 0)
     public static int worldReaderBaseConsumption = 1;
 
+    @ConfigurableProperty(
+        category = ConfigurableTypeCategory.CORE,
+        comment = "If corrupted networks should automatically be restored on first tick.")
+    public static boolean recreateCorruptedNetworks = true;
+
     /**
      * Create a new instance.
      */

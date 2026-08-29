@@ -27,7 +27,7 @@ public class EnergyStorageItemBlockEnergyContainer implements IEnergyStorageCapa
         this.rate = rate;
 
         if (!this.itemStack.hasTagCompound()) {
-            setEnergy(itemStack, 0);
+            setItemStackEnergy(itemStack, 0);
         }
     }
 
@@ -45,8 +45,7 @@ public class EnergyStorageItemBlockEnergyContainer implements IEnergyStorageCapa
         return block instanceof BlockEnergyBatteryBase && ((BlockEnergyBatteryBase) block).isCreative();
     }
 
-    @Override
-    public int getEnergyStored() {
+    protected int getEnergyStoredSingular() {
         if (isCreative()) return Integer.MAX_VALUE;
         NBTTagCompound tag = ItemNBTHelpers.getNBT(itemStack);
         return tag.getInteger(
@@ -55,7 +54,11 @@ public class EnergyStorageItemBlockEnergyContainer implements IEnergyStorageCapa
     }
 
     @Override
-    public int getMaxEnergyStored() {
+    public int getEnergyStored() {
+        return getEnergyStoredSingular() * this.itemStack.stackSize;
+    }
+
+    public int getMaxEnergyStoredSingular() {
         if (isCreative()) return Integer.MAX_VALUE;
         NBTTagCompound tag = ItemNBTHelpers.getNBT(itemStack);
         if (!tag.hasKey(
@@ -69,30 +72,41 @@ public class EnergyStorageItemBlockEnergyContainer implements IEnergyStorageCapa
     }
 
     @Override
+    public int getMaxEnergyStored() {
+        return getMaxEnergyStoredSingular() * this.itemStack.stackSize;
+    }
+
+    @Override
     public int receiveEnergy(int energy, boolean simulate) {
         if (isCreative()) return 0;
+        int stackSize = this.itemStack.stackSize;
+        if (stackSize == 0) return 0;
+        energy /= stackSize;
         energy = Math.min(energy, getRate());
-        int stored = getEnergyStored();
-        int energyReceived = Math.min(getMaxEnergyStored() - stored, energy);
+        int stored = getEnergyStoredSingular();
+        int energyReceived = Math.min(getMaxEnergyStoredSingular() - stored, energy);
         if (!simulate) {
-            setEnergy(itemStack, stored + energyReceived);
+            setItemStackEnergy(itemStack, stored + energyReceived);
         }
-        return energyReceived;
+        return energyReceived * stackSize;
     }
 
     @Override
     public int extractEnergy(int energy, boolean simulate) {
         if (isCreative()) return energy;
+        int stackSize = this.itemStack.stackSize;
+        if (stackSize == 0) return energy;
+        energy /= stackSize;
         energy = Math.min(energy, getRate());
-        int stored = getEnergyStored();
+        int stored = getEnergyStoredSingular();
         int newEnergy = Math.max(stored - energy, 0);
         if (!simulate) {
-            setEnergy(itemStack, newEnergy);
+            setItemStackEnergy(itemStack, newEnergy);
         }
-        return stored - newEnergy;
+        return (stored - newEnergy) * stackSize;
     }
 
-    public void setEnergy(ItemStack itemStack, int energy) {
+    public void setItemStackEnergy(ItemStack itemStack, int energy) {
         if (isCreative()) return;
         NBTTagCompound tag = ItemNBTHelpers.getNBT(itemStack);
         tag.setInteger(
@@ -118,6 +132,6 @@ public class EnergyStorageItemBlockEnergyContainer implements IEnergyStorageCapa
 
     @Override
     public void setEnergy(int energy) {
-        setEnergy(itemStack, energy);
+        setItemStackEnergy(itemStack, energy);
     }
 }

@@ -266,16 +266,13 @@ public class AspectWriteBuilders {
 
         public static final IAspectPropertyTypeInstance<ValueTypeDouble, ValueTypeDouble.ValueDouble> PROP_OFFSET_X = new AspectPropertyTypeInstance<>(
             ValueTypes.DOUBLE,
-            "aspect.aspecttypes.integrateddynamics.double.offset_x.name",
-            AspectReadBuilders.VALIDATOR_DOUBLE_POSITIVE);
+            "aspect.aspecttypes.integrateddynamics.double.offset_x");
         public static final IAspectPropertyTypeInstance<ValueTypeDouble, ValueTypeDouble.ValueDouble> PROP_OFFSET_Y = new AspectPropertyTypeInstance<>(
             ValueTypes.DOUBLE,
-            "aspect.aspecttypes.integrateddynamics.double.offset_y.name",
-            AspectReadBuilders.VALIDATOR_DOUBLE_POSITIVE);
+            "aspect.aspecttypes.integrateddynamics.double.offset_y");
         public static final IAspectPropertyTypeInstance<ValueTypeDouble, ValueTypeDouble.ValueDouble> PROP_OFFSET_Z = new AspectPropertyTypeInstance<>(
             ValueTypes.DOUBLE,
-            "aspect.aspecttypes.integrateddynamics.double.offset_z.name",
-            AspectReadBuilders.VALIDATOR_DOUBLE_POSITIVE);
+            "aspect.aspecttypes.integrateddynamics.double.offset_z");
         public static final IAspectPropertyTypeInstance<ValueTypeInteger, ValueTypeInteger.ValueInteger> PROP_PARTICLES = new AspectPropertyTypeInstance<>(
             ValueTypes.INTEGER,
             "aspect.aspecttypes.integrateddynamics.integer.particles.name",

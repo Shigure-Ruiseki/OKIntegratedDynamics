@@ -1,6 +1,7 @@
 package ruiseki.integrateddynamics.core.item;
 
 import java.util.List;
+import java.util.Locale;
 
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
@@ -59,8 +60,8 @@ public class ItemBlockEnergyContainer extends ItemBlockNBT implements IEnergyCon
         IEnergyStorage energyStorage = getEnergyBattery(itemStack);
         int amount = energyStorage.getEnergyStored();
         int capacity = energyStorage.getMaxEnergyStored();
-        String line = String.format("%,d", amount) + " / "
-            + String.format("%,d", capacity)
+        String line = String.format(Locale.ROOT, "%,d", amount) + " / "
+            + String.format(Locale.ROOT, "%,d", capacity)
             + " "
             + LangHelpers.localize(L10NValues.GENERAL_ENERGY_UNIT);
         list.add(IInformationProvider.ITEM_PREFIX + line);

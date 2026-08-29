@@ -86,19 +86,27 @@ public class TileDryingBasin extends TankInventoryTileEntity implements TileEnti
                 RecipeDryingBasin recipe = getCurrentRecipe();
                 if (recipe != null) {
                     if (progress >= recipe.getDuration()) {
+                        // Consume input fluid
+                        int amount = FluidHelpers.getAmount(recipe.getInputFluid());
+                        getTank().drain(amount, true);
+
+                        // Produce output item
                         ItemStack output = recipe.getOutputItem();
                         if (output != null) {
                             output = output.copy();
                             setInventorySlotContents(0, output);
-                            int amount = FluidHelpers.getAmount(recipe.getInputFluid());
-                            drain(amount, true);
-                            if (recipe.getOutputFluid() != null) {
-                                if (fill(recipe.getOutputFluid(), true) == 0) {
-                                    IntegratedDynamics
-                                        .clog(Level.ERROR, "Encountered an invalid recipe: " + recipe.getId());
-                                }
+                        } else {
+                            getInventory().setInventorySlotContents(0, null);
+                        }
+
+                        // Produce output fluid
+                        if (recipe.getOutputFluid() != null) {
+                            if (getTank().fill(recipe.getOutputFluid(), true) == 0) {
+                                IntegratedDynamics
+                                    .clog(Level.ERROR, "Encountered an invalid recipe: " + recipe.getId());
                             }
                         }
+
                         progress = 0;
                     } else {
                         progress++;

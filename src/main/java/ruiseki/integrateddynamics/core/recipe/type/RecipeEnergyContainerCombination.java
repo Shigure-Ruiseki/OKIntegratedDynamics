@@ -11,6 +11,7 @@ import ruiseki.okcore.datastructure.NonNullList;
 import ruiseki.okcore.energy.capability.CapabilityEnergy;
 import ruiseki.okcore.helper.CapabilityHelpers;
 import ruiseki.okcore.helper.Helpers;
+import ruiseki.okcore.helper.ItemStackHelpers;
 import ruiseki.okcore.recipe.IRecipeSerializer;
 import ruiseki.okcore.recipe.ingredient.Ingredient;
 import ruiseki.okcore.recipe.type.crafting.SpecialRecipe;
@@ -55,10 +56,12 @@ public class RecipeEnergyContainerCombination extends SpecialRecipe {
 
         for (int i = 0; i < aitemstack.size(); ++i) {
             ItemStack itemstack = inventory.getStackInSlot(i);
-            aitemstack.set(
-                i,
-                itemstack.getItem()
-                    .getContainerItem(itemstack));
+            if (itemstack != null && itemstack.getItem() != null) {
+                aitemstack.set(
+                    i,
+                    itemstack.getItem()
+                        .getContainerItem(itemstack));
+            }
         }
 
         return aitemstack;
@@ -82,21 +85,25 @@ public class RecipeEnergyContainerCombination extends SpecialRecipe {
 
         // Loop over the grid and count the total contents and capacity + collect energy.
         for (int j = 0; j < grid.getSizeInventory(); j++) {
-            ItemStack element = grid.getStackInSlot(j);
+            ItemStack stackInSlot = grid.getStackInSlot(j);
 
-            if (element != null) {
-                if (this.batteryItem.test(element)) {
-                    IEnergyStorageCapacity currentEnergyStorage = (IEnergyStorageCapacity) CapabilityHelpers
-                        .getCapability(element, CapabilityEnergy.ENERGY)
-                        .getOrNull();
+            if (stackInSlot != null) {
+                ItemStack element = ItemStackHelpers.split(stackInSlot.copy(), 1);
 
-                    if (currentEnergyStorage != null) {
-                        inputItems++;
-                        totalEnergy = Helpers.addSafe(totalEnergy, currentEnergyStorage.getEnergyStored());
-                        totalCapacity = Helpers.addSafe(totalCapacity, currentEnergyStorage.getMaxEnergyStored());
+                if (element != null) {
+                    if (this.batteryItem.test(element)) {
+                        IEnergyStorageCapacity currentEnergyStorage = (IEnergyStorageCapacity) CapabilityHelpers
+                            .getCapability(element, CapabilityEnergy.ENERGY)
+                            .getOrNull();
+
+                        if (currentEnergyStorage != null) {
+                            inputItems++;
+                            totalEnergy = Helpers.addSafe(totalEnergy, currentEnergyStorage.getEnergyStored());
+                            totalCapacity = Helpers.addSafe(totalCapacity, currentEnergyStorage.getMaxEnergyStored());
+                        }
+                    } else {
+                        return null;
                     }
-                } else {
-                    return null;
                 }
             }
         }

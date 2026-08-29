@@ -5,6 +5,8 @@ import java.util.stream.Collectors;
 
 import org.jetbrains.annotations.Nullable;
 
+import com.google.common.collect.Iterables;
+
 import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.integrateddynamics.api.part.PrioritizedPartPos;
 
@@ -55,7 +57,7 @@ public interface IPositionedAddonsNetwork {
     /**
      * Get the channel this position is present in.
      * -1 if it is not present in any channel.
-     * 
+     *
      * @param pos A position.
      * @return A channel.
      */
@@ -79,10 +81,8 @@ public interface IPositionedAddonsNetwork {
     /**
      * @return All stored positions, order is undefined.
      */
-    public default Collection<PartPos> getPositions() {
-        return getPrioritizedPositions().stream()
-            .map(PrioritizedPartPos::getPartPos)
-            .collect(Collectors.toList());
+    public default Iterable<PartPos> getPositions() {
+        return Iterables.transform(getPrioritizedPositions(), PrioritizedPartPos::getPartPos);
     }
 
     /**

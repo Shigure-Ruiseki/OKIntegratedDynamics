@@ -10,7 +10,6 @@ import com.google.common.collect.Iterators;
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
 import ruiseki.commoncapabilities.api.ingredient.storage.IIngredientComponentStorage;
 import ruiseki.commoncapabilities.api.ingredient.storage.IIngredientComponentStorageWrapperHandler;
-import ruiseki.commoncapabilities.api.ingredient.storage.IngredientComponentStorageEmpty;
 import ruiseki.integrateddynamics.api.ingredient.IIngredientComponentStorageObservable;
 import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.okcore.capabilities.Capability;
@@ -44,10 +43,7 @@ public interface IPositionedAddonsNetworkIngredients<T, M>
      * @param pos A position.
      * @return The storage, or an empty storage if none is available.
      */
-    public default IIngredientComponentStorage<T, M> getPositionedStorage(PartPos pos) {
-        IIngredientComponentStorage<T, M> storage = getPositionedStorageUnsafe(pos);
-        return storage == null ? new IngredientComponentStorageEmpty<>(getComponent()) : storage;
-    }
+    public IIngredientComponentStorage<T, M> getPositionedStorage(PartPos pos);
 
     /**
      * Set an ingredient filter for the given storage position.

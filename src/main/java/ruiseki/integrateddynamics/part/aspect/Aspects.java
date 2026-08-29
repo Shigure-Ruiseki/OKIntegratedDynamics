@@ -69,6 +69,7 @@ import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeOperator;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeString;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
 import ruiseki.integrateddynamics.core.helper.EnergyHelpers;
+import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.integrateddynamics.core.part.aspect.build.AspectBuilder;
 import ruiseki.integrateddynamics.core.part.aspect.build.IAspectValuePropagator;
 import ruiseki.integrateddynamics.part.aspect.read.AspectReadBuilders;
@@ -80,6 +81,7 @@ import ruiseki.okcore.fluid.capability.wrapper.BlockLiquidWrapper;
 import ruiseki.okcore.fluid.handler.IFluidTankProperties;
 import ruiseki.okcore.helper.BlockStateHelpers;
 import ruiseki.okcore.helper.CapabilityHelpers;
+import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
 
 /**
@@ -821,7 +823,7 @@ public class Aspects {
                     (network) -> network != null && network.getCapability(EnergyNetworkConfig.CAPABILITY)
                         .isPresent() ? network.getCapability(EnergyNetworkConfig.CAPABILITY)
                             .getOrNull()
-                            .getPositions()
+                            .getPrioritizedPositions()
                             .size() : 0)
                 .handle(AspectReadBuilders.PROP_GET_INTEGER, "energy")
                 .appendKind("batterycount")
@@ -858,12 +860,16 @@ public class Aspects {
                         .getTarget();
                     IValueInterface valueInterface = CapabilityHelpers
                         .getCapability(target.getPos(), ValueInterfaceConfig.CAPABILITY, target.getSide())
-                        .getOrNull();
-                    if (valueInterface != null) {
-                        return valueInterface.getValue()
-                            .orElseThrow(() -> new EvaluationException("No valid value interface value was found."));
-                    }
-                    throw new EvaluationException("No valid value interface was found.");
+                        .orElseThrow(() -> {
+                            EvaluationException error = new EvaluationException(
+                                LangHelpers.localize(L10NValues.ASPECT_ERROR_NOVALUEINTERFACE));
+                            error.setRetryEvaluation(true);
+                            return error;
+                        });
+                    return valueInterface.getValue()
+                        .orElseThrow(
+                            () -> new EvaluationException(
+                                LangHelpers.localize(L10NValues.ASPECT_ERROR_NOVALUEINTERFACE)));
                 })
                 .appendKind("value")
                 .buildRead();

@@ -1,14 +1,14 @@
 package ruiseki.integrateddynamics.core.network;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.WorldServer;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -23,8 +23,6 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntLinkedOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
-import ruiseki.commoncapabilities.api.capability.inventorystate.IInventoryState;
-import ruiseki.commoncapabilities.capability.inventorystate.InventoryStateConfig;
 import ruiseki.integrateddynamics.GeneralConfig;
 import ruiseki.integrateddynamics.api.ingredient.IIngredientComponentStorageObservable;
 import ruiseki.integrateddynamics.api.network.IPositionedAddonsNetworkIngredients;
@@ -32,7 +30,6 @@ import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.api.part.PrioritizedPartPos;
 import ruiseki.integrateddynamics.core.network.diagnostics.NetworkDiagnostics;
-import ruiseki.okcore.helper.CapabilityHelpers;
 import ruiseki.okcore.ingredient.collection.diff.IngredientCollectionDiff;
 import ruiseki.okcore.ingredient.collection.diff.IngredientCollectionDiffManager;
 
@@ -47,6 +44,7 @@ public class IngredientObserver<T, M> {
         .newFixedThreadPool(GeneralConfig.ingredientNetworkObserverThreads);
 
     private final IPositionedAddonsNetworkIngredients<T, M> network;
+    private final ConcurrentWorldIngredientsProxy<T, M> worldProxy;
 
     private final Set<IIngredientComponentStorageObservable.IIndexChangeObserver<T, M>> changeObservers;
     private final Int2ObjectMap<Map<PartPos, Integer>> observeTargetTickIntervals;
@@ -61,6 +59,7 @@ public class IngredientObserver<T, M> {
 
     public IngredientObserver(IPositionedAddonsNetworkIngredients<T, M> network) {
         this.network = network;
+        this.worldProxy = new ConcurrentWorldIngredientsProxy<>(network);
         this.changeObservers = Sets.newIdentityHashSet();
         this.observeTargetTickIntervals = new Int2ObjectOpenHashMap<>();
         this.observeTargetTicks = new Int2ObjectOpenHashMap<>();
@@ -167,21 +166,11 @@ public class IngredientObserver<T, M> {
             if (forceSync && GeneralConfig.ingredientNetworkObserverEnableMultithreading
                 && this.lastObserverBarrier != null
                 && !this.lastObserverBarrier.isDone()) {
-
-                // This loop prevents deadlocks between the main thread and worker threads
-                // when worker threads request main-thread chunk operations.
-                do {
-                    MinecraftServer server = MinecraftServer.getServer();
-                    if (server != null && server.worldServers != null) {
-                        for (WorldServer serverWorld : server.worldServers) {
-                            if (serverWorld != null && serverWorld.theChunkProviderServer != null) {
-                                serverWorld.theChunkProviderServer.unloadQueuedChunks();
-                            }
-                        }
-                    }
-
-                    Thread.yield();
-                } while (!this.lastObserverBarrier.isDone());
+                try {
+                    this.lastObserverBarrier.get();
+                } catch (InterruptedException | ExecutionException e) {
+                    e.printStackTrace();
+                }
             }
 
             if (GeneralConfig.ingredientNetworkObserverEnableMultithreading && !forceSync) {
@@ -191,6 +180,9 @@ public class IngredientObserver<T, M> {
                     || this.runningObserverSync) {
                     return false;
                 }
+
+                // Run the world proxy in the world thread
+                this.worldProxy.onWorldTick();
 
                 // Schedule the observation job
                 this.lastObserverBarrier = WORKER_POOL.submit(() -> {
@@ -204,7 +196,9 @@ public class IngredientObserver<T, M> {
                     return false;
                 }
 
-                this.runningObserverSync = true;
+                // Run the world proxy in the world thread
+                this.worldProxy.onWorldTick();
+
                 for (int channel : getChannels()) {
                     observe(channel);
                 }
@@ -281,16 +275,10 @@ public class IngredientObserver<T, M> {
                 }
 
                 if (!skipPosition) {
-                    IInventoryState inventoryState = CapabilityHelpers.getCapability(
-                        partPos.getPartPos()
-                            .getPos(),
-                        InventoryStateConfig.CAPABILITY,
-                        partPos.getPartPos()
-                            .getSide())
-                        .getOrNull();
-                    if (inventoryState != null) {
+                    Optional<Integer> newInventoryStateBoxed = this.worldProxy.getInventoryState(partPos.getPartPos());
+                    if (newInventoryStateBoxed.isPresent()) {
                         Integer lastState = this.lastInventoryStates.get(partPos.getPartPos());
-                        int newState = inventoryState.getHash();
+                        int newState = newInventoryStateBoxed.get();
                         if (lastState != null && lastState == newState) {
                             // Skip this position if it hasn't not changed
                             skipPosition = true;
@@ -308,8 +296,9 @@ public class IngredientObserver<T, M> {
                     }
 
                     // Emit event of diff
-                    IngredientCollectionDiff<T, M> diff = diffManager
-                        .onChange(getNetwork().getRawInstances(partPos.getPartPos()));
+                    Iterator<T> instances = this.worldProxy.getInstances(partPos.getPartPos())
+                        .iterator();
+                    IngredientCollectionDiff<T, M> diff = diffManager.onChange(instances);
                     boolean hasChanges = false;
                     if (diff.hasAdditions()) {
                         hasChanges = true;
@@ -420,6 +409,9 @@ public class IngredientObserver<T, M> {
     }
 
     public void resetTickInterval(int channel, PartPos targetPos) {
+        // Reset the world proxy
+        this.worldProxy.setRead(targetPos);
+
         // Reset the channel ticks
         Map<PartPos, Integer> channelTicks = this.observeTargetTicks.get(channel);
         if (channelTicks == null) {

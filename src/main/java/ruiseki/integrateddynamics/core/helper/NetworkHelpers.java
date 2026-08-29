@@ -8,11 +8,13 @@ import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
+import org.apache.logging.log4j.Level;
 import org.jetbrains.annotations.Nullable;
 
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
 import ruiseki.integrateddynamics.GeneralConfig;
 import ruiseki.integrateddynamics.IntegratedDynamics;
+import ruiseki.integrateddynamics.api.block.cable.ICableFakeable;
 import ruiseki.integrateddynamics.api.network.IEnergyNetwork;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.INetworkCarrier;
@@ -22,6 +24,7 @@ import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.network.IPositionedAddonsNetworkIngredients;
 import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.integrateddynamics.api.path.IPathElement;
+import ruiseki.integrateddynamics.capability.cable.CableFakeableConfig;
 import ruiseki.integrateddynamics.capability.network.EnergyNetworkConfig;
 import ruiseki.integrateddynamics.capability.network.NetworkCarrierConfig;
 import ruiseki.integrateddynamics.capability.network.PartNetworkConfig;
@@ -29,6 +32,7 @@ import ruiseki.integrateddynamics.capability.network.PositionedAddonsNetworkIngr
 import ruiseki.integrateddynamics.capability.networkelementprovider.NetworkElementProviderConfig;
 import ruiseki.integrateddynamics.capability.path.PathElementConfig;
 import ruiseki.integrateddynamics.capability.path.SidedPathElement;
+import ruiseki.integrateddynamics.core.TickHandler;
 import ruiseki.integrateddynamics.core.network.Network;
 import ruiseki.integrateddynamics.core.persist.world.NetworkWorldStorage;
 import ruiseki.okcore.datastructure.BlockPos;
@@ -328,7 +332,7 @@ public class NetworkHelpers {
     /**
      * Revalidate all network elements at the given position.
      * Warning: this assumes unsided network carrier capabilities, for example full-block network elements.
-     * 
+     *
      * @param world The world.
      * @param pos   The position.
      */
@@ -337,10 +341,16 @@ public class NetworkHelpers {
             .getOrNull();
         IPathElement pathElement = CapabilityHelpers.getCapability(world, pos, PathElementConfig.CAPABILITY)
             .getOrNull();
-        if (networkCarrier != null && pathElement != null && networkCarrier.getNetwork() == null) {
+        if (TickHandler.getInstance().ticked && networkCarrier != null
+            && pathElement != null
+            && networkCarrier.getNetwork() == null
+            && CapabilityHelpers.getCapability(world, pos, CableFakeableConfig.CAPABILITY)
+                .map(ICableFakeable::isRealCable)
+                .orElse(false)) {
             CapabilityHelpers.getCapability(world, pos, NetworkElementProviderConfig.CAPABILITY)
                 .ifPresent(networkElementProvider -> {
                     // Attempt to revalidate the network elements in this provider
+                    boolean foundNetwork = false;
                     for (INetwork network : NetworkWorldStorage.getInstance(IntegratedDynamics._instance)
                         .getNetworks()) {
                         if (network.containsSidedPathElement(SidedPathElement.of(pathElement, null))) {
@@ -349,8 +359,21 @@ public class NetworkHelpers {
                                 .createNetworkElements(world, pos)) {
                                 networkElement.revalidate(network);
                             }
+                            foundNetwork = true;
                             break; // No need to check the other networks anymore
                         }
+                    }
+
+                    // If no existing network was found, create a new network
+                    if (!foundNetwork && GeneralConfig.recreateCorruptedNetworks) {
+                        IntegratedDynamics.clog(
+                            Level.WARN,
+                            String.format(
+                                "Detected network position at "
+                                    + "position %s in world %d with corrupted network, recreating network...",
+                                pos,
+                                world.provider.dimensionId));
+                        NetworkHelpers.initNetwork(world, pos, null);
                     }
                 });
         }

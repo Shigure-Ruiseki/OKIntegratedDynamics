@@ -1,6 +1,7 @@
 package ruiseki.integrateddynamics.core.helper;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -178,8 +179,8 @@ public final class Helpers {
      * @return The localized string.
      */
     public static String getLocalizedEnergyLevel(int stored, int capacity) {
-        return String.format("%,d", stored) + " / "
-            + String.format("%,d", capacity)
+        return String.format(Locale.ROOT, "%,d", stored) + " / "
+            + String.format(Locale.ROOT, "%,d", capacity)
             + " "
             + LangHelpers.localize(L10NValues.GENERAL_ENERGY_UNIT);
     }

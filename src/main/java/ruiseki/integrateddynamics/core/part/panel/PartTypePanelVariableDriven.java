@@ -119,9 +119,19 @@ public abstract class PartTypePanelVariableDriven<P extends PartTypePanelVariabl
                 IVariable variable = state.getVariable(network, partNetwork);
                 if (variable != null) {
                     newValue = variable.getValue();
+
+                    if (state.isRetryEvaluation()) {
+                        state.setRetryEvaluation(false);
+                        state.addGlobalError(null);
+                    }
                 }
             } catch (EvaluationException e) {
-                state.addGlobalError(new LangHelpers.UnlocalizedString(e.getLocalizedMessage()));
+                if (!state.isRetryEvaluation()) {
+                    state.addGlobalError(new LangHelpers.UnlocalizedString(e.getLocalizedMessage()));
+                    if (e.isRetryEvaluation()) {
+                        state.setRetryEvaluation(true);
+                    }
+                }
             }
         }
         if (!ValueHelpers.areValuesEqual(lastValue, newValue)) {
