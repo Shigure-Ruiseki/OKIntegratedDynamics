@@ -69,13 +69,16 @@ public class ValueTypeRecipeLPElementPropertiesSubGui
 
             @Override
             public boolean mousePressed(Minecraft mc, int mouseX, int mouseY) {
+                boolean result = super.mousePressed(mc, mouseX, mouseY);
                 // Only allow one checkbox to be true at the same time
-                if (inputNbt.isChecked()) {
-                    inputTags.setChecked(false);
+                if (result) {
+                    if (inputNbt.isChecked()) {
+                        inputTags.setChecked(false);
+                    }
+                    saveGuiToState();
+                    loadStateToGui();
                 }
-                saveGuiToState();
-                loadStateToGui();
-                return super.mousePressed(mc, mouseX, mouseY);
+                return result;
             }
         };
         this.buttonList.add(this.inputNbt);
@@ -90,9 +93,12 @@ public class ValueTypeRecipeLPElementPropertiesSubGui
 
             @Override
             public boolean mousePressed(Minecraft mc, int mouseX, int mouseY) {
-                saveGuiToState();
-                loadStateToGui();
-                return super.mousePressed(mc, mouseX, mouseY);
+                boolean result = super.mousePressed(mc, mouseX, mouseY);
+                if (result) {
+                    saveGuiToState();
+                    loadStateToGui();
+                }
+                return result;
             }
         };
         this.buttonList.add(this.inputReusable);
@@ -107,16 +113,19 @@ public class ValueTypeRecipeLPElementPropertiesSubGui
 
             @Override
             public boolean mousePressed(Minecraft mc, int mouseX, int mouseY) {
-                // Only allow one checkbox to be true at the same time
-                if (inputTags.isChecked()) {
-                    inputNbt.setChecked(false);
+                boolean result = super.mousePressed(mc, mouseX, mouseY);
+                if (result) {
+                    // Only allow one checkbox to be true at the same time
+                    if (inputTags.isChecked()) {
+                        inputNbt.setChecked(false);
+                    }
+                    saveGuiToState();
+                    loadStateToGui();
+                    if (inputTags.isChecked()) {
+                        inputTagsDropdown.setFocused(true);
+                    }
                 }
-                saveGuiToState();
-                loadStateToGui();
-                if (inputTags.isChecked()) {
-                    inputTagsDropdown.setFocused(true);
-                }
-                return super.mousePressed(mc, mouseX, mouseY);
+                return result;
             }
         };
         this.buttonList.add(this.inputTags);
@@ -139,13 +148,13 @@ public class ValueTypeRecipeLPElementPropertiesSubGui
 
             @Override
             public boolean mousePressed(Minecraft mc, int mouseX, int mouseY) {
-                // If tag checkbox is checked, only allow exiting if a valid tag has been set
+                boolean result = super.mousePressed(mc, mouseX, mouseY);
                 if (!inputTags.isChecked() || inputTagsDropdown.getSelectedDropdownPossibility() != null) {
                     element.lastGui.setRecipeSubGui();
                 } else {
                     inputTagsDropdown.setFocused(true);
                 }
-                return super.mousePressed(mc, mouseX, mouseY);
+                return result;
             }
         };
         this.buttonList.add(this.inputSave);
