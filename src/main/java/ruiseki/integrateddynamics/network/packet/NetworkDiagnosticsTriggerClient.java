@@ -10,6 +10,7 @@ import net.minecraft.world.World;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.integrateddynamics.IntegratedDynamics;
+import ruiseki.integrateddynamics.core.network.diagnostics.NetworkDataClient;
 import ruiseki.integrateddynamics.core.network.diagnostics.NetworkDiagnosticsPartOverlayRenderer;
 import ruiseki.integrateddynamics.core.network.diagnostics.http.DiagnosticsWebServer;
 import ruiseki.integrateddynamics.proxy.ClientProxy;
@@ -83,6 +84,7 @@ public class NetworkDiagnosticsTriggerClient extends PacketCodec {
                         .sendToServer(NetworkDiagnosticsSubscribePacket.unsubscribe());
                     NetworkDiagnosticsPartOverlayRenderer.getInstance()
                         .clearPositions();
+                    NetworkDataClient.clearNetworkData();
                     ClientProxy.DIAGNOSTICS_SERVER.deinitialize();
                     ClientProxy.DIAGNOSTICS_SERVER = null;
                     player.addChatComponentMessage(new ChatComponentText("Stopped diagnostics server"));

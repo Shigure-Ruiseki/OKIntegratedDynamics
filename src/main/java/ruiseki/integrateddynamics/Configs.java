@@ -75,6 +75,7 @@ import ruiseki.integrateddynamics.item.ItemVariableTransformerConfig;
 import ruiseki.integrateddynamics.item.ItemWrenchConfig;
 import ruiseki.integrateddynamics.recipe.ItemFacadeRecipeConfig;
 import ruiseki.integrateddynamics.recipe.ItemVariableCopyRecipeConfig;
+import ruiseki.integrateddynamics.recipe.RecipeSerializerCraftingSpecialShapedOmniDirectional3Config;
 import ruiseki.integrateddynamics.recipe.RecipeSerializerCraftingSpecialShapedOmniDirectionalConfig;
 import ruiseki.integrateddynamics.recipe.RecipeSerializerCraftingSpecialShapelessOmniDirectionalConfig;
 import ruiseki.integrateddynamics.world.biome.BiomeMeneglinConfig;
@@ -179,6 +180,7 @@ public class Configs {
         configHandler.add(new RecipeEnergyContainerCombinationConfig());
         configHandler.add(new ItemVariableCopyRecipeConfig());
         configHandler.add(new ItemFacadeRecipeConfig());
+        configHandler.add(new RecipeSerializerCraftingSpecialShapedOmniDirectional3Config());
         configHandler.add(new RecipeSerializerCraftingSpecialShapedOmniDirectionalConfig());
         configHandler.add(new RecipeSerializerCraftingSpecialShapelessOmniDirectionalConfig());
     }

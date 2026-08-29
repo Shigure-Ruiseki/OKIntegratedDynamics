@@ -11,8 +11,9 @@ import ruiseki.integrateddynamics.api.ingredient.IIngredientPositionsIndex;
 import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.integrateddynamics.api.part.PrioritizedPartPos;
 import ruiseki.okcore.datastructure.MultitransformIterator;
+import ruiseki.okcore.ingredient.collection.IIngredientCollapsedCollectionMutable;
 import ruiseki.okcore.ingredient.collection.IIngredientMapMutable;
-import ruiseki.okcore.ingredient.collection.IngredientCollectionPrototypeMap;
+import ruiseki.okcore.ingredient.collection.IngredientCollectionHelpers;
 import ruiseki.okcore.ingredient.collection.IngredientHashMap;
 
 /**
@@ -29,7 +30,7 @@ public class IngredientPositionsIndex<T, M> implements IIngredientPositionsIndex
 
     private final IngredientComponent<T, M> component;
     private final AbstractInt2ObjectSortedMap<IIngredientMapMutable<T, M, ObjectOpenHashSet<PartPos>>> prioritizedPositionsMap;
-    private final AbstractInt2ObjectSortedMap<IngredientCollectionPrototypeMap<T, M>> ingredientInstances;
+    private final AbstractInt2ObjectSortedMap<IIngredientCollapsedCollectionMutable<T, M>> ingredientInstances;
 
     public IngredientPositionsIndex(IngredientComponent<T, M> component) {
         this.component = component;
@@ -124,7 +125,7 @@ public class IngredientPositionsIndex<T, M> implements IIngredientPositionsIndex
     public int size() {
         return this.ingredientInstances.values()
             .stream()
-            .mapToInt(IngredientCollectionPrototypeMap::size)
+            .mapToInt(IIngredientCollapsedCollectionMutable::size)
             .sum();
     }
 
@@ -163,11 +164,12 @@ public class IngredientPositionsIndex<T, M> implements IIngredientPositionsIndex
         return new MultitransformIterator<>(
             this.ingredientInstances.values()
                 .iterator(),
-            IngredientCollectionPrototypeMap::iterator);
+            IIngredientCollapsedCollectionMutable::iterator);
     }
 
     public void removeAll(PrioritizedPartPos pos, Iterable<? extends T> instances) {
-        IngredientCollectionPrototypeMap<T, M> ingredients = this.ingredientInstances.get(getInternalPriority(pos));
+        IIngredientCollapsedCollectionMutable<T, M> ingredients = this.ingredientInstances
+            .get(getInternalPriority(pos));
         if (ingredients != null) {
             ingredients.removeAll(instances);
             if (ingredients.isEmpty()) {
@@ -177,9 +179,10 @@ public class IngredientPositionsIndex<T, M> implements IIngredientPositionsIndex
     }
 
     public void addAll(PrioritizedPartPos pos, Iterable<? extends T> instances) {
-        IngredientCollectionPrototypeMap<T, M> ingredients = this.ingredientInstances.get(getInternalPriority(pos));
+        IIngredientCollapsedCollectionMutable<T, M> ingredients = this.ingredientInstances
+            .get(getInternalPriority(pos));
         if (ingredients == null) {
-            ingredients = new IngredientCollectionPrototypeMap<>(component, false);
+            ingredients = IngredientCollectionHelpers.createCollapsedCollection(component);
             this.ingredientInstances.put(getInternalPriority(pos), ingredients);
         }
         ingredients.addAll(instances);

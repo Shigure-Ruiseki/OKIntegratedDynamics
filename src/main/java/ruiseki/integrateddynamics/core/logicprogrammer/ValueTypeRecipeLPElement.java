@@ -187,7 +187,8 @@ public class ValueTypeRecipeLPElement extends ValueTypeLPElementBase {
                     slotId,
                     props.isNbt(),
                     props.getItemTag() == null ? "" : props.getItemTag(),
-                    props.getTagQuantity()));
+                    props.getTagQuantity(),
+                    props.isReusable()));
     }
 
     // Used by ID-Compat for JEI recipe transfer handler
@@ -491,6 +492,19 @@ public class ValueTypeRecipeLPElement extends ValueTypeLPElementBase {
         return inputs;
     }
 
+    protected Map<IngredientComponent<?, ?>, List<Boolean>> getInputsReusable(List<ItemMatchProperties> itemStacks) {
+        Map<IngredientComponent<?, ?>, List<Boolean>> inputs = Maps.newIdentityHashMap();
+
+        List<Boolean> items = itemStacks.stream()
+            .map(ItemMatchProperties::isReusable)
+            .collect(Collectors.toList());
+        if (!items.isEmpty()) {
+            inputs.put(IngredientComponent.ITEMSTACK, (List) items);
+        }
+
+        return inputs;
+    }
+
     protected Map<IngredientComponent<?, ?>, List<?>> getOutputs(List<ItemStack> itemStacksIn, ItemStack fluid,
         int fluidAmount, long energy) {
 
@@ -534,6 +548,7 @@ public class ValueTypeRecipeLPElement extends ValueTypeLPElementBase {
                     this.inputFluid,
                     Integer.parseInt(this.inputFluidAmount),
                     Long.parseLong(this.inputEnergy)),
+                getInputsReusable(this.inputStacks),
                 new MixedIngredients(
                     getOutputs(
                         this.outputStacks,

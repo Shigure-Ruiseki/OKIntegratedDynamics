@@ -81,9 +81,11 @@ public class NetworkDiagnosticsPartOverlayRenderer {
 
             List<PartPos> partList = Lists.newArrayList(partPositions);
             for (PartPos partPos : partList) {
-                BlockPos blockPos = partPos.getPos().getBlockPos();
+                BlockPos blockPos = partPos.getPos()
+                    .getBlockPos();
 
-                if (partPos.getPos().getDimensionId() != world.provider.dimensionId) {
+                if (partPos.getPos()
+                    .getDimensionId() != world.provider.dimensionId) {
                     continue;
                 }
 
@@ -93,7 +95,8 @@ public class NetworkDiagnosticsPartOverlayRenderer {
 
                 int chunkX = blockPos.getX() >> 4;
                 int chunkZ = blockPos.getZ() >> 4;
-                if (!world.getChunkProvider().chunkExists(chunkX, chunkZ)) {
+                if (!world.getChunkProvider()
+                    .chunkExists(chunkX, chunkZ)) {
                     continue;
                 }
 

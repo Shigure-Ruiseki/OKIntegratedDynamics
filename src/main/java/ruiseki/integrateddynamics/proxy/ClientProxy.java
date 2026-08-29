@@ -11,6 +11,7 @@ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.Reference;
+import ruiseki.integrateddynamics.core.network.diagnostics.NetworkDataClient;
 import ruiseki.integrateddynamics.core.network.diagnostics.NetworkDiagnosticsPartOverlayRenderer;
 import ruiseki.integrateddynamics.core.network.diagnostics.http.DiagnosticsWebServer;
 import ruiseki.integrateddynamics.item.ItemVariable;
@@ -74,6 +75,9 @@ public class ClientProxy extends ClientProxyComponent {
     public void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
         if (DIAGNOSTICS_SERVER != null) {
             IntegratedDynamics.clog("Stopping diagnostics server...");
+            NetworkDiagnosticsPartOverlayRenderer.getInstance()
+                .clearPositions();
+            NetworkDataClient.clearNetworkData();
             DIAGNOSTICS_SERVER.deinitialize();
             DIAGNOSTICS_SERVER = null;
             IntegratedDynamics.clog("Stopped diagnostics server");

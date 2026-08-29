@@ -2,6 +2,7 @@ package ruiseki.integrateddynamics.core.network.diagnostics;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -35,23 +36,21 @@ import ruiseki.okcore.helper.MinecraftHelpers;
  */
 public class NetworkDataClient {
 
-    public static final String[] LOCALIZE_ENTRIES = new String[]{
-        "gui.integrateddynamics.diagnostics.title",
-        "gui.integrateddynamics.diagnostics.parts",
-        "gui.integrateddynamics.diagnostics.observers",
-        "gui.integrateddynamics.diagnostics.table.network",
-        "gui.integrateddynamics.diagnostics.table.cables",
-        "gui.integrateddynamics.diagnostics.table.part",
-        "gui.integrateddynamics.diagnostics.table.ticktime",
-        "gui.integrateddynamics.diagnostics.table.dimension",
-        "gui.integrateddynamics.diagnostics.table.position",
-        "gui.integrateddynamics.diagnostics.table.side",
-        "gui.integrateddynamics.diagnostics.table.actions"
-    };
+    public static final String[] LOCALIZE_ENTRIES = new String[] { "gui.integrateddynamics.diagnostics.title",
+        "gui.integrateddynamics.diagnostics.parts", "gui.integrateddynamics.diagnostics.observers",
+        "gui.integrateddynamics.diagnostics.table.network", "gui.integrateddynamics.diagnostics.table.cables",
+        "gui.integrateddynamics.diagnostics.table.part", "gui.integrateddynamics.diagnostics.table.ticktime",
+        "gui.integrateddynamics.diagnostics.table.dimension", "gui.integrateddynamics.diagnostics.table.position",
+        "gui.integrateddynamics.diagnostics.table.side", "gui.integrateddynamics.diagnostics.table.actions" };
 
     private static final Pattern INT_PATTERN = Pattern.compile("-?\\d+");
     private static final Multimap<Integer, ObservablePartData> networkDataParts = ArrayListMultimap.create();
     private static final Multimap<Integer, ObservableObserverData> networkDataObservers = ArrayListMultimap.create();
+
+    public static void clearNetworkData() {
+        networkDataParts.clear();
+        networkDataObservers.clear();
+    }
 
     public static void setNetworkData(int id, RawNetworkData rawNetworkData) {
         synchronized (networkDataParts) {
@@ -168,12 +167,27 @@ public class NetworkDataClient {
                 ObservablePartData part = entry.getValue();
                 jsonPart.addProperty("network", part.getNetworkId());
                 jsonPart.addProperty("cables", part.getNetworkCables());
-                jsonPart.addProperty("part", part.getName());
-                jsonPart.addProperty("ticktime", String.format("%.6f", ((double) part.getLast20TicksDurationNs()) / MinecraftHelpers.SECOND_IN_TICKS / 1000000));
+                jsonPart.addProperty("part", LangHelpers.localize(part.getName()));
+                jsonPart.addProperty(
+                    "ticktime",
+                    Float.parseFloat(
+                        String.format(
+                            Locale.ENGLISH,
+                            "%.6f",
+                            ((double) part.getLast20TicksDurationNs()) / MinecraftHelpers.SECOND_IN_TICKS / 1000000)));
                 jsonPart.addProperty("dimension", String.valueOf(part.getDimension()));
-                jsonPart.addProperty("position", part.getPos().toString());
-                jsonPart.addProperty("side", part.getSide().name());
-                jsonPart.addProperty("highlighted", NetworkDiagnosticsPartOverlayRenderer.getInstance().hasPartPos(part.toPartPos()));
+                jsonPart.addProperty(
+                    "position",
+                    part.getPos()
+                        .toString());
+                jsonPart.addProperty(
+                    "side",
+                    part.getSide()
+                        .name());
+                jsonPart.addProperty(
+                    "highlighted",
+                    NetworkDiagnosticsPartOverlayRenderer.getInstance()
+                        .hasPartPos(part.toPartPos()));
                 jsonArray.add(jsonPart);
             }
         }
@@ -188,11 +202,24 @@ public class NetworkDataClient {
                 ObservableObserverData observer = entry.getValue();
                 jsonPart.addProperty("network", observer.getNetworkId());
                 jsonPart.addProperty("part", observer.getName());
-                jsonPart.addProperty("ticktime", String.format("%.6f", ((double) observer.getLast20TicksDurationNs()) / MinecraftHelpers.SECOND_IN_TICKS / 1000000));
+                jsonPart.addProperty(
+                    "ticktime",
+                    String.format(
+                        "%.6f",
+                        ((double) observer.getLast20TicksDurationNs()) / MinecraftHelpers.SECOND_IN_TICKS / 1000000));
                 jsonPart.addProperty("dimension", String.valueOf(observer.getDimension()));
-                jsonPart.addProperty("position", observer.getPos().toString());
-                jsonPart.addProperty("side", observer.getSide() != null ? observer.getSide().name() : "null");
-                jsonPart.addProperty("highlighted", NetworkDiagnosticsPartOverlayRenderer.getInstance().hasPartPos(observer.toPartPos()));
+                jsonPart.addProperty(
+                    "position",
+                    observer.getPos()
+                        .toString());
+                jsonPart.addProperty(
+                    "side",
+                    observer.getSide() != null ? observer.getSide()
+                        .name() : "null");
+                jsonPart.addProperty(
+                    "highlighted",
+                    NetworkDiagnosticsPartOverlayRenderer.getInstance()
+                        .hasPartPos(observer.toPartPos()));
                 jsonArray.add(jsonPart);
             }
         }
@@ -254,6 +281,7 @@ public class NetworkDataClient {
                     yaw,
                     0));
     }
+
     private static PartPos parsePosString(String dimensionString, String positionString, String sideString) {
         int x = 0, y = 0, z = 0;
 

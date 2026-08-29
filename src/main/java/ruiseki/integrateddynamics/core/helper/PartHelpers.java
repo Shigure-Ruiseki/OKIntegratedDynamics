@@ -18,6 +18,7 @@ import com.google.common.collect.ImmutableMap;
 
 import lombok.Data;
 import ruiseki.integrateddynamics.IntegratedDynamics;
+import ruiseki.integrateddynamics.api.PartStateException;
 import ruiseki.integrateddynamics.api.block.cable.ICableFakeable;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.INetworkElement;
@@ -80,7 +81,7 @@ public class PartHelpers {
     public static IPartContainer getPartContainerChecked(IBlockAccess world, BlockPos pos,
         @Nullable ForgeDirection side) {
         return getPartContainer(world, pos, side)
-            .orElseThrow(() -> new IllegalStateException("Could not get a part container"));
+            .orElseThrow(() -> new PartStateException(DimPos.of((World) world, pos), side));
     }
 
     /**
@@ -95,7 +96,7 @@ public class PartHelpers {
      */
     public static IPartContainer getPartContainerChecked(DimPos dimPos, @Nullable ForgeDirection side) {
         return PartHelpers.getPartContainer(dimPos, side)
-            .orElseThrow(() -> new IllegalStateException("Could not find a part container at " + dimPos.toString()));
+            .orElseThrow(() -> new PartStateException(dimPos, side));
     }
 
     /**

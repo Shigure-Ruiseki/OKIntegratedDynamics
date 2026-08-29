@@ -44,6 +44,7 @@ public class ValueTypeRecipeLPElementPropertiesSubGui
     private final int slotId;
     private GuiButtonCheckbox inputNbt;
     private GuiButtonCheckbox inputTags;
+    private GuiButtonCheckbox inputReusable;
     private GuiTextFieldDropdown<ResourceLocation> inputTagsDropdown;
     private GuiButtonImage inputSave;
 
@@ -59,7 +60,7 @@ public class ValueTypeRecipeLPElementPropertiesSubGui
 
         this.inputNbt = new GuiButtonCheckbox(
             0,
-            guiLeft + getX() - 2,
+            guiLeft + getX() + 2,
             guiTop + getY() + 2,
             20,
             10,
@@ -78,10 +79,27 @@ public class ValueTypeRecipeLPElementPropertiesSubGui
             }
         };
         this.buttonList.add(this.inputNbt);
-        this.inputTags = new GuiButtonCheckbox(
+        this.inputReusable = new GuiButtonCheckbox(
             1,
-            guiLeft + getX() - 2,
+            guiLeft + getX() + 2,
             guiTop + getY() + 12,
+            20,
+            10,
+            LangHelpers.localize(L10NValues.GUI_RECIPE_REUSABLE),
+            false) {
+
+            @Override
+            public boolean mousePressed(Minecraft mc, int mouseX, int mouseY) {
+                saveGuiToState();
+                loadStateToGui();
+                return super.mousePressed(mc, mouseX, mouseY);
+            }
+        };
+        this.buttonList.add(this.inputReusable);
+        this.inputTags = new GuiButtonCheckbox(
+            2,
+            guiLeft + getX() + 2,
+            guiTop + getY() + 22,
             20,
             10,
             LangHelpers.localize(L10NValues.GUI_RECIPE_TAGVARIANTS),
@@ -103,10 +121,10 @@ public class ValueTypeRecipeLPElementPropertiesSubGui
         };
         this.buttonList.add(this.inputTags);
         this.inputTagsDropdown = new GuiTextFieldDropdown<>(
-            2,
+            3,
             Minecraft.getMinecraft().fontRenderer,
             guiLeft + getX() + 2,
-            guiTop + getY() + 23,
+            guiTop + getY() + 33,
             134,
             14,
             true,
@@ -117,7 +135,7 @@ public class ValueTypeRecipeLPElementPropertiesSubGui
         this.inputTagsDropdown.setEnableBackgroundDrawing(false);
         this.inputTagsDropdown.setTextColor(16777215);
         this.inputTagsDropdown.setCanLoseFocus(true);
-        this.inputSave = new GuiButtonImage(3, guiLeft + getX() + 116, guiTop + getY() + 72, Images.OK) {
+        this.inputSave = new GuiButtonImage(4, guiLeft + getX() + 116, guiTop + getY() + 72, Images.OK) {
 
             @Override
             public boolean mousePressed(Minecraft mc, int mouseX, int mouseY) {
@@ -176,6 +194,7 @@ public class ValueTypeRecipeLPElementPropertiesSubGui
         ItemMatchProperties props = getSlotProperties();
         this.inputNbt.setChecked(props.isNbt());
         this.inputTags.setChecked(props.getItemTag() != null);
+        this.inputReusable.setChecked(props.isReusable());
         this.inputTagsDropdown.setVisible(this.inputTags.isChecked());
 
         if (this.inputTags.isChecked()) {
@@ -209,6 +228,7 @@ public class ValueTypeRecipeLPElementPropertiesSubGui
         String tag = this.inputTags.isChecked() ? this.inputTagsDropdown.getText() : null;
         getSlotProperties().setNbt(nbt);
         getSlotProperties().setItemTag(tag);
+        getSlotProperties().setReusable(this.inputReusable.isChecked());
         element.sendSlotPropertiesToServer(slotId, getSlotProperties());
     }
 
@@ -237,9 +257,14 @@ public class ValueTypeRecipeLPElementPropertiesSubGui
             guiTop + getY() + 3,
             0);
         fontRenderer.drawString(
-            LangHelpers.localize(L10NValues.GUI_RECIPE_TAGVARIANTS),
+            LangHelpers.localize(L10NValues.GUI_RECIPE_REUSABLE),
             guiLeft + getX() + 24,
             guiTop + getY() + 13,
+            0);
+        fontRenderer.drawString(
+            LangHelpers.localize(L10NValues.GUI_RECIPE_TAGVARIANTS),
+            guiLeft + getX() + 24,
+            guiTop + getY() + 23,
             0);
         this.inputTagsDropdown.drawTextBox(Minecraft.getMinecraft(), mouseX, mouseY);
     }

@@ -38,6 +38,8 @@ gui.integrateddynamics.input_short=Input
 gui.integrateddynamics.output_short=Output
 gui.integrateddynamics.recipe.strictnbt=Strict NBT
 gui.integrateddynamics.recipe.tagvariants=Item tag variants
+gui.integrateddynamics.recipe.reusable=Reusable
+
 
 # Diagnostics
 gui.integrateddynamics.diagnostics.title=Integrated Dynamics - Network Diagnostics

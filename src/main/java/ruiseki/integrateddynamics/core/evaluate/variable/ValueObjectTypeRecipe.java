@@ -47,10 +47,12 @@ public class ValueObjectTypeRecipe extends ValueObjectTypeBase<ValueObjectTypeRe
 
             sb.append(ValueObjectTypeIngredients.ingredientsToString(recipe.getOutput()));
             sb.append(" <- ");
+            boolean first = true;
 
             for (IngredientComponent<?, ?> component : recipe.getInputComponents()) {
                 IIngredientComponentHandler handler = IngredientComponentHandlers.REGISTRY
                     .getComponentHandler(component);
+                int i = 0;
                 for (IPrototypedIngredientAlternatives<?, ?> instances : recipe.getInputs(component)) {
                     IPrototypedIngredient<?, ?> prototypedIngredient = Iterables
                         .getFirst(instances.getAlternatives(), null);
@@ -61,8 +63,16 @@ public class ValueObjectTypeRecipe extends ValueObjectTypeBase<ValueObjectTypeRe
                     } else {
                         v = handler.toValue(prototypedIngredient.getPrototype());
                     }
+                    if (!first) {
+                        sb.append(", ");
+                    } else {
+                        first = false;
+                    }
                     sb.append(handler.toCompactString(v));
-                    sb.append(", ");
+                    if (recipe.isInputReusable(component, i)) {
+                        sb.append("*");
+                    }
+                    i++;
                 }
             }
             String str = sb.toString();

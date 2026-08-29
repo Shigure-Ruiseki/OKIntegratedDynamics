@@ -35,7 +35,8 @@ public class CommandNetworkDiagnostics extends CommandMod implements Command<ICo
 
     private int executeCommand(CommandContext<ICommandSender> context, boolean operationArg, boolean hasPortArg) {
         if (context.getSource() instanceof EntityPlayerMP playerMP) {
-            StartStop operation = operationArg ? ArgumentTypeEnum.getValue(context, "operation", StartStop.class) : StartStop.START;
+            StartStop operation = operationArg ? ArgumentTypeEnum.getValue(context, "operation", StartStop.class)
+                : StartStop.START;
             int port = hasPortArg ? IntegerArgumentType.getInteger(context, "port")
                 : GeneralConfig.diagnosticsWebServerPort;
 
