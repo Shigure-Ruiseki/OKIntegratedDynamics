@@ -11,6 +11,13 @@ import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeInteger;
  */
 public interface IValueTypeNumber<V extends IValue> extends IValueType<V>, IValueTypeNamed<V> {
 
+    /**
+     * Create an immutable default (zero) value.
+     *
+     * @return The zero value of this number type.
+     */
+    public V getDefault();
+
     public boolean isZero(V a);
 
     public boolean isOne(V a);
@@ -26,6 +33,12 @@ public interface IValueTypeNumber<V extends IValue> extends IValueType<V>, IValu
     public V max(V a, V b);
 
     public V min(V a, V b);
+
+    public V increment(V a);
+
+    public V decrement(V a);
+
+    public V modulus(V a, V b);
 
     public boolean greaterThan(V a, V b);
 

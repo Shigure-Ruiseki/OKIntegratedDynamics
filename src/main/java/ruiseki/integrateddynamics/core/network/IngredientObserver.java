@@ -56,6 +56,7 @@ public class IngredientObserver<T, M> {
     private final Map<PartPos, Integer> lastInventoryStates;
     private Future<?> lastObserverBarrier;
     private boolean runningObserverSync;
+    private boolean initialObservation;
 
     public IngredientObserver(IPositionedAddonsNetworkIngredients<T, M> network) {
         this.network = network;
@@ -70,6 +71,7 @@ public class IngredientObserver<T, M> {
 
         this.lastObserverBarrier = null;
         this.runningObserverSync = false;
+        this.initialObservation = true;
     }
 
     public IPositionedAddonsNetworkIngredients<T, M> getNetwork() {
@@ -189,6 +191,7 @@ public class IngredientObserver<T, M> {
                     for (int channel : getChannels()) {
                         observe(channel, false);
                     }
+                    this.initialObservation = false;
                 });
             } else {
                 // If we have an uncompleted sync observer, don't start a new one yet!
@@ -204,6 +207,7 @@ public class IngredientObserver<T, M> {
                     observe(channel, true);
                 }
                 this.runningObserverSync = false;
+                this.initialObservation = false;
             }
         }
         return true;
@@ -309,7 +313,8 @@ public class IngredientObserver<T, M> {
                                 partPos,
                                 IIngredientComponentStorageObservable.Change.ADDITION,
                                 false,
-                                diff.getAdditions()),
+                                diff.getAdditions(),
+                                this.initialObservation),
                             forceSync);
                     }
                     if (diff.hasDeletions()) {
@@ -320,7 +325,8 @@ public class IngredientObserver<T, M> {
                                 partPos,
                                 IIngredientComponentStorageObservable.Change.DELETION,
                                 diff.isCompletelyEmpty(),
-                                diff.getDeletions()),
+                                diff.getDeletions(),
+                                this.initialObservation),
                             forceSync);
                     }
 
@@ -395,7 +401,8 @@ public class IngredientObserver<T, M> {
                                 partPos,
                                 IIngredientComponentStorageObservable.Change.DELETION,
                                 diff.isCompletelyEmpty(),
-                                diff.getDeletions()),
+                                diff.getDeletions(),
+                                this.initialObservation),
                             forceSync);
                     }
                 }

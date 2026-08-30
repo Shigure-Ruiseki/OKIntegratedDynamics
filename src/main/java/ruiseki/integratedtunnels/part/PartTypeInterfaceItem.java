@@ -22,7 +22,7 @@ import ruiseki.okcore.item.handler.IItemHandler;
 
 /**
  * Interface for item handlers.
- * 
+ *
  * @author rubensworks
  */
 public class PartTypeInterfaceItem extends
@@ -126,7 +126,7 @@ public class PartTypeInterfaceItem extends
                 return Iterators.forArray();
             }
             disablePosition();
-            Iterator<ItemStack> ret = getPositionedAddonsNetwork().getChannel(getChannelInterface())
+            Iterator<ItemStack> ret = getPositionedAddonsNetwork().getChannelInternal(getChannelInterface())
                 .iterator();
             enablePosition();
             return ret;
@@ -138,7 +138,7 @@ public class PartTypeInterfaceItem extends
                 return Iterators.forArray();
             }
             disablePosition();
-            Iterator<ItemStack> ret = getPositionedAddonsNetwork().getChannel(getChannelInterface())
+            Iterator<ItemStack> ret = getPositionedAddonsNetwork().getChannelInternal(getChannelInterface())
                 .iterator(stack, matchFlags);
             enablePosition();
             return ret;
@@ -150,7 +150,7 @@ public class PartTypeInterfaceItem extends
                 return stack;
             }
             disablePosition();
-            ItemStack ret = getPositionedAddonsNetwork().getChannel(getChannelInterface())
+            ItemStack ret = getPositionedAddonsNetwork().getChannelInternal(getChannelInterface())
                 .insert(stack, simulate);
             enablePosition();
             return ret;
@@ -162,7 +162,7 @@ public class PartTypeInterfaceItem extends
                 return null;
             }
             disablePosition();
-            ItemStack ret = getPositionedAddonsNetwork().getChannel(getChannelInterface())
+            ItemStack ret = getPositionedAddonsNetwork().getChannelInternal(getChannelInterface())
                 .extract(amount, simulate);
             enablePosition();
             return ret;
@@ -174,7 +174,7 @@ public class PartTypeInterfaceItem extends
                 return null;
             }
             disablePosition();
-            ItemStack ret = getPositionedAddonsNetwork().getChannel(getChannelInterface())
+            ItemStack ret = getPositionedAddonsNetwork().getChannelInternal(getChannelInterface())
                 .extract(matchStack, matchFlags, simulate);
             enablePosition();
             return ret;

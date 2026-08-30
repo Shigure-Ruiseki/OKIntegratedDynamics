@@ -31,6 +31,11 @@ public abstract class PartTypeConnector<P extends PartTypeConnector<P, S>, S ext
     }
 
     @Override
+    public boolean supportsOffsets() {
+        return false;
+    }
+
+    @Override
     protected Block createBlock() {
         return new IgnoredBlockStatus();
     }

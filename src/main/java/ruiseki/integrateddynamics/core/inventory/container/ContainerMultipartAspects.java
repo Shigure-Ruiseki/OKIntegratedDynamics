@@ -53,6 +53,7 @@ public abstract class ContainerMultipartAspects<P extends IPartType<P, S> & IGui
     extends ScrollingInventoryContainer<A> implements IDirtyMarkListener {
 
     public static final int BUTTON_SETTINGS = 1;
+    public static final int BUTTON_OFFSETS = 2;
     private static final int PAGE_SIZE = 3;
 
     private final PartTarget target;
@@ -125,6 +126,26 @@ public abstract class ContainerMultipartAspects<P extends IPartType<P, S> & IGui
             }
         });
 
+        putButtonAction(GuiMultipartAspects.BUTTON_OFFSETS, new IButtonActionServer<InventoryContainer>() {
+
+            @Override
+            public void onAction(int buttonId, InventoryContainer container) {
+                if (!world.isRemote) {
+                    IGuiContainerProvider gui = ((PartTypeConfigurable<?, ?>) getPartType()).getOffsetsGuiProvider();
+                    IntegratedDynamics._instance.getGuiHandler()
+                        .setTemporaryData(
+                            ExtendedGuiHandler.PART,
+                            getTarget().getCenter()
+                                .getSide()); // Pass the side as extra data to the gui
+                    BlockPos cPos = getTarget().getCenter()
+                        .getPos()
+                        .getBlockPos();
+                    ContainerMultipartAspects.this.player
+                        .openGui(gui.getModGui(), gui.getGuiID(), world, cPos.getX(), cPos.getY(), cPos.getZ());
+                }
+            }
+        });
+
         int nextButtonId = 2;
         for (final IAspect aspect : getUnfilteredItems()) {
             if (aspect.hasProperties()) {
@@ -175,6 +196,7 @@ public abstract class ContainerMultipartAspects<P extends IPartType<P, S> & IGui
 
     @Override
     public void onContainerClosed(EntityPlayer player) {
+        super.onContainerClosed(player);
         if (inputSlots instanceof SimpleInventory) {
             ((SimpleInventory) inputSlots).removeDirtyMarkListener(this);
         }

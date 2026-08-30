@@ -1619,7 +1619,7 @@ public class TunnelAspectWriteBuilders {
                             dispense,
                             network.getCapability(ItemNetworkConfig.CAPABILITY)
                                 .getOrNull()
-                                .getChannel(channel));
+                                .getChannelInternal(channel));
                         transfer = input.getRight()
                             .getTransfer();
                     }
@@ -2517,7 +2517,7 @@ public class TunnelAspectWriteBuilders {
                     entityIndex,
                     network.getCapability(ItemNetworkConfig.CAPABILITY)
                         .getOrNull()
-                        .getChannel(channel));
+                        .getChannelInternal(channel));
                 storage.insert(null, false);
             }
             return null;
@@ -2568,7 +2568,7 @@ public class TunnelAspectWriteBuilders {
                 entityIndex,
                 network.getCapability(ItemNetworkConfig.CAPABILITY)
                     .getOrNull()
-                    .getChannel(channel));
+                    .getChannelInternal(channel));
             ITunnelTransfer transfer = input.getRight()
                 .getTransfer();
             return IItemTarget.ofStorage(transfer, network, partTarget, properties, itemStackMatcher, storage, -1);

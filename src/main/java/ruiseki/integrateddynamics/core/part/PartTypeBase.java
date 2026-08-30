@@ -9,6 +9,7 @@ import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 import net.minecraftforge.client.MinecraftForgeClient;
 import net.minecraftforge.common.util.ForgeDirection;
@@ -34,6 +35,8 @@ import ruiseki.integrateddynamics.core.client.gui.ExtendedGuiHandler;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.integrateddynamics.core.item.ItemPart;
 import ruiseki.integrateddynamics.core.network.PartNetworkElement;
+import ruiseki.integrateddynamics.item.ItemEnhancement;
+import ruiseki.integrateddynamics.item.ItemEnhancementConfig;
 import ruiseki.okcore.config.configurabletypeaction.BlockAction;
 import ruiseki.okcore.config.configurabletypeaction.ItemAction;
 import ruiseki.okcore.config.extendedconfig.BlockConfig;
@@ -42,6 +45,7 @@ import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
 import ruiseki.okcore.helper.BlockStateHelpers;
 import ruiseki.okcore.helper.Helpers;
+import ruiseki.okcore.helper.ItemNBTHelpers;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.init.IInitListener;
@@ -185,7 +189,7 @@ public abstract class PartTypeBase<P extends IPartType<P, S>, S extends IPartSta
 
     @Override
     public INetworkElement createNetworkElement(IPartContainer partContainer, DimPos pos, ForgeDirection side) {
-        return new PartNetworkElement(this, getTarget(PartPos.of(pos, side), (S) partContainer.getPartState(side)));
+        return new PartNetworkElement(this, PartPos.of(pos, side));
     }
 
     protected boolean hasGui() {
@@ -205,6 +209,13 @@ public abstract class PartTypeBase<P extends IPartType<P, S>, S extends IPartSta
             return false;
         }
 
+        // Consume enhancement
+        if (heldItem != null) {
+            if (heldItem.getItem() instanceof ItemEnhancement) {
+                return ((ItemEnhancement) heldItem.getItem()).applyEnhancement(this, partState, heldItem, player);
+            }
+        }
+
         if (hasGui()) {
             getModGui().getGuiHandler()
                 .setTemporaryData(ExtendedGuiHandler.PART, side); // Pass the side as extra data to the gui
@@ -214,6 +225,20 @@ public abstract class PartTypeBase<P extends IPartType<P, S>, S extends IPartSta
             return true;
         }
         return false;
+    }
+
+    @Override
+    public void addDrops(PartTarget target, S state, List<ItemStack> itemStacks, boolean dropMainElement,
+        boolean saveState) {
+        super.addDrops(target, state, itemStacks, dropMainElement, saveState);
+        // Save enhancements
+        if (!saveState) {
+            ItemStack itemStack = new ItemStack(ItemEnhancementConfig._instance.getInstance());
+            ((ItemEnhancement) ItemEnhancementConfig._instance.getInstance())
+                .setEnhancementValue(itemStack, state.getMaxOffset());
+            itemStacks.add(itemStack);
+        }
+
     }
 
     @Override
@@ -229,6 +254,27 @@ public abstract class PartTypeBase<P extends IPartType<P, S>, S extends IPartSta
             lines.add(LangHelpers.localize(L10NValues.PART_TOOLTIP_DISABLED));
         }
         lines.add(LangHelpers.localize(L10NValues.GENERAL_ITEM_ID, state.getId()));
+
+        if (state.getMaxOffset() > 0) {
+            lines.add(LangHelpers.localize(L10NValues.PART_TOOLTIP_MAXOFFSET, state.getMaxOffset()));
+        }
+    }
+
+    @Override
+    public void loadTooltip(ItemStack itemStack, List<String> lines) {
+        if (itemStack.getTagCompound() != null) {
+            NBTTagCompound tag = ItemNBTHelpers.getNBT(itemStack);
+            if (tag.hasKey("id", MinecraftHelpers.NBTTag_Types.NBTTagInt.ordinal())) {
+                int id = tag.getInteger("id");
+                lines.add(LangHelpers.localize(L10NValues.GENERAL_ITEM_ID, id));
+            }
+            if (tag.hasKey("maxOffset", MinecraftHelpers.NBTTag_Types.NBTTagInt.ordinal())) {
+                int maxOffset = tag.getInteger("maxOffset");
+                lines.add(LangHelpers.localize(L10NValues.PART_TOOLTIP_MAXOFFSET, maxOffset));
+            }
+        }
+
+        super.loadTooltip(itemStack, lines);
     }
 
     /**

@@ -62,7 +62,7 @@ public class FluidTargetCapabilityProvider extends ChanneledTargetCapabilityProv
 
     @Override
     public IIngredientComponentStorage<FluidStack, Integer> getFluidChannel() {
-        return getChanneledNetwork().getChannel(getChannel());
+        return getChanneledNetwork().getChannelInternal(getChannel());
     }
 
     @Override

@@ -41,6 +41,11 @@ import ruiseki.okcore.tag.TagManager;
 public class ValueTypeRecipeLPElementPropertiesSubGui
     extends RenderPattern<ValueTypeRecipeLPElement, GuiLogicProgrammerBase, ContainerLogicProgrammerBase> {
 
+    public static final int BUTTON_NBT = 0;
+    public static final int BUTTON_REUSABLE = 1;
+    public static final int BUTTON_TAGS = 2;
+    public static final int BUTTON_SAVE = 3;
+
     private final int slotId;
     private GuiButtonCheckbox inputNbt;
     private GuiButtonCheckbox inputTags;
@@ -59,7 +64,7 @@ public class ValueTypeRecipeLPElementPropertiesSubGui
         super.initGui(guiLeft, guiTop);
 
         this.inputNbt = new GuiButtonCheckbox(
-            0,
+            BUTTON_NBT,
             guiLeft + getX() + 2,
             guiTop + getY() + 2,
             20,
@@ -83,7 +88,7 @@ public class ValueTypeRecipeLPElementPropertiesSubGui
         };
         this.buttonList.add(this.inputNbt);
         this.inputReusable = new GuiButtonCheckbox(
-            1,
+            BUTTON_REUSABLE,
             guiLeft + getX() + 2,
             guiTop + getY() + 12,
             20,
@@ -103,7 +108,7 @@ public class ValueTypeRecipeLPElementPropertiesSubGui
         };
         this.buttonList.add(this.inputReusable);
         this.inputTags = new GuiButtonCheckbox(
-            2,
+            BUTTON_TAGS,
             guiLeft + getX() + 2,
             guiTop + getY() + 22,
             20,
@@ -130,7 +135,7 @@ public class ValueTypeRecipeLPElementPropertiesSubGui
         };
         this.buttonList.add(this.inputTags);
         this.inputTagsDropdown = new GuiTextFieldDropdown<>(
-            3,
+            BUTTON_SAVE,
             Minecraft.getMinecraft().fontRenderer,
             guiLeft + getX() + 2,
             guiTop + getY() + 33,

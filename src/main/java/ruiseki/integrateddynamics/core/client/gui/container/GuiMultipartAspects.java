@@ -51,6 +51,7 @@ public abstract class GuiMultipartAspects<P extends IPartType<P, S> & IGuiContai
     extends ScrollingGuiContainer {
 
     public static final int BUTTON_SETTINGS = 1;
+    public static final int BUTTON_OFFSETS = 2;
     private static final Rectangle ITEM_POSITION = new Rectangle(8, 17, 18, 18);
 
     protected final DisplayErrorsComponent displayErrors = new DisplayErrorsComponent();
@@ -72,6 +73,17 @@ public abstract class GuiMultipartAspects<P extends IPartType<P, S> & IGuiContai
         this.partType = container.getPartType();
 
         putButtonAction(BUTTON_SETTINGS, new IButtonActionClient<GuiContainerExtended, ExtendedInventoryContainer>() {
+
+            @Override
+            public void onAction(int buttonId, GuiContainerExtended gui, ExtendedInventoryContainer container) {
+                IntegratedDynamics._instance.getGuiHandler()
+                    .setTemporaryData(
+                        ExtendedGuiHandler.PART,
+                        getTarget().getCenter()
+                            .getSide()); // Pass the side as extra data to the gui
+            }
+        });
+        putButtonAction(BUTTON_OFFSETS, new IButtonActionClient<GuiContainerExtended, ExtendedInventoryContainer>() {
 
             @Override
             public void onAction(int buttonId, GuiContainerExtended gui, ExtendedInventoryContainer container) {

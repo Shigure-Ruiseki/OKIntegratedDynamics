@@ -104,7 +104,9 @@ public class ItemBlockCable extends ItemBlockMetadata {
         boolean calledSuper) {
         if (!calledSuper) {
             playPlaceSound(world, pos);
-            --stack.stackSize;
+            if (stack.getItem() == BlockCableConfig._instance.getItemInstance()) {
+                --stack.stackSize;
+            }
         }
         blockCable.setDisableCollisionBox(false);
     }

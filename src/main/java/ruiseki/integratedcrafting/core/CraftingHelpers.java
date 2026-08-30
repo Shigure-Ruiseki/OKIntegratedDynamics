@@ -126,7 +126,7 @@ public class CraftingHelpers {
 
     /**
      * Get the storage network of the given type in the given network.
-     * 
+     *
      * @param network             A network.
      * @param ingredientComponent The ingredient component type of the network.
      * @param <T>                 The instance type.
@@ -159,7 +159,7 @@ public class CraftingHelpers {
             if (scheduleObservation) {
                 ingredientsNetwork.scheduleObservation();
             }
-            return ingredientsNetwork.getChannel(channel);
+            return ingredientsNetwork.getChannelInternal(channel);
         }
         return new IngredientComponentStorageEmpty<>(ingredientComponent);
     }

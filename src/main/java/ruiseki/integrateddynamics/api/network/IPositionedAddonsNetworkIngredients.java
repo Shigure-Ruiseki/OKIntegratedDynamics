@@ -9,6 +9,7 @@ import com.google.common.collect.Iterators;
 
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
 import ruiseki.commoncapabilities.api.ingredient.storage.IIngredientComponentStorage;
+import ruiseki.commoncapabilities.api.ingredient.storage.IIngredientComponentStorageSlotted;
 import ruiseki.commoncapabilities.api.ingredient.storage.IIngredientComponentStorageWrapperHandler;
 import ruiseki.integrateddynamics.api.ingredient.IIngredientComponentStorageObservable;
 import ruiseki.integrateddynamics.api.part.PartPos;
@@ -95,7 +96,15 @@ public interface IPositionedAddonsNetworkIngredients<T, M>
      * @param channel A channel id.
      * @return A storage.
      */
-    public IIngredientComponentStorage<T, M> getChannel(int channel);
+    public INetworkIngredientsChannel<T, M> getChannelInternal(int channel);
+
+    /**
+     * Get the slotted storage at the given channel.
+     *
+     * @param channel A channel id.
+     * @return A slotted storage.
+     */
+    public IIngredientComponentStorageSlotted<T, M> getChannelSlotted(int channel);
 
     /**
      * Get the external storage at the given channel.
@@ -109,7 +118,7 @@ public interface IPositionedAddonsNetworkIngredients<T, M>
     public default <S> S getChannelExternal(Capability<S> capability, int channel) {
         IIngredientComponentStorageWrapperHandler<T, M, S> wrapperHandler = getComponent()
             .getStorageWrapperHandler(capability);
-        return wrapperHandler != null ? wrapperHandler.wrapStorage(getChannel(channel)) : null;
+        return wrapperHandler != null ? wrapperHandler.wrapStorage(getChannelInternal(channel)) : null;
     }
 
     /**

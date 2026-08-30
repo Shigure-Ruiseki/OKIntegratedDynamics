@@ -302,7 +302,7 @@ public class PartTypeInterfaceCrafting
                     .getOrNull())
             .orElse(null);
         if (storageNetwork != null) {
-            IIngredientComponentStorage<T, M> storage = storageNetwork.getChannel(channel);
+            IIngredientComponentStorage<T, M> storage = storageNetwork.getChannelInternal(channel);
             T remaining = storage.insert(wrapper.getInstance(), false);
             if (wrapper.getComponent()
                 .getMatcher()

@@ -70,7 +70,7 @@ public class ValueTypeListLPElement extends ValueTypeLPElementBase {
 
     @Override
     public IConfigRenderPattern getRenderPattern() {
-        return IConfigRenderPattern.NONE_CANVAS;
+        return IConfigRenderPattern.NONE_CANVAS_WIDE;
     }
 
     @Override
@@ -219,7 +219,8 @@ public class ValueTypeListLPElement extends ValueTypeLPElementBase {
         public MasterSubGuiRenderPattern(ValueTypeListLPElement element, int baseX, int baseY, int maxWidth,
             int maxHeight, GuiLogicProgrammerBase gui, ContainerLogicProgrammerBase container) {
             super(element, baseX, baseY, maxWidth, maxHeight, gui, container);
-            subGuiHolder.addSubGui(new SelectionSubGui(element, baseX, baseY, maxWidth, maxHeight, gui, container));
+            subGuiHolder.addSubGui(
+                new SelectionSubGui(element, baseX, baseY - getHeight() / 4, maxWidth, maxHeight, gui, container));
             this.baseX = baseX;
             this.baseY = baseY;
             this.maxWidth = maxWidth;
@@ -234,14 +235,7 @@ public class ValueTypeListLPElement extends ValueTypeLPElementBase {
             }
             if (index >= 0) {
                 subGuiHolder.addSubGui(
-                    elementSubGui = new ListElementSubGui(
-                        element,
-                        baseX,
-                        baseY + (getHeight() / 4),
-                        maxWidth,
-                        maxHeight,
-                        gui,
-                        container));
+                    elementSubGui = new ListElementSubGui(element, baseX, baseY, maxWidth, maxHeight, gui, container));
                 elementSubGui.initGui(lastGuiLeft, lastGuiTop);
             }
         }
@@ -308,7 +302,7 @@ public class ValueTypeListLPElement extends ValueTypeLPElementBase {
                 0,
                 Minecraft.getMinecraft().fontRenderer,
                 getX() + guiLeft + getWidth() / 2 - 50,
-                getY() + guiTop + 2,
+                getY() + guiTop + 9,
                 100,
                 15,
                 true,
@@ -320,8 +314,7 @@ public class ValueTypeListLPElement extends ValueTypeLPElementBase {
             }
             int x = guiLeft + getX();
             int y = guiTop + getY();
-            buttonList
-                .add(arrowAdd = new GuiButtonText(1, x + getWidth() - 13, y + getHeight() - 13, 12, 12, "+", true));
+            buttonList.add(arrowAdd = new GuiButtonText(1, x + getWidth() - 13, y + 10, 12, 12, "+", true));
         }
 
         @Override
@@ -339,6 +332,11 @@ public class ValueTypeListLPElement extends ValueTypeLPElementBase {
         }
 
         @Override
+        protected boolean isDrawBackground() {
+            return false;
+        }
+
+        @Override
         public void drawGuiContainerBackgroundLayer(int guiLeft, int guiTop, TextureManager textureManager,
             FontRenderer fontRenderer, float partialTicks, int mouseX, int mouseY) {
             super.drawGuiContainerBackgroundLayer(
@@ -349,7 +347,20 @@ public class ValueTypeListLPElement extends ValueTypeLPElementBase {
                 partialTicks,
                 mouseX,
                 mouseY);
+
             valueTypeSelector.drawTextBox(Minecraft.getMinecraft(), mouseX, mouseY);
+
+            if (element.activeElement >= 0) {
+                int x = guiLeft + getX() + 10;
+                int y = guiTop + getY() + 4;
+                RenderHelpers.drawScaledCenteredString(
+                    fontRenderer,
+                    String.valueOf(element.activeElement),
+                    x - 6,
+                    y + 12,
+                    10,
+                    Helpers.RGBToInt(20, 20, 20));
+            }
         }
 
         @Override
@@ -379,12 +390,11 @@ public class ValueTypeListLPElement extends ValueTypeLPElementBase {
             RenderPattern subGui = element.subElementGuis.get(element.activeElement);
             IValueTypeLogicProgrammerElement subElement = element.subElements.get(element.activeElement);
             if (subGui == null) {
-                subGui = (RenderPattern) subElement
-                    .createSubGui(baseX, baseY, maxWidth, maxHeight / 3 * 2, gui, container);
+                subGui = (RenderPattern) subElement.createSubGui(baseX, baseY, maxWidth, maxHeight, gui, container);
                 element.subElementGuis.put(element.activeElement, subGui);
             }
-            int x = getX() + baseX - 24;
-            int y = getY() + baseY - 23;
+            int x = RenderPattern.calculateX(baseX, maxWidth, subElement.getRenderPattern());
+            int y = RenderPattern.calculateY(baseY, maxHeight, subElement.getRenderPattern());
             gui.getContainer()
                 .setElementInventory(subElement, x, y);
             subElement.setValueInGui(subGui);
@@ -396,11 +406,6 @@ public class ValueTypeListLPElement extends ValueTypeLPElementBase {
             // Do the same thing server-side
             IntegratedDynamics._instance.getPacketHandler()
                 .sendToServer(new LogicProgrammerSetElementInventory(element.listValueType, x, y));
-        }
-
-        @Override
-        public int getHeight() {
-            return (super.getHeight() / 4) * 3;
         }
 
         @Override
@@ -418,9 +423,9 @@ public class ValueTypeListLPElement extends ValueTypeLPElementBase {
             buttonList.add(
                 arrowRemove = new GuiButtonText(
                     2,
-                    x + (getWidth() / 2) - (arrowLeft.width / 2),
+                    x + getWidth() - arrowLeft.width - 1,
                     y + getHeight() - 13,
-                    12,
+                    10,
                     12,
                     "-",
                     true));
@@ -439,28 +444,6 @@ public class ValueTypeListLPElement extends ValueTypeLPElementBase {
             } else if (guibutton == arrowRemove) {
                 element.removeElement(element.activeElement);
             }
-        }
-
-        @Override
-        public void drawGuiContainerBackgroundLayer(int guiLeft, int guiTop, TextureManager textureManager,
-            FontRenderer fontRenderer, float partialTicks, int mouseX, int mouseY) {
-            super.drawGuiContainerBackgroundLayer(
-                guiLeft,
-                guiTop,
-                textureManager,
-                fontRenderer,
-                partialTicks,
-                mouseX,
-                mouseY);
-            int x = guiLeft + getX() + (getWidth() / 2);
-            int y = guiTop + getY() + 4;
-            RenderHelpers.drawScaledCenteredString(
-                fontRenderer,
-                String.valueOf(element.activeElement),
-                x - 4,
-                y + 2,
-                10,
-                Helpers.RGBToInt(20, 20, 20));
         }
     }
 

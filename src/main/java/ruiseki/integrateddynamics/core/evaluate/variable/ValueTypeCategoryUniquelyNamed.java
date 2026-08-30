@@ -7,6 +7,7 @@ import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeUniquelyNamed;
 import ruiseki.integrateddynamics.api.evaluate.variable.IVariable;
+import ruiseki.integrateddynamics.core.evaluate.operator.Operators;
 import ruiseki.okcore.helper.Helpers;
 
 /**
@@ -21,7 +22,9 @@ public class ValueTypeCategoryUniquelyNamed extends ValueTypeCategoryBase<IValue
     }
 
     public String getUniqueName(IVariable a) throws EvaluationException {
-        return ((IValueTypeUniquelyNamed) a.getType()).getUniqueName(a.getValue());
+        IValueTypeUniquelyNamed<IValue> type = ValueHelpers
+            .variableUnpackAnyType(a, Operators.UNIQUELYNAMED_UNIQUENAME, this, IValueTypeUniquelyNamed.class);
+        return type.getUniqueName(a.getValue());
     }
 
     @Override

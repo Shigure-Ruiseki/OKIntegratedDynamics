@@ -37,6 +37,16 @@ public class PartTypePanelLightDynamic
     }
 
     @Override
+    public boolean supportsOffsets() {
+        return false;
+    }
+
+    @Override
+    protected Block createBlock() {
+        return new IgnoredBlockStatus();
+    }
+
+    @Override
     public Class<? super PartTypePanelLightDynamic> getPartTypeClass() {
         return PartTypePanelLightDynamic.class;
     }

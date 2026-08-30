@@ -80,7 +80,7 @@ public class TerminalStorageIngredientItemStackCraftingGridSetRecipe extends Pac
 
                 // Try filling the grid with the given recipe
                 IIngredientComponentStorage<ItemStack, Integer> storage = tabServerCrafting.getIngredientNetwork()
-                    .getChannel(channel);
+                    .getChannelInternal(channel);
                 IIngredientMatcher<ItemStack, Integer> matcher = IngredientComponent.ITEMSTACK.getMatcher();
                 for (Map.Entry<Integer, List<ItemStack>> entry : this.slottedIngredients.entrySet()) {
                     int slotId = entry.getKey() + slotOffset;

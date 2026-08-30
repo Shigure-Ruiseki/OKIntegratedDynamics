@@ -244,7 +244,7 @@ public final class Operators {
             .build());
 
     /**
-     * Arithmetic MULTIPLY operator with two input integers and one output integer.
+     * Arithmetic MULTIPLY operator with two input numbers and one output number.
      */
     public static final IOperator ARITHMETIC_MULTIPLICATION = REGISTRY.register(
         OperatorBuilders.ARITHMETIC_2.symbol("*")
@@ -255,7 +255,7 @@ public final class Operators {
             .build());
 
     /**
-     * Arithmetic DIVIDE operator with two input integers and one output integer.
+     * Arithmetic DIVIDE operator with two input numbers and one output number.
      */
     public static final IOperator ARITHMETIC_DIVISION = REGISTRY.register(
         OperatorBuilders.ARITHMETIC_2.symbol("/")
@@ -266,7 +266,7 @@ public final class Operators {
             .build());
 
     /**
-     * Arithmetic MAX operator with two input integers and one output integer.
+     * Arithmetic MAX operator with two input numbers and one output number.
      */
     public static final IOperator ARITHMETIC_MAXIMUM = REGISTRY.register(
         OperatorBuilders.ARITHMETIC_2_PREFIX.symbol("max")
@@ -276,7 +276,7 @@ public final class Operators {
             .build());
 
     /**
-     * Arithmetic MIN operator with two input integers and one output integer.
+     * Arithmetic MIN operator with two input numbers and one output number.
      */
     public static final IOperator ARITHMETIC_MINIMUM = REGISTRY.register(
         OperatorBuilders.ARITHMETIC_2_PREFIX.symbol("min")
@@ -286,56 +286,39 @@ public final class Operators {
             .build());
 
     /**
+     * Arithmetic INCREMENT operator with one input numbers and one output number.
+     */
+    public static final IOperator ARITHMETIC_INCREMENT = REGISTRY.register(
+        OperatorBuilders.ARITHMETIC_1_SUFFIX.symbol("++")
+            .operatorName("increment")
+            .function(variables -> ValueTypes.CATEGORY_NUMBER.increment(variables.getVariables()[0]))
+            .build());
+
+    /**
+     * Arithmetic DECREMENT operator with one input numbers and one output number.
+     */
+    public static final IOperator ARITHMETIC_DECREMENT = REGISTRY.register(
+        OperatorBuilders.ARITHMETIC_1_SUFFIX.symbol("--")
+            .operatorName("decrement")
+            .function(variables -> ValueTypes.CATEGORY_NUMBER.decrement(variables.getVariables()[0]))
+            .build());
+
+    /**
+     * Arithmetic MODULO operator with two input numbers and one output number.
+     */
+    public static final IOperator ARITHMETIC_MODULUS = REGISTRY.register(
+        OperatorBuilders.ARITHMETIC_2.symbol("%")
+            .operatorName("modulus")
+            .function(
+                variables -> ValueTypes.CATEGORY_NUMBER
+                    .modulus(variables.getVariables()[0], variables.getVariables()[1]))
+            .build());
+
+    /**
      * ----------------------------------- INTEGER OPERATORS -----------------------------------
      */
 
     private static final ValueTypeInteger.ValueInteger ZERO = ValueTypeInteger.ValueInteger.of(0);
-
-    /**
-     * Integer MODULO operator with two input integers and one output integer.
-     */
-    public static final IOperator INTEGER_MODULUS = REGISTRY.register(
-        OperatorBuilders.INTEGER_2.symbol("%")
-            .operatorName("modulus")
-            .function(variables -> {
-                ValueTypeInteger.ValueInteger b = variables.getValue(1, ValueTypes.INTEGER);
-                if (b.getRawValue() == 0) { // You can not divide by zero
-                    throw new EvaluationException("Division by zero");
-                } else if (b.getRawValue() == 1) { // If b is neutral element for division
-                    return ZERO;
-                } else {
-                    ValueTypeInteger.ValueInteger a = variables.getValue(0, ValueTypes.INTEGER);
-                    return ValueTypeInteger.ValueInteger.of(a.getRawValue() % b.getRawValue());
-
-                }
-            })
-            .build());
-
-    /**
-     * Integer INCREMENT operator with one input integers and one output integer.
-     */
-    public static final IOperator INTEGER_INCREMENT = REGISTRY.register(
-        OperatorBuilders.INTEGER_1_SUFFIX.symbol("++")
-            .operatorName("increment")
-            .function(variables -> {
-                ValueTypeInteger.ValueInteger a = variables.getValue(0, ValueTypes.INTEGER);
-                return ValueTypeInteger.ValueInteger.of(a.getRawValue() + 1);
-
-            })
-            .build());
-
-    /**
-     * Integer INCREMENT operator with one input integers and one output integer.
-     */
-    public static final IOperator INTEGER_DECREMENT = REGISTRY.register(
-        OperatorBuilders.INTEGER_1_SUFFIX.symbol("--")
-            .operatorName("decrement")
-            .function(variables -> {
-                ValueTypeInteger.ValueInteger a = variables.getValue(0, ValueTypes.INTEGER);
-                return ValueTypeInteger.ValueInteger.of(a.getRawValue() - 1);
-
-            })
-            .build());
 
     /**
      * ----------------------------------- RELATIONAL OPERATORS -----------------------------------
@@ -445,7 +428,7 @@ public final class Operators {
      */
 
     /**
-     * Binary AND operator with two input integers and one output integers.
+     * Binary AND operator with two input numbers and one output numbers.
      */
     public static final IOperator BINARY_AND = REGISTRY.register(
         OperatorBuilders.BINARY_2.symbol("&")
@@ -459,7 +442,7 @@ public final class Operators {
             .build());
 
     /**
-     * Binary OR operator with two input integers and one output integers.
+     * Binary OR operator with two input numbers and one output numbers.
      */
     public static final IOperator BINARY_OR = REGISTRY.register(
         OperatorBuilders.BINARY_2.symbol("|")
@@ -925,8 +908,13 @@ public final class Operators {
                             .replaceAll(pattern.getRawValue(), replacement.getRawValue()));
                 } catch (PatternSyntaxException e) {
                     throw new EvaluationException(e.getMessage());
+                } catch (IndexOutOfBoundsException e) {
+                    throw new EvaluationException(
+                        LangHelpers.localize(
+                            L10NValues.OPERATOR_ERROR_REPLACEREGEX_INVALIDGROUP,
+                            replacement.getRawValue(),
+                            e.getMessage()));
                 }
-
             })
             .build());
 

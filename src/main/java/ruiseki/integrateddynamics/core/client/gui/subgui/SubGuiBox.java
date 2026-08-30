@@ -56,72 +56,84 @@ public abstract class SubGuiBox extends Gui implements ISubGuiBox {
         }
     }
 
+    protected boolean isDrawBackground() {
+        return true;
+    }
+
     @Override
     public void drawGuiContainerBackgroundLayer(int guiLeft, int guiTop, TextureManager textureManager,
         FontRenderer fontRenderer, float partialTicks, int mouseX, int mouseY) {
-        textureManager.bindTexture(TEXTURE);
-        GlStateManager.color(1, 1, 1, 1);
+        if (this.isDrawBackground()) {
+            textureManager.bindTexture(TEXTURE);
+            GlStateManager.color(1, 1, 1, 1);
 
-        int textureWidth = 19;
-        int textureHeight = textureWidth;
+            int textureWidth = 19;
+            int textureHeight = textureWidth;
 
-        int x = guiLeft + getX();
-        int y = guiTop + getY();
-        int width = getWidth();
-        int height = getHeight();
-        int tx = type.getX();
-        int ty = type.getY();
+            int x = guiLeft + getX();
+            int y = guiTop + getY();
+            int width = getWidth();
+            int height = getHeight();
+            int tx = type.getX();
+            int ty = type.getY();
 
-        // Corners
-        this.drawTexturedModalRect(x, y, tx, tx, 1, 1); // top left
-        this.drawTexturedModalRect(x + width - 1, y, tx + textureWidth - 1, ty, 1, 1); // top right
-        this.drawTexturedModalRect(x, y + height - 1, 0, tx + textureHeight - 1, ty + 1, 1); // bottom left
-        this.drawTexturedModalRect(x + width - 1, y + height - 1, tx + textureWidth - 1, ty + textureHeight - 1, 1, 1); // bottom
-                                                                                                                        // right
+            // Corners
+            this.drawTexturedModalRect(x, y, tx, tx, 1, 1); // top left
+            this.drawTexturedModalRect(x + width - 1, y, tx + textureWidth - 1, ty, 1, 1); // top right
+            this.drawTexturedModalRect(x, y + height - 1, 0, tx + textureHeight - 1, ty + 1, 1); // bottom left
+            this.drawTexturedModalRect(
+                x + width - 1,
+                y + height - 1,
+                tx + textureWidth - 1,
+                ty + textureHeight - 1,
+                1,
+                1); // bottom
+            // right
 
-        int i, j;
+            int i, j;
 
-        // Sides
-        i = 1;
-        while (i < width - 1) {
-            int currentWidth = Math.max(1, Math.min(width - i, textureWidth - 2) - 1);
-            this.drawTexturedModalRect(x + i, y, tx + 1, ty, currentWidth, 1);
-            this.drawTexturedModalRect(x + i, y + height - 1, tx + 1, ty + textureHeight - 1, currentWidth, 1);
-            i += currentWidth;
-        }
-
-        i = 1;
-        while (i < height - 1) {
-            int currentHeight = Math.max(1, Math.min(height - i, textureHeight - 2) - 1);
-            this.drawTexturedModalRect(x, y + i, tx, ty + 1, 1, currentHeight);
-            this.drawTexturedModalRect(x + width - 1, y + i, tx + textureWidth - 1, ty + 1, 1, currentHeight);
-            i += currentHeight;
-        }
-
-        // Center
-        i = 1;
-        while (i < width - 1) {
-            int currentWidth = Math.max(1, Math.min(width - i, textureWidth - 2) - 1);
-            j = 1;
-            while (j < height - 1) {
-                int currentHeight = Math.max(1, Math.min(height - j, textureHeight - 2) - 1);
-                this.drawTexturedModalRect(x + i, y + j, tx + 1, ty + 1, currentWidth, currentHeight);
-                j += currentHeight;
+            // Sides
+            i = 1;
+            while (i < width - 1) {
+                int currentWidth = Math.max(1, Math.min(width - i, textureWidth - 2) - 1);
+                this.drawTexturedModalRect(x + i, y, tx + 1, ty, currentWidth, 1);
+                this.drawTexturedModalRect(x + i, y + height - 1, tx + 1, ty + textureHeight - 1, currentWidth, 1);
+                i += currentWidth;
             }
-            i += currentWidth;
+
+            i = 1;
+            while (i < height - 1) {
+                int currentHeight = Math.max(1, Math.min(height - i, textureHeight - 2) - 1);
+                this.drawTexturedModalRect(x, y + i, tx, ty + 1, 1, currentHeight);
+                this.drawTexturedModalRect(x + width - 1, y + i, tx + textureWidth - 1, ty + 1, 1, currentHeight);
+                i += currentHeight;
+            }
+
+            // Center
+            i = 1;
+            while (i < width - 1) {
+                int currentWidth = Math.max(1, Math.min(width - i, textureWidth - 2) - 1);
+                j = 1;
+                while (j < height - 1) {
+                    int currentHeight = Math.max(1, Math.min(height - j, textureHeight - 2) - 1);
+                    this.drawTexturedModalRect(x + i, y + j, tx + 1, ty + 1, currentWidth, currentHeight);
+                    j += currentHeight;
+                }
+                i += currentWidth;
+            }
+
+            // Draw buttons
+            drawScreen(mouseX, mouseY, partialTicks);
+
+            subGuiHolder.drawGuiContainerBackgroundLayer(
+                guiLeft,
+                guiTop,
+                textureManager,
+                fontRenderer,
+                partialTicks,
+                mouseX,
+                mouseY);
         }
-
-        // Draw buttons
-        drawScreen(mouseX, mouseY, partialTicks);
-
-        subGuiHolder.drawGuiContainerBackgroundLayer(
-            guiLeft,
-            guiTop,
-            textureManager,
-            fontRenderer,
-            partialTicks,
-            mouseX,
-            mouseY);
     }
 
     @Override

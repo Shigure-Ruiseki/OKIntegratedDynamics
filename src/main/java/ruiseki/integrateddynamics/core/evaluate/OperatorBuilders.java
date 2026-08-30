@@ -115,6 +115,9 @@ public class OperatorBuilders {
             }
             return ValueTypes.CATEGORY_NUMBER.getLowestType(types);
         });
+    public static final OperatorBuilder<OperatorBase.SafeVariablesGetter> ARITHMETIC_1_SUFFIX = ARITHMETIC
+        .inputTypes(1, ValueTypes.CATEGORY_NUMBER)
+        .renderPattern(IConfigRenderPattern.SUFFIX_1);
     public static final OperatorBuilder<OperatorBase.SafeVariablesGetter> ARITHMETIC_2 = ARITHMETIC
         .inputTypes(2, ValueTypes.CATEGORY_NUMBER)
         .renderPattern(IConfigRenderPattern.INFIX);
@@ -331,7 +334,7 @@ public class OperatorBuilders {
                         L10NValues.OPERATOR_ERROR_WRONGCURRYINGTYPE,
                         new LangHelpers.UnlocalizedString(innerOperator.getUnlocalizedName()),
                         new LangHelpers.UnlocalizedString(
-                            input.getVariables()[0].getType()
+                            input.getVariables()[1].getType()
                                 .getUnlocalizedName()),
                         0,
                         new LangHelpers.UnlocalizedString(innerOperator.getInputTypes()[0].getUnlocalizedName()));

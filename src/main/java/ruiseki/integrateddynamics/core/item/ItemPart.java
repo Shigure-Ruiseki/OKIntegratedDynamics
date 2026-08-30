@@ -23,13 +23,11 @@ import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.integrateddynamics.block.BlockCableConfig;
 import ruiseki.integrateddynamics.core.helper.CableHelpers;
-import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
 import ruiseki.integrateddynamics.core.helper.PartHelpers;
 import ruiseki.integrateddynamics.item.ItemBlockCable;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.helper.LangHelpers;
-import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.item.ItemBase;
 
 /**
@@ -184,12 +182,6 @@ public class ItemPart<P extends IPartType<P, S>, S extends IPartState<P>> extend
     @SideOnly(Side.CLIENT)
     @Override
     public void addInformation(ItemStack itemStack, EntityPlayer entityPlayer, List list, boolean par4) {
-        if (itemStack.getTagCompound() != null && itemStack.getTagCompound()
-            .hasKey("id", MinecraftHelpers.NBTTag_Types.NBTTagInt.ordinal())) {
-            int id = itemStack.getTagCompound()
-                .getInteger("id");
-            list.add(LangHelpers.localize(L10NValues.GENERAL_ITEM_ID, id));
-        }
         getPart().loadTooltip(itemStack, list);
         LangHelpers.addOptionalInfo(list, getPart().getUnlocalizedNameBase());
         super.addInformation(itemStack, entityPlayer, list, par4);

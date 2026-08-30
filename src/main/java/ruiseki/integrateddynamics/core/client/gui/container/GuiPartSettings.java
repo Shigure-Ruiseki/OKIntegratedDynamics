@@ -36,6 +36,7 @@ import ruiseki.okcore.helper.Helpers;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.ValueNotifierHelpers;
 import ruiseki.okcore.init.ModBase;
+import ruiseki.okcore.inventory.container.ExtendedInventoryContainer;
 
 /**
  * Gui for part settings.
@@ -83,6 +84,11 @@ public class GuiPartSettings extends GuiContainerExtended {
         this.partType = partType;
 
         putButtonAction(BUTTON_SAVE, (buttonId, gui, container) -> onSave());
+    }
+
+    @Override
+    protected ExtendedInventoryContainer getContainer() {
+        return super.getContainer();
     }
 
     protected void onSave() {

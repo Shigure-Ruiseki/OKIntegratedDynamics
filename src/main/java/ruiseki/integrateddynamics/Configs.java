@@ -65,6 +65,7 @@ import ruiseki.integrateddynamics.item.ItemBucketLiquidChorusConfig;
 import ruiseki.integrateddynamics.item.ItemBucketMenrilResinConfig;
 import ruiseki.integrateddynamics.item.ItemCrystalizedChorusChunkConfig;
 import ruiseki.integrateddynamics.item.ItemCrystalizedMenrilChunkConfig;
+import ruiseki.integrateddynamics.item.ItemEnhancementConfig;
 import ruiseki.integrateddynamics.item.ItemFacadeConfig;
 import ruiseki.integrateddynamics.item.ItemLabellerConfig;
 import ruiseki.integrateddynamics.item.ItemLogicDirectorConfig;
@@ -158,6 +159,7 @@ public class Configs {
         // configHandler.add(new ItemOnTheDynamicsOfIntegrationConfig());
         configHandler.add(new ItemCrystalizedChorusChunkConfig());
         configHandler.add(new ItemLogicDirectorConfig());
+        configHandler.add(new ItemEnhancementConfig());
 
         // Biomes
         configHandler.add(new BiomeMeneglinConfig());

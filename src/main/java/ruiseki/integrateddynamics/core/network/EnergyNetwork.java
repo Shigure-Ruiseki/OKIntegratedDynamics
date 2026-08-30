@@ -30,7 +30,7 @@ public class EnergyNetwork extends PositionedAddonsNetworkIngredients<Long, Bool
         int multiplier = GeneralConfig.energyConsumptionMultiplier;
         if (multiplier == 0) return true;
         int consumptionRate = ((IEnergyConsumingNetworkElement) element).getConsumptionRate() * multiplier;
-        return getChannel(element.getChannel()).extract(consumptionRate, true) == consumptionRate;
+        return getChannelInternal(element.getChannel()).extract(consumptionRate, true) == consumptionRate;
     }
 
     @Override
@@ -46,7 +46,7 @@ public class EnergyNetwork extends PositionedAddonsNetworkIngredients<Long, Bool
             int multiplier = GeneralConfig.energyConsumptionMultiplier;
             if (multiplier > 0) {
                 int consumptionRate = consumingNetworkElement.getConsumptionRate() * multiplier;
-                getChannel(element.getChannel()).extract(consumptionRate, false);
+                getChannelInternal(element.getChannel()).extract(consumptionRate, false);
             }
             consumingNetworkElement.postUpdate(getNetwork(), true);
         }

@@ -19,6 +19,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
 import ruiseki.commoncapabilities.api.ingredient.storage.IIngredientComponentStorage;
+import ruiseki.commoncapabilities.api.ingredient.storage.IIngredientComponentStorageSlotted;
 import ruiseki.commoncapabilities.api.ingredient.storage.IIngredientComponentStorageWrapperHandler;
 import ruiseki.commoncapabilities.api.ingredient.storage.IngredientComponentStorageEmpty;
 import ruiseki.integrateddynamics.GeneralConfig;
@@ -26,6 +27,7 @@ import ruiseki.integrateddynamics.api.ingredient.IIngredientComponentStorageObse
 import ruiseki.integrateddynamics.api.ingredient.IIngredientPositionsIndex;
 import ruiseki.integrateddynamics.api.network.IFullNetworkListener;
 import ruiseki.integrateddynamics.api.network.INetworkElement;
+import ruiseki.integrateddynamics.api.network.INetworkIngredientsChannel;
 import ruiseki.integrateddynamics.api.network.IPositionedAddonsNetwork;
 import ruiseki.integrateddynamics.api.network.IPositionedAddonsNetworkIngredients;
 import ruiseki.integrateddynamics.api.network.PositionedAddonsNetworkIngredientsFilter;
@@ -200,7 +202,7 @@ public abstract class PositionedAddonsNetworkIngredients<T, M> extends Positione
     }
 
     @Override
-    public IIngredientComponentStorage<T, M> getChannel(int channel) {
+    public INetworkIngredientsChannel<T, M> getChannelInternal(int channel) {
         return new IngredientChannelIndexed<>(this, channel, getChannelIndex(channel));
     }
 
@@ -245,16 +247,19 @@ public abstract class PositionedAddonsNetworkIngredients<T, M> extends Positione
         return index;
     }
 
+    @Override
+    public IIngredientComponentStorageSlotted<T, M> getChannelSlotted(int channel) {
+        return new IngredientChannelAdapterWrapperSlotted<>(
+            (IngredientChannelAdapter<T, M>) getChannelInternal(channel),
+            this.cacheChannelSlots);
+    }
+
     @Nullable
     @Override
     public <S> S getChannelExternal(Capability<S> capability, int channel) {
         IIngredientComponentStorageWrapperHandler<T, M, S> wrapperHandler = getComponent()
             .getStorageWrapperHandler(capability);
-        return wrapperHandler != null ? wrapperHandler.wrapStorage(
-            new IngredientChannelAdapterWrapperSlotted<>(
-                (IngredientChannelAdapter<T, M>) getChannel(channel),
-                this.cacheChannelSlots))
-            : null;
+        return wrapperHandler != null ? wrapperHandler.wrapStorage(getChannelSlotted(channel)) : null;
     }
 
     @Override

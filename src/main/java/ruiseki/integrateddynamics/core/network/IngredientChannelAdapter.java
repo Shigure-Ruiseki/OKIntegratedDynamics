@@ -14,6 +14,7 @@ import com.google.common.collect.Lists;
 import ruiseki.commoncapabilities.api.ingredient.IIngredientMatcher;
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
 import ruiseki.commoncapabilities.api.ingredient.storage.IIngredientComponentStorage;
+import ruiseki.integrateddynamics.api.network.INetworkIngredientsChannel;
 import ruiseki.integrateddynamics.api.network.IPartPosIteratorHandler;
 import ruiseki.integrateddynamics.api.network.IPositionedAddonsNetworkIngredients;
 import ruiseki.integrateddynamics.api.network.PositionedAddonsNetworkIngredientsFilter;
@@ -28,7 +29,7 @@ import ruiseki.okcore.ingredient.collection.IngredientHashMap;
  * @param <T> The instance type.
  * @param <M> The matching condition parameter.
  */
-public abstract class IngredientChannelAdapter<T, M> implements IIngredientComponentStorage<T, M> {
+public abstract class IngredientChannelAdapter<T, M> implements INetworkIngredientsChannel<T, M> {
 
     private final IPositionedAddonsNetworkIngredients<T, M> network;
     private final int channel;
@@ -69,6 +70,26 @@ public abstract class IngredientChannelAdapter<T, M> implements IIngredientCompo
     protected abstract Iterator<PartPos> getNonEmptyPositions();
 
     protected abstract Iterator<PartPos> getMatchingPositions(@Nonnull T prototype, M matchFlags);
+
+    @Override
+    public Iterable<PartPos> findNonFullPositions() {
+        return () -> getPartPosIteratorData(this::getNonFullPositions, channel).getRight();
+    }
+
+    @Override
+    public Iterable<PartPos> findAllPositions() {
+        return () -> getPartPosIteratorData(this::getAllPositions, channel).getRight();
+    }
+
+    @Override
+    public Iterable<PartPos> findNonEmptyPositions() {
+        return () -> getPartPosIteratorData(this::getNonEmptyPositions, channel).getRight();
+    }
+
+    @Override
+    public Iterable<PartPos> findMatchingPositions(@Nonnull T prototype, M matchFlags) {
+        return () -> getPartPosIteratorData(() -> this.getMatchingPositions(prototype, matchFlags), channel).getRight();
+    }
 
     @Override
     public long getMaxQuantity() {

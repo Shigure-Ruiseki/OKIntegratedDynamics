@@ -251,6 +251,7 @@ public class GuiAspectSettings extends GuiContainerExtended {
             subGuiHolder.removeSubGui(propertyConfigPattern);
             subGuiHolder.removeSubGui(propertyInfo);
         }
+
         // Determine element type
         IValueTypeLogicProgrammerElement lpElement = property.getType()
             .createLogicProgrammerElement();

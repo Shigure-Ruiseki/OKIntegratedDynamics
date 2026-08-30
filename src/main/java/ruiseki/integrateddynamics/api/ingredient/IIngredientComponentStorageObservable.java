@@ -117,14 +117,21 @@ public interface IIngredientComponentStorageObservable<T, M> {
         private final Change changeType;
         private final boolean completeChange;
         private final IIngredientCollection<T, M> instances;
+        private final boolean initialChange;
 
         public StorageChangeEvent(int channel, PrioritizedPartPos pos, Change changeType, boolean completeChange,
             IIngredientCollection<T, M> instances) {
+            this(channel, pos, changeType, completeChange, instances, false);
+        }
+
+        public StorageChangeEvent(int channel, PrioritizedPartPos pos, Change changeType, boolean completeChange,
+            IIngredientCollection<T, M> instances, boolean initialChange) {
             this.channel = channel;
             this.pos = pos;
             this.changeType = changeType;
             this.completeChange = completeChange;
             this.instances = instances;
+            this.initialChange = initialChange;
         }
 
         public int getChannel() {
@@ -156,6 +163,13 @@ public interface IIngredientComponentStorageObservable<T, M> {
          */
         public IIngredientCollection<T, M> getInstances() {
             return instances;
+        }
+
+        /**
+         * @return If this change occurred during initialization of the observer.
+         */
+        public boolean isInitialChange() {
+            return initialChange;
         }
 
         @Override

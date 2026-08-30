@@ -57,7 +57,7 @@ public class IngredientChannelAdapterWrapperSlotted<T, M> implements IIngredient
         IPositionedAddonsNetworkIngredients<T, M> network = this.channel.getNetwork();
 
         boolean hasDisabledPosition = false;
-        for (PartPos pos : network.getPositions()) {
+        for (PartPos pos : network.getPositions(this.channel.getChannel())) {
             // Skip if the position is not loaded or disabled
             if (!pos.getPos()
                 .isLoaded()) {
@@ -82,7 +82,7 @@ public class IngredientChannelAdapterWrapperSlotted<T, M> implements IIngredient
     protected Triple<IIngredientComponentStorage<T, M>, Integer, PartPos> getStorageAndRelativeSlot(int slot) {
         IPositionedAddonsNetworkIngredients<T, M> network = this.channel.getNetwork();
 
-        for (PartPos pos : network.getPositions()) {
+        for (PartPos pos : network.getPositions(this.channel.getChannel())) {
             // Skip if the position is not loaded or disabled
             if (!pos.getPos()
                 .isLoaded() || network.isPositionDisabled(pos)) {
@@ -195,9 +195,9 @@ public class IngredientChannelAdapterWrapperSlotted<T, M> implements IIngredient
             T extractedSimulated;
             if (storage instanceof IIngredientComponentStorageSlotted) {
                 extractedSimulated = ((IIngredientComponentStorageSlotted<T, M>) storage)
-                    .extract(slotRelative, maxQuantity, simulate);
+                    .extract(slotRelative, maxQuantity, true);
             } else {
-                extractedSimulated = storage.extract(maxQuantity, simulate);
+                extractedSimulated = storage.extract(maxQuantity, true);
             }
             if (!filter.testExtraction(extractedSimulated)) {
                 return getComponent().getMatcher()

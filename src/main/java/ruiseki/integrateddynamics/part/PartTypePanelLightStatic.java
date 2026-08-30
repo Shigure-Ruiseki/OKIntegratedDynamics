@@ -9,6 +9,7 @@ import ruiseki.integrateddynamics.GeneralConfig;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.part.PartTarget;
+import ruiseki.integrateddynamics.core.block.IgnoredBlock;
 import ruiseki.integrateddynamics.core.part.PartStateEmpty;
 import ruiseki.integrateddynamics.core.part.panel.PartTypePanel;
 import ruiseki.okcore.datastructure.BlockPos;
@@ -25,6 +26,16 @@ public class PartTypePanelLightStatic
 
     public PartTypePanelLightStatic(String name) {
         super(name);
+    }
+
+    @Override
+    public boolean supportsOffsets() {
+        return false;
+    }
+
+    @Override
+    protected Block createBlock() {
+        return new IgnoredBlock();
     }
 
     @Override

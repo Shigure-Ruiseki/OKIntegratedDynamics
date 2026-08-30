@@ -30,6 +30,7 @@ public class L10NValues {
     public static final String PART_TOOLTIP_MONODIRECTIONALCONNECTOR_GROUP = "parttype.parttypes." + NS
         + ".tooltip.monodirectionalconnector.group";
     public static final String PART_TOOLTIP_NOASPECTS = "parttype.parttypes." + NS + ".tooltip.noaspects";
+    public static final String PART_TOOLTIP_MAXOFFSET = "parttype." + NS + ".tooltip.maxoffset";
 
     public static final String GUI_RENAME = "gui." + NS + ".button.rename";
     public static final String GUI_LOGICPROGRAMMER_FILTER = "gui." + NS + ".logicprogrammer.filter";
@@ -111,4 +112,49 @@ public class L10NValues {
     public static final String OPERATOR_ERROR_WRONGINPUTLENGTHVIRTIUAL = "operator." + NS
         + ".error.wrong_input_length_virtual";
     public static final String OPERATOR_ERROR_RECURSIONLIMIT = "operator." + NS + ".error.operator_recursion_limit";
+    // 0: expression, 1: message
+    public static final String OPERATOR_ERROR_NBT_PATH_EXPRESSION = "operator." + NS
+        + ".error.operator_nbt_path_expression";
+    // 0: value-type-from, 1: value-type-to
+    public static final String OPERATOR_ERROR_CAST_NOMAPPING = "operator." + NS + ".error.cast.no_mapping";
+    // 0: value-type-from, 1: value-type-to, 2: value
+    public static final String OPERATOR_ERROR_CAST_ILLEGAL = "operator." + NS + ".error.cast.illegal";
+    // 0: value-type-from-actual, 1: value-type-from-expected, 2: value-type-to
+    public static final String OPERATOR_ERROR_CAST_UNEXPECTED = "operator." + NS + ".error.cast.unexpected";
+    public static final String OPERATOR_ERROR_DIVIDEBYZERO = "operator." + NS + ".error.divide_by_zero";
+    // 0: string-value, 1: value-type
+    public static final String OPERATOR_ERROR_PARSE = "operator." + NS + ".error.parse";
+    // 0: value
+    public static final String OPERATOR_ERROR_NO_DESERIALIZER = "operator." + NS + ".error.no_derserializer";
+    // 0: regex-value
+    public static final String OPERATOR_ERROR_REGEX_INVALID = "operator." + NS + ".error.regex.invalid";
+    public static final String OPERATOR_ERROR_SUBSTRING_TOGREATERTHANFROM = "operator." + NS
+        + ".error.substring.to_greater_than_from";
+    public static final String OPERATOR_ERROR_SUBSTRING_INDEXNEGATIVE = "operator." + NS
+        + ".error.substring.index_negative";
+    public static final String OPERATOR_ERROR_SUBSTRING_LONGERTHANSTRING = "operator." + NS
+        + ".error.substring.longer_than_string";
+    public static final String OPERATOR_ERROR_GROUP_INDEXNEGATIVE = "operator." + NS + ".error.group.index_negative";
+    // 0: regex-value, 1: value
+    public static final String OPERATOR_ERROR_GROUP_NOMATCH = "operator." + NS + ".error.group.no_match";
+    // 0: regex-value, 1: value, 2: group
+    public static final String OPERATOR_ERROR_GROUP_NOMATCHGROUP = "operator." + NS + ".error.group.no_match_group";
+    public static final String OPERATOR_ERROR_REGEXSCAN_INDEXNEGATIVE = "operator." + NS
+        + ".error.regex_scan.index_negative";
+    // 0: regex-value, 1: value, 2: group
+    public static final String OPERATOR_ERROR_REGEXSCAN_NOMATCHGROUP = "operator." + NS
+        + ".error.regex_scan.no_match_group";
+    // 0: replacement-value, 1: message
+    public static final String OPERATOR_ERROR_REPLACEREGEX_INVALIDGROUP = "operator." + NS
+        + ".error.replace_regex.invalid_group";
+    // 0: operation
+    public static final String OPERATOR_ERROR_INFINITELIST_ILLEGAL = "operator." + NS + ".error.infinite_list.illegal";
+    // 0: index, 1: length
+    public static final String OPERATOR_ERROR_INDEXOUTOFBOUNDS = "operator." + NS + ".error.index_out_of_bounds";
+    public static final String OPERATOR_ERROR_SLICE_TOGREATERTHANFROM = "operator." + NS
+        + ".error.slice.to_greater_than_from";
+    public static final String OPERATOR_ERROR_SLICE_INDEXNEGATIVE = "operator." + NS + ".error.slice.index_negative";
+    // 0: operator
+    public static final String OPERATOR_ERROR_OPERATORNOTFOUND = "operator." + NS + ".error.operator_not_found";
+    public static final String OPERATOR_ERROR_REDUCE_EMPTY = "operator." + NS + ".error.reduce.empty";
 }

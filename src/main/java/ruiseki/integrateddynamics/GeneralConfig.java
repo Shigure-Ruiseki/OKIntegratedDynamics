@@ -455,6 +455,12 @@ public class GeneralConfig extends DummyConfig {
         comment = "The default port for running the network diagnostics HTTP server.")
     public static int diagnosticsWebServerPort = 3030;
 
+    @ConfigurableProperty(
+        category = ConfigurableTypeCategory.MACHINE,
+        comment = "The maximum offset in blocks a part can target.",
+        minimalValue = 1)
+    public static int maxPartOffset = 32;
+
     /**
      * Create a new instance.
      */

@@ -15,7 +15,9 @@ import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeNamed;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeNumber;
 import ruiseki.integrateddynamics.api.evaluate.variable.IVariable;
+import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.okcore.helper.Helpers;
+import ruiseki.okcore.helper.LangHelpers;
 
 /**
  * Value type category with values that are numbers.
@@ -24,8 +26,8 @@ import ruiseki.okcore.helper.Helpers;
  */
 public class ValueTypeCategoryNumber extends ValueTypeCategoryBase<IValue> implements IValueTypeNamed<IValue> {
 
-    private static final IValueTypeNumber[] ELEMENTS = new IValueTypeNumber[] { ValueTypes.INTEGER, ValueTypes.DOUBLE,
-        ValueTypes.LONG };
+    private static final IValueTypeNumber[] ELEMENTS = new IValueTypeNumber[] { ValueTypes.INTEGER, ValueTypes.LONG,
+        ValueTypes.DOUBLE };
     private static final Map<IValueTypeNumber, Integer> INVERTED_ELEMENTS = Collections
         .unmodifiableMap(constructInvertedArray(ELEMENTS));
 
@@ -147,6 +149,28 @@ public class ValueTypeCategoryNumber extends ValueTypeCategoryBase<IValue> imple
     public IValue min(IVariable a, IVariable b) throws EvaluationException {
         IValueTypeNumber type = getLowestType(getType(a), getType(b));
         return type.min(castValue(type, a.getValue()), castValue(type, b.getValue()));
+    }
+
+    public IValue increment(IVariable a) throws EvaluationException {
+        IValueTypeNumber type = getType(a);
+        return type.increment(castValue(type, a.getValue()));
+    }
+
+    public IValue decrement(IVariable a) throws EvaluationException {
+        IValueTypeNumber type = getType(a);
+        return type.decrement(castValue(type, a.getValue()));
+    }
+
+    public IValue modulus(IVariable a, IVariable b) throws EvaluationException {
+        IValueTypeNumber type = getLowestType(getType(a), getType(b));
+        IValue bValue = castValue(type, b.getValue());
+        if (type.isZero(bValue)) { // You can not divide by zero
+            throw new EvaluationException(LangHelpers.localize(L10NValues.OPERATOR_ERROR_DIVIDEBYZERO));
+        } else if (type.isOne(bValue)) { // If b is neutral element for division
+            return type.getDefault();
+        } else {
+            return type.modulus(castValue(type, a.getValue()), bValue);
+        }
     }
 
     public boolean greaterThan(IVariable a, IVariable b) throws EvaluationException {

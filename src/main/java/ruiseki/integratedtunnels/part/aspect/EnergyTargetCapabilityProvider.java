@@ -44,7 +44,7 @@ public class EnergyTargetCapabilityProvider extends ChanneledTargetCapabilityPro
 
     @Override
     public IIngredientComponentStorage<Long, Boolean> getEnergyChannel() {
-        return getChanneledNetwork().getChannel(getChannel());
+        return getChanneledNetwork().getChannelInternal(getChannel());
     }
 
     @Override

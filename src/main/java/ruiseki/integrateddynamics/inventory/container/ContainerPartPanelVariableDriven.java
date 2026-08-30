@@ -32,7 +32,7 @@ import ruiseki.okcore.inventory.SimpleInventory;
  */
 @EqualsAndHashCode(callSuper = false)
 @Data
-public class ContainerPartDisplay<P extends PartTypePanelVariableDriven<P, S>, S extends PartTypePanelVariableDriven.State<P, S>>
+public class ContainerPartPanelVariableDriven<P extends PartTypePanelVariableDriven<P, S>, S extends PartTypePanelVariableDriven.State<P, S>>
     extends ContainerMultipart<P, S> {
 
     private static final int SLOT_X = 79;
@@ -49,7 +49,7 @@ public class ContainerPartDisplay<P extends PartTypePanelVariableDriven<P, S>, S
      * @param partContainer The part container.
      * @param partType      The part type.
      */
-    public ContainerPartDisplay(EntityPlayer player, PartTarget target, IPartContainer partContainer,
+    public ContainerPartPanelVariableDriven(EntityPlayer player, PartTarget target, IPartContainer partContainer,
         IPartType partType) {
         super(player, target, partContainer, (P) partType);
 
@@ -127,6 +127,7 @@ public class ContainerPartDisplay<P extends PartTypePanelVariableDriven<P, S>, S
 
     @Override
     public void onContainerClosed(EntityPlayer player) {
+        super.onContainerClosed(player);
         getPartState().getInventory()
             .removeDirtyMarkListener(this);
     }

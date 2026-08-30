@@ -135,6 +135,7 @@ public class InventoryVariableEvaluator<V extends IValue> implements IVariableFa
     @Override
     public void addError(LangHelpers.UnlocalizedString error) {
         errors.add(error);
+        onErrorsChanged();
     }
 
     public void onErrorsChanged() {

@@ -59,7 +59,7 @@ public class ItemTargetCapabilityProvider extends ChanneledTargetCapabilityProvi
 
     @Override
     public IIngredientComponentStorage<ItemStack, Integer> getItemChannel() {
-        return getChanneledNetwork().getChannel(getChannel());
+        return getChanneledNetwork().getChannelInternal(getChannel());
     }
 
     @Override

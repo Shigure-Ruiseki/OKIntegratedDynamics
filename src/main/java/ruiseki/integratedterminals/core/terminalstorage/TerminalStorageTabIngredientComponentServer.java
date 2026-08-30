@@ -331,7 +331,7 @@ public class TerminalStorageTabIngredientComponentServer<T, M>
     }
 
     protected void sendToClient(IIngredientComponentStorageObservable.StorageChangeEvent<T, M> event) {
-        long maxQuantity = this.ingredientNetwork.getChannel(event.getChannel())
+        long maxQuantity = this.ingredientNetwork.getChannelInternal(event.getChannel())
             .getMaxQuantity();
 
         // Only allow ingredient collection of a max given size to be sent in a packet
@@ -445,7 +445,7 @@ public class TerminalStorageTabIngredientComponentServer<T, M>
         IIngredientComponentTerminalStorageHandler<T, M> viewHandler = ingredientComponent
             .getCapability(IngredientComponentTerminalStorageHandlerConfig.CAPABILITY)
             .getOrNull();
-        IIngredientComponentStorage<T, M> storage = ingredientNetwork.getChannel(channel);
+        IIngredientComponentStorage<T, M> storage = ingredientNetwork.getChannelInternal(channel);
 
         boolean updateActivePlayerStack = false;
 

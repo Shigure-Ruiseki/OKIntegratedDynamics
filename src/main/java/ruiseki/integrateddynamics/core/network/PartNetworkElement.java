@@ -21,28 +21,30 @@ import ruiseki.integrateddynamics.api.network.IPositionedAddonsNetwork;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartState;
 import ruiseki.integrateddynamics.api.part.IPartType;
+import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
 import ruiseki.integrateddynamics.core.helper.PartHelpers;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
+import ruiseki.okcore.datastructure.LazyOptional;
 
 /**
  * A network element for parts.
- * 
+ *
  * @author rubensworks
  */
 public class PartNetworkElement<P extends IPartType<P, S>, S extends IPartState<P>> extends NetworkElementBase
     implements IPartNetworkElement<P, S>, IEnergyConsumingNetworkElement {
 
     private final P part;
-    private final PartTarget target;
+    private final PartPos center;
 
     private S tempState = null;
 
-    public PartNetworkElement(P part, PartTarget target) {
+    public PartNetworkElement(P part, PartPos center) {
         this.part = part;
-        this.target = target;
+        this.center = center;
     }
 
     protected static DimPos getCenterPos(PartTarget target) {
@@ -72,7 +74,11 @@ public class PartNetworkElement<P extends IPartType<P, S>, S extends IPartState<
 
     @Override
     public PartTarget getTarget() {
-        return target;
+        return getPart().getTarget(this.center, getPartState());
+    }
+
+    public PartTarget getTarget(S partState) {
+        return getPart().getTarget(this.center, partState);
     }
 
     public S getTempState() {
@@ -85,22 +91,17 @@ public class PartNetworkElement<P extends IPartType<P, S>, S extends IPartState<
 
     @Override
     public IPartContainer getPartContainer() {
-        return PartHelpers.getPartContainerChecked(
-            getCenterPos(getTarget()),
-            getTarget().getCenter()
-                .getSide());
+        return PartHelpers.getPartContainerChecked(this.center.getPos(), this.center.getSide());
+    }
+
+    public LazyOptional<IPartContainer> getPartContainerOptional() {
+        return PartHelpers.getPartContainer(getCenterPos(getTarget()), getTarget().getCenter().getSide());
     }
 
     @Override
     public void setPriorityAndChannel(INetwork network, int priority, int channel) {
         // noinspection deprecation
-        part.setPriorityAndChannel(
-            network,
-            NetworkHelpers.getPartNetworkChecked(network),
-            getTarget(),
-            getPartState(),
-            priority,
-            channel);
+        part.setPriorityAndChannel(network, NetworkHelpers.getPartNetworkChecked(network), getTarget(), getPartState(), priority, channel);
     }
 
     @Override
@@ -115,24 +116,25 @@ public class PartNetworkElement<P extends IPartType<P, S>, S extends IPartState<
 
     @Override
     public boolean canRevalidate(INetwork network) {
-        return canRevalidatePositioned(network, getCenterPos(getTarget()));
+        return canRevalidatePositioned(network, this.center.getPos());
     }
 
     @Override
     public void revalidate(INetwork network) {
         super.revalidate(network);
-        revalidatePositioned(network, getCenterPos(getTarget()));
+        revalidatePositioned(network, this.center.getPos());
     }
 
     @Override
     public boolean isLoaded() {
-        return getCenterPos(getTarget()).isLoaded();
+        return this.center.getPos().isLoaded();
     }
 
     public boolean hasPartState() {
         if (isLoaded()) {
-            IPartContainer partContainer = getPartContainer();
-            return partContainer != null && partContainer.hasPart(getCenterSide(getTarget()));
+            return getPartContainerOptional()
+                .map(partContainer -> partContainer.hasPart(this.center.getSide()))
+                .orElse(false);
         }
         return false;
     }
@@ -140,13 +142,10 @@ public class PartNetworkElement<P extends IPartType<P, S>, S extends IPartState<
     @Override
     public S getPartState() throws PartStateException {
         IPartContainer partContainer = getPartContainer();
-        if (partContainer != null) {
-            return (S) partContainer.getPartState(getCenterSide(getTarget()));
+        if(partContainer != null) {
+            return (S) partContainer.getPartState(this.center.getSide());
         } else {
-            throw new PartStateException(
-                getCenterPos(getTarget()),
-                getTarget().getCenter()
-                    .getSide());
+            throw new PartStateException(this.center.getPos(), this.center.getSide());
         }
     }
 
@@ -186,17 +185,17 @@ public class PartNetworkElement<P extends IPartType<P, S>, S extends IPartState<
 
     @Override
     public void beforeNetworkKill(INetwork network) {
-        part.beforeNetworkKill(network, NetworkHelpers.getPartNetworkChecked(network), target, getPartState());
+        part.beforeNetworkKill(network, NetworkHelpers.getPartNetworkChecked(network), getTarget(), getPartState());
     }
 
     @Override
     public void afterNetworkAlive(INetwork network) {
-        part.afterNetworkAlive(network, NetworkHelpers.getPartNetworkChecked(network), target, getPartState());
+        part.afterNetworkAlive(network, NetworkHelpers.getPartNetworkChecked(network), getTarget(), getPartState());
     }
 
     @Override
     public void afterNetworkReAlive(INetwork network) {
-        part.afterNetworkReAlive(network, NetworkHelpers.getPartNetworkChecked(network), target, getPartState());
+        part.afterNetworkReAlive(network, NetworkHelpers.getPartNetworkChecked(network), getTarget(), getPartState());
     }
 
     @Override
@@ -207,9 +206,9 @@ public class PartNetworkElement<P extends IPartType<P, S>, S extends IPartState<
     @Override
     public boolean onNetworkAddition(INetwork network) {
         IPartNetwork partNetwork = NetworkHelpers.getPartNetworkChecked(network);
-        boolean res = partNetwork.addPart(getPartState().getId(), getTarget().getCenter());
-        if (res) {
-            part.onNetworkAddition(network, partNetwork, target, getPartState());
+        boolean res = partNetwork.addPart(getPartState().getId(), this.center);
+        if(res) {
+            part.onNetworkAddition(network, partNetwork, getTarget(), getPartState());
         }
         return res;
     }
@@ -218,35 +217,25 @@ public class PartNetworkElement<P extends IPartType<P, S>, S extends IPartState<
     public void onNetworkRemoval(INetwork network) {
         IPartNetwork partNetwork = NetworkHelpers.getPartNetworkChecked(network);
         partNetwork.removePart(getPartState().getId());
-        part.onNetworkRemoval(network, partNetwork, target, getPartState());
+        part.onNetworkRemoval(network, partNetwork, getTarget(), getPartState());
     }
 
     @Override
     public void onPreRemoved(INetwork network) {
-        part.onPreRemoved(network, NetworkHelpers.getPartNetworkChecked(network), target, (tempState = getPartState()));
+        part.onPreRemoved(network, NetworkHelpers.getPartNetworkChecked(network), getTarget(), (tempState = getPartState()));
     }
 
     @Override
     public void onPostRemoved(INetwork network) {
-        part.onPostRemoved(
-            network,
-            NetworkHelpers.getPartNetworkChecked(network),
-            target,
-            Objects.requireNonNull(tempState));
+        part.onPostRemoved(network, NetworkHelpers.getPartNetworkChecked(network), getTarget(tempState), Objects.requireNonNull(tempState));
         tempState = null;
     }
 
     @Override
     public void onNeighborBlockChange(@Nullable INetwork network, IBlockAccess world, Block neighbourBlock,
         BlockPos neighbourBlockPos) {
-        part.onBlockNeighborChange(
-            network,
-            NetworkHelpers.getPartNetworkChecked(network),
-            target,
-            getPartState(),
-            world,
-            neighbourBlock,
-            neighbourBlockPos);
+        part.onBlockNeighborChange(network, NetworkHelpers.getPartNetworkChecked(network), getTarget(), getPartState(), world,
+            neighbourBlock, neighbourBlockPos);
     }
 
     @Override
@@ -261,7 +250,7 @@ public class PartNetworkElement<P extends IPartType<P, S>, S extends IPartState<
     @Override
     public int hashCode() {
         int result = part.hashCode();
-        result = 31 * result + target.hashCode();
+        result = 31 * result + this.center.hashCode();
         return result;
     }
 
@@ -309,14 +298,12 @@ public class PartNetworkElement<P extends IPartType<P, S>, S extends IPartState<
 
     @Override
     public DimPos getPosition() {
-        return getTarget().getCenter()
-            .getPos();
+        return this.center.getPos();
     }
 
     @Override
     public ForgeDirection getSide() {
-        return getTarget().getCenter()
-            .getSide();
+        return this.center.getSide();
     }
 
     @Override

@@ -45,7 +45,7 @@ import ruiseki.integrateddynamics.core.helper.WrenchHelpers;
 import ruiseki.integrateddynamics.core.network.event.NetworkElementAddEvent;
 import ruiseki.integrateddynamics.core.network.event.VariableContentsUpdatedEvent;
 import ruiseki.integrateddynamics.core.part.PartStateActiveVariableBase;
-import ruiseki.integrateddynamics.inventory.container.ContainerPartDisplay;
+import ruiseki.integrateddynamics.inventory.container.ContainerPartPanelVariableDriven;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.helper.BlockHelpers;
 import ruiseki.okcore.helper.BlockStateHelpers;
@@ -205,7 +205,7 @@ public abstract class PartTypePanelVariableDriven<P extends PartTypePanelVariabl
 
     @Override
     public Class<? extends Container> getContainer() {
-        return ContainerPartDisplay.class;
+        return ContainerPartPanelVariableDriven.class;
     }
 
     @Override

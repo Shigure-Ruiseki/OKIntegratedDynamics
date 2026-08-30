@@ -69,6 +69,7 @@ import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeOperator;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeString;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
 import ruiseki.integrateddynamics.core.helper.EnergyHelpers;
+import ruiseki.integrateddynamics.core.helper.Helpers;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.integrateddynamics.core.part.aspect.build.AspectBuilder;
 import ruiseki.integrateddynamics.core.part.aspect.build.IAspectValuePropagator;
@@ -952,9 +953,10 @@ public class Aspects {
             public static final IAspectRead<ValueTypeInteger.ValueInteger, ValueTypeInteger> INTEGER_TICKTIME = AspectReadBuilders.World.BUILDER_INTEGER
                 .handle(AspectReadBuilders.World.PROP_GET_WORLD)
                 .handle(
-                    (world) -> (int) DoubleMath.mean(
+                    (world) -> (int) (Helpers.mean(
                         FMLCommonHandler.instance()
-                            .getMinecraftServerInstance().worldTickTimes.get(world.provider.dimensionId)))
+                            .getMinecraftServerInstance().worldTickTimes.get(world.provider.dimensionId))
+                        * 1.0E-6D))
                 .handle(AspectReadBuilders.PROP_GET_INTEGER, "ticktime")
                 .buildRead();
 
@@ -978,31 +980,10 @@ public class Aspects {
                 .buildRead();
             public static final IAspectRead<ValueTypeDouble.ValueDouble, ValueTypeDouble> DOUBLE_TPS = AspectReadBuilders.World.BUILDER_DOUBLE
                 .handle(AspectReadBuilders.World.PROP_GET_WORLD)
-                .handle(world -> {
-                    if (world == null || FMLCommonHandler.instance()
-                        .getMinecraftServerInstance() == null) {
-                        return 20.0D;
-                    }
-
-                    int dimId = world.provider.dimensionId;
-                    long[] times = FMLCommonHandler.instance()
-                        .getMinecraftServerInstance().worldTickTimes.get(dimId);
-
-                    if (times == null || times.length == 0) {
-                        return 20.0D;
-                    }
-
-                    long totalTime = 0;
-                    for (long time : times) {
-                        totalTime += time;
-                    }
-
-                    double meanTickTimeMs = (totalTime / (double) times.length) * 1.0E-6D;
-                    if (meanTickTimeMs <= 0) return 20.0D;
-
-                    double tps = 1000.0D / meanTickTimeMs;
-                    return Math.min(20.0D, tps);
-                })
+                .handle(
+                    world -> Helpers.calculateTps(
+                        FMLCommonHandler.instance()
+                            .getMinecraftServerInstance().worldTickTimes.get(world.provider.dimensionId)))
                 .handle(AspectReadBuilders.PROP_GET_DOUBLE, "tps")
                 .buildRead();
 

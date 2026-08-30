@@ -9,7 +9,9 @@ import ruiseki.integrateddynamics.api.part.IPartState;
 import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartRenderPosition;
 import ruiseki.integrateddynamics.core.client.gui.ExtendedGuiHandler;
+import ruiseki.integrateddynamics.core.client.gui.container.GuiPartOffset;
 import ruiseki.integrateddynamics.core.client.gui.container.GuiPartSettings;
+import ruiseki.integrateddynamics.core.inventory.container.ContainerPartOffset;
 import ruiseki.integrateddynamics.core.inventory.container.ContainerPartSettings;
 import ruiseki.okcore.helper.Helpers;
 import ruiseki.okcore.init.ModBase;
@@ -25,6 +27,8 @@ public abstract class PartTypeConfigurable<P extends IPartType<P, S>, S extends 
 
     @Getter
     private final IGuiContainerProvider settingsGuiProvider;
+    @Getter
+    private final IGuiContainerProvider offsetsGuiProvider;
 
     public PartTypeConfigurable(String name, PartRenderPosition partRenderPosition) {
         super(name, partRenderPosition);
@@ -37,10 +41,24 @@ public abstract class PartTypeConfigurable<P extends IPartType<P, S>, S extends 
         } else {
             settingsGuiProvider = null;
         }
+
+        if (supportsOffsets()) {
+            int guiIDSettings = Helpers.getNewId(getModGui(), Helpers.IDType.GUI);
+            getModGui().getGuiHandler()
+                .registerGUI(
+                    (offsetsGuiProvider = constructPartOffsetsGuiProvider(guiIDSettings)),
+                    ExtendedGuiHandler.PART);
+        } else {
+            offsetsGuiProvider = null;
+        }
     }
 
     protected IGuiContainerProvider constructSettingsGuiProvider(int guiId) {
         return new GuiProviderSettings(guiId, getModGui());
+    }
+
+    protected IGuiContainerProvider constructPartOffsetsGuiProvider(int guiId) {
+        return new GuiProviderOffsets(guiId, getModGui());
     }
 
     public boolean hasSettings() {
@@ -61,6 +79,23 @@ public abstract class PartTypeConfigurable<P extends IPartType<P, S>, S extends 
         @Override
         public Class<? extends GuiScreen> getGui() {
             return GuiPartSettings.class;
+        }
+    }
+
+    @Data
+    public static class GuiProviderOffsets implements IGuiContainerProvider {
+
+        private final int guiID;
+        private final ModBase modGui;
+
+        @Override
+        public Class<? extends Container> getContainer() {
+            return ContainerPartOffset.class;
+        }
+
+        @Override
+        public Class<? extends GuiScreen> getGui() {
+            return GuiPartOffset.class;
         }
     }
 
