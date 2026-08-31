@@ -275,7 +275,7 @@ public abstract class TileMechanicalMachine<I extends IInventory, R extends IRec
             // If we still need energy, ask it from the network.
             IEnergyNetwork energyNetwork = getEnergyNetwork().getOrNull();
             if (energyNetwork != null) {
-                toDrain -= energyNetwork.getChannelInternal(IPositionedAddonsNetwork.DEFAULT_CHANNEL)
+                toDrain -= energyNetwork.getChannel(IPositionedAddonsNetwork.DEFAULT_CHANNEL)
                     .extract(toDrain, simulate);
             }
         }

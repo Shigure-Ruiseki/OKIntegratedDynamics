@@ -1,5 +1,6 @@
 package ruiseki.integrateddynamics.api.network;
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -13,6 +14,7 @@ import ruiseki.commoncapabilities.api.ingredient.storage.IIngredientComponentSto
 import ruiseki.commoncapabilities.api.ingredient.storage.IIngredientComponentStorageWrapperHandler;
 import ruiseki.integrateddynamics.api.ingredient.IIngredientComponentStorageObservable;
 import ruiseki.integrateddynamics.api.part.PartPos;
+import ruiseki.integrateddynamics.core.network.IIngredientChannelInsertPreConsumer;
 import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.capabilities.ICapabilityProvider;
 import ruiseki.okcore.datastructure.DimPos;
@@ -96,7 +98,7 @@ public interface IPositionedAddonsNetworkIngredients<T, M>
      * @param channel A channel id.
      * @return A storage.
      */
-    public INetworkIngredientsChannel<T, M> getChannelInternal(int channel);
+    public INetworkIngredientsChannel<T, M> getChannel(int channel);
 
     /**
      * Get the slotted storage at the given channel.
@@ -118,7 +120,7 @@ public interface IPositionedAddonsNetworkIngredients<T, M>
     public default <S> S getChannelExternal(Capability<S> capability, int channel) {
         IIngredientComponentStorageWrapperHandler<T, M, S> wrapperHandler = getComponent()
             .getStorageWrapperHandler(capability);
-        return wrapperHandler != null ? wrapperHandler.wrapStorage(getChannelInternal(channel)) : null;
+        return wrapperHandler != null ? wrapperHandler.wrapStorage(getChannel(channel)) : null;
     }
 
     /**
@@ -132,5 +134,24 @@ public interface IPositionedAddonsNetworkIngredients<T, M>
      * Reset the last second duration count.
      */
     public void resetLastSecondDurationsIndex();
+
+    /**
+     * Register an insert pre-consumer.
+     *
+     * @param preConsumer The consumer.
+     */
+    public void registerInsertPreConsumer(IIngredientChannelInsertPreConsumer<T> preConsumer);
+
+    /**
+     * Unregister an insert pre-consumer.
+     *
+     * @param preConsumer The consumer.
+     */
+    public void unregisterInsertPreConsumer(IIngredientChannelInsertPreConsumer<T> preConsumer);
+
+    /**
+     * @return All registered insert pre-consumers.
+     */
+    public Collection<IIngredientChannelInsertPreConsumer<T>> getInsertPreConsumers();
 
 }

@@ -1,5 +1,6 @@
 package ruiseki.integrateddynamics.core.evaluate.operator;
 
+import java.util.Arrays;
 import java.util.Objects;
 
 import net.minecraft.nbt.JsonToNBT;
@@ -52,8 +53,33 @@ public class CombinedOperator extends OperatorBase {
     }
 
     @Override
-    public IOperator materialize() {
-        return this;
+    public IOperator materialize() throws EvaluationException {
+        // Materialize all combined operators, as these may still refer to non-materialized values.
+        // For example, a curried operator that has a list from an inventory applied to it,
+        // which would otherwise be sent to clients as an unresolvable position-based list proxy. #1703
+        OperatorsFunction function = (OperatorsFunction) getFunction();
+        IOperator[] operators = function.getOperators();
+        IOperator[] materializedOperators = new IOperator[operators.length];
+        boolean changed = false;
+        for (int i = 0; i < operators.length; i++) {
+            materializedOperators[i] = operators[i].materialize();
+            changed |= materializedOperators[i] != operators[i];
+        }
+        return changed ? function.recreate(materializedOperators) : this;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof CombinedOperator)) return false;
+        CombinedOperator that = (CombinedOperator) o;
+        return Objects.equals(getUniqueName(), that.getUniqueName())
+            && Objects.equals(getFunction(), that.getFunction());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getUniqueName(), getFunction());
     }
 
     public static abstract class OperatorsFunction implements IFunction {
@@ -70,6 +96,27 @@ public class CombinedOperator extends OperatorBase {
 
         public int getInputOperatorCount() {
             return getOperators().length;
+        }
+
+        /**
+         * Create a new operator of this same function type for the given operators.
+         * 
+         * @param operators The operators to combine.
+         * @return The new combined operator.
+         * @throws EvaluationException If the operators can not be combined.
+         */
+        public abstract CombinedOperator recreate(IOperator... operators) throws EvaluationException;
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            return Arrays.equals(operators, ((OperatorsFunction) o).operators);
+        }
+
+        @Override
+        public int hashCode() {
+            return 31 * getClass().hashCode() + Arrays.hashCode(operators);
         }
     }
 
@@ -95,6 +142,11 @@ public class CombinedOperator extends OperatorBase {
         public static CombinedOperator asOperator(IOperator... operators) {
             CombinedOperator.Conjunction conjunction = new CombinedOperator.Conjunction(operators);
             return new CombinedOperator(":&&:", "p_conjunction", conjunction, ValueTypes.BOOLEAN);
+        }
+
+        @Override
+        public CombinedOperator recreate(IOperator... operators) {
+            return Conjunction.asOperator(operators);
         }
 
         public static class Serializer extends ListOperatorSerializer<Conjunction> {
@@ -135,6 +187,11 @@ public class CombinedOperator extends OperatorBase {
             return new CombinedOperator(":||:", "p_disjunction", disjunction, ValueTypes.BOOLEAN);
         }
 
+        @Override
+        public CombinedOperator recreate(IOperator... operators) {
+            return Disjunction.asOperator(operators);
+        }
+
         public static class Serializer extends ListOperatorSerializer<Disjunction> {
 
             public Serializer() {
@@ -167,6 +224,11 @@ public class CombinedOperator extends OperatorBase {
         public static CombinedOperator asOperator(IOperator operator) {
             CombinedOperator.Negation negation = new CombinedOperator.Negation(operator);
             return new CombinedOperator("!:", "p_negation", negation, ValueTypes.BOOLEAN);
+        }
+
+        @Override
+        public CombinedOperator recreate(IOperator... operators) {
+            return Negation.asOperator(operators[0]);
         }
 
         public static class Serializer extends ListOperatorSerializer<Negation> {
@@ -282,6 +344,11 @@ public class CombinedOperator extends OperatorBase {
             };
         }
 
+        @Override
+        public CombinedOperator recreate(IOperator... operators) {
+            return Pipe.asOperator(operators);
+        }
+
         public static class Serializer extends ListOperatorSerializer<Pipe> {
 
             public Serializer() {
@@ -309,6 +376,11 @@ public class CombinedOperator extends OperatorBase {
 
         public static CombinedOperator asOperator(IOperator... operators) {
             return Pipe.asOperator(new CombinedOperator.Pipe2(operators), ":.2:", "piped2", operators);
+        }
+
+        @Override
+        public CombinedOperator recreate(IOperator... operators) {
+            return Pipe2.asOperator(operators);
         }
 
         public static class Serializer extends ListOperatorSerializer<Pipe2> {
@@ -372,6 +444,11 @@ public class CombinedOperator extends OperatorBase {
                 throw new EvaluationException(e.getMessage());
             }
             return combinedOperator;
+        }
+
+        @Override
+        public CombinedOperator recreate(IOperator... operators) throws EvaluationException {
+            return Flip.asOperator(operators[0]);
         }
 
         public static class Serializer extends ListOperatorSerializer<Flip> {

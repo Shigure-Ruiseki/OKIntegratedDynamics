@@ -4,6 +4,7 @@ import org.jetbrains.annotations.Nullable;
 
 import ruiseki.commoncapabilities.api.capability.work.IWorker;
 import ruiseki.commoncapabilities.capability.worker.WorkerConfig;
+import ruiseki.integrateddynamics.block.BlockCoalGeneratorConfig;
 import ruiseki.integrateddynamics.tileentity.TileCoalGenerator;
 import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.capabilities.ICapabilityProvider;
@@ -43,7 +44,7 @@ public class WorkerCoalGeneratorTileCompat extends SimpleCapabilityConstructor<I
 
         @Override
         public boolean canWork() {
-            return provider.canAddEnergy(TileCoalGenerator.ENERGY_PER_TICK);
+            return provider.canAddEnergy(BlockCoalGeneratorConfig.energyPerTick);
         }
     }
 }

@@ -80,7 +80,7 @@ public class TerminalStorageIngredientItemStackCraftingGridClear extends PacketC
                 if (toStorage) {
                     // To storage
                     ItemStack remainder = tabServer.getIngredientNetwork()
-                        .getChannelInternal(channel)
+                        .getChannel(channel)
                         .insert(itemStack, false);
                     // Place any remainder back into the grid slot so items aren't lost
                     if (remainder != null && remainder.stackSize > 0) {

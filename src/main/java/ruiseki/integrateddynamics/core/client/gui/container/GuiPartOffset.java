@@ -139,6 +139,14 @@ public class GuiPartOffset<T extends ContainerPartOffset> extends GuiContainerEx
     }
 
     @Override
+    public void onGuiClosed() {
+        // Auto-save the offsets when the gui is closed,
+        // so that players don't have to explicitly confirm their changes.
+        onSave();
+        super.onGuiClosed();
+    }
+
+    @Override
     protected void keyTyped(char typedChar, int keyCode) {
         if (!this.numberFieldX.textboxKeyTyped(typedChar, keyCode)
             && !this.numberFieldY.textboxKeyTyped(typedChar, keyCode)

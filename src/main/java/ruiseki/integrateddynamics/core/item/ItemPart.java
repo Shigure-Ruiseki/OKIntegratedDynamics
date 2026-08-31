@@ -84,7 +84,7 @@ public class ItemPart<P extends IPartType<P, S>, S extends IPartState<P>> extend
         ForgeDirection side = ForgeDirection.getOrientation(sideInt);
         IPartContainer partContainerFirst = PartHelpers.getPartContainer(world, pos, side)
             .getOrNull();
-        if (partContainerFirst != null) {
+        if (partContainerFirst != null && !partContainerFirst.hasPart(side)) {
             // Add part to existing cable
             if (PartHelpers.addPart(world, pos, side, getPart(), itemStack)) {
                 if (world.isRemote) {

@@ -1,6 +1,8 @@
 package ruiseki.integrateddynamics.block;
 
 import ruiseki.integrateddynamics.IntegratedDynamics;
+import ruiseki.okcore.config.ConfigurableProperty;
+import ruiseki.okcore.config.ConfigurableTypeCategory;
 import ruiseki.okcore.config.extendedconfig.BlockContainerConfig;
 
 /**
@@ -9,6 +11,12 @@ import ruiseki.okcore.config.extendedconfig.BlockContainerConfig;
  * @author rubensworks
  */
 public class BlockCoalGeneratorConfig extends BlockContainerConfig {
+
+    @ConfigurableProperty(
+        category = ConfigurableTypeCategory.MACHINE,
+        comment = "The energy production rate (in RF/t) of the coal generator.",
+        minimalValue = 1)
+    public static int energyPerTick = 20;
 
     /**
      * The unique instance.

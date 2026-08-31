@@ -2,6 +2,7 @@ package ruiseki.integrateddynamics.core.network;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import net.minecraftforge.common.util.ForgeDirection;
@@ -12,6 +13,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 import it.unimi.dsi.fastutil.ints.Int2IntLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
@@ -55,6 +57,7 @@ public abstract class PositionedAddonsNetworkIngredients<T, M> extends Positione
     private final Map<PartPos, PositionedAddonsNetworkIngredientsFilter<T>> positionFilters = Maps.newHashMap();
     private final LoadingCache<PartPos, IIngredientComponentStorage<T, M>> cacheStorage;
     private final Int2IntMap cacheChannelSlots;
+    private final Set<IIngredientChannelInsertPreConsumer<T>> insertPreConsumers;
 
     private boolean observe;
     private Map<PartPos, Long> lastSecondDurations = Maps.newHashMap();
@@ -75,6 +78,7 @@ public abstract class PositionedAddonsNetworkIngredients<T, M> extends Positione
                 }
             });
         this.cacheChannelSlots = new Int2IntLinkedOpenHashMap();
+        this.insertPreConsumers = Sets.newIdentityHashSet();
 
         this.observe = false;
     }
@@ -202,7 +206,7 @@ public abstract class PositionedAddonsNetworkIngredients<T, M> extends Positione
     }
 
     @Override
-    public INetworkIngredientsChannel<T, M> getChannelInternal(int channel) {
+    public INetworkIngredientsChannel<T, M> getChannel(int channel) {
         return new IngredientChannelIndexed<>(this, channel, getChannelIndex(channel));
     }
 
@@ -250,7 +254,7 @@ public abstract class PositionedAddonsNetworkIngredients<T, M> extends Positione
     @Override
     public IIngredientComponentStorageSlotted<T, M> getChannelSlotted(int channel) {
         return new IngredientChannelAdapterWrapperSlotted<>(
-            (IngredientChannelAdapter<T, M>) getChannelInternal(channel),
+            (IngredientChannelAdapter<T, M>) getChannel(channel),
             this.cacheChannelSlots);
     }
 
@@ -348,5 +352,20 @@ public abstract class PositionedAddonsNetworkIngredients<T, M> extends Positione
     @Override
     public void revalidateElement(INetworkElement element) {
 
+    }
+
+    @Override
+    public void registerInsertPreConsumer(IIngredientChannelInsertPreConsumer<T> preConsumer) {
+        insertPreConsumers.add(preConsumer);
+    }
+
+    @Override
+    public void unregisterInsertPreConsumer(IIngredientChannelInsertPreConsumer<T> preConsumer) {
+        insertPreConsumers.remove(preConsumer);
+    }
+
+    @Override
+    public Set<IIngredientChannelInsertPreConsumer<T>> getInsertPreConsumers() {
+        return insertPreConsumers;
     }
 }

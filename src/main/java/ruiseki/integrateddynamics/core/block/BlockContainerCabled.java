@@ -54,8 +54,9 @@ public abstract class BlockContainerCabled extends BlockTile {
     @Override
     public void onBlockAdded(World world, int x, int y, int z) {
         super.onBlockAdded(world, x, y, z);
-        if (!world.isRemote) {
-            CableHelpers.onCableAdded(world, new BlockPos(x, y, z));
+        BlockPos pos = new BlockPos(x, y, z);
+        if (!world.isRemote && pos.getBlock(world) != this) {
+            CableHelpers.onCableAdded(world, pos);
         }
     }
 

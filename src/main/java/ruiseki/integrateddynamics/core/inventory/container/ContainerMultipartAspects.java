@@ -1,5 +1,6 @@
 package ruiseki.integrateddynamics.core.inventory.container;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -14,12 +15,16 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.jetbrains.annotations.Nullable;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import ruiseki.integrateddynamics.IntegratedDynamics;
+import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
+import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 import ruiseki.integrateddynamics.api.item.IAspectVariableFacade;
 import ruiseki.integrateddynamics.api.item.IVariableFacadeHandlerRegistry;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
@@ -27,14 +32,18 @@ import ruiseki.integrateddynamics.api.part.IPartState;
 import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.api.part.aspect.IAspect;
+import ruiseki.integrateddynamics.api.part.aspect.property.IAspectProperties;
+import ruiseki.integrateddynamics.api.part.aspect.property.IAspectPropertyTypeInstance;
 import ruiseki.integrateddynamics.core.client.gui.ExtendedGuiHandler;
 import ruiseki.integrateddynamics.core.client.gui.container.GuiMultipartAspects;
+import ruiseki.integrateddynamics.core.evaluate.variable.ValueHelpers;
 import ruiseki.integrateddynamics.core.helper.PartHelpers;
 import ruiseki.integrateddynamics.core.item.AspectVariableFacade;
 import ruiseki.integrateddynamics.core.part.PartTypeConfigurable;
 import ruiseki.integrateddynamics.part.aspect.Aspects;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.helper.LangHelpers;
+import ruiseki.okcore.helper.ValueNotifierHelpers;
 import ruiseki.okcore.inventory.IGuiContainerProvider;
 import ruiseki.okcore.inventory.SimpleInventory;
 import ruiseki.okcore.inventory.container.InventoryContainer;
@@ -63,6 +72,7 @@ public abstract class ContainerMultipartAspects<P extends IPartType<P, S> & IGui
     private final World world;
     private final BlockPos pos;
     private final Map<IAspect, Integer> aspectPropertyButtons = Maps.newHashMap();
+    private final Map<IAspect, Integer> aspectPropertyValueIds = Maps.newIdentityHashMap();
 
     protected final IInventory inputSlots;
     protected final EntityPlayer player;
@@ -151,6 +161,7 @@ public abstract class ContainerMultipartAspects<P extends IPartType<P, S> & IGui
         for (final IAspect aspect : getUnfilteredItems()) {
             if (aspect.hasProperties()) {
                 aspectPropertyButtons.put(aspect, nextButtonId);
+                aspectPropertyValueIds.put(aspect, getNextValueId());
                 putButtonAction(nextButtonId, new IButtonActionServer<InventoryContainer>() {
 
                     @Override
@@ -178,6 +189,71 @@ public abstract class ContainerMultipartAspects<P extends IPartType<P, S> & IGui
 
     public Map<IAspect, Integer> getAspectPropertyButtons() {
         return Collections.unmodifiableMap(this.aspectPropertyButtons);
+    }
+
+    @Override
+    public void detectAndSendChanges() {
+        super.detectAndSendChanges();
+
+        if (!world.isRemote) {
+            for (Map.Entry<IAspect, Integer> entry : this.aspectPropertyValueIds.entrySet()) {
+                ValueNotifierHelpers.setValue(this, entry.getValue(), getModifiedAspectPropertyValues(entry.getKey()));
+            }
+        }
+    }
+
+    /**
+     * Determine the values of all properties of the given aspect that deviate from their default value.
+     *
+     * The returned list has one entry for each of the aspect's property types,
+     * in the order of {@link IAspect#getPropertyTypes()}.
+     * Properties that still have their default value are represented by "EMPTY".
+     *
+     * @param aspect An aspect that has properties.
+     * @return The modified property values, in the order of the aspect's property types.
+     */
+    @SuppressWarnings("unchecked")
+    protected List<String> getModifiedAspectPropertyValues(IAspect aspect) {
+        IAspectProperties defaultProperties = aspect.getDefaultProperties();
+        IAspectProperties properties = getPartState().getAspectProperties(aspect);
+        if (properties == null) {
+            properties = defaultProperties;
+        }
+
+        List<String> values = Lists.newArrayList();
+        for (IAspectPropertyTypeInstance property : (Collection<IAspectPropertyTypeInstance>) aspect
+            .getPropertyTypes()) {
+            IValue value = properties.getValue(property);
+            IValue defaultValue = defaultProperties.getValue(property);
+            if (value == null || ValueHelpers.areValuesEqual(value, defaultValue)) {
+                values.add("");
+            } else {
+                IValueType valueType = value.getType();
+                String compactValue = valueType.toCompactString(value);
+                if (compactValue == null || compactValue.isEmpty()) {
+                    values.add("");
+                } else {
+                    values.add(valueType.getDisplayColorFormat() + compactValue);
+                }
+            }
+        }
+        return values;
+    }
+
+    /**
+     * Get the modified property values of the given aspect, as synced from the server.
+     *
+     * @param aspect An aspect.
+     * @return The modified property values, in the order of {@link IAspect#getPropertyTypes()},
+     *         or null if they are unknown.
+     */
+    @Nullable
+    public List<String> getModifiedAspectPropertyValuesSynced(IAspect aspect) {
+        Integer valueId = this.aspectPropertyValueIds.get(aspect);
+        if (valueId == null) {
+            return null;
+        }
+        return ValueNotifierHelpers.getValueStringList(this, valueId);
     }
 
     @SuppressWarnings("unchecked")

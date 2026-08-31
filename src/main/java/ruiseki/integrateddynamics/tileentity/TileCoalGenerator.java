@@ -15,6 +15,7 @@ import lombok.experimental.Delegate;
 import ruiseki.integrateddynamics.api.network.IEnergyNetwork;
 import ruiseki.integrateddynamics.api.network.INetworkElement;
 import ruiseki.integrateddynamics.api.network.IPositionedAddonsNetwork;
+import ruiseki.integrateddynamics.block.BlockCoalGeneratorConfig;
 import ruiseki.integrateddynamics.capability.networkelementprovider.NetworkElementProviderConfig;
 import ruiseki.integrateddynamics.capability.networkelementprovider.NetworkElementProviderSingleton;
 import ruiseki.integrateddynamics.core.helper.EnergyHelpers;
@@ -38,7 +39,6 @@ import ruiseki.okcore.persist.nbt.NBTPersist;
 public class TileCoalGenerator extends TileCableConnectableInventory implements IEnergyProvider, IEnergyStorage {
 
     public static final int MAX_PROGRESS = 13;
-    public static final int ENERGY_PER_TICK = 20;
     public static final int SLOT_FUEL = 0;
 
     @NBTPersist
@@ -100,7 +100,7 @@ public class TileCoalGenerator extends TileCableConnectableInventory implements 
 
     public boolean canAddEnergy(int energy) {
         IEnergyNetwork network = getEnergyNetwork().getOrNull();
-        if (network != null && network.getChannelInternal(IPositionedAddonsNetwork.DEFAULT_CHANNEL)
+        if (network != null && network.getChannel(IPositionedAddonsNetwork.DEFAULT_CHANNEL)
             .insert((long) energy, true) == 0) {
             return true;
         }
@@ -112,7 +112,7 @@ public class TileCoalGenerator extends TileCableConnectableInventory implements 
         int toFill = energy;
         if (network != null) {
             toFill = Helpers.castSafe(
-                network.getChannelInternal(IPositionedAddonsNetwork.DEFAULT_CHANNEL)
+                network.getChannel(IPositionedAddonsNetwork.DEFAULT_CHANNEL)
                     .insert((long) toFill, false));
         }
         if (toFill > 0) {
@@ -131,13 +131,14 @@ public class TileCoalGenerator extends TileCableConnectableInventory implements 
         if (!getWorldObj().isRemote) {
             boolean wasBurning = isBurning();
 
-            if ((getStackInSlot(SLOT_FUEL) != null || isBurning()) && canAddEnergy(ENERGY_PER_TICK)) {
+            if ((getStackInSlot(SLOT_FUEL) != null || isBurning())
+                && canAddEnergy(BlockCoalGeneratorConfig.energyPerTick)) {
                 if (isBurning()) {
                     if (++currentlyBurning >= currentlyBurningMax) {
                         currentlyBurning = 0;
                         currentlyBurningMax = 0;
                     }
-                    int toFill = ENERGY_PER_TICK;
+                    int toFill = BlockCoalGeneratorConfig.energyPerTick;
                     addEnergy(toFill);
                     markDirty();
                 }

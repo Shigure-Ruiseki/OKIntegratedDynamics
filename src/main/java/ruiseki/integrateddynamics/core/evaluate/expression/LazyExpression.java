@@ -1,5 +1,9 @@
 package ruiseki.integrateddynamics.core.evaluate.expression;
 
+import org.apache.logging.log4j.Level;
+
+import ruiseki.integrateddynamics.GeneralConfig;
+import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.evaluate.expression.IExpression;
 import ruiseki.integrateddynamics.api.evaluate.expression.ILazyExpressionValueCache;
@@ -38,6 +42,9 @@ public class LazyExpression<V extends IValue> extends VariableAdapter<V> impleme
     public IValue evaluate() throws EvaluationException {
         if (valueCache.hasValue(id)) {
             return valueCache.getValue(id);
+        }
+        if (GeneralConfig.logCardEvaluation) {
+            IntegratedDynamics.clog(Level.INFO, "Evaluating variable card with ID: " + id);
         }
         IValue value = op.evaluate(input);
         for (IVariable inputVariable : input) {

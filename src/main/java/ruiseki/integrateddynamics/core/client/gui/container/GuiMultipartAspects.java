@@ -53,6 +53,10 @@ public abstract class GuiMultipartAspects<P extends IPartType<P, S> & IGuiContai
     public static final int BUTTON_SETTINGS = 1;
     public static final int BUTTON_OFFSETS = 2;
     private static final Rectangle ITEM_POSITION = new Rectangle(8, 17, 18, 18);
+    /**
+     * The maximum number of characters that are shown for a modified aspect property value in tooltips.
+     */
+    private static final int MAX_PROPERTY_VALUE_LENGTH = 20;
 
     protected final DisplayErrorsComponent displayErrors = new DisplayErrorsComponent();
     private final PartTarget target;
@@ -240,7 +244,8 @@ public abstract class GuiMultipartAspects<P extends IPartType<P, S> & IGuiContai
     @Override
     protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
         super.drawGuiContainerForegroundLayer(mouseX, mouseY);
-        ContainerMultipartAspects<P, S, A> container = (ContainerMultipartAspects) getScrollingInventoryContainer();
+        @SuppressWarnings("unchecked")
+        ContainerMultipartAspects<P, S, A> container = (ContainerMultipartAspects<P, S, A>) getScrollingInventoryContainer();
         for (int i = 0; i < container.getPageSize(); i++) {
             if (container.isElementVisible(i)) {
                 // Item icon tooltip
@@ -262,9 +267,24 @@ public abstract class GuiMultipartAspects<P extends IPartType<P, S> & IGuiContai
                         List<String> lines = Lists.newLinkedList();
                         lines.add(
                             EnumChatFormatting.WHITE + LangHelpers.localize("gui.integrateddynamics.part.properties"));
+                        List<String> propertyValues = container.getModifiedAspectPropertyValuesSynced(aspect);
+                        int propertyIndex = 0;
                         for (IAspectPropertyTypeInstance property : ((IAspect<?, ?>) aspect).getPropertyTypes()) {
-                            lines.add(
-                                "-" + EnumChatFormatting.YELLOW + LangHelpers.localize(property.getUnlocalizedName()));
+                            String line = "-" + EnumChatFormatting.YELLOW
+                                + LangHelpers.localize(property.getUnlocalizedName());
+
+                            String value = propertyValues != null && propertyIndex < propertyValues.size()
+                                ? propertyValues.get(propertyIndex)
+                                : null;
+
+                            if (value != null && !value.trim()
+                                .isEmpty()) {
+                                line += EnumChatFormatting.YELLOW + ": "
+                                    + EnumChatFormatting.RESET
+                                    + compactPropertyValue(value);
+                            }
+                            lines.add(line);
+                            propertyIndex++;
                         }
                         drawTooltip(lines, mouseX - this.guiLeft, mouseY - this.guiTop);
                     }
@@ -278,5 +298,20 @@ public abstract class GuiMultipartAspects<P extends IPartType<P, S> & IGuiContai
 
     public int getMaxLabelWidth() {
         return 63;
+    }
+
+    /**
+     * Create a compact single-line representation of the given aspect property value.
+     * 
+     * @param value An aspect property value.
+     * @return A compact representation of the given value.
+     */
+    protected static String compactPropertyValue(String value) {
+        if (value == null) return "";
+        String string = value.replaceAll("\\s+", " ");
+        if (string.length() > MAX_PROPERTY_VALUE_LENGTH) {
+            string = string.substring(0, MAX_PROPERTY_VALUE_LENGTH) + "...";
+        }
+        return string;
     }
 }

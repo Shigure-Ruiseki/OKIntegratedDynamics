@@ -1089,9 +1089,46 @@ public final class Operators {
     public static final IOperator NUMBER_COMPACT = REGISTRY.register(
         OperatorBuilders.NUMBER_1_LONG.inputType(ValueTypes.CATEGORY_NUMBER)
             .output(ValueTypes.STRING)
-            .symbol("compact")
-            .operatorName("compact")
+            .symbolOperator("compact")
             .function(variables -> ValueTypes.CATEGORY_NUMBER.compact(variables.getVariables()[0]))
+            .build());
+    /**
+     * Cast any number to a double
+     */
+    public static final IOperator NUMBER_CAST_DOUBLE = REGISTRY.register(
+        OperatorBuilders.NUMBER_1_PREFIX.inputType(ValueTypes.CATEGORY_NUMBER)
+            .output(ValueTypes.DOUBLE)
+            .symbol("(double)")
+            .operatorName("cast_double")
+            .function(
+                variables -> variables.getVariables()[0].getValue()
+                    .cast(ValueTypes.DOUBLE))
+            .build());
+
+    /**
+     * Cast any number to a double
+     */
+    public static final IOperator NUMBER_CAST_LONG = REGISTRY.register(
+        OperatorBuilders.NUMBER_1_PREFIX.inputType(ValueTypes.CATEGORY_NUMBER)
+            .output(ValueTypes.LONG)
+            .symbol("(long)")
+            .operatorName("cast_long")
+            .function(
+                variables -> variables.getVariables()[0].getValue()
+                    .cast(ValueTypes.LONG))
+            .build());
+
+    /**
+     * Cast any number to a double
+     */
+    public static final IOperator NUMBER_CAST_INTEGER = REGISTRY.register(
+        OperatorBuilders.NUMBER_1_PREFIX.inputType(ValueTypes.CATEGORY_NUMBER)
+            .output(ValueTypes.INTEGER)
+            .symbol("(integer)")
+            .operatorName("cast_integer")
+            .function(
+                variables -> variables.getVariables()[0].getValue()
+                    .cast(ValueTypes.INTEGER))
             .build());
 
     /**
@@ -1231,16 +1268,27 @@ public final class Operators {
             .renderPattern(IConfigRenderPattern.PREFIX_2_LONG)
             .output(ValueTypes.BOOLEAN)
             .symbolOperator("contains")
-            .function(variables -> {
-                ValueTypeList.ValueList valueList = variables.getValue(0, ValueTypes.LIST);
-                IValueTypeListProxy<IValueType<IValue>, IValue> list = valueList.getRawValue();
-                IValue input = variables.getValue(1);
-                for (IValue value : list) {
-                    if (value.equals(input)) {
-                        return ValueTypeBoolean.ValueBoolean.of(true);
+            .function(new OperatorBase.IFunction() {
+
+                @Override
+                public IValue evaluate(OperatorBase.SafeVariablesGetter variables) throws EvaluationException {
+                    ValueTypeList.ValueList valueList = variables.getValue(0, ValueTypes.LIST);
+                    IValueTypeListProxy<IValueType<IValue>, IValue> list = valueList.getRawValue();
+                    if (list.isInfinite()) {
+                        throw new EvaluationException(
+                            LangHelpers.localize(
+                                L10NValues.OPERATOR_ERROR_INFINITELIST_ILLEGAL,
+                                LIST_CONTAINS.getLocalizedNameFull()));
                     }
+                    IValue input = variables.getValue(1);
+                    for (IValue value : list) {
+                        if (value.equals(input)) {
+                            return ValueTypeBoolean.ValueBoolean.of(true);
+                        }
+                    }
+                    return ValueTypeBoolean.ValueBoolean.of(false);
                 }
-                return ValueTypeBoolean.ValueBoolean.of(false);
+
             })
             .build());
 
@@ -1253,18 +1301,30 @@ public final class Operators {
             .renderPattern(IConfigRenderPattern.INFIX)
             .output(ValueTypes.BOOLEAN)
             .symbolOperator("contains_p")
-            .function(variables -> {
-                ValueTypeList.ValueList valueList = variables.getValue(0, ValueTypes.LIST);
-                IValueTypeListProxy<IValueType<IValue>, IValue> list = valueList.getRawValue();
-                IOperator operator = OperatorBuilders.getSafePredictate(variables.getValue(1, ValueTypes.OPERATOR));
-                for (IValue value : list) {
-                    IValue result = ValueHelpers.evaluateOperator(operator, value);
-                    ValueHelpers.validatePredicateOutput(operator, result);
-                    if (((ValueTypeBoolean.ValueBoolean) result).getRawValue()) {
-                        return ValueTypeBoolean.ValueBoolean.of(true);
+            .function(new OperatorBase.IFunction() {
+
+                @Override
+                public IValue evaluate(OperatorBase.SafeVariablesGetter variables) throws EvaluationException {
+                    ValueTypeList.ValueList valueList = variables.getValue(0, ValueTypes.LIST);
+                    IValueTypeListProxy<IValueType<IValue>, IValue> list = valueList.getRawValue();
+                    if (list.isInfinite()) {
+                        throw new EvaluationException(
+                            LangHelpers.localize(
+                                L10NValues.OPERATOR_ERROR_INFINITELIST_ILLEGAL,
+                                LIST_CONTAINS_PREDICATE.getLocalizedNameFull()));
+
                     }
+                    IOperator operator = OperatorBuilders.getSafePredictate(variables.getValue(1, ValueTypes.OPERATOR));
+                    for (IValue value : list) {
+                        IValue result = ValueHelpers.evaluateOperator(operator, value);
+                        ValueHelpers.validatePredicateOutput(operator, result);
+                        if (((ValueTypeBoolean.ValueBoolean) result).getRawValue()) {
+                            return ValueTypeBoolean.ValueBoolean.of(true);
+                        }
+                    }
+                    return ValueTypeBoolean.ValueBoolean.of(false);
                 }
-                return ValueTypeBoolean.ValueBoolean.of(false);
+
             })
             .build());
 
@@ -1511,25 +1571,42 @@ public final class Operators {
             .output(ValueTypes.BOOLEAN)
             .symbol("=set=")
             .operatorName("equals_set")
-            .function(variables -> {
-                ValueTypeList.ValueList valueList0 = variables.getValue(0, ValueTypes.LIST);
-                IValueTypeListProxy a = valueList0.getRawValue();
-                ValueTypeList.ValueList valueList1 = variables.getValue(1, ValueTypes.LIST);
-                IValueTypeListProxy b = valueList1.getRawValue();
-                if (!ValueHelpers.correspondsTo(a.getValueType(), b.getValueType())) {
-                    throw new EvaluationException(
-                        LangHelpers.localize(
-                            L10NValues.VALUETYPE_ERROR_INVALIDLISTVALUETYPE,
+            .function(new OperatorBase.IFunction() {
+
+                @Override
+                public IValue evaluate(OperatorBase.SafeVariablesGetter variables) throws EvaluationException {
+                    ValueTypeList.ValueList valueList0 = variables.getValue(0, ValueTypes.LIST);
+                    IValueTypeListProxy a = valueList0.getRawValue();
+                    if (a.isInfinite()) {
+                        throw new EvaluationException(
                             LangHelpers.localize(
-                                a.getValueType()
-                                    .getUnlocalizedName()),
+                                L10NValues.OPERATOR_ERROR_INFINITELIST_ILLEGAL,
+                                LIST_EQUALS_SET.getLocalizedNameFull()));
+                    }
+                    ValueTypeList.ValueList valueList1 = variables.getValue(1, ValueTypes.LIST);
+                    IValueTypeListProxy b = valueList1.getRawValue();
+                    if (b.isInfinite()) {
+                        throw new EvaluationException(
                             LangHelpers.localize(
-                                b.getValueType()
-                                    .getUnlocalizedName())));
+                                L10NValues.OPERATOR_ERROR_INFINITELIST_ILLEGAL,
+                                LIST_EQUALS_SET.getLocalizedNameFull()));
+                    }
+                    if (!ValueHelpers.correspondsTo(a.getValueType(), b.getValueType())) {
+                        throw new EvaluationException(
+                            LangHelpers.localize(
+                                L10NValues.VALUETYPE_ERROR_INVALIDLISTVALUETYPE,
+                                LangHelpers.localize(
+                                    (a.getValueType()
+                                        .getUnlocalizedName()),
+                                    LangHelpers.localize(
+                                        b.getValueType()
+                                            .getUnlocalizedName()))));
+                    }
+                    Set<Object> setA = Sets.newHashSet(a);
+                    Set<Object> setB = Sets.newHashSet(b);
+                    return ValueTypeBoolean.ValueBoolean.of(setA.equals(setB));
                 }
-                Set<Object> setA = Sets.newHashSet(a);
-                Set<Object> setB = Sets.newHashSet(b);
-                return ValueTypeBoolean.ValueBoolean.of(setA.equals(setB));
+
             })
             .build());
 
@@ -1542,25 +1619,41 @@ public final class Operators {
             .output(ValueTypes.BOOLEAN)
             .symbol("=multiset=")
             .operatorName("equals_multiset")
-            .function(variables -> {
-                ValueTypeList.ValueList valueList0 = variables.getValue(0, ValueTypes.LIST);
-                IValueTypeListProxy a = valueList0.getRawValue();
-                ValueTypeList.ValueList valueList1 = variables.getValue(1, ValueTypes.LIST);
-                IValueTypeListProxy b = valueList1.getRawValue();
-                if (!ValueHelpers.correspondsTo(a.getValueType(), b.getValueType())) {
-                    throw new EvaluationException(
-                        LangHelpers.localize(
-                            L10NValues.VALUETYPE_ERROR_INVALIDLISTVALUETYPE,
+            .function(new OperatorBase.IFunction() {
+
+                @Override
+                public IValue evaluate(OperatorBase.SafeVariablesGetter variables) throws EvaluationException {
+                    ValueTypeList.ValueList valueList0 = variables.getValue(0, ValueTypes.LIST);
+                    IValueTypeListProxy a = valueList0.getRawValue();
+                    if (a.isInfinite()) {
+                        throw new EvaluationException(
                             LangHelpers.localize(
-                                a.getValueType()
-                                    .getUnlocalizedName()),
+                                L10NValues.OPERATOR_ERROR_INFINITELIST_ILLEGAL,
+                                LIST_EQUALS_MULTISET.getLocalizedNameFull()));
+                    }
+                    ValueTypeList.ValueList valueList1 = variables.getValue(1, ValueTypes.LIST);
+                    IValueTypeListProxy b = valueList1.getRawValue();
+                    if (b.isInfinite()) {
+                        throw new EvaluationException(
                             LangHelpers.localize(
-                                b.getValueType()
-                                    .getUnlocalizedName())));
+                                L10NValues.OPERATOR_ERROR_INFINITELIST_ILLEGAL,
+                                LIST_EQUALS_MULTISET.getLocalizedNameFull()));
+                    }
+                    if (!ValueHelpers.correspondsTo(a.getValueType(), b.getValueType())) {
+                        throw new EvaluationException(
+                            LangHelpers.localize(
+                                L10NValues.VALUETYPE_ERROR_INVALIDLISTVALUETYPE,
+                                LangHelpers.localize(
+                                    a.getValueType()
+                                        .getUnlocalizedName()),
+                                LangHelpers.localize(
+                                    b.getValueType()
+                                        .getUnlocalizedName())));
+                    }
+                    Multiset<Object> setA = HashMultiset.create(a);
+                    Multiset<Object> setB = HashMultiset.create(b);
+                    return ValueTypeBoolean.ValueBoolean.of(setA.equals(setB));
                 }
-                Multiset<Object> setA = HashMultiset.create(a);
-                Multiset<Object> setB = HashMultiset.create(b);
-                return ValueTypeBoolean.ValueBoolean.of(setA.equals(setB));
             })
             .build());
 

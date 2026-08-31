@@ -54,7 +54,7 @@ public class ItemTargetStorage extends ChanneledTarget<IItemNetwork> implements 
 
     @Override
     public IIngredientComponentStorage<ItemStack, Integer> getItemChannel() {
-        return getChanneledNetwork().getChannelInternal(getChannel());
+        return getChanneledNetwork().getChannel(getChannel());
     }
 
     @Override

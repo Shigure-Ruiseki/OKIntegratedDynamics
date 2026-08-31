@@ -126,7 +126,7 @@ public class PartTypeInterfaceItem extends
                 return Iterators.forArray();
             }
             disablePosition();
-            Iterator<ItemStack> ret = getPositionedAddonsNetwork().getChannelInternal(getChannelInterface())
+            Iterator<ItemStack> ret = getPositionedAddonsNetwork().getChannel(getChannelInterface())
                 .iterator();
             enablePosition();
             return ret;
@@ -138,7 +138,7 @@ public class PartTypeInterfaceItem extends
                 return Iterators.forArray();
             }
             disablePosition();
-            Iterator<ItemStack> ret = getPositionedAddonsNetwork().getChannelInternal(getChannelInterface())
+            Iterator<ItemStack> ret = getPositionedAddonsNetwork().getChannel(getChannelInterface())
                 .iterator(stack, matchFlags);
             enablePosition();
             return ret;
@@ -150,7 +150,7 @@ public class PartTypeInterfaceItem extends
                 return stack;
             }
             disablePosition();
-            ItemStack ret = getPositionedAddonsNetwork().getChannelInternal(getChannelInterface())
+            ItemStack ret = getPositionedAddonsNetwork().getChannel(getChannelInterface())
                 .insert(stack, simulate);
             enablePosition();
             return ret;
@@ -162,7 +162,7 @@ public class PartTypeInterfaceItem extends
                 return null;
             }
             disablePosition();
-            ItemStack ret = getPositionedAddonsNetwork().getChannelInternal(getChannelInterface())
+            ItemStack ret = getPositionedAddonsNetwork().getChannel(getChannelInterface())
                 .extract(amount, simulate);
             enablePosition();
             return ret;
@@ -174,7 +174,7 @@ public class PartTypeInterfaceItem extends
                 return null;
             }
             disablePosition();
-            ItemStack ret = getPositionedAddonsNetwork().getChannelInternal(getChannelInterface())
+            ItemStack ret = getPositionedAddonsNetwork().getChannel(getChannelInterface())
                 .extract(matchStack, matchFlags, simulate);
             enablePosition();
             return ret;
