@@ -25,6 +25,7 @@ public class ContainerPartInterfaceCraftingSettings extends ContainerPartSetting
 
     private final int lastChannelInterfaceCraftingValueId;
     private final Map<IngredientComponent<?, ?>, Integer> targetSideOverrideValueIds;
+    private final int lastDisableCraftingCheckValueId;
 
     public ContainerPartInterfaceCraftingSettings(EntityPlayer player, PartTarget target, IPartContainer partContainer,
         IPartType partType) {
@@ -36,11 +37,12 @@ public class ContainerPartInterfaceCraftingSettings extends ContainerPartSetting
             IngredientComponent<?, ?> ingredientComponent = IngredientComponent.REGISTRY.getValue(key);
             targetSideOverrideValueIds.put(ingredientComponent, getNextValueId());
         }
+        lastDisableCraftingCheckValueId = getNextValueId();
     }
 
     @Override
     protected int getPlayerInventoryOffsetY() {
-        return 154;
+        return 174;
     }
 
     @Override
@@ -60,6 +62,10 @@ public class ContainerPartInterfaceCraftingSettings extends ContainerPartSetting
                     .getIngredientComponentTargetSideOverride(ingredientComponent)
                     .ordinal());
         }
+        ValueNotifierHelpers.setValue(
+            this,
+            lastDisableCraftingCheckValueId,
+            ((PartTypeInterfaceCrafting.State) getPartState()).isDisableCraftingCheck());
     }
 
     public int getLastChannelInterfaceCraftingValueId() {
@@ -84,6 +90,18 @@ public class ContainerPartInterfaceCraftingSettings extends ContainerPartSetting
         return ForgeDirection.VALID_DIRECTIONS[i];
     }
 
+    public int getLastDisableCraftingCheckValueId() {
+        return lastDisableCraftingCheckValueId;
+    }
+
+    public boolean getLastDisableCraftingCheckValue() {
+        return ValueNotifierHelpers.getValueBoolean(this, lastDisableCraftingCheckValueId);
+    }
+
+    public void setLastDisableCraftingCheckValue(boolean value) {
+        ValueNotifierHelpers.setValue(this, lastDisableCraftingCheckValueId, value);
+    }
+
     @Override
     protected void updatePartSettings() {
         super.updatePartSettings();
@@ -94,5 +112,6 @@ public class ContainerPartInterfaceCraftingSettings extends ContainerPartSetting
                 ingredientComponent,
                 getTargetSideOverrideValue(ingredientComponent));
         }
+        ((PartTypeInterfaceCrafting.State) getPartState()).setDisableCraftingCheck(getLastDisableCraftingCheckValue());
     }
 }

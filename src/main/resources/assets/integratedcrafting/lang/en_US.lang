@@ -4,6 +4,8 @@ general.integratedcrafting.description=Craft stuff in Integrated Dynamics networ
 
 # Gui
 gui.integratedcrafting.partsettings.channel.interface=Crafting Channel
+gui.integratedcrafting.partsettings.ingredient=Ingredient Type
+gui.integratedcrafting.partsettings.craftingcheckdisabled=Disable Craft Check
 
 gui.integratedcrafting.partinterface.slot.message.valid=Recipe is valid for the target.
 gui.integratedcrafting.partinterface.slot.message.invalid=Recipe is not acceptable by the target.

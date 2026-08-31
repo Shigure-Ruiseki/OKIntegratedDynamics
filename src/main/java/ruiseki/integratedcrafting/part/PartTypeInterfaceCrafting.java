@@ -354,6 +354,7 @@ public class PartTypeInterfaceCrafting
         private final IntSet delayedRecipeReloads;
         private final Map<IVariable, Boolean> variableListeners;
         private int channelCrafting = 0;
+        private boolean disableCraftingCheck = false;
 
         private final Int2ObjectMap<IRecipeDefinition> currentRecipes;
         private PartTarget target = null;
@@ -433,6 +434,7 @@ public class PartTypeInterfaceCrafting
                 recipeSlotValidatedTag.setBoolean(String.valueOf(entry.getIntKey()), entry.getBooleanValue());
             }
             tag.setTag("recipeSlotValidated", recipeSlotValidatedTag);
+            tag.setBoolean("disableCraftingCheck", disableCraftingCheck);
         }
 
         @Override
@@ -469,6 +471,7 @@ public class PartTypeInterfaceCrafting
             for (String slot : recipeSlotValidatedTag.func_150296_c()) {
                 this.recipeSlotValidated.put(Integer.parseInt(slot), recipeSlotValidatedTag.getBoolean(slot));
             }
+            this.disableCraftingCheck = tag.getBoolean("disableCraftingCheck");
         }
 
         public void setChannelCrafting(int channelCrafting) {
@@ -561,7 +564,8 @@ public class PartTypeInterfaceCrafting
                                 .getRawValue();
                             if (recipeWrapper.isPresent()) {
                                 IRecipeDefinition recipe = recipeWrapper.get();
-                                if (!GeneralConfig.validateRecipesCraftingInterface || isValid(recipe)) {
+                                if (!GeneralConfig.validateRecipesCraftingInterface || this.disableCraftingCheck
+                                    || isValid(recipe)) {
                                     this.currentRecipes.put(slot, recipe);
                                     this.recipeSlotValidated.put(slot, true);
                                     this.recipeSlotMessages.put(
@@ -847,6 +851,18 @@ public class PartTypeInterfaceCrafting
 
         public IntSet getDelayedRecipeReloads() {
             return delayedRecipeReloads;
+        }
+
+        public void setDisableCraftingCheck(boolean disableCraftingCheck) {
+            if (disableCraftingCheck != this.disableCraftingCheck) {
+                this.disableCraftingCheck = disableCraftingCheck;
+
+                this.sendUpdate();
+            }
+        }
+
+        public boolean isDisableCraftingCheck() {
+            return disableCraftingCheck;
         }
     }
 }

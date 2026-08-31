@@ -22,6 +22,7 @@ import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.core.client.gui.GuiTextFieldDropdown;
 import ruiseki.integrateddynamics.core.client.gui.container.GuiPartSettings;
+import ruiseki.okcore.client.gui.component.button.GuiButtonCheckbox;
 import ruiseki.okcore.client.gui.component.input.GuiArrowedListField;
 import ruiseki.okcore.client.gui.component.input.GuiNumberField;
 import ruiseki.okcore.client.gui.component.input.IInputListener;
@@ -41,6 +42,7 @@ public class GuiPartInterfaceCraftingSettings extends GuiPartSettings implements
     private List<SideDropdownEntry> dropdownEntries;
     private IngredientComponent<?, ?> selectedIngredientComponent = null;
     private GuiNumberField numberFieldChannelInterfaceCrafting = null;
+    private GuiButtonCheckbox checkboxFieldDisabledCraftingCheck = null;
 
     public GuiPartInterfaceCraftingSettings(EntityPlayer player, PartTarget target, IPartContainer partContainer,
         IPartType partType) {
@@ -98,6 +100,8 @@ public class GuiPartInterfaceCraftingSettings extends GuiPartSettings implements
                 getContainer(),
                 ((ContainerPartInterfaceCraftingSettings) getContainer()).getLastChannelInterfaceCraftingValueId(),
                 channelInterface);
+            ((ContainerPartInterfaceCraftingSettings) getContainer())
+                .setLastDisableCraftingCheckValue(checkboxFieldDisabledCraftingCheck.isChecked());
         } catch (NumberFormatException e) {}
     }
 
@@ -160,6 +164,16 @@ public class GuiPartInterfaceCraftingSettings extends GuiPartSettings implements
         numberFieldChannelInterfaceCrafting.setTextColor(16777215);
         numberFieldChannelInterfaceCrafting.setCanLoseFocus(true);
 
+        checkboxFieldDisabledCraftingCheck = new GuiButtonCheckbox(
+            0,
+            guiLeft + 110,
+            guiTop + 159,
+            110,
+            10,
+            LangHelpers.localize("gui.integratedcrafting.partsettings.craftingcheckdisabled"),
+            false);
+        buttonList.add(checkboxFieldDisabledCraftingCheck);
+
         this.refreshValues();
     }
 
@@ -209,11 +223,17 @@ public class GuiPartInterfaceCraftingSettings extends GuiPartSettings implements
             guiTop + 137,
             0);
         numberFieldChannelInterfaceCrafting.drawTextBox(Minecraft.getMinecraft(), mouseX, mouseY);
+
+        fontRendererObj.drawString(
+            LangHelpers.localize("gui.integratedcrafting.partsettings.craftingcheckdisabled"),
+            guiLeft + 8,
+            guiTop + 162,
+            0);
     }
 
     @Override
     protected int getBaseYSize() {
-        return 236;
+        return 256;
     }
 
     protected void setSideInDropdownField(IngredientComponent<?, ?> ingredientComponent, ForgeDirection side) {
@@ -241,6 +261,10 @@ public class GuiPartInterfaceCraftingSettings extends GuiPartSettings implements
             numberFieldChannelInterfaceCrafting.setText(
                 Integer.toString(
                     ((ContainerPartInterfaceCraftingSettings) getContainer()).getLastChannelInterfaceValue()));
+        }
+        if (valueId == ((ContainerPartInterfaceCraftingSettings) getContainer()).getLastDisableCraftingCheckValueId()) {
+            checkboxFieldDisabledCraftingCheck.setChecked(
+                ((ContainerPartInterfaceCraftingSettings) getContainer()).getLastDisableCraftingCheckValue());
         }
     }
 
