@@ -2,6 +2,7 @@ package ruiseki.integrateddynamics.part.aspect.read;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 
 import net.minecraft.entity.item.EntityItemFrame;
 import net.minecraft.init.Blocks;
@@ -347,7 +348,10 @@ public class AspectReadBuilders {
 
             @Override
             public FluidStack getOutput(IFluidTankProperties tankInfo) {
-                return tankInfo != null ? tankInfo.getContents() : null;
+                return Optional.ofNullable(tankInfo)
+                    .map(IFluidTankProperties::getContents)
+                    .map(FluidStack::copy)
+                    .orElse(null);
             }
         };
         public static final IAspectValuePropagator<Pair<PartTarget, IAspectProperties>, ValueTypeList.ValueList> PROP_GET_LIST_FLUIDSTACKS = new IAspectValuePropagator<Pair<PartTarget, IAspectProperties>, ValueTypeList.ValueList>() {

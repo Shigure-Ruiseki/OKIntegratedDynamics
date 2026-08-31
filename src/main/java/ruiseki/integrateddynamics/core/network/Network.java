@@ -617,6 +617,9 @@ public class Network implements INetwork {
     }
 
     protected boolean isValid(INetworkElement element) {
+        if (!element.isLoaded()) {
+            return false;
+        }
         if (invalidatedElements.contains(element)) {
             if (element.canRevalidate(this)) {
                 element.revalidate(this);

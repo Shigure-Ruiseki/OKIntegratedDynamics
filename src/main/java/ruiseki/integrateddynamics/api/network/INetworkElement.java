@@ -10,6 +10,7 @@ import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
 import ruiseki.okcore.datastructure.BlockPos;
+import ruiseki.okcore.datastructure.DimPos;
 
 /**
  * Objects that can be an element of a {@link INetwork}.
@@ -154,4 +155,22 @@ public interface INetworkElement extends Comparable<INetworkElement> {
      * @param network The network.
      */
     public void revalidate(INetwork network);
+
+    /**
+     * @return If this element's position is currently loaded in the world.
+     */
+    public default boolean isLoaded() {
+        return true;
+    }
+
+    /**
+     * If a network element on the given position should tick.
+     * This can be used as implementation for {@link INetworkElement#isLoaded()}.
+     *
+     * @param pos A position.
+     * @return If it should tick.
+     */
+    public static boolean shouldTick(DimPos pos) {
+        return pos.isLoaded();
+    }
 }

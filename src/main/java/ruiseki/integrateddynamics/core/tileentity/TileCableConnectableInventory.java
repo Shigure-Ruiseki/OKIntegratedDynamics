@@ -78,7 +78,9 @@ public class TileCableConnectableInventory extends InventoryTileEntity implement
             cable.updateConnections();
         }
         if (getWorldObj() != null && !getWorldObj().isRemote) {
-            NetworkHelpers.revalidateNetworkElements(getWorldObj(), getPos());
+            if (NetworkHelpers.revalidateNetworkElements(worldObj, pos)) {
+                afterNetworkReAlive();
+            }
         }
     }
 

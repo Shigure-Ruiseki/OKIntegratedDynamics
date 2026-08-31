@@ -137,4 +137,8 @@ public class EnergyBatteryNetworkElement extends NetworkElementBase {
                     .getCanonicalName());
     }
 
+    @Override
+    public boolean isLoaded() {
+        return INetworkElement.shouldTick(this.getPos());
+    }
 }

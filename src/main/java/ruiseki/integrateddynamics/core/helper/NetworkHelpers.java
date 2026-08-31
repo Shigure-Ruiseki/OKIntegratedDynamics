@@ -336,7 +336,7 @@ public class NetworkHelpers {
      * @param world The world.
      * @param pos   The position.
      */
-    public static void revalidateNetworkElements(World world, BlockPos pos) {
+    public static boolean revalidateNetworkElements(World world, BlockPos pos) {
         INetworkCarrier networkCarrier = CapabilityHelpers.getCapability(world, pos, NetworkCarrierConfig.CAPABILITY)
             .getOrNull();
         IPathElement pathElement = CapabilityHelpers.getCapability(world, pos, PathElementConfig.CAPABILITY)
@@ -346,9 +346,9 @@ public class NetworkHelpers {
             && networkCarrier.getNetwork() == null
             && CapabilityHelpers.getCapability(world, pos, CableFakeableConfig.CAPABILITY)
                 .map(ICableFakeable::isRealCable)
-                .orElse(false)) {
-            CapabilityHelpers.getCapability(world, pos, NetworkElementProviderConfig.CAPABILITY)
-                .ifPresent(networkElementProvider -> {
+                .orElse(true)) {
+            return CapabilityHelpers.getCapability(world, pos, NetworkElementProviderConfig.CAPABILITY)
+                .map(networkElementProvider -> {
                     // Attempt to revalidate the network elements in this provider
                     boolean foundNetwork = false;
                     for (INetwork network : NetworkWorldStorage.getInstance(IntegratedDynamics._instance)
@@ -374,9 +374,13 @@ public class NetworkHelpers {
                                 pos,
                                 world.provider.dimensionId));
                         NetworkHelpers.initNetwork(world, pos, null);
+                        return true;
                     }
-                });
+                    return foundNetwork;
+                })
+                .orElse(false);
         }
+        return false;
     }
 
 }

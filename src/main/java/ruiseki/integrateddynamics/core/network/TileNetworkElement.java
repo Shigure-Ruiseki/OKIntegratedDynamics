@@ -84,4 +84,9 @@ public abstract class TileNetworkElement<T extends TileCableConnectableInventory
     public DimPos getPosition() {
         return this.pos;
     }
+
+    @Override
+    public boolean isLoaded() {
+        return INetworkElement.shouldTick(this.getPos());
+    }
 }

@@ -1,8 +1,10 @@
 package ruiseki.integrateddynamics.core.logicprogrammer;
 
 import java.io.IOException;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
@@ -405,7 +407,7 @@ public class ValueTypeIngredientsLPElement extends ValueTypeLPElementBase {
         extends RenderPattern<ValueTypeIngredientsLPElement, GuiLogicProgrammerBase, ContainerLogicProgrammerBase>
         implements IInputListener {
 
-        private GuiArrowedListField<IngredientComponent> valueTypeSelector = null;
+        private GuiArrowedListField<IngredientComponent<?, ?>> valueTypeSelector = null;
         private GuiButton arrowAdd;
 
         public SelectionSubGui(ValueTypeIngredientsLPElement element, int baseX, int baseY, int maxWidth, int maxHeight,
@@ -418,14 +420,27 @@ public class ValueTypeIngredientsLPElement extends ValueTypeLPElementBase {
             return super.getHeight() / 4;
         }
 
-        protected static List<IngredientComponent> getValueTypes() {
-            return Lists.newArrayList(IngredientComponentHandlers.REGISTRY.getComponents());
+        protected static List<IngredientComponent<?, ?>> getValueTypes() {
+            // By coincidence, sorting by name (in reverse) is sufficient to achieve the order we want,
+            // for the following known ingredient components:
+            // - minecraft:itemstack
+            // - minecraft:fluidstack
+            // - minecraft:energy
+            // - mekanism:chemicalstack
+            return IngredientComponentHandlers.REGISTRY.getComponents()
+                .stream()
+                .sorted(
+                    Comparator.comparing(
+                        (IngredientComponent<?, ?> component) -> component.getName()
+                            .toString())
+                        .reversed())
+                .collect(Collectors.toList());
         }
 
         @Override
         public void initGui(int guiLeft, int guiTop) {
             super.initGui(guiLeft, guiTop);
-            valueTypeSelector = new GuiArrowedListField<IngredientComponent>(
+            valueTypeSelector = new GuiArrowedListField<>(
                 0,
                 Minecraft.getMinecraft().fontRenderer,
                 getX() + guiLeft + getWidth() / 2 - 50,

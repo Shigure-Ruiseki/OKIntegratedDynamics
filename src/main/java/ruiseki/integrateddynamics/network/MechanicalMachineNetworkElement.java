@@ -10,7 +10,7 @@ import ruiseki.okcore.datastructure.DimPos;
 
 /**
  * Network element for mechanical machines.
- * 
+ *
  * @author rubensworks
  */
 @EqualsAndHashCode(callSuper = false)
@@ -57,4 +57,8 @@ public class MechanicalMachineNetworkElement extends NetworkElementBase {
                     .getCanonicalName());
     }
 
+    @Override
+    public boolean isLoaded() {
+        return INetworkElement.shouldTick(this.getPos());
+    }
 }
