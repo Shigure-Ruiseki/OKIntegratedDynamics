@@ -243,19 +243,7 @@ public class PartTypeInterfaceCrafting
         }
 
         // Push any pending output ingredients into the network
-        ListIterator<IngredientInstanceWrapper<?, ?>> outputBufferIt = state.getInventoryOutputBuffer()
-            .listIterator();
-        while (outputBufferIt.hasNext()) {
-            IngredientInstanceWrapper<?, ?> newWrapper = insertIntoNetwork(
-                outputBufferIt.next(),
-                network,
-                state.getChannelCrafting());
-            if (newWrapper == null) {
-                outputBufferIt.remove();
-            } else {
-                outputBufferIt.set(newWrapper);
-            }
-        }
+        state.flushInventoryOutputBuffer(network);
 
         // Block job ticking if there still are outputs in our crafting result buffer.
         if (state.getInventoryOutputBuffer()
@@ -838,6 +826,10 @@ public class PartTypeInterfaceCrafting
         public <T, M> void addResult(IngredientComponent<T, M> ingredientComponent, T instance) {
             this.getInventoryOutputBuffer()
                 .add(new IngredientInstanceWrapper<>(ingredientComponent, instance));
+            // Try to flush buffer immediately
+            if (this.network != null) {
+                this.flushInventoryOutputBuffer(this.network);
+            }
         }
 
         public void setIngredientComponentTargetSideOverride(IngredientComponent<?, ?> ingredientComponent,
@@ -883,6 +875,33 @@ public class PartTypeInterfaceCrafting
 
         public boolean isDisableCraftingCheck() {
             return disableCraftingCheck;
+        }
+
+        public void flushInventoryOutputBuffer(INetwork network) {
+            // Try to insert each ingredient in the buffer into the network.
+            boolean changed = false;
+            ListIterator<IngredientInstanceWrapper<?, ?>> outputBufferIt = this.getInventoryOutputBuffer()
+                .listIterator();
+            while (outputBufferIt.hasNext()) {
+                IngredientInstanceWrapper<?, ?> oldWrapper = outputBufferIt.next();
+                IngredientInstanceWrapper<?, ?> newWrapper = insertIntoNetwork(
+                    oldWrapper,
+                    network,
+                    this.getChannelCrafting());
+                if (newWrapper != oldWrapper) {
+                    changed = true;
+                }
+                if (newWrapper == null) {
+                    outputBufferIt.remove();
+                } else {
+                    outputBufferIt.set(newWrapper);
+                }
+            }
+
+            // If at least one ingredient was inserted, force a sync observer update in the network.
+            if (changed) {
+                CraftingHelpers.beforeCalculateCraftingJobs(network, getChannelCrafting());
+            }
         }
     }
 }

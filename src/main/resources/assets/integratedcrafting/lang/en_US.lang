@@ -33,6 +33,8 @@ aspect.aspecttypes.integratedcrafting.boolean.ignorestorage.name=Ignore storage 
 aspect.aspecttypes.integratedcrafting.boolean.ignorecrafting.name=Ignore crafting jobs
 aspect.aspecttypes.integratedcrafting.boolean.craftmissing.name=Craft missing ingredients
 aspect.aspecttypes.integratedcrafting.integer.craftamount.name=Craft amount
+aspect.aspecttypes.integratedcrafting.integer.craftdelay=Storage contents craft delay
+aspect.aspecttypes.integratedcrafting.integer.craftdelay.info=Only craft if ingredient is missing from storage for this duration
 
 # Aspects
 

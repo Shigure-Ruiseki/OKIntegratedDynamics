@@ -8,7 +8,7 @@ import ruiseki.integrateddynamics.api.network.IPositionedAddonsNetworkIngredient
 
 /**
  * Exposes crafting capabilities to ingredient networks.
- * 
+ *
  * @author rubensworks
  */
 public class NetworkCraftingHandlerCraftingNetwork implements INetworkCraftingHandler {
@@ -16,7 +16,7 @@ public class NetworkCraftingHandlerCraftingNetwork implements INetworkCraftingHa
     @Override
     public <T, M> boolean isCrafting(INetwork network, IPositionedAddonsNetworkIngredients<T, M> ingredientsNetwork,
         int channel, IngredientComponent<T, M> ingredientComponent, T instance, M matchCondition) {
-        return CraftingHelpers.getCraftingNetwork(network)
+        return CraftingHelpers.getCraftingNetworkChecked(network)
             .getCraftingJobs(channel, ingredientComponent, instance, matchCondition)
             .hasNext();
     }
@@ -24,7 +24,7 @@ public class NetworkCraftingHandlerCraftingNetwork implements INetworkCraftingHa
     @Override
     public <T, M> boolean canCraft(INetwork network, IPositionedAddonsNetworkIngredients<T, M> ingredientsNetwork,
         int channel) {
-        return !CraftingHelpers.getCraftingNetwork(network)
+        return !CraftingHelpers.getCraftingNetworkChecked(network)
             .getRecipeIndex(channel)
             .getRecipes()
             .isEmpty();

@@ -63,7 +63,7 @@ public class TerminalStorageTabIngredientCraftingHandlerCraftingNetwork
     private static final ResourceLocation ID = new ResourceLocation(Reference.MOD_ID, "craftingNetwork");
 
     protected IRecipeIndex getRecipeIndex(INetwork network, int channel) {
-        ICraftingNetwork craftingNetwork = CraftingHelpers.getCraftingNetwork(network);
+        ICraftingNetwork craftingNetwork = CraftingHelpers.getCraftingNetworkChecked(network);
         return craftingNetwork.getRecipeIndex(channel);
     }
 
@@ -75,7 +75,7 @@ public class TerminalStorageTabIngredientCraftingHandlerCraftingNetwork
     @Override
     public <T, M> int[] getChannels(TerminalStorageTabIngredientComponentServer<T, M> tab) {
         INetwork network = tab.getNetwork();
-        ICraftingNetwork craftingNetwork = CraftingHelpers.getCraftingNetwork(network);
+        ICraftingNetwork craftingNetwork = CraftingHelpers.getCraftingNetworkChecked(network);
         return craftingNetwork.getChannels();
     }
 
@@ -261,7 +261,7 @@ public class TerminalStorageTabIngredientCraftingHandlerCraftingNetwork
                 .getCraftingJobDependencyGraph();
             try {
                 CraftingHelpers.scheduleCraftingJobs(
-                    CraftingHelpers.getCraftingNetwork(network),
+                    CraftingHelpers.getCraftingNetworkChecked(network),
                     craftingJobDependencyGraph,
                     true,
                     player.getUniqueID());
@@ -427,7 +427,8 @@ public class TerminalStorageTabIngredientCraftingHandlerCraftingNetwork
 
     @Override
     public List<ITerminalCraftingPlan<Integer>> getCraftingJobs(INetwork network, int channel) {
-        ICraftingNetwork craftingNetwork = CraftingHelpers.getCraftingNetwork(network);
+        ICraftingNetwork craftingNetwork = CraftingHelpers.getCraftingNetwork(network)
+            .getOrNull();
         if (craftingNetwork == null) {
             return Collections.emptyList();
         }
@@ -446,7 +447,7 @@ public class TerminalStorageTabIngredientCraftingHandlerCraftingNetwork
     @Nullable
     @Override
     public ITerminalCraftingPlan<Integer> getCraftingJob(INetwork network, int channel, Integer craftingJobId) {
-        ICraftingNetwork craftingNetwork = CraftingHelpers.getCraftingNetwork(network);
+        ICraftingNetwork craftingNetwork = CraftingHelpers.getCraftingNetworkChecked(network);
         CraftingJob craftingJob = craftingNetwork.getCraftingJob(channel, craftingJobId);
         if (craftingJob != null) {
             CraftingJobDependencyGraph dependencyGraph = craftingNetwork.getCraftingJobDependencyGraph();
@@ -457,7 +458,7 @@ public class TerminalStorageTabIngredientCraftingHandlerCraftingNetwork
 
     @Override
     public boolean cancelCraftingJob(INetwork network, int channel, Integer craftingJobId) {
-        ICraftingNetwork craftingNetwork = CraftingHelpers.getCraftingNetwork(network);
+        ICraftingNetwork craftingNetwork = CraftingHelpers.getCraftingNetworkChecked(network);
         return craftingNetwork.cancelCraftingJob(channel, craftingJobId);
     }
 

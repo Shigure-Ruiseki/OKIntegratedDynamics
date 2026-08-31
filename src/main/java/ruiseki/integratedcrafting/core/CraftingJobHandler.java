@@ -351,7 +351,7 @@ public class CraftingJobHandler {
             for (CraftingJob finishedCraftingJob : finishedCraftingJobs.values()) {
                 if (finishedCraftingJob.getAmount() == 1) {
                     // If only a single amount for the job was remaining, remove it from the network
-                    ICraftingNetwork craftingNetwork = CraftingHelpers.getCraftingNetwork(network);
+                    ICraftingNetwork craftingNetwork = CraftingHelpers.getCraftingNetworkChecked(network);
                     craftingNetwork.onCraftingJobFinished(finishedCraftingJob);
                     allCraftingJobs.remove(finishedCraftingJob.getId());
                 } else {
@@ -378,7 +378,7 @@ public class CraftingJobHandler {
         if (processingJobs < this.maxProcessingJobs) {
             // Handle crafting jobs
             CraftingJob startingCraftingJob = null;
-            ICraftingNetwork craftingNetwork = CraftingHelpers.getCraftingNetwork(network);
+            ICraftingNetwork craftingNetwork = CraftingHelpers.getCraftingNetworkChecked(network);
             CraftingJobDependencyGraph dependencyGraph = craftingNetwork.getCraftingJobDependencyGraph();
             for (CraftingJob pendingCraftingJob : getPendingCraftingJobs()) {
                 // Make sure that this crafting job has no incomplete dependency jobs
@@ -393,6 +393,7 @@ public class CraftingJobHandler {
                         CraftingHelpers.getNetworkStorageGetter(network, pendingCraftingJob.getChannel(), false),
                         pendingCraftingJob.getRecipe(),
                         true,
+                        Maps.newIdentityHashMap(),
                         Maps.newIdentityHashMap(),
                         true,
                         1);
@@ -412,6 +413,52 @@ public class CraftingJobHandler {
                         for (IngredientComponent<?, ?> component : inputs.getRight()
                             .keySet()) {
                             registerIngredientObserver(component, network);
+
+                            // For the missing ingredients that are reusable,
+                            // trigger a crafting job for them if no job is running yet.
+                            // This special case is needed because reusable ingredients are usually durability-based,
+                            // and may be consumed _during_ a bulk crafting job.
+                            MissingIngredients<?, ?> missingIngredients = inputs.getRight()
+                                .get(component);
+                            for (MissingIngredients.Element<?, ?> element : missingIngredients.getElements()) {
+                                if (element.isInputReusable()) {
+                                    for (MissingIngredients.PrototypedWithRequested alternative : element
+                                        .getAlternatives()) {
+                                        // Try to start crafting jobs for each alternative until one of them succeeds.
+                                        if (CraftingHelpers.isCrafting(
+                                            craftingNetwork,
+                                            channel,
+                                            alternative.getRequestedPrototype()
+                                                .getComponent(),
+                                            alternative.getRequestedPrototype()
+                                                .getPrototype(),
+                                            alternative.getRequestedPrototype()
+                                                .getCondition())) {
+                                            // Break loop if we have found an existing job for our dependency
+                                            // This may occur if a crafting job was triggered in a parallelized job
+                                            break;
+                                        }
+                                        CraftingJob craftingJob = CraftingHelpers.calculateAndScheduleCraftingJob(
+                                            network,
+                                            channel,
+                                            alternative.getRequestedPrototype()
+                                                .getComponent(),
+                                            alternative.getRequestedPrototype()
+                                                .getPrototype(),
+                                            alternative.getRequestedPrototype()
+                                                .getCondition(),
+                                            true,
+                                            true,
+                                            CraftingHelpers.getGlobalCraftingJobIdentifier(),
+                                            null);
+                                        if (craftingJob != null) {
+                                            pendingCraftingJob.addDependency(craftingJob);
+                                            // Break loop once we have found a valid job
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
 
@@ -447,19 +494,26 @@ public class CraftingJobHandler {
                         startingCraftingJob,
                         CraftingHelpers.getRecipeOutputs(startingCraftingJob.getRecipe()));
 
+                    // Register listeners for pending ingredients
+                    for (IngredientComponent<?, ?> component : startingCraftingJob.getRecipe()
+                        .getOutput()
+                        .getComponents()) {
+                        registerIngredientObserver(component, network);
+                    }
+
                     // Push the ingredients to the crafting interface
-                    if (insertCrafting(targetPos, ingredients, network, channel, false)) {
-                        // Register listeners for pending ingredients
+                    if (!insertCrafting(targetPos, ingredients, network, channel, false)) {
+                        // Unregister listeners again for pending ingredients
                         for (IngredientComponent<?, ?> component : startingCraftingJob.getRecipe()
                             .getOutput()
                             .getComponents()) {
-                            registerIngredientObserver(component, network);
+                            unregisterIngredientObserver(component, network);
                         }
-                    } else {
+
                         // If we reach this point, the target does not accept the recipe inputs,
                         // even though they were acceptable in simulation mode.
                         // The failed ingredients were already re-inserted into the network at this point,
-                        // so we just silently remove the job.
+                        // so we mark the job as failed, and add it again to the queue.
                         startingCraftingJob.setInvalidInputs(true);
                         unmarkCraftingJobProcessing(startingCraftingJob);
                     }
