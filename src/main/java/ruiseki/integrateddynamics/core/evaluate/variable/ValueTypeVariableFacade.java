@@ -12,6 +12,7 @@ import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 import ruiseki.integrateddynamics.api.evaluate.variable.IVariable;
 import ruiseki.integrateddynamics.api.item.IValueTypeVariableFacade;
+import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.integrateddynamics.core.item.VariableFacadeBase;
@@ -56,7 +57,7 @@ public class ValueTypeVariableFacade<V extends IValue> extends VariableFacadeBas
     }
 
     @Override
-    public IVariable<V> getVariable(IPartNetwork network) {
+    public IVariable<V> getVariable(INetwork network, IPartNetwork partNetwork) {
         if (isValid()) {
             if (variable == null) {
                 variable = new Variable<V>(getValueType(), getValue());
@@ -72,7 +73,8 @@ public class ValueTypeVariableFacade<V extends IValue> extends VariableFacadeBas
     }
 
     @Override
-    public void validate(IPartNetwork network, IValidator validator, IValueType containingValueType) {
+    public void validate(INetwork network, IPartNetwork partNetwork, IValidator validator,
+        IValueType containingValueType) {
         if (!isValid()) {
             validator.addError(new LangHelpers.UnlocalizedString(L10NValues.VARIABLE_ERROR_INVALIDITEM));
         } else {

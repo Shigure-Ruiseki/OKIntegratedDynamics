@@ -1,6 +1,5 @@
 package ruiseki.integrateddynamics.core.evaluate.variable;
 
-import java.text.NumberFormat;
 import java.util.Locale;
 
 import net.minecraft.util.EnumChatFormatting;
@@ -129,14 +128,33 @@ public class ValueTypeInteger extends ValueTypeBase<ValueTypeInteger.ValueIntege
 
     @Override
     public ValueTypeString.ValueString compact(ValueInteger a) {
-        NumberFormat nf = NumberFormat.getCompactNumberInstance(
-            Locale.US,
-            GeneralConfig.numberCompactUseLongStyle ? NumberFormat.Style.LONG : NumberFormat.Style.SHORT);
-        nf.setMinimumFractionDigits(GeneralConfig.numberCompactMinimumFractionDigits);
-        nf.setMaximumFractionDigits(GeneralConfig.numberCompactMaximumFractionDigits);
-        nf.setMinimumIntegerDigits(GeneralConfig.numberCompactMinimumIntegerDigits);
-        nf.setMaximumIntegerDigits(GeneralConfig.numberCompactMaximumIntegerDigits);
-        return ValueTypeString.ValueString.of(nf.format(a.getRawValue()));
+        return ValueTypeString.ValueString.of(formatCompactInteger(a.getRawValue()));
+    }
+
+    private static String formatCompactInteger(int value) {
+        if (value == Integer.MIN_VALUE) return formatCompactInteger(Integer.MIN_VALUE + 1);
+        if (value < 0) return "-" + formatCompactInteger(-value);
+        if (value < 1000) return Integer.toString(value);
+
+        final String[] suffixesShort = new String[] { "", "K", "M", "B" };
+        final String[] suffixesLong = new String[] { "", " thousand", " million", " billion" };
+
+        String[] suffixes = GeneralConfig.numberCompactUseLongStyle ? suffixesLong : suffixesShort;
+
+        int index = (int) (Math.log10(value) / 3);
+        if (index >= suffixes.length) index = suffixes.length - 1;
+
+        double num = value / Math.pow(10, index * 3);
+
+        int maxDigits = GeneralConfig.numberCompactMaximumFractionDigits;
+        if (maxDigits <= 0) {
+            return String.format(Locale.US, "%.0f%s", num, suffixes[index]);
+        }
+
+        String pattern = "%." + maxDigits + "f%s";
+        String formatted = String.format(Locale.US, pattern, num, suffixes[index]);
+
+        return formatted.replaceAll("(\\.\\d*?[1-9])0+|\\.(0+)", "$1");
     }
 
     @Override
@@ -172,5 +190,4 @@ public class ValueTypeInteger extends ValueTypeBase<ValueTypeInteger.ValueIntege
             return getType().hashCode() + value;
         }
     }
-
 }

@@ -21,6 +21,7 @@ import ruiseki.integrateddynamics.api.evaluate.variable.IVariable;
 import ruiseki.integrateddynamics.api.item.IVariableFacade;
 import ruiseki.integrateddynamics.api.item.IVariableFacadeHandler;
 import ruiseki.integrateddynamics.api.item.IVariableFacadeHandlerRegistry;
+import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueHelpers;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeBoolean;
@@ -174,7 +175,7 @@ public class VariableFacadeHandlerRegistry implements IVariableFacadeHandlerRegi
         }
 
         @Override
-        public <V extends IValue> IVariable<V> getVariable(IPartNetwork network) {
+        public <V extends IValue> IVariable<V> getVariable(INetwork network, IPartNetwork partNetwork) {
             return VARIABLE_TRUE;
         }
 
@@ -184,7 +185,8 @@ public class VariableFacadeHandlerRegistry implements IVariableFacadeHandlerRegi
         }
 
         @Override
-        public void validate(IPartNetwork network, IValidator validator, IValueType containingValueType) {
+        public void validate(INetwork network, IPartNetwork partNetwork, IValidator validator,
+            IValueType containingValueType) {
             if (!ValueHelpers.correspondsTo(containingValueType, ValueTypes.BOOLEAN)) {
                 validator.addError(new LangHelpers.UnlocalizedString(unlocalizedError));
             }

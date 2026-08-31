@@ -1,6 +1,5 @@
 package ruiseki.integrateddynamics.core.evaluate.variable;
 
-import java.text.NumberFormat;
 import java.util.Locale;
 
 import net.minecraft.util.EnumChatFormatting;
@@ -128,14 +127,30 @@ public class ValueTypeLong extends ValueTypeBase<ValueTypeLong.ValueLong>
 
     @Override
     public ValueTypeString.ValueString compact(ValueLong a) {
-        NumberFormat nf = NumberFormat.getCompactNumberInstance(
-            Locale.US,
-            GeneralConfig.numberCompactUseLongStyle ? NumberFormat.Style.LONG : NumberFormat.Style.SHORT);
-        nf.setMinimumFractionDigits(GeneralConfig.numberCompactMinimumFractionDigits);
-        nf.setMaximumFractionDigits(GeneralConfig.numberCompactMaximumFractionDigits);
-        nf.setMinimumIntegerDigits(GeneralConfig.numberCompactMinimumIntegerDigits);
-        nf.setMaximumIntegerDigits(GeneralConfig.numberCompactMaximumIntegerDigits);
-        return ValueTypeString.ValueString.of(nf.format(a.getRawValue()));
+        long value = a.getRawValue();
+        return ValueTypeString.ValueString.of(formatCompactLong(value));
+    }
+
+    private static String formatCompactLong(long value) {
+        if (value == Long.MIN_VALUE) return formatCompactLong(Long.MIN_VALUE + 1);
+        if (value < 0) return "-" + formatCompactLong(-value);
+        if (value < 1000) return Long.toString(value);
+
+        final String[] suffixes = new String[] { "", "K", "M", "B", "T", "P", "E" };
+        int index = (int) (Math.log10(value) / 3);
+        if (index >= suffixes.length) index = suffixes.length - 1;
+
+        double num = value / Math.pow(10, index * 3);
+
+        int maxDigits = GeneralConfig.numberCompactMaximumFractionDigits;
+        if (maxDigits <= 0) {
+            return String.format(Locale.US, "%.0f%s", num, suffixes[index]);
+        }
+
+        String pattern = "%." + maxDigits + "f%s";
+        String formatted = String.format(Locale.US, pattern, num, suffixes[index]);
+
+        return formatted.replaceAll("(\\.\\d*?[1-9])0+|\\.(0+)", "$1");
     }
 
     @Override
