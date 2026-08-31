@@ -84,8 +84,7 @@ public class ItemBlockCable extends ItemBlockMetadata {
                 if (!world.isRemote) {
                     cable.setRealCable(true);
                     CableHelpers.updateConnections(world, pos, side);
-                    CableHelpers.onCableAdded(world, pos);
-                    CableHelpers.onCableAddedByPlayer(world, pos, placer);
+                    CableHelpers.onCableAddedByPlayerActual(world, pos, placer);
                 }
                 return true;
             }

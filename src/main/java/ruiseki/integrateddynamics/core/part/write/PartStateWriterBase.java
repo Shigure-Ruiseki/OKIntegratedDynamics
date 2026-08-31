@@ -80,8 +80,14 @@ public class PartStateWriterBase<P extends IPartTypeWriter> extends PartStateAct
     }
 
     @Override
-    public void triggerAspectInfoUpdate(P partType, PartTarget target, IAspectWrite newAspect) {
-        onVariableContentsUpdated(partType, target);
+    public void triggerAspectInfoUpdate(P partType, PartTarget target, IAspectWrite newAspect,
+        boolean isNetworkInitializing) {
+        if (!isNetworkInitializing) {
+            // We skip network content updates during network init,
+            // as it will be called once for all parts right after network init.
+            // This is to avoid re-updating variable contents many times during network init, which can get expensive.
+            onVariableContentsUpdated(partType, target);
+        }
         IAspectWrite activeAspect = getActiveAspect();
         if (activeAspect != null && activeAspect != newAspect) {
             activeAspect.onDeactivate(partType, target, this);

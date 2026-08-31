@@ -1,5 +1,6 @@
 package ruiseki.integrateddynamics.core.helper;
 
+import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -250,6 +251,8 @@ public class CableHelpers {
         return false;
     }
 
+    private static WeakReference<EntityLivingBase> CABLE_PLACER_SNAPSHOT = new WeakReference<>(null);
+
     /**
      * This should be called when a cable is added.
      * This method automatically notifies the neighbours and (re-)initializes the network if this cable carries one.
@@ -259,11 +262,12 @@ public class CableHelpers {
      * @param pos   The position.
      */
     public static void onCableAdded(World world, BlockPos pos) {
-        CableHelpers.updateConnectionsNeighbours(world, pos, CableHelpers.ALL_SIDES);
-        if (!world.isRemote) {
-            NetworkHelpers.initNetwork(world, pos, null)
-                .ifPresent(
-                    network -> MinecraftForge.EVENT_BUS.post(new NetworkInitializedEvent(network, world, pos, null)));
+        EntityLivingBase placer = CABLE_PLACER_SNAPSHOT.get();
+        if (placer != null) {
+            CableHelpers.onCableAddedByPlayer(world, pos, placer);
+            CABLE_PLACER_SNAPSHOT = new WeakReference<>(null);
+        } else {
+            onCableAddedByPlayerActual(world, pos, null);
         }
     }
 
@@ -277,6 +281,23 @@ public class CableHelpers {
      * @param placer The entity who placed the cable.
      */
     public static void onCableAddedByPlayer(World world, BlockPos pos, @Nullable EntityLivingBase placer) {
+        if (world.captureBlockSnapshots) {
+            CABLE_PLACER_SNAPSHOT = new WeakReference<>(placer);
+        } else {
+            onCableAddedByPlayerActual(world, pos, placer);
+        }
+    }
+
+    /**
+     * This should be called when a cable was added by a player.
+     * This should be called after {@link CableHelpers#onCableAdded(World, BlockPos)}.
+     * It simply emits an player-sensitive init event on the network bus.
+     * 
+     * @param world  The world.
+     * @param pos    The position.
+     * @param placer The entity who placed the cable.
+     */
+    public static void onCableAddedByPlayerActual(World world, BlockPos pos, @Nullable EntityLivingBase placer) {
         CableHelpers.updateConnectionsNeighbours(world, pos, CableHelpers.ALL_SIDES);
         if (!world.isRemote) {
             NetworkHelpers.initNetwork(world, pos, null)

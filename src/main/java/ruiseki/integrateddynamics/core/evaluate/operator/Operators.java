@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -54,9 +55,11 @@ import net.minecraftforge.oredict.OreDictionary;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 
+import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multiset;
 import com.google.common.collect.Sets;
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 import com.gtnewhorizon.gtnhlib.blockstate.registry.BlockPropertyRegistry;
@@ -319,6 +322,35 @@ public final class Operators {
      */
 
     private static final ValueTypeInteger.ValueInteger ZERO = ValueTypeInteger.ValueInteger.of(0);
+
+    /**
+     * ----------------------------------- DOUBLE OPERATORS -----------------------------------
+     */
+
+    /**
+     * Integer SQRT operator with two input numbers and one output number.
+     */
+    public static final IOperator DOUBLE_SQRT = REGISTRY.register(
+        OperatorBuilders.DOUBLE_1_PREFIX.symbol("sqrt")
+            .operatorName("sqrt")
+            .function(variables -> {
+                ValueTypeDouble.ValueDouble a = variables.getValue(0, ValueTypes.DOUBLE);
+                return ValueTypeDouble.ValueDouble.of(Math.sqrt(a.getRawValue()));
+            })
+            .build());
+
+    /**
+     * Integer POW operator with two input numbers and one output number.
+     */
+    public static final IOperator DOUBLE_POW = REGISTRY.register(
+        OperatorBuilders.DOUBLE_2.symbol("pow")
+            .operatorName("pow")
+            .function(variables -> {
+                ValueTypeDouble.ValueDouble a = variables.getValue(0, ValueTypes.DOUBLE);
+                ValueTypeDouble.ValueDouble b = variables.getValue(1, ValueTypes.DOUBLE);
+                return ValueTypeDouble.ValueDouble.of(Math.pow(a.getRawValue(), b.getRawValue()));
+            })
+            .build());
 
     /**
      * ----------------------------------- RELATIONAL OPERATORS -----------------------------------
@@ -855,7 +887,10 @@ public final class Operators {
                         .matcher(str.getRawValue());
                     List<ValueTypeString.ValueString> values = Lists.newArrayList();
                     while (m.find()) {
-                        values.add(ValueTypeString.ValueString.of(m.group(group.getRawValue())));
+                        String match = m.group(group.getRawValue());
+                        if (match != null) {
+                            values.add(ValueTypeString.ValueString.of(match));
+                        }
                     }
                     return ValueTypeList.ValueList.ofList(ValueTypes.STRING, values);
                 } catch (PatternSyntaxException e) {
@@ -995,12 +1030,31 @@ public final class Operators {
             .build());
 
     /**
-     * ----------------------------------- DOUBLE OPERATORS -----------------------------------
-     *
-     * @@ -534,36 +451,27 @@ public IValue evaluate(OperatorBase.SafeVariablesGetter variables) throws Evalua
+     * Throw a custom error
      */
-    public static final IOperator DOUBLE_ROUND = REGISTRY.register(
-        OperatorBuilders.DOUBLE_1_PREFIX.inputType(ValueTypes.CATEGORY_NUMBER)
+    public static final IOperator STRING_ERROR = REGISTRY.register(
+        OperatorBuilders.STRING_2.symbol("error")
+            .operatorName("string_error")
+            .inputType(ValueTypes.STRING)
+            .renderPattern(IConfigRenderPattern.SUFFIX_1_LONG)
+            .function(
+                (variables) -> {
+                    throw new EvaluationException(
+                        LangHelpers.localize(
+                            variables.getValue(0, ValueTypes.STRING)
+                                .getRawValue()));
+                })
+            .build());
+
+    /**
+     * ----------------------------------- NUMBER OPERATORS -----------------------------------
+     */
+
+    /**
+     * Number round operator with one input double and one output integers.
+     */
+    public static final IOperator NUMBER_ROUND = REGISTRY.register(
+        OperatorBuilders.NUMBER_1_PREFIX.inputType(ValueTypes.CATEGORY_NUMBER)
             .output(ValueTypes.INTEGER)
             .symbol("|| ||")
             .operatorName("round")
@@ -1008,10 +1062,10 @@ public final class Operators {
             .build());
 
     /**
-     * Double ceil operator with one input double and one output integers.
+     * Number ceil operator with one input double and one output integers.
      */
-    public static final IOperator DOUBLE_CEIL = REGISTRY.register(
-        OperatorBuilders.DOUBLE_1_PREFIX.inputType(ValueTypes.CATEGORY_NUMBER)
+    public static final IOperator NUMBER_CEIL = REGISTRY.register(
+        OperatorBuilders.NUMBER_1_PREFIX.inputType(ValueTypes.CATEGORY_NUMBER)
             .output(ValueTypes.INTEGER)
             .symbol("⌈ ⌉")
             .operatorName("ceil")
@@ -1019,14 +1073,24 @@ public final class Operators {
             .build());
 
     /**
-     * Double floor operator with one input double and one output integers.
+     * Number floor operator with one input double and one output integers.
      */
-    public static final IOperator DOUBLE_FLOOR = REGISTRY.register(
-        OperatorBuilders.DOUBLE_1_PREFIX.inputType(ValueTypes.CATEGORY_NUMBER)
+    public static final IOperator NUMBER_FLOOR = REGISTRY.register(
+        OperatorBuilders.NUMBER_1_PREFIX.inputType(ValueTypes.CATEGORY_NUMBER)
             .output(ValueTypes.INTEGER)
             .symbol("⌊ ⌋")
             .operatorName("floor")
             .function(variables -> ValueTypes.CATEGORY_NUMBER.floor(variables.getVariables()[0]))
+            .build());
+
+    /**
+     * Accepts a number, and returns a string roughly representing that number
+     */
+    public static final IOperator NUMBER_COMPACT = REGISTRY.register(
+        OperatorBuilders.NUMBER_1_LONG.inputType(ValueTypes.CATEGORY_NUMBER)
+            .output(ValueTypes.STRING)
+            .operatorName("compact")
+            .function(variables -> ValueTypes.CATEGORY_NUMBER.compact(variables.getVariables()[0]))
             .build());
 
     /**
@@ -1434,6 +1498,68 @@ public final class Operators {
                 }
                 return ValueTypeList.ValueList
                     .ofFactory(new ValueTypeListProxySlice<>(list, from.getRawValue(), to.getRawValue()));
+            })
+            .build());
+
+    /**
+     * Test list equality using set semantics.
+     */
+    public static final IOperator LIST_EQUALS_SET = REGISTRY.register(
+        OperatorBuilders.LIST.inputTypes(new IValueType[] { ValueTypes.LIST, ValueTypes.LIST })
+            .renderPattern(IConfigRenderPattern.INFIX)
+            .output(ValueTypes.BOOLEAN)
+            .symbol("=set=")
+            .operatorName("equals_set")
+            .function(variables -> {
+                ValueTypeList.ValueList valueList0 = variables.getValue(0, ValueTypes.LIST);
+                IValueTypeListProxy a = valueList0.getRawValue();
+                ValueTypeList.ValueList valueList1 = variables.getValue(1, ValueTypes.LIST);
+                IValueTypeListProxy b = valueList1.getRawValue();
+                if (!ValueHelpers.correspondsTo(a.getValueType(), b.getValueType())) {
+                    throw new EvaluationException(
+                        LangHelpers.localize(
+                            L10NValues.VALUETYPE_ERROR_INVALIDLISTVALUETYPE,
+                            LangHelpers.localize(
+                                a.getValueType()
+                                    .getUnlocalizedName()),
+                            LangHelpers.localize(
+                                b.getValueType()
+                                    .getUnlocalizedName())));
+                }
+                Set<Object> setA = Sets.newHashSet(a);
+                Set<Object> setB = Sets.newHashSet(b);
+                return ValueTypeBoolean.ValueBoolean.of(setA.equals(setB));
+            })
+            .build());
+
+    /**
+     * Test list equality using multiset semantics.
+     */
+    public static final IOperator LIST_EQUALS_MULTISET = REGISTRY.register(
+        OperatorBuilders.LIST.inputTypes(new IValueType[] { ValueTypes.LIST, ValueTypes.LIST })
+            .renderPattern(IConfigRenderPattern.INFIX)
+            .output(ValueTypes.BOOLEAN)
+            .symbol("=multiset=")
+            .operatorName("equals_multiset")
+            .function(variables -> {
+                ValueTypeList.ValueList valueList0 = variables.getValue(0, ValueTypes.LIST);
+                IValueTypeListProxy a = valueList0.getRawValue();
+                ValueTypeList.ValueList valueList1 = variables.getValue(1, ValueTypes.LIST);
+                IValueTypeListProxy b = valueList1.getRawValue();
+                if (!ValueHelpers.correspondsTo(a.getValueType(), b.getValueType())) {
+                    throw new EvaluationException(
+                        LangHelpers.localize(
+                            L10NValues.VALUETYPE_ERROR_INVALIDLISTVALUETYPE,
+                            LangHelpers.localize(
+                                a.getValueType()
+                                    .getUnlocalizedName()),
+                            LangHelpers.localize(
+                                b.getValueType()
+                                    .getUnlocalizedName())));
+                }
+                Multiset<Object> setA = HashMultiset.create(a);
+                Multiset<Object> setB = HashMultiset.create(b);
+                return ValueTypeBoolean.ValueBoolean.of(setA.equals(setB));
             })
             .build());
 
@@ -2418,6 +2544,72 @@ public final class Operators {
             .function(
                 OperatorBuilders.FUNCTION_ITEMSTACK_TO_BOOLEAN
                     .build(itemStack -> itemStack != null && itemStack.hasTagCompound()))
+            .build());
+
+    /**
+     * Get an itemstack with the given nbt tag
+     */
+    public static final IOperator OBJECT_ITEMSTACK_WITH_TAG = REGISTRY.register(
+        OperatorBuilders.ITEMSTACK_2_LONG.inputTypes(ValueTypes.OBJECT_ITEMSTACK, ValueTypes.NBT)
+            .output(ValueTypes.OBJECT_ITEMSTACK)
+            .symbol("item_with_tag")
+            .operatorName("itemwithtag")
+            .function(variables -> {
+                ItemStack inputItem = variables.getValue(0, ValueTypes.OBJECT_ITEMSTACK)
+                    .getRawValue()
+                    .get()
+                    .copy();
+                ValueTypeNbt.ValueNbt tag = variables.getValue(1, ValueTypes.NBT);
+                inputItem.setTagCompound((NBTTagCompound) tag.getRawValue());
+                return ValueObjectTypeItemStack.ValueItemStack.of(inputItem);
+            })
+            .build());
+
+    /**
+     * Get the tooltip of an itemstack in list form.
+     */
+    public static final IOperator OBJECT_ITEMSTACK_TOOLTIP = REGISTRY.register(
+        OperatorBuilders.ITEMSTACK_1_SUFFIX_LONG.output(ValueTypes.LIST)
+            .symbol("tooltip")
+            .operatorName("tooltip")
+            .function(input -> {
+                ValueObjectTypeItemStack.ValueItemStack itemStack = input.getValue(0, ValueTypes.OBJECT_ITEMSTACK);
+                return ValueTypeList.ValueList.ofList(
+                    ValueTypes.STRING,
+                    itemStack.getRawValue()
+                        .get()
+                        .getTooltip(null, false)
+                        .stream()
+                        .map(c -> ValueTypeString.ValueString.of(c))
+                        .toList());
+            })
+            .build());
+    /**
+     * Get the tooltip of an itemstack in list form, using the provided player entity as the player context.
+     */
+    public static final IOperator OBJECT_ITEMSTACK_ENTITY_TOOLTIP = REGISTRY.register(
+        OperatorBuilders.ENTITY_1_ITEMSTACK_1.inputTypes(ValueTypes.OBJECT_ENTITY, ValueTypes.OBJECT_ITEMSTACK)
+            .output(ValueTypes.LIST)
+            .symbol("entity_item_tooltip")
+            .operatorName("entityitemtooltip")
+            .function(variables -> {
+                ValueObjectTypeEntity.ValueEntity a = variables.getValue(0, ValueTypes.OBJECT_ENTITY);
+                ValueObjectTypeItemStack.ValueItemStack itemStack = variables.getValue(1, ValueTypes.OBJECT_ITEMSTACK);
+                if (a.getRawValue()
+                    .isPresent()
+                    && a.getRawValue()
+                        .get() instanceof EntityPlayer entity) {
+                    return ValueTypeList.ValueList.ofList(
+                        ValueTypes.STRING,
+                        itemStack.getRawValue()
+                            .get()
+                            .getTooltip(entity, false)
+                            .stream()
+                            .map(c -> ValueTypeString.ValueString.of(c))
+                            .toList());
+                }
+                return ValueTypes.LIST.getDefault();
+            })
             .build());
 
     /**

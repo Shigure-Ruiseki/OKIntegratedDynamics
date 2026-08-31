@@ -1,5 +1,7 @@
 package ruiseki.integrateddynamics.api.part.aspect;
 
+import java.util.function.Supplier;
+
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 import ruiseki.integrateddynamics.api.part.PartTarget;
@@ -13,11 +15,11 @@ public interface IAspectRead<V extends IValue, T extends IValueType<V>> extends 
 
     /**
      * Creates a new variable for this aspect.
-     *
-     * @param target The target for this aspect.
+     * 
+     * @param targetSupplier The target supplier for this aspect.
      * @return The variable pointing to the given target.
      */
-    public IAspectVariable<V> createNewVariable(PartTarget target);
+    public IAspectVariable<V> createNewVariable(Supplier<PartTarget> targetSupplier);
 
     /**
      * @return The update type on which this aspect should invalidate.

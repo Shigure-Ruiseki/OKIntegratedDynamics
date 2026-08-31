@@ -279,7 +279,8 @@ public class GuiAspectSettings extends GuiContainerExtended {
         IAspectPropertyTypeInstance property = getActiveProperty();
         IValue value = ((ContainerAspectSettings) container).getPropertyValue(property);
         if (value != null) {
-            guiElement.setValue(value, propertyConfigPattern);
+            guiElement.setValue(value);
+            guiElement.setValueInGui(propertyConfigPattern, false);
         }
         onValueChanged();
     }

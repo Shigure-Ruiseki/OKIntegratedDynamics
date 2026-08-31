@@ -13,6 +13,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 
 import org.apache.commons.lang3.tuple.Triple;
+import org.jetbrains.annotations.Nullable;
 import org.lwjgl.input.Keyboard;
 
 import com.google.common.collect.Lists;
@@ -57,6 +58,7 @@ public class GuiLogicProgrammerBase extends ScrollingGuiContainer {
     protected SubGuiOperatorInfo operatorInfoPattern = null;
     protected boolean firstInit = true;
     protected int relativeStep = -1;
+    protected boolean swallowNextCharacter = false;
 
     public GuiLogicProgrammerBase(InventoryPlayer inventoryPlayer, ContainerLogicProgrammerBase container) {
         super(container);
@@ -234,43 +236,63 @@ public class GuiLogicProgrammerBase extends ScrollingGuiContainer {
         ILogicProgrammerElement<RenderPattern, GuiLogicProgrammerBase, ContainerLogicProgrammerBase> element) {
         subGuiHolder.addSubGui(operatorInfoPattern = new SubGuiOperatorInfo(element));
         operatorInfoPattern.initGui(guiLeft, guiTop);
-        operatorConfigPattern = element
-            .createSubGui(88, 18, 160, 87, this, (ContainerLogicProgrammerBase) getContainer());
-        if (operatorConfigPattern != null) {
-            subGuiHolder.addSubGui(operatorConfigPattern);
-            operatorConfigPattern.initGui(guiLeft, guiTop);
-        }
+        subGuiHolder.addSubGui(
+            operatorConfigPattern = element.createSubGui(
+                ContainerLogicProgrammerBase.BASE_X,
+                ContainerLogicProgrammerBase.BASE_Y,
+                ContainerLogicProgrammerBase.MAX_WIDTH,
+                ContainerLogicProgrammerBase.MAX_HEIGHT,
+                this,
+                (ContainerLogicProgrammerBase) getContainer()));
+        operatorConfigPattern.initGui(guiLeft, guiTop);
     }
 
     protected void onDeactivateElement(ILogicProgrammerElement element) {
         subGuiHolder.clear();
     }
 
-    public boolean handleElementActivation(ILogicProgrammerElement element) {
+    public boolean handleElementActivation(ILogicProgrammerElement element, boolean sendToServer) {
         boolean activate = false;
-        ContainerLogicProgrammerBase container = (ContainerLogicProgrammerBase) getScrollingInventoryContainer();
+        boolean deselect = false;
+        ContainerLogicProgrammerBase container = getContainer();
         ILogicProgrammerElement newActive = null;
-        onDeactivateElement(element);
-        if (container.getActiveElement() != element) {
+        if (container.getActiveElement() == element) {
+            // Only allow deselection of the current LP element if the write slot is empty
+            if (!container.hasWriteItemInSlot()) {
+                deselect = true;
+                onDeactivateElement(element);
+            }
+        } else {
+            // Swap to another LP element
+            onDeactivateElement(element);
             activate = true;
             newActive = element;
             if (element != null) {
                 onActivateElement(element);
             }
         }
-        container.setActiveElement(
-            newActive,
-            operatorConfigPattern == null ? 0 : operatorConfigPattern.getX(),
-            operatorConfigPattern == null ? 0 : operatorConfigPattern.getY());
-        if (newActive != null) {
-            ILogicProgrammerElementType type = newActive.getType();
-            IntegratedDynamics._instance.getPacketHandler()
-                .sendToServer(new LogicProgrammerActivateElementPacket(type.getName(), type.getName(newActive)));
-        } else {
-            IntegratedDynamics._instance.getPacketHandler()
-                .sendToServer(new LogicProgrammerActivateElementPacket("", ""));
+        if (activate || deselect) {
+            container.setActiveElement(
+                newActive,
+                operatorConfigPattern == null ? 0 : operatorConfigPattern.getX(),
+                operatorConfigPattern == null ? 0 : operatorConfigPattern.getY());
+        }
+        if (sendToServer) {
+            if (newActive != null) {
+                ILogicProgrammerElementType type = newActive.getType();
+                IntegratedDynamics._instance.getPacketHandler()
+                    .sendToServer(new LogicProgrammerActivateElementPacket(type.getName(), type.getName(newActive)));
+            } else if (deselect) {
+                IntegratedDynamics._instance.getPacketHandler()
+                    .sendToServer(new LogicProgrammerActivateElementPacket("", ""));
+            }
         }
         return activate;
+    }
+
+    @Nullable
+    public RenderPattern getOperatorConfigPattern() {
+        return operatorConfigPattern;
     }
 
     protected void setSearchFieldFocussed(boolean focused) {
@@ -286,7 +308,7 @@ public class GuiLogicProgrammerBase extends ScrollingGuiContainer {
 
         // Deactivate current element
         if (elementId < 0) {
-            handleElementActivation(container.getActiveElement());
+            handleElementActivation(container.getActiveElement(), true);
             return false;
         }
 
@@ -296,7 +318,7 @@ public class GuiLogicProgrammerBase extends ScrollingGuiContainer {
                 if (elementId-- == 0) {
                     ILogicProgrammerElement element = container.getVisibleElement(i);
                     if (container.getActiveElement() != element) {
-                        handleElementActivation(element);
+                        handleElementActivation(element, true);
                     }
                     return true;
                 }
@@ -318,10 +340,12 @@ public class GuiLogicProgrammerBase extends ScrollingGuiContainer {
                 if (ClientProxy.FOCUS_LP_SEARCH.isActiveAndMatches(keyCode)) {
                     // Focus search field
                     setSearchFieldFocussed(true);
+                    swallowNextCharacter = true;
                 } else
                     if (isElementFocused && ClientProxy.FOCUS_LP_RENAME.isActiveAndMatches(keyCode) && hasLabeller()) {
                         // Open labeller gui
                         operatorInfoPattern.onButtonEditClick();
+                        swallowNextCharacter = true;
                     } else if (Keyboard.KEY_LEFT == keyCode && (!isElementFocused && isSearchFieldFocussed())) {
                         // Unfocus search field
                         setSearchFieldFocussed(isSearchFieldFocussed());
@@ -367,7 +391,7 @@ public class GuiLogicProgrammerBase extends ScrollingGuiContainer {
                 if (container.isElementVisible(i)) {
                     ILogicProgrammerElement element = container.getVisibleElement(i);
                     if (isPointInRegion(getElementPosition(container, i, false), new Point(mouseX, mouseY))) {
-                        boolean activated = handleElementActivation(element);
+                        boolean activated = handleElementActivation(element, true);
                         relativeStep = activated ? i : -1;
                         if (activated) {
                             container.getActiveElement()

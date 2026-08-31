@@ -176,6 +176,20 @@ public class OperatorBuilders {
     public static final OperatorBuilder<OperatorBase.SafeVariablesGetter> DOUBLE_1_PREFIX = DOUBLE
         .inputTypes(1, ValueTypes.DOUBLE)
         .renderPattern(IConfigRenderPattern.PREFIX_1);
+    public static final OperatorBuilder<OperatorBase.SafeVariablesGetter> DOUBLE_2 = DOUBLE
+        .inputTypes(2, ValueTypes.DOUBLE)
+        .renderPattern(IConfigRenderPattern.INFIX);
+
+    // --------------- Number builders ---------------
+    public static final OperatorBuilder<OperatorBase.SafeVariablesGetter> NUMBER = OperatorBuilder
+        .forType(ValueTypes.CATEGORY_NUMBER)
+        .appendKind("number");
+    public static final OperatorBuilder<OperatorBase.SafeVariablesGetter> NUMBER_1_PREFIX = NUMBER
+        .inputTypes(1, ValueTypes.CATEGORY_NUMBER)
+        .renderPattern(IConfigRenderPattern.PREFIX_1);
+    public static final OperatorBuilder<OperatorBase.SafeVariablesGetter> NUMBER_1_LONG = NUMBER
+        .inputTypes(1, ValueTypes.CATEGORY_NUMBER)
+        .renderPattern(IConfigRenderPattern.SUFFIX_1_LONG);
 
     // --------------- Nullable builders ---------------
     public static final OperatorBuilder<OperatorBase.SafeVariablesGetter> NULLABLE = OperatorBuilder
@@ -275,6 +289,9 @@ public class OperatorBuilders {
     public static final OperatorBuilder<OperatorBase.SafeVariablesGetter> ENTITY_1_SUFFIX_LONG = ENTITY
         .inputTypes(1, ValueTypes.OBJECT_ENTITY)
         .renderPattern(IConfigRenderPattern.SUFFIX_1_LONG);
+    public static final OperatorBuilder<OperatorBase.SafeVariablesGetter> ENTITY_1_ITEMSTACK_1 = ENTITY
+        .inputTypes(new IValueType[] { ValueTypes.OBJECT_ENTITY, ValueTypes.OBJECT_ITEMSTACK })
+        .renderPattern(IConfigRenderPattern.INFIX_LONG);
     public static final IterativeFunction.PrePostBuilder<Entity, IValue> FUNCTION_ENTITY = IterativeFunction.PrePostBuilder
         .begin()
         .appendPre(input -> {
@@ -300,6 +317,9 @@ public class OperatorBuilders {
     public static final OperatorBuilder<OperatorBase.SafeVariablesGetter> FLUIDSTACK_2 = FLUIDSTACK
         .inputTypes(2, ValueTypes.OBJECT_FLUIDSTACK)
         .renderPattern(IConfigRenderPattern.INFIX);
+    public static final OperatorBuilder<OperatorBase.SafeVariablesGetter> FLUIDSTACK_2_LONG = FLUIDSTACK
+        .inputTypes(2, ValueTypes.OBJECT_FLUIDSTACK)
+        .renderPattern(IConfigRenderPattern.INFIX_LONG);
     public static final IterativeFunction.PrePostBuilder<FluidStack, IValue> FUNCTION_FLUIDSTACK = IterativeFunction.PrePostBuilder
         .begin()
         .appendPre(input -> {

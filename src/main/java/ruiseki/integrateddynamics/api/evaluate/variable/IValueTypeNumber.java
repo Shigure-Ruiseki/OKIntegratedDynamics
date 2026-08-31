@@ -1,6 +1,7 @@
 package ruiseki.integrateddynamics.api.evaluate.variable;
 
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeInteger;
+import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeString;
 
 /**
  * A numerical value type.
@@ -39,6 +40,8 @@ public interface IValueTypeNumber<V extends IValue> extends IValueType<V>, IValu
     public V decrement(V a);
 
     public V modulus(V a, V b);
+
+    public ValueTypeString.ValueString compact(V a);
 
     public boolean greaterThan(V a, V b);
 

@@ -54,16 +54,23 @@ public class GuiElementValueTypeString<G extends Gui, C extends Container>
     }
 
     @Override
-    public void setValue(IValue value, GuiElementValueTypeStringRenderPattern propertyConfigPattern) {
-        setInputString(ValueHelpers.serializeRaw(value), propertyConfigPattern);
+    public void setValue(IValue value) {
+        setInputString(ValueHelpers.serializeRaw(value));
     }
 
-    public void setInputString(String inputString, GuiElementValueTypeStringRenderPattern subGui) {
-        this.inputString = inputString;
+    @Override
+    public void setValueInGui(GuiElementValueTypeStringRenderPattern subGui, boolean sendToServer) {
         if (subGui != null) {
             subGui.getSearchField()
                 .setText(inputString);
+            if (sendToServer) {
+                subGui.sendValueToServer();
+            }
         }
+    }
+
+    public void setInputString(String inputString) {
+        this.inputString = inputString;
     }
 
     @Override

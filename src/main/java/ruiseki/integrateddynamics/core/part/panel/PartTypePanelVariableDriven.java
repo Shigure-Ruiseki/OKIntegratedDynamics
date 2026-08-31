@@ -93,18 +93,6 @@ public abstract class PartTypePanelVariableDriven<P extends PartTypePanelVariabl
     }
 
     @Override
-    public void beforeNetworkKill(INetwork network, IPartNetwork partNetwork, PartTarget target, S state) {
-        super.beforeNetworkKill(network, partNetwork, target, state);
-        state.onVariableContentsUpdated((P) this, target);
-    }
-
-    @Override
-    public void afterNetworkAlive(INetwork network, IPartNetwork partNetwork, PartTarget target, S state) {
-        super.afterNetworkAlive(network, partNetwork, target, state);
-        state.onVariableContentsUpdated((P) this, target);
-    }
-
-    @Override
     public boolean isUpdate(S state) {
         return true;
     }
@@ -130,6 +118,8 @@ public abstract class PartTypePanelVariableDriven<P extends PartTypePanelVariabl
                     state.addGlobalError(new LangHelpers.UnlocalizedString(e.getLocalizedMessage()));
                     if (e.isRetryEvaluation()) {
                         state.setRetryEvaluation(true);
+                    } else {
+                        e.addResolutionListeners(() -> state.onVariableContentsUpdated((P) this, target));
                     }
                 }
             }
@@ -193,6 +183,7 @@ public abstract class PartTypePanelVariableDriven<P extends PartTypePanelVariabl
                     .materialize(newValue);
             } catch (EvaluationException e) {
                 state.addGlobalError(new LangHelpers.UnlocalizedString(e.getLocalizedMessage()));
+                e.addResolutionListeners(() -> state.addGlobalError(null)); // TODO: also change here?
             }
             state.setDisplayValue(materializedValue);
         }

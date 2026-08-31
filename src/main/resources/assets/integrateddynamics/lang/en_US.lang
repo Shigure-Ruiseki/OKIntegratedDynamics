@@ -253,6 +253,8 @@ valuetype.valuetypes.integrateddynamics.named.name=Named
 valuetype.valuetypes.integrateddynamics.named.info=Something that has a name, such as display names of items and blocks.
 valuetype.valuetypes.integrateddynamics.uniquely_named.name=Uniquely Named
 valuetype.valuetypes.integrateddynamics.uniquely_named.info=Something that has a unique name, such as items and blocks.
+valuetype.valuetypes.integrateddynamics.string.string_error=Error
+valuetype.valuetypes.integrateddynamics.string.string_error.info=Throw a custom error
 
 valuetype.valuetypes.integrateddynamics.boolean.name=Boolean
 valuetype.valuetypes.integrateddynamics.integer.name=Integer
@@ -881,12 +883,19 @@ operator.operators.integrateddynamics.string.unique_name.info=Get the unique nam
 
 operator.operators.integrateddynamics.double.name=Double
 operator.operators.integrateddynamics.double.basename=Double %s
-operator.operators.integrateddynamics.double.round.name=Round
-operator.operators.integrateddynamics.double.round.info=Round to the nearest Integer
-operator.operators.integrateddynamics.double.ceil.name=Ceil
-operator.operators.integrateddynamics.double.ceil.info=Round up to the nearest Integer
-operator.operators.integrateddynamics.double.floor.name=Floor
-operator.operators.integrateddynamics.double.floor.info=Round down to the nearest Integer
+operator.operators.integrateddynamics.double.sqrt=quare Root
+operator.operators.integrateddynamics.double.po=Power
+
+operator.operators.integrateddynamics.number=Number
+operator.operators.integrateddynamics.number.basename=Number %s
+operator.operators.integrateddynamics.number.round=Round
+operator.operators.integrateddynamics.number.round.info=Round to the nearest Integer
+operator.operators.integrateddynamics.number.ceil=Ceil
+operator.operators.integrateddynamics.number.ceil.info=Round up to the nearest Integer
+operator.operators.integrateddynamics.number.floor=Floor
+operator.operators.integrateddynamics.number.floor.info=Round down to the nearest Integer
+operator.operators.integrateddynamics.number.compact=Compact
+operator.operators.integrateddynamics.number.compact.info=Show a shorter, less precise representation of a Number
 
 operator.operators.integrateddynamics.list.name=List
 operator.operators.integrateddynamics.list.basename=List %s
@@ -924,6 +933,10 @@ operator.operators.integrateddynamics.list.uniq.name=Uniq
 operator.operators.integrateddynamics.list.uniq.info=Deduplicate all elements in the list.
 operator.operators.integrateddynamics.list.slice.name=Slice
 operator.operators.integrateddynamics.list.slice.info=Take a subset of the given list from the given index (inclusive) to the given index (exclusive).
+operator.operators.integrateddynamics.list.equals_set=List Equals (Set)
+operator.operators.integrateddynamics.list.equals_set.info=Check if two lists are equal according to set semantics.
+operator.operators.integrateddynamics.list.equals_multiset=List Equals (Multiset)
+operator.operators.integrateddynamics.list.equals_multiset.info=Check if two lists are equal according to multiset semantics.
 
 operator.operators.integrateddynamics.block.name=Block
 operator.operators.integrateddynamics.block.basename=Block %s
@@ -1030,6 +1043,8 @@ operator.operators.integrateddynamics.itemstack.nbt.name=Item NBT
 operator.operators.integrateddynamics.itemstack.nbt.info=Get the NBT tag of the given item.
 operator.operators.integrateddynamics.itemstack.hasnbt.name=Has NBT
 operator.operators.integrateddynamics.itemstack.hasnbt.info=If the item stack has an NBT tag.
+operator.operators.integrateddynamics.itemstack.itemwithtag=Item With Tag
+operator.operators.integrateddynamics.itemstack.itemwithtag.info=Set the NBT tag of the given item.
 
 operator.operators.integrateddynamics.entity.name=Entity
 operator.operators.integrateddynamics.entity.basename=Entity %s
@@ -1109,7 +1124,11 @@ operator.operators.integrateddynamics.entity.entityenergystored.name=Entity Ener
 operator.operators.integrateddynamics.entity.entityenergystored.info=The amount of energy that is stored in this entity.
 operator.operators.integrateddynamics.entity.entityenergycapacity.name=Entity Energy Capacity
 operator.operators.integrateddynamics.entity.entityenergycapacity.info=The energy capacity of this entity.
+operator.operators.integrateddynamics.entity.entityitemtooltip=Entity Tooltip
+operator.operators.integrateddynamics.entity.entityitemtooltip.info=In the context of the given Player Entity, get the tooltip of the given item as a list of strings.
 
+operator.operators.integrateddynamics.itemstack.tooltip=Tooltip
+operator.operators.integrateddynamics.itemstack.tooltip.info=Get the tooltip of the given item as a list of strings.
 operator.operators.integrateddynamics.itemstack.isfecontainer.name=Is FE Container
 operator.operators.integrateddynamics.itemstack.isfecontainer.info=If the given item can hold FE
 operator.operators.integrateddynamics.itemstack.storedfe.name=FE Stored

@@ -86,16 +86,26 @@ public class GuiElementValueTypeStringRenderPattern<S extends ISubGuiBox, G exte
     public boolean keyTyped(boolean checkHotbarKeys, char typedChar, int keyCode) throws IOException {
         if (!checkHotbarKeys) {
             if (searchField.textboxKeyTyped(typedChar, keyCode)) {
-                element.setInputString(searchField.getText());
-                if (container instanceof IDirtyMarkListener) {
-                    ((IDirtyMarkListener) container).onDirty();
-                }
-                IntegratedDynamics._instance.getPacketHandler()
-                    .sendToServer(new LogicProgrammerValueTypeStringValueChangedPacket(element.getInputString()));
+                onTyped();
                 return true;
             }
         }
         return super.keyTyped(checkHotbarKeys, typedChar, keyCode);
+    }
+
+    private void onTyped() {
+        element.setInputString(searchField.getText());
+        if (container instanceof IDirtyMarkListener) {
+            ((IDirtyMarkListener) container).onDirty();
+        }
+        sendValueToServer();
+    }
+
+    @Override
+    public void sendValueToServer() {
+        super.sendValueToServer();
+        IntegratedDynamics._instance.getPacketHandler()
+            .sendToServer(new LogicProgrammerValueTypeStringValueChangedPacket(element.getInputString()));
     }
 
     @Override

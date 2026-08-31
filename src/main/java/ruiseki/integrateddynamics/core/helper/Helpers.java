@@ -9,6 +9,7 @@ import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+import net.minecraftforge.fluids.FluidContainerRegistry;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.IFluidBlock;
 import net.minecraftforge.oredict.OreDictionary;
@@ -22,6 +23,7 @@ import ruiseki.okcore.datastructure.NonNullList;
 import ruiseki.okcore.fluid.handler.IFluidHandler;
 import ruiseki.okcore.fluid.handler.IFluidTankProperties;
 import ruiseki.okcore.helper.FluidHelpers;
+import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.TileHelpers;
 
@@ -196,6 +198,27 @@ public final class Helpers {
         long sum = 0L;
         for (long v : values) sum += v;
         return sum / values.length;
+    }
+
+    /**
+     * Helper find ItemStack (Bucket/Container)
+     */
+    public static ItemStack getItemStackFromFluid(FluidStack fluidStack) {
+        if (fluidStack == null || fluidStack.getFluid() == null) {
+            return ItemHelpers.EMPTY;
+        }
+
+        for (FluidContainerRegistry.FluidContainerData data : FluidContainerRegistry
+            .getRegisteredFluidContainerData()) {
+            if (data.fluid != null && data.fluid.getFluid() == fluidStack.getFluid()) {
+                return data.filledContainer.copy();
+            }
+        }
+
+        ItemStack filledBucket = FluidContainerRegistry
+            .fillFluidContainer(fluidStack, FluidContainerRegistry.EMPTY_BUCKET);
+
+        return filledBucket != null ? filledBucket : ItemHelpers.EMPTY;
     }
 
     public static void addInterfaceRetriever(IInterfaceRetriever interfaceRetriever) {

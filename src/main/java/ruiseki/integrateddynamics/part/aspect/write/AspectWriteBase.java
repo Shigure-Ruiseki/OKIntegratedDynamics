@@ -18,6 +18,7 @@ import ruiseki.integrateddynamics.api.part.aspect.property.IAspectProperties;
 import ruiseki.integrateddynamics.api.part.write.IPartStateWriter;
 import ruiseki.integrateddynamics.api.part.write.IPartTypeWriter;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueHelpers;
+import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.integrateddynamics.part.aspect.AspectBase;
 import ruiseki.integrateddynamics.part.aspect.Aspects;
 import ruiseki.okcore.helper.LangHelpers;
@@ -51,15 +52,46 @@ public abstract class AspectWriteBase<V extends IValue, T extends IValueType<V>>
         IPartStateWriter writerState = (IPartStateWriter) state;
         IVariable variable = partTypeWriter.getActiveVariable(network, partNetwork, target, writerState);
         if (variable != null && writerState.getErrors(this)
-            .isEmpty() && ValueHelpers.correspondsTo(getValueType(), variable.getType())) {
-            if (writerState.isDeactivated() || writerState.checkAndResetFirstTick()) {
-                onActivate(partTypeWriter, target, writerState);
-            }
-            try {
-                write(partTypeWriter, target, writerState, variable);
-            } catch (EvaluationException e) {
-                writerState.addError(this, new LangHelpers.UnlocalizedString(e.getLocalizedMessage()));
+            .isEmpty()) {
+            if (ValueHelpers.correspondsTo(variable, getValueType())) {
+                if (writerState.isDeactivated() || writerState.checkAndResetFirstTick()) {
+                    onActivate(partTypeWriter, target, writerState);
+                }
+                try {
+                    write(partTypeWriter, target, writerState, variable);
+                } catch (EvaluationException e) {
+                    writerState.addError(this, new LangHelpers.UnlocalizedString(e.getLocalizedMessage()));
+                    writerState.setDeactivated(true);
+                    e.addResolutionListeners(() -> writerState.onVariableContentsUpdated(partTypeWriter, target));
+                }
+            } else {
+                // This will only occur in cases where the variable is of any type, and the value type is more precise.
+                // In all other cases, type checking will already have happen using the variable facades.
+                try {
+                    writerState.addError(
+                        this,
+                        new LangHelpers.UnlocalizedString(
+                            LangHelpers.localize(
+                                L10NValues.ASPECT_ERROR_INVALIDTYPE,
+                                LangHelpers.localize(getValueType().getUnlocalizedName()),
+                                LangHelpers.localize(
+                                    variable.getValue()
+                                        .getType()
+                                        .getUnlocalizedName()))));
+                } catch (EvaluationException e) {
+                    // Fallback to a less precise form of error reporting
+                    writerState.addError(
+                        this,
+                        new LangHelpers.UnlocalizedString(
+                            LangHelpers.localize(
+                                L10NValues.ASPECT_ERROR_INVALIDTYPE,
+                                LangHelpers.localize(getValueType().getUnlocalizedName()),
+                                LangHelpers.localize(
+                                    variable.getType()
+                                        .getUnlocalizedName()))));
+                }
                 writerState.setDeactivated(true);
+
             }
         } else if (!writerState.isDeactivated()) {
             onDeactivate(partTypeWriter, target, writerState);
@@ -76,6 +108,14 @@ public abstract class AspectWriteBase<V extends IValue, T extends IValueType<V>>
     public <P extends IPartTypeWriter<P, S>, S extends IPartStateWriter<P>> void onDeactivate(P partType,
         PartTarget target, S state) {
         state.setDeactivated(true);
+    }
+
+    @Override
+    public <P extends IPartType<P, S>, S extends IPartState<P>> void setProperties(P partType, PartTarget target,
+        S state, IAspectProperties properties) {
+        onDeactivate((IPartTypeWriter) partType, target, (IPartStateWriter) state);
+        super.setProperties(partType, target, state, properties);
+        onActivate((IPartTypeWriter) partType, target, (IPartStateWriter) state);
     }
 
     protected String getUnlocalizedType() {

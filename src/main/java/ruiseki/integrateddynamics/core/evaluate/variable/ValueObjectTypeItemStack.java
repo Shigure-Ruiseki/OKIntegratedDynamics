@@ -134,6 +134,12 @@ public class ValueObjectTypeItemStack extends ValueObjectTypeBase<ValueObjectTyp
                 public ValueObjectTypeItemStack.ValueItemStack getValue(ItemStack itemStack) {
                     return ValueObjectTypeItemStack.ValueItemStack.of(itemStack);
                 }
+
+                @Override
+                public ItemStack getValueAsItemStack(ValueItemStack value) {
+                    return value.getRawValue()
+                        .get();
+                }
             });
     }
 

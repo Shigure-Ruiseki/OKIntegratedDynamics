@@ -39,15 +39,15 @@ public class ItemEnhancement extends ItemBase {
                 if (partType.supportsOffsets()) {
                     int value = getEnhancementValue(itemStack);
                     int newValue = partState.getMaxOffset() + value;
-                    if (newValue < GeneralConfig.maxPartOffset) {
+                    if (newValue <= GeneralConfig.maxPartOffset) {
                         if (!player.worldObj.isRemote) {
                             partState.setMaxOffset(newValue);
+                            itemStack.stackSize--;
+                            player.addChatComponentMessage(
+                                new ChatComponentTranslation(
+                                    "item.items.integrateddynamics.enhancement_offset.increased",
+                                    newValue));
                         }
-                        itemStack.stackSize--;
-                        player.addChatComponentMessage(
-                            new ChatComponentTranslation(
-                                "item.items.integrateddynamics.enhancement_offset.increased",
-                                newValue));
                         return true;
                     }
                     player.addChatComponentMessage(

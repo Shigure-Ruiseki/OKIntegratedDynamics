@@ -36,6 +36,7 @@ import lombok.Setter;
 import lombok.experimental.Delegate;
 import ruiseki.integrateddynamics.api.block.IDynamicLight;
 import ruiseki.integrateddynamics.api.block.IDynamicRedstone;
+import ruiseki.integrateddynamics.api.block.cable.ICableFakeable;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartState;
 import ruiseki.integrateddynamics.api.part.IPartType;
@@ -265,9 +266,13 @@ public class BlockCable extends BlockTile
     @Override
     public void onBlockAdded(World world, int x, int y, int z) {
         super.onBlockAdded(world, x, y, z);
-        if (!world.isRemote && !world.getBlock(x, y, z)
-            .hasTileEntity(world.getBlockMetadata(x, y, z))) {
-            CableHelpers.onCableAdded(world, new BlockPos(x, y, z));
+        if (!world.isRemote) {
+            BlockPos pos = new BlockPos(x, y, z);
+            ICableFakeable cableFakeable = CableHelpers.getCableFakeable(world, pos, null)
+                .getOrNull();
+            if (cableFakeable != null && cableFakeable.isRealCable()) {
+                CableHelpers.onCableAdded(world, pos);
+            }
         }
     }
 

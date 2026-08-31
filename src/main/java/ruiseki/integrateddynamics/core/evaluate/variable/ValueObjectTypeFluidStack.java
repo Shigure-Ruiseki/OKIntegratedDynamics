@@ -2,11 +2,13 @@ package ruiseki.integrateddynamics.core.evaluate.variable;
 
 import java.util.Optional;
 
+import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.JsonToNBT;
 import net.minecraft.nbt.NBTException;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fluids.IFluidBlock;
 
 import lombok.ToString;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeNamed;
@@ -16,6 +18,8 @@ import ruiseki.integrateddynamics.core.helper.Helpers;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.integrateddynamics.core.logicprogrammer.ValueTypeItemStackLPElement;
 import ruiseki.integrateddynamics.core.logicprogrammer.ValueTypeLPElementBase;
+import ruiseki.okcore.helper.FluidHelpers;
+import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.helper.LangHelpers;
 
 /**
@@ -91,13 +95,28 @@ public class ValueObjectTypeFluidStack extends ValueObjectTypeBase<ValueObjectTy
 
                 @Override
                 public LangHelpers.UnlocalizedString validate(ItemStack itemStack) {
-                    return itemStack != null && Helpers.getFluidStack(itemStack) != null ? null
-                        : new LangHelpers.UnlocalizedString(L10NValues.VALUETYPE_OBJECT_FLUID_ERROR_NOFLUID);
+                    return ItemHelpers.isEmpty(itemStack) || FluidHelpers.getFluidHandler(itemStack)
+                        .isPresent()
+                        || (itemStack.getItem() instanceof ItemBlock blockItem && blockItem instanceof IFluidBlock)
+                            ? null
+                            : new LangHelpers.UnlocalizedString(L10NValues.VALUETYPE_OBJECT_FLUID_ERROR_NOFLUID);
                 }
 
                 @Override
                 public ValueObjectTypeFluidStack.ValueFluidStack getValue(ItemStack itemStack) {
                     return ValueObjectTypeFluidStack.ValueFluidStack.of(Helpers.getFluidStack(itemStack));
+                }
+
+                @Override
+                public ItemStack getValueAsItemStack(ValueFluidStack value) {
+                    if (value == null || value.getRawValue()
+                        .isPresent()) {
+                        return ItemHelpers.EMPTY;
+                    }
+
+                    FluidStack fluidStack = value.getRawValue()
+                        .get();
+                    return Helpers.getItemStackFromFluid(fluidStack);
                 }
             });
     }

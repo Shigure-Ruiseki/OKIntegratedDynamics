@@ -26,6 +26,7 @@ import ruiseki.integrateddynamics.core.evaluate.operator.Operators;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeOperator;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
 import ruiseki.integrateddynamics.core.evaluate.variable.gui.GuiElementValueTypeDropdownList;
+import ruiseki.integrateddynamics.core.evaluate.variable.gui.GuiElementValueTypeDropdownListRenderPattern;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.integrateddynamics.inventory.container.ContainerLogicProgrammerBase;
 import ruiseki.integrateddynamics.network.packet.LogicProgrammerValueTypeOperatorValueChangedPacket;
@@ -88,6 +89,21 @@ public class ValueTypeOperatorLPElement extends ValueTypeLPElementBase implement
     @Override
     public IValue getValue() {
         return ValueTypeOperator.ValueOperator.of(selectedOperator);
+    }
+
+    @Override
+    public void setValue(IValue value) {
+        this.selectedOperator = ((ValueTypeOperator.ValueOperator) value).getRawValue();
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public void setValueInGui(ISubGuiBox subGui) {
+        if (this.selectedOperator != null) {
+            ((GuiElementValueTypeDropdownListRenderPattern) subGui).getSearchField()
+                .setText(this.selectedOperator.getLocalizedNameFull());
+            ((GuiElementValueTypeDropdownListRenderPattern) subGui).onTyped();
+        }
     }
 
     @Override

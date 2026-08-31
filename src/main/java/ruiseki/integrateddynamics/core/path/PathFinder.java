@@ -1,9 +1,10 @@
 package ruiseki.integrateddynamics.core.path;
 
+import java.util.ArrayDeque;
+import java.util.HashSet;
+import java.util.Queue;
 import java.util.Set;
 import java.util.TreeSet;
-
-import com.google.common.collect.Sets;
 
 import ruiseki.integrateddynamics.api.path.IPathElement;
 import ruiseki.integrateddynamics.api.path.ISidedPathElement;
@@ -11,50 +12,41 @@ import ruiseki.okcore.datastructure.DimPos;
 
 /**
  * Algorithm to construct paths/clusters of {@link IPathElement}s.
- * 
+ *
  * @author rubensworks
  */
 public final class PathFinder {
 
-    protected static TreeSet<ISidedPathElement> getConnectedElements(ISidedPathElement head,
-        Set<DimPos> visitedPositions) {
-        TreeSet<ISidedPathElement> elements = Sets.newTreeSet();
+    protected static Set<ISidedPathElement> getConnectedElements(ISidedPathElement head) {
+        Set<ISidedPathElement> connectedElements = new HashSet<>();
+        Set<DimPos> visitedPositions = new HashSet<>();
 
-        // Make sure to add our head
-        if (!visitedPositions.contains(
-            head.getPathElement()
-                .getPosition())) {
-            elements.add(head);
-            visitedPositions.add(
-                head.getPathElement()
-                    .getPosition());
-        }
+        // Use a queue for BFS traversal.
+        Queue<ISidedPathElement> queue = new ArrayDeque<>();
+        DimPos headPos = head.getPathElement()
+            .getPosition();
+        visitedPositions.add(headPos);
+        queue.offer(head);
 
-        // Add neighbours that haven't been checked yet.
-        for (ISidedPathElement neighbour : head.getPathElement()
-            .getReachableElements()) {
-            if (!visitedPositions.contains(
-                neighbour.getPathElement()
-                    .getPosition())) {
-                elements.add(neighbour);
-                visitedPositions.add(
-                    neighbour.getPathElement()
-                        .getPosition());
+        while (!queue.isEmpty()) {
+            ISidedPathElement current = queue.poll();
+            connectedElements.add(current);
+            IPathElement currentElement = current.getPathElement();
+
+            for (ISidedPathElement neighbour : currentElement.getReachableElements()) {
+                DimPos neighbourPos = neighbour.getPathElement()
+                    .getPosition();
+                if (visitedPositions.add(neighbourPos)) { // Adds and returns true if not already present.
+                    queue.offer(neighbour);
+                }
             }
         }
 
-        // Loop over the added neighbours to recursively check their neighbours.
-        Set<ISidedPathElement> neighbourElements = Sets.newHashSet();
-        for (ISidedPathElement addedElement : elements) {
-            neighbourElements.addAll(getConnectedElements(addedElement, visitedPositions));
-        }
-        elements.addAll(neighbourElements);
-
-        return elements;
+        return connectedElements;
     }
 
     public static Cluster getConnectedCluster(ISidedPathElement head) {
-        return new Cluster(getConnectedElements(head, Sets.<DimPos>newTreeSet()));
+        return new Cluster(new TreeSet<>(getConnectedElements(head)));
     }
 
 }

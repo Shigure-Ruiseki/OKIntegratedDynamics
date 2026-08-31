@@ -6,6 +6,7 @@ import java.util.Iterator;
 import it.unimi.dsi.fastutil.ints.AbstractInt2ObjectSortedMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectAVLTreeMap;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+import ruiseki.commoncapabilities.api.ingredient.IIngredientMatcher;
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
 import ruiseki.integrateddynamics.api.ingredient.IIngredientPositionsIndex;
 import ruiseki.integrateddynamics.api.part.PartPos;
@@ -60,10 +61,20 @@ public class IngredientPositionsIndex<T, M> implements IIngredientPositionsIndex
 
     @Override
     public Iterator<PartPos> getPositions(T instance, M matchFlags) {
+        // Since we store ingredients by prototype in ingredientCollection,
+        // we can make the match flags more precise,
+        // and possibly improve performance of the lookup operation.
+        IIngredientMatcher<T, M> matcher = getComponent().getMatcher();
+        if (matcher.getExactMatchNoQuantityCondition()
+            .equals(matchFlags)) {
+            matchFlags = matcher.getExactMatchCondition();
+        }
+        M finalMatchFlags = matchFlags;
+
         return this.prioritizedPositionsMap.values()
             .stream()
             .flatMap(
-                ingredientCollection -> ingredientCollection.getAll(getPrototype(instance), matchFlags)
+                ingredientCollection -> ingredientCollection.getAll(getPrototype(instance), finalMatchFlags)
                     .stream())
             .flatMap(Collection::stream)
             .distinct()

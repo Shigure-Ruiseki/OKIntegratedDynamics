@@ -253,7 +253,6 @@ public abstract class PartTypeBase<P extends IPartType<P, S>, S extends IPartSta
             }
             state.setMaxOffset(0);
         }
-
     }
 
     @Override

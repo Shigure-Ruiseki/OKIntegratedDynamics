@@ -128,7 +128,7 @@ public abstract class PartTypeReadBase<P extends IPartTypeReader<P, S>, S extend
                         aspect.getUnlocalizedName(),
                         this));
             }
-            variable = aspect.createNewVariable(target);
+            variable = aspect.createNewVariable(() -> getTarget(target.getCenter(), partState));
             partState.setVariable(aspect, variable);
         }
         return variable;

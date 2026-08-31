@@ -99,6 +99,30 @@ public class ValueHelpers {
     }
 
     /**
+     * Check if the variable corresponds to the given type.
+     *
+     * @param variable Variable.
+     * @param type     First type.
+     * @return If they correspond to each.
+     */
+    public static boolean correspondsTo(IVariable<?> variable, IValueType type) {
+        // Special case when the variable type is ANY, but the actual contained value is more specific.
+        // This can for example occur in Integrated Scripting when applying a scripted operator.
+        // See CyclopsMC/IntegratedScripting#20
+        if (type != ValueTypes.CATEGORY_ANY && variable.getType() == ValueTypes.CATEGORY_ANY) {
+            try {
+                IValue value = variable.getValue();
+                return ValueHelpers.correspondsTo(type, value.getType());
+            } catch (EvaluationException e) {
+                // Ignore error
+                return false;
+            }
+        }
+
+        return ValueHelpers.correspondsTo(type, variable.getType());
+    }
+
+    /**
      * Evaluate an operator for the given values.
      *
      * @param operator The operator.

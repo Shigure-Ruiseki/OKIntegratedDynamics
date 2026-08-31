@@ -456,6 +456,31 @@ public class GeneralConfig extends DummyConfig {
     public static boolean recreateCorruptedNetworks = true;
 
     @ConfigurableProperty(
+        category = ConfigurableTypeCategory.CORE,
+        comment = "When true, use the LONG number format style. Otherwise, use the SHORT style.")
+    public static boolean numberCompactUseLongStyle = false;
+
+    @ConfigurableProperty(
+        category = ConfigurableTypeCategory.CORE,
+        comment = "The maximum number of fractional digits to include in the result of the compact operator")
+    public static int numberCompactMaximumFractionDigits = 2;
+
+    @ConfigurableProperty(
+        category = ConfigurableTypeCategory.CORE,
+        comment = "The minimum number of fractional digits to include in the result of the compact operator")
+    public static int numberCompactMinimumFractionDigits = 0;
+
+    @ConfigurableProperty(
+        category = ConfigurableTypeCategory.CORE,
+        comment = "The maximum number of integer digits to include in the result of the compact operator")
+    public static int numberCompactMaximumIntegerDigits = 3;
+
+    @ConfigurableProperty(
+        category = ConfigurableTypeCategory.CORE,
+        comment = "The minimum number of integer digits to include in the result of the compact operator")
+    public static int numberCompactMinimumIntegerDigits = 1;
+
+    @ConfigurableProperty(
         category = ConfigurableTypeCategory.GENERAL,
         comment = "The default port for running the network diagnostics HTTP server.")
     public static int diagnosticsWebServerPort = 3030;

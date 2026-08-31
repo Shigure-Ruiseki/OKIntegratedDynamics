@@ -29,7 +29,7 @@ import ruiseki.okcore.helper.MinecraftHelpers;
 
 /**
  * An operator that somehow combines one or more operators.
- * 
+ *
  * @author rubensworks
  */
 public class CombinedOperator extends OperatorBase {
@@ -198,7 +198,7 @@ public class CombinedOperator extends OperatorBase {
          * Pass the first variable to all n-1 first operators.
          * Prepend the results of these operators to the variables array.
          * Pass the final variables array to the last operator, and return the result.
-         * 
+         *
          * @param allVariables The input variables.
          * @param operators    The operators to apply to. The n-1 first ones are the inputs, and the last one is the
          *                     target to pipe to.
@@ -220,7 +220,7 @@ public class CombinedOperator extends OperatorBase {
 
         /**
          * Determine the input types and output type for the given operators.
-         * 
+         *
          * @param operators The operators to apply to. The n-1 first ones are the inputs, and the last one is the target
          *                  to pipe to.
          * @return The input types and output type.
@@ -248,7 +248,12 @@ public class CombinedOperator extends OperatorBase {
                         ArrayUtils.subarray(operatorInputTypes, firstInputRange, operatorInputTypes.length));
                 }
             }
-            return Pair.of(inputTypes, operators[operators.length - 1].getOutputType());
+            IValueType lastOutputType = operators[operators.length - 1].getOutputType();
+            if (lastOutputType == ValueTypes.OPERATOR) {
+                // If output type is an operator, make it ANY, as we don't know yet what we will pipe with.
+                lastOutputType = ValueTypes.CATEGORY_ANY;
+            }
+            return Pair.of(inputTypes, lastOutputType);
 
         }
 

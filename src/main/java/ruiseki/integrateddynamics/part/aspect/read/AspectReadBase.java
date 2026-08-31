@@ -1,5 +1,7 @@
 package ruiseki.integrateddynamics.part.aspect.read;
 
+import java.util.function.Supplier;
+
 import net.minecraft.util.ResourceLocation;
 
 import cpw.mods.fml.relauncher.Side;
@@ -75,12 +77,12 @@ public abstract class AspectReadBase<V extends IValue, T extends IValueType<V>> 
     protected abstract V getValue(PartTarget target, IAspectProperties properties) throws EvaluationException;
 
     @Override
-    public IAspectVariable<V> createNewVariable(final PartTarget target) {
+    public IAspectVariable<V> createNewVariable(Supplier<PartTarget> target) {
         return new LazyAspectVariable<V>(getValueType(), target, this) {
 
             @Override
             public V getValueLazy() throws EvaluationException {
-                return AspectReadBase.this.getValue(target, getAspectProperties());
+                return AspectReadBase.this.getValue(getTarget(), getAspectProperties());
             }
         };
     }

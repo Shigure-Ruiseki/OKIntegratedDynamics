@@ -17,8 +17,10 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.client.gui.subgui.ISubGuiBox;
+import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
+import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeListProxy;
 import ruiseki.integrateddynamics.api.logicprogrammer.IConfigRenderPattern;
 import ruiseki.integrateddynamics.api.logicprogrammer.ILogicProgrammerElementType;
 import ruiseki.integrateddynamics.api.logicprogrammer.IValueTypeLogicProgrammerElement;
@@ -100,8 +102,63 @@ public class ValueTypeListLPElement extends ValueTypeLPElementBase {
             : serverValue;
     }
 
+    @Override
+    public void setValue(IValue value) {
+        if (!MinecraftHelpers.isClientSide()) {
+            serverValue = (ValueTypeList.ValueList) value;
+        }
+
+        IValueTypeListProxy list = ((ValueTypeList.ValueList) value).getRawValue();
+        if (!list.isInfinite()) {
+            setListValueType(list.getValueType());
+            try {
+                int length = list.getLength();
+                this.length = length;
+                for (int i = 0; i < length; i++) {
+                    initializeElement(i).setValue(list.get(i));
+                }
+            } catch (EvaluationException e) {
+                // Ignore exceptions
+            }
+        }
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public void setValueInGui(ISubGuiBox subGui) {
+        if (length > 0) {
+            masterGui.setSelectedValueType(this.listValueType);
+            setActiveElement(0);
+        }
+    }
+
+    @Override
+    public void setValueInContainer(ContainerLogicProgrammerBase container) {
+        if (length > 0) {
+            IValueTypeLogicProgrammerElement subElement = setActiveElement(0);
+            int x = RenderPattern.calculateX(
+                ContainerLogicProgrammerBase.BASE_X,
+                ContainerLogicProgrammerBase.MAX_WIDTH,
+                subElement.getRenderPattern());
+            int y = RenderPattern.calculateY(
+                ContainerLogicProgrammerBase.BASE_Y,
+                ContainerLogicProgrammerBase.MAX_HEIGHT,
+                subElement.getRenderPattern());
+            container.setElementInventory(subElement, x, y);
+            container.getTemporaryInputSlots()
+                .removeDirtyMarkListener(container);
+            subElement.setValueInContainer(container);
+            container.getTemporaryInputSlots()
+                .addDirtyMarkListener(container);
+        }
+    }
+
     public void setListValueType(IValueType listValueType) {
         this.listValueType = listValueType;
+        reset();
+    }
+
+    public void reset() {
         this.subElements = Maps.newHashMap();
         this.subElementGuis = Maps.newHashMap();
         setLength(0);
@@ -112,17 +169,28 @@ public class ValueTypeListLPElement extends ValueTypeLPElementBase {
         setActiveElement(length - 1);
     }
 
-    public void setActiveElement(int index) {
+    public IValueTypeLogicProgrammerElement initializeElement(int index) {
+        IValueTypeLogicProgrammerElement subElement = listValueType.createLogicProgrammerElement();
+        subElement.activate();
+        subElements.put(index, subElement);
+        return subElement;
+    }
+
+    public IValueTypeLogicProgrammerElement setActiveElement(int index) {
         activeElement = index;
+        IValueTypeLogicProgrammerElement subElement;
         if (index >= 0 && !subElements.containsKey(index)) {
-            IValueTypeLogicProgrammerElement subElement = listValueType.createLogicProgrammerElement();
-            subElements.put(index, subElement);
+            subElement = initializeElement(index);
+
             subElement.activate();
+        } else {
+            subElement = subElements.get(index);
         }
         if (MinecraftHelpers.isClientSide()) {
             masterGui.setActiveElement(activeElement);
             masterGui.container.onDirty();
         }
+        return subElement;
     }
 
     public void removeElement(int index) {
@@ -145,7 +213,7 @@ public class ValueTypeListLPElement extends ValueTypeLPElementBase {
 
     @Override
     public void activate() {
-
+        reset();
     }
 
     @Override
@@ -210,6 +278,7 @@ public class ValueTypeListLPElement extends ValueTypeLPElementBase {
         private final int maxHeight;
         private final GuiLogicProgrammerBase gui;
         private final ContainerLogicProgrammerBase container;
+        private final SelectionSubGui selectionGui;
 
         protected ListElementSubGui elementSubGui = null;
         protected int lastGuiLeft;
@@ -220,7 +289,14 @@ public class ValueTypeListLPElement extends ValueTypeLPElementBase {
             int maxHeight, GuiLogicProgrammerBase gui, ContainerLogicProgrammerBase container) {
             super(element, baseX, baseY, maxWidth, maxHeight, gui, container);
             subGuiHolder.addSubGui(
-                new SelectionSubGui(element, baseX, baseY - getHeight() / 4, maxWidth, maxHeight, gui, container));
+                this.selectionGui = new SelectionSubGui(
+                    element,
+                    baseX,
+                    baseY - getHeight() / 4,
+                    maxWidth,
+                    maxHeight,
+                    gui,
+                    container));
             this.baseX = baseX;
             this.baseY = baseY;
             this.maxWidth = maxWidth;
@@ -238,6 +314,10 @@ public class ValueTypeListLPElement extends ValueTypeLPElementBase {
                     elementSubGui = new ListElementSubGui(element, baseX, baseY, maxWidth, maxHeight, gui, container));
                 elementSubGui.initGui(lastGuiLeft, lastGuiTop);
             }
+        }
+
+        public void setSelectedValueType(IValueType valueType) {
+            this.selectionGui.setActiveElement(valueType);
         }
 
         @Override
@@ -371,6 +451,12 @@ public class ValueTypeListLPElement extends ValueTypeLPElementBase {
                 arrowAdd.enabled = newType != ValueTypes.CATEGORY_ANY;
             }
         }
+
+        public void setActiveElement(IValueType valueType) {
+            valueTypeSelector.setListener(null);
+            valueTypeSelector.setActiveElement(valueType);
+            valueTypeSelector.setListener(this);
+        }
     }
 
     /**
@@ -384,11 +470,14 @@ public class ValueTypeListLPElement extends ValueTypeLPElementBase {
         private GuiButtonArrow arrowRight;
         private GuiButton arrowRemove;
 
+        private RenderPattern subGui;
+        private IValueTypeLogicProgrammerElement subElement;
+
         public ListElementSubGui(ValueTypeListLPElement element, int baseX, int baseY, int maxWidth, int maxHeight,
             GuiLogicProgrammerBase gui, ContainerLogicProgrammerBase container) {
             super(element, baseX, baseY, maxWidth, maxHeight, gui, container);
-            RenderPattern subGui = element.subElementGuis.get(element.activeElement);
-            IValueTypeLogicProgrammerElement subElement = element.subElements.get(element.activeElement);
+            this.subGui = element.subElementGuis.get(element.activeElement);
+            this.subElement = element.subElements.get(element.activeElement);
             if (subGui == null) {
                 subGui = (RenderPattern) subElement.createSubGui(baseX, baseY, maxWidth, maxHeight, gui, container);
                 element.subElementGuis.put(element.activeElement, subGui);
@@ -432,6 +521,12 @@ public class ValueTypeListLPElement extends ValueTypeLPElementBase {
             arrowLeft.enabled = element.activeElement > 0;
             arrowRight.enabled = element.activeElement < element.length - 1;
             arrowRemove.enabled = element.length > 0;
+            container.getTemporaryInputSlots()
+                .removeDirtyMarkListener(container);
+            subElement.setValueInGui(subGui);
+            subElement.setValueInContainer(subGui.container);
+            container.getTemporaryInputSlots()
+                .addDirtyMarkListener(container);
         }
 
         @Override

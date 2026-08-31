@@ -11,7 +11,7 @@ import ruiseki.integrateddynamics.api.part.PartPos;
 /**
  * An {@link IPartPosIteratorHandler} that maintains the state of an iterator
  * and achieves round-robin iteration.
- * 
+ *
  * @author rubensworks
  */
 public class PartPosIteratorHandlerRoundRobin implements IPartPosIteratorHandler {
@@ -74,6 +74,7 @@ public class PartPosIteratorHandlerRoundRobin implements IPartPosIteratorHandler
                 return true;
             } else if (!countdownAllowedRemaining) {
                 countdownAllowedRemaining = true;
+                handler.offset = 0;
                 if (allowedRemaining > 0) {
                     innerIt = iteratorSupplier.get();
                     return innerIt.hasNext();

@@ -1,8 +1,12 @@
 package ruiseki.integrateddynamics.core.evaluate.variable;
 
+import java.text.NumberFormat;
+import java.util.Locale;
+
 import net.minecraft.util.EnumChatFormatting;
 
 import lombok.ToString;
+import ruiseki.integrateddynamics.GeneralConfig;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeNumber;
 import ruiseki.okcore.helper.Helpers;
 
@@ -120,6 +124,18 @@ public class ValueTypeDouble extends ValueTypeBase<ValueTypeDouble.ValueDouble>
     @Override
     public ValueTypeInteger.ValueInteger floor(ValueDouble a) {
         return ValueTypeInteger.ValueInteger.of((int) Math.floor(a.getRawValue()));
+    }
+
+    @Override
+    public ValueTypeString.ValueString compact(ValueDouble a) {
+        NumberFormat nf = NumberFormat.getCompactNumberInstance(
+            Locale.US,
+            GeneralConfig.numberCompactUseLongStyle ? NumberFormat.Style.LONG : NumberFormat.Style.SHORT);
+        nf.setMinimumFractionDigits(GeneralConfig.numberCompactMinimumFractionDigits);
+        nf.setMaximumFractionDigits(GeneralConfig.numberCompactMaximumFractionDigits);
+        nf.setMinimumIntegerDigits(GeneralConfig.numberCompactMinimumIntegerDigits);
+        nf.setMaximumIntegerDigits(GeneralConfig.numberCompactMaximumIntegerDigits);
+        return ValueTypeString.ValueString.of(nf.format(a.getRawValue()));
     }
 
     @Override

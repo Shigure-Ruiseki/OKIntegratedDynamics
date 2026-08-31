@@ -70,12 +70,14 @@ public class LazyExpression<V extends IValue> extends VariableAdapter<V> impleme
             return (V) value;
         } catch (ClassCastException e) {
             errored = true;
-            throw new EvaluationException(
+            EvaluationException e2 = new EvaluationException(
                 String.format(
                     "The evaluation for operator %s returned %s instead of " + "the expected %s.",
                     op,
                     value.getType(),
                     op.getOutputType()));
+            e2.addResolutionListeners(this::invalidate);
+            throw e2;
         }
     }
 

@@ -1,6 +1,7 @@
 package ruiseki.integrateddynamics.core.ingredient;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Collections;
 
 import net.minecraft.item.ItemStack;
@@ -13,10 +14,12 @@ import ruiseki.commoncapabilities.api.capability.recipehandler.IPrototypedIngred
 import ruiseki.commoncapabilities.api.capability.recipehandler.PrototypedIngredientAlternativesItemStackOredictionary;
 import ruiseki.commoncapabilities.api.capability.recipehandler.PrototypedIngredientAlternativesItemStackTag;
 import ruiseki.commoncapabilities.api.capability.recipehandler.PrototypedIngredientAlternativesList;
+import ruiseki.commoncapabilities.api.ingredient.IPrototypedIngredient;
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
 import ruiseki.commoncapabilities.api.ingredient.PrototypedIngredient;
 import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.okcore.datastructure.DimPos;
+import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.network.ExtendedBuffer;
 import ruiseki.okcore.network.PacketCodec;
 
@@ -162,5 +165,39 @@ public class ItemMatchProperties {
                     getTagQuantity());
             }
         }
+    }
+
+    public static ItemMatchProperties fromPrototypedIngredient(
+        IPrototypedIngredientAlternatives<ItemStack, Integer> prototypedIngredient, boolean reusable) {
+        ItemMatchProperties props = new ItemMatchProperties(ItemHelpers.EMPTY);
+        if (prototypedIngredient instanceof PrototypedIngredientAlternativesItemStackTag prototypedTag) {
+            prototypedTag.getKeys()
+                .stream()
+                .findFirst()
+                .ifPresent(props::setItemTag);
+            props.setTagQuantity((int) prototypedTag.getQuantity());
+        } else
+            if (prototypedIngredient instanceof PrototypedIngredientAlternativesItemStackOredictionary oredictionary) {
+                oredictionary.getKeys()
+                    .stream()
+                    .findFirst()
+                    .ifPresent(props::setItemTag);
+                props.setTagQuantity((int) oredictionary.getQuantity());
+            } else
+                if (prototypedIngredient instanceof PrototypedIngredientAlternativesList<ItemStack, Integer>prototypedList) {
+                    Collection<IPrototypedIngredient<ItemStack, Integer>> alternatives = prototypedList
+                        .getAlternatives();
+                    IPrototypedIngredient<ItemStack, Integer> prototype = alternatives.stream()
+                        .findFirst()
+                        .orElse(null);
+                    if (prototype != null) {
+                        props = new ItemMatchProperties(prototype.getPrototype());
+                        props.setNbt(
+                            IngredientComponent.ITEMSTACK.getMatcher()
+                                .hasCondition(prototype.getCondition(), ItemMatch.NBT));
+                    }
+                }
+        props.setReusable(reusable);
+        return props;
     }
 }

@@ -26,6 +26,7 @@ import ruiseki.integrateddynamics.core.logicprogrammer.LogicProgrammerElementTyp
 import ruiseki.integrateddynamics.core.persist.world.LabelsWorldStorage;
 import ruiseki.integrateddynamics.item.ItemVariable;
 import ruiseki.integrateddynamics.item.ItemVariableConfig;
+import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.inventory.IGuiContainerProvider;
@@ -44,6 +45,11 @@ public abstract class ContainerLogicProgrammerBase extends ScrollingInventoryCon
 
     public static final int OUTPUT_X = 232;
     public static final int OUTPUT_Y = 110;
+
+    public static final int BASE_X = 88;
+    public static final int BASE_Y = 18;
+    public static final int MAX_WIDTH = 160;
+    public static final int MAX_HEIGHT = 87;
 
     protected static final IItemPredicate<ILogicProgrammerElement> FILTERER = new IItemPredicate<ILogicProgrammerElement>() {
 
@@ -292,24 +298,39 @@ public abstract class ContainerLogicProgrammerBase extends ScrollingInventoryCon
             }
             ItemStack outputStack = writeElementInfo();
             writeSlot.removeDirtyMarkListener(this);
+            writeSlot.removeDirtyMarkListener(loadConfigListener);
             writeSlot.setInventorySlotContents(0, outputStack);
             if (!StringUtils.isNullOrEmpty(this.lastLabel)) {
                 labelCurrent();
             }
             writeSlot.addDirtyMarkListener(this);
+            writeSlot.addDirtyMarkListener(loadConfigListener);
         }
     }
 
     protected void loadConfigFrom(ItemStack itemStack) {
-        // Only do this client-side, a packet will be sent to do the same server-side.
-        if (MinecraftHelpers.isClientSide()) {
-            IVariableFacadeHandlerRegistry registry = IntegratedDynamics._instance.getRegistryManager()
-                .getRegistry(IVariableFacadeHandlerRegistry.class);
-            IVariableFacade variableFacade = registry.handle(itemStack);
-            for (ILogicProgrammerElement element : getElements()) {
-                if (element.isFor(variableFacade)) {
-                    getGui().handleElementActivation(element);
+        IVariableFacadeHandlerRegistry registry = IntegratedDynamics._instance.getRegistryManager()
+            .getRegistry(IVariableFacadeHandlerRegistry.class);
+        IVariableFacade variableFacade = registry.handle(itemStack);
+        for (ILogicProgrammerElement element : getUnfilteredItems()) {
+            if (element.isFor(variableFacade)) {
+                writeSlot.removeDirtyMarkListener(this);
+                writeSlot.removeDirtyMarkListener(loadConfigListener);
+                if (MinecraftHelpers.isClientSide()) {
+                    getGui().handleElementActivation(element, false);
+                } else {
+                    setActiveElement(element, 0, 0);
                 }
+                temporaryInputSlots.removeDirtyMarkListener(this);
+                element.loadElement(variableFacade);
+                if (MinecraftHelpers.isClientSide()) {
+                    element.setValueInGui(getGui().getOperatorConfigPattern());
+                } else {
+                    element.setValueInContainer(this);
+                }
+                writeSlot.addDirtyMarkListener(this);
+                writeSlot.addDirtyMarkListener(loadConfigListener);
+                temporaryInputSlots.addDirtyMarkListener(this);
             }
         }
     }
@@ -318,7 +339,7 @@ public abstract class ContainerLogicProgrammerBase extends ScrollingInventoryCon
         return this.lastError;
     }
 
-    public IInventory getTemporaryInputSlots() {
+    public SimpleInventory getTemporaryInputSlots() {
         return this.temporaryInputSlots;
     }
 
@@ -351,17 +372,12 @@ public abstract class ContainerLogicProgrammerBase extends ScrollingInventoryCon
 
         @Override
         public void onDirty() {
-            // Currently disabled, this requires quite complex negotiation between C and S, not too mention
-            // any other players having the gui open!
-            /*
-             * if ((temporaryInputSlots == null || temporaryInputSlots.isEmpty())
-             * && (activeElement == null || activeElement.canCurrentlyReadFromOtherItem())) {
-             * ItemStack itemStack = writeSlot.getStackInSlot(0);
-             * if (itemStack != null) {
-             * ContainerLogicProgrammer.this.loadConfigFrom(itemStack);
-             * }
-             * }
-             */
+            if (activeElement == null) {
+                ItemStack itemStack = writeSlot.getStackInSlot(0);
+                if (!ItemHelpers.isEmpty(itemStack)) {
+                    ContainerLogicProgrammerBase.this.loadConfigFrom(itemStack);
+                }
+            }
         }
 
     }
