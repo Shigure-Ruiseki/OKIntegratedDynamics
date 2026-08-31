@@ -162,7 +162,7 @@ public class GuiPartOffset<T extends ContainerPartOffset> extends GuiContainerEx
         super.drawGuiContainerBackgroundLayer(partialTicks, mouseX, mouseY);
         fontRendererObj.drawString(
             LangHelpers.localize("gui.integrateddynamics.partoffset.offsets"),
-            guiLeft + 34,
+            guiLeft + 8,
             guiTop + 19,
             Helpers.RGBToInt(0, 0, 0));
         numberFieldX.drawTextBox(Minecraft.getMinecraft(), mouseX, mouseY);

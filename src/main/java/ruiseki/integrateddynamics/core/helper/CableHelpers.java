@@ -38,7 +38,7 @@ import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.helper.CapabilityHelpers;
 import ruiseki.okcore.helper.InventoryHelpers;
-import ruiseki.okcore.helper.ItemStackHelpers;
+import ruiseki.okcore.helper.ItemHelpers;
 
 /**
  * Helpers related to cables.
@@ -168,7 +168,7 @@ public class CableHelpers {
 
     /**
      * Disconnect a cable's side.
-     * 
+     *
      * @param world          The cable world.
      * @param pos            The cable position.
      * @param side           The cable side.
@@ -391,9 +391,9 @@ public class CableHelpers {
             cableFakeable.setRealCable(false);
         }
         if (player == null) {
-            ItemStackHelpers.spawnItemStack(world, pos, cable.getItemStack());
+            ItemHelpers.spawnItemStack(world, pos, cable.getItemStack());
         } else if (!player.capabilities.isCreativeMode) {
-            ItemStackHelpers.spawnItemStackToPlayer(world, pos, cable.getItemStack(), player);
+            ItemHelpers.spawnItemStackToPlayer(world, pos, cable.getItemStack(), player);
         }
         CableHelpers.onCableRemoved(world, pos, getCableConnections(cable));
 

@@ -19,9 +19,9 @@ import com.google.common.collect.Lists;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
 import ruiseki.okcore.datastructure.NonNullList;
-import ruiseki.okcore.fluid.FluidHelpers;
 import ruiseki.okcore.fluid.handler.IFluidHandler;
 import ruiseki.okcore.fluid.handler.IFluidTankProperties;
+import ruiseki.okcore.helper.FluidHelpers;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.TileHelpers;
 

@@ -14,7 +14,7 @@ import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeNullable;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeUniquelyNamed;
 import ruiseki.integrateddynamics.core.logicprogrammer.ValueTypeItemStackLPElement;
 import ruiseki.integrateddynamics.core.logicprogrammer.ValueTypeLPElementBase;
-import ruiseki.okcore.helper.ItemStackHelpers;
+import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.helper.LangHelpers;
 
 /**
@@ -170,7 +170,7 @@ public class ValueObjectTypeItemStack extends ValueObjectTypeBase<ValueObjectTyp
 
         @Override
         public int hashCode() {
-            return 37 + (getRawValue().isPresent() ? ItemStackHelpers.getItemStackHashCode(getRawValue().get()) : 0);
+            return 37 + (getRawValue().isPresent() ? ItemHelpers.getItemStackHashCode(getRawValue().get()) : 0);
         }
     }
 }

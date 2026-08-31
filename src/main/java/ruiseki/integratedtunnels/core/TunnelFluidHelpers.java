@@ -30,7 +30,7 @@ import ruiseki.integratedtunnels.core.predicate.IngredientPredicateFluidStackNbt
 import ruiseki.integratedtunnels.core.predicate.IngredientPredicateFluidStackOperator;
 import ruiseki.integratedtunnels.part.aspect.ITunnelConnection;
 import ruiseki.okcore.datastructure.BlockPos;
-import ruiseki.okcore.fluid.FluidHelpers;
+import ruiseki.okcore.helper.FluidHelpers;
 
 /**
  * @author rubensworks
@@ -153,7 +153,7 @@ public class TunnelFluidHelpers {
 
     /**
      * Place fluids from the given source in the world.
-     * 
+     *
      * @param network            The network in which the movement is happening.
      * @param ingredientsNetwork The network in which the movement is happening.
      * @param channel            The channel.
@@ -203,7 +203,7 @@ public class TunnelFluidHelpers {
 
     /**
      * Place fluids from the given source in the world.
-     * 
+     *
      * @param network            The network in which the movement is happening.
      * @param ingredientsNetwork The ingredients network in which the movement is happening.
      * @param channel            The channel.
@@ -246,7 +246,7 @@ public class TunnelFluidHelpers {
 
     /**
      * Helper function to get a copy of the given fluidstack with the given amount.
-     * 
+     *
      * @param prototype A prototype fluidstack.
      * @param count     A new amount.
      * @return A copy of the given fluidstack with the given count.

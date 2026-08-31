@@ -16,7 +16,7 @@ import ruiseki.okcore.block.property.BooleanProperty;
 import ruiseki.okcore.config.extendedconfig.BlockConfig;
 import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 import ruiseki.okcore.datastructure.BlockPos;
-import ruiseki.okcore.fluid.FluidHelpers;
+import ruiseki.okcore.helper.FluidHelpers;
 import ruiseki.okcore.helper.TileHelpers;
 
 /**

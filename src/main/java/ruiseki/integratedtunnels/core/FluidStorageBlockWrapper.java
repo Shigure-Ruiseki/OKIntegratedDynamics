@@ -25,16 +25,16 @@ import ruiseki.integratedtunnels.IntegratedTunnels;
 import ruiseki.integratedtunnels.api.world.IBlockBreakHandler;
 import ruiseki.integratedtunnels.api.world.IBlockBreakHandlerRegistry;
 import ruiseki.okcore.datastructure.BlockPos;
-import ruiseki.okcore.fluid.FluidHelpers;
 import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
 import ruiseki.okcore.fluid.capability.wrapper.BlockLiquidWrapper;
 import ruiseki.okcore.fluid.capability.wrapper.BlockWrapper;
 import ruiseki.okcore.fluid.capability.wrapper.FluidBlockWrapper;
 import ruiseki.okcore.fluid.handler.IFluidHandler;
+import ruiseki.okcore.helper.FluidHelpers;
 
 /**
  * An item storage for world block placement.
- * 
+ *
  * @author rubensworks
  */
 public class FluidStorageBlockWrapper implements IIngredientComponentStorage<FluidStack, Integer> {

@@ -8,9 +8,11 @@ import net.minecraft.world.World;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.item.IVariableFacade;
 import ruiseki.integrateddynamics.api.item.IVariableFacadeHandlerRegistry;
+import ruiseki.integrateddynamics.core.persist.world.LabelsWorldStorage;
 import ruiseki.integrateddynamics.item.ItemVariable;
 import ruiseki.integrateddynamics.item.ItemVariableConfig;
 import ruiseki.okcore.datastructure.NonNullList;
+import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.recipe.IRecipeSerializer;
 import ruiseki.okcore.recipe.ingredient.Ingredient;
@@ -58,17 +60,34 @@ public class ItemVariableCopyRecipe extends SpecialRecipe {
 
     @Override
     public NonNullList<ItemStack> getRemainingItems(InventoryCrafting inv) {
-        NonNullList<ItemStack> remaining = NonNullList.withSize(inv.getSizeInventory(), null);
-        for (int i = 0; i < remaining.size(); ++i) {
-            ItemStack stack = inv.getStackInSlot(i);
-            if (stack != null && stack.getItem() instanceof ItemVariable itemVariable) {
-                IVariableFacade facade = itemVariable.getVariableFacade(stack);
+        NonNullList<ItemStack> ret = NonNullList.withSize(inv.getSizeInventory(), ItemHelpers.EMPTY);
+        for (int j = 0; j < inv.getSizeInventory(); j++) {
+            ItemStack element = inv.getStackInSlot(j);
+            if (!ItemHelpers.isEmpty(element) && element.getItem() instanceof ItemVariable itemVariable) {
+                IVariableFacade facade = itemVariable.getVariableFacade(element);
                 if (facade.isValid()) {
-                    remaining.set(i, stack);
+                    // Create a copy with a new id.
+                    ItemStack copy = IntegratedDynamics._instance.getRegistryManager()
+                        .getRegistry(IVariableFacadeHandlerRegistry.class)
+                        .copy(!MinecraftHelpers.isClientSide(), element);
+
+                    // If the input had a label, also copy the label
+                    String label = LabelsWorldStorage.getInstance(IntegratedDynamics._instance)
+                        .getLabel(facade.getId());
+                    if (label != null) {
+                        IVariableFacade facadeCopy = ((ItemVariable) ItemVariableConfig._instance.getInstance())
+                            .getVariableFacade(copy);
+                        if (facadeCopy != null) {
+                            LabelsWorldStorage.getInstance(IntegratedDynamics._instance)
+                                .put(facadeCopy.getId(), label);
+                        }
+                    }
+
+                    ret.set(j, copy);
                 }
             }
         }
-        return remaining;
+        return ret;
     }
 
     @Override

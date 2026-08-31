@@ -26,11 +26,11 @@ import com.google.common.collect.Iterators;
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
 import ruiseki.commoncapabilities.api.ingredient.storage.IIngredientComponentStorage;
 import ruiseki.okcore.datastructure.BlockPos;
-import ruiseki.okcore.helper.ItemStackHelpers;
+import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.inventory.PlayerInventoryIterator;
 
 /**
- * An item storage for player interaction simulation (1.7.10 GTNH Compatible).
+ * An item storage for player interaction simulation.
  *
  * @author rubensworks
  */
@@ -92,7 +92,7 @@ public class ItemStoragePlayerWrapper implements IIngredientComponentStorage<Ite
             ItemStack itemStack = it.next();
             if (itemStack != null && itemStack.stackSize > 0) {
                 ItemStack remaining = this.playerReturnHandler.insert(itemStack, false);
-                ItemStackHelpers.spawnItemStackToPlayer(world, pos, remaining, player);
+                ItemHelpers.spawnItemStackToPlayer(world, pos, remaining, player);
                 it.remove();
             }
         }

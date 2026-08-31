@@ -37,7 +37,7 @@ import ruiseki.integratedtunnels.core.predicate.IngredientPredicateItemStackNbt;
 import ruiseki.integratedtunnels.core.predicate.IngredientPredicateItemStackOperator;
 import ruiseki.integratedtunnels.part.aspect.ITunnelConnection;
 import ruiseki.okcore.datastructure.BlockPos;
-import ruiseki.okcore.helper.ItemStackHelpers;
+import ruiseki.okcore.helper.ItemHelpers;
 
 /**
  * @author rubensworks
@@ -312,7 +312,7 @@ public class TunnelItemHelpers {
                 if (cachedStack != null) {
                     ItemStack remaining = destination.insert(cachedStack, false);
                     if (GeneralConfig.ejectItemsOnBlockDropOverflow) {
-                        ItemStackHelpers.spawnItemStack(world, pos, remaining);
+                        ItemHelpers.spawnItemStack(world, pos, remaining);
                     }
                     it.remove();
                 }

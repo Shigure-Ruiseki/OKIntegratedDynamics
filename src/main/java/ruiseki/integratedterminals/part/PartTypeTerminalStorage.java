@@ -26,7 +26,7 @@ import ruiseki.integratedterminals.client.gui.container.GuiTerminalStoragePart;
 import ruiseki.integratedterminals.core.part.PartTypeTerminal;
 import ruiseki.integratedterminals.core.terminalstorage.TerminalStorageTabIngredientComponentItemStackCrafting;
 import ruiseki.integratedterminals.inventory.container.ContainerTerminalStoragePart;
-import ruiseki.okcore.helper.ItemStackHelpers;
+import ruiseki.okcore.helper.ItemHelpers;
 
 /**
  * A part that exposes a gui using which players can access storage indexes in the network.
@@ -130,7 +130,7 @@ public class PartTypeTerminalStorage extends PartTypeTerminal<PartTypeTerminalSt
                     "itemCount",
                     entry.getValue()
                         .size());
-                ItemStackHelpers.saveAllItems(listEntry, entry.getValue());
+                ItemHelpers.saveAllItems(listEntry, entry.getValue());
                 list.appendTag(listEntry);
             }
             tag.setTag("namedInventories", list);
@@ -147,7 +147,7 @@ public class PartTypeTerminalStorage extends PartTypeTerminal<PartTypeTerminalSt
                 List<ItemStack> list = new ArrayList<>(Collections.nCopies(itemCount, null));
                 String tabName = listEntry.getString("tabName");
 
-                ItemStackHelpers.loadAllItems(listEntry, list);
+                ItemHelpers.loadAllItems(listEntry, list);
                 this.namedInventories.put(tabName, list);
             }
         }

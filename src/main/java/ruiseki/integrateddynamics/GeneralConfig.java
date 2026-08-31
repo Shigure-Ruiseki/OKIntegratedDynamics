@@ -1,5 +1,10 @@
 package ruiseki.integrateddynamics;
 
+import java.util.Map;
+
+import com.google.common.collect.Maps;
+
+import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeNbt;
 import ruiseki.okcore.config.ConfigurableProperty;
 import ruiseki.okcore.config.ConfigurableTypeCategory;
@@ -460,6 +465,29 @@ public class GeneralConfig extends DummyConfig {
         comment = "The maximum offset in blocks a part can target.",
         minimalValue = 1)
     public static int maxPartOffset = 32;
+
+    @ConfigurableProperty(
+        category = ConfigurableTypeCategory.MACHINE,
+        comment = "The distance from which part offsets should be shown.",
+        minimalValue = 1)
+    public static int partOffsetRenderDistance = 16;
+
+    @ConfigurableProperty(
+        category = ConfigurableTypeCategory.MACHINE,
+        comment = "The maximum values that Part Offset items will have when dropped from a broken part.",
+        minimalValue = 1)
+    public static int enchancementOffsetPartDropValue = 4;
+
+    @ConfigurableProperty(
+        category = ConfigurableTypeCategory.GENERAL,
+        comment = "The minimum update interval to enforce for all parts, in number of ticks.")
+    public static int partsMinimumUpdateInterval = 1;
+    @ConfigurableProperty(
+        category = ConfigurableTypeCategory.GENERAL,
+        comment = "The minimum update intervals to enforce for specific parts. You can add entries in the form of 'integrateddynamics:machine_reader:10', where '10' refers to the number of ticks.")
+    public static String[] partMinimumUpdateIntervals = new String[0];
+
+    public static Map<IPartType<?, ?>, Integer> partMinimumUpdateIntervalsMap = Maps.newIdentityHashMap();
 
     /**
      * Create a new instance.

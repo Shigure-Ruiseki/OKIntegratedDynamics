@@ -78,9 +78,9 @@ import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
 import ruiseki.okcore.energy.capability.CapabilityEnergy;
-import ruiseki.okcore.fluid.FluidHelpers;
 import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
 import ruiseki.okcore.helper.BlockHelpers;
+import ruiseki.okcore.helper.FluidHelpers;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.item.capability.CapabilityItemHandler;
 

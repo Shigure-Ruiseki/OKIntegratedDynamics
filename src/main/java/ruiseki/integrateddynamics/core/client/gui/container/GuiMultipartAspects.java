@@ -31,7 +31,7 @@ import ruiseki.okcore.client.gui.component.button.GuiButtonImage;
 import ruiseki.okcore.client.gui.component.button.GuiButtonText;
 import ruiseki.okcore.client.gui.container.GuiContainerExtended;
 import ruiseki.okcore.client.gui.container.ScrollingGuiContainer;
-import ruiseki.okcore.client.gui.image.Images;
+import ruiseki.okcore.client.gui.image.IImage;
 import ruiseki.okcore.helper.Helpers;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.RenderHelpers;
@@ -100,18 +100,35 @@ public abstract class GuiMultipartAspects<P extends IPartType<P, S> & IGuiContai
     public void initGui() {
         buttonList.clear();
         super.initGui();
-        if (getPartType() instanceof PartTypeConfigurable && ((PartTypeConfigurable) getPartType()).hasSettings()) {
-            buttonList.add(
-                new GuiButtonImage(
-                    BUTTON_SETTINGS,
-                    this.guiLeft + 174,
-                    this.guiTop + 4,
-                    15,
-                    15,
-                    Images.CONFIG_BOARD,
-                    -2,
-                    -3,
-                    true));
+        if (getPartType() instanceof PartTypeConfigurable<?, ?>configurable) {
+            if (configurable.hasSettings()) {
+                buttonList.add(
+                    new GuiButtonImage(
+                        ContainerMultipartAspects.BUTTON_SETTINGS,
+                        this.guiLeft - 20,
+                        this.guiTop + 0,
+                        18,
+                        18,
+                        new IImage[] { ruiseki.integrateddynamics.client.gui.image.Images.BUTTON_BACKGROUND_INACTIVE,
+                            ruiseki.integrateddynamics.client.gui.image.Images.BUTTON_MIDDLE_SETTINGS },
+                        0,
+                        0,
+                        false));
+            }
+            if (configurable.supportsOffsets()) {
+                buttonList.add(
+                    new GuiButtonImage(
+                        ContainerMultipartAspects.BUTTON_OFFSETS,
+                        this.guiLeft - 20,
+                        this.guiTop + 20,
+                        18,
+                        18,
+                        new IImage[] { ruiseki.integrateddynamics.client.gui.image.Images.BUTTON_BACKGROUND_INACTIVE,
+                            ruiseki.integrateddynamics.client.gui.image.Images.BUTTON_MIDDLE_OFFSET },
+                        0,
+                        0,
+                        false));
+            }
         }
         for (Map.Entry<IAspect, Integer> entry : (Set<Map.Entry<IAspect, Integer>>) ((ContainerMultipartAspects) getContainer())
             .getAspectPropertyButtons()

@@ -4273,9 +4273,10 @@ public final class Operators {
                     .getValue(0, ValueTypes.OBJECT_INGREDIENTS);
                 ValueTypeInteger.ValueInteger index = variables.getValue(1, ValueTypes.INTEGER);
                 ValueObjectTypeItemStack.ValueItemStack itemStack = variables.getValue(2, ValueTypes.OBJECT_ITEMSTACK);
-                if (!value.getRawValue()
-                    .isPresent()) {
-                    return value;
+                if (value.getRawValue()
+                    .isEmpty()) {
+                    value = ValueObjectTypeIngredients.ValueIngredients
+                        .of(new MixedIngredients(Maps.newIdentityHashMap()));
                 }
                 IMixedIngredients baseIngredients = value.getRawValue()
                     .get();
@@ -4301,9 +4302,10 @@ public final class Operators {
                 ValueTypeInteger.ValueInteger index = variables.getValue(1, ValueTypes.INTEGER);
                 ValueObjectTypeFluidStack.ValueFluidStack fluidStack = variables
                     .getValue(2, ValueTypes.OBJECT_FLUIDSTACK);
-                if (!value.getRawValue()
-                    .isPresent()) {
-                    return value;
+                if (value.getRawValue()
+                    .isEmpty()) {
+                    value = ValueObjectTypeIngredients.ValueIngredients
+                        .of(new MixedIngredients(Maps.newIdentityHashMap()));
                 }
                 IMixedIngredients baseIngredients = value.getRawValue()
                     .get();
@@ -4329,9 +4331,10 @@ public final class Operators {
                     .getValue(0, ValueTypes.OBJECT_INGREDIENTS);
                 ValueTypeInteger.ValueInteger index = variables.getValue(1, ValueTypes.INTEGER);
                 ValueTypeLong.ValueLong energy = variables.getValue(2, ValueTypes.LONG);
-                if (!value.getRawValue()
-                    .isPresent()) {
-                    return value;
+                if (value.getRawValue()
+                    .isEmpty()) {
+                    value = ValueObjectTypeIngredients.ValueIngredients
+                        .of(new MixedIngredients(Maps.newIdentityHashMap()));
                 }
                 IMixedIngredients baseIngredients = value.getRawValue()
                     .get();
@@ -4355,9 +4358,10 @@ public final class Operators {
                     .getValue(0, ValueTypes.OBJECT_INGREDIENTS);
                 ValueTypeList.ValueList<ValueObjectTypeItemStack, ValueObjectTypeItemStack.ValueItemStack> list = variables
                     .getValue(1, ValueTypes.LIST);
-                if (!valueIngredients.getRawValue()
-                    .isPresent()) {
-                    return valueIngredients;
+                if (valueIngredients.getRawValue()
+                    .isEmpty()) {
+                    valueIngredients = ValueObjectTypeIngredients.ValueIngredients
+                        .of(new MixedIngredients(Maps.newIdentityHashMap()));
                 }
                 IMixedIngredients baseIngredients = valueIngredients.getRawValue()
                     .get();
@@ -4380,9 +4384,10 @@ public final class Operators {
                     .getValue(0, ValueTypes.OBJECT_INGREDIENTS);
                 ValueTypeList.ValueList<ValueObjectTypeFluidStack, ValueObjectTypeFluidStack.ValueFluidStack> list = variables
                     .getValue(1, ValueTypes.LIST);
-                if (!valueIngredients.getRawValue()
-                    .isPresent()) {
-                    return valueIngredients;
+                if (valueIngredients.getRawValue()
+                    .isEmpty()) {
+                    valueIngredients = ValueObjectTypeIngredients.ValueIngredients
+                        .of(new MixedIngredients(Maps.newIdentityHashMap()));
                 }
                 IMixedIngredients baseIngredients = valueIngredients.getRawValue()
                     .get();
@@ -4406,9 +4411,10 @@ public final class Operators {
                     .getValue(0, ValueTypes.OBJECT_INGREDIENTS);
                 ValueTypeList.ValueList<ValueTypeInteger, ValueTypeInteger.ValueInteger> list = variables
                     .getValue(1, ValueTypes.LIST);
-                if (!valueIngredients.getRawValue()
-                    .isPresent()) {
-                    return valueIngredients;
+                if (valueIngredients.getRawValue()
+                    .isEmpty()) {
+                    valueIngredients = ValueObjectTypeIngredients.ValueIngredients
+                        .of(new MixedIngredients(Maps.newIdentityHashMap()));
                 }
                 IMixedIngredients baseIngredients = valueIngredients.getRawValue()
                     .get();

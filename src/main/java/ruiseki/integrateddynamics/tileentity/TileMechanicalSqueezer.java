@@ -13,11 +13,11 @@ import ruiseki.integrateddynamics.core.recipe.type.RecipeTypeMechanicalSqueezerC
 import ruiseki.integrateddynamics.core.tileentity.TileMechanicalMachine;
 import ruiseki.okcore.capabilities.resolver.BasicCapabilityResolver;
 import ruiseki.okcore.datastructure.NonNullList;
-import ruiseki.okcore.fluid.FluidHelpers;
 import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
 import ruiseki.okcore.fluid.handler.IFluidHandler;
 import ruiseki.okcore.fluid.handler.SmartTank;
 import ruiseki.okcore.helper.CapabilityHelpers;
+import ruiseki.okcore.helper.FluidHelpers;
 import ruiseki.okcore.helper.InventoryHelpers;
 import ruiseki.okcore.persist.nbt.NBTPersist;
 import ruiseki.okcore.recipe.RecipeManager;

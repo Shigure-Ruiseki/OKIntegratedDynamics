@@ -13,13 +13,13 @@ import lombok.experimental.Delegate;
 import ruiseki.integrateddynamics.block.BlockSqueezer;
 import ruiseki.integrateddynamics.core.recipe.type.RecipeSqueezer;
 import ruiseki.integrateddynamics.core.recipe.type.RecipeTypeSqueezerConfig;
-import ruiseki.okcore.fluid.FluidHelpers;
 import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
 import ruiseki.okcore.fluid.handler.IFluidHandler;
 import ruiseki.okcore.helper.BlockStateHelpers;
 import ruiseki.okcore.helper.CapabilityHelpers;
+import ruiseki.okcore.helper.FluidHelpers;
 import ruiseki.okcore.helper.ItemHandlerHelpers;
-import ruiseki.okcore.helper.ItemStackHelpers;
+import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.item.capability.CapabilityItemHandler;
 import ruiseki.okcore.item.handler.IItemHandler;
 import ruiseki.okcore.persist.nbt.NBTPersist;
@@ -152,7 +152,7 @@ public class TileSqueezer extends TankInventoryTileEntity implements TileEntityO
                                 }
 
                                 if (resultStack != null && resultStack.stackSize > 0) {
-                                    ItemStackHelpers.spawnItemStack(worldObj, xCoord, yCoord, zCoord, resultStack);
+                                    ItemHelpers.spawnItemStack(worldObj, xCoord, yCoord, zCoord, resultStack);
                                 }
                             }
                         }

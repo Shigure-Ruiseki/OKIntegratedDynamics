@@ -11,7 +11,7 @@ import ruiseki.okcore.datastructure.NonNullList;
 import ruiseki.okcore.energy.capability.CapabilityEnergy;
 import ruiseki.okcore.helper.CapabilityHelpers;
 import ruiseki.okcore.helper.Helpers;
-import ruiseki.okcore.helper.ItemStackHelpers;
+import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.recipe.IRecipeSerializer;
 import ruiseki.okcore.recipe.ingredient.Ingredient;
 import ruiseki.okcore.recipe.type.crafting.SpecialRecipe;
@@ -88,7 +88,7 @@ public class RecipeEnergyContainerCombination extends SpecialRecipe {
             ItemStack stackInSlot = grid.getStackInSlot(j);
 
             if (stackInSlot != null) {
-                ItemStack element = ItemStackHelpers.split(stackInSlot.copy(), 1);
+                ItemStack element = ItemHelpers.split(stackInSlot.copy(), 1);
 
                 if (element != null) {
                     if (this.batteryItem.test(element)) {

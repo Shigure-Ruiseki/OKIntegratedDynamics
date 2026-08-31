@@ -319,26 +319,29 @@ public class OperatorBuilders {
     public static final IterativeFunction.PrePostBuilder<Pair<IOperator, OperatorBase.SafeVariablesGetter>, IValue> FUNCTION_OPERATOR_TAKE_OPERATOR = IterativeFunction.PrePostBuilder
         .begin()
         .appendPre(input -> {
-            ValueTypeOperator.ValueOperator value = input.getValue(0, ValueTypes.OPERATOR);
-            IOperator innerOperator = value.getRawValue();
-            if (innerOperator.getRequiredInputLength() == 1) {
-                IValue applyingValue = input.getValue(1);
-                LangHelpers.UnlocalizedString error = innerOperator
-                    .validateTypes(new IValueType[] { applyingValue.getType() });
-                if (error != null) {
-                    throw new EvaluationException(error.localize());
-                }
-            } else {
-                if (!ValueHelpers.correspondsTo(input.getVariables()[1].getType(), innerOperator.getInputTypes()[0])) {
-                    LangHelpers.UnlocalizedString error = new LangHelpers.UnlocalizedString(
-                        L10NValues.OPERATOR_ERROR_WRONGCURRYINGTYPE,
-                        new LangHelpers.UnlocalizedString(innerOperator.getUnlocalizedName()),
-                        new LangHelpers.UnlocalizedString(
-                            input.getVariables()[1].getType()
-                                .getUnlocalizedName()),
-                        0,
-                        new LangHelpers.UnlocalizedString(innerOperator.getInputTypes()[0].getUnlocalizedName()));
-                    throw new EvaluationException(error.localize());
+            IOperator innerOperator = input.getValue(0, ValueTypes.OPERATOR)
+                .getRawValue();
+            if (input.getVariables().length > 1) {
+                if (innerOperator.getRequiredInputLength() == 1) {
+                    IValue applyingValue = input.getValue(1);
+                    String error = innerOperator.validateTypes(new IValueType[] { applyingValue.getType() })
+                        .localize();
+                    if (error != null) {
+                        throw new EvaluationException(error);
+                    }
+                } else if (innerOperator.getRequiredInputLength() > 0) {
+                    if (!ValueHelpers
+                        .correspondsTo(input.getVariables()[1].getType(), innerOperator.getInputTypes()[0])) {
+                        String error = LangHelpers.localize(
+                            L10NValues.OPERATOR_ERROR_WRONGCURRYINGTYPE,
+                            LangHelpers.localize(innerOperator.getUnlocalizedName()),
+                            LangHelpers.localize(
+                                input.getVariables()[1].getType()
+                                    .getUnlocalizedName()),
+                            0,
+                            LangHelpers.localize(innerOperator.getInputTypes()[0].getUnlocalizedName()));
+                        throw new EvaluationException(error);
+                    }
                 }
             }
             return Pair.<IOperator, OperatorBase.SafeVariablesGetter>of(

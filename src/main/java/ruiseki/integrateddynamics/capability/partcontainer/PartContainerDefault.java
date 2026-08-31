@@ -35,7 +35,7 @@ import ruiseki.okcore.datastructure.DimPos;
 import ruiseki.okcore.datastructure.EnumFacingMap;
 import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.helper.InventoryHelpers;
-import ruiseki.okcore.helper.ItemStackHelpers;
+import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
 
 /**
@@ -151,7 +151,7 @@ public abstract class PartContainerDefault implements IPartContainer {
                 networkElement.addDrops(itemStacks, dropMainElement, saveState);
                 for (ItemStack itemStack : itemStacks) {
                     if (player != null) {
-                        ItemStackHelpers.spawnItemStackToPlayer(getWorld(), getPos(), itemStack, player);
+                        ItemHelpers.spawnItemStackToPlayer(getWorld(), getPos(), itemStack, player);
                     } else {
                         InventoryHelpers.dropItems(getWorld(), itemStack, getPos());
                     }
@@ -173,10 +173,10 @@ public abstract class PartContainerDefault implements IPartContainer {
                 if (player != null) {
                     if (player != null) {
                         if (!player.capabilities.isCreativeMode) {
-                            ItemStackHelpers.spawnItemStackToPlayer(getWorld(), getPos(), itemStack, player);
+                            ItemHelpers.spawnItemStackToPlayer(getWorld(), getPos(), itemStack, player);
                         }
                     } else {
-                        ItemStackHelpers.spawnItemStack(getWorld(), getPos(), itemStack);
+                        ItemHelpers.spawnItemStack(getWorld(), getPos(), itemStack);
                     }
                 }
             }

@@ -14,7 +14,7 @@ import ruiseki.integratedcompat.IntegratedCompat;
 import ruiseki.integratedcompat.network.packet.LPPacketJEIDragging;
 import ruiseki.integrateddynamics.client.gui.GuiLogicProgrammerBase;
 import ruiseki.jfmuy.api.gui.IGhostIngredientHandler;
-import ruiseki.okcore.fluid.FluidHelpers;
+import ruiseki.okcore.helper.FluidHelpers;
 import ruiseki.okcore.inventory.SimpleInventory;
 
 public class LPGhostIngredientHandler<T extends GuiLogicProgrammerBase> implements IGhostIngredientHandler<T> {

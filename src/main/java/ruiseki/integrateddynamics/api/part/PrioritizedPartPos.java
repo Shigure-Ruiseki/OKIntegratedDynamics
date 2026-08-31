@@ -33,7 +33,8 @@ public class PrioritizedPartPos implements Comparable<PrioritizedPartPos> {
                     .getSide();
                 ForgeDirection otherSide = o.getPartPos()
                     .getSide();
-                return thisSide == null ? -1 : (otherSide == null ? 1 : thisSide.compareTo(otherSide));
+                return thisSide == null ? (otherSide == null ? 0 : -1)
+                    : (otherSide == null ? 1 : thisSide.compareTo(otherSide));
             }
             return compPos;
         }

@@ -95,13 +95,22 @@ public class PartNetworkElement<P extends IPartType<P, S>, S extends IPartState<
     }
 
     public LazyOptional<IPartContainer> getPartContainerOptional() {
-        return PartHelpers.getPartContainer(getCenterPos(getTarget()), getTarget().getCenter().getSide());
+        return PartHelpers.getPartContainer(
+            getCenterPos(getTarget()),
+            getTarget().getCenter()
+                .getSide());
     }
 
     @Override
     public void setPriorityAndChannel(INetwork network, int priority, int channel) {
         // noinspection deprecation
-        part.setPriorityAndChannel(network, NetworkHelpers.getPartNetworkChecked(network), getTarget(), getPartState(), priority, channel);
+        part.setPriorityAndChannel(
+            network,
+            NetworkHelpers.getPartNetworkChecked(network),
+            getTarget(),
+            getPartState(),
+            priority,
+            channel);
     }
 
     @Override
@@ -127,13 +136,13 @@ public class PartNetworkElement<P extends IPartType<P, S>, S extends IPartState<
 
     @Override
     public boolean isLoaded() {
-        return this.center.getPos().isLoaded();
+        return this.center.getPos()
+            .isLoaded();
     }
 
     public boolean hasPartState() {
         if (isLoaded()) {
-            return getPartContainerOptional()
-                .map(partContainer -> partContainer.hasPart(this.center.getSide()))
+            return getPartContainerOptional().map(partContainer -> partContainer.hasPart(this.center.getSide()))
                 .orElse(false);
         }
         return false;
@@ -142,7 +151,7 @@ public class PartNetworkElement<P extends IPartType<P, S>, S extends IPartState<
     @Override
     public S getPartState() throws PartStateException {
         IPartContainer partContainer = getPartContainer();
-        if(partContainer != null) {
+        if (partContainer != null) {
             return (S) partContainer.getPartState(this.center.getSide());
         } else {
             throw new PartStateException(this.center.getPos(), this.center.getSide());
@@ -207,7 +216,7 @@ public class PartNetworkElement<P extends IPartType<P, S>, S extends IPartState<
     public boolean onNetworkAddition(INetwork network) {
         IPartNetwork partNetwork = NetworkHelpers.getPartNetworkChecked(network);
         boolean res = partNetwork.addPart(getPartState().getId(), this.center);
-        if(res) {
+        if (res) {
             part.onNetworkAddition(network, partNetwork, getTarget(), getPartState());
         }
         return res;
@@ -222,20 +231,34 @@ public class PartNetworkElement<P extends IPartType<P, S>, S extends IPartState<
 
     @Override
     public void onPreRemoved(INetwork network) {
-        part.onPreRemoved(network, NetworkHelpers.getPartNetworkChecked(network), getTarget(), (tempState = getPartState()));
+        part.onPreRemoved(
+            network,
+            NetworkHelpers.getPartNetworkChecked(network),
+            getTarget(),
+            (tempState = getPartState()));
     }
 
     @Override
     public void onPostRemoved(INetwork network) {
-        part.onPostRemoved(network, NetworkHelpers.getPartNetworkChecked(network), getTarget(tempState), Objects.requireNonNull(tempState));
+        part.onPostRemoved(
+            network,
+            NetworkHelpers.getPartNetworkChecked(network),
+            getTarget(tempState),
+            Objects.requireNonNull(tempState));
         tempState = null;
     }
 
     @Override
     public void onNeighborBlockChange(@Nullable INetwork network, IBlockAccess world, Block neighbourBlock,
         BlockPos neighbourBlockPos) {
-        part.onBlockNeighborChange(network, NetworkHelpers.getPartNetworkChecked(network), getTarget(), getPartState(), world,
-            neighbourBlock, neighbourBlockPos);
+        part.onBlockNeighborChange(
+            network,
+            NetworkHelpers.getPartNetworkChecked(network),
+            getTarget(),
+            getPartState(),
+            world,
+            neighbourBlock,
+            neighbourBlockPos);
     }
 
     @Override

@@ -11,10 +11,10 @@ import ruiseki.integrateddynamics.core.recipe.type.RecipeTypeMechanicalDryingBas
 import ruiseki.integrateddynamics.core.tileentity.TileMechanicalMachine;
 import ruiseki.okcore.capabilities.resolver.SidedCapabilityResolver;
 import ruiseki.okcore.datastructure.NonNullList;
-import ruiseki.okcore.fluid.FluidHelpers;
 import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
 import ruiseki.okcore.fluid.handler.IFluidHandler;
 import ruiseki.okcore.fluid.handler.SmartTank;
+import ruiseki.okcore.helper.FluidHelpers;
 import ruiseki.okcore.helper.InventoryHelpers;
 import ruiseki.okcore.inventory.IInventoryFluid;
 import ruiseki.okcore.persist.nbt.NBTPersist;

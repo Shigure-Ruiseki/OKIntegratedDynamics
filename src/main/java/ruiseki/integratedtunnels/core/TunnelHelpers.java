@@ -24,7 +24,7 @@ import ruiseki.integratedtunnels.GeneralConfig;
 import ruiseki.integratedtunnels.IntegratedTunnels;
 import ruiseki.integratedtunnels.core.predicate.IngredientPredicate;
 import ruiseki.integratedtunnels.part.aspect.ITunnelConnection;
-import ruiseki.okcore.helper.ItemStackHelpers;
+import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.ingredient.storage.InconsistentIngredientInsertionException;
 import ruiseki.okcore.ingredient.storage.IngredientStorageHelpers;
@@ -88,7 +88,7 @@ public class TunnelHelpers {
                 // If we are moving items, emit them in the world, otherwise they go lost.
                 if (GeneralConfig.ejectItemsOnInconsistentSimulationMovement && e.getIngredientComponent()
                     .equals(IngredientComponent.ITEMSTACK)) {
-                    ItemStackHelpers.spawnItemStack(
+                    ItemHelpers.spawnItemStack(
                         movementPosition.getPos()
                             .getWorld(),
                         movementPosition.getPos()

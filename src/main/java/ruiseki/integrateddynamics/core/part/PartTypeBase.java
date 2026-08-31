@@ -17,6 +17,7 @@ import net.minecraftforge.common.util.ForgeDirection;
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 
 import lombok.Getter;
+import ruiseki.integrateddynamics.GeneralConfig;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.INetworkElement;
@@ -232,11 +233,25 @@ public abstract class PartTypeBase<P extends IPartType<P, S>, S extends IPartSta
         boolean saveState) {
         super.addDrops(target, state, itemStacks, dropMainElement, saveState);
         // Save enhancements
-        if (!saveState) {
-            ItemStack itemStack = new ItemStack(ItemEnhancementConfig._instance.getInstance());
-            ((ItemEnhancement) ItemEnhancementConfig._instance.getInstance())
-                .setEnhancementValue(itemStack, state.getMaxOffset());
-            itemStacks.add(itemStack);
+        if (!saveState && state.getMaxOffset() > 0) {
+            // Drop Part Offset items each with as maximum the GeneralConfig.enchancementOffsetPartDropValue offset
+            // value.
+            int remainingOffset = state.getMaxOffset();
+            while (remainingOffset > 0) {
+                int offset;
+                if (remainingOffset < GeneralConfig.enchancementOffsetPartDropValue) {
+                    offset = remainingOffset;
+                } else {
+                    offset = GeneralConfig.enchancementOffsetPartDropValue;
+                }
+                remainingOffset -= offset;
+
+                ItemStack itemStack = new ItemStack(ItemEnhancementConfig._instance.getInstance());
+                ((ItemEnhancement) ItemEnhancementConfig._instance.getInstance())
+                    .setEnhancementValue(itemStack, offset);
+                itemStacks.add(itemStack);
+            }
+            state.setMaxOffset(0);
         }
 
     }

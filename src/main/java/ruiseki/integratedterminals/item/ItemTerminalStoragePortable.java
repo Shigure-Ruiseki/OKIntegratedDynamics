@@ -33,8 +33,8 @@ import ruiseki.okcore.config.extendedconfig.ItemConfig;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.NonNullList;
 import ruiseki.okcore.helper.InventoryHelpers;
+import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.helper.ItemNBTHelpers;
-import ruiseki.okcore.helper.ItemStackHelpers;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.item.ItemGui;
 
@@ -158,7 +158,7 @@ public class ItemTerminalStoragePortable extends ItemGui {
             public List<ItemStack> getNamedInventory(String name) {
                 NBTTagCompound tag = tagInventories.getCompoundTag(name);
                 NonNullList<ItemStack> list = NonNullList.withSize(tag.getInteger("itemCount"), null);
-                ItemStackHelpers.loadAllItems(tag, list);
+                ItemHelpers.loadAllItems(tag, list);
                 return list;
             }
 
@@ -167,7 +167,7 @@ public class ItemTerminalStoragePortable extends ItemGui {
                 NBTTagCompound tag = new NBTTagCompound();
                 tag.setString("tabName", name);
                 tag.setInteger("itemCount", inventory.size());
-                ItemStackHelpers.saveAllItems(tag, inventory);
+                ItemHelpers.saveAllItems(tag, inventory);
                 tagInventories.setTag(name, tag);
             }
         };

@@ -13,7 +13,7 @@ import net.minecraftforge.fluids.FluidStack;
 
 import ruiseki.integrateddynamics.tileentity.TileDryingBasin;
 import ruiseki.okcore.client.renderer.GlStateManager;
-import ruiseki.okcore.fluid.FluidHelpers;
+import ruiseki.okcore.helper.FluidHelpers;
 import ruiseki.okcore.helper.RenderHelpers;
 
 /**

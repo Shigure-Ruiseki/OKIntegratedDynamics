@@ -54,6 +54,7 @@ public abstract class ContainerMultipartAspects<P extends IPartType<P, S> & IGui
 
     public static final int BUTTON_SETTINGS = 1;
     public static final int BUTTON_OFFSETS = 2;
+    public static final int BUTTON_ASPECT_PROPERTIES_START = 3;
     private static final int PAGE_SIZE = 3;
 
     private final PartTarget target;
@@ -146,7 +147,7 @@ public abstract class ContainerMultipartAspects<P extends IPartType<P, S> & IGui
             }
         });
 
-        int nextButtonId = 2;
+        int nextButtonId = BUTTON_ASPECT_PROPERTIES_START;
         for (final IAspect aspect : getUnfilteredItems()) {
             if (aspect.hasProperties()) {
                 aspectPropertyButtons.put(aspect, nextButtonId);

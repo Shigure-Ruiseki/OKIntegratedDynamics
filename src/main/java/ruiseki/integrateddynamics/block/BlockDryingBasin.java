@@ -15,8 +15,8 @@ import net.minecraftforge.fluids.IFluidHandler;
 import ruiseki.integrateddynamics.tileentity.TileDryingBasin;
 import ruiseki.okcore.block.BlockTile;
 import ruiseki.okcore.fluid.FluidActionResult;
-import ruiseki.okcore.fluid.FluidHelpers;
 import ruiseki.okcore.fluid.handler.SmartTank;
+import ruiseki.okcore.helper.FluidHelpers;
 import ruiseki.okcore.helper.InventoryHelpers;
 import ruiseki.okcore.helper.TileHelpers;
 

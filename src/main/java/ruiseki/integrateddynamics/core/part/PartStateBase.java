@@ -33,7 +33,7 @@ import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.capabilities.CapabilityDispatcher;
 import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.datastructure.NonNullList;
-import ruiseki.okcore.helper.ItemStackHelpers;
+import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.persist.IDirtyMarkListener;
 import ruiseki.okcore.persist.nbt.NBTClassType;
@@ -92,8 +92,7 @@ public abstract class PartStateBase<P extends IPartType> implements IPartState<P
                 entry.getValue()
                     .size());
 
-            // Lưu inventory theo chuẩn 1.12.2
-            ItemStackHelpers.saveAllItems(listEntry, entry.getValue());
+            ItemHelpers.saveAllItems(listEntry, entry.getValue());
             namedInventoriesList.appendTag(listEntry);
         }
         tag.setTag("inventoriesNamed", namedInventoriesList);
@@ -136,7 +135,7 @@ public abstract class PartStateBase<P extends IPartType> implements IPartState<P
             int itemCount = listEntry.getInteger("itemCount");
 
             NonNullList<ItemStack> list = NonNullList.withSize(itemCount, null);
-            ItemStackHelpers.loadAllItems(listEntry, list);
+            ItemHelpers.loadAllItems(listEntry, list);
             this.inventoriesNamed.put(tabName, list);
         }
 

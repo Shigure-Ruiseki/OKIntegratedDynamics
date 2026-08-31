@@ -23,7 +23,7 @@ import ruiseki.okcore.block.collidable.ICollidable;
 import ruiseki.okcore.block.collidable.ImmutableAxisAlignedBB;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.helper.CapabilityHelpers;
-import ruiseki.okcore.helper.ItemStackHelpers;
+import ruiseki.okcore.helper.ItemHelpers;
 
 public class CollidableComponentFacade implements ICollidable.IComponent<ForgeDirection, BlockCable> {
 
@@ -68,7 +68,7 @@ public class CollidableComponentFacade implements ICollidable.IComponent<ForgeDi
             ((ItemFacade) ItemFacadeConfig._instance.getInstance()).writeFacadeBlock(itemStack, blockState);
             facadeable.setFacade(null);
             if (!player.capabilities.isCreativeMode) {
-                ItemStackHelpers.spawnItemStackToPlayer(world, pos, itemStack, player);
+                ItemHelpers.spawnItemStackToPlayer(world, pos, itemStack, player);
             }
             return true;
         }

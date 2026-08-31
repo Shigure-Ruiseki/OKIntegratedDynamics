@@ -9,7 +9,7 @@ import net.minecraft.item.ItemStack;
 
 import ruiseki.commoncapabilities.api.ingredient.IMixedIngredients;
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
-import ruiseki.okcore.helper.ItemStackHelpers;
+import ruiseki.okcore.helper.ItemHelpers;
 
 /**
  * A crafting grid itemstack holder (Minecraft 1.7.10 fix for slot indexing).
@@ -78,7 +78,7 @@ public class CraftingGrid extends InventoryCrafting {
         int hash = 11 + getSizeInventory();
         for (int i = 0; i < getSizeInventory(); i++) {
             hash = hash << 1;
-            hash |= ItemStackHelpers.getItemStackHashCode(getStackInSlot(i));
+            hash |= ItemHelpers.getItemStackHashCode(getStackInSlot(i));
         }
         return hash;
     }
