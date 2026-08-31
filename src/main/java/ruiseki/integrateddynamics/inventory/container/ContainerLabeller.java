@@ -12,6 +12,7 @@ import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.item.IVariableFacade;
 import ruiseki.integrateddynamics.api.item.IVariableFacadeHandlerRegistry;
 import ruiseki.integrateddynamics.client.gui.GuiLabeller;
+import ruiseki.integrateddynamics.core.helper.Helpers;
 import ruiseki.integrateddynamics.core.persist.world.LabelsWorldStorage;
 import ruiseki.integrateddynamics.item.ItemLabeller;
 import ruiseki.integrateddynamics.item.ItemLabellerConfig;
@@ -93,7 +94,7 @@ public class ContainerLabeller extends ItemInventoryContainer<ItemLabeller> {
         if (!player.worldObj.isRemote) {
             ItemStack itemStack = temporaryInputSlots.getStackInSlot(0);
             if (itemStack != null) {
-                player.dropPlayerItemWithRandomChoice(itemStack, false);
+                Helpers.returnItemToPlayer(player, itemStack);
             }
         }
     }

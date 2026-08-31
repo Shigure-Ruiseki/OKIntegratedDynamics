@@ -22,6 +22,8 @@ import ruiseki.integrateddynamics.api.item.IVariableFacadeHandlerRegistry;
 import ruiseki.integrateddynamics.api.logicprogrammer.ILogicProgrammerElement;
 import ruiseki.integrateddynamics.api.logicprogrammer.ILogicProgrammerElementType;
 import ruiseki.integrateddynamics.client.gui.GuiLogicProgrammerBase;
+import ruiseki.integrateddynamics.core.helper.Helpers;
+import ruiseki.integrateddynamics.core.inventory.container.slot.SlotVariable;
 import ruiseki.integrateddynamics.core.logicprogrammer.LogicProgrammerElementTypes;
 import ruiseki.integrateddynamics.core.persist.world.LabelsWorldStorage;
 import ruiseki.integrateddynamics.item.ItemVariable;
@@ -110,26 +112,19 @@ public abstract class ContainerLogicProgrammerBase extends ScrollingInventoryCon
     }
 
     protected void initializeSlotsPre() {
-        addSlotToContainer(
-            new SlotSingleItem(writeSlot, 0, OUTPUT_X, OUTPUT_Y, ItemVariableConfig._instance.getInstance()));
-        SlotSingleItem filterSlotIn1 = new SlotSingleItem(
-            filterSlots,
-            0,
-            6,
-            218,
-            ItemVariableConfig._instance.getInstance());
-        SlotSingleItem filterSlotIn2 = new SlotSingleItem(
-            filterSlots,
-            1,
-            24,
-            218,
-            ItemVariableConfig._instance.getInstance());
-        SlotSingleItem filterSlotOut = new SlotSingleItem(
-            filterSlots,
-            2,
-            58,
-            218,
-            ItemVariableConfig._instance.getInstance());
+        addSlotToContainer(new SlotVariable(writeSlot, 0, OUTPUT_X, OUTPUT_Y) {
+
+            @Override
+            public void onSlotChanged() {
+                // We don't call super here to avoid dirty mark listeners to be called twice, which can cause issues
+                // with loading and immediate overwriting.
+                // This is because SimpleInventory will already call dirty mark listeners when calling setItem.
+                // Strictly this behaviour in SimpleInventory is not required, but due to backwards-compat, we keep it.
+            }
+        });
+        SlotSingleItem filterSlotIn1 = new SlotVariable(filterSlots, 0, 6, 218);
+        SlotSingleItem filterSlotIn2 = new SlotVariable(filterSlots, 1, 24, 218);
+        SlotSingleItem filterSlotOut = new SlotVariable(filterSlots, 2, 58, 218);
         filterSlotIn1.setPhantom(true);
         filterSlotIn2.setPhantom(true);
         filterSlotOut.setPhantom(true);
@@ -250,10 +245,7 @@ public abstract class ContainerLogicProgrammerBase extends ScrollingInventoryCon
     public void onContainerClosed(EntityPlayer player) {
         super.onContainerClosed(player);
         if (!player.worldObj.isRemote) {
-            ItemStack itemStack = writeSlot.getStackInSlot(0);
-            if (itemStack != null) {
-                player.dropPlayerItemWithRandomChoice(itemStack, false);
-            }
+            returnWriteItemToPlayer();
         }
     }
 
@@ -345,6 +337,14 @@ public abstract class ContainerLogicProgrammerBase extends ScrollingInventoryCon
 
     public boolean hasWriteItemInSlot() {
         return this.writeSlot.getStackInSlot(0) != null;
+    }
+
+    public void returnWriteItemToPlayer() {
+        if (hasWriteItemInSlot()) {
+            ItemStack itemStack = writeSlot.getStackInSlot(0);
+            Helpers.returnItemToPlayer(player, itemStack);
+            writeSlot.setInventorySlotContents(0, null);
+        }
     }
 
     @Override

@@ -5,6 +5,7 @@ import java.awt.Rectangle;
 import java.io.IOException;
 import java.util.List;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.renderer.texture.TextureManager;
@@ -36,8 +37,10 @@ import ruiseki.integrateddynamics.proxy.ClientProxy;
 import ruiseki.okcore.client.gui.component.button.GuiButtonText;
 import ruiseki.okcore.client.gui.component.input.GuiTextFieldExtended;
 import ruiseki.okcore.client.gui.container.ScrollingGuiContainer;
+import ruiseki.okcore.client.gui.image.Images;
 import ruiseki.okcore.client.renderer.GlStateManager;
 import ruiseki.okcore.helper.Helpers;
+import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.RenderHelpers;
 import ruiseki.okcore.init.ModBase;
@@ -197,6 +200,16 @@ public class GuiLogicProgrammerBase extends ScrollingGuiContainer {
                     Helpers.RGBToInt(40, 40, 40));
             }
         }
+
+        // Draw arrow on write slot
+        RenderHelpers.bindTexture(texture);
+        drawTexturedModalRect(
+            guiLeft + offsetX + ContainerLogicProgrammerBase.OUTPUT_X - 4,
+            guiTop + offsetY + ContainerLogicProgrammerBase.OUTPUT_Y - 4,
+            subGuiHolder.isEmpty() ? 7 : 3,
+            240,
+            4,
+            4);
     }
 
     protected Rectangle getElementPosition(ContainerLogicProgrammerBase container, int i, boolean absolute) {
@@ -211,6 +224,7 @@ public class GuiLogicProgrammerBase extends ScrollingGuiContainer {
     @Override
     protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
         super.drawGuiContainerForegroundLayer(mouseX, mouseY);
+
         subGuiHolder.drawGuiContainerForegroundLayer(
             this.guiLeft,
             this.guiTop,
@@ -218,6 +232,42 @@ public class GuiLogicProgrammerBase extends ScrollingGuiContainer {
             fontRendererObj,
             mouseX,
             mouseY);
+
+        // Draw usage information
+        if (subGuiHolder.isEmpty()) {
+            // Create
+            Images.ARROW_LEFT.draw(this, offsetX + 85, offsetY + 17);
+            fontRendererObj.drawString(
+                LangHelpers.localize(L10NValues.GUI_LOGICPROGRAMMER_INFO_CREATE),
+                offsetX + 100,
+                offsetY + 23,
+                Helpers.RGBToInt(80, 80, 80));
+
+            // Modify
+            Images.ARROW_DOWN.draw(this, offsetX + 230, offsetY + 90);
+            String modifyComponent = LangHelpers.localize(L10NValues.GUI_LOGICPROGRAMMER_INFO_MODIFY);
+            fontRendererObj.drawString(
+                modifyComponent,
+                offsetX + 230 - fontRendererObj.getStringWidth(modifyComponent),
+                offsetY + 95,
+                Helpers.RGBToInt(80, 80, 80));
+
+            // Tooltip on write slot
+            if (this.func_146978_c(
+                ContainerLogicProgrammerBase.OUTPUT_X,
+                ContainerLogicProgrammerBase.OUTPUT_Y,
+                GuiLogicProgrammerBase.BOX_HEIGHT,
+                GuiLogicProgrammerBase.BOX_HEIGHT,
+                mouseX,
+                mouseY) && ItemHelpers.isEmpty(Minecraft.getMinecraft().thePlayer.inventory.getCurrentItem())
+                && !getContainer().hasWriteItemInSlot()) {
+                this.drawTooltip(
+                    Lists.newArrayList(LangHelpers.localize(L10NValues.GUI_LOGICPROGRAMMER_TOOLTIP_WRITESLOT_MODIFY)),
+                    mouseX - this.guiLeft,
+                    mouseY - this.guiTop);
+            }
+        }
+
         // Draw operator tooltips
         ContainerLogicProgrammerBase container = (ContainerLogicProgrammerBase) getScrollingInventoryContainer();
         for (int i = 0; i < container.getPageSize(); i++) {

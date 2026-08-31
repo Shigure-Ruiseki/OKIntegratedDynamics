@@ -9,6 +9,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import com.google.common.collect.Maps;
 
 import ruiseki.integrateddynamics.api.item.IVariableFacade;
+import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.api.part.aspect.IAspect;
@@ -58,11 +59,12 @@ public class PartStateWriterBase<P extends IPartTypeWriter> extends PartStateAct
     }
 
     @Override
-    protected void validate(IPartNetwork network) {
+    protected void validate(INetwork network, IPartNetwork partNetwork) {
         // Note that this is only called server-side, so these errors are sent via NBT to the client(s).
         if (getActiveAspect() != null) {
             this.currentVariableFacade.validate(
                 network,
+                partNetwork,
                 new PartStateWriterBase.Validator(this, getActiveAspect()),
                 getActiveAspect().getValueType());
         }

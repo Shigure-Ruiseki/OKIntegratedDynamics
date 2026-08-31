@@ -186,11 +186,11 @@ public class ValueTypeIngredientsLPElement extends ValueTypeLPElementBase {
         if (!subElements.get(currentType)
             .isEmpty()) {
             IValueTypeLogicProgrammerElement subElement = setActiveElement(0);
-            int x = RenderPattern.calculateX(
+            int x = RenderPatternCommon.calculateX(
                 ContainerLogicProgrammerBase.BASE_X,
                 ContainerLogicProgrammerBase.MAX_WIDTH,
                 subElement.getRenderPattern()) + ContainerLogicProgrammerBase.BASE_X - OFFSET_X;
-            int y = RenderPattern.calculateY(
+            int y = RenderPatternCommon.calculateY(
                 ContainerLogicProgrammerBase.BASE_Y,
                 ContainerLogicProgrammerBase.MAX_HEIGHT,
                 subElement.getRenderPattern()) + ContainerLogicProgrammerBase.BASE_Y - OFFSET_Y;

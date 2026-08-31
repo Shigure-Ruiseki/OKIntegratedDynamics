@@ -111,7 +111,7 @@ public abstract class TileActiveVariableBase<E> extends TileCableConnectableInve
 
     @Nullable
     public IVariable<?> getVariable(IPartNetwork network) {
-        return evaluator.getVariable(network);
+        return evaluator.getVariable(getNetwork(), network);
     }
 
     @Override

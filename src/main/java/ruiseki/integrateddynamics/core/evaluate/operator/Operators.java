@@ -1089,6 +1089,7 @@ public final class Operators {
     public static final IOperator NUMBER_COMPACT = REGISTRY.register(
         OperatorBuilders.NUMBER_1_LONG.inputType(ValueTypes.CATEGORY_NUMBER)
             .output(ValueTypes.STRING)
+            .symbol("compact")
             .operatorName("compact")
             .function(variables -> ValueTypes.CATEGORY_NUMBER.compact(variables.getVariables()[0]))
             .build());

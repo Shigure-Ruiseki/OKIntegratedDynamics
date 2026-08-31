@@ -68,7 +68,7 @@ public class GuiTextFieldDropdown<T> extends GuiTextFieldExtended {
         return visiblePossibilities.get(index);
     }
 
-    protected void refreshDropdownList() {
+    public void refreshDropdownList() {
         // Remove all colors and formatting when changing text
         if (getText().contains("§")) {
             setText(getText().replaceAll("§.", ""));
@@ -107,6 +107,7 @@ public class GuiTextFieldDropdown<T> extends GuiTextFieldExtended {
 
     @Override
     public boolean textboxKeyTyped(char typedChar, int keyCode) {
+        IDropdownEntry<T> oldPossibility = selectedDropdownPossibility;
         selectedDropdownPossibility = null;
         if (!possibilities.isEmpty()) {
             switch (keyCode) {
@@ -163,6 +164,7 @@ public class GuiTextFieldDropdown<T> extends GuiTextFieldExtended {
             }
             return true;
         }
+        selectedDropdownPossibility = oldPossibility;
         return false;
     }
 

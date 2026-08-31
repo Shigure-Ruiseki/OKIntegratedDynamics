@@ -69,10 +69,13 @@ public abstract class PartStateActiveVariableBase<P extends IPartType> extends P
         return this.inventory;
     }
 
-    protected void validate(IPartNetwork network) {
+    protected void validate(INetwork network, IPartNetwork partNetwork) {
         // Note that this is only called server-side, so these errors are sent via NBT to the client(s).
-        this.currentVariableFacade
-            .validate(network, new PartStateActiveVariableBase.Validator(this), currentVariableFacade.getOutputType());
+        this.currentVariableFacade.validate(
+            network,
+            partNetwork,
+            new PartStateActiveVariableBase.Validator(this),
+            currentVariableFacade.getOutputType());
     }
 
     protected void onCorruptedState() {
@@ -107,7 +110,7 @@ public abstract class PartStateActiveVariableBase<P extends IPartType> extends P
                 .values()) {
                 if (facade != null) {
                     currentVariableFacade = facade;
-                    validate(partNetwork);
+                    validate(network, partNetwork);
                 }
             }
             this.checkedForWriteVariable = true;
@@ -116,7 +119,7 @@ public abstract class PartStateActiveVariableBase<P extends IPartType> extends P
             onCorruptedState();
             return null;
         }
-        return currentVariableFacade.getVariable(partNetwork);
+        return currentVariableFacade.getVariable(network, partNetwork);
     }
 
     /**

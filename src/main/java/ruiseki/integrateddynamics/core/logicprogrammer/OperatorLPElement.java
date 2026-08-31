@@ -142,7 +142,7 @@ public class OperatorLPElement
             for (int i = 0; i < variableIds.length; i++) {
                 IValueType valueType = operator.getInputTypes()[i];
                 if (valueType instanceof IValueTypeCategory<?>valueTypeCategory) {
-                    valueType = Iterables.getFirst(valueTypeCategory.getElements(), valueType);
+                    valueType = Iterables.getFirst(valueTypeCategory.getElements(), ValueTypes.BOOLEAN);
                 }
                 this.inputVariables[i] = new ValueTypeVariableFacade<>(
                     variableIds[i],

@@ -47,6 +47,7 @@ import ruiseki.integrateddynamics.capability.network.EnergyNetworkConfig;
 import ruiseki.integrateddynamics.capability.valueinterface.ValueInterfaceConfig;
 import ruiseki.integrateddynamics.core.evaluate.operator.Operators;
 import ruiseki.integrateddynamics.core.evaluate.operator.PositionedOperator;
+import ruiseki.integrateddynamics.core.evaluate.operator.PositionedOperatorNetworkVariableById;
 import ruiseki.integrateddynamics.core.evaluate.operator.PositionedOperatorRecipeHandlerInputs;
 import ruiseki.integrateddynamics.core.evaluate.operator.PositionedOperatorRecipeHandlerOutput;
 import ruiseki.integrateddynamics.core.evaluate.operator.PositionedOperatorRecipeHandlerRecipeByInput;
@@ -874,6 +875,25 @@ public class Aspects {
                 })
                 .appendKind("value")
                 .buildRead();
+            public static final IAspectRead<ValueTypeOperator.ValueOperator, ValueTypeOperator> OPERATOR_GETVARIABLEBYID = AspectReadBuilders.BUILDER_OPERATOR
+                .appendKind("network")
+                .handle(
+                    input -> ValueTypeOperator.ValueOperator.of(
+                        new PositionedOperatorNetworkVariableById(
+                            input.getLeft()
+                                .getTarget()
+                                .getPos(),
+                            input.getLeft()
+                                .getTarget()
+                                .getSide())))
+                .appendKind("variablebyid")
+                .buildRead();
+            static {
+                Operators.REGISTRY.registerSerializer(
+                    new PositionedOperator.Serializer(
+                        PositionedOperatorNetworkVariableById.class,
+                        "positioned_network_variable_by_id"));
+            }
         }
 
         public static final class Redstone {

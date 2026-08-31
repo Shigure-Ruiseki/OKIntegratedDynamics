@@ -36,7 +36,7 @@ public class VariableContainerDefault implements IVariableContainer {
         NetworkHelpers.getPartNetwork(network)
             .ifPresent(partNetwork -> {
                 for (IVariableFacade variableFacade : getVariableCache().values()) {
-                    IVariable<?> variable = variableFacade.getVariable(partNetwork);
+                    IVariable<?> variable = variableFacade.getVariable(network, partNetwork);
                     if (variable != null) {
                         variable.invalidate();
                     }

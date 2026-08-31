@@ -87,7 +87,7 @@ public abstract class ValueTypeCategoryBase<V extends IValue> extends ValueTypeB
 
     @Override
     public Set<IValueType<?>> getElements() {
-        return Collections.unmodifiableSet(elements);
+        return elements == null ? Collections.emptySet() : Collections.unmodifiableSet(elements);
     }
 
     @Override

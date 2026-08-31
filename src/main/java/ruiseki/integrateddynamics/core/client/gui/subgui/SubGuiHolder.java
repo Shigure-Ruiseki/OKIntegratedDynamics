@@ -12,7 +12,7 @@ import ruiseki.integrateddynamics.api.client.gui.subgui.ISubGui;
 
 /**
  * A subgui that itself can contain multiple {@link ISubGui} and delegates to them.
- * 
+ *
  * @author rubensworks
  */
 public class SubGuiHolder implements ISubGui {
@@ -33,6 +33,10 @@ public class SubGuiHolder implements ISubGui {
 
     protected Set<ISubGui> getSubGuis() {
         return Sets.newHashSet(subGuis);
+    }
+
+    public boolean isEmpty() {
+        return subGuis.isEmpty();
     }
 
     @Override

@@ -46,6 +46,9 @@ public class LogicProgrammerActivateElementPacket extends PacketCodec {
     @Override
     public void actionServer(World world, EntityPlayerMP player) {
         if (player.openContainer instanceof ContainerLogicProgrammerBase) {
+            if (typeId != null) {
+                ((ContainerLogicProgrammerBase) player.openContainer).returnWriteItemToPlayer();
+            }
             ((ContainerLogicProgrammerBase) player.openContainer).setActiveElementById(typeId, elementId);
         }
     }

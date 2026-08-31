@@ -5,6 +5,8 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.IBlockAccess;
@@ -223,6 +225,17 @@ public final class Helpers {
 
     public static void addInterfaceRetriever(IInterfaceRetriever interfaceRetriever) {
         INTERFACE_RETRIEVERS.add(interfaceRetriever);
+    }
+
+    public static void returnItemToPlayer(EntityPlayer player, ItemStack itemStack) {
+        if (!player.isDead && (!(player instanceof EntityPlayerMP)
+            || !((EntityPlayerMP) player).playerNetServerHandler.netManager.isChannelOpen())) {
+            if (!player.inventory.addItemStackToInventory(itemStack)) {
+                player.dropPlayerItemWithRandomChoice(itemStack, false);
+            }
+        } else {
+            player.dropPlayerItemWithRandomChoice(itemStack, false);
+        }
     }
 
     public static interface IInterfaceRetriever {

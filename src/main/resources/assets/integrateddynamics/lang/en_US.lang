@@ -32,6 +32,10 @@ gui.integrateddynamics.partoffset.z=Z Offset
 gui.integrateddynamics.delay.capacity=Capacity
 gui.integrateddynamics.part.properties=Properties:
 gui.integrateddynamics.logicprogrammer.filter=Filter
+gui.integrateddynamics.logicprogrammer.info.create=§lBind new§r Variable Card
+gui.integrateddynamics.logicprogrammer.info.modify=§lModify§r Variable Card
+gui.integrateddynamics.logicprogrammer.tooltip.writeslot.create=Insert Variable Card to bind to a §lnew§r value
+gui.integrateddynamics.logicprogrammer.tooltip.writeslot.modify=Insert Variable Card to load §lload§r its value
 gui.integrateddynamics.waila.part_config=Part Information
 gui.integrateddynamics.waila.proxy_config=Proxy Information
 gui.integrateddynamics.waila.drying_basin_config=Drying Basin Information
@@ -639,6 +643,8 @@ aspect.aspects.integrateddynamics.read.integer.network.energy.consumptionrate.na
 aspect.aspects.integrateddynamics.read.integer.network.energy.consumptionrate.info=The current energy consumption rate of all ID parts within the target network per tick
 aspect.aspects.integrateddynamics.read.any.network.value.name=Value
 aspect.aspects.integrateddynamics.read.any.network.value.info=The value that is being exposed by the target
+aspect.aspects.integrateddynamics.read.operator.network.variablebyid=Variable Value By ID
+aspect.aspects.integrateddynamics.read.operator.network.variablebyid.info=An operator that returns the value of a variable by its integer identifier
 
 ## Redstone aspects
 aspect.aspects.integrateddynamics.read.boolean.redstone.high.name=Redstone High

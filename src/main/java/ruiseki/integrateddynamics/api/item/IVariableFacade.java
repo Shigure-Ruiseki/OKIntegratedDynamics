@@ -11,6 +11,7 @@ import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 import ruiseki.integrateddynamics.api.evaluate.variable.IVariable;
+import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.okcore.helper.LangHelpers;
 
@@ -33,12 +34,13 @@ public interface IVariableFacade {
 
     /**
      * Get the variable.
-     *
-     * @param <V>     The value type.
-     * @param network The object used to look for the variable.
+     * 
+     * @param <V>         The value type.
+     * @param network     The network used to look for the variable.
+     * @param partNetwork The part network used to look for the variable.
      * @return The variable.
      */
-    public <V extends IValue> IVariable<V> getVariable(IPartNetwork network);
+    public <V extends IValue> IVariable<V> getVariable(INetwork network, IPartNetwork partNetwork);
 
     /**
      * @return If this is a valid reference.
@@ -47,12 +49,14 @@ public interface IVariableFacade {
 
     /**
      * Check if this facade is valid, otherwise notify the validator of any errors.
-     *
-     * @param network             The object used to look for the variable.
+     * 
+     * @param network             The network used to look for the variable.
+     * @param partNetwork         The part network used to look for the variable.
      * @param validator           The object to notify errors to.
      * @param containingValueType The value type in which this variable facade is being used.
      */
-    public void validate(IPartNetwork network, IValidator validator, IValueType containingValueType);
+    public void validate(INetwork network, IPartNetwork partNetwork, IValidator validator,
+        IValueType containingValueType);
 
     /**
      * @return The output type of this variable facade.

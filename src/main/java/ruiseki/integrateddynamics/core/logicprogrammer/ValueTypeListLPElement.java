@@ -136,11 +136,11 @@ public class ValueTypeListLPElement extends ValueTypeLPElementBase {
     public void setValueInContainer(ContainerLogicProgrammerBase container) {
         if (length > 0) {
             IValueTypeLogicProgrammerElement subElement = setActiveElement(0);
-            int x = RenderPattern.calculateX(
+            int x = RenderPatternCommon.calculateX(
                 ContainerLogicProgrammerBase.BASE_X,
                 ContainerLogicProgrammerBase.MAX_WIDTH,
                 subElement.getRenderPattern());
-            int y = RenderPattern.calculateY(
+            int y = RenderPatternCommon.calculateY(
                 ContainerLogicProgrammerBase.BASE_Y,
                 ContainerLogicProgrammerBase.MAX_HEIGHT,
                 subElement.getRenderPattern());
@@ -181,7 +181,6 @@ public class ValueTypeListLPElement extends ValueTypeLPElementBase {
         IValueTypeLogicProgrammerElement subElement;
         if (index >= 0 && !subElements.containsKey(index)) {
             subElement = initializeElement(index);
-
             subElement.activate();
         } else {
             subElement = subElements.get(index);
@@ -482,8 +481,8 @@ public class ValueTypeListLPElement extends ValueTypeLPElementBase {
                 subGui = (RenderPattern) subElement.createSubGui(baseX, baseY, maxWidth, maxHeight, gui, container);
                 element.subElementGuis.put(element.activeElement, subGui);
             }
-            int x = RenderPattern.calculateX(baseX, maxWidth, subElement.getRenderPattern());
-            int y = RenderPattern.calculateY(baseY, maxHeight, subElement.getRenderPattern());
+            int x = RenderPatternCommon.calculateX(baseX, maxWidth, subElement.getRenderPattern());
+            int y = RenderPatternCommon.calculateY(baseY, maxHeight, subElement.getRenderPattern());
             gui.getContainer()
                 .setElementInventory(subElement, x, y);
             subElement.setValueInGui(subGui);
