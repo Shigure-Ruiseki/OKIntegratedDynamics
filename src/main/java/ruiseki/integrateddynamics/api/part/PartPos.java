@@ -1,5 +1,7 @@
 package ruiseki.integrateddynamics.api.part;
 
+import java.io.IOException;
+
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
@@ -9,6 +11,8 @@ import org.jetbrains.annotations.Nullable;
 import ruiseki.integrateddynamics.core.helper.PartHelpers;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
+import ruiseki.okcore.network.ExtendedBuffer;
+import ruiseki.okcore.network.PacketCodec;
 
 /**
  * Object holder to refer to a block side and position.
@@ -16,6 +20,30 @@ import ruiseki.okcore.datastructure.DimPos;
  * @author rubensworks
  */
 public class PartPos implements Comparable<PartPos> {
+
+    static {
+
+        PacketCodec.addCodedAction(PartPos.class, new PacketCodec.ICodecAction() {
+
+            @Override
+            public void encode(Object o, ExtendedBuffer extendedBuffer) throws IOException {
+                PartPos pos = (PartPos) o;
+                PacketCodec.getAction(DimPos.class)
+                    .encode(pos.getPos(), extendedBuffer);
+                PacketCodec.getAction(ForgeDirection.class)
+                    .encode(pos.getSide(), extendedBuffer);
+            }
+
+            @Override
+            public Object decode(ExtendedBuffer extendedBuffer) {
+                DimPos pos = (DimPos) PacketCodec.getAction(DimPos.class)
+                    .decode(extendedBuffer);
+                ForgeDirection side = (ForgeDirection) PacketCodec.getAction(ForgeDirection.class)
+                    .decode(extendedBuffer);
+                return PartPos.of(pos, side);
+            }
+        });
+    }
 
     private final DimPos pos;
     private final ForgeDirection side;

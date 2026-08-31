@@ -9,7 +9,7 @@ import ruiseki.okcore.tracking.Versions;
 
 /**
  * A config with general options for this mod.
- * 
+ *
  * @author rubensworks
  *
  */
@@ -112,6 +112,11 @@ public class GeneralConfig extends DummyConfig {
         comment = "The base energy usage for the crafting interface per crafting job being processed.",
         minimalValue = 0)
     public static int interfaceCraftingBaseConsumption = 5;
+
+    @ConfigurableProperty(
+        category = ConfigurableTypeCategory.MACHINE,
+        comment = "Enabling this option will log all recipe validation failures in crafting interfaces into the server logs")
+    public static boolean logRecipeValidationFailures = true;
 
     /**
      * The type of this config.

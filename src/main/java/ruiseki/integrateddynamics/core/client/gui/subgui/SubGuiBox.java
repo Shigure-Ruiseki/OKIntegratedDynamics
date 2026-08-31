@@ -121,19 +121,19 @@ public abstract class SubGuiBox extends Gui implements ISubGuiBox {
                 }
                 i += currentWidth;
             }
-
-            // Draw buttons
-            drawScreen(mouseX, mouseY, partialTicks);
-
-            subGuiHolder.drawGuiContainerBackgroundLayer(
-                guiLeft,
-                guiTop,
-                textureManager,
-                fontRenderer,
-                partialTicks,
-                mouseX,
-                mouseY);
         }
+
+        // Draw buttons
+        drawScreen(mouseX, mouseY, partialTicks);
+
+        subGuiHolder.drawGuiContainerBackgroundLayer(
+            guiLeft,
+            guiTop,
+            textureManager,
+            fontRenderer,
+            partialTicks,
+            mouseX,
+            mouseY);
     }
 
     @Override

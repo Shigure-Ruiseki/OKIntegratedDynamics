@@ -56,7 +56,7 @@ public class GuiElementValueTypeBoolean<G extends Gui, C extends Container>
 
     @Override
     public void setValueInGui(GuiElementValueTypeBooleanRenderPattern subGui, boolean sendToServer) {
-        if (subGui != null) {
+        if (subGui != null && subGui.getCheckbox() != null) {
             subGui.getCheckbox()
                 .setChecked(inputBoolean);
             if (sendToServer) {

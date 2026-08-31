@@ -20,6 +20,8 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.common.util.ForgeDirection;
 
+import org.apache.logging.log4j.Level;
+
 import com.google.common.collect.Lists;
 import com.google.common.collect.MapMaker;
 import com.google.common.collect.Maps;
@@ -42,6 +44,7 @@ import ruiseki.commoncapabilities.api.ingredient.MixedIngredients;
 import ruiseki.commoncapabilities.api.ingredient.storage.IIngredientComponentStorage;
 import ruiseki.commoncapabilities.capability.recipehandler.RecipeHandlerConfig;
 import ruiseki.integratedcrafting.GeneralConfig;
+import ruiseki.integratedcrafting.IntegratedCrafting;
 import ruiseki.integratedcrafting.api.crafting.CraftingJob;
 import ruiseki.integratedcrafting.api.crafting.CraftingJobStatus;
 import ruiseki.integratedcrafting.api.crafting.ICraftingInterface;
@@ -55,6 +58,7 @@ import ruiseki.integratedcrafting.core.CraftingHelpers;
 import ruiseki.integratedcrafting.core.CraftingJobHandler;
 import ruiseki.integratedcrafting.core.CraftingProcessOverrides;
 import ruiseki.integratedcrafting.core.part.PartTypeCraftingBase;
+import ruiseki.integratedcrafting.ingredient.storage.IngredientComponentStorageSlottedInsertProxy;
 import ruiseki.integratedcrafting.inventory.container.ContainerPartInterfaceCrafting;
 import ruiseki.integratedcrafting.inventory.container.ContainerPartInterfaceCraftingSettings;
 import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
@@ -82,7 +86,6 @@ import ruiseki.okcore.helper.BlockStateHelpers;
 import ruiseki.okcore.helper.CapabilityHelpers;
 import ruiseki.okcore.helper.Helpers;
 import ruiseki.okcore.helper.LangHelpers;
-import ruiseki.okcore.ingredient.storage.IngredientStorageHelpers;
 import ruiseki.okcore.inventory.IGuiContainerProvider;
 import ruiseki.okcore.inventory.SimpleInventory;
 
@@ -644,8 +647,25 @@ public class PartTypeInterfaceCrafting
             if (recipeHandler != null) {
                 IMixedIngredients simulatedOutput = recipeHandler.simulate(MixedIngredients.fromRecipeInput(recipe));
                 if (simulatedOutput != null && !simulatedOutput.isEmpty()) {
-                    return recipe.getOutput()
-                        .containsAll(simulatedOutput);
+                    if (recipe.getOutput()
+                        .containsAll(simulatedOutput)) {
+                        return true;
+                    } else {
+                        if (GeneralConfig.logRecipeValidationFailures) {
+                            IntegratedCrafting.clog(
+                                Level.INFO,
+                                "Recipe validation failure: incompatible recipe output and simulated output:\nRecipe output: "
+                                    + recipe.getOutput()
+                                    + "\nSimulated output: "
+                                    + simulatedOutput);
+                        }
+                        return false;
+                    }
+                }
+                if (GeneralConfig.logRecipeValidationFailures) {
+                    IntegratedCrafting.clog(
+                        Level.INFO,
+                        "Recipe validation failure: No output was obtained when simulating a recipe\n" + recipe);
                 }
                 return false;
             }
@@ -808,7 +828,7 @@ public class PartTypeInterfaceCrafting
                 .getNetworkStorage(this.network, this.channelCrafting, ingredientComponent, false);
 
             // Don't allow extraction, only insertion
-            storage = IngredientStorageHelpers.wrapStorage(storage, true, true, false);
+            storage = new IngredientComponentStorageSlottedInsertProxy<>(storage);
 
             return ingredientComponent.getStorageWrapperHandler(capability)
                 .wrapStorage(storage);

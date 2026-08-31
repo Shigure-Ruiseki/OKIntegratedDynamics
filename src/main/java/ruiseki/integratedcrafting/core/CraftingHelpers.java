@@ -52,6 +52,7 @@ import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.integrateddynamics.capability.network.PositionedAddonsNetworkIngredientsHandlerConfig;
 import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
 import ruiseki.integrateddynamics.core.network.IngredientChannelAdapter;
+import ruiseki.integrateddynamics.core.network.IngredientChannelIndexed;
 import ruiseki.okcore.capabilities.ICapabilityProvider;
 import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.helper.TileHelpers;
@@ -167,7 +168,7 @@ public class CraftingHelpers {
     /**
      * If the network is guaranteed to have uncommitted changes (such as the one in #48),
      * forcefully run observers synchronously, so that we can calculate the job in a consistent network state.
-     * 
+     *
      * @param network The network.
      * @param channel A network channel.
      */
@@ -944,8 +945,14 @@ public class CraftingHelpers {
         IngredientComponent<T, M> ingredientComponent, T instance, M matchCondition) {
         IIngredientComponentStorage<T, M> storage = getNetworkStorage(network, channel, ingredientComponent, true);
         if (storage instanceof IngredientChannelAdapter) ((IngredientChannelAdapter) storage).disableLimits();
-        boolean contains = !ingredientComponent.getMatcher()
-            .isEmpty(storage.extract(instance, matchCondition, true));
+        boolean contains;
+        if (storage instanceof IngredientChannelIndexed<T, M>) {
+            contains = ((IngredientChannelIndexed<T, M>) storage).getIndex()
+                .contains(instance, matchCondition);
+        } else {
+            contains = !ingredientComponent.getMatcher()
+                .isEmpty(storage.extract(instance, matchCondition, true));
+        }
         if (storage instanceof IngredientChannelAdapter) ((IngredientChannelAdapter) storage).enableLimits();
         return contains;
     }

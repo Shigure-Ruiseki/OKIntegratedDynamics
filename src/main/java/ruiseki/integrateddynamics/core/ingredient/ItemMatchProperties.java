@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.Collections;
 
 import net.minecraft.item.ItemStack;
-import net.minecraftforge.common.util.ForgeDirection;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -17,8 +16,6 @@ import ruiseki.commoncapabilities.api.capability.recipehandler.PrototypedIngredi
 import ruiseki.commoncapabilities.api.ingredient.IPrototypedIngredient;
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
 import ruiseki.commoncapabilities.api.ingredient.PrototypedIngredient;
-import ruiseki.integrateddynamics.api.part.PartPos;
-import ruiseki.okcore.datastructure.DimPos;
 import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.network.ExtendedBuffer;
 import ruiseki.okcore.network.PacketCodec;
@@ -56,26 +53,6 @@ public class ItemMatchProperties {
                     itemTag.isEmpty() ? null : itemTag,
                     tagQuantity,
                     reusable);
-            }
-        });
-
-        PacketCodec.addCodedAction(PartPos.class, new PacketCodec.ICodecAction() {
-
-            @Override
-            public void encode(Object o, ExtendedBuffer extendedBuffer) throws IOException {
-                PacketCodec.getAction(DimPos.class)
-                    .encode(((PartPos) o).getPos(), extendedBuffer);
-                PacketCodec.getAction(ForgeDirection.class)
-                    .encode(((PartPos) o).getSide(), extendedBuffer);
-            }
-
-            @Override
-            public Object decode(ExtendedBuffer extendedBuffer) {
-                DimPos pos = (DimPos) PacketCodec.getAction(DimPos.class)
-                    .decode(extendedBuffer);
-                ForgeDirection side = (ForgeDirection) PacketCodec.getAction(ForgeDirection.class)
-                    .decode(extendedBuffer);
-                return PartPos.of(pos, side);
             }
         });
     }

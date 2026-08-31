@@ -393,7 +393,8 @@ public class ValueTypeListLPElement extends ValueTypeLPElementBase {
             }
             int x = guiLeft + getX();
             int y = guiTop + getY();
-            buttonList.add(arrowAdd = new GuiButtonText(1, x + getWidth() - 13, y + 10, 12, 12, "+", true));
+            arrowAdd = new GuiButtonText(1, x + getWidth() - 13, y + 10, 12, 12, "+", true);
+            buttonList.add(arrowAdd);
         }
 
         @Override
