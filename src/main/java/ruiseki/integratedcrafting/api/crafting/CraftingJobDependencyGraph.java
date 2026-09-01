@@ -95,14 +95,10 @@ public class CraftingJobDependencyGraph {
     }
 
     public void onCraftingJobFinished(CraftingJob craftingJob) {
-        this.onCraftingJobFinished(craftingJob, true);
+        this.onCraftingJobFinished(craftingJob, false);
     }
 
-    public void onCraftingJobFinished(CraftingJob craftingJob, boolean validateDependencies) {
-        // Check if the crafting job can be finished.
-        if (validateDependencies && hasDependencies(craftingJob)) {
-            throw new IllegalStateException("A crafting job was finished while it still has unfinished dependencies.");
-        }
+    public void onCraftingJobFinished(CraftingJob craftingJob, boolean finishInvalidDependencies) {
 
         // Remove the job instance reference
         removeCraftingJobId(craftingJob);
@@ -119,27 +115,29 @@ public class CraftingJobDependencyGraph {
                 int dependent = removedIt.nextInt();
                 IntCollection dependentDependencies = dependencies.get(dependent);
                 dependentDependencies.rem(craftingJob.getId());
-                craftingJobs.get(dependent)
-                    .getDependencyCraftingJobs()
-                    .rem(craftingJob.getId());
-                if (dependentDependencies.isEmpty()) {
-                    dependencies.remove(dependent);
-                    if (!dependents.containsKey(dependent)) {
-                        craftingJobs.remove(dependent);
+                CraftingJob dependentJob = craftingJobs.get(dependent);
+                if (dependentJob != null) {
+                    dependentJob.getDependencyCraftingJobs()
+                        .rem(craftingJob.getId());
+                    if (dependentDependencies.isEmpty()) {
+                        dependencies.remove(dependent);
+                        if (!dependents.containsKey(dependent)) {
+                            craftingJobs.remove(dependent);
+                        }
                     }
                 }
             }
         }
 
         // Remove invalid dependencies that are not present in craftingJobs
-        if (!validateDependencies) {
-            IntCollection removedDependencies = dependencies.remove(craftingJob.getId());
-            if (removedDependencies != null) {
-                IntIterator removedDependenciesIt = removedDependencies.iterator();
-                while (removedDependenciesIt.hasNext()) {
-                    int dependency = removedDependenciesIt.nextInt();
-                    dependents.remove(dependency);
-                    onCraftingJobFinished(craftingJobs.get(dependency), false);
+        IntCollection removedDependencies = dependencies.remove(craftingJob.getId());
+        if (removedDependencies != null) {
+            IntIterator removedDependenciesIt = removedDependencies.iterator();
+            while (removedDependenciesIt.hasNext()) {
+                int dependency = removedDependenciesIt.nextInt();
+                dependents.remove(dependency);
+                if (finishInvalidDependencies) {
+                    onCraftingJobFinished(craftingJobs.get(dependency), true);
                 }
             }
         }
@@ -247,7 +245,7 @@ public class CraftingJobDependencyGraph {
 
         if (markMergeeAsFinished) {
             // Remove the crafting job from the graph
-            this.onCraftingJobFinished(mergee, false);
+            this.onCraftingJobFinished(mergee, true);
         }
     }
 

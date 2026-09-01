@@ -58,7 +58,7 @@ import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientUpdat
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.ingredient.collection.IIngredientCollapsedCollectionMutable;
 import ruiseki.okcore.ingredient.collection.IngredientArrayList;
-import ruiseki.okcore.ingredient.collection.IngredientCollectionPrototypeMap;
+import ruiseki.okcore.ingredient.collection.IngredientCollectionHelpers;
 import ruiseki.okcore.ingredient.collection.diff.IngredientCollectionDiff;
 import ruiseki.okcore.ingredient.collection.diff.IngredientCollectionDiffHelpers;
 import ruiseki.okcore.ingredient.collection.diff.IngredientCollectionDiffManager;
@@ -186,7 +186,7 @@ public class TerminalStorageTabIngredientComponentServer<T, M>
     protected IIngredientCollapsedCollectionMutable<T, M> getUnfilteredIngredientsView(int channel) {
         IIngredientCollapsedCollectionMutable<T, M> ingredientsView = unfilteredIngredientsViews.get(channel);
         if (ingredientsView == null) {
-            ingredientsView = new IngredientCollectionPrototypeMap<>(this.ingredientComponent);
+            ingredientsView = IngredientCollectionHelpers.createCollapsedCollection(this.ingredientComponent);
             unfilteredIngredientsViews.put(channel, ingredientsView);
         }
         return ingredientsView;
@@ -396,7 +396,7 @@ public class TerminalStorageTabIngredientComponentServer<T, M>
     private void sendCraftingOptionsToClient(int channel,
         List<HandlerWrappedTerminalCraftingOption<T>> channeledCraftingOptions, boolean reset, boolean firstChannel) {
         // Only allow collection of a max given size to be sent in a packet
-        if (channeledCraftingOptions.size() <= GeneralConfig.terminalStoragePacketMaxInstances) {
+        if (channeledCraftingOptions.size() <= GeneralConfig.terminalStoragePacketMaxRecipes) {
             IntegratedTerminals._instance.getPacketHandler()
                 .sendToPlayer(
                     new TerminalStorageIngredientCraftingOptionsPacket(
@@ -409,17 +409,17 @@ public class TerminalStorageTabIngredientComponentServer<T, M>
                     player);
         } else {
             List<HandlerWrappedTerminalCraftingOption<T>> buffer = Lists
-                .newArrayListWithExpectedSize(GeneralConfig.terminalStoragePacketMaxInstances);
+                .newArrayListWithExpectedSize(GeneralConfig.terminalStoragePacketMaxRecipes);
 
             for (HandlerWrappedTerminalCraftingOption<T> instance : channeledCraftingOptions) {
                 buffer.add(instance);
 
                 // If our buffer reaches its capacity,
                 // flush it, and create a new buffer
-                if (buffer.size() == GeneralConfig.terminalStoragePacketMaxInstances) {
+                if (buffer.size() == GeneralConfig.terminalStoragePacketMaxRecipes) {
                     sendCraftingOptionsToClient(channel, buffer, reset, firstChannel);
                     reset = false; // Only reset in first packet
-                    buffer = Lists.newArrayListWithExpectedSize(GeneralConfig.terminalStoragePacketMaxInstances);
+                    buffer = Lists.newArrayListWithExpectedSize(GeneralConfig.terminalStoragePacketMaxRecipes);
                 }
             }
 

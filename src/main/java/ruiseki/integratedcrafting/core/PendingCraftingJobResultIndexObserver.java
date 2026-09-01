@@ -1,5 +1,6 @@
 package ruiseki.integratedcrafting.core;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -12,6 +13,7 @@ import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
 import ruiseki.commoncapabilities.api.ingredient.PrototypedIngredient;
 import ruiseki.commoncapabilities.api.ingredient.storage.IIngredientComponentStorage;
 import ruiseki.integratedcrafting.api.crafting.CraftingJob;
+import ruiseki.integratedcrafting.api.network.ICraftingNetwork;
 import ruiseki.integrateddynamics.api.ingredient.IIngredientComponentStorageObservable;
 import ruiseki.integrateddynamics.api.network.IPositionedAddonsNetwork;
 import ruiseki.okcore.ingredient.collection.IIngredientCollection;
@@ -30,118 +32,132 @@ public class PendingCraftingJobResultIndexObserver<T, M>
 
     private final IngredientComponent<T, M> ingredientComponent;
     private final CraftingJobHandler handler;
+    private final ICraftingNetwork craftingNetwork;
 
     public PendingCraftingJobResultIndexObserver(IngredientComponent<T, M> ingredientComponent,
-        CraftingJobHandler handler) {
+        CraftingJobHandler handler, ICraftingNetwork craftingNetwork) {
         this.ingredientComponent = ingredientComponent;
         this.handler = handler;
+        this.craftingNetwork = craftingNetwork;
     }
 
     @Override
     public void onChange(IIngredientComponentStorageObservable.StorageChangeEvent<T, M> event) {
-        if (event.getChangeType() == IIngredientComponentStorageObservable.Change.ADDITION) {
+        if (event.getChangeType() == IIngredientComponentStorageObservable.Change.ADDITION
+            // If we're still initializing the network, skip addition events.
+            // Otherwise, we could incorrectly mark running crafting jobs as finished.
+            && !event.isInitialChange()) {
             IIngredientCollection<T, M> addedIngredients = event.getInstances();
             IIngredientComponentStorage<T, M> ingredientsHayStack = null; // A mutable copy of addedIngredients (lazily
                                                                           // created)
             IIngredientMatcher<T, M> matcher = ingredientComponent.getMatcher();
 
-            Int2ObjectMap<Map<IngredientComponent<?, ?>, List<IPrototypedIngredient<?, ?>>>> processingJobs = handler
+            Int2ObjectMap<List<Map<IngredientComponent<?, ?>, List<IPrototypedIngredient<?, ?>>>>> processingJobs = handler
                 .getProcessingCraftingJobsPendingIngredients();
-            if (processingJobs.isEmpty()) return;
-            ObjectIterator<Int2ObjectMap.Entry<Map<IngredientComponent<?, ?>, List<IPrototypedIngredient<?, ?>>>>> jobEntryIt = processingJobs
+            ObjectIterator<Int2ObjectMap.Entry<List<Map<IngredientComponent<?, ?>, List<IPrototypedIngredient<?, ?>>>>>> jobsEntryIt = processingJobs
                 .int2ObjectEntrySet()
                 .iterator();
-            while (jobEntryIt.hasNext()) {
-                Int2ObjectMap.Entry<Map<IngredientComponent<?, ?>, List<IPrototypedIngredient<?, ?>>>> jobEntry = jobEntryIt
+            while (jobsEntryIt.hasNext()) {
+                Int2ObjectMap.Entry<List<Map<IngredientComponent<?, ?>, List<IPrototypedIngredient<?, ?>>>>> jobsEntry = jobsEntryIt
                     .next();
+                int craftingJobId = jobsEntry.getIntKey();
                 // Only check jobs that have a matching channel with the event
                 CraftingJob craftingJob = handler.getAllCraftingJobs()
-                    .get(jobEntry.getIntKey());
+                    .get(jobsEntry.getIntKey());
                 if (craftingJob != null && (craftingJob.getChannel() == IPositionedAddonsNetwork.WILDCARD_CHANNEL
                     || craftingJob.getChannel() == event.getChannel())) {
-                    List<IPrototypedIngredient<?, ?>> pendingIngredientsUnsafe = jobEntry.getValue()
-                        .get(ingredientComponent);
-                    if (pendingIngredientsUnsafe != null) {
-                        // Remove pending ingredients that were added in the event
-                        List<IPrototypedIngredient<T, M>> pendingIngredients = (List<IPrototypedIngredient<T, M>>) (Object) pendingIngredientsUnsafe;
+                    Iterator<Map<IngredientComponent<?, ?>, List<IPrototypedIngredient<?, ?>>>> jobEntryIt = jobsEntry
+                        .getValue()
+                        .iterator();
+                    while (jobEntryIt.hasNext()) {
+                        Map<IngredientComponent<?, ?>, List<IPrototypedIngredient<?, ?>>> jobEntry = jobEntryIt.next();
+                        List<IPrototypedIngredient<?, ?>> pendingIngredientsUnsafe = jobEntry.get(ingredientComponent);
+                        if (pendingIngredientsUnsafe != null) {
+                            // Remove pending ingredients that were added in the event
+                            List<IPrototypedIngredient<T, M>> pendingIngredients = (List<IPrototypedIngredient<T, M>>) (Object) pendingIngredientsUnsafe;
 
-                        // Iterate over all pending ingredients for this ingredient component
-                        ListIterator<IPrototypedIngredient<T, M>> it = pendingIngredients.listIterator();
-                        while (it.hasNext()) {
-                            IPrototypedIngredient<T, M> prototypedIngredient = it.next();
-                            // Allow Empty Ingredient
-                            if (prototypedIngredient == null || prototypedIngredient.getPrototype() == null) {
-                                it.remove();
-                                continue;
-                            }
+                            // Iterate over all pending ingredients for this ingredient component
+                            ListIterator<IPrototypedIngredient<T, M>> it = pendingIngredients.listIterator();
+                            while (it.hasNext()) {
+                                IPrototypedIngredient<T, M> prototypedIngredient = it.next();
+                                final long initialQuantity = matcher.getQuantity(prototypedIngredient.getPrototype());
+                                long remainingQuantity = initialQuantity;
 
-                            T prototype = prototypedIngredient.getPrototype();
-                            final long initialQuantity = matcher.getQuantity(prototype);
-                            long remainingQuantity = initialQuantity;
-
-                            // Lazily create ingredientsHayStack only when needed,
-                            // because we need to copy all ingredients from addedIngredients,
-                            // which can get expensive
-                            // We need to make a copy because multiple crafting jobs can have the same pending
-                            // instances,
-                            // so each instance may only be consumed by a single crafting job.
-                            if (ingredientsHayStack == null) {
-                                boolean isContained = addedIngredients
-                                    .contains(prototype, prototypedIngredient.getCondition());
-
-                                if (!isContained) {
-                                    continue;
+                                // Lazily create ingredientsHayStack only when needed,
+                                // because we need to copy all ingredients from addedIngredients,
+                                // which can get expensive
+                                // We need to make a copy because multiple crafting jobs can have the same pending
+                                // instances,
+                                // so each instance may only be consumed by a single crafting job.
+                                if (ingredientsHayStack == null) {
+                                    if (addedIngredients.contains(
+                                        prototypedIngredient.getPrototype(),
+                                        prototypedIngredient.getCondition())) {
+                                        IngredientCollectionPrototypeMap<T, M> prototypeMap = new IngredientCollectionPrototypeMap<>(
+                                            ingredientComponent);
+                                        ingredientsHayStack = new IngredientComponentStorageCollectionWrapper<>(
+                                            prototypeMap);
+                                        prototypeMap.addAll(addedIngredients);
+                                    } else {
+                                        continue;
+                                    }
                                 }
 
-                                IngredientCollectionPrototypeMap<T, M> prototypeMap = new IngredientCollectionPrototypeMap<>(
-                                    ingredientComponent);
-                                ingredientsHayStack = new IngredientComponentStorageCollectionWrapper<>(prototypeMap);
-                                prototypeMap.addAll(addedIngredients);
-                            }
+                                // Iteratively extract the pending ingredient from the hay stack.
+                                T extracted;
+                                do {
+                                    extracted = ingredientsHayStack.extract(
+                                        prototypedIngredient.getPrototype(),
+                                        prototypedIngredient.getCondition(),
+                                        false);
 
-                            // Iteratively extract the pending ingredient from the hay stack.
-                            T extracted;
-                            do {
-                                extracted = ingredientsHayStack
-                                    .extract(prototype, prototypedIngredient.getCondition(), false);
+                                    if (matcher.isEmpty(extracted)) {
+                                        // Quickly break when no matches are available anymore
+                                        break;
+                                    }
 
-                                if (matcher.isEmpty(extracted)) {
-                                    // Quickly break when no matches are available anymore
-                                    break;
+                                    remainingQuantity -= matcher.getQuantity(extracted);
+                                } while (!matcher.isEmpty(extracted) && remainingQuantity > 0);
+
+                                // Update the list if the prototype has changed.
+                                if (remainingQuantity <= 0) {
+                                    it.remove();
+                                } else if (initialQuantity != remainingQuantity) {
+                                    it.set(
+                                        new PrototypedIngredient<>(
+                                            ingredientComponent,
+                                            matcher
+                                                .withQuantity(prototypedIngredient.getPrototype(), remainingQuantity),
+                                            prototypedIngredient.getCondition()));
                                 }
 
-                                remainingQuantity -= matcher.getQuantity(extracted);
-                            } while (!matcher.isEmpty(extracted) && remainingQuantity > 0);
-
-                            // Update the list if the prototype has changed.
-                            if (remainingQuantity <= 0) {
-                                it.remove();
-                            } else if (initialQuantity != remainingQuantity) {
-                                it.set(
-                                    new PrototypedIngredient<>(
-                                        ingredientComponent,
-                                        matcher.withQuantity(prototype, remainingQuantity),
-                                        prototypedIngredient.getCondition()));
                             }
-                        }
 
-                        // If no prototypes for this component type for this crafting job are pending.
-                        if (pendingIngredients.isEmpty()) {
-                            // Remove observer (in next tick) when all pending ingredients are resolved
-                            handler.getObserversPendingDeletion()
-                                .add(ingredientComponent);
+                            // If no prototypes for this component type for this crafting job for this job entry are
+                            // pending.
+                            if (pendingIngredients.isEmpty()) {
+                                // Remove observer (in next tick) when all pending ingredients are resolved
+                                handler.getObserversPendingDeletion()
+                                    .add(ingredientComponent);
 
-                            // Remove crafting job if needed.
-                            jobEntry.getValue()
-                                .remove(ingredientComponent);
-                            if (jobEntry.getValue()
-                                .isEmpty()) {
-                                handler.onCraftingJobFinished(
-                                    handler.getAllCraftingJobs()
-                                        .get(jobEntry.getIntKey()));
-                                handler.getProcessingCraftingJobsRaw()
-                                    .remove(jobEntry.getIntKey());
-                                jobEntryIt.remove();
+                                // Remove crafting job if needed.
+                                // No ingredients of this ingredient component type are pending
+                                jobEntry.remove(ingredientComponent);
+                                if (jobEntry.isEmpty()) {
+                                    // No ingredients are pending for this non-blocking-mode-entry are pending
+                                    handler.onCraftingJobEntryFinished(craftingNetwork, craftingJobId);
+                                    jobEntryIt.remove();
+                                }
+                                if (jobsEntry.getValue()
+                                    .isEmpty()) {
+                                    // No more entries for this crafting job are pending
+                                    handler.onCraftingJobFinished(
+                                        handler.getAllCraftingJobs()
+                                            .get(craftingJobId));
+                                    handler.getProcessingCraftingJobsRaw()
+                                        .remove(craftingJobId);
+                                    jobsEntryIt.remove();
+                                }
                             }
                         }
                     }

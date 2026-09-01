@@ -18,11 +18,12 @@ import ruiseki.okcore.datastructure.DistinctIterator;
 import ruiseki.okcore.datastructure.MultitransformIterator;
 import ruiseki.okcore.ingredient.collection.IIngredientMapMutable;
 import ruiseki.okcore.ingredient.collection.IngredientHashMap;
+import ruiseki.okcore.ingredient.collection.IngredientMapSingleClassified;
 
 /**
  * A default implementation of {@link ruiseki.integratedcrafting.api.recipe.IRecipeIndex} and
  * {@link IRecipeIndexModifiable}.
- * 
+ *
  * @author rubensworks
  */
 public class RecipeIndexDefault implements IRecipeIndexModifiable {
@@ -56,9 +57,12 @@ public class RecipeIndexDefault implements IRecipeIndexModifiable {
     }
 
     @Nullable
-    protected <T, M> IIngredientMapMutable<T, M, Set<IRecipeDefinition>> initializeIndex(
-        IngredientComponent<T, M> recipeComponent) {
-        return new IngredientHashMap<>(recipeComponent);
+    protected <T, M> IIngredientMapMutable<T, M, Set<IRecipeDefinition>> initializeIndex(IngredientComponent<T, M> recipeComponent) {
+        // TODO: Consider moving/copying this logic to IngredientCollectionHelpers in next/major
+        if (recipeComponent.getCategoryTypes().size() == 1) {
+            return new IngredientHashMap<>(recipeComponent);
+        }
+        return new IngredientMapSingleClassified<>(recipeComponent, () -> new IngredientHashMap<>(recipeComponent), recipeComponent.getCategoryTypes().get(0));
     }
 
     @Override

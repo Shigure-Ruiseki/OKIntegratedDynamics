@@ -76,6 +76,11 @@ public class GeneralConfig extends DummyConfig {
         comment = "The maximum number of terminal storage instances that can be sent in a single packet. Reduce this when you have packet overflows.",
         isCommandable = true)
     public static int terminalStoragePacketMaxInstances = 1024;
+    @ConfigurableProperty(
+        category = ConfigurableTypeCategory.CORE,
+        comment = "The maximum number of terminal storage crafting recipes that can be sent in a single packet. Reduce this when you have packet overflows.",
+        isCommandable = true)
+    public static int terminalStoragePacketMaxRecipes = 128;
 
     /**
      * The number that should be selected when clicking on an item in the storage terminal.

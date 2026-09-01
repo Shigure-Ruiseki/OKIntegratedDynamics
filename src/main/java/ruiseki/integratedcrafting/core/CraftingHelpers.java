@@ -558,6 +558,21 @@ public class CraftingHelpers {
             }
         }
 
+        // Add remaining surplus as negatives to simulated extraction
+        for (IngredientComponent<?, ?> surplusComponent : dependenciesOutputSurplus.keySet()) {
+            IngredientCollectionPrototypeMap<?, ?> surplusInstances = dependenciesOutputSurplus.get(surplusComponent);
+            if (surplusInstances != null) {
+                for (Object instance : surplusInstances) {
+                    IngredientCollectionPrototypeMap<?, ?> simulatedExtractionMemoryInstances = simulatedExtractionMemory.get(surplusComponent);
+                    if (simulatedExtractionMemoryInstances == null) {
+                        simulatedExtractionMemoryInstances = new IngredientCollectionPrototypeMap<>(surplusComponent, true);
+                        simulatedExtractionMemory.put(surplusComponent, simulatedExtractionMemoryInstances);
+                    }
+                    ((IngredientCollectionPrototypeMap) simulatedExtractionMemoryInstances).remove(instance);
+                }
+            }
+        }
+
         // If at least one of our dependencies does not have a valid recipe or is not available,
         // go check the next recipe.
         if (!missingDependencies.isEmpty()) {
@@ -999,6 +1014,34 @@ public class CraftingHelpers {
         }
         if (storage instanceof IngredientChannelAdapter) ((IngredientChannelAdapter) storage).enableLimits();
         return contains;
+    }
+
+    /**
+     * Check the quantity of the given instance in the network.
+     *
+     * @param network             The target network.
+     * @param channel             The target channel.
+     * @param ingredientComponent The ingredient component type of the instance.
+     * @param instance            The instance to check.
+     * @param matchCondition      The match condition of the instance.
+     * @param <T>                 The instance type.
+     * @param <M>                 The matching condition parameter.
+     * @return The quantity in the network.
+     */
+    public static <T, M> long getStorageInstanceQuantity(INetwork network, int channel,
+        IngredientComponent<T, M> ingredientComponent, T instance, M matchCondition) {
+        IIngredientComponentStorage<T, M> storage = getNetworkStorage(network, channel, ingredientComponent, true);
+        if (storage instanceof IngredientChannelAdapter) ((IngredientChannelAdapter) storage).disableLimits();
+        long quantityPresent;
+        if (storage instanceof IngredientChannelIndexed) {
+            quantityPresent = ((IngredientChannelIndexed<T, M>) storage).getIndex()
+                .getQuantity(instance);
+        } else {
+            quantityPresent = ingredientComponent.getMatcher()
+                .getQuantity(storage.extract(instance, matchCondition, true));
+        }
+        if (storage instanceof IngredientChannelAdapter) ((IngredientChannelAdapter) storage).enableLimits();
+        return quantityPresent;
     }
 
     /**
@@ -1453,6 +1496,7 @@ public class CraftingHelpers {
         Map<IngredientComponent<?, ?>, IngredientCollectionPrototypeMap<?, ?>> simulatedExtractionMemories,
         Map<IngredientComponent<?, ?>, IIngredientCollectionMutable<?, ?>> extractionMemoriesReusable,
         boolean collectMissingIngredients, long recipeOutputQuantity) {
+        // Determine available and missing ingredients
         Map<IngredientComponent<?, ?>, List<?>> ingredientsAvailable = Maps.newIdentityHashMap();
         Map<IngredientComponent<?, ?>, MissingIngredients<?, ?>> ingredientsMissing = Maps.newIdentityHashMap();
         for (IngredientComponent<?, ?> ingredientComponent : recipe.getInputComponents()) {
@@ -1491,7 +1535,17 @@ public class CraftingHelpers {
                 }
             }
         }
-        return Pair.of(ingredientsAvailable, ingredientsMissing);
+        // Compress missing ingredients
+        // We do this to ensure that instances missing multiple times can be easily combined
+        // when triggering a crafting job for them.
+        Map<IngredientComponent<?, ?>, MissingIngredients<?, ?>> ingredientsMissingCompressed = Maps
+            .newIdentityHashMap();
+        for (IngredientComponent<?, ?> ingredientComponent : ingredientsMissing.keySet()) {
+            ingredientsMissingCompressed
+                .put(ingredientComponent, compressMissingIngredients(ingredientsMissing.get(ingredientComponent)));
+        }
+
+        return Pair.of(ingredientsAvailable, ingredientsMissingCompressed);
     }
 
     /**
@@ -1543,6 +1597,48 @@ public class CraftingHelpers {
         }
 
         return outputs;
+    }
+
+    /**
+     * Compress the given missing ingredients so that equal instances just have an incremented quantity.
+     *
+     * @param missingIngredients The missing ingredients.
+     * @param <T>                The instance type.
+     * @param <M>                The matching condition parameter.
+     * @return A new missing ingredients object.
+     */
+    public static <T, M> MissingIngredients<T, M> compressMissingIngredients(
+        MissingIngredients<T, M> missingIngredients) {
+        // Index identical missing ingredients in a map, to group them by quantity
+        Map<MissingIngredients.Element<T, M>, Long> elementsCompressedMap = Maps.newLinkedHashMap(); // Must be a linked
+                                                                                                     // map to maintain
+                                                                                                     // our order!!!
+        for (MissingIngredients.Element<T, M> element : missingIngredients.getElements()) {
+            elementsCompressedMap.merge(element, 1L, Long::sum);
+        }
+
+        // Create a new missing ingredients list where we multiply the missing quantities
+        List<MissingIngredients.Element<T, M>> elementsCompressed = Lists.newArrayList();
+        for (Map.Entry<MissingIngredients.Element<T, M>, Long> entry : elementsCompressedMap.entrySet()) {
+            Long quantity = entry.getValue();
+            if (quantity == 1L || entry.getKey()
+                .isInputReusable()) {
+                elementsCompressed.add(entry.getKey());
+            } else {
+                MissingIngredients.Element<T, M> elementOld = entry.getKey();
+                MissingIngredients.Element<T, M> elementNewQuantity = new MissingIngredients.Element<>(
+                    elementOld.getAlternatives()
+                        .stream()
+                        .map(
+                            alt -> new MissingIngredients.PrototypedWithRequested<>(
+                                alt.getRequestedPrototype(),
+                                alt.getQuantityMissing() * quantity))
+                        .toList(),
+                    elementOld.isInputReusable());
+                elementsCompressed.add(elementNewQuantity);
+            }
+        }
+        return new MissingIngredients<>(elementsCompressed);
     }
 
     /**

@@ -43,6 +43,7 @@ public class GuiPartInterfaceCraftingSettings extends GuiPartSettings implements
     private IngredientComponent<?, ?> selectedIngredientComponent = null;
     private GuiNumberField numberFieldChannelInterfaceCrafting = null;
     private GuiButtonCheckbox checkboxFieldDisabledCraftingCheck = null;
+    private GuiButtonCheckbox checkboxFieldBlockingMode = null;
 
     public GuiPartInterfaceCraftingSettings(EntityPlayer player, PartTarget target, IPartContainer partContainer,
         IPartType partType) {
@@ -52,6 +53,11 @@ public class GuiPartInterfaceCraftingSettings extends GuiPartSettings implements
             target,
             partContainer,
             partType);
+    }
+
+    @Override
+    protected ContainerPartInterfaceCraftingSettings getContainer() {
+        return (ContainerPartInterfaceCraftingSettings) super.getContainer();
     }
 
     protected ResourceLocation constructResourceLocation() {
@@ -91,17 +97,14 @@ public class GuiPartInterfaceCraftingSettings extends GuiPartSettings implements
             int side = selectedSide != null && selectedSide != getDefaultSide() ? selectedSide.ordinal() : -1;
             ValueNotifierHelpers.setValue(
                 getContainer(),
-                ((ContainerPartInterfaceCraftingSettings) getContainer())
-                    .getTargetSideOverrideValueId(selectedIngredientComponent),
+                getContainer().getTargetSideOverrideValueId(selectedIngredientComponent),
                 side);
 
             int channelInterface = numberFieldChannelInterfaceCrafting.getInt();
-            ValueNotifierHelpers.setValue(
-                getContainer(),
-                ((ContainerPartInterfaceCraftingSettings) getContainer()).getLastChannelInterfaceCraftingValueId(),
-                channelInterface);
-            ((ContainerPartInterfaceCraftingSettings) getContainer())
-                .setLastDisableCraftingCheckValue(checkboxFieldDisabledCraftingCheck.isChecked());
+            ValueNotifierHelpers
+                .setValue(getContainer(), getContainer().getLastChannelInterfaceCraftingValueId(), channelInterface);
+            getContainer().setLastDisableCraftingCheckValue(checkboxFieldDisabledCraftingCheck.isChecked());
+            getContainer().setLastBlockingModeValue(checkboxFieldBlockingMode.isChecked());
         } catch (NumberFormatException e) {}
     }
 
@@ -167,12 +170,22 @@ public class GuiPartInterfaceCraftingSettings extends GuiPartSettings implements
         checkboxFieldDisabledCraftingCheck = new GuiButtonCheckbox(
             0,
             guiLeft + 110,
-            guiTop + 159,
+            guiTop + 149,
             110,
             10,
             LangHelpers.localize("gui.integratedcrafting.partsettings.craftingcheckdisabled"),
             false);
         buttonList.add(checkboxFieldDisabledCraftingCheck);
+
+        checkboxFieldBlockingMode = new GuiButtonCheckbox(
+            1,
+            guiLeft + 110,
+            guiTop + 159,
+            110,
+            10,
+            LangHelpers.localize("gui.integratedcrafting.partsettings.blockingmode"),
+            false);
+        buttonList.add(checkboxFieldBlockingMode);
 
         this.refreshValues();
     }
@@ -227,6 +240,11 @@ public class GuiPartInterfaceCraftingSettings extends GuiPartSettings implements
         fontRendererObj.drawString(
             LangHelpers.localize("gui.integratedcrafting.partsettings.craftingcheckdisabled"),
             guiLeft + 8,
+            guiTop + 152,
+            0);
+        fontRendererObj.drawString(
+            LangHelpers.localize("gui.integratedcrafting.partsettings.blockingmode"),
+            guiLeft + 8,
             guiTop + 162,
             0);
     }
@@ -246,25 +264,24 @@ public class GuiPartInterfaceCraftingSettings extends GuiPartSettings implements
     public void onUpdate(int valueId, NBTTagCompound value) {
         super.onUpdate(valueId, value);
         for (IngredientComponent<?, ?> ingredientComponent : IngredientComponent.REGISTRY.getValuesCollection()) {
-            if (valueId == ((ContainerPartInterfaceCraftingSettings) getContainer())
-                .getTargetSideOverrideValueId(ingredientComponent)) {
-                int side = ((ContainerPartInterfaceCraftingSettings) getContainer())
-                    .getTargetSideOverrideValue(ingredientComponent)
+            if (valueId == getContainer().getTargetSideOverrideValueId(ingredientComponent)) {
+                int side = getContainer().getTargetSideOverrideValue(ingredientComponent)
                     .ordinal();
                 setSideInDropdownField(
                     ingredientComponent,
                     side == -1 ? getDefaultSide() : ForgeDirection.VALID_DIRECTIONS[side]);
             }
         }
-        if (valueId
-            == ((ContainerPartInterfaceCraftingSettings) getContainer()).getLastChannelInterfaceCraftingValueId()) {
-            numberFieldChannelInterfaceCrafting.setText(
-                Integer.toString(
-                    ((ContainerPartInterfaceCraftingSettings) getContainer()).getLastChannelInterfaceValue()));
+        if (valueId == getContainer().getLastChannelInterfaceCraftingValueId()) {
+            numberFieldChannelInterfaceCrafting
+                .setText(Integer.toString(getContainer().getLastChannelInterfaceValue()));
         }
-        if (valueId == ((ContainerPartInterfaceCraftingSettings) getContainer()).getLastDisableCraftingCheckValueId()) {
-            checkboxFieldDisabledCraftingCheck.setChecked(
-                ((ContainerPartInterfaceCraftingSettings) getContainer()).getLastDisableCraftingCheckValue());
+        if (valueId == getContainer().getLastDisableCraftingCheckValueId()) {
+            checkboxFieldDisabledCraftingCheck.setChecked(getContainer().getLastDisableCraftingCheckValue());
+        }
+
+        if (valueId == getContainer().getLastBlockingModeValueId()) {
+            checkboxFieldBlockingMode.setChecked(getContainer().getLastBlockingModeValue());
         }
     }
 
