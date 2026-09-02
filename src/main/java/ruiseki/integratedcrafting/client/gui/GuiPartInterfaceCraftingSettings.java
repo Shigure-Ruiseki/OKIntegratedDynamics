@@ -20,12 +20,15 @@ import ruiseki.integratedcrafting.inventory.container.ContainerPartInterfaceCraf
 import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartTarget;
+import ruiseki.integrateddynamics.client.gui.image.Images;
 import ruiseki.integrateddynamics.core.client.gui.GuiTextFieldDropdown;
 import ruiseki.integrateddynamics.core.client.gui.container.GuiPartSettings;
 import ruiseki.okcore.client.gui.component.button.GuiButtonCheckbox;
+import ruiseki.okcore.client.gui.component.button.GuiButtonImage;
 import ruiseki.okcore.client.gui.component.input.GuiArrowedListField;
 import ruiseki.okcore.client.gui.component.input.GuiNumberField;
 import ruiseki.okcore.client.gui.component.input.IInputListener;
+import ruiseki.okcore.client.gui.image.IImage;
 import ruiseki.okcore.client.renderer.GlStateManager;
 import ruiseki.okcore.helper.Helpers;
 import ruiseki.okcore.helper.LangHelpers;
@@ -112,6 +115,21 @@ public class GuiPartInterfaceCraftingSettings extends GuiPartSettings implements
     public void initGui() {
         super.initGui();
 
+        if (getContainer().getPartType()
+            .supportsOffsets()) {
+            buttonList.add(
+                new GuiButtonImage(
+                    ContainerPartInterfaceCraftingSettings.BUTTON_OFFSETS,
+                    this.guiLeft - 20,
+                    this.guiTop + 10,
+                    18,
+                    18,
+                    new IImage[] { Images.BUTTON_BACKGROUND_INACTIVE, Images.BUTTON_MIDDLE_OFFSET },
+                    0,
+                    0,
+                    false));
+        }
+
         ingredientComponentSideSelector = new GuiArrowedListField<IngredientComponent<?, ?>>(
             0,
             Minecraft.getMinecraft().fontRenderer,
@@ -168,7 +186,7 @@ public class GuiPartInterfaceCraftingSettings extends GuiPartSettings implements
         numberFieldChannelInterfaceCrafting.setCanLoseFocus(true);
 
         checkboxFieldDisabledCraftingCheck = new GuiButtonCheckbox(
-            0,
+            5,
             guiLeft + 110,
             guiTop + 149,
             110,
@@ -178,7 +196,7 @@ public class GuiPartInterfaceCraftingSettings extends GuiPartSettings implements
         buttonList.add(checkboxFieldDisabledCraftingCheck);
 
         checkboxFieldBlockingMode = new GuiButtonCheckbox(
-            1,
+            6,
             guiLeft + 110,
             guiTop + 159,
             110,
@@ -247,6 +265,19 @@ public class GuiPartInterfaceCraftingSettings extends GuiPartSettings implements
             guiLeft + 8,
             guiTop + 162,
             0);
+    }
+
+    @Override
+    protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
+        super.drawGuiContainerForegroundLayer(mouseX, mouseY);
+
+        if (getContainer().getPartType()
+            .supportsOffsets() && func_146978_c(-20, 0 + 10, 18, 18, mouseX, mouseY)) {
+            drawTooltip(
+                Lists.newArrayList(LangHelpers.localize("gui.integrateddynamics.part_offsets")),
+                mouseX - guiLeft,
+                mouseY - guiTop);
+        }
     }
 
     @Override

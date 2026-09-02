@@ -2,7 +2,6 @@ package ruiseki.integratedcrafting.core.crafting.processoverride;
 
 import java.util.Map;
 import java.util.UUID;
-import java.util.WeakHashMap;
 import java.util.function.Function;
 
 import net.minecraft.block.BlockWorkbench;
@@ -12,6 +11,7 @@ import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.util.FakePlayer;
 
+import com.google.common.collect.MapMaker;
 import com.mojang.authlib.GameProfile;
 
 import cpw.mods.fml.common.FMLCommonHandler;
@@ -34,7 +34,11 @@ public class CraftingProcessOverrideCraftingTable implements ICraftingProcessOve
     private static final GameProfile PROFILE = new GameProfile(
         UUID.fromString("41C82C87-7AfB-4024-BB57-13D2C99CAE77"),
         "[IntegratedCrafting]");
-    private static final Map<WorldServer, FakePlayer> FAKE_PLAYERS = new WeakHashMap<>();
+    // Weak keys AND values: the FakePlayer value holds a reference to its ServerLevel key,
+    // so a WeakHashMap (weak keys only) would keep the key alive forever and leak.
+    private static final Map<WorldServer, FakePlayer> FAKE_PLAYERS = new MapMaker().weakKeys()
+        .weakValues()
+        .makeMap();
 
     public static FakePlayer getFakePlayer(WorldServer world) {
         FakePlayer fakePlayer = FAKE_PLAYERS.get(world);

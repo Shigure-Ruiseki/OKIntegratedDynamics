@@ -45,31 +45,6 @@ public class ContainerPartInterfaceCrafting
         IPartType partType) {
         super(player, target, partContainer, (PartTypeInterfaceCrafting) partType);
 
-        putButtonAction(GuiPartInterfaceCrafting.BUTTON_SETTINGS, new IButtonActionServer<InventoryContainer>() {
-
-            @Override
-            public void onAction(int buttonId, InventoryContainer container) {
-                if (!player.worldObj.isRemote) {
-                    IGuiContainerProvider gui = getPartType().getSettingsGuiProvider();
-                    IntegratedDynamics._instance.getGuiHandler()
-                        .setTemporaryData(
-                            ExtendedGuiHandler.PART,
-                            getTarget().getCenter()
-                                .getSide()); // Pass the side as extra data to the gui
-                    BlockPos cPos = getTarget().getCenter()
-                        .getPos()
-                        .getBlockPos();
-                    ContainerPartInterfaceCrafting.this.player.openGui(
-                        gui.getModGui(),
-                        gui.getGuiID(),
-                        player.worldObj,
-                        cPos.getX(),
-                        cPos.getY(),
-                        cPos.getZ());
-                }
-            }
-        });
-
         SimpleInventory inventory = getPartState().getInventoryVariables();
         addInventory(inventory, 0, 8, 22, 1, inventory.getSizeInventory());
         addPlayerInventory(player.inventory, 8, 59);

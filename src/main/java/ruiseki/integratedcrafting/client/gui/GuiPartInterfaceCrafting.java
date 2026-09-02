@@ -31,8 +31,6 @@ import ruiseki.okcore.init.ModBase;
  */
 public class GuiPartInterfaceCrafting extends GuiMultipart<PartTypeInterfaceCrafting, PartTypeInterfaceCrafting.State> {
 
-    public static final int BUTTON_SETTINGS = 1;
-
     /**
      * Make a new instance.
      *
@@ -44,30 +42,11 @@ public class GuiPartInterfaceCrafting extends GuiMultipart<PartTypeInterfaceCraf
     public GuiPartInterfaceCrafting(EntityPlayer player, PartTarget partTarget, IPartContainer partContainer,
         IPartType partType) {
         super(new ContainerPartInterfaceCrafting(player, partTarget, partContainer, partType));
-
-        putButtonAction(BUTTON_SETTINGS, (buttonId, gui, container) -> {
-            IntegratedDynamics._instance.getGuiHandler()
-                .setTemporaryData(
-                    ExtendedGuiHandler.PART,
-                    getTarget().getCenter()
-                        .getSide()); // Pass the side as extra data to the gui
-        });
     }
 
     @Override
     public void initGui() {
         super.initGui();
-        buttonList.add(
-            new GuiButtonImage(
-                BUTTON_SETTINGS,
-                this.guiLeft + 155,
-                this.guiTop + 4,
-                15,
-                15,
-                Images.CONFIG_BOARD,
-                -2,
-                -3,
-                true));
     }
 
     @Override

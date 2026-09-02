@@ -2,8 +2,11 @@ package ruiseki.integrateddynamics.core.client.gui.container;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
@@ -11,10 +14,12 @@ import net.minecraft.util.EnumChatFormatting;
 
 import com.google.common.collect.Lists;
 
+import net.minecraftforge.common.util.ForgeDirection;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartTarget;
+import ruiseki.integrateddynamics.core.client.gui.ExtendedGuiHandler;
 import ruiseki.integrateddynamics.core.inventory.container.ContainerPartOffset;
 import ruiseki.okcore.client.gui.component.button.GuiButtonText;
 import ruiseki.okcore.client.gui.component.input.GuiNumberField;
@@ -33,9 +38,15 @@ import ruiseki.okcore.init.ModBase;
  *
  * @author rubensworks
  */
+@EqualsAndHashCode(callSuper = false)
+@Data
 public class GuiPartOffset<T extends ContainerPartOffset> extends GuiContainerExtended {
 
-    public static final int BUTTON_SAVE = 0;
+    public static final int BUTTON_SAVE = 1;
+
+    private final PartTarget target;
+    private final IPartContainer partContainer;
+    private final IPartType partType;
 
     private GuiNumberField numberFieldX = null;
     private GuiNumberField numberFieldY = null;
@@ -56,6 +67,9 @@ public class GuiPartOffset<T extends ContainerPartOffset> extends GuiContainerEx
     public GuiPartOffset(ContainerPartOffset containerPartOffset, EntityPlayer player, PartTarget target,
         IPartContainer partContainer, IPartType partType) {
         super(containerPartOffset);
+        this.target = target;
+        this.partContainer = partContainer;
+        this.partType = partType;
 
         putButtonAction(BUTTON_SAVE, (buttonId, gui, container) -> onSave());
     }
@@ -65,17 +79,22 @@ public class GuiPartOffset<T extends ContainerPartOffset> extends GuiContainerEx
         return (ContainerPartOffset) super.getContainer();
     }
 
-    @Override
-    public String getGuiTexture() {
-        return IntegratedDynamics._instance.getReferenceValue(ModBase.REFKEY_TEXTURE_PATH_GUI) + "part_offsets.png";
-    }
-
     protected void onSave() {
+        IntegratedDynamics._instance.getGuiHandler()
+            .setTemporaryData(
+                ExtendedGuiHandler.PART,
+                getTarget().getCenter()
+                    .getSide());
         try {
             ValueNotifierHelpers.setValue(getContainer(), getContainer().getLastXValueId(), numberFieldX.getInt());
             ValueNotifierHelpers.setValue(getContainer(), getContainer().getLastYValueId(), numberFieldY.getInt());
             ValueNotifierHelpers.setValue(getContainer(), getContainer().getLastZValueId(), numberFieldZ.getInt());
         } catch (NumberFormatException e) {}
+    }
+
+    @Override
+    public String getGuiTexture() {
+        return IntegratedDynamics._instance.getReferenceValue(ModBase.REFKEY_TEXTURE_PATH_GUI) + "part_offsets.png";
     }
 
     @Override

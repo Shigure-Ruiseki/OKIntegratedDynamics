@@ -13,16 +13,27 @@ import com.google.common.collect.Maps;
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
 import ruiseki.integratedcrafting.core.part.PartTypeInterfaceCraftingBase;
 import ruiseki.integratedcrafting.part.PartTypeInterfaceCrafting;
+import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartTarget;
+import ruiseki.integrateddynamics.core.client.gui.ExtendedGuiHandler;
+import ruiseki.integrateddynamics.core.client.gui.container.GuiMultipart;
+import ruiseki.integrateddynamics.core.inventory.container.ContainerMultipart;
 import ruiseki.integrateddynamics.core.inventory.container.ContainerPartSettings;
+import ruiseki.integrateddynamics.core.part.PartTypeConfigurable;
+import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.helper.ValueNotifierHelpers;
+import ruiseki.okcore.inventory.IGuiContainerProvider;
+import ruiseki.okcore.inventory.container.InventoryContainer;
+import ruiseki.okcore.inventory.container.button.IButtonActionServer;
 
 /**
  * @author rubensworks
  */
 public class ContainerPartInterfaceCraftingSettings extends ContainerPartSettings {
+
+    public static final int BUTTON_OFFSETS = 2;
 
     private final int lastChannelInterfaceCraftingValueId;
     private final Map<IngredientComponent<?, ?>, Integer> targetSideOverrideValueIds;
@@ -41,6 +52,30 @@ public class ContainerPartInterfaceCraftingSettings extends ContainerPartSetting
         }
         lastDisableCraftingCheckValueId = getNextValueId();
         lastBlockingModeValueId = getNextValueId();
+
+        // Expose the offsets gui from within the settings gui,
+        // as some crafting interfaces (such as the attuned one) show the settings gui as their main gui.
+
+        putButtonAction(GuiMultipart.BUTTON_OFFSETS, new IButtonActionServer<InventoryContainer>() {
+
+            @Override
+            public void onAction(int buttonId, InventoryContainer container) {
+                if (!player.worldObj.isRemote) {
+                    IGuiContainerProvider gui = ((PartTypeConfigurable<?, ?>) getPartType()).getOffsetsGuiProvider();
+                    IntegratedDynamics._instance.getGuiHandler()
+                        .setTemporaryData(
+                            ExtendedGuiHandler.PART,
+                            getTarget().getCenter()
+                                .getSide()); // Pass the side as extra data to the gui
+                    BlockPos cPos = getTarget().getCenter()
+                        .getPos()
+                        .getBlockPos();
+                    ContainerPartInterfaceCraftingSettings.this.player
+                        .openGui(gui.getModGui(), gui.getGuiID(), player.worldObj, cPos.getX(), cPos.getY(), cPos.getZ());
+                }
+            }
+        });
+
     }
 
     @Override
