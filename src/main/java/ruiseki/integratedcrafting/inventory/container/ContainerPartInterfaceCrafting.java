@@ -10,6 +10,7 @@ import ruiseki.integratedcrafting.part.PartTypeInterfaceCrafting;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.item.IVariableFacade;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
+import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.core.client.gui.ExtendedGuiHandler;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueHelpers;
@@ -41,8 +42,8 @@ public class ContainerPartInterfaceCrafting
      * @param partType      The part type.
      */
     public ContainerPartInterfaceCrafting(EntityPlayer player, PartTarget target, IPartContainer partContainer,
-        PartTypeInterfaceCrafting partType) {
-        super(player, target, partContainer, partType);
+        IPartType partType) {
+        super(player, target, partContainer, (PartTypeInterfaceCrafting) partType);
 
         putButtonAction(GuiPartInterfaceCrafting.BUTTON_SETTINGS, new IButtonActionServer<InventoryContainer>() {
 

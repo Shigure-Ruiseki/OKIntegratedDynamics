@@ -22,6 +22,7 @@ import ruiseki.okcore.item.ItemBlockMetadata;
 
 /**
  * The item for the cable.
+ * Ported to 1.7.10 following modern CyclopsMC structure.
  *
  * @author rubensworks
  */
@@ -33,6 +34,11 @@ public class ItemBlockCable extends ItemBlockMetadata {
         super(block);
     }
 
+    /**
+     * Register a use action for the cable item.
+     *
+     * @param useAction The use action.
+     */
     public static void addUseAction(IUseAction useAction) {
         USE_ACTIONS.add(useAction);
     }
@@ -56,18 +62,17 @@ public class ItemBlockCable extends ItemBlockMetadata {
         ForgeDirection side = ForgeDirection.getOrientation(sideInt);
         BlockPos target = pos.offset(side);
 
-        // First check if pos is an unreal cable.
+        // First check if the target is an unreal cable.
         if (checkCableAt(world, pos, side)) return true;
-        // Check if target is an unreal cable.
+        // Then check if the target is covered by an unreal cable at the given side.
         if (checkCableAt(world, target, side.getOpposite())) return true;
 
-        // FIX: Check if either the clicked position OR target offset position is replaceable!
+        // Skips client-side entity collision detection for placing cables.
         Block blockAtPos = pos.getBlock(world);
         if (blockAtPos.isReplaceable(world, pos.getX(), pos.getY(), pos.getZ())) {
             return true;
         }
 
-        // Skips client-side entity collision detection for placing cables.
         Block blockAtTarget = target.getBlock(world);
         return blockAtTarget.isReplaceable(world, target.getX(), target.getY(), target.getZ())
             || blockAtTarget.getMaterial()
@@ -84,7 +89,8 @@ public class ItemBlockCable extends ItemBlockMetadata {
                 if (!world.isRemote) {
                     cable.setRealCable(true);
                     CableHelpers.updateConnections(world, pos, side);
-                    CableHelpers.onCableAddedByPlayerActual(world, pos, placer);
+                    CableHelpers.onCableAdded(world, pos);
+                    CableHelpers.onCableAddedByPlayer(world, pos, placer);
                 }
                 return true;
             }
@@ -132,20 +138,22 @@ public class ItemBlockCable extends ItemBlockMetadata {
         BlockPos pos = new BlockPos(x, y, z);
         ForgeDirection side = ForgeDirection.getOrientation(sideInt);
 
+        // Skips server-side entity collision detection for placing cables.
+        // We temporary disable the collision box of the cable so that it can be placed even if an entity is in the way.
         BlockCable blockCable = (BlockCable) field_150939_a;
         blockCable.setDisableCollisionBox(true);
 
-        // 1. Try placing inside fake cable at clicked position
+        // Avoid regular block placement when the target is an unreal cable.
         if (attempItemUseTarget(stack, worldIn, pos, side, blockCable, playerIn, false)) {
             afterItemUse(stack, worldIn, pos, blockCable, false);
             return true;
         }
 
-        // 2. Try placing inside fake cable at target offset position
+        // Change pos and side when we are targeting a block that is blocked by an unreal cable, so we want to target
+        // the unreal cable.
         BlockPos targetPos = pos.offset(side);
         if (attempItemUseTarget(stack, worldIn, targetPos, side.getOpposite(), blockCable, playerIn, true)) {
-            // FIX: Pass targetPos instead of pos!
-            afterItemUse(stack, worldIn, pos.offset(side), blockCable, false);
+            afterItemUse(stack, worldIn, targetPos, blockCable, false);
             return true;
         }
 

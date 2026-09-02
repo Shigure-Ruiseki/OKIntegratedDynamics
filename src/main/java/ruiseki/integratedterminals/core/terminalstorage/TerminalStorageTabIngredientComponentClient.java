@@ -74,8 +74,9 @@ import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.helper.RenderHelpers;
 import ruiseki.okcore.helper.StringHelpers;
-import ruiseki.okcore.ingredient.collection.IIngredientListMutable;
+import ruiseki.okcore.ingredient.collection.IIngredientCollapsedCollectionMutable;
 import ruiseki.okcore.ingredient.collection.IngredientArrayList;
+import ruiseki.okcore.ingredient.collection.IngredientCollectionPrototypeMap;
 import ruiseki.okcore.ingredient.collection.diff.IngredientCollectionDiff;
 import ruiseki.okcore.ingredient.collection.diff.IngredientCollectionDiffHelpers;
 
@@ -310,7 +311,14 @@ public class TerminalStorageTabIngredientComponentClient<T, M>
             // Sort
             Comparator<T> sorter = getInstanceSorter();
             if (sorter != null) {
-                ingredientsView.sort(InstanceWithMetadata.createComparator(sorter));
+                try {
+                    ingredientsView.sort(InstanceWithMetadata.createComparator(sorter));
+                } catch (IllegalArgumentException e) {
+                    // We deliberately ignore comparison violations
+                    // If this would cause issues, we'll need to do a deep-copy of all ingredients, which will impact
+                    // performance
+                    // See https://github.com/CyclopsMC/IntegratedTerminals/issues/119
+                }
             }
 
             filteredIngredientsViews.put(channel, ingredientsView);
@@ -416,11 +424,11 @@ public class TerminalStorageTabIngredientComponentClient<T, M>
 
         // Apply diff
         List<InstanceWithMetadata<T>> rawPersistedIngredients = getRawUnfilteredIngredientsView(channel);
-        IIngredientListMutable<T, M> persistedIngredients = new IngredientArrayList<>(
-            ingredientComponent,
-            rawPersistedIngredients.stream()
-                .map(InstanceWithMetadata::getInstance)
-                .collect(Collectors.toList()));
+        IIngredientCollapsedCollectionMutable<T, M> persistedIngredients = new IngredientCollectionPrototypeMap<>(
+            ingredientComponent);
+        rawPersistedIngredients.stream()
+            .map(InstanceWithMetadata::getInstance)
+            .forEach(persistedIngredients::add);
         IngredientCollectionDiff<T, M> diff = new IngredientCollectionDiff<>(
             changeType == IIngredientComponentStorageObservable.Change.ADDITION ? ingredients : null,
             changeType == IIngredientComponentStorageObservable.Change.DELETION ? ingredients : null,
@@ -583,7 +591,7 @@ public class TerminalStorageTabIngredientComponentClient<T, M>
 
     @Override
     public boolean handleClick(Container container, int channel, int hoveringStorageSlot, int mouseButton,
-        boolean hasClickedOutside, boolean hasClickedInStorage, int hoveredContainerSlot) {
+        boolean hasClickedOutside, boolean hasClickedInStorage, int hoveredContainerSlot, boolean isQuickMove) {
         this.activeChannel = channel;
 
         IIngredientMatcher<T, M> matcher = ingredientComponent.getMatcher();
@@ -627,7 +635,7 @@ public class TerminalStorageTabIngredientComponentClient<T, M>
                     }
                 }
             } else if (hoveredContainerSlot >= 0 && container.getSlot(hoveredContainerSlot)
-                .getStack() != null && shift) {
+                .getStack() != null && isQuickMove) {
                     // Quick move max quantity from player to storage
                     clickType = mouseButton == 2 ? TerminalClickType.PLAYER_QUICK_MOVE_INCREMENTAL
                         : TerminalClickType.PLAYER_QUICK_MOVE;
@@ -890,7 +898,7 @@ public class TerminalStorageTabIngredientComponentClient<T, M>
             int activeSlotQuantityOld = this.activeSlotQuantity;
 
             this.activeSlotQuantity = quantity;
-            this.handleClick(container, channel, getActiveSlotId(), 0, false, false, slot.slotNumber);
+            this.handleClick(container, channel, getActiveSlotId(), 0, false, false, slot.slotNumber, false);
 
             this.activeSlotId = oldActiveSlotId;
             this.activeSlotQuantity = activeSlotQuantityOld;

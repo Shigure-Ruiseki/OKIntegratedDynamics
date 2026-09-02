@@ -57,12 +57,18 @@ public class RecipeIndexDefault implements IRecipeIndexModifiable {
     }
 
     @Nullable
-    protected <T, M> IIngredientMapMutable<T, M, Set<IRecipeDefinition>> initializeIndex(IngredientComponent<T, M> recipeComponent) {
+    protected <T, M> IIngredientMapMutable<T, M, Set<IRecipeDefinition>> initializeIndex(
+        IngredientComponent<T, M> recipeComponent) {
         // TODO: Consider moving/copying this logic to IngredientCollectionHelpers in next/major
-        if (recipeComponent.getCategoryTypes().size() == 1) {
+        if (recipeComponent.getCategoryTypes()
+            .size() == 1) {
             return new IngredientHashMap<>(recipeComponent);
         }
-        return new IngredientMapSingleClassified<>(recipeComponent, () -> new IngredientHashMap<>(recipeComponent), recipeComponent.getCategoryTypes().get(0));
+        return new IngredientMapSingleClassified<>(
+            recipeComponent,
+            () -> new IngredientHashMap<>(recipeComponent),
+            recipeComponent.getCategoryTypes()
+                .get(0));
     }
 
     @Override
@@ -84,7 +90,7 @@ public class RecipeIndexDefault implements IRecipeIndexModifiable {
             .getInstances(index.getComponent())) {
             Set<IRecipeDefinition> set = index.get(instance);
             if (set == null) {
-                set = Sets.newHashSet();
+                set = Sets.newLinkedHashSet(); // Keeps insertion priority
                 index.put(instance, set);
             }
             set.add(prioritizedRecipe);

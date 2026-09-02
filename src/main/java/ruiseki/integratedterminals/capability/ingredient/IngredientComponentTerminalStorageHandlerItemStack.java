@@ -81,6 +81,12 @@ public class IngredientComponentTerminalStorageHandlerItemStack
             return;
         }
 
+        // Make a copy of the item to make sure that any changes in the NBT tag that the mod may make during rendering
+        // does not propagate into our client-side index. Otherwise, the client may think it has different items than
+        // the server, which will cause these items not to be extractable by the client from the terminal.
+        // See https://github.com/CyclopsMC/IntegratedTerminals/issues/106
+        final ItemStack instanceCopy = instance.copy();
+
         RenderItemExtendedSlotCount renderItem = RenderItemExtendedSlotCount.getInstance();
         GlStateManager.pushMatrix();
         GlStateManager.enableBlend();
@@ -95,18 +101,18 @@ public class IngredientComponentTerminalStorageHandlerItemStack
                 .renderItemAndEffectIntoGUI(
                     TerminalClientUtils.getFontRenderer(),
                     TerminalClientUtils.getTextureManager(),
-                    instance,
+                    instanceCopy,
                     x,
                     y);
             renderItem.renderItemOverlayIntoGUI(
                 TerminalClientUtils.getFontRenderer(),
                 TerminalClientUtils.getTextureManager(),
-                instance,
+                instanceCopy,
                 x,
                 y,
                 label);
         } else {
-            GuiHelpers.preItemToolTip(instance);
+            GuiHelpers.preItemToolTip(instanceCopy);
             GuiHelpers.renderTooltip(
                 gui,
                 x,
@@ -117,14 +123,14 @@ public class IngredientComponentTerminalStorageHandlerItemStack
                 mouseY,
                 () -> {
                     // Safe call to getTooltip
-                    List<String> lines = TerminalClientUtils.getTooltip(instance);
+                    List<String> lines = TerminalClientUtils.getTooltip(instanceCopy);
                     if (lines == null) {
                         lines = Lists.newArrayList();
                     }
                     if (additionalTooltipLines != null) {
                         lines.addAll(additionalTooltipLines);
                     }
-                    addQuantityTooltip(lines, instance);
+                    addQuantityTooltip(lines, instanceCopy);
                     return lines;
                 });
             GuiHelpers.postItemToolTip();

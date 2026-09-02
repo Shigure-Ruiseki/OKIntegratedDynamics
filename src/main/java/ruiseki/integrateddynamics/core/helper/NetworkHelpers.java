@@ -335,6 +335,7 @@ public class NetworkHelpers {
      *
      * @param world The world.
      * @param pos   The position.
+     * @return If the network was revalidated in this tick.
      */
     public static boolean revalidateNetworkElements(World world, BlockPos pos) {
         INetworkCarrier networkCarrier = CapabilityHelpers.getCapability(world, pos, NetworkCarrierConfig.CAPABILITY)
@@ -370,12 +371,13 @@ public class NetworkHelpers {
                             Level.WARN,
                             String.format(
                                 "Detected network position at "
-                                    + "position %s in world %d with corrupted network, recreating network...",
+                                    + "position %s in world %s with corrupted network, recreating network...",
                                 pos,
                                 world.provider.dimensionId));
                         NetworkHelpers.initNetwork(world, pos, null);
                         return true;
                     }
+
                     return foundNetwork;
                 })
                 .orElse(false);

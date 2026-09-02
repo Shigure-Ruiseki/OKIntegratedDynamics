@@ -12,6 +12,7 @@ import ruiseki.integratedcrafting.inventory.container.ContainerPartInterfaceCraf
 import ruiseki.integratedcrafting.part.PartTypeInterfaceCrafting;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
+import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.core.client.gui.ExtendedGuiHandler;
 import ruiseki.integrateddynamics.core.client.gui.container.GuiMultipart;
@@ -41,7 +42,7 @@ public class GuiPartInterfaceCrafting extends GuiMultipart<PartTypeInterfaceCraf
      * @param partType      The targeted part type.
      */
     public GuiPartInterfaceCrafting(EntityPlayer player, PartTarget partTarget, IPartContainer partContainer,
-        PartTypeInterfaceCrafting partType) {
+        IPartType partType) {
         super(new ContainerPartInterfaceCrafting(player, partTarget, partContainer, partType));
 
         putButtonAction(BUTTON_SETTINGS, (buttonId, gui, container) -> {

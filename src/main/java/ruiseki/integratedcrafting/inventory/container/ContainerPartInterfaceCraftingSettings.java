@@ -11,6 +11,7 @@ import net.minecraftforge.common.util.ForgeDirection;
 import com.google.common.collect.Maps;
 
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
+import ruiseki.integratedcrafting.core.part.PartTypeInterfaceCraftingBase;
 import ruiseki.integratedcrafting.part.PartTypeInterfaceCrafting;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartType;
@@ -50,28 +51,22 @@ public class ContainerPartInterfaceCraftingSettings extends ContainerPartSetting
     @Override
     protected void initializeValues() {
         super.initializeValues();
-        ValueNotifierHelpers.setValue(
-            this,
-            lastChannelInterfaceCraftingValueId,
-            ((PartTypeInterfaceCrafting.State) getPartState()).getChannelCrafting());
-
-        // ĐÃ SỬA: Thay getValuesCollection() thành values()
+        PartTypeInterfaceCraftingBase.State<?, ?> partState = (PartTypeInterfaceCraftingBase.State<?, ?>) getPartState();
+        ValueNotifierHelpers.setValue(this, lastChannelInterfaceCraftingValueId, partState.getChannelCrafting());
         for (IngredientComponent<?, ?> ingredientComponent : IngredientComponent.REGISTRY.getValuesCollection()) {
             ValueNotifierHelpers.setValue(
                 this,
                 getTargetSideOverrideValueId(ingredientComponent),
-                ((PartTypeInterfaceCrafting.State) getPartState())
-                    .getIngredientComponentTargetSideOverride(ingredientComponent)
+                partState.getIngredientComponentTargetSideOverride(ingredientComponent)
                     .ordinal());
+        }
+        if (partState instanceof PartTypeInterfaceCrafting.State stateNormal) {
+            ValueNotifierHelpers.setValue(this, lastDisableCraftingCheckValueId, stateNormal.isDisableCraftingCheck());
         }
         ValueNotifierHelpers.setValue(
             this,
-            lastDisableCraftingCheckValueId,
-            ((PartTypeInterfaceCrafting.State) getPartState()).isDisableCraftingCheck());
-        ValueNotifierHelpers.setValue(
-            this,
             lastBlockingModeValueId,
-            ((PartTypeInterfaceCrafting.State) getPartState()).getCraftingJobHandler()
+            partState.getCraftingJobHandler()
                 .isBlockingJobsMode());
     }
 
@@ -124,18 +119,20 @@ public class ContainerPartInterfaceCraftingSettings extends ContainerPartSetting
     @Override
     protected void updatePartSettings() {
         super.updatePartSettings();
-        ((PartTypeInterfaceCrafting.State) getPartState()).setChannelCrafting(getLastChannelInterfaceValue());
-
+        PartTypeInterfaceCraftingBase.State<?, ?> partState = (PartTypeInterfaceCraftingBase.State<?, ?>) getPartState();
+        partState.setChannelCrafting(getLastChannelInterfaceValue());
         for (IngredientComponent<?, ?> ingredientComponent : IngredientComponent.REGISTRY.getValuesCollection()) {
-            ((PartTypeInterfaceCrafting.State) getPartState()).setIngredientComponentTargetSideOverride(
+            partState.setIngredientComponentTargetSideOverride(
                 ingredientComponent,
                 getTargetSideOverrideValue(ingredientComponent));
         }
-        ((PartTypeInterfaceCrafting.State) getPartState()).setDisableCraftingCheck(getLastDisableCraftingCheckValue());
-        if (((PartTypeInterfaceCrafting.State) getPartState()).getCraftingJobHandler()
+        if (partState instanceof PartTypeInterfaceCrafting.State stateNormal) {
+            stateNormal.setDisableCraftingCheck(getLastDisableCraftingCheckValue());
+        }
+        if (partState.getCraftingJobHandler()
             .setBlockingJobsMode(getLastBlockingModeValue())) {
-            ((PartTypeInterfaceCrafting.State) getPartState()).sendUpdate();
-            ((PartTypeInterfaceCrafting.State) getPartState()).onDirty();
+            partState.sendUpdate();
+            partState.onDirty();
         }
     }
 }

@@ -38,6 +38,7 @@ import ruiseki.integratedterminals.core.client.gui.GuiTerminalStorage;
 import ruiseki.integratedterminals.core.terminalstorage.TerminalStorageTabs;
 import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientOpenCraftingJobAmountGuiPacket;
 import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientOpenCraftingPlanGuiPacket;
+import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.helper.ValueNotifierHelpers;
 import ruiseki.okcore.inventory.IGuiContainerProvider;
 import ruiseki.okcore.inventory.container.ExtendedInventoryContainer;
@@ -264,6 +265,21 @@ public abstract class ContainerTerminalStorageBase<L> extends ExtendedInventoryC
             return Collections.emptyList();
         }
         return slots;
+    }
+
+    @Override
+    public ItemStack transferStackInSlot(EntityPlayer player, int slotID) {
+        // Handle any (modded) client-side quick move controls
+        if (player.worldObj.isRemote) {
+            Optional<ITerminalStorageTabClient<?>> tabOptional = this.screen.getSelectedClientTab();
+            if (tabOptional.isPresent() && !tabOptional.get()
+                .isQuickMovePrevented(slotID)) {
+                tabOptional.get()
+                    .handleClick(this, this.getSelectedChannel(), -1, 0, false, false, slotID, true);
+            }
+        }
+        // Always return empty stack because the tab's #handleClick already does the quick move
+        return ItemHelpers.EMPTY;
     }
 
     protected void enableSlots(String tabName) {

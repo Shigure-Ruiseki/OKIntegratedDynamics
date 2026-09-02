@@ -1,5 +1,6 @@
 package ruiseki.integratedterminals.network.packet;
 
+import java.util.Collection;
 import java.util.List;
 
 import net.minecraft.entity.player.EntityPlayer;
@@ -45,7 +46,7 @@ public class TerminalStorageIngredientCraftingOptionsPacket extends PacketCodec 
     }
 
     public <T> TerminalStorageIngredientCraftingOptionsPacket(String tabId, int channel,
-        List<HandlerWrappedTerminalCraftingOption<T>> craftingOptions, boolean reset, boolean firstChannel) {
+        Collection<HandlerWrappedTerminalCraftingOption<T>> craftingOptions, boolean reset, boolean firstChannel) {
         this.tabId = tabId;
         this.channel = channel;
         this.data = new NBTTagCompound();

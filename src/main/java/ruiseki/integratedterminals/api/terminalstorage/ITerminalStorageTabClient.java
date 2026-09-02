@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Set;
 
 import net.minecraft.client.gui.inventory.GuiContainer;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
@@ -136,10 +137,11 @@ public interface ITerminalStorageTabClient<S extends ITerminalStorageSlot> {
      * @param hasClickedInStorage  If the player has clicked inside the storage space.
      *                             This can be true even if the storage slot is -1.
      * @param hoveredContainerSlot The container slot id that is being hovered. -1 if none.
+     * @param isQuickMove          If the click comes from a quickMoveStack action
      * @return If further click processing should stop.
      */
     public boolean handleClick(Container container, int channel, int hoveringStorageSlot, int mouseButton,
-        boolean hasClickedOutside, boolean hasClickedInStorage, int hoveredContainerSlot);
+        boolean hasClickedOutside, boolean hasClickedInStorage, int hoveredContainerSlot, boolean isQuickMove);
 
     /**
      * @return The active storage slot id.
@@ -150,6 +152,28 @@ public interface ITerminalStorageTabClient<S extends ITerminalStorageSlot> {
      * @return The active storage slot quantity.
      */
     public int getActiveSlotQuantity();
+
+    /**
+     * Dictates if a slot can have {@link #handleClick} called on it by
+     * {@link ruiseki.integratedterminals.inventory.container.ContainerTerminalStorageBase#transferStackInSlot(EntityPlayer, int)}
+     *
+     * @param slotIndex The index of the slot in question
+     * @return If vanilla quick move actions should apply to the given slot
+     */
+    default public boolean isQuickMovePrevented(int slotIndex) {
+        return false;
+    };
+
+    /**
+     * Dictates if a slot can have {@link #handleClick} called on it by
+     * {@link ruiseki.integratedterminals.inventory.container.ContainerTerminalStorageBase#transferStackInSlot(EntityPlayer, int)}
+     *
+     * @param slot The slot in question
+     * @return If vanilla quick move actions should apply to the given slot
+     */
+    default public boolean isQuickMovePrevented(Slot slot) {
+        return isQuickMovePrevented(slot.getSlotIndex());
+    }
 
     /**
      * Set the active quantity.

@@ -46,6 +46,7 @@ import ruiseki.okcore.client.renderer.GlStateManager;
 import ruiseki.okcore.helper.GuiHelpers;
 import ruiseki.okcore.helper.Helpers;
 import ruiseki.okcore.helper.LangHelpers;
+import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.helper.RenderHelpers;
 import ruiseki.okcore.init.ModBase;
 import ruiseki.okcore.inventory.container.InventoryContainer;
@@ -266,10 +267,13 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
         super.updateScreen();
         if (!initialized && getSelectedClientTab().isPresent()) {
             initialized = true;
-
-            fieldSearch.setText(
+            String filter = getSelectedClientTab().get()
+                .getInstanceFilter(getContainer().getSelectedChannel());
+            if (filter != null && !"".equals(filter)) {
+                fieldSearch.setText(filter);
                 getSelectedClientTab().get()
-                    .getInstanceFilter(getContainer().getSelectedChannel()));
+                    .setInstanceFilter(getContainer().getSelectedChannel(), filter); // Forces event to be sent
+            }
         }
     }
 
@@ -858,6 +862,9 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
                     return;
                 }
             }
+            if (MinecraftHelpers.isShifted() && playerSlot != null && tab.isQuickMovePrevented(playerSlot)) {
+                return;
+            }
         } else if (getSlotUnderMouse() != null) {
             // Don't allow shift clicking items into container when no tab has been selected
             return;
@@ -922,9 +929,7 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
             }
         });
 
-        if (!isShiftKeyDown()) {
-            super.mouseClicked(mouseX, mouseY, mouseButton);
-        }
+        super.mouseClicked(mouseX, mouseY, mouseButton);
     }
 
     @Nullable
@@ -1042,7 +1047,8 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
                         mouseButton,
                         hasClickedOutside,
                         hasClickedInStorage,
-                        playerSlot != null ? playerSlot.slotNumber : -1)) {
+                        playerSlot != null ? playerSlot.slotNumber : -1,
+                        false)) {
                     return;
                 }
             }

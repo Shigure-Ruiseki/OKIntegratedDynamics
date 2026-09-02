@@ -175,7 +175,7 @@ public class TerminalStorageTabIngredientComponentCommon<T, M>
                 .getTabServer(getName().toString());
             if (tabServer != null) {
                 tabServer.updateFilter(this.variables, this);
-                tabServer.reApplyFilter();
+                tabServer.reApplyFilter(null);
             }
         }
     }

@@ -25,6 +25,9 @@ advancement.integratedcrafting.craft_planks.desc=Use a Crafting Writer to start 
 # Part types
 parttype.parttypes.integratedcrafting.interface_crafting.name=Crafting Interface
 parttype.parttypes.integratedcrafting.interface_crafting.info=Holds crafting variables for crafting in the target machine.
+parttype.parttypes.integratedcrafting.interface_crafting_attuned=Attuned Crafting Interface
+parttype.parttypes.integratedcrafting.interface_crafting_attuned.info=Handles crafting for all recipes exposed by the target machine.
+parttype.parttypes.integratedcrafting.interface_crafting_attuned.unsupported=The target machine does not support recipe handling.
 
 parttype.parttypes.integratedcrafting.crafting_writer.name=Crafting Writer
 parttype.parttypes.integratedcrafting.crafting_writer.info=Starts crafting jobs

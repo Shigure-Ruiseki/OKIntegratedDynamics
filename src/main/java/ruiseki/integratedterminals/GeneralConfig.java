@@ -75,12 +75,23 @@ public class GeneralConfig extends DummyConfig {
         category = ConfigurableTypeCategory.CORE,
         comment = "The maximum number of terminal storage instances that can be sent in a single packet. Reduce this when you have packet overflows.",
         isCommandable = true)
-    public static int terminalStoragePacketMaxInstances = 1024;
+    public static int terminalStoragePacketMaxInstances = 512;
     @ConfigurableProperty(
         category = ConfigurableTypeCategory.CORE,
         comment = "The maximum number of terminal storage crafting recipes that can be sent in a single packet. Reduce this when you have packet overflows.",
         isCommandable = true)
     public static int terminalStoragePacketMaxRecipes = 128;
+
+    @ConfigurableProperty(
+        category = ConfigurableTypeCategory.CORE,
+        comment = "If crafting plans should default to the tree-based view. If false, it will default to the flattened view.",
+        isCommandable = true)
+    public static boolean terminalStorageDefaultToCraftingPlanTree = false;
+    @ConfigurableProperty(
+        category = ConfigurableTypeCategory.CORE,
+        comment = "The limit for the number of leaves in a tree-based crafting plan after which it won't be sent to the client anymore.",
+        isCommandable = true)
+    public static int terminalStorageMaxTreePlanSize = 64;
 
     /**
      * The number that should be selected when clicking on an item in the storage terminal.

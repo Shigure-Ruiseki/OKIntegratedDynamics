@@ -112,6 +112,11 @@ public class GeneralConfig extends DummyConfig {
         comment = "The base energy usage for the crafting interface per crafting job being processed.",
         minimalValue = 0)
     public static int interfaceCraftingBaseConsumption = 5;
+    @ConfigurableProperty(
+        category = ConfigurableTypeCategory.GENERAL,
+        comment = "The base energy usage for the attuned crafting interface per crafting job being processed.",
+        minimalValue = 0)
+    public static int interfaceCraftingAttunedBaseConsumption = 10;
 
     @ConfigurableProperty(
         category = ConfigurableTypeCategory.MACHINE,

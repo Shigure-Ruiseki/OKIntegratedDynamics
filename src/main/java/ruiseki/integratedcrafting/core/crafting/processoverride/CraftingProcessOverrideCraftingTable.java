@@ -15,8 +15,10 @@ import net.minecraftforge.common.util.FakePlayer;
 import com.mojang.authlib.GameProfile;
 
 import cpw.mods.fml.common.FMLCommonHandler;
+import ruiseki.commoncapabilities.api.capability.recipehandler.IRecipeDefinition;
 import ruiseki.commoncapabilities.api.ingredient.IMixedIngredients;
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
+import ruiseki.integratedcrafting.api.crafting.CraftingJob;
 import ruiseki.integratedcrafting.api.crafting.ICraftingProcessOverride;
 import ruiseki.integratedcrafting.api.crafting.ICraftingResultsSink;
 import ruiseki.integrateddynamics.api.part.PartPos;
@@ -24,7 +26,7 @@ import ruiseki.okcore.helper.CraftingHelpers;
 
 /**
  * A crafting process override for crafting tables (Minecraft 1.7.10).
- * 
+ *
  * @author rubensworks
  */
 public class CraftingProcessOverrideCraftingTable implements ICraftingProcessOverride {
@@ -59,7 +61,7 @@ public class CraftingProcessOverrideCraftingTable implements ICraftingProcessOve
 
     @Override
     public boolean craft(Function<IngredientComponent<?, ?>, PartPos> targetGetter, IMixedIngredients ingredients,
-        ICraftingResultsSink resultsSink, boolean simulate) {
+        IRecipeDefinition recipe, ICraftingResultsSink resultsSink, CraftingJob craftingJob, boolean simulate) {
         PartPos target = targetGetter.apply(IngredientComponent.ITEMSTACK);
         if (target == null || target.getPos() == null
             || target.getPos()
@@ -68,14 +70,14 @@ public class CraftingProcessOverrideCraftingTable implements ICraftingProcessOve
         }
 
         CraftingGrid grid = new CraftingGrid(ingredients, 3, 3);
-        IRecipe recipe = CraftingHelpers.findMatchingRecipeCached(
+        IRecipe recipeCached = CraftingHelpers.findMatchingRecipeCached(
             grid,
             target.getPos()
                 .getWorld(),
             true);
 
-        if (recipe != null) {
-            ItemStack result = recipe.getCraftingResult(grid);
+        if (recipeCached != null) {
+            ItemStack result = recipeCached.getCraftingResult(grid);
 
             if (result == null) {
                 return false;
@@ -104,7 +106,7 @@ public class CraftingProcessOverrideCraftingTable implements ICraftingProcessOve
                             ItemStack containerStack = stack.getItem()
                                 .getContainerItem(stack);
                             if (containerStack != null) {
-                                resultsSink.addResult(IngredientComponent.ITEMSTACK, containerStack.copy());
+                                craftingJob.addToIngredientsStorageBuffer(IngredientComponent.ITEMSTACK, stack);
                             }
                         }
                     }

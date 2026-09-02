@@ -264,6 +264,7 @@ public class TerminalStorageTabIngredientCraftingHandlerCraftingNetwork
             try {
                 CraftingHelpers.scheduleCraftingJobs(
                     CraftingHelpers.getCraftingNetworkChecked(network),
+                    CraftingHelpers.getNetworkStorageGetter(network, channel, false),
                     craftingJobDependencyGraph,
                     true,
                     player.getUniqueID());

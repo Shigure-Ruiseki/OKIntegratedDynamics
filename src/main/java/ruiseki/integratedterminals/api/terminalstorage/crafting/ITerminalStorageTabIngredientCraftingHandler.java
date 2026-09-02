@@ -103,6 +103,28 @@ public interface ITerminalStorageTabIngredientCraftingHandler<O extends ITermina
     }
 
     /**
+     * Serialize a flat crafting plan to NBT.
+     * 
+     * @param craftingPlan A flat crafting plan.
+     * @return An NBT tag.
+     */
+    public default NBTTagCompound serializeCraftingPlanFlat(ITerminalCraftingPlanFlat<I> craftingPlan) {
+        return TerminalCraftingPlanFlatStatic.serialize((TerminalCraftingPlanFlatStatic) craftingPlan, this);
+    }
+
+    /**
+     * Deserialize a flat crafting plan from NBT.
+     * 
+     * @param tag An NBT tag representing a flat crafting plan.
+     * @return A crafting option.
+     * @throws IllegalArgumentException If the given tag was invalid.
+     */
+    public default ITerminalCraftingPlanFlat<I> deserializeCraftingPlanFlat(NBTTagCompound tag)
+        throws IllegalArgumentException {
+        return TerminalCraftingPlanFlatStatic.deserialize(tag, this);
+    }
+
+    /**
      * Serializes a crafting job id.
      *
      * @param id An id.

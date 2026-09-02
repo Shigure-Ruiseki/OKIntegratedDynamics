@@ -15,7 +15,7 @@ import ruiseki.okcore.init.ModBase;
 
 /**
  * Base part for a crafting part.
- * 
+ *
  * @author rubensworks
  */
 public abstract class PartTypeCraftingBase<P extends IPartType<P, S>, S extends IPartState<P>>
