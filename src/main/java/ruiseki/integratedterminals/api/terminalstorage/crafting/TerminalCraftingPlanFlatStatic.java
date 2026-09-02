@@ -170,7 +170,7 @@ public class TerminalCraftingPlanFlatStatic<I> implements ITerminalCraftingPlanF
             throw new IllegalArgumentException("Could not find a channel entry in the given tag");
         }
 
-        I id = handler.deserializeCraftingJobId(tag.getCompoundTag("id"));
+        I id = handler.deserializeCraftingJobId(tag.getTag("id"));
 
         NBTTagList entriesTag = tag.getTagList("entries", Constants.NBT.TAG_COMPOUND);
         List<TerminalCraftingPlanFlatStatic.Entry> entries = Lists.newArrayListWithExpectedSize(entriesTag.tagCount());
@@ -219,28 +219,28 @@ public class TerminalCraftingPlanFlatStatic<I> implements ITerminalCraftingPlanF
 
     public static class Entry implements ITerminalCraftingPlanFlat.IEntry {
 
-        private final IPrototypedIngredient<?, ?> instance;
+        private final List<IPrototypedIngredient<?, ?>> instances;
         private long quantityToCraft;
         private long quantityCrafting;
         private long quantityInStorage;
         private long quantityMissing;
 
-        public Entry(IPrototypedIngredient<?, ?> instance, long quantityToCraft, long quantityCrafting,
+        public Entry(List<IPrototypedIngredient<?, ?>> instances, long quantityToCraft, long quantityCrafting,
             long quantityInStorage, long quantityMissing) {
-            this.instance = instance;
+            this.instances = instances;
             this.quantityToCraft = quantityToCraft;
             this.quantityCrafting = quantityCrafting;
             this.quantityInStorage = quantityInStorage;
             this.quantityMissing = quantityMissing;
         }
 
-        public Entry(IPrototypedIngredient<?, ?> instance) {
-            this(instance, 0, 0, 0, 0);
+        public Entry(List<IPrototypedIngredient<?, ?>> instances) {
+            this(instances, 0, 0, 0, 0);
         }
 
         @Override
-        public IPrototypedIngredient<?, ?> getInstance() {
-            return instance;
+        public List<IPrototypedIngredient<?, ?>> getInstances() {
+            return instances;
         }
 
         @Override
@@ -281,7 +281,12 @@ public class TerminalCraftingPlanFlatStatic<I> implements ITerminalCraftingPlanF
 
         public static NBTTagCompound serialize(TerminalCraftingPlanFlatStatic.Entry entry) {
             NBTTagCompound tag = new NBTTagCompound();
-            tag.setTag("instance", IPrototypedIngredient.serialize(entry.getInstance()));
+            // New multi-instance field for alternatives
+            NBTTagList instancesTag = new NBTTagList();
+            for (IPrototypedIngredient<?, ?> instance : entry.getInstances()) {
+                instancesTag.appendTag(IPrototypedIngredient.serialize((PrototypedIngredient) instance));
+            }
+            tag.setTag("instances", instancesTag);
             tag.setLong("quantityToCraft", entry.getQuantityToCraft());
             tag.setLong("quantityCrafting", entry.getQuantityCrafting());
             tag.setLong("quantityInStorage", entry.getQuantityInStorage());
@@ -290,7 +295,7 @@ public class TerminalCraftingPlanFlatStatic<I> implements ITerminalCraftingPlanF
         }
 
         public static TerminalCraftingPlanFlatStatic.Entry deserialize(NBTTagCompound tag) {
-            if (!tag.hasKey("instance", Constants.NBT.TAG_COMPOUND)) {
+            if (!tag.hasKey("instances", Constants.NBT.TAG_LIST)) {
                 throw new IllegalArgumentException("Could not find a instance entry in the given tag");
             }
             if (!tag.hasKey("quantityToCraft", Constants.NBT.TAG_LONG)) {
@@ -306,14 +311,20 @@ public class TerminalCraftingPlanFlatStatic<I> implements ITerminalCraftingPlanF
                 throw new IllegalArgumentException("Could not find a quantityMissing entry in the given tag");
             }
 
-            IPrototypedIngredient<?, ?> instance = IPrototypedIngredient.deserialize(tag.getCompoundTag("instance"));
+            // Prefer the new \"instances\" list if present, otherwise fall back to the legacy single instance.
+            List<IPrototypedIngredient<?, ?>> instances = Lists.newArrayList();
+            NBTTagList instancesTag = tag.getTagList("instances", Constants.NBT.TAG_COMPOUND);
+            for (int i = 0; i < instancesTag.tagCount(); i++) {
+                NBTTagCompound instanceCompound = instancesTag.getCompoundTagAt(i);
+                instances.add(IPrototypedIngredient.deserialize(instanceCompound));
+            }
             long quantityToCraft = tag.getLong("quantityToCraft");
             long quantityCrafting = tag.getLong("quantityCrafting");
             long quantityInStorage = tag.getLong("quantityInStorage");
             long quantityMissing = tag.getLong("quantityMissing");
 
             return new TerminalCraftingPlanFlatStatic.Entry(
-                instance,
+                instances,
                 quantityToCraft,
                 quantityCrafting,
                 quantityInStorage,

@@ -11,6 +11,7 @@ import ruiseki.integratedterminals.api.terminalstorage.location.ITerminalStorage
 import ruiseki.integratedterminals.core.terminalstorage.crafting.HandlerWrappedTerminalCraftingOption;
 import ruiseki.integratedterminals.core.terminalstorage.crafting.HandlerWrappedTerminalCraftingPlan;
 import ruiseki.integratedterminals.core.terminalstorage.location.TerminalStorageLocations;
+import ruiseki.integratedterminals.inventory.container.TerminalStorageState;
 import ruiseki.okcore.network.ExtendedBuffer;
 
 /**
@@ -28,10 +29,12 @@ public class CraftingOptionGuiData<T, M, L> {
     private final HandlerWrappedTerminalCraftingPlan craftingPlan;
     private final ITerminalStorageLocation<L> location;
     private final L locationInstance;
+    private final TerminalStorageState state;
 
     public CraftingOptionGuiData(IngredientComponent<T, M> component, String tabName, int channel,
         @Nullable HandlerWrappedTerminalCraftingOption<T> craftingOption, int amount,
-        HandlerWrappedTerminalCraftingPlan craftingPlan, ITerminalStorageLocation<L> location, L locationInstance) {
+        HandlerWrappedTerminalCraftingPlan craftingPlan, ITerminalStorageLocation<L> location, L locationInstance,
+        TerminalStorageState state) {
         this.component = component;
         this.tabName = tabName;
         this.channel = channel;
@@ -40,6 +43,7 @@ public class CraftingOptionGuiData<T, M, L> {
         this.craftingPlan = craftingPlan;
         this.location = location;
         this.locationInstance = locationInstance;
+        this.state = state;
     }
 
     public IngredientComponent<T, M> getComponent() {
@@ -76,6 +80,10 @@ public class CraftingOptionGuiData<T, M, L> {
         return locationInstance;
     }
 
+    public TerminalStorageState getState() {
+        return state;
+    }
+
     public CraftingOptionGuiData<T, M, L> copyWithAmount(int amount) {
         return new CraftingOptionGuiData<>(
             this.getComponent(),
@@ -85,7 +93,8 @@ public class CraftingOptionGuiData<T, M, L> {
             amount,
             this.getCraftingPlan(),
             getLocation(),
-            getLocationInstance());
+            getLocationInstance(),
+            getState());
     }
 
     public void writeToPacketBuffer(ExtendedBuffer packetBuffer) throws IOException {
@@ -105,6 +114,7 @@ public class CraftingOptionGuiData<T, M, L> {
         }
         packetBuffer.writeResourceLocation(location.getName());
         location.writeToPacketBuffer(packetBuffer, locationInstance);
+        state.writeToPacketBuffer(packetBuffer);
     }
 
     public static CraftingOptionGuiData readFromPacketBuffer(ExtendedBuffer packetBuffer) throws IOException {
@@ -125,6 +135,7 @@ public class CraftingOptionGuiData<T, M, L> {
         ITerminalStorageLocation<?> location = TerminalStorageLocations.REGISTRY
             .getLocation(packetBuffer.readResourceLocation());
         Object locationInstance = location.readFromPacketBuffer(packetBuffer);
+        TerminalStorageState state = TerminalStorageState.readFromPacketBuffer(packetBuffer);
         return new CraftingOptionGuiData(
             component,
             tabName,
@@ -133,6 +144,7 @@ public class CraftingOptionGuiData<T, M, L> {
             amount,
             craftingPlan,
             location,
-            locationInstance);
+            locationInstance,
+            state);
     }
 }

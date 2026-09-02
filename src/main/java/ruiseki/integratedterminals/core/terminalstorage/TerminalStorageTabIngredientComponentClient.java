@@ -3,12 +3,15 @@ package ruiseki.integratedterminals.core.terminalstorage;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -43,6 +46,7 @@ import ruiseki.commoncapabilities.api.ingredient.IIngredientMatcher;
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
 import ruiseki.integrateddynamics.api.ingredient.IIngredientComponentStorageObservable;
 import ruiseki.integrateddynamics.api.network.IPositionedAddonsNetwork;
+import ruiseki.integratedterminals.GeneralConfig;
 import ruiseki.integratedterminals.IntegratedTerminals;
 import ruiseki.integratedterminals.api.ingredient.IIngredientComponentTerminalStorageHandler;
 import ruiseki.integratedterminals.api.ingredient.IIngredientInstanceSorter;
@@ -61,6 +65,9 @@ import ruiseki.integratedterminals.core.terminalstorage.button.TerminalButtonFil
 import ruiseki.integratedterminals.core.terminalstorage.button.TerminalButtonScaleGui;
 import ruiseki.integratedterminals.core.terminalstorage.button.TerminalButtonSort;
 import ruiseki.integratedterminals.core.terminalstorage.crafting.HandlerWrappedTerminalCraftingOption;
+import ruiseki.integratedterminals.core.terminalstorage.crafting.PendingCraftingJobOutput;
+import ruiseki.integratedterminals.core.terminalstorage.crafting.PendingCraftingJobOutputEntry;
+import ruiseki.integratedterminals.core.terminalstorage.crafting.PendingCraftingJobOutputs;
 import ruiseki.integratedterminals.core.terminalstorage.crafting.TerminalStorageTabIngredientCraftingHandlers;
 import ruiseki.integratedterminals.core.terminalstorage.query.IIngredientQuery;
 import ruiseki.integratedterminals.core.terminalstorage.slot.TerminalStorageSlotIngredient;
@@ -76,7 +83,7 @@ import ruiseki.okcore.helper.RenderHelpers;
 import ruiseki.okcore.helper.StringHelpers;
 import ruiseki.okcore.ingredient.collection.IIngredientCollapsedCollectionMutable;
 import ruiseki.okcore.ingredient.collection.IngredientArrayList;
-import ruiseki.okcore.ingredient.collection.IngredientCollectionPrototypeMap;
+import ruiseki.okcore.ingredient.collection.IngredientCollectionHelpers;
 import ruiseki.okcore.ingredient.collection.diff.IngredientCollectionDiff;
 import ruiseki.okcore.ingredient.collection.diff.IngredientCollectionDiffHelpers;
 
@@ -101,9 +108,11 @@ public class TerminalStorageTabIngredientComponentClient<T, M>
     protected final ContainerTerminalStorageBase container;
     private final List<ITerminalButton<?, ?, ?>> buttons;
 
-    private final Int2ObjectMap<List<InstanceWithMetadata<T>>> ingredientsViews;
+    private final Int2ObjectMap<IIngredientCollapsedCollectionMutable<T, M>> ingredientsUnsortedViews;
     private final Int2ObjectMap<List<InstanceWithMetadata<T>>> filteredIngredientsViews;
+    private final Int2ObjectMap<List<InstanceWithMetadata<T>>> lastFilteredIngredientsViews;
     private final Int2ObjectMap<Collection<HandlerWrappedTerminalCraftingOption<T>>> craftingOptions;
+    private PendingCraftingJobOutputs<T, M> pendingCraftingJobOutputs;
 
     private final Int2LongMap maxQuantities;
     private final Int2LongMap totalQuantities;
@@ -112,6 +121,8 @@ public class TerminalStorageTabIngredientComponentClient<T, M>
     private int activeSlotId;
     private int activeSlotQuantity;
     private int activeChannel;
+    private int lastChangeId;
+    private boolean sortingPaused;
 
     @SubscribeEvent
     public static void onToolTip(ItemTooltipEvent event) {
@@ -149,9 +160,13 @@ public class TerminalStorageTabIngredientComponentClient<T, M>
         MinecraftForge.EVENT_BUS.post(event);
         this.buttons = event.getButtons();
 
-        this.ingredientsViews = new Int2ObjectOpenHashMap<>();
+        this.ingredientsUnsortedViews = new Int2ObjectOpenHashMap<>();
         this.filteredIngredientsViews = new Int2ObjectOpenHashMap<>();
+        this.lastFilteredIngredientsViews = new Int2ObjectOpenHashMap<>();
         this.craftingOptions = new Int2ObjectOpenHashMap<>();
+        this.pendingCraftingJobOutputs = new PendingCraftingJobOutputs<>(
+            this.ingredientComponent,
+            IPositionedAddonsNetwork.WILDCARD_CHANNEL);
 
         this.maxQuantities = new Int2LongOpenHashMap();
         this.totalQuantities = new Int2LongOpenHashMap();
@@ -159,6 +174,8 @@ public class TerminalStorageTabIngredientComponentClient<T, M>
         this.channels = new IntOpenHashSet();
         resetActiveSlot();
 
+        this.lastChangeId = 0;
+        this.sortingPaused = false;
     }
 
     protected void loadButtons(List<ITerminalButton<?, ?, ?>> buttons) {
@@ -239,7 +256,54 @@ public class TerminalStorageTabIngredientComponentClient<T, M>
     }
 
     public void resetFilteredIngredientsViews(int channel) {
+        resetFilteredIngredientsViews(channel, true);
+    }
+
+    /**
+     * Reset the filtered ingredients views of the given channel.
+     *
+     * @param channel                 A channel id.
+     * @param resetPausedSortingOrder If the ingredient order that is used to keep ingredient positions stable
+     *                                while sorting is paused should be forgotten as well.
+     *                                This should only be false for changes that are not caused by the user,
+     *                                as user-triggered changes should always be applied immediately.
+     */
+    public void resetFilteredIngredientsViews(int channel, boolean resetPausedSortingOrder) {
         filteredIngredientsViews.remove(channel);
+        if (resetPausedSortingOrder) {
+            lastFilteredIngredientsViews.remove(channel);
+        }
+    }
+
+    /**
+     * @return If the automatic re-sorting of ingredients is currently paused.
+     */
+    public boolean isSortingPaused() {
+        return GeneralConfig.guiStoragePauseSortingWhileShifting && MinecraftHelpers.isShifted();
+    }
+
+    /**
+     * Check if sorting has been paused or resumed since the last call,
+     * and re-sort all ingredient views when sorting has been resumed.
+     *
+     * @param channel A channel id.
+     */
+    protected void updateSortingPausedState(int channel) {
+        boolean sortingPaused = isSortingPaused();
+        if (this.sortingPaused != sortingPaused) {
+            // Update the field before doing anything else, so that re-entrant calls become no-ops.
+            this.sortingPaused = sortingPaused;
+            if (!sortingPaused) {
+                // Remember the selected instance, as re-sorting might change its position.
+                Optional<T> lastInstance = getSlotInstance(channel, this.activeSlotId);
+
+                // Enforce a re-sorting of all views
+                this.filteredIngredientsViews.clear();
+                this.lastFilteredIngredientsViews.clear();
+
+                updateActiveInstance(lastInstance, channel);
+            }
+        }
     }
 
     @Override
@@ -254,11 +318,11 @@ public class TerminalStorageTabIngredientComponentClient<T, M>
             .setSearch(getTabSettingsName().toString(), channel, filter.toLowerCase(Locale.ENGLISH));
     }
 
-    public List<InstanceWithMetadata<T>> getRawUnfilteredIngredientsView(int channel) {
-        List<InstanceWithMetadata<T>> ingredientsView = ingredientsViews.get(channel);
+    public IIngredientCollapsedCollectionMutable<T, M> getRawUnfilteredIngredientsView(int channel) {
+        IIngredientCollapsedCollectionMutable<T, M> ingredientsView = ingredientsUnsortedViews.get(channel);
         if (ingredientsView == null) {
-            ingredientsView = Lists.newArrayList();
-            ingredientsViews.put(channel, ingredientsView);
+            ingredientsView = IngredientCollectionHelpers.createCollapsedCollection(getIngredientComponent());
+            ingredientsUnsortedViews.put(channel, ingredientsView);
         }
         return ingredientsView;
     }
@@ -268,24 +332,80 @@ public class TerminalStorageTabIngredientComponentClient<T, M>
         return craftingOptions.get(channel);
     }
 
-    public List<InstanceWithMetadata<T>> getUnfilteredIngredientsView(int channel) {
+    /**
+     * Called by the server when the outputs that running crafting jobs are still expected to produce have changed.
+     *
+     * @param channel The channel the outputs were collected for.
+     * @param entries All pending crafting job outputs of all ingredient components.
+     */
+    public synchronized void setPendingCraftingJobOutputs(int channel, List<PendingCraftingJobOutputEntry> entries) {
+        PendingCraftingJobOutputs<T, M> pendingCraftingJobOutputs = new PendingCraftingJobOutputs<>(
+            this.ingredientComponent,
+            channel);
+        for (PendingCraftingJobOutputEntry entry : entries) {
+            if (entry.ingredient()
+                .getComponent() == this.ingredientComponent) {
+                pendingCraftingJobOutputs.add(
+                    (T) entry.ingredient()
+                        .getPrototype(),
+                    entry.status());
+            }
+        }
+        this.pendingCraftingJobOutputs = pendingCraftingJobOutputs;
+    }
+
+    /**
+     * Get the quantity and status of the running crafting jobs that will produce the given instance.
+     *
+     * @param channel  A channel id.
+     * @param instance An instance.
+     * @return The pending crafting job output, or null if the given instance is not being crafted.
+     */
+    @Nullable
+    public PendingCraftingJobOutput<T> getPendingCraftingJobOutput(int channel, T instance) {
+        // The outputs are collected for the channel that is shown in the terminal,
+        // so they don't apply anymore right after the shown channel has changed.
+        return this.pendingCraftingJobOutputs.getChannel() == channel ? this.pendingCraftingJobOutputs.get(instance)
+            : null;
+    }
+
+    /**
+     * Check if the given instance is currently shown as a stored ingredient in the given channel.
+     *
+     * An instance can be shown twice: once as a stored ingredient, and once for each crafting option producing it.
+     * This allows crafting option slots to defer to the stored ingredient slot for things
+     * that apply to the instance as a whole, such as the indication of running crafting jobs.
+     *
+     * @param channel  A channel id.
+     * @param instance An instance.
+     * @return If a stored ingredient slot is shown for the given instance.
+     */
+    public boolean isShownAsStoredInstance(int channel, T instance) {
+        IIngredientMatcher<T, M> matcher = this.ingredientComponent.getMatcher();
+        return getInstanceFilterMetadata().apply(new InstanceWithMetadata<>(instance, null))
+            && getRawUnfilteredIngredientsView(channel).contains(instance, matcher.getExactMatchNoQuantityCondition());
+    }
+
+    public List<InstanceWithMetadata<T>> createUnfilteredIngredientsView(int channel) {
+        // Convert raw ingredients view to list
+        List<InstanceWithMetadata<T>> enrichedIngredients = Lists.newArrayList();
+        for (T persistedIngredient : getRawUnfilteredIngredientsView(channel)) {
+            enrichedIngredients.add(new InstanceWithMetadata<>(persistedIngredient, null));
+        }
+
+        // Add all crafting option outputs
         Collection<HandlerWrappedTerminalCraftingOption<T>> craftingOptions = getCraftingOptions(channel);
-        if (craftingOptions == null) {
-            return getRawUnfilteredIngredientsView(channel);
-        } else {
-            List<InstanceWithMetadata<T>> enrichedIngredients = Lists.newArrayList();
-            enrichedIngredients.addAll(getRawUnfilteredIngredientsView(channel));
-            // Add all crafting option outputs
+        if (craftingOptions != null) {
             for (HandlerWrappedTerminalCraftingOption<T> craftingOption : craftingOptions) {
                 for (T output : getUniqueCraftingOptionOutputs(craftingOption.getCraftingOption())) {
                     enrichedIngredients.add(new InstanceWithMetadata<>(output, craftingOption));
                 }
             }
-            return enrichedIngredients;
         }
+        return enrichedIngredients;
     }
 
-    protected Collection<T> getUniqueCraftingOptionOutputs(ITerminalCraftingOption<T> craftingOption) {
+    public Collection<T> getUniqueCraftingOptionOutputs(ITerminalCraftingOption<T> craftingOption) {
         TreeSet<T> uniqueOutputs = Sets.newTreeSet(ingredientComponent.getMatcher());
         Iterator<T> it = craftingOption.getOutputs();
         while (it.hasNext()) {
@@ -295,9 +415,10 @@ public class TerminalStorageTabIngredientComponentClient<T, M>
     }
 
     protected List<InstanceWithMetadata<T>> getFilteredIngredientsView(int channel) {
+        updateSortingPausedState(channel);
         List<InstanceWithMetadata<T>> ingredientsView = filteredIngredientsViews.get(channel);
         if (ingredientsView == null) {
-            ingredientsView = getUnfilteredIngredientsView(channel);
+            ingredientsView = createUnfilteredIngredientsView(channel);
 
             // Filter
             ingredientsView = Lists.newArrayList(
@@ -305,25 +426,83 @@ public class TerminalStorageTabIngredientComponentClient<T, M>
                     .filter(
                         im -> IIngredientQuery.parse(ingredientComponent, getInstanceFilter(channel))
                             .apply(im.getInstance()))
-                    .filter(getInstanceFilterMetadata()::apply)
+                    .filter(im -> getInstanceFilterMetadata().apply(im))
                     .collect(Collectors.toList()));
 
             // Sort
             Comparator<T> sorter = getInstanceSorter();
-            if (sorter != null) {
-                try {
+            List<InstanceWithMetadata<T>> pausedOrder = this.sortingPaused ? lastFilteredIngredientsViews.get(channel)
+                : null;
+            try {
+                if (pausedOrder != null) {
+                    // Sorting is paused, so keep the positions of the previously shown ingredients
+                    sortByPreviousOrder(ingredientsView, pausedOrder, sorter);
+                } else if (sorter != null) {
                     ingredientsView.sort(InstanceWithMetadata.createComparator(sorter));
-                } catch (IllegalArgumentException e) {
-                    // We deliberately ignore comparison violations
-                    // If this would cause issues, we'll need to do a deep-copy of all ingredients, which will impact
-                    // performance
-                    // See https://github.com/CyclopsMC/IntegratedTerminals/issues/119
+
                 }
+            } catch (IllegalArgumentException e) {
+                // We deliberately ignore comparison violations
+                // If this would cause issues, we'll need to do a deep-copy of all ingredients, which will impact
+                // performance
+                // See https://github.com/CyclopsMC/IntegratedTerminals/issues/119
             }
 
             filteredIngredientsViews.put(channel, ingredientsView);
+            lastFilteredIngredientsViews.put(channel, ingredientsView);
         }
         return ingredientsView;
+    }
+
+    /**
+     * Sort the given ingredients view based on the order of a previously shown ingredients view.
+     *
+     * Ingredients that were present in the previous view keep their position, independent of their quantity,
+     * while new ingredients are appended at the end.
+     *
+     * @param ingredientsView The ingredients view to sort in-place.
+     * @param previousView    A previously shown ingredients view.
+     * @param sorter          An optional sorter that is used for ordering the new ingredients.
+     */
+    protected void sortByPreviousOrder(List<InstanceWithMetadata<T>> ingredientsView,
+        List<InstanceWithMetadata<T>> previousView, @Nullable Comparator<T> sorter) {
+        IIngredientMatcher<T, M> matcher = this.ingredientComponent.getMatcher();
+
+        // Determine the position of all previously shown ingredients, while ignoring their quantities.
+        // Crafting options are taken into account as well,
+        // as an ingredient can be shown both as a stored ingredient and as a crafting option.
+        Map<InstanceWithMetadata<T>, Integer> previousPositions = new TreeMap<>(
+            InstanceWithMetadata.createComparator(matcher));
+        int position = 0;
+        for (InstanceWithMetadata<T> instanceWithMetadata : previousView) {
+            previousPositions.putIfAbsent(withoutQuantity(instanceWithMetadata), position++);
+        }
+
+        // Assign the previous positions to the current ingredients, new ingredients are placed at the end.
+        Map<InstanceWithMetadata<T>, Integer> positions = new IdentityHashMap<>();
+        for (InstanceWithMetadata<T> instanceWithMetadata : ingredientsView) {
+            positions.put(
+                instanceWithMetadata,
+                previousPositions.getOrDefault(withoutQuantity(instanceWithMetadata), Integer.MAX_VALUE));
+        }
+
+        ingredientsView.sort(
+            Comparator.<InstanceWithMetadata<T>>comparingInt(positions::get)
+                .thenComparing(InstanceWithMetadata.createComparator(sorter != null ? sorter : matcher)));
+    }
+
+    /**
+     * Create a copy of the given ingredient with a fixed quantity,
+     * so that it can be used as a quantity-independent key.
+     *
+     * @param instanceWithMetadata An ingredient with metadata.
+     * @return A quantity-independent copy.
+     */
+    protected InstanceWithMetadata<T> withoutQuantity(InstanceWithMetadata<T> instanceWithMetadata) {
+        return new InstanceWithMetadata<>(
+            this.ingredientComponent.getMatcher()
+                .withQuantity(instanceWithMetadata.getInstance(), 1),
+            instanceWithMetadata.getCraftingOption());
     }
 
     protected Stream<InstanceWithMetadata<T>> transformIngredientsView(
@@ -394,6 +573,8 @@ public class TerminalStorageTabIngredientComponentClient<T, M>
      */
     public synchronized void onChange(int channel, IIngredientComponentStorageObservable.Change changeType,
         IngredientArrayList<T, M> ingredients, boolean enabled) {
+        this.lastChangeId++;
+
         boolean wasEnabled = this.enabled;
         this.enabled = enabled || this.craftingOptions.containsKey(channel);
         if (channel != IPositionedAddonsNetwork.WILDCARD_CHANNEL) {
@@ -423,24 +604,16 @@ public class TerminalStorageTabIngredientComponentClient<T, M>
         totalQuantities.put(channel, newQuantity);
 
         // Apply diff
-        List<InstanceWithMetadata<T>> rawPersistedIngredients = getRawUnfilteredIngredientsView(channel);
-        IIngredientCollapsedCollectionMutable<T, M> persistedIngredients = new IngredientCollectionPrototypeMap<>(
-            ingredientComponent);
-        rawPersistedIngredients.stream()
-            .map(InstanceWithMetadata::getInstance)
-            .forEach(persistedIngredients::add);
+        IIngredientCollapsedCollectionMutable<T, M> rawPersistedIngredients = getRawUnfilteredIngredientsView(channel);
+
         IngredientCollectionDiff<T, M> diff = new IngredientCollectionDiff<>(
             changeType == IIngredientComponentStorageObservable.Change.ADDITION ? ingredients : null,
             changeType == IIngredientComponentStorageObservable.Change.DELETION ? ingredients : null,
             false);
-        IngredientCollectionDiffHelpers.applyDiff(ingredientComponent, diff, persistedIngredients);
-        rawPersistedIngredients.clear();
-        for (T persistedIngredient : persistedIngredients) {
-            rawPersistedIngredients.add(new InstanceWithMetadata<>(persistedIngredient, null));
-        }
+        IngredientCollectionDiffHelpers.applyDiff(ingredientComponent, diff, rawPersistedIngredients);
 
         // Persist changes
-        resetFilteredIngredientsViews(channel);
+        resetFilteredIngredientsViews(channel, false);
 
         // Update the active instance by searching for its new position in the slots
         // If this becomes a performance bottleneck, we could search _around_ the previous position.
@@ -495,7 +668,7 @@ public class TerminalStorageTabIngredientComponentClient<T, M>
         }
 
         // Persist changes
-        resetFilteredIngredientsViews(channel);
+        resetFilteredIngredientsViews(channel, false);
 
         // Update the active instance by searching for its new position in the slots
         // If this becomes a performance bottleneck, we could search _around_ the previous position.
@@ -714,7 +887,8 @@ public class TerminalStorageTabIngredientComponentClient<T, M>
                     1,
                     null,
                     containerTerminalStorage.getLocation(),
-                    containerTerminalStorage.getLocationInstance());
+                    containerTerminalStorage.getLocationInstance(),
+                    containerTerminalStorage.getGuiState());
                 if (shift) {
                     containerTerminalStorage.sendOpenCraftingPlanGuiPacketToServer(craftingOptionData);
                 } else {
@@ -723,10 +897,12 @@ public class TerminalStorageTabIngredientComponentClient<T, M>
             } else if (clickType != null) {
                 T activeInstance = matcher.getEmptyInstance();
                 if (activeSlotId >= 0) {
-                    activeInstance = matcher.withQuantity(
-                        getSlots(channel, activeSlotId, 1).get(0)
-                            .getInstance(),
-                        moveQuantity);
+                    TerminalStorageSlotIngredient<T, M> slot = getSlots(channel, activeSlotId, 1).stream()
+                        .findFirst()
+                        .orElse(null);
+                    if (slot != null) {
+                        activeInstance = matcher.withQuantity(slot.getInstance(), moveQuantity);
+                    }
                 }
                 IntegratedTerminals._instance.getPacketHandler()
                     .sendToServer(
@@ -917,6 +1093,10 @@ public class TerminalStorageTabIngredientComponentClient<T, M>
     public void resetScale() {
         // Re-init screen to enforce new scale
         container.screen.initGui();
+    }
+
+    public int getLastChangeId() {
+        return lastChangeId;
     }
 
     public static class InstanceWithMetadata<T> {

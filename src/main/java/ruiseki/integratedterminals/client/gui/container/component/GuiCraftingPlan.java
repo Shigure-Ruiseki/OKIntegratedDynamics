@@ -59,7 +59,7 @@ import ruiseki.okcore.helper.RenderHelpers;
  */
 public class GuiCraftingPlan extends Gui {
 
-    private static final int ELEMENT_WIDTH = 221;
+    public static final int ELEMENT_WIDTH = 221;
     private static final int ELEMENT_HEIGHT = 16;
     private static final int ELEMENT_HEIGHT_TOTAL = 18;
 
@@ -226,6 +226,7 @@ public class GuiCraftingPlan extends Gui {
         x = xOriginal + width - 50;
         if (layer == GuiTerminalStorage.DrawLayer.BACKGROUND) {
             // Draw counters
+            int moved = 0;
             if (element.getStorageQuantity() > 0) {
                 renderItem(new ItemStack(Blocks.chest), x, y, 0.45F);
                 RenderHelpers.drawScaledString(
@@ -238,6 +239,7 @@ public class GuiCraftingPlan extends Gui {
                     16777215,
                     true);
                 y += 8;
+                moved++;
             }
             if (element.getCraftQuantity() > 0) {
                 renderItem(new ItemStack(Blocks.crafting_table), x, y, 0.45F);
@@ -251,8 +253,13 @@ public class GuiCraftingPlan extends Gui {
                     16777215,
                     true);
                 y += 8;
+                moved++;
             }
             if (element.getMissingQuantity() > 0) {
+                if (moved == 2) {
+                    y -= 16;
+                    x -= 44;
+                }
                 renderItem(new ItemStack(Blocks.iron_bars), x, y, 0.45F);
                 RenderHelpers.drawScaledString(
                     Minecraft.getMinecraft().fontRenderer,

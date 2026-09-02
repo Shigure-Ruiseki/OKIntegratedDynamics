@@ -31,11 +31,12 @@ public class ContainerTerminalStoragePart extends ContainerTerminalStorageBase<P
     private final PartTypeTerminalStorage partType;
 
     public ContainerTerminalStoragePart(EntityPlayer player, PartTarget target, IPartContainer partContainer,
-        IPartType partType, InitTabData initTabData) {
+        IPartType partType, InitTabData initTabData, TerminalStorageState terminalStorageState) {
         super(
             player,
             (PartTypeTerminalStorage) partType,
             initTabData,
+            terminalStorageState,
             NetworkHelpers.getNetwork(target.getCenter())
                 .map(a -> a),
             Optional
@@ -48,11 +49,8 @@ public class ContainerTerminalStoragePart extends ContainerTerminalStorageBase<P
         this.target = target;
         this.partType = (PartTypeTerminalStorage) partType;
         this.partContainer = partContainer;
-    }
-
-    public ContainerTerminalStoragePart(EntityPlayer player, PartTarget target, IPartContainer partContainer,
-        IPartType partType) {
-        this(player, target, partContainer, partType, (ContainerTerminalStorageBase.InitTabData) null);
+        this.getGuiState()
+            .setDirtyMarkListener(this::sendGuiStateToServer);
     }
 
     public PartTypeTerminalStorage getPartType() {

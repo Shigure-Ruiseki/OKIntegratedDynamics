@@ -39,6 +39,9 @@ import ruiseki.okcore.init.ModBase;
 public class GuiTerminalStorageCraftingOptionAmountBase<L, C extends ContainerTerminalStorageCraftingOptionAmountBase<L>>
     extends GuiContainerExtended {
 
+    public static final int BUTTON_NEXT = 6;
+    public static final int BUTTON_BACK = 7;
+
     public static int OUTPUT_SLOT_X = 135;
     public static int OUTPUT_SLOT_Y = 15;
 
@@ -62,6 +65,11 @@ public class GuiTerminalStorageCraftingOptionAmountBase<L, C extends ContainerTe
                 this.outputs.add(new PrototypedIngredient(outputComponent, output, null));
             }
         }
+    }
+
+    @Override
+    protected ContainerTerminalStorageCraftingOptionAmountBase getContainer() {
+        return (ContainerTerminalStorageCraftingOptionAmountBase) super.getContainer();
     }
 
     @Override
@@ -105,7 +113,11 @@ public class GuiTerminalStorageCraftingOptionAmountBase<L, C extends ContainerTe
         numberField.setVisible(true);
         numberField.setTextColor(16777215);
         numberField.setCanLoseFocus(true);
-        numberField.setText("1");
+        numberField.setText(
+            Integer.toString(
+                numberField.validateNumber(
+                    getContainer().getCraftingOptionGuiData()
+                        .getAmount())));
 
         scrollBar = new GuiScrollBar(guiLeft + 153, guiTop + 15, 54, this::setFirstRow, 3);
         scrollBar.setTotalRows(outputs.size() - 1);
@@ -122,7 +134,7 @@ public class GuiTerminalStorageCraftingOptionAmountBase<L, C extends ContainerTe
                 new GuiButtonChangeQuantity(5, guiLeft + 91, guiTop + 55, -1000),
 
                 nextButton = new GuiButtonText(
-                    6,
+                    BUTTON_NEXT,
                     guiLeft + 81,
                     guiTop + 33,
                     50,
@@ -130,6 +142,9 @@ public class GuiTerminalStorageCraftingOptionAmountBase<L, C extends ContainerTe
                     EnumChatFormatting.YELLOW
                         + LangHelpers.localize("gui.integratedterminals.terminal_storage.step.next"),
                     true)));
+
+        GuiButtonText backButton = new GuiButtonText(BUTTON_BACK, guiLeft + 5, guiTop + 33, 15, 20, "<", true);
+        this.buttonList.add(backButton);
     }
 
     @Override
@@ -167,11 +182,14 @@ public class GuiTerminalStorageCraftingOptionAmountBase<L, C extends ContainerTe
     @Override
     public void onButtonClick(int buttonId) {
         super.onButtonClick(buttonId);
-        GuiButton button = buttonList.get(buttonId);
-        if (button instanceof GuiButtonChangeQuantity) {
-            buttonChangeQuantity(button);
-        } else if (button instanceof GuiButtonText) {
+
+        if (buttonId == BUTTON_BACK) {
+            returnToTerminalStorage();
+        } else if (buttonId == BUTTON_NEXT) {
             calculateCraftingJob();
+        } else if (buttonId >= 0 && buttonId <= 5) {
+            GuiButton button = (GuiButton) this.buttonList.get(buttonId);
+            buttonChangeQuantity(button);
         }
     }
 

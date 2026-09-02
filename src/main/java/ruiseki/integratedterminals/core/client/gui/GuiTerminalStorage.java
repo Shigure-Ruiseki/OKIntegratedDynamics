@@ -39,9 +39,12 @@ import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientItemS
 import ruiseki.integratedterminals.proxy.ClientProxy;
 import ruiseki.okcore.client.gui.RenderItemExtendedSlotCount;
 import ruiseki.okcore.client.gui.component.GuiScrollBar;
+import ruiseki.okcore.client.gui.component.button.GuiButtonImage;
 import ruiseki.okcore.client.gui.component.input.GuiArrowedListField;
 import ruiseki.okcore.client.gui.component.input.GuiTextFieldExtended;
 import ruiseki.okcore.client.gui.container.GuiContainerExtended;
+import ruiseki.okcore.client.gui.image.IImage;
+import ruiseki.okcore.client.gui.image.Images;
 import ruiseki.okcore.client.renderer.GlStateManager;
 import ruiseki.okcore.helper.GuiHelpers;
 import ruiseki.okcore.helper.Helpers;
@@ -83,6 +86,7 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
     private GuiArrowedListField<String> fieldChannel;
     private GuiScrollBar scrollBar;
     private GuiTextFieldExtended fieldSearch;
+    private GuiButtonImage buttonSetDefaults;
     private int firstRow;
     private boolean initialized;
     protected final Set<Slot> terminalDragSplittingSlots = Sets.<Slot>newHashSet();
@@ -91,6 +95,7 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
     private int terminalDragSplittingButton;
     private int terminalDragSplittingRemnant;
     private boolean clicked;
+    protected boolean swallowNextCharacter = false;
 
     public GuiTerminalStorage(C container) {
         super(container);
@@ -162,6 +167,22 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
         fieldSearch.setCanLoseFocus(true);
         fieldSearch.setEnabled(true);
         fieldSearch.setEnableBackgroundDrawing(false);
+
+        buttonSetDefaults = new GuiButtonImage(
+            ContainerTerminalStorageBase.BUTTON_SET_DEFAULTS,
+            this.guiLeft + ITerminalStorageTabClient.DEFAULT_SLOT_OFFSET_X
+                + (getGridXSize() / 2)
+                + getPlayerInventoryOffsetX()
+                + (9 * GuiHelpers.SLOT_SIZE / 2)
+                + 27,
+            this.guiTop + getGridYSize() + getPlayerInventoryOffsetY() + 120,
+            15,
+            15,
+            new IImage[] { Images.ANVIL },
+            -2,
+            -3,
+            false);
+        this.buttonList.add(buttonSetDefaults);
 
         repositionInventorySlots();
     }
@@ -686,6 +707,22 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
                 }
             });
         });
+
+        // Draw save defaults button
+        if (buttonSetDefaults != null && buttonSetDefaults.visible) {
+            int buttonX = buttonSetDefaults.xPosition - guiLeft;
+            int buttonY = buttonSetDefaults.yPosition - guiTop;
+
+            if (func_146978_c(buttonX, buttonY, buttonSetDefaults.width, buttonSetDefaults.height, mouseX, mouseY)) {
+                List<String> lines = Lists.newArrayList();
+                lines.add(LangHelpers.localize("gui.integratedterminals.terminal_storage.setdefaults"));
+                lines.add(
+                    EnumChatFormatting.GRAY
+                        + LangHelpers.localize("gui.integratedterminals.terminal_storage.setdefaults.info"));
+
+                drawTooltip(lines, mouseX - guiLeft, mouseY - guiTop);
+            }
+        }
     }
 
     @Override
@@ -1060,6 +1097,7 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
     protected boolean handleKeyCodeFirst(int keyCode) {
         if (ruiseki.integrateddynamics.proxy.ClientProxy.FOCUS_LP_SEARCH.isActiveAndMatches(keyCode)) {
             fieldSearch.setFocused(true);
+            swallowNextCharacter = true;
             return true;
         } else if (ClientProxy.TERMINAL_TAB_NEXT.isActiveAndMatches(keyCode)) {
             if (getContainer().getTabsClientCount() > 0) {

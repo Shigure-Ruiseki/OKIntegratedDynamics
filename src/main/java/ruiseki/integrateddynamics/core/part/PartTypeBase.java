@@ -68,7 +68,7 @@ public abstract class PartTypeBase<P extends IPartType<P, S>, S extends IPartSta
     @Getter
     private final Block block;
     @Getter
-    private final int guiID;
+    protected int guiID;
     @Getter
     private final String name;
     @Getter
@@ -76,6 +76,16 @@ public abstract class PartTypeBase<P extends IPartType<P, S>, S extends IPartSta
     private final Map<Class<? extends INetworkEvent>, IEventAction> networkEventActions;
 
     public PartTypeBase(String name, PartRenderPosition partRenderPosition) {
+        this.name = name;
+        this.block = registerBlock();
+        this.item = registerItem();
+        this.partRenderPosition = partRenderPosition;
+
+        networkEventActions = constructNetworkEventActions();
+        registerGui();
+    }
+
+    protected void registerGui() {
         if (hasGui()) {
             this.guiID = Helpers.getNewId(getModGui(), Helpers.IDType.GUI);
             getModGui().getGuiHandler()
@@ -83,12 +93,6 @@ public abstract class PartTypeBase<P extends IPartType<P, S>, S extends IPartSta
         } else {
             this.guiID = -1;
         }
-        this.name = name;
-        this.block = registerBlock();
-        this.item = registerItem();
-        this.partRenderPosition = partRenderPosition;
-
-        networkEventActions = constructNetworkEventActions();
     }
 
     protected ModBase getMod() {
@@ -218,14 +222,19 @@ public abstract class PartTypeBase<P extends IPartType<P, S>, S extends IPartSta
         }
 
         if (hasGui()) {
-            getModGui().getGuiHandler()
-                .setTemporaryData(ExtendedGuiHandler.PART, side); // Pass the side as extra data to the gui
-            if (!world.isRemote && hasGui()) {
-                player.openGui(getModGui().getModId(), getGuiID(), world, pos.getX(), pos.getY(), pos.getZ());
-            }
+            openGui(world, pos, partState, player, heldItem, side, hitX, hitY, hitZ);
             return true;
         }
         return false;
+    }
+
+    protected void openGui(World world, BlockPos pos, S partState, EntityPlayer player, ItemStack heldItem,
+        ForgeDirection side, float hitX, float hitY, float hitZ) {
+        getModGui().getGuiHandler()
+            .setTemporaryData(ExtendedGuiHandler.PART, side); // Pass the side as extra data to the gui
+        if (!world.isRemote && hasGui()) {
+            player.openGui(getModGui().getModId(), getGuiID(), world, pos.getX(), pos.getY(), pos.getZ());
+        }
     }
 
     @Override

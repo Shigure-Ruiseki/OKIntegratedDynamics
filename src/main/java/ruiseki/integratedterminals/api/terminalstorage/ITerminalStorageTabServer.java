@@ -4,7 +4,7 @@ import net.minecraft.util.ResourceLocation;
 
 /**
  * A server-side terminal storage tab.
- * 
+ *
  * @author rubensworks
  */
 public interface ITerminalStorageTabServer {
@@ -26,7 +26,9 @@ public interface ITerminalStorageTabServer {
 
     /**
      * Called on each tick this tab is active.
+     * 
+     * @param channel The channel that is being shown in the terminal.
      */
-    public void updateActive();
+    public void updateActive(int channel);
 
 }

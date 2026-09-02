@@ -6,12 +6,16 @@ import java.util.List;
 import java.util.Map;
 
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
+import net.minecraftforge.common.util.ForgeDirection;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.Nullable;
 
 import com.google.common.collect.Maps;
@@ -23,16 +27,15 @@ import ruiseki.integrateddynamics.core.part.PartStateEmpty;
 import ruiseki.integratedterminals.GeneralConfig;
 import ruiseki.integratedterminals.api.terminalstorage.ITerminalStorageTabCommon;
 import ruiseki.integratedterminals.client.gui.container.GuiTerminalStoragePart;
+import ruiseki.integratedterminals.core.client.gui.ExtendedGuiHandler;
 import ruiseki.integratedterminals.core.part.PartTypeTerminal;
 import ruiseki.integratedterminals.core.terminalstorage.TerminalStorageTabIngredientComponentItemStackCrafting;
 import ruiseki.integratedterminals.inventory.container.ContainerTerminalStoragePart;
+import ruiseki.integratedterminals.inventory.container.TerminalStorageState;
+import ruiseki.okcore.datastructure.BlockPos;
+import ruiseki.okcore.helper.Helpers;
 import ruiseki.okcore.helper.ItemHelpers;
 
-/**
- * A part that exposes a gui using which players can access storage indexes in the network.
- *
- * @author rubensworks
- */
 public class PartTypeTerminalStorage extends PartTypeTerminal<PartTypeTerminalStorage, PartTypeTerminalStorage.State> {
 
     public PartTypeTerminalStorage(String name) {
@@ -61,11 +64,34 @@ public class PartTypeTerminalStorage extends PartTypeTerminal<PartTypeTerminalSt
     }
 
     @Override
+    protected void openGui(World world, BlockPos pos, State partState, EntityPlayer player, ItemStack heldItem,
+        ForgeDirection side, float hitX, float hitY, float hitZ) {
+        TerminalStorageState terminalStorageState = partState.getPlayerStorageState(player);
+        getModGui().getGuiHandler()
+            .setTemporaryData(
+                ExtendedGuiHandler.TERMINAL_STORAGE_PART,
+                Pair.of(side, Pair.of(null, terminalStorageState)));
+        if (!world.isRemote && hasGui()) {
+            player.openGui(getModGui().getModId(), getGuiID(), world, pos.getX(), pos.getY(), pos.getZ());
+        }
+    }
+
+    @Override
+    public void registerGui() {
+        if (hasGui()) {
+            this.guiID = Helpers.getNewId(getModGui(), Helpers.IDType.GUI);
+            getModGui().getGuiHandler()
+                .registerGUI(this, ExtendedGuiHandler.TERMINAL_STORAGE_PART);
+        } else {
+            this.guiID = -1;
+        }
+    }
+
+    @Override
     public void addDrops(PartTarget target, State state, List<ItemStack> itemStacks, boolean dropMainElement,
         boolean saveState) {
         for (Map.Entry<String, List<ItemStack>> entry : state.getNamedInventories()
             .entrySet()) {
-            // TODO: for now hardcoded on crafting tab
             if (entry.getKey()
                 .equals(TerminalStorageTabIngredientComponentItemStackCrafting.NAME.toString())) {
                 if (!entry.getValue()
@@ -89,14 +115,16 @@ public class PartTypeTerminalStorage extends PartTypeTerminal<PartTypeTerminalSt
         implements ITerminalStorageTabCommon.IVariableInventory {
 
         private final Map<String, List<ItemStack>> namedInventories;
+        private final Map<String, TerminalStorageState> playerStorageStates;
 
         public State() {
             this.namedInventories = Maps.newHashMap();
+            this.playerStorageStates = Maps.newHashMap();
         }
 
         @Override
         public int getUpdateInterval() {
-            return 1; // For enabling energy consumption
+            return 1;
         }
 
         public void clearNamedInventories() {
@@ -119,6 +147,21 @@ public class PartTypeTerminalStorage extends PartTypeTerminal<PartTypeTerminalSt
             return this.namedInventories.get(name);
         }
 
+        public TerminalStorageState getPlayerStorageState(EntityPlayer player) {
+            TerminalStorageState state = playerStorageStates.get(
+                player.getUniqueID()
+                    .toString());
+            if (state == null) {
+                state = TerminalStorageState.getPlayerDefault(player, this);
+                playerStorageStates.put(
+                    player.getUniqueID()
+                        .toString(),
+                    state);
+                this.onDirty();
+            }
+            return state;
+        }
+
         @Override
         public void writeToNBT(NBTTagCompound tag) {
             super.writeToNBT(tag);
@@ -134,6 +177,18 @@ public class PartTypeTerminalStorage extends PartTypeTerminal<PartTypeTerminalSt
                 list.appendTag(listEntry);
             }
             tag.setTag("namedInventories", list);
+
+            NBTTagList playerStorageStatesList = new NBTTagList();
+            for (Map.Entry<String, TerminalStorageState> entry : this.playerStorageStates.entrySet()) {
+                NBTTagCompound stateEntry = new NBTTagCompound();
+                stateEntry.setString("player", entry.getKey());
+                stateEntry.setTag(
+                    "value",
+                    entry.getValue()
+                        .getTag());
+                playerStorageStatesList.appendTag(stateEntry);
+            }
+            tag.setTag("playerStorageStates", playerStorageStatesList);
         }
 
         @Override
@@ -149,6 +204,14 @@ public class PartTypeTerminalStorage extends PartTypeTerminal<PartTypeTerminalSt
 
                 ItemHelpers.loadAllItems(listEntry, list);
                 this.namedInventories.put(tabName, list);
+            }
+
+            NBTTagList playerStorageList = tag.getTagList("playerStorageStates", Constants.NBT.TAG_COMPOUND);
+            for (int i = 0; i < playerStorageList.tagCount(); i++) {
+                NBTTagCompound tagAt = playerStorageList.getCompoundTagAt(i);
+                String playerName = tagAt.getString("player");
+                TerminalStorageState state = new TerminalStorageState(tagAt.getCompoundTag("value"), this);
+                this.playerStorageStates.put(playerName, state);
             }
         }
     }

@@ -61,7 +61,7 @@ public interface ITerminalCraftingPlanFlat<I> {
 
     /**
      * Mark this plan as errored.
-     * 
+     *
      * @param unlocalizedError An unlocalized error message.
      */
     public void setError(String unlocalizedError);
@@ -69,9 +69,9 @@ public interface ITerminalCraftingPlanFlat<I> {
     public static interface IEntry {
 
         /**
-         * @return The entry instance.
+         * @return The alternative entry instances for this entry. Never empty.
          */
-        public IPrototypedIngredient<?, ?> getInstance();
+        public List<IPrototypedIngredient<?, ?>> getInstances();
 
         /**
          * @return The number of instances to craft.

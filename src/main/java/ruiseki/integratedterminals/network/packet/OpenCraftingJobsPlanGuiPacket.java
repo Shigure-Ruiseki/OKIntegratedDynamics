@@ -99,7 +99,7 @@ public class OpenCraftingJobsPlanGuiPacket extends PacketCodec {
             side,
             channel,
             craftingPlan.getHandler(),
-            craftingPlan.getCraftingPlan()
+            craftingPlan.getCraftingPlanFlat()
                 .getId());
         IntegratedTerminals._instance.getGuiHandler()
             .setTemporaryData(ExtendedGuiHandler.CRAFTING_PLAN_PART, Pair.of(side, data));

@@ -30,18 +30,16 @@ public class ContainerTerminalStorageItem extends ContainerTerminalStorageBase<I
 
     private final int itemIndex;
 
-    public ContainerTerminalStorageItem(EntityPlayer player, int itemIndex, InitTabData initTabData) {
+    public ContainerTerminalStorageItem(EntityPlayer player, int itemIndex, InitTabData initTabData,
+        TerminalStorageState terminalStorageState) {
         super(
             player,
             ((IGuiContainerProvider) ItemTerminalStoragePortableConfig._instance.getInstance()),
             initTabData,
+            terminalStorageState,
             Optional.ofNullable(getNetworkFromItem(InventoryHelpers.getItemFromIndex(player, itemIndex))),
             getVariableInventoryFromItem(InventoryHelpers.getItemFromIndex(player, itemIndex)));
         this.itemIndex = itemIndex;
-    }
-
-    public ContainerTerminalStorageItem(EntityPlayer player, int itemIndex) {
-        this(player, itemIndex, null);
     }
 
     public static INetwork getNetworkFromItem(ItemStack itemStack) {

@@ -18,6 +18,7 @@ import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.core.part.PartTypeBase;
 import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorageBase;
+import ruiseki.integratedterminals.inventory.container.TerminalStorageState;
 import ruiseki.okcore.client.gui.GuiHandler;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.helper.MinecraftHelpers;
@@ -38,7 +39,7 @@ public class ExtendedGuiHandler extends GuiHandler {
     /**
      * Gui type for storage terminals with a preselected tab and channel (PART).
      */
-    public static final GuiType<Pair<ForgeDirection, ContainerTerminalStorageBase.InitTabData>> TERMINAL_STORAGE_PART = GuiType
+    public static final GuiType<Pair<ForgeDirection, Pair<ContainerTerminalStorageBase.InitTabData, TerminalStorageState>>> TERMINAL_STORAGE_PART = GuiType
         .create(true);
     /**
      * Gui type for crafting plans (PART).
@@ -53,7 +54,7 @@ public class ExtendedGuiHandler extends GuiHandler {
     /**
      * Gui type for storage terminals with a preselected tab and channel (ITEM).
      */
-    public static final GuiType<Pair<Integer, ContainerTerminalStorageBase.InitTabData>> TERMINAL_STORAGE_ITEM = GuiType
+    public static final GuiType<Pair<Integer, Pair<ContainerTerminalStorageBase.InitTabData, TerminalStorageState>>> TERMINAL_STORAGE_ITEM = GuiType
         .create(true);
 
     static {
@@ -139,17 +140,26 @@ public class ExtendedGuiHandler extends GuiHandler {
                         IPartContainer.class,
                         data.getMiddle()
                             .getClass(),
-                        ContainerTerminalStorageBase.InitTabData.class);
+                        ContainerTerminalStorageBase.InitTabData.class,
+                        TerminalStorageState.class);
                 } catch (NoSuchMethodException e) {
                     containerConstructor = containerClass.getConstructor(
                         EntityPlayer.class,
                         PartTarget.class,
                         IPartContainer.class,
                         IPartType.class,
-                        ContainerTerminalStorageBase.InitTabData.class);
+                        ContainerTerminalStorageBase.InitTabData.class,
+                        TerminalStorageState.class);
                 }
-                return containerConstructor
-                    .newInstance(player, data.getRight(), data.getLeft(), data.getMiddle(), in.getRight());
+                return containerConstructor.newInstance(
+                    player,
+                    data.getRight(),
+                    data.getLeft(),
+                    data.getMiddle(),
+                    in.getRight()
+                        .getLeft(),
+                    in.getRight()
+                        .getRight());
             } catch (InstantiationException | IllegalAccessException | InvocationTargetException
                 | NoSuchMethodException e) {
                 e.printStackTrace();
@@ -172,17 +182,26 @@ public class ExtendedGuiHandler extends GuiHandler {
                             IPartContainer.class,
                             data.getMiddle()
                                 .getClass(),
-                            ContainerTerminalStorageBase.InitTabData.class);
+                            ContainerTerminalStorageBase.InitTabData.class,
+                            TerminalStorageState.class);
                     } catch (NoSuchMethodException e) {
                         guiConstructor = guiClass.getConstructor(
                             EntityPlayer.class,
                             PartTarget.class,
                             IPartContainer.class,
                             IPartType.class,
-                            ContainerTerminalStorageBase.InitTabData.class);
+                            ContainerTerminalStorageBase.InitTabData.class,
+                            TerminalStorageState.class);
                     }
-                    return guiConstructor
-                        .newInstance(player, data.getRight(), data.getLeft(), data.getMiddle(), in.getRight());
+                    return guiConstructor.newInstance(
+                        player,
+                        data.getRight(),
+                        data.getLeft(),
+                        data.getMiddle(),
+                        in.getRight()
+                            .getLeft(),
+                        in.getRight()
+                            .getRight());
                 } catch (InstantiationException | IllegalAccessException | InvocationTargetException
                     | NoSuchMethodException e) {
                     e.printStackTrace();
@@ -286,9 +305,18 @@ public class ExtendedGuiHandler extends GuiHandler {
 
         TERMINAL_STORAGE_ITEM.setContainerConstructor((id, player, world, x, y, z, containerClass, dataIn) -> {
             try {
-                Constructor<? extends Container> containerConstructor = containerClass
-                    .getConstructor(EntityPlayer.class, Integer.TYPE, ContainerTerminalStorageBase.InitTabData.class);
-                return containerConstructor.newInstance(player, dataIn.getLeft(), dataIn.getRight());
+                Constructor<? extends Container> containerConstructor = containerClass.getConstructor(
+                    EntityPlayer.class,
+                    Integer.TYPE,
+                    ContainerTerminalStorageBase.InitTabData.class,
+                    TerminalStorageState.class);
+                return containerConstructor.newInstance(
+                    player,
+                    dataIn.getLeft(),
+                    dataIn.getRight()
+                        .getLeft(),
+                    dataIn.getRight()
+                        .getRight());
             } catch (InstantiationException | IllegalAccessException | InvocationTargetException
                 | NoSuchMethodException e) {
                 e.printStackTrace();
@@ -302,8 +330,15 @@ public class ExtendedGuiHandler extends GuiHandler {
                     Constructor<? extends GuiScreen> guiConstructor = guiClass.getConstructor(
                         EntityPlayer.class,
                         Integer.TYPE,
-                        ContainerTerminalStorageBase.InitTabData.class);
-                    return guiConstructor.newInstance(player, dataIn.getLeft(), dataIn.getRight());
+                        ContainerTerminalStorageBase.InitTabData.class,
+                        TerminalStorageState.class);
+                    return guiConstructor.newInstance(
+                        player,
+                        dataIn.getLeft(),
+                        dataIn.getRight()
+                            .getLeft(),
+                        dataIn.getRight()
+                            .getRight());
                 } catch (InstantiationException | IllegalAccessException | InvocationTargetException
                     | NoSuchMethodException e) {
                     e.printStackTrace();

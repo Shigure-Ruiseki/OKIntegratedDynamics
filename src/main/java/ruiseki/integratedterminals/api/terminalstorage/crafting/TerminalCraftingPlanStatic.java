@@ -1,8 +1,11 @@
 package ruiseki.integratedterminals.api.terminalstorage.crafting;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
@@ -138,7 +141,8 @@ public class TerminalCraftingPlanStatic<I> implements ITerminalCraftingPlan<I> {
     public ITerminalCraftingPlanFlat<I> flatten() {
         // Group dependencies by prototype
         IndexedEntries indexedEntries = new IndexedEntries();
-        groupDependenciesByPrototype(indexedEntries, this);
+        Set<I> handledPlans = new HashSet<>();
+        groupDependenciesByPrototype(indexedEntries, handledPlans, this);
 
         // Make plan
         TerminalCraftingPlanFlatStatic<I> planFlat = new TerminalCraftingPlanFlatStatic<>(
@@ -175,36 +179,67 @@ public class TerminalCraftingPlanStatic<I> implements ITerminalCraftingPlan<I> {
 
     public static class IndexedEntries {
 
-        private final Map<IPrototypedIngredient<?, ?>, TerminalCraftingPlanFlatStatic.Entry> indexedEntries;
+        /**
+         * Entries indexed by a canonical list of prototype ingredients.
+         * <p>
+         * Each key is a list of {@link IPrototypedIngredient} where:
+         * <ul>
+         * <li>Every element has quantity 1.</li>
+         * <li>Every element uses the exact-match-no-quantity condition.</li>
+         * </ul>
+         * The original (possibly non-normalized) alternatives list is stored inside the
+         * {@link TerminalCraftingPlanFlatStatic.Entry} for rendering purposes.
+         */
+        private final Map<List<IPrototypedIngredient<?, ?>>, TerminalCraftingPlanFlatStatic.Entry> indexedEntries;
 
         public IndexedEntries() {
             this.indexedEntries = Maps.newHashMap();
         }
 
-        public TerminalCraftingPlanFlatStatic.Entry get(IPrototypedIngredient<?, ?> prototypedIngredient) {
-            IPrototypedIngredient<?, ?> prototype = getPrototype(prototypedIngredient);
-            return indexedEntries.computeIfAbsent(
-                prototype,
-                k -> new TerminalCraftingPlanFlatStatic.Entry(
+        /**
+         * Get (or create) the entry corresponding to the given list of alternative ingredients.
+         *
+         * @param prototypedIngredients A non-empty list of alternatives.
+         * @return The corresponding flat plan entry.
+         */
+        public TerminalCraftingPlanFlatStatic.Entry get(List<IPrototypedIngredient<?, ?>> prototypedIngredients) {
+            List<IPrototypedIngredient<?, ?>> key = getPrototypes(prototypedIngredients);
+            return indexedEntries.computeIfAbsent(key, k -> new TerminalCraftingPlanFlatStatic.Entry(k));
+        }
+
+        /**
+         * Build a canonical list of prototype ingredients for the given alternatives.
+         * Quantities are normalized to 1 and the exact-match-no-quantity condition is used.
+         */
+        protected List<IPrototypedIngredient<?, ?>> getPrototypes(
+            List<IPrototypedIngredient<?, ?>> prototypedIngredients) {
+            List<IPrototypedIngredient<?, ?>> result = new ArrayList<>(prototypedIngredients.size());
+            for (IPrototypedIngredient<?, ?> ingredient : prototypedIngredients) {
+                IIngredientMatcher matcher = ingredient.getComponent()
+                    .getMatcher();
+                result.add(
                     new PrototypedIngredient(
-                        prototypedIngredient.getComponent(),
-                        prototype.getPrototype(),
-                        prototypedIngredient.getCondition())));
+                        ingredient.getComponent(),
+                        matcher.withQuantity(ingredient.getPrototype(), 1L),
+                        matcher.getExactMatchNoQuantityCondition()));
+            }
+            return result;
         }
 
-        protected <T, M> IPrototypedIngredient<T, M> getPrototype(IPrototypedIngredient<T, M> prototypedIngredient) {
-            IIngredientMatcher<T, M> matcher = prototypedIngredient.getComponent()
+        /**
+         * Get the quantity associated with the given alternatives list.
+         * <p>
+         * This is derived from the first element, which is consistent with prior behaviour
+         * when only a single prototype was available.
+         */
+        public static long getQuantity(List<IPrototypedIngredient<?, ?>> prototypedIngredients) {
+            if (prototypedIngredients.isEmpty()) {
+                return 0;
+            }
+            IPrototypedIngredient<?, ?> first = prototypedIngredients.get(0);
+            IIngredientMatcher matcher = first.getComponent()
                 .getMatcher();
-            return new PrototypedIngredient(
-                prototypedIngredient.getComponent(),
-                matcher.withQuantity(prototypedIngredient.getPrototype(), 1L),
-                matcher.getExactMatchNoQuantityCondition());
-        }
-
-        public static long getQuantity(IPrototypedIngredient<?, ?> prototypedIngredient) {
-            IIngredientMatcher matcher = prototypedIngredient.getComponent()
-                .getMatcher();
-            return matcher.getQuantity(prototypedIngredient.getPrototype());
+            return matcher.getQuantity(first.getPrototype());
         }
 
         public Collection<TerminalCraftingPlanFlatStatic.Entry> getEntries() {
@@ -212,12 +247,20 @@ public class TerminalCraftingPlanStatic<I> implements ITerminalCraftingPlan<I> {
         }
     }
 
-    protected static <I> void groupDependenciesByPrototype(IndexedEntries indexedEntries,
+    protected static <I> void groupDependenciesByPrototype(IndexedEntries indexedEntries, Set<I> handledPlans,
         ITerminalCraftingPlan<I> plan) {
+        // Since jobs can have multiple dependents due to job splitting, we only consider each job once during
+        // flattening.
+        if ((!(plan.getId() instanceof Integer id) || id > 0) && handledPlans.contains(plan.getId())) {
+            return;
+        }
+        handledPlans.add(plan.getId());
+
         // Determine outputs that are invalid or will be crafted
         for (IPrototypedIngredient<?, ?> output : plan.getOutputs()) {
-            TerminalCraftingPlanFlatStatic.Entry entry = indexedEntries.get(output);
-            long quantity = IndexedEntries.getQuantity(output);
+            List<IPrototypedIngredient<?, ?>> outputs = List.of(output);
+            TerminalCraftingPlanFlatStatic.Entry entry = indexedEntries.get(outputs);
+            long quantity = IndexedEntries.getQuantity(outputs);
 
             if (plan.getStatus() == TerminalCraftingJobStatus.ERROR
                 || plan.getStatus() == TerminalCraftingJobStatus.INVALID
@@ -232,35 +275,33 @@ public class TerminalCraftingPlanStatic<I> implements ITerminalCraftingPlan<I> {
             if (plan.getStatus() == TerminalCraftingJobStatus.QUEUEING
                 || plan.getStatus() == TerminalCraftingJobStatus.PENDING_DEPENDENCIES
                 || plan.getStatus() == TerminalCraftingJobStatus.PENDING_INPUTS
-                || plan.getStatus() == TerminalCraftingJobStatus.CRAFTING
                 || plan.getStatus() == TerminalCraftingJobStatus.UNSTARTED) {
                 entry.setQuantityToCraft(entry.getQuantityToCraft() + quantity);
             }
-            if (plan.getStatus() == TerminalCraftingJobStatus.CRAFTING) {
+            if (plan.getStatus() == TerminalCraftingJobStatus.CRAFTING
+                || plan.getStatus() == TerminalCraftingJobStatus.FINISHED) {
                 entry.setQuantityCrafting(entry.getQuantityCrafting() + quantity);
             }
         }
 
         // Determine storage ingredients
         for (IPrototypedIngredient<?, ?> output : plan.getStorageIngredients()) {
-            TerminalCraftingPlanFlatStatic.Entry entry = indexedEntries.get(output);
-            long quantity = IndexedEntries.getQuantity(output);
+            List<IPrototypedIngredient<?, ?>> outputs = List.of(output);
+            TerminalCraftingPlanFlatStatic.Entry entry = indexedEntries.get(outputs);
+            long quantity = IndexedEntries.getQuantity(outputs);
             entry.setQuantityInStorage(entry.getQuantityInStorage() + quantity);
         }
 
         // Determine missing ingredients
         for (List<IPrototypedIngredient<?, ?>> outputVariants : plan.getLastMissingIngredients()) {
-            IPrototypedIngredient<?, ?> output = outputVariants.stream()
-                .findFirst()
-                .get();
-            TerminalCraftingPlanFlatStatic.Entry entry = indexedEntries.get(output);
-            long quantity = IndexedEntries.getQuantity(output);
+            TerminalCraftingPlanFlatStatic.Entry entry = indexedEntries.get(outputVariants);
+            long quantity = IndexedEntries.getQuantity(outputVariants);
             entry.setQuantityMissing(entry.getQuantityMissing() + quantity * plan.getCraftingQuantity());
         }
 
         // Recurse into dependencies
         for (ITerminalCraftingPlan<I> dependency : plan.getDependencies()) {
-            groupDependenciesByPrototype(indexedEntries, dependency);
+            groupDependenciesByPrototype(indexedEntries, handledPlans, dependency);
         }
     }
 

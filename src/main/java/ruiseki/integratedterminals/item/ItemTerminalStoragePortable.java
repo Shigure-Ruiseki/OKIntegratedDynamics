@@ -14,6 +14,8 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.common.util.ForgeDirection;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.integrateddynamics.block.BlockCable;
@@ -24,6 +26,7 @@ import ruiseki.integrateddynamics.core.part.PartTypes;
 import ruiseki.integrateddynamics.part.PartTypeConnectorOmniDirectional;
 import ruiseki.integratedterminals.api.terminalstorage.ITerminalStorageTabCommon;
 import ruiseki.integratedterminals.client.gui.container.GuiTerminalStorageItem;
+import ruiseki.integratedterminals.core.client.gui.ExtendedGuiHandler;
 import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorageItem;
 import ruiseki.integratedterminals.inventory.container.TerminalStorageState;
 import ruiseki.okcore.Reference;
@@ -32,11 +35,13 @@ import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 import ruiseki.okcore.config.extendedconfig.ItemConfig;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.NonNullList;
+import ruiseki.okcore.datastructure.Wrapper;
 import ruiseki.okcore.helper.InventoryHelpers;
 import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.helper.ItemNBTHelpers;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.item.ItemGui;
+import ruiseki.okcore.persist.IDirtyMarkListener;
 
 /**
  * A portable storage terminal.
@@ -56,14 +61,14 @@ public class ItemTerminalStoragePortable extends ItemGui {
     @Override
     public void openGuiForItemIndex(World world, EntityPlayer player, int itemIndex) {
         if (world.isRemote) {
-            super.openGuiForItemIndex(world, player, itemIndex);
+            openGui(world, player, itemIndex);
         } else {
             ItemStack itemStack = InventoryHelpers.getItemFromIndex(player, itemIndex);
             int groupId = getGroupId(itemStack);
             if (groupId >= 0) {
                 INetwork network = ContainerTerminalStorageItem.getNetworkFromItem(itemStack);
                 if (network != null) {
-                    super.openGuiForItemIndex(world, player, itemIndex);
+                    openGui(world, player, itemIndex);
                 } else {
                     player.addChatComponentMessage(
                         new ChatComponentTranslation(
@@ -74,6 +79,16 @@ public class ItemTerminalStoragePortable extends ItemGui {
                     new ChatComponentTranslation(
                         "item.items.integratedterminals.terminal_storage_portable.status.no_network"));
             }
+        }
+    }
+
+    private void openGui(World world, EntityPlayer player, int itemIndex) {
+        ItemStack stack = InventoryHelpers.getItemFromIndex(player, itemIndex);
+        TerminalStorageState state = getTerminalStorageState(stack, player, itemIndex);
+        getModGui().getGuiHandler()
+            .setTemporaryData(ExtendedGuiHandler.TERMINAL_STORAGE_ITEM, Pair.of(itemIndex, Pair.of(null, state)));
+        if (!world.isRemote || isClientSideOnlyGui()) {
+            player.openGui(getModGui(), getGuiID(), world, (int) player.posX, (int) player.posY, (int) player.posZ);
         }
     }
 
@@ -174,22 +189,51 @@ public class ItemTerminalStoragePortable extends ItemGui {
     }
 
     public static TerminalStorageState getTerminalStorageState(ItemStack itemStack, EntityPlayer player, int slot) {
-        // Navigate to relevant tag in item
+        // Construct item dirty mark listener
+        Wrapper<TerminalStorageState> stateWrapped = new Wrapper<>();
+        String playerKey = player.getUniqueID()
+            .toString();
+        IDirtyMarkListener dirtyMarkListener = () -> {
+            ItemStack currentStack = InventoryHelpers.getItemFromIndex(player, slot);
+            if (currentStack != null) {
+                NBTTagCompound tagRoot = ItemNBTHelpers.getNBT(currentStack);
+                if (!tagRoot.hasKey(NBT_KEY_STATES, Constants.NBT.TAG_COMPOUND)) {
+                    tagRoot.setTag(NBT_KEY_STATES, new NBTTagCompound());
+                }
+                NBTTagCompound tagStates = tagRoot.getCompoundTag(NBT_KEY_STATES);
+
+                if (stateWrapped.get() != null) {
+                    tagStates.setTag(
+                        playerKey,
+                        stateWrapped.get()
+                            .getTag());
+                    tagRoot.setTag(NBT_KEY_STATES, tagStates);
+
+                    currentStack.setTagCompound(tagRoot);
+                    player.inventory.markDirty();
+                    player.openContainer.detectAndSendChanges();
+                }
+            }
+        };
+
         NBTTagCompound tagRoot = ItemNBTHelpers.getNBT(itemStack);
         if (!tagRoot.hasKey(NBT_KEY_STATES, Constants.NBT.TAG_COMPOUND)) {
             tagRoot.setTag(NBT_KEY_STATES, new NBTTagCompound());
         }
         NBTTagCompound tagStates = tagRoot.getCompoundTag(NBT_KEY_STATES);
-        String playerKey = player.getUniqueID()
-            .toString();
 
         // Instantiate storage state from NBT
         if (!tagStates.hasKey(playerKey, Constants.NBT.TAG_COMPOUND)) {
-            TerminalStorageState state = TerminalStorageState.getPlayerDefault(player);
+            TerminalStorageState state = TerminalStorageState.getPlayerDefault(player, dirtyMarkListener);
+            stateWrapped.set(state);
             tagStates.setTag(playerKey, state.getTag());
             return state;
         } else {
-            return new TerminalStorageState(tagStates.getCompoundTag(playerKey));
+            TerminalStorageState state = new TerminalStorageState(
+                tagStates.getCompoundTag(playerKey),
+                dirtyMarkListener);
+            stateWrapped.set(state);
+            return state;
         }
     }
 }

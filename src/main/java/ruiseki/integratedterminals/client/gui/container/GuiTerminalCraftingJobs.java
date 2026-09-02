@@ -19,7 +19,7 @@ import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integratedterminals.IntegratedTerminals;
 import ruiseki.integratedterminals.Reference;
-import ruiseki.integratedterminals.api.terminalstorage.crafting.ITerminalCraftingPlan;
+import ruiseki.integratedterminals.api.terminalstorage.crafting.ITerminalCraftingPlanFlat;
 import ruiseki.integratedterminals.capability.ingredient.IngredientComponentTerminalStorageHandlerConfig;
 import ruiseki.integratedterminals.client.gui.container.component.GuiCraftingPlan;
 import ruiseki.integratedterminals.core.client.gui.CraftingJobGuiData;
@@ -151,7 +151,7 @@ public class GuiTerminalCraftingJobs extends GuiContainerExtended {
     protected void drawCraftingPlan(HandlerWrappedTerminalCraftingPlan craftingPlan, int x, int y,
         GuiTerminalStorage.DrawLayer layer, float partialTick, int mouseX, int mouseY) {
         int xOriginal = x;
-        ITerminalCraftingPlan<?> plan = craftingPlan.getCraftingPlan();
+        ITerminalCraftingPlanFlat<?> plan = craftingPlan.getCraftingPlanFlat();
 
         // Draw background color if hovering
         if (layer == GuiTerminalStorage.DrawLayer.BACKGROUND && RenderHelpers
@@ -199,7 +199,8 @@ public class GuiTerminalCraftingJobs extends GuiContainerExtended {
                 16777215,
                 true);
 
-            int dependencies = getDependencies(plan);
+            int dependencies = plan.getEntries()
+                .size();
             String dependenciesString = LangHelpers
                 .localize("gui.integratedterminals.terminal_crafting_job.craftingplan.dependencies", dependencies);
             RenderHelpers.drawScaledString(
@@ -240,14 +241,6 @@ public class GuiTerminalCraftingJobs extends GuiContainerExtended {
         }
     }
 
-    protected static int getDependencies(ITerminalCraftingPlan<?> plan) {
-        int count = 1;
-        for (ITerminalCraftingPlan<?> dependency : plan.getDependencies()) {
-            count += getDependencies(dependency);
-        }
-        return count;
-    }
-
     @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
         super.drawScreen(mouseX, mouseY, partialTicks);
@@ -284,7 +277,7 @@ public class GuiTerminalCraftingJobs extends GuiContainerExtended {
                 center.getSide(),
                 getContainer().getChannel(),
                 craftingJob.getHandler(),
-                craftingJob.getCraftingPlan()
+                craftingJob.getCraftingPlanFlat()
                     .getId());
             IntegratedTerminals._instance.getPacketHandler()
                 .sendToServer(new CancelCraftingJobPacket(data));

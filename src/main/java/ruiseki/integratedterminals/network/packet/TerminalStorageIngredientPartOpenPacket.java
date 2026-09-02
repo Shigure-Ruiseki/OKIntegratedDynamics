@@ -12,6 +12,7 @@ import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.integratedterminals.IntegratedTerminals;
 import ruiseki.integratedterminals.core.client.gui.ExtendedGuiHandler;
 import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorageBase;
+import ruiseki.integratedterminals.inventory.container.TerminalStorageState;
 import ruiseki.integratedterminals.proxy.guiprovider.GuiProviders;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.network.CodecField;
@@ -33,16 +34,20 @@ public class TerminalStorageIngredientPartOpenPacket extends PacketCodec {
     private String tabName;
     @CodecField
     private int channel;
+    @CodecField
+    TerminalStorageState state;
 
     public TerminalStorageIngredientPartOpenPacket() {
 
     }
 
-    public TerminalStorageIngredientPartOpenPacket(BlockPos pos, ForgeDirection side, String tabName, int channel) {
+    public TerminalStorageIngredientPartOpenPacket(BlockPos pos, ForgeDirection side, String tabName, int channel,
+        TerminalStorageState state) {
         this.pos = pos;
         this.side = side;
         this.tabName = tabName;
         this.channel = channel;
+        this.state = state;
     }
 
     @Override
@@ -56,23 +61,23 @@ public class TerminalStorageIngredientPartOpenPacket extends PacketCodec {
         IntegratedTerminals._instance.getGuiHandler()
             .setTemporaryData(
                 ExtendedGuiHandler.TERMINAL_STORAGE_PART,
-                Pair.of(side, new ContainerTerminalStorageBase.InitTabData(tabName, channel)));
+                Pair.of(side, Pair.of(new ContainerTerminalStorageBase.InitTabData(tabName, channel), state)));
     }
 
     @Override
     public void actionServer(World world, EntityPlayerMP player) {
-        openServer(world, pos, side, player, tabName, channel);
+        openServer(world, pos, side, player, tabName, channel, state);
     }
 
     public static void openServer(World world, BlockPos pos, ForgeDirection side, EntityPlayerMP player, String tabName,
-        int channel) {
+        int channel, TerminalStorageState state) {
         IntegratedTerminals._instance.getGuiHandler()
             .setTemporaryData(
                 ExtendedGuiHandler.TERMINAL_STORAGE_PART,
-                Pair.of(side, new ContainerTerminalStorageBase.InitTabData(tabName, channel)));
+                Pair.of(side, Pair.of(new ContainerTerminalStorageBase.InitTabData(tabName, channel), state)));
 
         IntegratedTerminals._instance.getPacketHandler()
-            .sendToPlayer(new TerminalStorageIngredientPartOpenPacket(pos, side, tabName, channel), player);
+            .sendToPlayer(new TerminalStorageIngredientPartOpenPacket(pos, side, tabName, channel, state), player);
 
         player.openGui(
             IntegratedTerminals._instance,
@@ -83,14 +88,15 @@ public class TerminalStorageIngredientPartOpenPacket extends PacketCodec {
             pos.getZ());
     }
 
-    public static void send(BlockPos pos, ForgeDirection side, String tabName, int channel) {
+    public static void send(BlockPos pos, ForgeDirection side, String tabName, int channel,
+        TerminalStorageState state) {
         IntegratedTerminals._instance.getGuiHandler()
             .setTemporaryData(
                 ExtendedGuiHandler.TERMINAL_STORAGE_PART,
-                Pair.of(side, new ContainerTerminalStorageBase.InitTabData(tabName, channel)));
+                Pair.of(side, Pair.of(new ContainerTerminalStorageBase.InitTabData(tabName, channel), state)));
 
         IntegratedTerminals._instance.getPacketHandler()
-            .sendToServer(new TerminalStorageIngredientPartOpenPacket(pos, side, tabName, channel));
+            .sendToServer(new TerminalStorageIngredientPartOpenPacket(pos, side, tabName, channel, state));
     }
 
 }

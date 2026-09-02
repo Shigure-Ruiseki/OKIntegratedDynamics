@@ -40,17 +40,17 @@ public class TerminalStorageRecipeTransferHandler<C extends ContainerTerminalSto
     implements IRecipeTransferHandler<C> {
 
     private final IRecipeTransferHandlerHelper recipeTransferHandlerHelper;
-    private final Class<C> containerClass;
+    private final Class<C> clazz;
 
-    public TerminalStorageRecipeTransferHandler(Class<C> containerClass,
+    public TerminalStorageRecipeTransferHandler(Class<C> clazz,
         IRecipeTransferHandlerHelper recipeTransferHandlerHelper) {
-        this.containerClass = containerClass;
+        this.clazz = clazz;
         this.recipeTransferHandlerHelper = recipeTransferHandlerHelper;
     }
 
     @Override
     public Class<C> getContainerClass() {
-        return containerClass;
+        return clazz;
     }
 
     @Nullable
@@ -71,7 +71,7 @@ public class TerminalStorageRecipeTransferHandler<C extends ContainerTerminalSto
                 TerminalStorageTabIngredientComponentClient tabClient = (TerminalStorageTabIngredientComponentClient) container
                     .getTabClient(container.getSelectedTab());
                 List<TerminalStorageTabIngredientComponentClient.InstanceWithMetadata<ItemStack>> unfilteredIngredients = tabClient
-                    .getUnfilteredIngredientsView(container.getSelectedChannel());
+                    .createUnfilteredIngredientsView(container.getSelectedChannel());
                 IIngredientCollectionMutable<ItemStack, Integer> hayStack = new IngredientCollectionPrototypeMap<>(
                     IngredientComponent.ITEMSTACK);
                 hayStack.addAll(

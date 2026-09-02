@@ -1,5 +1,6 @@
 package ruiseki.integratedterminals.inventory.container;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -36,12 +37,15 @@ import ruiseki.integratedterminals.api.terminalstorage.location.ITerminalStorage
 import ruiseki.integratedterminals.core.client.gui.CraftingOptionGuiData;
 import ruiseki.integratedterminals.core.client.gui.GuiTerminalStorage;
 import ruiseki.integratedterminals.core.terminalstorage.TerminalStorageTabs;
+import ruiseki.integratedterminals.network.packet.TerminalStorageChangeGuiState;
 import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientOpenCraftingJobAmountGuiPacket;
 import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientOpenCraftingPlanGuiPacket;
 import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.helper.ValueNotifierHelpers;
 import ruiseki.okcore.inventory.IGuiContainerProvider;
 import ruiseki.okcore.inventory.container.ExtendedInventoryContainer;
+import ruiseki.okcore.network.ExtendedBuffer;
+import ruiseki.okcore.network.PacketCodec;
 import ruiseki.okcore.persist.IDirtyMarkListener;
 
 /**
@@ -49,11 +53,14 @@ import ruiseki.okcore.persist.IDirtyMarkListener;
  */
 public abstract class ContainerTerminalStorageBase<L> extends ExtendedInventoryContainer implements IDirtyMarkListener {
 
+    public static final int BUTTON_SET_DEFAULTS = 5;
+
     private final World world;
     private final Map<String, ITerminalStorageTabClient<?>> tabsClient;
     private final Map<String, ITerminalStorageTabServer> tabsServer;
     private final Map<String, ITerminalStorageTabCommon> tabsCommon;
     private final Map<String, List<Pair<Slot, ITerminalStorageTabCommon.ISlotPositionCallback>>> tabSlots;
+    private final TerminalStorageState terminalStorageState;
     private final Optional<INetwork> network;
     private final Optional<ITerminalStorageTabCommon.IVariableInventory> variableInventory;
 
@@ -67,11 +74,9 @@ public abstract class ContainerTerminalStorageBase<L> extends ExtendedInventoryC
     @SideOnly(Side.CLIENT)
     public GuiTerminalStorage screen;
 
-    private static final TerminalStorageState GLOBAL_PLAYER_STATE = new TerminalStorageState();
-
     public ContainerTerminalStorageBase(EntityPlayer player, IGuiContainerProvider provider,
-        ContainerTerminalStorageBase.InitTabData initTabData, Optional<INetwork> network,
-        Optional<ITerminalStorageTabCommon.IVariableInventory> variableInventory) {
+        ContainerTerminalStorageBase.InitTabData initTabData, TerminalStorageState terminalStorageState,
+        Optional<INetwork> network, Optional<ITerminalStorageTabCommon.IVariableInventory> variableInventory) {
         super(player.inventory, provider);
 
         this.world = player.getEntityWorld();
@@ -79,6 +84,7 @@ public abstract class ContainerTerminalStorageBase<L> extends ExtendedInventoryC
         this.tabsServer = Maps.newLinkedHashMap();
         this.tabsCommon = Maps.newLinkedHashMap();
         this.tabSlots = Maps.newHashMap();
+        this.terminalStorageState = terminalStorageState;
         this.network = network;
         this.variableInventory = variableInventory;
 
@@ -144,6 +150,18 @@ public abstract class ContainerTerminalStorageBase<L> extends ExtendedInventoryC
             setSelectedTab(null);
             setSelectedChannel(IPositionedAddonsNetwork.WILDCARD_CHANNEL);
         }
+
+        if (initTabData != null) {
+            setSelectedTab(initTabData.getTabName());
+            setSelectedChannel(initTabData.getChannel());
+        }
+
+        // Update player's default state
+        putButtonAction(ContainerTerminalStorageBase.BUTTON_SET_DEFAULTS, (s, containerExtended) -> {
+            if (!player.worldObj.isRemote) {
+                TerminalStorageState.setPlayerDefault(player, getGuiState());
+            }
+        });
     }
 
     protected void addInventoryAndOffHand(EntityPlayer player) {
@@ -198,7 +216,14 @@ public abstract class ContainerTerminalStorageBase<L> extends ExtendedInventoryC
     }
 
     public TerminalStorageState getGuiState() {
-        return GLOBAL_PLAYER_STATE;
+        return this.terminalStorageState;
+    }
+
+    public void sendGuiStateToServer() {
+        if (player.worldObj.isRemote) {
+            IntegratedTerminals._instance.getPacketHandler()
+                .sendToServer(new TerminalStorageChangeGuiState(getGuiState()));
+        }
     }
 
     public int getNextValueId() {
@@ -224,7 +249,7 @@ public abstract class ContainerTerminalStorageBase<L> extends ExtendedInventoryC
         // Update active server tab
         ITerminalStorageTabServer activeServerTab = getTabServer(getSelectedTab());
         if (activeServerTab != null) {
-            activeServerTab.updateActive();
+            activeServerTab.updateActive(getSelectedChannel());
         }
     }
 
@@ -392,6 +417,21 @@ public abstract class ContainerTerminalStorageBase<L> extends ExtendedInventoryC
 
     public static class InitTabData {
 
+        static {
+            PacketCodec.addCodedAction(InitTabData.class, new PacketCodec.ICodecAction() {
+
+                @Override
+                public void encode(Object o, ExtendedBuffer extendedBuffer) throws IOException {
+                    ((InitTabData) o).writeToPacketBuffer(extendedBuffer);
+                }
+
+                @Override
+                public Object decode(ExtendedBuffer extendedBuffer) {
+                    return InitTabData.readFromPacketBuffer(extendedBuffer);
+                }
+            });
+        }
+
         private final String tabName;
         private final int channel;
 
@@ -408,6 +448,14 @@ public abstract class ContainerTerminalStorageBase<L> extends ExtendedInventoryC
             return channel;
         }
 
+        public void writeToPacketBuffer(ExtendedBuffer packetBuffer) {
+            packetBuffer.writeString(tabName);
+            packetBuffer.writeInt(channel);
+        }
+
+        public static InitTabData readFromPacketBuffer(ExtendedBuffer packetBuffer) {
+            return new InitTabData(packetBuffer.readString(), packetBuffer.readInt());
+        }
     }
 
 }

@@ -9,6 +9,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import ruiseki.integratedterminals.IntegratedTerminals;
 import ruiseki.integratedterminals.core.client.gui.ExtendedGuiHandler;
 import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorageBase;
+import ruiseki.integratedterminals.inventory.container.TerminalStorageState;
 import ruiseki.integratedterminals.proxy.guiprovider.GuiProviders;
 import ruiseki.okcore.network.CodecField;
 import ruiseki.okcore.network.PacketCodec;
@@ -18,18 +19,19 @@ public class TerminalStorageIngredientItemOpenPacket extends PacketCodec {
     @CodecField
     private int slotIndex;
     @CodecField
-    private String tabName;
+    private ContainerTerminalStorageBase.InitTabData tabData;
     @CodecField
-    private int channel;
+    TerminalStorageState state;
 
     public TerminalStorageIngredientItemOpenPacket() {
 
     }
 
-    public TerminalStorageIngredientItemOpenPacket(int slotIndex, String tabName, int channel) {
+    public TerminalStorageIngredientItemOpenPacket(int slotIndex, ContainerTerminalStorageBase.InitTabData tabData,
+        TerminalStorageState state) {
         this.slotIndex = slotIndex;
-        this.tabName = tabName;
-        this.channel = channel;
+        this.tabData = tabData;
+        this.state = state;
     }
 
     @Override
@@ -40,24 +42,21 @@ public class TerminalStorageIngredientItemOpenPacket extends PacketCodec {
     @Override
     public void actionClient(World world, EntityPlayer player) {
         IntegratedTerminals._instance.getGuiHandler()
-            .setTemporaryData(
-                ExtendedGuiHandler.TERMINAL_STORAGE_ITEM,
-                Pair.of(slotIndex, new ContainerTerminalStorageBase.InitTabData(tabName, channel)));
+            .setTemporaryData(ExtendedGuiHandler.TERMINAL_STORAGE_ITEM, Pair.of(slotIndex, Pair.of(tabData, state)));
     }
 
     @Override
     public void actionServer(World world, EntityPlayerMP player) {
-        openServer(world, slotIndex, player, tabName, channel);
+        openServer(world, slotIndex, player, tabData, state);
     }
 
-    public static void openServer(World world, int slotIndex, EntityPlayerMP player, String tabName, int channel) {
+    public static void openServer(World world, int slotIndex, EntityPlayerMP player,
+        ContainerTerminalStorageBase.InitTabData tabData, TerminalStorageState state) {
         IntegratedTerminals._instance.getGuiHandler()
-            .setTemporaryData(
-                ExtendedGuiHandler.TERMINAL_STORAGE_ITEM,
-                Pair.of(slotIndex, new ContainerTerminalStorageBase.InitTabData(tabName, channel)));
+            .setTemporaryData(ExtendedGuiHandler.TERMINAL_STORAGE_ITEM, Pair.of(slotIndex, Pair.of(tabData, state)));
 
         IntegratedTerminals._instance.getPacketHandler()
-            .sendToPlayer(new TerminalStorageIngredientItemOpenPacket(slotIndex, tabName, channel), player);
+            .sendToPlayer(new TerminalStorageIngredientItemOpenPacket(slotIndex, tabData, state), player);
 
         player.openGui(
             IntegratedTerminals._instance,
@@ -68,13 +67,12 @@ public class TerminalStorageIngredientItemOpenPacket extends PacketCodec {
             (int) player.posZ);
     }
 
-    public static void send(int slotIndex, String tabName, int channel) {
+    public static void send(int slotIndex, ContainerTerminalStorageBase.InitTabData tabData,
+        TerminalStorageState state) {
         IntegratedTerminals._instance.getGuiHandler()
-            .setTemporaryData(
-                ExtendedGuiHandler.TERMINAL_STORAGE_ITEM,
-                Pair.of(slotIndex, new ContainerTerminalStorageBase.InitTabData(tabName, channel)));
+            .setTemporaryData(ExtendedGuiHandler.TERMINAL_STORAGE_ITEM, Pair.of(slotIndex, Pair.of(tabData, state)));
 
         IntegratedTerminals._instance.getPacketHandler()
-            .sendToServer(new TerminalStorageIngredientItemOpenPacket(slotIndex, tabName, channel));
+            .sendToServer(new TerminalStorageIngredientItemOpenPacket(slotIndex, tabData, state));
     }
 }

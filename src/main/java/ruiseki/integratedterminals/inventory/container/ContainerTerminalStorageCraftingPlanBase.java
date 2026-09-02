@@ -24,12 +24,14 @@ import ruiseki.okcore.inventory.container.ExtendedInventoryContainer;
 public abstract class ContainerTerminalStorageCraftingPlanBase<L> extends ExtendedInventoryContainer {
 
     public static final int BUTTON_START = 1;
+    public static final int BUTTON_BACK = 2;
     private static final ExecutorService WORKER_POOL = Executors
         .newFixedThreadPool(GeneralConfig.craftingPlannerThreads);
 
-    private final World world;
     private final CraftingOptionGuiData craftingOptionGuiData;
     private final int craftingPlanNotifierId;
+    private final int craftingPlanFlatNotifierId;
+    private final World world;
 
     private boolean calculatedCraftingPlan;
     private ITerminalCraftingPlan craftingPlan;
@@ -46,6 +48,7 @@ public abstract class ContainerTerminalStorageCraftingPlanBase<L> extends Extend
 
         this.craftingOptionGuiData = craftingOptionGuiData;
         this.craftingPlanNotifierId = getNextValueId();
+        this.craftingPlanFlatNotifierId = getNextValueId();
         this.world = player.worldObj;
 
         putButtonAction(BUTTON_START, (buttonId, container) -> startCraftingJob());
@@ -76,6 +79,10 @@ public abstract class ContainerTerminalStorageCraftingPlanBase<L> extends Extend
         return craftingPlanNotifierId;
     }
 
+    public int getCraftingPlanFlatNotifierId() {
+        return craftingPlanFlatNotifierId;
+    }
+
     protected void updateCraftingPlan() {
         HandlerWrappedTerminalCraftingOption craftingOptionWrapper = this.craftingOptionGuiData.getCraftingOption();
         INetwork network = getNetwork();
@@ -98,11 +105,18 @@ public abstract class ContainerTerminalStorageCraftingPlanBase<L> extends Extend
 
     protected void setCraftingPlan(ITerminalCraftingPlan craftingPlan) {
         this.craftingPlan = craftingPlan;
+        if (!ContainerTerminalCraftingJobsPlan.isPlanTooLarge(this.craftingPlan)) {
+            setValue(
+                this.craftingPlanNotifierId,
+                this.craftingOptionGuiData.getCraftingOption()
+                    .getHandler()
+                    .serializeCraftingPlan(this.craftingPlan));
+        }
         setValue(
-            this.craftingPlanNotifierId,
+            this.craftingPlanFlatNotifierId,
             this.craftingOptionGuiData.getCraftingOption()
                 .getHandler()
-                .serializeCraftingPlan(this.craftingPlan));
+                .serializeCraftingPlanFlat(this.craftingPlan.flatten()));
     }
 
     @Override

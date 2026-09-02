@@ -15,6 +15,7 @@ import ruiseki.integratedterminals.core.client.gui.CraftingOptionGuiData;
 import ruiseki.integratedterminals.core.terminalstorage.crafting.HandlerWrappedTerminalCraftingOption;
 import ruiseki.integratedterminals.core.terminalstorage.crafting.HandlerWrappedTerminalCraftingPlan;
 import ruiseki.integratedterminals.core.terminalstorage.location.TerminalStorageLocations;
+import ruiseki.integratedterminals.inventory.container.TerminalStorageState;
 import ruiseki.okcore.network.CodecField;
 import ruiseki.okcore.network.ExtendedBuffer;
 import ruiseki.okcore.network.PacketCodec;
@@ -41,6 +42,8 @@ public abstract class TerminalStorageIngredientCraftingOptionDataPacketAbstract<
     private int amount;
     @CodecField
     private NBTTagCompound craftingPlan;
+    @CodecField
+    private TerminalStorageState state;
 
     public TerminalStorageIngredientCraftingOptionDataPacketAbstract() {}
 
@@ -60,6 +63,7 @@ public abstract class TerminalStorageIngredientCraftingOptionDataPacketAbstract<
         this.craftingPlan = craftingOptionData.getCraftingPlan() != null
             ? HandlerWrappedTerminalCraftingPlan.serialize(craftingOptionData.getCraftingPlan())
             : new NBTTagCompound();
+        this.state = craftingOptionData.getState();
     }
 
     @Override
@@ -137,6 +141,7 @@ public abstract class TerminalStorageIngredientCraftingOptionDataPacketAbstract<
             amount,
             getCraftingPlan(),
             location,
-            locationInstance);
+            locationInstance,
+            state);
     }
 }

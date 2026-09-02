@@ -61,11 +61,6 @@ public abstract class PartTypeInterfaceCraftingBase<P extends PartTypeInterfaceC
     }
 
     @Override
-    public Class<? super P> getPartTypeClass() {
-        return PartTypeCraftingBase.class;
-    }
-
-    @Override
     public void afterNetworkReAlive(INetwork network, IPartNetwork partNetwork, PartTarget target, S state) {
         super.afterNetworkReAlive(network, partNetwork, target, state);
         addTargetToNetwork(network, target, state, true);
@@ -97,7 +92,7 @@ public abstract class PartTypeInterfaceCraftingBase<P extends PartTypeInterfaceC
         return CraftingNetworkConfig.CAPABILITY;
     }
 
-    protected void addTargetToNetwork(INetwork network, PartTarget pos, State state, boolean initialize) {
+    protected void addTargetToNetwork(INetwork network, PartTarget pos, S state, boolean initialize) {
         network.getCapability(getNetworkCapability())
             .ifPresent(craftingNetwork -> {
                 int channel = state.getChannel();
@@ -226,7 +221,6 @@ public abstract class PartTypeInterfaceCraftingBase<P extends PartTypeInterfaceC
         protected INetwork network = null;
         protected IPartNetwork partNetwork = null;
         protected ICraftingNetwork craftingNetwork = null;
-        private int channel = -1;
         private boolean shouldAddToCraftingNetwork = false;
         protected EntityPlayer lastPlayer;
 
@@ -248,8 +242,7 @@ public abstract class PartTypeInterfaceCraftingBase<P extends PartTypeInterfaceC
                 NBTTagCompound instanceTag = new NBTTagCompound();
                 instanceTag.setString(
                     "component",
-                    instanceWrapper.getComponent()
-                        .getName()
+                    IngredientComponent.REGISTRY.getKey(instanceWrapper.getComponent())
                         .toString());
                 instanceTag.setTag(
                     "instance",
@@ -482,7 +475,6 @@ public abstract class PartTypeInterfaceCraftingBase<P extends PartTypeInterfaceC
 
         public void flushInventoryOutputBuffer(INetwork network) {
             // Try to insert each ingredient in the buffer into the network.
-
             ListIterator<IngredientInstanceWrapper<?, ?>> outputBufferIt = this.getInventoryOutputBuffer()
                 .listIterator();
             while (outputBufferIt.hasNext()) {

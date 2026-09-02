@@ -11,6 +11,7 @@ import ruiseki.integratedterminals.Reference;
 import ruiseki.integratedterminals.api.terminalstorage.location.ITerminalStorageLocation;
 import ruiseki.integratedterminals.core.client.gui.CraftingOptionGuiData;
 import ruiseki.integratedterminals.core.client.gui.ExtendedGuiHandler;
+import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorageBase;
 import ruiseki.integratedterminals.network.packet.PacketSetCraftingDataItem;
 import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientItemOpenPacket;
 import ruiseki.integratedterminals.proxy.guiprovider.GuiProviders;
@@ -30,8 +31,12 @@ public class TerminalStorageLocationItem implements ITerminalStorageLocation<Int
     public <T, M> void openContainerFromClient(CraftingOptionGuiData<T, M, Integer> craftingOptionGuiData) {
         Integer slot = craftingOptionGuiData.getLocationInstance();
 
-        TerminalStorageIngredientItemOpenPacket
-            .send(slot, craftingOptionGuiData.getTabName(), craftingOptionGuiData.getChannel());
+        TerminalStorageIngredientItemOpenPacket.send(
+            slot,
+            new ContainerTerminalStorageBase.InitTabData(
+                craftingOptionGuiData.getTabName(),
+                craftingOptionGuiData.getChannel()),
+            craftingOptionGuiData.getState());
     }
 
     @Override
@@ -39,8 +44,14 @@ public class TerminalStorageLocationItem implements ITerminalStorageLocation<Int
         EntityPlayerMP player) {
         Integer slot = craftingOptionGuiData.getLocationInstance();
 
-        TerminalStorageIngredientItemOpenPacket
-            .openServer(world, slot, player, craftingOptionGuiData.getTabName(), craftingOptionGuiData.getChannel());
+        TerminalStorageIngredientItemOpenPacket.openServer(
+            world,
+            slot,
+            player,
+            new ContainerTerminalStorageBase.InitTabData(
+                craftingOptionGuiData.getTabName(),
+                craftingOptionGuiData.getChannel()),
+            craftingOptionGuiData.getState());
     }
 
     @Override

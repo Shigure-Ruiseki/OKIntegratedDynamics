@@ -36,7 +36,8 @@ public class TerminalStorageLocationPart implements ITerminalStorageLocation<Par
                 .getBlockPos(),
             partPos.getSide(),
             craftingOptionGuiData.getTabName(),
-            craftingOptionGuiData.getChannel());
+            craftingOptionGuiData.getChannel(),
+            craftingOptionGuiData.getState());
     }
 
     @Override
@@ -50,7 +51,8 @@ public class TerminalStorageLocationPart implements ITerminalStorageLocation<Par
             partPos.getSide(),
             player,
             craftingOptionGuiData.getTabName(),
-            craftingOptionGuiData.getChannel());
+            craftingOptionGuiData.getChannel(),
+            craftingOptionGuiData.getState());
     }
 
     @Override

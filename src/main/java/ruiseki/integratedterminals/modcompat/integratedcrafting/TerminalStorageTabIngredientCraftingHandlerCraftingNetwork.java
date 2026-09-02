@@ -87,9 +87,17 @@ public class TerminalStorageTabIngredientCraftingHandlerCraftingNetwork
         IngredientComponent<T, M> ingredientComponent = tab.getIngredientNetwork()
             .getComponent();
         IIngredientMatcher<T, M> matcher = ingredientComponent.getMatcher();
+        return getCraftingOptionsWithOutput(tab, channel, matcher.getEmptyInstance(), matcher.getAnyMatchCondition());
+    }
+
+    @Override
+    public <T, M> Collection<TerminalCraftingOptionRecipeDefinition<?, ?>> getCraftingOptionsWithOutput(
+        TerminalStorageTabIngredientComponentServer<T, M> tab, int channel, T instance, M matchCondition) {
+        IngredientComponent<T, M> ingredientComponent = tab.getIngredientNetwork()
+            .getComponent();
         IRecipeIndex recipeIndex = getRecipeIndex(tab.getNetwork(), channel);
         Iterable<IRecipeDefinition> recipes = () -> recipeIndex
-            .getRecipes(ingredientComponent, matcher.getEmptyInstance(), matcher.getAnyMatchCondition());
+            .getRecipes(ingredientComponent, instance, matchCondition);
         return StreamSupport.stream(recipes.spliterator(), false)
             .map((recipe) -> new TerminalCraftingOptionRecipeDefinition<>(ingredientComponent, recipe))
             .collect(Collectors.toList());
@@ -476,7 +484,7 @@ public class TerminalStorageTabIngredientCraftingHandlerCraftingNetwork
         return StreamSupport.stream(iterable.spliterator(), false)
             .filter(
                 job -> job.getDependentCraftingJobs()
-                    .isEmpty()) // Only expose root jobs
+                    .isEmpty() && job.getAmount() > 0) // Only expose root jobs AND non-finalizing jobs (amount > 0)
             .map(job -> newActiveCraftingJob(craftingNetwork, channel, job, dependencyGraph))
             .sorted(Comparator.comparingInt(ITerminalCraftingPlan::getId))
             .collect(Collectors.toList());

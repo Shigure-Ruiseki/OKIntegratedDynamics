@@ -112,7 +112,9 @@ public class TerminalStorageTabIngredientComponentItemStackCraftingClient
                         GeneralConfig.shiftClickCraftingResultLimit));
             return true;
         }
-        if (hoveredContainerSlot > craftingResultSlotIndex && hoveredContainerSlot <= craftingResultSlotIndex + 9
+        // Don't act on (non-shift) clicks here.
+        if (!isQuickMove && hoveredContainerSlot > craftingResultSlotIndex
+            && hoveredContainerSlot <= craftingResultSlotIndex + 9
             && getActiveSlotId() < 0) {
             return false;
         }

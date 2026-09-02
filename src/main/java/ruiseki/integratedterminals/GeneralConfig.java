@@ -175,6 +175,12 @@ public class GeneralConfig extends DummyConfig {
         isCommandable = true)
     public static boolean craftingPlannerEnableMultithreading = true;
 
+    @ConfigurableProperty(
+        category = ConfigurableTypeCategory.CORE,
+        comment = "If client-directed packets should be serialized in a separate thread.",
+        isCommandable = true)
+    public static boolean packetSerializationEnableMultithreading = true;
+
     /**
      * The base energy usage for the crafting terminal.
      */
@@ -248,6 +254,12 @@ public class GeneralConfig extends DummyConfig {
         category = ConfigurableTypeCategory.GENERAL,
         comment = "If the crafting grid should always be shown centrally, and not be responsive based on screen size.")
     public static boolean guiStorageForceCraftingGridCenter = false;
+
+    @ConfigurableProperty(
+        category = ConfigurableTypeCategory.GENERAL,
+        comment = "If the automatic re-sorting of the storage terminal contents should be paused while the shift key is held down.",
+        isCommandable = true)
+    public static boolean guiStoragePauseSortingWhileShifting = true;
 
     /**
      * The type of this config.

@@ -15,7 +15,7 @@ import ruiseki.okcore.network.PacketCodec;
 
 /**
  * Packet for opening a live crafting plan gui.
- * 
+ *
  * @author rubensworks
  *
  */
@@ -48,7 +48,7 @@ public class OpenCraftingJobsGuiPacket extends PacketCodec {
     @Override
     public void actionServer(World world, EntityPlayerMP player) {
         IntegratedDynamics._instance.getGuiHandler()
-            .setTemporaryData(ruiseki.integrateddynamics.core.client.gui.ExtendedGuiHandler.PART, side);
+            .setTemporaryData(ExtendedGuiHandler.PART, side);
         player.openGui(
             IntegratedDynamics._instance,
             TerminalPartTypes.TERMINAL_CRAFTING_JOB.getGuiID(),
