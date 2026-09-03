@@ -6,7 +6,6 @@ import net.minecraft.potion.Potion;
 
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.okcore.config.ConfigurableProperty;
-import ruiseki.okcore.config.ConfigurableTypeCategory;
 import ruiseki.okcore.config.extendedconfig.ItemConfig;
 
 /**
@@ -26,7 +25,7 @@ public class ItemMenrilBerriesConfig extends ItemConfig {
      * If the berries should give the night vision effect when eaten.
      */
     @ConfigurableProperty(
-        category = ConfigurableTypeCategory.ITEM,
+        category = "item",
         comment = "If the berries should give the night vision effect when eaten.",
         requiresMcRestart = true)
     public static boolean nightVision = true;

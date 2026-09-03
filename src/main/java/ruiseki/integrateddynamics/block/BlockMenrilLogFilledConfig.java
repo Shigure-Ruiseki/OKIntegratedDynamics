@@ -5,7 +5,6 @@ import net.minecraft.init.Blocks;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.Reference;
 import ruiseki.okcore.config.ConfigurableProperty;
-import ruiseki.okcore.config.ConfigurableTypeCategory;
 import ruiseki.okcore.config.extendedconfig.BlockConfig;
 
 /**
@@ -26,7 +25,7 @@ public class BlockMenrilLogFilledConfig extends BlockConfig {
      * lower the chance.
      */
     @ConfigurableProperty(
-        category = ConfigurableTypeCategory.WORLDGENERATION,
+        category = "world_generation",
         comment = "The 1/x chance at which Menril Wood will be filled with Menril Resin when generated, the higher this value, the lower the chance.",
         isCommandable = true,
         minimalValue = 0)

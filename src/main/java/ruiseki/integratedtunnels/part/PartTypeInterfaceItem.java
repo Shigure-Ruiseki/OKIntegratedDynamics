@@ -14,15 +14,17 @@ import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integratedtunnels.GeneralConfig;
 import ruiseki.integratedtunnels.api.network.IItemNetwork;
 import ruiseki.integratedtunnels.capability.network.ItemNetworkConfig;
+import ruiseki.integratedtunnels.core.part.IPartTypeInterfacePositionedAddon;
 import ruiseki.integratedtunnels.core.part.PartTypeInterfacePositionedAddon;
 import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.datastructure.LazyOptional;
+import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.item.capability.CapabilityItemHandler;
 import ruiseki.okcore.item.handler.IItemHandler;
 
 /**
  * Interface for item handlers.
- *
+ * 
  * @author rubensworks
  */
 public class PartTypeInterfaceItem extends
@@ -33,12 +35,12 @@ public class PartTypeInterfaceItem extends
     }
 
     @Override
-    protected Capability<IItemNetwork> getNetworkCapability() {
+    public Capability<IItemNetwork> getNetworkCapability() {
         return ItemNetworkConfig.CAPABILITY;
     }
 
     @Override
-    protected Capability<IItemHandler> getTargetCapability() {
+    public Capability<IItemHandler> getTargetCapability() {
         return CapabilityItemHandler.ITEM_HANDLER;
     }
 
@@ -52,157 +54,187 @@ public class PartTypeInterfaceItem extends
         return GeneralConfig.interfaceItemBaseConsumption;
     }
 
-    public static class State
-        extends PartTypeInterfacePositionedAddon.State<PartTypeInterfaceItem, IItemNetwork, IItemHandler>
-        implements IItemHandler, ISlotlessItemHandler {
+    public static class State extends
+        PartTypeInterfacePositionedAddon.State<IItemNetwork, IItemHandler, PartTypeInterfaceItem, PartTypeInterfaceItem.State> {
 
         @Override
-        protected Capability<IItemHandler> getTargetCapability() {
+        public Capability<IItemHandler> getTargetCapability() {
             return CapabilityItemHandler.ITEM_HANDLER;
         }
 
-        protected IItemHandler getItemHandler() {
-            return getPositionedAddonsNetwork().getChannelExternal(CapabilityItemHandler.ITEM_HANDLER, getChannel());
-        }
-
         @Override
-        public int getSlots() {
-            if (!isNetworkAndPositionValid()) {
-                return 0;
-            }
-            disablePosition();
-            int ret = getItemHandler().getSlots();
-            enablePosition();
-            return ret;
-        }
-
-        @Override
-        public ItemStack getStackInSlot(int slot) {
-            if (!isNetworkAndPositionValid()) {
-                return null;
-            }
-            disablePosition();
-            ItemStack ret = getItemHandler().getStackInSlot(slot);
-            enablePosition();
-            return ret;
-        }
-
-        @Override
-        public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
-            if (!isNetworkAndPositionValid()) {
-                return stack;
-            }
-            disablePosition();
-            ItemStack ret = getItemHandler().insertItem(slot, stack, simulate);
-            enablePosition();
-            return ret;
-        }
-
-        @Override
-        public ItemStack extractItem(int slot, int amount, boolean simulate) {
-            if (!isNetworkAndPositionValid()) {
-                return null;
-            }
-            disablePosition();
-            ItemStack ret = getItemHandler().extractItem(slot, amount, simulate);
-            enablePosition();
-            return ret;
-        }
-
-        @Override
-        public int getSlotLimit(int slot) {
-            if (!isNetworkAndPositionValid()) {
-                return 0;
-            }
-            disablePosition();
-            int ret = getItemHandler().getSlotLimit(slot);
-            enablePosition();
-            return ret;
-        }
-
-        @Override
-        public Iterator<ItemStack> getItems() {
-            if (!isNetworkAndPositionValid()) {
-                return Iterators.forArray();
-            }
-            disablePosition();
-            Iterator<ItemStack> ret = getPositionedAddonsNetwork().getChannel(getChannelInterface())
-                .iterator();
-            enablePosition();
-            return ret;
-        }
-
-        @Override
-        public Iterator<ItemStack> findItems(ItemStack stack, int matchFlags) {
-            if (!isNetworkAndPositionValid()) {
-                return Iterators.forArray();
-            }
-            disablePosition();
-            Iterator<ItemStack> ret = getPositionedAddonsNetwork().getChannel(getChannelInterface())
-                .iterator(stack, matchFlags);
-            enablePosition();
-            return ret;
-        }
-
-        @Override
-        public ItemStack insertItem(ItemStack stack, boolean simulate) {
-            if (!isNetworkAndPositionValid()) {
-                return stack;
-            }
-            disablePosition();
-            ItemStack ret = getPositionedAddonsNetwork().getChannel(getChannelInterface())
-                .insert(stack, simulate);
-            enablePosition();
-            return ret;
-        }
-
-        @Override
-        public ItemStack extractItem(int amount, boolean simulate) {
-            if (!isNetworkAndPositionValid()) {
-                return null;
-            }
-            disablePosition();
-            ItemStack ret = getPositionedAddonsNetwork().getChannel(getChannelInterface())
-                .extract(amount, simulate);
-            enablePosition();
-            return ret;
-        }
-
-        @Override
-        public ItemStack extractItem(ItemStack matchStack, int matchFlags, boolean simulate) {
-            if (!isNetworkAndPositionValid()) {
-                return null;
-            }
-            disablePosition();
-            ItemStack ret = getPositionedAddonsNetwork().getChannel(getChannelInterface())
-                .extract(matchStack, matchFlags, simulate);
-            enablePosition();
-            return ret;
-        }
-
-        @Override
-        public int getLimit() {
-            if (!isNetworkAndPositionValid()) {
-                return 0;
-            }
-            disablePosition();
-            int limit = 0;
-            IItemHandler itemHandler = getItemHandler();
-            for (int i = 0; i < itemHandler.getSlots(); i++) {
-                limit += itemHandler.getSlotLimit(i);
-            }
-            enablePosition();
-            return limit;
+        public IItemHandler getCapabilityInstance() {
+            return new PartTypeInterfaceItem.ItemHandler(this);
         }
 
         @Override
         public <T2> LazyOptional<T2> getCapability(Capability<T2> capability, INetwork network,
             IPartNetwork partNetwork, PartTarget target) {
             if (isNetworkAndPositionValid() && capability == SlotlessItemHandlerConfig.CAPABILITY) {
-                return LazyOptional.of(() -> this)
+                return LazyOptional.of(this::getCapabilityInstance)
                     .cast();
             }
             return super.getCapability(capability, network, partNetwork, target);
+        }
+    }
+
+    public static class ItemHandler implements IItemHandler, ISlotlessItemHandler {
+
+        private final IPartTypeInterfacePositionedAddon.IState<IItemNetwork, IItemHandler, ?, ?> state;
+
+        public ItemHandler(IPartTypeInterfacePositionedAddon.IState<IItemNetwork, IItemHandler, ?, ?> state) {
+            this.state = state;
+        }
+
+        protected IItemHandler getItemHandler() {
+            return state.getPositionedAddonsNetwork()
+                .getChannelExternal(CapabilityItemHandler.ITEM_HANDLER, state.getChannel());
+        }
+
+        @Override
+        public int getSlots() {
+            if (!state.isNetworkAndPositionValid()) {
+                return 0;
+            }
+            state.disablePosition();
+            int ret = getItemHandler().getSlots();
+            state.enablePosition();
+            return ret;
+        }
+
+        @Override
+        public ItemStack getStackInSlot(int slot) {
+            if (!state.isNetworkAndPositionValid()) {
+                return ItemHelpers.EMPTY;
+            }
+            state.disablePosition();
+            ItemStack ret = getItemHandler().getStackInSlot(slot);
+            state.enablePosition();
+            return ret;
+        }
+
+        @Override
+        public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
+            if (!state.isNetworkAndPositionValid()) {
+                return stack;
+            }
+            state.disablePosition();
+            ItemStack ret = getItemHandler().insertItem(slot, stack, simulate);
+            state.enablePosition();
+            return ret;
+        }
+
+        @Override
+        public ItemStack extractItem(int slot, int amount, boolean simulate) {
+            if (!state.isNetworkAndPositionValid()) {
+                return ItemHelpers.EMPTY;
+            }
+            state.disablePosition();
+            ItemStack ret = getItemHandler().extractItem(slot, amount, simulate);
+            state.enablePosition();
+            return ret;
+        }
+
+        @Override
+        public int getSlotLimit(int slot) {
+            if (!state.isNetworkAndPositionValid()) {
+                return 0;
+            }
+            state.disablePosition();
+            int ret = getItemHandler().getSlotLimit(slot);
+            state.enablePosition();
+            return ret;
+        }
+
+        @Override
+        public boolean isItemValid(int slot, ItemStack stack) {
+            if (!state.isNetworkAndPositionValid()) {
+                return false;
+            }
+            state.disablePosition();
+            boolean ret = getItemHandler().isItemValid(slot, stack);
+            state.enablePosition();
+            return ret;
+        }
+
+        @Override
+        public Iterator<ItemStack> getItems() {
+            if (!state.isNetworkAndPositionValid()) {
+                return Iterators.forArray();
+            }
+            state.disablePosition();
+            Iterator<ItemStack> ret = state.getPositionedAddonsNetwork()
+                .getChannel(state.getChannelInterface())
+                .iterator();
+            state.enablePosition();
+            return ret;
+        }
+
+        @Override
+        public Iterator<ItemStack> findItems(ItemStack stack, int matchFlags) {
+            if (!state.isNetworkAndPositionValid()) {
+                return Iterators.forArray();
+            }
+            state.disablePosition();
+            Iterator<ItemStack> ret = state.getPositionedAddonsNetwork()
+                .getChannel(state.getChannelInterface())
+                .iterator(stack, matchFlags);
+            state.enablePosition();
+            return ret;
+        }
+
+        @Override
+        public ItemStack insertItem(ItemStack stack, boolean simulate) {
+            if (!state.isNetworkAndPositionValid()) {
+                return stack;
+            }
+            state.disablePosition();
+            ItemStack ret = state.getPositionedAddonsNetwork()
+                .getChannel(state.getChannelInterface())
+                .insert(stack, simulate);
+            state.enablePosition();
+            return ret;
+        }
+
+        @Override
+        public ItemStack extractItem(int amount, boolean simulate) {
+            if (!state.isNetworkAndPositionValid()) {
+                return ItemHelpers.EMPTY;
+            }
+            state.disablePosition();
+            ItemStack ret = state.getPositionedAddonsNetwork()
+                .getChannel(state.getChannelInterface())
+                .extract(amount, simulate);
+            state.enablePosition();
+            return ret;
+        }
+
+        @Override
+        public ItemStack extractItem(ItemStack matchStack, int matchFlags, boolean simulate) {
+            if (!state.isNetworkAndPositionValid()) {
+                return ItemHelpers.EMPTY;
+            }
+            state.disablePosition();
+            ItemStack ret = state.getPositionedAddonsNetwork()
+                .getChannel(state.getChannelInterface())
+                .extract(matchStack, matchFlags, simulate);
+            state.enablePosition();
+            return ret;
+        }
+
+        @Override
+        public int getLimit() {
+            if (!state.isNetworkAndPositionValid()) {
+                return 0;
+            }
+            state.disablePosition();
+            int limit = 0;
+            IItemHandler itemHandler = getItemHandler();
+            for (int i = 0; i < itemHandler.getSlots(); i++) {
+                limit += itemHandler.getSlotLimit(i);
+            }
+            state.enablePosition();
+            return limit;
         }
     }
 }

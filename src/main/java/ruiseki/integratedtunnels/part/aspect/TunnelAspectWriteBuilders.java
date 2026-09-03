@@ -19,6 +19,7 @@ import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 
+import ruiseki.commoncapabilities.IngredientComponents;
 import ruiseki.commoncapabilities.api.ingredient.storage.IIngredientComponentStorage;
 import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.evaluate.operator.IOperator;
@@ -28,6 +29,7 @@ import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeListProxy;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.IPositionedAddonsNetwork;
 import ruiseki.integrateddynamics.api.network.IPositionedAddonsNetworkIngredients;
+import ruiseki.integrateddynamics.api.network.PositionedAddonsNetworkIngredientsFilter;
 import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.api.part.aspect.property.IAspectProperties;
@@ -70,13 +72,15 @@ import ruiseki.integratedtunnels.core.TunnelEnergyHelpers;
 import ruiseki.integratedtunnels.core.TunnelFluidHelpers;
 import ruiseki.integratedtunnels.core.TunnelHelpers;
 import ruiseki.integratedtunnels.core.TunnelItemHelpers;
-import ruiseki.integratedtunnels.core.part.PartStatePositionedAddon;
+import ruiseki.integratedtunnels.core.part.IPartTypeInterfacePositionedAddon;
+import ruiseki.integratedtunnels.core.part.PartTypeInterfacePositionedAddonFiltering;
 import ruiseki.integratedtunnels.core.predicate.IngredientPredicate;
 import ruiseki.integratedtunnels.part.PartStatePlayerSimulator;
 import ruiseki.okcore.block.collidable.ImmutableAxisAlignedBB;
 import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
+import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.energy.capability.CapabilityEnergy;
 import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
 import ruiseki.okcore.helper.BlockHelpers;
@@ -143,6 +147,46 @@ public class TunnelAspectWriteBuilders {
         }
     }
 
+    public static <T, M> IAspectValuePropagator<Triple<PartTarget, IAspectProperties, ChanneledTargetInformation<T, M>>, Void> propSetFilter() {
+        return input -> {
+            // This will only be called once, due to our filter-specific update logic in
+            // PartTypeInterfacePositionedAddon
+            PartHelpers.PartStateHolder<?, PartTypeInterfacePositionedAddonFiltering.State<?, T, ?, ?>> partStateHolder = (PartHelpers.PartStateHolder<?, PartTypeInterfacePositionedAddonFiltering.State<?, T, ?, ?>>) PartHelpers
+                .getPart(
+                    input.getLeft()
+                        .getCenter());
+            if (partStateHolder != null) {
+                IAspectProperties properties = input.getMiddle();
+                PartTypeInterfacePositionedAddonFiltering partType = ((PartTypeInterfacePositionedAddonFiltering<?, T, ?, ?>) partStateHolder
+                    .getPart());
+                PartTypeInterfacePositionedAddonFiltering.State<?, T, ?, ?> partState = partStateHolder.getState();
+                PartTarget target = input.getLeft();
+
+                partState.setTargetFilter(
+                    new PositionedAddonsNetworkIngredientsFilter<>(
+                        input.getRight()
+                            .getIngredientPredicate(),
+                        properties.getValue(PROP_FILTER_APPLY_TO_INSERTIONS)
+                            .getRawValue(),
+                        properties.getValue(PROP_FILTER_APPLY_TO_EXTRACTIONS)
+                            .getRawValue(),
+                        properties.getValue(PROP_FILTER_ALLOW_ALL_IF_NOT_APPLIED)
+                            .getRawValue()));
+                partType.addTargetToNetwork(
+                    partStateHolder.getState()
+                        .getNetwork(),
+                    target.getTarget(),
+                    partStateHolder.getState()
+                        .getPriority(),
+                    partStateHolder.getState()
+                        .getChannelInterface(),
+                    partState);
+                partType.scheduleNetworkObservation(target, partState);
+            }
+            return null;
+        };
+    }
+
     public static final IAspectPropertyTypeInstance<ValueTypeBoolean, ValueTypeBoolean.ValueBoolean> PROP_BLACKLIST = new AspectPropertyTypeInstance<>(
         ValueTypes.BOOLEAN,
         "aspect.aspecttypes.integratedtunnels.boolean.blacklist.name");
@@ -161,6 +205,15 @@ public class TunnelAspectWriteBuilders {
     public static final IAspectPropertyTypeInstance<ValueTypeBoolean, ValueTypeBoolean.ValueBoolean> PROP_CRAFT = new AspectPropertyTypeInstance<>(
         ValueTypes.BOOLEAN,
         "aspect.aspecttypes.integratedtunnels.boolean.craft.name");
+    public static final IAspectPropertyTypeInstance<ValueTypeBoolean, ValueTypeBoolean.ValueBoolean> PROP_FILTER_APPLY_TO_INSERTIONS = new AspectPropertyTypeInstance<>(
+        ValueTypes.BOOLEAN,
+        "aspect.aspecttypes.integratedtunnels.boolean.filter.applytoinsert.name");
+    public static final IAspectPropertyTypeInstance<ValueTypeBoolean, ValueTypeBoolean.ValueBoolean> PROP_FILTER_APPLY_TO_EXTRACTIONS = new AspectPropertyTypeInstance<>(
+        ValueTypes.BOOLEAN,
+        "aspect.aspecttypes.integratedtunnels.boolean.filter.applytoextract.name");
+    public static final IAspectPropertyTypeInstance<ValueTypeBoolean, ValueTypeBoolean.ValueBoolean> PROP_FILTER_ALLOW_ALL_IF_NOT_APPLIED = new AspectPropertyTypeInstance<>(
+        ValueTypes.BOOLEAN,
+        "aspect.aspecttypes.integratedtunnels.boolean.filter.allowallifnotapplied.name");
     public static final IAspectProperties PROPERTIES_CHANNEL = new AspectProperties(
         ImmutableList.<IAspectPropertyTypeInstance>of(PROP_CHANNEL, PROP_ROUNDROBIN));
     static {
@@ -169,6 +222,30 @@ public class TunnelAspectWriteBuilders {
             ValueTypeInteger.ValueInteger.of(IPositionedAddonsNetworkIngredients.DEFAULT_CHANNEL));
         PROPERTIES_CHANNEL.setValue(PROP_ROUNDROBIN, ValueTypeBoolean.ValueBoolean.of(false));
     }
+
+    public static final IAspectWriteActivator PREPARE_FILTER = new IAspectWriteActivator() {
+
+        @Override
+        public <P extends IPartTypeWriter<P, S>, S extends IPartStateWriter<P>> void onActivate(P partType,
+            PartTarget target, S state) {
+            if (state instanceof PartTypeInterfacePositionedAddonFiltering.State)
+                ((PartTypeInterfacePositionedAddonFiltering.State<?, ?, ?, ?>) state).requireAspectUpdate();
+        }
+    };
+    public static final IAspectWriteDeactivator RESET_FILTER = new IAspectWriteDeactivator() {
+
+        @Override
+        public <P extends IPartTypeWriter<P, S>, S extends IPartStateWriter<P>> void onDeactivate(P partType,
+            PartTarget target, S state) {
+            if (state instanceof PartTypeInterfacePositionedAddonFiltering.State) {
+                PartTypeInterfacePositionedAddonFiltering.State<?, ?, ?, ?> stateCast = (PartTypeInterfacePositionedAddonFiltering.State<?, ?, ?, ?>) state;
+                PartTypeInterfacePositionedAddonFiltering partTypeCast = (PartTypeInterfacePositionedAddonFiltering<?, ?, ?, ?>) partType;
+                stateCast.setTargetFilter(null);
+                partTypeCast.removePositionFromNetwork(stateCast.getNetwork(), target.getTarget(), stateCast);
+                partTypeCast.scheduleNetworkObservation(target, stateCast);
+            }
+        }
+    };
 
     public static final class Energy {
 
@@ -212,6 +289,11 @@ public class TunnelAspectWriteBuilders {
             ImmutableList.<IAspectPropertyTypeInstance>of(PROP_CHANNEL, PROP_ROUNDROBIN
             // , PROP_EXACTAMOUNT
             ));
+        public static final IAspectProperties PROPERTIES_FILTER = new AspectProperties(
+            ImmutableList.<IAspectPropertyTypeInstance>of(
+                PROP_FILTER_APPLY_TO_INSERTIONS,
+                PROP_FILTER_APPLY_TO_EXTRACTIONS,
+                PROP_FILTER_ALLOW_ALL_IF_NOT_APPLIED));
         static {
             PROPERTIES_RATE.setValue(PROP_ROUNDROBIN, ValueTypeBoolean.ValueBoolean.of(false));
             PROPERTIES_RATE.setValue(
@@ -232,6 +314,10 @@ public class TunnelAspectWriteBuilders {
                 ValueTypeInteger.ValueInteger.of(IPositionedAddonsNetworkIngredients.DEFAULT_CHANNEL));
             PROPERTIES.setValue(PROP_ROUNDROBIN, ValueTypeBoolean.ValueBoolean.of(false));
             // PROPERTIES.setValue(PROP_EXACTAMOUNT, ValueTypeBoolean.ValueBoolean.of(false));
+
+            PROPERTIES_FILTER.setValue(PROP_FILTER_APPLY_TO_INSERTIONS, ValueTypeBoolean.ValueBoolean.of(true));
+            PROPERTIES_FILTER.setValue(PROP_FILTER_APPLY_TO_EXTRACTIONS, ValueTypeBoolean.ValueBoolean.of(true));
+            PROPERTIES_FILTER.setValue(PROP_FILTER_ALLOW_ALL_IF_NOT_APPLIED, ValueTypeBoolean.ValueBoolean.of(false));
         }
 
         public static final IAspectValuePropagator<Triple<PartTarget, IAspectProperties, Boolean>, Triple<PartTarget, IAspectProperties, Integer>> PROP_GETRATE = input -> Triple
@@ -275,7 +361,24 @@ public class TunnelAspectWriteBuilders {
             }
             return null;
         };
+        public static final IAspectValuePropagator<Triple<PartTarget, IAspectProperties, Boolean>, Triple<PartTarget, IAspectProperties, ChanneledTargetInformation<Long, Boolean>>> PROP_BOOLEAN_PREDICATE = input -> {
+            IngredientPredicate<Long, Boolean> energyMatcher = new IngredientPredicate<Long, Boolean>(
+                IngredientComponents.ENERGY,
+                false,
+                false,
+                0,
+                false) {
 
+                @Override
+                public boolean test(Long integer) {
+                    return input.getRight();
+                }
+            };
+            return Triple.of(
+                input.getLeft(),
+                input.getMiddle(),
+                ChanneledTargetInformation.of(energyMatcher, energyMatcher, -1));
+        };
     }
 
     public static final class Item {
@@ -419,6 +522,31 @@ public class TunnelAspectWriteBuilders {
                 PROP_NBT_SUPERSET,
                 PROP_NBT_REQUIRE,
                 PROP_NBT_RECURSIVE));
+        public static final IAspectProperties PROPERTIES_FILTER = new AspectProperties(
+            ImmutableList.<IAspectPropertyTypeInstance>of(
+                PROP_FILTER_APPLY_TO_INSERTIONS,
+                PROP_FILTER_APPLY_TO_EXTRACTIONS,
+                PROP_FILTER_ALLOW_ALL_IF_NOT_APPLIED));
+        public static final IAspectProperties PROPERTIES_FILTER_CHECKS = new AspectProperties(
+            ImmutableList.<IAspectPropertyTypeInstance>of(
+                PROP_FILTER_APPLY_TO_INSERTIONS,
+                PROP_FILTER_APPLY_TO_EXTRACTIONS,
+                PROP_FILTER_ALLOW_ALL_IF_NOT_APPLIED,
+                PROP_BLACKLIST,
+                PROP_RATE,
+                PROP_CHECK_STACKSIZE,
+                PROP_CHECK_NBT,
+                PROP_EMPTYISANY));
+        public static final IAspectProperties PROPERTIES_FILTER_NBT = new AspectProperties(
+            ImmutableList.<IAspectPropertyTypeInstance>of(
+                PROP_FILTER_APPLY_TO_INSERTIONS,
+                PROP_FILTER_APPLY_TO_EXTRACTIONS,
+                PROP_FILTER_ALLOW_ALL_IF_NOT_APPLIED,
+                PROP_BLACKLIST,
+                PROP_NBT_SUBSET,
+                PROP_NBT_SUPERSET,
+                PROP_NBT_REQUIRE,
+                PROP_NBT_RECURSIVE));
         static {
             PROPERTIES_RATESLOT.setValue(
                 PROP_CHANNEL,
@@ -493,6 +621,30 @@ public class TunnelAspectWriteBuilders {
             PROPERTIES_NBT.setValue(PROP_NBT_SUPERSET, ValueTypeBoolean.ValueBoolean.of(true));
             PROPERTIES_NBT.setValue(PROP_NBT_REQUIRE, ValueTypeBoolean.ValueBoolean.of(true));
             PROPERTIES_NBT.setValue(PROP_NBT_RECURSIVE, ValueTypeBoolean.ValueBoolean.of(true));
+
+            PROPERTIES_FILTER.setValue(PROP_FILTER_APPLY_TO_INSERTIONS, ValueTypeBoolean.ValueBoolean.of(true));
+            PROPERTIES_FILTER.setValue(PROP_FILTER_APPLY_TO_EXTRACTIONS, ValueTypeBoolean.ValueBoolean.of(true));
+            PROPERTIES_FILTER.setValue(PROP_FILTER_ALLOW_ALL_IF_NOT_APPLIED, ValueTypeBoolean.ValueBoolean.of(false));
+
+            PROPERTIES_FILTER_CHECKS.setValue(PROP_FILTER_APPLY_TO_INSERTIONS, ValueTypeBoolean.ValueBoolean.of(true));
+            PROPERTIES_FILTER_CHECKS.setValue(PROP_FILTER_APPLY_TO_EXTRACTIONS, ValueTypeBoolean.ValueBoolean.of(true));
+            PROPERTIES_FILTER_CHECKS
+                .setValue(PROP_FILTER_ALLOW_ALL_IF_NOT_APPLIED, ValueTypeBoolean.ValueBoolean.of(false));
+            PROPERTIES_FILTER_CHECKS.setValue(PROP_BLACKLIST, ValueTypeBoolean.ValueBoolean.of(false));
+            PROPERTIES_FILTER_CHECKS.setValue(PROP_RATE, ValueTypeInteger.ValueInteger.of(64));
+            PROPERTIES_FILTER_CHECKS.setValue(PROP_CHECK_STACKSIZE, ValueTypeBoolean.ValueBoolean.of(false));
+            PROPERTIES_FILTER_CHECKS.setValue(PROP_CHECK_NBT, ValueTypeBoolean.ValueBoolean.of(true));
+            PROPERTIES_FILTER_CHECKS.setValue(PROP_EMPTYISANY, ValueTypeBoolean.ValueBoolean.of(false));
+
+            PROPERTIES_FILTER_NBT.setValue(PROP_FILTER_APPLY_TO_INSERTIONS, ValueTypeBoolean.ValueBoolean.of(true));
+            PROPERTIES_FILTER_NBT.setValue(PROP_FILTER_APPLY_TO_EXTRACTIONS, ValueTypeBoolean.ValueBoolean.of(true));
+            PROPERTIES_FILTER_NBT
+                .setValue(PROP_FILTER_ALLOW_ALL_IF_NOT_APPLIED, ValueTypeBoolean.ValueBoolean.of(false));
+            PROPERTIES_FILTER_NBT.setValue(PROP_BLACKLIST, ValueTypeBoolean.ValueBoolean.of(false));
+            PROPERTIES_FILTER_NBT.setValue(PROP_NBT_SUBSET, ValueTypeBoolean.ValueBoolean.of(true));
+            PROPERTIES_FILTER_NBT.setValue(PROP_NBT_SUPERSET, ValueTypeBoolean.ValueBoolean.of(true));
+            PROPERTIES_FILTER_NBT.setValue(PROP_NBT_REQUIRE, ValueTypeBoolean.ValueBoolean.of(true));
+            PROPERTIES_FILTER_NBT.setValue(PROP_NBT_RECURSIVE, ValueTypeBoolean.ValueBoolean.of(true));
         }
 
         public static final IAspectValuePropagator<Triple<PartTarget, IAspectProperties, Boolean>, Triple<PartTarget, IAspectProperties, ChanneledTargetInformation<ItemStack, Integer>>> PROP_BOOLEAN_ITEMPREDICATE = input -> {
@@ -920,6 +1072,30 @@ public class TunnelAspectWriteBuilders {
                 PROP_NBT_SUPERSET,
                 PROP_NBT_REQUIRE,
                 PROP_NBT_RECURSIVE));
+        public static final IAspectProperties PROPERTIES_FILTER = new AspectProperties(
+            ImmutableList.<IAspectPropertyTypeInstance>of(
+                PROP_FILTER_APPLY_TO_INSERTIONS,
+                PROP_FILTER_APPLY_TO_EXTRACTIONS,
+                PROP_FILTER_ALLOW_ALL_IF_NOT_APPLIED));
+        public static final IAspectProperties PROPERTIES_FILTER_CHECKS = new AspectProperties(
+            ImmutableList.<IAspectPropertyTypeInstance>of(
+                PROP_FILTER_APPLY_TO_INSERTIONS,
+                PROP_FILTER_APPLY_TO_EXTRACTIONS,
+                PROP_FILTER_ALLOW_ALL_IF_NOT_APPLIED,
+                PROP_BLACKLIST,
+                PROP_RATE,
+                PROP_CHECK_AMOUNT,
+                PROP_CHECK_NBT));
+        public static final IAspectProperties PROPERTIES_FILTER_NBT = new AspectProperties(
+            ImmutableList.<IAspectPropertyTypeInstance>of(
+                PROP_FILTER_APPLY_TO_INSERTIONS,
+                PROP_FILTER_APPLY_TO_EXTRACTIONS,
+                PROP_FILTER_ALLOW_ALL_IF_NOT_APPLIED,
+                PROP_BLACKLIST,
+                PROP_NBT_SUBSET,
+                PROP_NBT_SUPERSET,
+                PROP_NBT_REQUIRE,
+                PROP_NBT_RECURSIVE));
         static {
             PROPERTIES.setValue(
                 PROP_CHANNEL,
@@ -974,6 +1150,29 @@ public class TunnelAspectWriteBuilders {
             PROPERTIES_NBT.setValue(PROP_NBT_SUPERSET, ValueTypeBoolean.ValueBoolean.of(true));
             PROPERTIES_NBT.setValue(PROP_NBT_REQUIRE, ValueTypeBoolean.ValueBoolean.of(true));
             PROPERTIES_NBT.setValue(PROP_NBT_RECURSIVE, ValueTypeBoolean.ValueBoolean.of(true));
+
+            PROPERTIES_FILTER.setValue(PROP_FILTER_APPLY_TO_INSERTIONS, ValueTypeBoolean.ValueBoolean.of(true));
+            PROPERTIES_FILTER.setValue(PROP_FILTER_APPLY_TO_EXTRACTIONS, ValueTypeBoolean.ValueBoolean.of(true));
+            PROPERTIES_FILTER.setValue(PROP_FILTER_ALLOW_ALL_IF_NOT_APPLIED, ValueTypeBoolean.ValueBoolean.of(false));
+
+            PROPERTIES_FILTER_CHECKS.setValue(PROP_FILTER_APPLY_TO_INSERTIONS, ValueTypeBoolean.ValueBoolean.of(true));
+            PROPERTIES_FILTER_CHECKS.setValue(PROP_FILTER_APPLY_TO_EXTRACTIONS, ValueTypeBoolean.ValueBoolean.of(true));
+            PROPERTIES_FILTER_CHECKS
+                .setValue(PROP_FILTER_ALLOW_ALL_IF_NOT_APPLIED, ValueTypeBoolean.ValueBoolean.of(false));
+            PROPERTIES_FILTER_CHECKS.setValue(PROP_BLACKLIST, ValueTypeBoolean.ValueBoolean.of(false));
+            PROPERTIES_FILTER_CHECKS.setValue(PROP_RATE, ValueTypeInteger.ValueInteger.of(1000));
+            PROPERTIES_FILTER_CHECKS.setValue(PROP_CHECK_AMOUNT, ValueTypeBoolean.ValueBoolean.of(false));
+            PROPERTIES_FILTER_CHECKS.setValue(PROP_CHECK_NBT, ValueTypeBoolean.ValueBoolean.of(true));
+
+            PROPERTIES_FILTER_NBT.setValue(PROP_FILTER_APPLY_TO_INSERTIONS, ValueTypeBoolean.ValueBoolean.of(true));
+            PROPERTIES_FILTER_NBT.setValue(PROP_FILTER_APPLY_TO_EXTRACTIONS, ValueTypeBoolean.ValueBoolean.of(true));
+            PROPERTIES_FILTER_NBT
+                .setValue(PROP_FILTER_ALLOW_ALL_IF_NOT_APPLIED, ValueTypeBoolean.ValueBoolean.of(false));
+            PROPERTIES_FILTER_NBT.setValue(PROP_BLACKLIST, ValueTypeBoolean.ValueBoolean.of(false));
+            PROPERTIES_FILTER_NBT.setValue(PROP_NBT_SUBSET, ValueTypeBoolean.ValueBoolean.of(true));
+            PROPERTIES_FILTER_NBT.setValue(PROP_NBT_SUPERSET, ValueTypeBoolean.ValueBoolean.of(true));
+            PROPERTIES_FILTER_NBT.setValue(PROP_NBT_REQUIRE, ValueTypeBoolean.ValueBoolean.of(true));
+            PROPERTIES_FILTER_NBT.setValue(PROP_NBT_RECURSIVE, ValueTypeBoolean.ValueBoolean.of(true));
         }
 
         public static final IAspectValuePropagator<Triple<PartTarget, IAspectProperties, Boolean>, Triple<PartTarget, IAspectProperties, Integer>> PROP_BOOLEAN_GETRATE = input -> Triple
@@ -983,7 +1182,22 @@ public class TunnelAspectWriteBuilders {
                 input.getRight() ? input.getMiddle()
                     .getValue(PROP_RATE)
                     .getRawValue() : 0);
+        public static final IAspectValuePropagator<Triple<PartTarget, IAspectProperties, Boolean>, Triple<PartTarget, IAspectProperties, ChanneledTargetInformation<FluidStack, Integer>>> PROP_BOOLEAN_PREDICATE = input -> {
+            IngredientPredicate<FluidStack, Integer> fluidMatcher = new IngredientPredicate<FluidStack, Integer>(
+                IngredientComponents.FLUIDSTACK,
+                false,
+                false,
+                0,
+                false) {
 
+                @Override
+                public boolean test(FluidStack integer) {
+                    return input.getRight();
+                }
+            };
+            return Triple
+                .of(input.getLeft(), input.getMiddle(), ChanneledTargetInformation.of(fluidMatcher, fluidMatcher, -1));
+        };
         public static final IAspectValuePropagator<Triple<PartTarget, IAspectProperties, Integer>, Triple<PartTarget, IAspectProperties, ChanneledTargetInformation<FluidStack, Integer>>> PROP_INTEGER_FLUIDPREDICATE = input -> {
             IngredientPredicate<FluidStack, Integer> fluidStackMatcher = TunnelFluidHelpers.matchAll(
                 input.getRight(),
@@ -2593,35 +2807,41 @@ public class TunnelAspectWriteBuilders {
             @Override
             public <P extends IPartTypeWriter<P, S>, S extends IPartStateWriter<P>> void onActivate(P partType,
                 PartTarget target, S state) {
-                state.addVolatileCapability(targetCapability, (T) state);
+                state.addVolatileCapability(
+                    targetCapability,
+                    LazyOptional.of(() -> state)
+                        .cast());
                 DimPos pos = target.getCenter()
                     .getPos();
-                INetwork network = NetworkHelpers.getNetwork(
+                NetworkHelpers.getNetwork(
                     pos.getWorld(),
                     pos.getBlockPos(),
                     target.getCenter()
                         .getSide())
-                    .getOrNull();
-                if (network != null && network.getCapability(networkCapability.get())
-                    .isPresent()) {
-                    ((PartStatePositionedAddon<?, N>) state).setPositionedAddonsNetwork(
-                        network.getCapability(networkCapability.get())
-                            .getOrNull());
+                    .ifPresent(
+                        network -> network.getCapability(networkCapability.get())
+                            .ifPresent(positionedAddonsNetwork -> {
+                                if (state instanceof IPartTypeInterfacePositionedAddon.IState) {
+                                    ((IPartTypeInterfacePositionedAddon.IState<N, ?, ?, ?>) state)
+                                        .setPositionedAddonsNetwork(positionedAddonsNetwork);
+                                }
 
-                    // Notify target neighbour
-                    DimPos targetPos = target.getTarget()
-                        .getPos();
-                    if (targetPos.getWorld() != null) {
-                        BlockPos targetBlockPos = targetPos.getBlockPos();
-                        int x = targetBlockPos.getX();
-                        int y = targetBlockPos.getY();
-                        int z = targetBlockPos.getZ();
-                        Block targetBlock = targetPos.getWorld()
-                            .getBlock(x, y, z);
-                        targetPos.getWorld()
-                            .notifyBlocksOfNeighborChange(x, y, z, targetBlock);
-                    }
-                }
+                                // Notify target neighbour
+                                DimPos originPos = target.getCenter()
+                                    .getPos();
+                                DimPos targetPos = target.getTarget()
+                                    .getPos();
+                                if (targetPos.getWorld() != null) {
+                                    BlockPos targetBlockPos = targetPos.getBlockPos();
+                                    int x = targetBlockPos.getX();
+                                    int y = targetBlockPos.getY();
+                                    int z = targetBlockPos.getZ();
+                                    Block targetBlock = targetPos.getWorld()
+                                        .getBlock(x, y, z);
+                                    targetPos.getWorld()
+                                        .notifyBlocksOfNeighborChange(x, y, z, targetBlock);
+                                }
+                            }));
             }
         };
     }
@@ -2636,32 +2856,33 @@ public class TunnelAspectWriteBuilders {
                 state.removeVolatileCapability(targetCapability);
                 DimPos pos = target.getCenter()
                     .getPos();
-                INetwork network = NetworkHelpers.getNetwork(
+                NetworkHelpers.getNetwork(
                     pos.getWorld(),
                     pos.getBlockPos(),
                     target.getCenter()
                         .getSide())
-                    .getOrNull();
-                if (network != null && network.getCapability(networkCapability.get())
-                    .isPresent()) {
-                    ((PartStatePositionedAddon<?, N>) state).setPositionedAddonsNetwork(
-                        network.getCapability(networkCapability.get())
-                            .getOrNull());
+                    .ifPresent(
+                        network -> network.getCapability(networkCapability.get())
+                            .ifPresent(positionedAddonsNetwork -> {
+                                if (state instanceof IPartTypeInterfacePositionedAddon.IState) {
+                                    ((IPartTypeInterfacePositionedAddon.IState<N, ?, ?, ?>) state)
+                                        .setPositionedAddonsNetwork(positionedAddonsNetwork);
+                                }
 
-                    // Notify target neighbour
-                    DimPos targetPos = target.getTarget()
-                        .getPos();
-                    if (targetPos.getWorld() != null) {
-                        BlockPos targetBlockPos = targetPos.getBlockPos();
-                        int x = targetBlockPos.getX();
-                        int y = targetBlockPos.getY();
-                        int z = targetBlockPos.getZ();
-                        Block targetBlock = targetPos.getWorld()
-                            .getBlock(x, y, z);
-                        targetPos.getWorld()
-                            .notifyBlocksOfNeighborChange(x, y, z, targetBlock);
-                    }
-                }
+                                // Notify target neighbour
+                                DimPos targetPos = target.getTarget()
+                                    .getPos();
+                                if (targetPos.getWorld() != null) {
+                                    BlockPos targetBlockPos = targetPos.getBlockPos();
+                                    int x = targetBlockPos.getX();
+                                    int y = targetBlockPos.getY();
+                                    int z = targetBlockPos.getZ();
+                                    Block targetBlock = targetPos.getWorld()
+                                        .getBlock(x, y, z);
+                                    targetPos.getWorld()
+                                        .notifyBlocksOfNeighborChange(x, y, z, targetBlock);
+                                }
+                            }));
             }
         };
     }

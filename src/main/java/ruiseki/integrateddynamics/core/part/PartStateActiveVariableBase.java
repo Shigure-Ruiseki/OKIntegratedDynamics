@@ -59,7 +59,7 @@ public abstract class PartStateActiveVariableBase<P extends IPartType> extends P
         this.inventory.addDirtyMarkListener(this); // No need to remove myself eventually. If I am removed, inv is also
                                                    // removed.
         variableContainer = new VariableContainerDefault();
-        addVolatileCapability(VariableContainerConfig.CAPABILITY, variableContainer);
+        addVolatileCapability(VariableContainerConfig.CAPABILITY, LazyOptional.of(() -> variableContainer));
     }
 
     /**

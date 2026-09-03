@@ -1,12 +1,8 @@
 package ruiseki.integratedcompat;
 
-import org.apache.logging.log4j.Level;
-
 import ruiseki.okcore.config.ConfigurableProperty;
 import ruiseki.okcore.config.ConfigurableType;
-import ruiseki.okcore.config.ConfigurableTypeCategory;
 import ruiseki.okcore.config.extendedconfig.DummyConfig;
-import ruiseki.okcore.init.ModBase;
 
 /**
  * A config with general options for this mod.
@@ -16,44 +12,8 @@ import ruiseki.okcore.init.ModBase;
  */
 public class GeneralConfig extends DummyConfig {
 
-    /**
-     * The current mod version, will be used to check if the player's config isn't out of date and
-     * warn the player accordingly.
-     */
     @ConfigurableProperty(
-        category = ConfigurableTypeCategory.CORE,
-        comment = "Config version for " + Reference.MOD_NAME + ".\nDO NOT EDIT MANUALLY!")
-    public static String version = Reference.MOD_VERSION;
-
-    /**
-     * If the debug mode should be enabled. @see Debug
-     */
-    @ConfigurableProperty(
-        category = ConfigurableTypeCategory.CORE,
-        comment = "Set 'true' to enable development debug mode. This will result in a lower performance!",
-        requiresMcRestart = true)
-    public static boolean debug = false;
-
-    /**
-     * If the recipe loader should crash when finding invalid recipes.
-     */
-    @ConfigurableProperty(
-        category = ConfigurableTypeCategory.CORE,
-        comment = "If the recipe loader should crash when finding invalid recipes.",
-        requiresMcRestart = true)
-    public static boolean crashOnInvalidRecipe = false;
-
-    /**
-     * If mod compatibility loader should crash hard if errors occur in that process.
-     */
-    @ConfigurableProperty(
-        category = ConfigurableTypeCategory.CORE,
-        comment = "If mod compatibility loader should crash hard if errors occur in that process.",
-        requiresMcRestart = true)
-    public static boolean crashOnModCompatCrash = false;
-
-    @ConfigurableProperty(
-        category = ConfigurableTypeCategory.CORE,
+        category = "core",
         comment = "If JEI recipe filling should heuristically try to determine item tags from recipes.",
         requiresMcRestart = true)
     public static boolean jeiHeuristicTags = false;
@@ -67,23 +27,11 @@ public class GeneralConfig extends DummyConfig {
      * Create a new instance.
      */
     public GeneralConfig() {
-        super(IntegratedCompat._instance, true, "general", null, GeneralConfig.class);
+        super(IntegratedCompat._instance, true, "general", null);
     }
 
     @Override
-    public void onRegistered() {
-        // Check version of config file
-        if (!version.equals(Reference.MOD_VERSION)) {
-            getMod().log(
-                Level.WARN,
-                "The config file of " + Reference.MOD_NAME
-                    + " is out of date and might cause problems, please remove it so it can be regenerated.");
-        }
-
-        getMod().putGenericReference(ModBase.REFKEY_CRASH_ON_INVALID_RECIPE, GeneralConfig.crashOnInvalidRecipe);
-        getMod().putGenericReference(ModBase.REFKEY_DEBUGCONFIG, GeneralConfig.debug);
-        getMod().putGenericReference(ModBase.REFKEY_CRASH_ON_MODCOMPAT_CRASH, GeneralConfig.crashOnModCompatCrash);
-    }
+    public void onRegistered() {}
 
     @Override
     public boolean isEnabled() {

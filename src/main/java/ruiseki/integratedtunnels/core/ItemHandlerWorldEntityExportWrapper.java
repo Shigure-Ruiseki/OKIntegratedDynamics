@@ -20,7 +20,6 @@ import com.google.common.collect.Iterators;
 
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
 import ruiseki.commoncapabilities.api.ingredient.storage.IIngredientComponentStorage;
-import ruiseki.integratedtunnels.GeneralConfig;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.helper.ItemHelpers;
 
@@ -219,17 +218,6 @@ public class ItemHandlerWorldEntityExportWrapper
 
             entity.delayBeforeCanPickup = delayBeforePickup;
             world.spawnEntityInWorld(entity);
-
-            if (GeneralConfig.debug) {
-                world.playAuxSFX(1000, pos.getX(), pos.getY(), pos.getZ(), 0); // Sound
-                BlockPos targetPos = pos.offset(facing.getOpposite());
-                world.playAuxSFX(
-                    2000,
-                    targetPos.getX(),
-                    targetPos.getY(),
-                    targetPos.getZ(),
-                    facing.offsetX + 1 + (facing.offsetZ + 1) * 3); // Particles
-            }
         } else if (this.dispense) {
             ItemStack result = ItemHelpers.copy(stack);
             ItemHelpers.shrink(result, 1);

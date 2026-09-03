@@ -1,8 +1,6 @@
 package ruiseki.integratedtunnels.core.part;
 
 import net.minecraft.block.Block;
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.inventory.Container;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.IBlockAccess;
 import net.minecraftforge.common.util.Constants;
@@ -12,47 +10,54 @@ import org.jetbrains.annotations.Nullable;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.network.IPositionedAddonsNetwork;
+import ruiseki.integrateddynamics.api.network.IPositionedAddonsNetworkIngredients;
+import ruiseki.integrateddynamics.api.network.PositionedAddonsNetworkIngredientsFilter;
 import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.integrateddynamics.api.part.PartTarget;
-import ruiseki.integrateddynamics.core.part.PartStateBase;
+import ruiseki.integrateddynamics.core.part.write.PartStateWriterBase;
 import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.LazyOptional;
 
 /**
- * Interface for positioned network addons that do not have a filter.
- *
+ * Interface for positioned network addons that have a filter.
+ * 
  * @author rubensworks
  */
-public abstract class PartTypeInterfacePositionedAddon<N extends IPositionedAddonsNetwork, T, P extends PartTypeInterfacePositionedAddon<N, T, P, S>, S extends IPartTypeInterfacePositionedAddon.IState<N, T, P, S>>
-    extends PartTypeTunnel<P, S> implements IPartTypeInterfacePositionedAddon<N, T, P, S> {
+public abstract class PartTypeInterfacePositionedAddonFiltering<N extends IPositionedAddonsNetwork, T, P extends PartTypeInterfacePositionedAddonFiltering<N, T, P, S>, S extends PartTypeInterfacePositionedAddonFiltering.State<N, T, P, S>>
+    extends PartTypeTunnelAspects<P, S> implements IPartTypeInterfacePositionedAddon<N, T, P, S> {
 
-    public PartTypeInterfacePositionedAddon(String name) {
+    public PartTypeInterfacePositionedAddonFiltering(String name) {
         super(name);
     }
 
     @Override
-    public Class<? extends GuiScreen> getGui() {
-        return GuiInterfaceSettings.class;
-    }
-
-    @Override
-    public Class<? extends Container> getContainer() {
-        return ContainerInterfaceSettings.class;
+    public void update(INetwork network, IPartNetwork partNetwork, PartTarget target, S state) {
+        if (state.isRequireAspectUpdateAndReset()) {
+            // For filter interfaces, we assume that targetFilters are set upon each aspect exec, which we only need to
+            // do once.
+            super.update(network, partNetwork, target, state);
+        }
     }
 
     @Override
     public void onAddingPositionToNetwork(N networkCapability, INetwork network, PartPos pos, int priority,
         int channelInterface, S state) {
-        networkCapability.addPosition(pos, priority, channelInterface);
+        if (state.getTargetFilter() != null) {
+            networkCapability.addPosition(pos, priority, channelInterface);
+            ((IPositionedAddonsNetworkIngredients<T, ?>) state.getPositionedAddonsNetwork())
+                .setPositionedStorageFilter(pos, state.getTargetFilter());
+        }
     }
 
     @Override
     public void onRemovingPositionFromNetwork(N networkCapability, INetwork network, PartPos pos, S state) {
         networkCapability.removePosition(pos);
+        ((IPositionedAddonsNetworkIngredients<T, ?>) state.getPositionedAddonsNetwork())
+            .setPositionedStorageFilter(pos, null);
     }
 
-    // Methods below copied to PartTypeInterfacePositionedAddonFiltering
+    // Methods below copied from PartTypeInterfacePositionedAddon
 
     @Override
     public void afterNetworkReAlive(INetwork network, IPartNetwork partNetwork, PartTarget target, S state) {
@@ -93,24 +98,33 @@ public abstract class PartTypeInterfacePositionedAddon<N extends IPositionedAddo
         addTargetToNetwork(network, target.getTarget(), priority, state.getChannelInterface(), state);
     }
 
-    public static abstract class State<N extends IPositionedAddonsNetwork, T, P extends PartTypeInterfacePositionedAddon<N, T, P, S>, S extends State<N, T, P, S>>
-        extends PartStateBase<P> implements IPartTypeInterfacePositionedAddon.IState<N, T, P, S> {
+    public static abstract class State<N extends IPositionedAddonsNetwork, T, P extends PartTypeInterfacePositionedAddonFiltering<N, T, P, S>, S extends PartTypeInterfacePositionedAddonFiltering.State<N, T, P, S>>
+        extends PartStateWriterBase<P> implements IPartTypeInterfacePositionedAddon.IState<N, T, P, S> {
 
         private N positionedAddonsNetwork = null;
         private PartPos pos = null;
         private boolean validTargetCapability = false;
         private int channelInterface = 0;
 
+        private PositionedAddonsNetworkIngredientsFilter<T> targetFilter = null;
         private INetwork network;
         private IPartNetwork partNetwork;
+        private boolean requireAspectUpdate = true;
+
+        public State(int inventorySize) {
+            super(inventorySize);
+        }
+
+        @Override
+        protected int getDefaultUpdateInterval() {
+            return 10;
+        }
 
         @Override
         public void readFromNBT(NBTTagCompound tag) {
             super.readFromNBT(tag);
             if (tag.hasKey("channelInterface", Constants.NBT.TAG_INT)) {
                 this.channelInterface = tag.getInteger("channelInterface");
-            } else {
-                this.channelInterface = getChannel();
             }
         }
 
@@ -162,6 +176,32 @@ public abstract class PartTypeInterfacePositionedAddon<N extends IPositionedAddo
             this.pos = pos;
         }
 
+        public boolean isRequireAspectUpdateAndReset() {
+            boolean ret = this.requireAspectUpdate;
+            this.requireAspectUpdate = false;
+            return ret;
+        }
+
+        @Nullable
+        public PositionedAddonsNetworkIngredientsFilter<T> getTargetFilter() {
+            return this.targetFilter;
+        }
+
+        public void setTargetFilter(@Nullable PositionedAddonsNetworkIngredientsFilter<T> targetFilter) {
+            this.targetFilter = targetFilter;
+
+            // Trigger aspect re-execution if needed
+            if (targetFilter == null) {
+                this.requireAspectUpdate();
+            } else {
+                getVariable(network, partNetwork).addInvalidationListener(this::requireAspectUpdate);
+            }
+        }
+
+        public void requireAspectUpdate() {
+            this.requireAspectUpdate = true;
+        }
+
         @Override
         public void setNetworks(@Nullable INetwork network, @Nullable IPartNetwork partNetwork) {
             this.network = network;
@@ -169,12 +209,14 @@ public abstract class PartTypeInterfacePositionedAddon<N extends IPositionedAddo
         }
 
         @Override
-        public @Nullable INetwork getNetwork() {
+        @Nullable
+        public INetwork getNetwork() {
             return network;
         }
 
         @Override
-        public @Nullable IPartNetwork getPartNetwork() {
+        @Nullable
+        public IPartNetwork getPartNetwork() {
             return partNetwork;
         }
 
@@ -182,7 +224,7 @@ public abstract class PartTypeInterfacePositionedAddon<N extends IPositionedAddo
         public <T2> LazyOptional<T2> getCapability(Capability<T2> capability, INetwork network,
             IPartNetwork partNetwork, PartTarget target) {
             if (isNetworkAndPositionValid() && capability == getTargetCapability()) {
-                return LazyOptional.of(() -> this)
+                return LazyOptional.of(this::getCapabilityInstance)
                     .cast();
             }
             return super.getCapability(capability, network, partNetwork, target);

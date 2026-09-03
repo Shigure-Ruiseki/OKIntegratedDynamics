@@ -217,12 +217,12 @@ public interface IPartState<P extends IPartType> {
 
     /**
      * Add a capability to this state that will not be automatically persisted to NBT.
-     *
-     * @param capability The capability.
+     * 
+     * @param capability The optional capability.
      * @param value      The capability instance.
      * @param <T>        The capability type.
      */
-    public <T> void addVolatileCapability(Capability<T> capability, T value);
+    public <T> void addVolatileCapability(Capability<T> capability, LazyOptional<T> value);
 
     /**
      * Remove a non-persisted capability.

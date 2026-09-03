@@ -14,7 +14,6 @@ import ruiseki.integrateddynamics.Reference;
 import ruiseki.integrateddynamics.item.ItemMenrilBerriesConfig;
 import ruiseki.okcore.block.BlockLeavesBase;
 import ruiseki.okcore.config.ConfigurableProperty;
-import ruiseki.okcore.config.ConfigurableTypeCategory;
 import ruiseki.okcore.config.extendedconfig.BlockConfig;
 
 /**
@@ -34,7 +33,7 @@ public class BlockMenrilLeavesConfig extends BlockConfig {
      * A 1/x chance menril berries will be dropped when breaking a leaves block.
      */
     @ConfigurableProperty(
-        category = ConfigurableTypeCategory.BLOCK,
+        category = "block",
         comment = "A 1/x chance menril berries will be dropped when breaking a leaves block.",
         isCommandable = true,
         minimalValue = 0)

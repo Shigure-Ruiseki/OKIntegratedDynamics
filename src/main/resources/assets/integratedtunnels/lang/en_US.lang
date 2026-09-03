@@ -48,6 +48,8 @@ advancement.integratedtunnels.click_sword.desc=Click with a Diamond Sword using 
 # Part types
 parttype.parttypes.integratedtunnels.interface_energy.name=Energy Interface
 parttype.parttypes.integratedtunnels.interface_energy.info=Attaches an energy holder to the network
+parttype.parttypes.integratedtunnels.interface_filter_energy.name=Filtering Energy Interface
+parttype.parttypes.integratedtunnels.interface_filter_energy.info=Attaches an energy holder to the network and filter it
 parttype.parttypes.integratedtunnels.importer_energy.name=Energy Importer
 parttype.parttypes.integratedtunnels.importer_energy.info=Imports energy into the network
 parttype.parttypes.integratedtunnels.exporter_energy.name=Energy Exporter
@@ -58,6 +60,8 @@ parttype.parttypes.integratedtunnels.exporter_world_energy.name=World Energy Exp
 parttype.parttypes.integratedtunnels.exporter_world_energy.info=Place energy into the world
 parttype.parttypes.integratedtunnels.interface_item.name=Item Interface
 parttype.parttypes.integratedtunnels.interface_item.info=Attaches an item inventory to the network
+parttype.parttypes.integratedtunnels.interface_filter_item.name=Filtering Item Interface
+parttype.parttypes.integratedtunnels.interface_filter_item.info=Attaches an item inventory to the network and filter it
 parttype.parttypes.integratedtunnels.importer_item.name=Item Importer
 parttype.parttypes.integratedtunnels.importer_item.info=Imports items into the network
 parttype.parttypes.integratedtunnels.exporter_item.name=Item Exporter
@@ -68,11 +72,12 @@ parttype.parttypes.integratedtunnels.exporter_world_item.name=World Item Exporte
 parttype.parttypes.integratedtunnels.exporter_world_item.info=Place items into the world
 parttype.parttypes.integratedtunnels.interface_fluid.name=Fluid Interface
 parttype.parttypes.integratedtunnels.interface_fluid.info=Attaches an fluid tank to the network
+parttype.parttypes.integratedtunnels.interface_filter_fluid.name=Filtering Fluid Interface
+parttype.parttypes.integratedtunnels.interface_filter_fluid.info=Attaches a fluid tank to the network and filter it
 parttype.parttypes.integratedtunnels.importer_fluid.name=Fluid Importer
 parttype.parttypes.integratedtunnels.importer_fluid.info=Imports fluids into the network
 parttype.parttypes.integratedtunnels.exporter_fluid.name=Fluid Exporter
 parttype.parttypes.integratedtunnels.exporter_fluid.info=Exports fluids from the network
-parttype.parttypes.integratedtunnels.exporter_fluid.name=Fluid Exporter
 parttype.parttypes.integratedtunnels.importer_world_fluid.name=World Fluid Importer
 parttype.parttypes.integratedtunnels.importer_world_fluid.info=Pick up fluids from the world
 parttype.parttypes.integratedtunnels.exporter_world_fluid.name=World Fluid Exporter
@@ -149,6 +154,12 @@ aspect.aspecttypes.integratedtunnels.boolean.emptyisany.name=Empty is Wildcard
 aspect.aspecttypes.integratedtunnels.boolean.emptyisany.info=If an empty value matches with everything, otherwise nothing matches.
 aspect.aspecttypes.integratedtunnels.boolean.craft.name=Craft
 aspect.aspecttypes.integratedtunnels.boolean.craft.info=If the instance should be crafted if it is not present in the network.
+aspect.aspecttypes.integratedtunnels.boolean.filter.applytoinsert.name=Apply to Insertions
+aspect.aspecttypes.integratedtunnels.boolean.filter.applytoinsert.info=If the filter should apply to insertions into the network.
+aspect.aspecttypes.integratedtunnels.boolean.filter.applytoextract.name=Apply to Extractions
+aspect.aspecttypes.integratedtunnels.boolean.filter.applytoextract.info=If the filter should apply to extractions from the network (including views).
+aspect.aspecttypes.integratedtunnels.boolean.filter.allowallifnotapplied.name=Allow if not applied
+aspect.aspecttypes.integratedtunnels.boolean.filter.allowallifnotapplied.info=If all ingredients should be passed if filter is disabled for ins/del.
 
 # Aspects
 
@@ -394,6 +405,34 @@ aspect.aspects.integratedtunnels.write.operator.player.click.name=Click Item Pre
 aspect.aspects.integratedtunnels.write.operator.player.click.info=Click with the items that match the given predicate.
 aspect.aspects.integratedtunnels.write.nbt.player.click.name=Click Item NBT
 aspect.aspects.integratedtunnels.write.nbt.player.click.info=Click with the items that match the given NBT tag.
+
+# Item Filter
+aspect.aspects.integratedtunnels.write.boolean.item.filter.name=Filter All Items
+aspect.aspects.integratedtunnels.write.boolean.item.filter.info=Pass items if the boolean is true
+aspect.aspects.integratedtunnels.write.itemstack.item.filter.name=Filter Item
+aspect.aspects.integratedtunnels.write.itemstack.item.filter.info=Only pass the given item.
+aspect.aspects.integratedtunnels.write.list.item.filter.name=Filter Items
+aspect.aspects.integratedtunnels.write.list.item.filter.info=Pass the given items.
+aspect.aspects.integratedtunnels.write.operator.item.filter.name=Filter Items Predicate
+aspect.aspects.integratedtunnels.write.operator.item.filter.info=Pass all items that match the given predicate.
+aspect.aspects.integratedtunnels.write.nbt.item.filter.name=Filter Items NBT
+aspect.aspects.integratedtunnels.write.nbt.item.filter.info=Pass all items that match the given NBT tag.
+
+# Fluid Filter
+aspect.aspects.integratedtunnels.write.boolean.fluid.filter.name=Filter All Fluids
+aspect.aspects.integratedtunnels.write.boolean.fluid.filter.info=Pass fluids if the boolean is true
+aspect.aspects.integratedtunnels.write.fluidstack.fluid.filter.name=Filter Fluid
+aspect.aspects.integratedtunnels.write.fluidstack.fluid.filter.info=Only pass the given fluid.
+aspect.aspects.integratedtunnels.write.list.fluid.filter.name=Filter Fluids
+aspect.aspects.integratedtunnels.write.list.fluid.filter.info=Pass the given fluids.
+aspect.aspects.integratedtunnels.write.operator.fluid.filter.name=Filter Fluids Predicate
+aspect.aspects.integratedtunnels.write.operator.fluid.filter.info=Pass all fluids that match the given predicate.
+aspect.aspects.integratedtunnels.write.nbt.fluid.filter.name=Filter Fluids NBT
+aspect.aspects.integratedtunnels.write.nbt.fluid.filter.info=Pass all fluids that match the given NBT tag.
+
+# Energy Filter
+aspect.aspects.integratedtunnels.write.boolean.energy.filter.name=Filter All Energy
+aspect.aspects.integratedtunnels.write.boolean.energy.filter.info=Pass energy if the boolean is true
 
 # Configuration
 config.integratedtunnels=%s configuration

@@ -6,7 +6,6 @@ import net.minecraftforge.common.BiomeManager;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.Reference;
 import ruiseki.okcore.config.ConfigurableProperty;
-import ruiseki.okcore.config.ConfigurableTypeCategory;
 import ruiseki.okcore.config.extendedconfig.BiomeConfig;
 
 /**
@@ -25,14 +24,14 @@ public class BiomeMeneglinConfig extends BiomeConfig {
     /**
      * The weight of spawning.
      */
-    @ConfigurableProperty(category = ConfigurableTypeCategory.BIOME, comment = "The weight of spawning.")
+    @ConfigurableProperty(category = "biome", comment = "The weight of spawning.")
     public static int spawnWeight = 5;
 
     /**
      * List of dimension IDs in which the meneglin biome should not generate.
      */
     @ConfigurableProperty(
-        category = ConfigurableTypeCategory.WORLDGENERATION,
+        category = "world_generation",
         comment = "List of dimension IDs in which the meneglin biome should not generate.")
     public static int[] meneglinBiomeDimensionBlacklist = new int[] { -1, 1 };
 

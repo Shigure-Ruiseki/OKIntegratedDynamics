@@ -360,10 +360,6 @@ public abstract class PartStateBase<P extends IPartType> implements IPartState<P
     }
 
     @Override
-    public <T> void addVolatileCapability(Capability<T> capability, T value) {
-        addVolatileCapability(capability, LazyOptional.of(() -> value));
-    }
-
     public <T> void addVolatileCapability(Capability<T> capability, LazyOptional<T> lazyOptional) {
         volatileCapabilities.put(capability, lazyOptional);
     }

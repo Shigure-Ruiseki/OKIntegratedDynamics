@@ -5,7 +5,6 @@ import net.minecraft.item.ItemBlock;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.item.ItemBlockDelay;
 import ruiseki.okcore.config.ConfigurableProperty;
-import ruiseki.okcore.config.ConfigurableTypeCategory;
 import ruiseki.okcore.config.extendedconfig.BlockContainerConfig;
 
 /**
@@ -24,7 +23,7 @@ public class BlockDelayConfig extends BlockContainerConfig {
      * The maximum value history length that can be maintained.
      */
     @ConfigurableProperty(
-        category = ConfigurableTypeCategory.MACHINE,
+        category = "machine",
         comment = "The maximum value history length that can be maintained..",
         minimalValue = 1)
     public static int maxHistoryCapacity = 1024;
