@@ -8,6 +8,7 @@ import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
 import ruiseki.okcore.fluid.handler.IFluidHandler;
 import ruiseki.okcore.helper.CapabilityHelpers;
+import ruiseki.okcore.helper.FluidHelpers;
 import ruiseki.okcore.persist.nbt.INBTProvider;
 
 /**
@@ -41,10 +42,13 @@ public class ValueTypeListProxyPositionedTankFluidStacks
 
     @Override
     public ValueObjectTypeFluidStack.ValueFluidStack get(int index) {
-        return ValueObjectTypeFluidStack.ValueFluidStack.of(getTank().map(fluidHandler -> {
+        FluidStack result = getTank().map(fluidHandler -> {
             FluidStack stack = fluidHandler.getTankProperties()[index].getContents();
-            return stack != null ? stack.copy() : null;
+            FluidStack copy = FluidHelpers.copy(stack);
+            return copy != null ? copy : FluidHelpers.EMPTY;
         })
-            .orElse(null));
+            .orElse(FluidHelpers.EMPTY);
+
+        return ValueObjectTypeFluidStack.ValueFluidStack.of(result);
     }
 }

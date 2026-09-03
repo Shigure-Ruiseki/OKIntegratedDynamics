@@ -18,11 +18,12 @@ import ruiseki.commoncapabilities.api.ingredient.storage.IIngredientComponentSto
 import ruiseki.integratedtunnels.GeneralConfig;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.helper.Helpers;
+import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.ingredient.collection.FilteredIngredientCollectionIterator;
 
 /**
  * An item handler for importing item entities from the world.
- * 
+ *
  * @author rubensworks
  */
 public class ItemHandlerWorldEntityImportWrapper implements IIngredientComponentStorage<ItemStack, Integer> {
@@ -75,8 +76,9 @@ public class ItemHandlerWorldEntityImportWrapper implements IIngredientComponent
     public Iterator<ItemStack> iterator() {
         List<ItemStack> stacks = new ArrayList<ItemStack>();
         for (EntityItem entity : this.entities) {
-            if (entity.getEntityItem() != null) {
-                stacks.add(entity.getEntityItem());
+            ItemStack stack = entity.getEntityItem();
+            if (!ItemHelpers.isEmpty(stack)) {
+                stacks.add(stack);
             }
         }
         return stacks.iterator();
@@ -102,7 +104,7 @@ public class ItemHandlerWorldEntityImportWrapper implements IIngredientComponent
     }
 
     protected void postExtract(EntityItem entity, ItemStack itemStack) {
-        if (itemStack == null || itemStack.stackSize <= 0) {
+        if (ItemHelpers.isEmpty(itemStack)) {
             entity.setDead();
         } else {
             entity.setEntityItemStack(itemStack);
@@ -121,8 +123,8 @@ public class ItemHandlerWorldEntityImportWrapper implements IIngredientComponent
 
     @Override
     public ItemStack extract(ItemStack prototype, Integer matchCondition, boolean simulate) {
-        if (prototype == null) {
-            return null;
+        if (ItemHelpers.isEmpty(prototype) || this.entities.isEmpty()) {
+            return ItemHelpers.EMPTY;
         }
 
         IIngredientMatcher<ItemStack, Integer> matcher = getComponent().getMatcher();
@@ -132,19 +134,18 @@ public class ItemHandlerWorldEntityImportWrapper implements IIngredientComponent
             matchCondition,
             getComponent().getPrimaryQuantifier()
                 .getMatchCondition());
-        List<EntityItem> entities = this.entities;
-        if (entities.isEmpty()) {
-            return null;
-        }
 
-        for (EntityItem entity : entities) {
+        for (EntityItem entity : this.entities) {
             ItemStack itemStack = entity.getEntityItem();
-            if (itemStack != null && matcher.matches(prototype, itemStack, subMatchCondition)
+
+            if (!ItemHelpers.isEmpty(itemStack) && matcher.matches(prototype, itemStack, subMatchCondition)
                 && (!matcher.hasCondition(matchCondition, quantityFlag)
                     || itemStack.stackSize >= prototype.stackSize)) {
 
-                itemStack = itemStack.copy();
-                ItemStack ret = itemStack.splitStack(Helpers.castSafe(prototype.stackSize));
+                itemStack = ItemHelpers.copy(itemStack);
+
+                int extractCount = Math.min(itemStack.stackSize, Helpers.castSafe(prototype.stackSize));
+                ItemStack ret = ItemHelpers.split(itemStack, extractCount);
 
                 if (!simulate) {
                     postExtract(entity, itemStack);
@@ -154,23 +155,27 @@ public class ItemHandlerWorldEntityImportWrapper implements IIngredientComponent
             }
         }
 
-        return null;
+        return ItemHelpers.EMPTY;
     }
 
     @Override
     public ItemStack extract(long maxQuantity, boolean simulate) {
         if (this.entities.isEmpty()) {
-            return null;
+            return ItemHelpers.EMPTY;
         }
 
         EntityItem entity = this.entities.get(0);
         ItemStack itemStack = entity.getEntityItem();
-        if (itemStack == null) {
-            return null;
+
+        if (ItemHelpers.isEmpty(itemStack)) {
+            return ItemHelpers.EMPTY;
         }
 
-        itemStack = itemStack.copy();
-        ItemStack ret = itemStack.splitStack(Helpers.castSafe(maxQuantity));
+        itemStack = ItemHelpers.copy(itemStack);
+
+        int extractCount = Math.min(itemStack.stackSize, Helpers.castSafe(maxQuantity));
+        ItemStack ret = ItemHelpers.split(itemStack, extractCount);
+
         if (!simulate) {
             postExtract(entity, itemStack);
         }

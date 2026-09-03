@@ -114,8 +114,7 @@ public class AspectWriteBuilders {
             input.getLeft(),
             input.getMiddle(),
             input.getRight()
-                .getRawValue()
-                .orElse(null));
+                .getRawValue());
 
     public static final IAspectValuePropagator<Triple<PartTarget, IAspectProperties, ValueTypeString.ValueString>, Triple<PartTarget, IAspectProperties, String>> PROP_GET_STRING = input -> Triple
         .of(
@@ -137,8 +136,7 @@ public class AspectWriteBuilders {
             input.getLeft(),
             input.getMiddle(),
             input.getRight()
-                .getRawValue()
-                .orElse(null));
+                .getRawValue());
 
     public static final IAspectValuePropagator<Triple<PartTarget, IAspectProperties, ValueTypeNbt.ValueNbt>, Triple<PartTarget, IAspectProperties, NBTTagCompound>> PROP_GET_NBT = input -> Triple
         .of(

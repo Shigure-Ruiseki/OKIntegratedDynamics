@@ -35,7 +35,6 @@ public class IngredientComponentValueHandlerItemStack implements
 
     @Override
     public ItemStack toInstance(ValueObjectTypeItemStack.ValueItemStack value) {
-        return value.getRawValue()
-            .orElse(null);
+        return value.getRawValue();
     }
 }

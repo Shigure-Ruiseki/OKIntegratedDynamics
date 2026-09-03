@@ -2,24 +2,134 @@ package ruiseki.integratedtunnels.part.aspect;
 
 import net.minecraft.item.ItemStack;
 
+import com.google.common.collect.Iterators;
+
+import ruiseki.commoncapabilities.api.capability.fluidhandler.FluidMatch;
+import ruiseki.commoncapabilities.api.capability.itemhandler.ItemMatch;
+import ruiseki.commoncapabilities.api.ingredient.storage.IIngredientComponentStorage;
+import ruiseki.integrateddynamics.api.part.aspect.IAspectRead;
 import ruiseki.integrateddynamics.api.part.aspect.IAspectWrite;
+import ruiseki.integrateddynamics.core.evaluate.operator.Operators;
+import ruiseki.integrateddynamics.core.evaluate.operator.PositionedOperator;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueObjectTypeBlock;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueObjectTypeFluidStack;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueObjectTypeItemStack;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeBoolean;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeInteger;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeList;
+import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeLong;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeNbt;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeOperator;
+import ruiseki.integrateddynamics.part.aspect.read.AspectReadBuilders;
+import ruiseki.integratedtunnels.part.aspect.operator.PositionedOperatorIngredientIndexFluid;
+import ruiseki.integratedtunnels.part.aspect.operator.PositionedOperatorIngredientIndexItem;
+import ruiseki.okcore.helper.FluidHelpers;
+import ruiseki.okcore.helper.ItemHelpers;
 
 /**
  * Collection of all tunnel aspects.
- * 
+ *
  * @author rubensworks
  */
 public class TunnelAspects {
 
     public static void load() {}
+
+    public static final class Read {
+
+        public static final class Item {
+
+            public static final IAspectRead<ValueTypeLong.ValueLong, ValueTypeLong> LONG_COUNT = TunnelAspectReadBuilders.Network.Item.BUILDER_LONG
+                .handle(TunnelAspectReadBuilders.Network.Item.PROP_GET_CHANNELINDEX)
+                .handle(
+                    channel -> channel.stream()
+                        .mapToLong(stack -> stack.stackSize)
+                        .sum())
+                .handle(AspectReadBuilders.PROP_GET_LONG, "count")
+                .buildRead();
+            public static final IAspectRead<ValueTypeLong.ValueLong, ValueTypeLong> LONG_COUNTMAX = TunnelAspectReadBuilders.Network.Item.BUILDER_LONG
+                .handle(TunnelAspectReadBuilders.Network.Item.PROP_GET_CHANNEL)
+                .handle(IIngredientComponentStorage::getMaxQuantity)
+                .handle(AspectReadBuilders.PROP_GET_LONG, "countmax")
+                .buildRead();
+            public static final IAspectRead<ValueTypeList.ValueList, ValueTypeList> LIST_ITEMSTACKS = TunnelAspectReadBuilders.Network.Item.BUILDER_LIST
+                .handle(TunnelAspectReadBuilders.Network.Item.PROP_GET_LIST, "itemstacks")
+                .buildRead();
+            public static final IAspectRead<ValueTypeOperator.ValueOperator, ValueTypeOperator> OPERATOR_GETITEMCOUNT = TunnelAspectReadBuilders.Network.Item.BUILDER_OPERATOR
+                .handle(
+                    input -> ValueTypeOperator.ValueOperator.of(
+                        new PositionedOperatorIngredientIndexItem(
+                            input.getLeft()
+                                .getTarget()
+                                .getPos(),
+                            input.getLeft()
+                                .getTarget()
+                                .getSide(),
+                            input.getRight()
+                                .getValue(AspectReadBuilders.Network.PROPERTY_CHANNEL)
+                                .getRawValue())))
+                .appendKind("countbyitem")
+                .buildRead();
+            public static final IAspectRead<ValueTypeInteger.ValueInteger, ValueTypeInteger> INTEGER_INTERFACES = TunnelAspectReadBuilders.Network.Item.BUILDER_INTEGER
+                .handle(TunnelAspectReadBuilders.Network.Item.PROP_GET_CHANNELINDEX)
+                .handle(channel -> Iterators.size(channel.getPositions(ItemHelpers.EMPTY, ItemMatch.ANY)))
+                .handle(AspectReadBuilders.PROP_GET_INTEGER, "interfaces")
+                .buildRead();
+            static {
+                Operators.REGISTRY.registerSerializer(
+                    new PositionedOperator.Serializer(
+                        PositionedOperatorIngredientIndexItem.class,
+                        "positioned_ingredient_index_item"));
+            }
+        }
+
+        public static final class Fluid {
+
+            public static final IAspectRead<ValueTypeLong.ValueLong, ValueTypeLong> LONG_COUNT = TunnelAspectReadBuilders.Network.Fluid.BUILDER_LONG
+                .handle(TunnelAspectReadBuilders.Network.Fluid.PROP_GET_CHANNELINDEX)
+                .handle(
+                    channel -> channel.stream()
+                        .mapToLong(stack -> stack.amount)
+                        .sum())
+                .handle(AspectReadBuilders.PROP_GET_LONG, "count")
+                .buildRead();
+            public static final IAspectRead<ValueTypeLong.ValueLong, ValueTypeLong> LONG_COUNTMAX = TunnelAspectReadBuilders.Network.Fluid.BUILDER_LONG
+                .handle(TunnelAspectReadBuilders.Network.Fluid.PROP_GET_CHANNEL)
+                .handle(IIngredientComponentStorage::getMaxQuantity)
+                .handle(AspectReadBuilders.PROP_GET_LONG, "countmax")
+                .buildRead();
+            public static final IAspectRead<ValueTypeList.ValueList, ValueTypeList> LIST_FLUIDSTACKS = TunnelAspectReadBuilders.Network.Fluid.BUILDER_LIST
+                .handle(TunnelAspectReadBuilders.Network.Fluid.PROP_GET_LIST, "fluidstacks")
+                .buildRead();
+            public static final IAspectRead<ValueTypeOperator.ValueOperator, ValueTypeOperator> OPERATOR_GETFLUIDCOUNT = TunnelAspectReadBuilders.Network.Fluid.BUILDER_OPERATOR
+                .handle(
+                    input -> ValueTypeOperator.ValueOperator.of(
+                        new PositionedOperatorIngredientIndexFluid(
+                            input.getLeft()
+                                .getTarget()
+                                .getPos(),
+                            input.getLeft()
+                                .getTarget()
+                                .getSide(),
+                            input.getRight()
+                                .getValue(AspectReadBuilders.Network.PROPERTY_CHANNEL)
+                                .getRawValue())))
+                .appendKind("countbyfluid")
+                .buildRead();
+            public static final IAspectRead<ValueTypeInteger.ValueInteger, ValueTypeInteger> INTEGER_INTERFACES = TunnelAspectReadBuilders.Network.Fluid.BUILDER_INTEGER
+                .handle(TunnelAspectReadBuilders.Network.Fluid.PROP_GET_CHANNELINDEX)
+                .handle(channel -> Iterators.size(channel.getPositions(FluidHelpers.EMPTY, FluidMatch.ANY)))
+                .handle(AspectReadBuilders.PROP_GET_INTEGER, "interfaces")
+                .buildRead();
+            static {
+                Operators.REGISTRY.registerSerializer(
+                    new PositionedOperator.Serializer(
+                        PositionedOperatorIngredientIndexFluid.class,
+                        "positioned_ingredient_index_fluid"));
+            }
+        }
+
+    }
 
     public static final class Write {
 

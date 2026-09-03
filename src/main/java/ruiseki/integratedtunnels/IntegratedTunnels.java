@@ -5,6 +5,8 @@ import net.minecraftforge.common.MinecraftForge;
 
 import org.apache.logging.log4j.Level;
 
+import com.google.common.collect.Lists;
+
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.SidedProxy;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
@@ -13,6 +15,8 @@ import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartedEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import cpw.mods.fml.common.event.FMLServerStoppingEvent;
+import ruiseki.integrateddynamics.core.part.PartTypes;
+import ruiseki.integrateddynamics.core.part.aspect.AspectRegistry;
 import ruiseki.integratedtunnels.api.world.IBlockBreakHandlerRegistry;
 import ruiseki.integratedtunnels.api.world.IBlockPlaceHandlerRegistry;
 import ruiseki.integratedtunnels.capability.ingredient.TunnelIngredientComponentCapabilities;
@@ -25,6 +29,7 @@ import ruiseki.integratedtunnels.core.world.BlockBreakPlaceRegistry;
 import ruiseki.integratedtunnels.core.world.BlockPlaceHandlers;
 import ruiseki.integratedtunnels.part.TunnelPartTypes;
 import ruiseki.integratedtunnels.part.aspect.TunnelAspects;
+import ruiseki.integratedtunnels.part.aspect.listproxy.TunnelValueTypeListProxyFactories;
 import ruiseki.okcore.config.ConfigHandler;
 import ruiseki.okcore.init.ModBaseVersionable;
 import ruiseki.okcore.proxy.ICommonProxy;
@@ -79,11 +84,32 @@ public class IntegratedTunnels extends ModBaseVersionable {
         TunnelIngredientComponentCapabilities.load();
         TunnelAspects.load();
         TunnelPartTypes.load();
+        TunnelValueTypeListProxyFactories.load();
         BlockBreakHandlers.load();
         BlockPlaceHandlers.load();
         super.preInit(event);
 
         MinecraftForge.EVENT_BUS.register(new TunnelNetworkCapabilityConstructors());
+
+        // Register value list proxies
+        TunnelValueTypeListProxyFactories.load();
+
+        // Inject aspects into ID parts
+        AspectRegistry.getInstance()
+            .register(
+                PartTypes.NETWORK_READER,
+                Lists.newArrayList(
+                    TunnelAspects.Read.Item.LONG_COUNT,
+                    TunnelAspects.Read.Item.LONG_COUNTMAX,
+                    TunnelAspects.Read.Item.LIST_ITEMSTACKS,
+                    TunnelAspects.Read.Item.OPERATOR_GETITEMCOUNT,
+                    TunnelAspects.Read.Item.INTEGER_INTERFACES,
+
+                    TunnelAspects.Read.Fluid.LONG_COUNT,
+                    TunnelAspects.Read.Fluid.LONG_COUNTMAX,
+                    TunnelAspects.Read.Fluid.LIST_FLUIDSTACKS,
+                    TunnelAspects.Read.Fluid.OPERATOR_GETFLUIDCOUNT,
+                    TunnelAspects.Read.Fluid.INTEGER_INTERFACES));
     }
 
     /**

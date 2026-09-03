@@ -92,8 +92,7 @@ public class IngredientComponentHandlers {
                         @Override
                         @Nullable
                         public ItemStack toInstance(ValueObjectTypeItemStack.ValueItemStack value) {
-                            return value.getRawValue()
-                                .orElse(null);
+                            return value.getRawValue();
                         }
                     });
             }
@@ -120,8 +119,7 @@ public class IngredientComponentHandlers {
                         @Override
                         @Nullable
                         public FluidStack toInstance(ValueObjectTypeFluidStack.ValueFluidStack value) {
-                            return value.getRawValue()
-                                .orElse(null);
+                            return value.getRawValue();
                         }
                     });
             }

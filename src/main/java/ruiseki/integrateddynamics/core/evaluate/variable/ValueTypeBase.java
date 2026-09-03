@@ -14,6 +14,7 @@ import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.integrateddynamics.core.logicprogrammer.ValueTypeLPElementBase;
+import ruiseki.integrateddynamics.core.logicprogrammer.ValueTypeStringLPElement;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
 
@@ -123,7 +124,7 @@ public abstract class ValueTypeBase<V extends IValue> implements IValueType<V> {
 
     @Override
     public ValueTypeLPElementBase createLogicProgrammerElement() {
-        return null;
+        return new ValueTypeStringLPElement(this);
     }
 
     protected String getModId() {

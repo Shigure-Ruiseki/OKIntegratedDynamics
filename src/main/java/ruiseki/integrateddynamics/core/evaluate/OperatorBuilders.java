@@ -57,6 +57,8 @@ import ruiseki.integrateddynamics.core.ingredient.IngredientComponentHandlers;
 import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.energy.capability.CapabilityEnergy;
 import ruiseki.okcore.helper.CapabilityHelpers;
+import ruiseki.okcore.helper.FluidHelpers;
+import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.helper.LangHelpers;
 
 /**
@@ -249,8 +251,7 @@ public class OperatorBuilders {
         .begin()
         .appendPre(input -> {
             ValueObjectTypeItemStack.ValueItemStack value = input.getValue(0, ValueTypes.OBJECT_ITEMSTACK);
-            return value.getRawValue()
-                .orElse(null);
+            return value.getRawValue();
         });
     public static final IterativeFunction.PrePostBuilder<ItemStack, Integer> FUNCTION_ITEMSTACK_TO_INT = FUNCTION_ITEMSTACK
         .appendPost(PROPAGATOR_INTEGER_VALUE);
@@ -260,17 +261,10 @@ public class OperatorBuilders {
         .begin()
         .appendPre(input -> {
             ValueObjectTypeItemStack.ValueItemStack a = input.getValue(0, ValueTypes.OBJECT_ITEMSTACK);
-            if (a.getRawValue()
-                .isPresent()
-                && CapabilityHelpers.getCapability(
-                    a.getRawValue()
-                        .get(),
-                    CapabilityEnergy.ENERGY)
-                    .isPresent()) {
-                return CapabilityHelpers.getCapability(
-                    a.getRawValue()
-                        .get(),
-                    CapabilityEnergy.ENERGY)
+            ItemStack itemStack = a.getRawValue();
+
+            if (!ItemHelpers.isEmpty(itemStack)) {
+                return CapabilityHelpers.getCapability(itemStack, CapabilityEnergy.ENERGY)
                     .getOrNull();
             }
             return null;
@@ -327,11 +321,8 @@ public class OperatorBuilders {
         .begin()
         .appendPre(input -> {
             ValueObjectTypeFluidStack.ValueFluidStack a = input.getValue(0, ValueTypes.OBJECT_FLUIDSTACK);
-            return a.getRawValue()
-                .isPresent()
-                    ? a.getRawValue()
-                        .get()
-                    : null;
+            FluidStack fluidStack = a.getRawValue();
+            return !FluidHelpers.isEmpty(fluidStack) ? fluidStack : FluidHelpers.EMPTY;
         });
     public static final IterativeFunction.PrePostBuilder<FluidStack, Integer> FUNCTION_FLUIDSTACK_TO_INT = FUNCTION_FLUIDSTACK
         .appendPost(PROPAGATOR_INTEGER_VALUE);
@@ -741,7 +732,6 @@ public class OperatorBuilders {
         .renderPattern(IConfigRenderPattern.PREFIX_2_LONG);
 
     // --------------- Capability helpers ---------------
-
     /**
      * Helper function to create an operator function builder for deriving capabilities from an itemstack.
      *
@@ -754,17 +744,10 @@ public class OperatorBuilders {
         return IterativeFunction.PrePostBuilder.begin()
             .appendPre(input -> {
                 ValueObjectTypeItemStack.ValueItemStack a = input.getValue(0);
-                if (a.getRawValue()
-                    .isPresent()
-                    && CapabilityHelpers.getCapability(
-                        a.getRawValue()
-                            .get(),
-                        capabilityReference.getReference())
-                        .isPresent()) {
-                    return CapabilityHelpers.getCapability(
-                        a.getRawValue()
-                            .get(),
-                        capabilityReference.getReference())
+                ItemStack itemStack = a.getRawValue();
+
+                if (!ItemHelpers.isEmpty(itemStack) && capabilityReference != null) {
+                    return CapabilityHelpers.getCapability(itemStack, capabilityReference.getReference())
                         .getOrNull();
                 }
                 return null;

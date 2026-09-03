@@ -90,14 +90,13 @@ public class IngredientsValueTypeWorldRenderer implements IValueTypeWorldRendere
 
                     if (renderValue instanceof ValueObjectTypeItemStack.ValueItemStack) {
                         ValueObjectTypeItemStack.ValueItemStack itemValue = (ValueObjectTypeItemStack.ValueItemStack) renderValue;
-                        if (itemValue.getRawValue()
-                            .isPresent()) {
-                            ItemStack itemStackRaw = itemValue.getRawValue()
-                                .get();
+                        ItemStack itemStackRaw = itemValue.getRawValue();
+
+                        if (!ItemHelpers.isEmpty(itemStackRaw)) {
                             if (itemStackRaw.getItemDamage() == OreDictionary.WILDCARD_VALUE) {
                                 List<ItemStack> subItems = ItemHelpers.getSubItems(itemStackRaw);
                                 int subtick = ((int) Minecraft.getMinecraft().theWorld.getWorldTime()) / 10;
-                                ItemStack itemStack = prepareElementForTick(subItems, subtick, () -> null);
+                                ItemStack itemStack = prepareElementForTick(subItems, subtick, () -> ItemHelpers.EMPTY);
                                 renderValue = ValueObjectTypeItemStack.ValueItemStack.of(itemStack);
                             }
                         }

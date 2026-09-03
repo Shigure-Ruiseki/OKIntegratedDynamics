@@ -8,6 +8,7 @@ import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeListProxy;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueObjectTypeFluidStack;
 import ruiseki.integratedtunnels.core.TunnelFluidHelpers;
+import ruiseki.okcore.helper.FluidHelpers;
 
 /**
  * @author rubensworks
@@ -33,16 +34,10 @@ public class IngredientPredicateFluidStackList extends IngredientPredicate<Fluid
 
     @Override
     public boolean test(@Nullable FluidStack input) {
-        for (ValueObjectTypeFluidStack.ValueFluidStack fluidStack : fluidStacks) {
-            if (fluidStack.getRawValue()
-                .isPresent()
-                && TunnelFluidHelpers.areFluidStackEqual(
-                    input,
-                    fluidStack.getRawValue()
-                        .get(),
-                    checkFluid,
-                    checkAmount,
-                    checkNbt)) {
+        for (ValueObjectTypeFluidStack.ValueFluidStack valueFluidStack : fluidStacks) {
+            FluidStack targetStack = valueFluidStack.getRawValue();
+            if (!FluidHelpers.isEmpty(targetStack)
+                && TunnelFluidHelpers.areFluidStackEqual(input, targetStack, checkFluid, checkAmount, checkNbt)) {
                 return !blacklist;
             }
         }

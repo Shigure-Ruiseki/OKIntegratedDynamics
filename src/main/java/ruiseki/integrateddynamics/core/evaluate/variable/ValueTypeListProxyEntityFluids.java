@@ -10,6 +10,7 @@ import org.jetbrains.annotations.Nullable;
 
 import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
 import ruiseki.okcore.fluid.handler.IFluidHandler;
+import ruiseki.okcore.helper.FluidHelpers;
 import ruiseki.okcore.persist.nbt.INBTProvider;
 
 /**
@@ -43,6 +44,6 @@ public class ValueTypeListProxyEntityFluids extends
     public ValueObjectTypeFluidStack.ValueFluidStack get(int index) {
         return ValueObjectTypeFluidStack.ValueFluidStack.of(
             getCapability().map(handler -> Objects.requireNonNull(handler.getTankProperties()[index].getContents()))
-                .orElse(null));
+                .orElse(FluidHelpers.EMPTY));
     }
 }

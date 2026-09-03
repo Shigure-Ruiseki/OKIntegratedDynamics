@@ -152,6 +152,28 @@ aspect.aspecttypes.integratedtunnels.boolean.craft.info=If the instance should b
 
 # Aspects
 
+# Network aspects
+aspect.aspects.integratedtunnels.read.long.itemnetwork.count.name=Network Item Count
+aspect.aspects.integratedtunnels.read.long.itemnetwork.count.info=Get the total amount of items in the network
+aspect.aspects.integratedtunnels.read.long.itemnetwork.countmax.name=Network Item Max Count
+aspect.aspects.integratedtunnels.read.long.itemnetwork.countmax.info=The upper limit of the total amount of items that can be stored in the network
+aspect.aspects.integratedtunnels.read.list.itemnetwork.itemstacks.name=Network Items
+aspect.aspects.integratedtunnels.read.list.itemnetwork.itemstacks.info=Get a list of all items in the network
+aspect.aspects.integratedtunnels.read.operator.itemnetwork.countbyitem.name=Network Count Of Item
+aspect.aspects.integratedtunnels.read.operator.itemnetwork.countbyitem.info=Get the total count of the given item in the network
+aspect.aspects.integratedtunnels.read.integer.itemnetwork.interfaces.name=Network Item Interfaces
+aspect.aspects.integratedtunnels.read.integer.itemnetwork.interfaces.info=Get number of valid interfaces for item storage
+aspect.aspects.integratedtunnels.read.long.fluidnetwork.count.name=Network Fluid Count
+aspect.aspects.integratedtunnels.read.long.fluidnetwork.count.info=Get the total amount of fluids in the network
+aspect.aspects.integratedtunnels.read.long.fluidnetwork.countmax.name=Network Fluid Max Count
+aspect.aspects.integratedtunnels.read.long.fluidnetwork.countmax.info=The upper limit of the total amount of fluids that can be stored in the network
+aspect.aspects.integratedtunnels.read.list.fluidnetwork.fluidstacks.name=Network Fluids
+aspect.aspects.integratedtunnels.read.list.fluidnetwork.fluidstacks.info=Get a list of all fluids in the network
+aspect.aspects.integratedtunnels.read.operator.fluidnetwork.countbyfluid.name=Network Count Of Fluid
+aspect.aspects.integratedtunnels.read.operator.fluidnetwork.countbyfluid.info=Get the total count of the given fluid in the network
+aspect.aspects.integratedtunnels.read.integer.fluidnetwork.interfaces.name=Network Fluid Interfaces
+aspect.aspects.integratedtunnels.read.integer.fluidnetwork.interfaces.info=Get number of valid interfaces for fluid storage
+
 ## Energy
 aspect.aspects.integratedtunnels.write.boolean.energy.export.name=Export Energy
 aspect.aspects.integratedtunnels.write.boolean.energy.export.info=Export energy if the boolean is true

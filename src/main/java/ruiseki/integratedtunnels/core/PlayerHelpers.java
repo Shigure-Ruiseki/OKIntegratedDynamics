@@ -29,7 +29,7 @@ public class PlayerHelpers {
     public static FakePlayer getFakePlayer(WorldServer world) {
         FakePlayer fakePlayer = FAKE_PLAYERS.get(world);
         if (fakePlayer == null) {
-            fakePlayer = FakePlayerHelpers.initFakePlayer(world);
+            fakePlayer = new ExtendedFakePlayer(world);
             FAKE_PLAYERS.put(world, fakePlayer);
         }
         return fakePlayer;

@@ -16,6 +16,7 @@ import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.IFluidBlock;
 
+import com.google.common.collect.Iterators;
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
@@ -72,7 +73,7 @@ public class FluidStorageBlockWrapper implements IIngredientComponentStorage<Flu
     }
 
     protected void postInsert(FluidStack moved) {
-        if (moved != null && GeneralConfig.worldInteractionEvents) {
+        if (!FluidHelpers.isEmpty(moved) && GeneralConfig.worldInteractionEvents) {
             world.playSoundEffect(
                 pos.getX() + 0.5D,
                 pos.getY() + 0.5D,
@@ -87,7 +88,7 @@ public class FluidStorageBlockWrapper implements IIngredientComponentStorage<Flu
     }
 
     protected void postExtract(FluidStack moved) {
-        if (moved != null && GeneralConfig.worldInteractionEvents) {
+        if (!FluidHelpers.isEmpty(moved) && GeneralConfig.worldInteractionEvents) {
             world.playSoundEffect(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D, "random.drink", 1.0F, 1.0F);
         }
     }
@@ -99,12 +100,13 @@ public class FluidStorageBlockWrapper implements IIngredientComponentStorage<Flu
 
     @Override
     public Iterator<FluidStack> iterator() {
-        return this.targetStorage.iterator();
+        return targetStorage != null ? this.targetStorage.iterator() : Iterators.emptyIterator();
     }
 
     @Override
     public Iterator<FluidStack> iterator(@Nonnull FluidStack prototype, Integer matchCondition) {
-        return this.targetStorage.iterator(prototype, matchCondition);
+        return targetStorage != null ? this.targetStorage.iterator(prototype, matchCondition)
+            : Iterators.emptyIterator();
     }
 
     @Override
@@ -114,13 +116,17 @@ public class FluidStorageBlockWrapper implements IIngredientComponentStorage<Flu
 
     @Override
     public FluidStack insert(@Nonnull FluidStack stack, boolean simulate) {
+        if (FluidHelpers.isEmpty(stack)) {
+            return FluidHelpers.EMPTY;
+        }
+
         if (targetStorage != null) {
             return stack;
         }
 
         Fluid fluid = stack.getFluid();
         if (world.provider.isHellWorld && fluid == FluidRegistry.WATER) {
-            return null;
+            return FluidHelpers.EMPTY;
         }
 
         Block block = fluid.getBlock();
@@ -141,15 +147,16 @@ public class FluidStorageBlockWrapper implements IIngredientComponentStorage<Flu
             postInsert(stack);
         }
 
-        if (remaining == 0) {
-            return null;
+        if (remaining <= 0) {
+            return FluidHelpers.EMPTY;
         } else {
-            return new FluidStack(stack, remaining);
+            return FluidHelpers.copyWithAmount(stack, remaining);
         }
     }
 
     @Override
     public FluidStack extract(@Nonnull FluidStack prototype, Integer matchCondition, boolean simulate) {
+        if (targetStorage == null) return FluidHelpers.EMPTY;
         FluidStack extracted = targetStorage.extract(prototype, matchCondition, simulate);
         if (!simulate) {
             postExtract(extracted);
@@ -159,6 +166,7 @@ public class FluidStorageBlockWrapper implements IIngredientComponentStorage<Flu
 
     @Override
     public FluidStack extract(long maxQuantity, boolean simulate) {
+        if (targetStorage == null) return FluidHelpers.EMPTY;
         FluidStack extracted = targetStorage.extract(maxQuantity, simulate);
         if (!simulate) {
             postExtract(extracted);

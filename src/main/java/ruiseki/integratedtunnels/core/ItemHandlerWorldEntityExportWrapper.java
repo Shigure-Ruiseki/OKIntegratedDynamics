@@ -22,10 +22,11 @@ import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
 import ruiseki.commoncapabilities.api.ingredient.storage.IIngredientComponentStorage;
 import ruiseki.integratedtunnels.GeneralConfig;
 import ruiseki.okcore.datastructure.BlockPos;
+import ruiseki.okcore.helper.ItemHelpers;
 
 /**
  * An item storage for exporting item entities to the world.
- * 
+ *
  * @author rubensworks
  */
 public class ItemHandlerWorldEntityExportWrapper
@@ -87,7 +88,7 @@ public class ItemHandlerWorldEntityExportWrapper
     protected static void handleDispenseResult(IIngredientComponentStorage<ItemStack, Integer> dispenseResultHandler,
         IBlockSource blockSource, ItemStack itemStack) {
         ItemStack remaining = dispenseResultHandler.insert(itemStack, false);
-        if (remaining != null && remaining.stackSize > 0) {
+        if (!ItemHelpers.isEmpty(remaining)) {
             DISPENSE_ITEM_DIRECTLY.dispense(blockSource, remaining);
         }
     }
@@ -178,8 +179,8 @@ public class ItemHandlerWorldEntityExportWrapper
 
     @Override
     public ItemStack insert(@Nonnull ItemStack stack, boolean simulate) {
-        if (stack == null || stack.stackSize <= 0) {
-            return null;
+        if (ItemHelpers.isEmpty(stack)) {
+            return ItemHelpers.EMPTY;
         }
 
         if (!simulate) {
@@ -188,11 +189,11 @@ public class ItemHandlerWorldEntityExportWrapper
                     .getObject(stack.getItem());
                 if (behaviorDispenseItem != null
                     && behaviorDispenseItem.getClass() != BehaviorDefaultDispenseItem.class) {
-                    ItemStack result = behaviorDispenseItem.dispense(this, stack.copy());
-                    if (result != null && result.stackSize > 0) {
+                    ItemStack result = behaviorDispenseItem.dispense(this, ItemHelpers.copy(stack));
+                    if (!ItemHelpers.isEmpty(result)) {
                         handleDispenseResult(this.dispenseResultHandler, this, result);
                     }
-                    return null;
+                    return ItemHelpers.EMPTY;
                 }
             }
 
@@ -201,7 +202,7 @@ public class ItemHandlerWorldEntityExportWrapper
                 pos.getX() + offsetX,
                 pos.getY() + offsetY,
                 pos.getZ() + offsetZ,
-                stack.copy());
+                ItemHelpers.copy(stack));
             entity.lifespan = lifespan <= 0 ? stack.getItem()
                 .getEntityLifespan(stack, world) : lifespan;
 
@@ -230,21 +231,21 @@ public class ItemHandlerWorldEntityExportWrapper
                     facing.offsetX + 1 + (facing.offsetZ + 1) * 3); // Particles
             }
         } else if (this.dispense) {
-            ItemStack result = stack.copy();
-            result.stackSize--;
-            return result.stackSize <= 0 ? null : result;
+            ItemStack result = ItemHelpers.copy(stack);
+            ItemHelpers.shrink(result, 1);
+            return ItemHelpers.isEmpty(result) ? ItemHelpers.EMPTY : result;
         }
-        return null;
+        return ItemHelpers.EMPTY;
     }
 
     @Override
     public ItemStack extract(@Nonnull ItemStack prototype, Integer matchCondition, boolean simulate) {
-        return null;
+        return ItemHelpers.EMPTY;
     }
 
     @Override
     public ItemStack extract(long maxQuantity, boolean simulate) {
-        return null;
+        return ItemHelpers.EMPTY;
     }
 
     protected static class SimulatedTileEntityDispenser extends TileEntityDispenser {
@@ -269,7 +270,7 @@ public class ItemHandlerWorldEntityExportWrapper
         }
 
         @Override
-        public int func_146019_a(ItemStack stack) { // addItemStack(ItemStack stack) in 1.7.10
+        public int func_146019_a(ItemStack stack) {
             handleDispenseResult(this.dispenseResultHandler, this.blockSource, stack);
             return 0;
         }

@@ -8,6 +8,7 @@ import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeListProxy;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueObjectTypeItemStack;
 import ruiseki.integratedtunnels.core.TunnelItemHelpers;
+import ruiseki.okcore.helper.ItemHelpers;
 
 /**
  * @author rubensworks
@@ -35,17 +36,10 @@ public class IngredientPredicateItemStackList extends IngredientPredicate<ItemSt
 
     @Override
     public boolean test(@Nullable ItemStack input) {
-        for (ValueObjectTypeItemStack.ValueItemStack itemStack : itemStacks) {
-            if (itemStack.getRawValue()
-                .isPresent()
-                && TunnelItemHelpers.areItemStackEqual(
-                    input,
-                    itemStack.getRawValue()
-                        .get(),
-                    checkStackSize,
-                    checkItem,
-                    checkDamage,
-                    checkNbt)) {
+        for (ValueObjectTypeItemStack.ValueItemStack itemStackValue : itemStacks) {
+            ItemStack targetStack = itemStackValue.getRawValue();
+            if (!ItemHelpers.isEmpty(targetStack) && TunnelItemHelpers
+                .areItemStackEqual(input, targetStack, checkStackSize, checkItem, checkDamage, checkNbt)) {
                 return !blacklist;
             }
         }
