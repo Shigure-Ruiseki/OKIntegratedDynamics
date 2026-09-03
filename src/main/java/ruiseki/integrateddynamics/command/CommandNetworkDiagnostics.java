@@ -4,7 +4,6 @@ import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.ChatComponentText;
 
-import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
@@ -17,7 +16,7 @@ import ruiseki.okcore.command.CommandMod;
 import ruiseki.okcore.command.argument.ArgumentTypeEnum;
 import ruiseki.okcore.init.ModBase;
 
-public class CommandNetworkDiagnostics extends CommandMod implements Command<ICommandSender> {
+public class CommandNetworkDiagnostics extends CommandMod {
 
     public static final String NAME = "networkdiagnostics";
 

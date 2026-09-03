@@ -5,25 +5,18 @@ import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 
-import ruiseki.integratedcrafting.client.gui.GuiPartInterfaceCrafting;
 import ruiseki.integratedcrafting.part.PartTypeInterfaceCrafting;
-import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.item.IVariableFacade;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartTarget;
-import ruiseki.integrateddynamics.core.client.gui.ExtendedGuiHandler;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueHelpers;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
 import ruiseki.integrateddynamics.core.inventory.container.ContainerMultipart;
 import ruiseki.integrateddynamics.core.inventory.container.slot.SlotVariable;
 import ruiseki.integrateddynamics.item.ItemVariable;
 import ruiseki.integrateddynamics.item.ItemVariableConfig;
-import ruiseki.okcore.datastructure.BlockPos;
-import ruiseki.okcore.inventory.IGuiContainerProvider;
 import ruiseki.okcore.inventory.SimpleInventory;
-import ruiseki.okcore.inventory.container.InventoryContainer;
-import ruiseki.okcore.inventory.container.button.IButtonActionServer;
 
 /**
  * Container for the crafting interface.

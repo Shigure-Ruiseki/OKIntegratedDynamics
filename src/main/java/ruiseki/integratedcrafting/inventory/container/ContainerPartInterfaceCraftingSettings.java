@@ -19,7 +19,6 @@ import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.core.client.gui.ExtendedGuiHandler;
 import ruiseki.integrateddynamics.core.client.gui.container.GuiMultipart;
-import ruiseki.integrateddynamics.core.inventory.container.ContainerMultipart;
 import ruiseki.integrateddynamics.core.inventory.container.ContainerPartSettings;
 import ruiseki.integrateddynamics.core.part.PartTypeConfigurable;
 import ruiseki.okcore.datastructure.BlockPos;
@@ -70,8 +69,13 @@ public class ContainerPartInterfaceCraftingSettings extends ContainerPartSetting
                     BlockPos cPos = getTarget().getCenter()
                         .getPos()
                         .getBlockPos();
-                    ContainerPartInterfaceCraftingSettings.this.player
-                        .openGui(gui.getModGui(), gui.getGuiID(), player.worldObj, cPos.getX(), cPos.getY(), cPos.getZ());
+                    ContainerPartInterfaceCraftingSettings.this.player.openGui(
+                        gui.getModGui(),
+                        gui.getGuiID(),
+                        player.worldObj,
+                        cPos.getX(),
+                        cPos.getY(),
+                        cPos.getZ());
                 }
             }
         });

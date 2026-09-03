@@ -2,11 +2,8 @@ package ruiseki.integrateddynamics.core.client.gui.container;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 import java.util.Optional;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
@@ -14,7 +11,8 @@ import net.minecraft.util.EnumChatFormatting;
 
 import com.google.common.collect.Lists;
 
-import net.minecraftforge.common.util.ForgeDirection;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartType;

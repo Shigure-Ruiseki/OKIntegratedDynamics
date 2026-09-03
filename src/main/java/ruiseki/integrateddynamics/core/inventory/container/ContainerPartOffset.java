@@ -36,7 +36,6 @@ import ruiseki.okcore.inventory.container.button.IButtonActionServer;
  */
 public class ContainerPartOffset extends ExtendedInventoryContainer {
 
-
     private final PartTarget target;
     private final IPartContainer partContainer;
     private final IPartType partType;

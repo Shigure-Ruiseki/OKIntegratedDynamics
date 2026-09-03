@@ -19,11 +19,12 @@ import ruiseki.integratedcrafting.api.recipe.ICraftingJobIndexModifiable;
 import ruiseki.okcore.datastructure.MultitransformIterator;
 import ruiseki.okcore.ingredient.collection.IIngredientMapMutable;
 import ruiseki.okcore.ingredient.collection.IngredientHashMap;
+import ruiseki.okcore.ingredient.collection.IngredientMapSingleClassified;
 
 /**
  * A default implementation of {@link ruiseki.integratedcrafting.api.recipe.ICraftingJobIndex} and
  * {@link ICraftingJobIndexModifiable}.
- * 
+ *
  * @author rubensworks
  */
 public class CraftingJobIndexDefault implements ICraftingJobIndexModifiable {
@@ -63,7 +64,18 @@ public class CraftingJobIndexDefault implements ICraftingJobIndexModifiable {
     @Nullable
     protected <T, M> IIngredientMapMutable<T, M, Collection<CraftingJob>> initializeIndex(
         IngredientComponent<T, M> recipeComponent) {
-        return new IngredientHashMap<>(recipeComponent);
+        // Classify by the component's primary category, just like RecipeIndexDefault does.
+        // Lookups in this index are done with quantity-less match conditions,
+        // which a plain hash map can only answer by filtering over every indexed crafting job.
+        if (recipeComponent.getCategoryTypes()
+            .size() == 1) {
+            return new IngredientHashMap<>(recipeComponent);
+        }
+        return new IngredientMapSingleClassified<>(
+            recipeComponent,
+            () -> new IngredientHashMap<>(recipeComponent),
+            recipeComponent.getCategoryTypes()
+                .get(0));
     }
 
     @Override
