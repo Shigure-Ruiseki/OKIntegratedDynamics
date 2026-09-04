@@ -1,0 +1,16 @@
+{
+  "type": "integrateddynamics:squeezer",
+  "item": "etfuturum:chorus_fruit_popped",
+  "result": {
+    "fluid": {
+      "fluid": "integrateddynamics:liquid_chorus",
+      "amount": 125
+    }
+  },
+  "conditions": [
+    {
+      "type": "forge:mod_loaded",
+      "modid": "etfuturum"
+    }
+  ]
+}

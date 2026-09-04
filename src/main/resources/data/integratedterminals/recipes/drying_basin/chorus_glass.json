@@ -4,8 +4,11 @@
     "fluid": "integrateddynamics:liquid_chorus",
     "amount": 1000
   },
-  "duration": 300,
+  "item": {
+    "tag": "forge:glass/colorless"
+  },
+  "duration": 200,
   "result": {
-    "item": "integrateddynamics:crystalized_chorus_block"
+    "item": "integratedterminals:chorus_glass"
   }
 }

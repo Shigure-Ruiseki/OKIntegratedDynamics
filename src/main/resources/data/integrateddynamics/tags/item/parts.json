@@ -21,6 +21,34 @@
     "integrateddynamics:part_redstone_reader",
     "integrateddynamics:part_redstone_writer",
     "integrateddynamics:part_static_light_panel",
-    "integrateddynamics:part_world_reader"
+    "integrateddynamics:part_world_reader",
+
+    "integratedtunnels:part_interface_energy",
+    "integratedtunnels:part_interface_filter_energy",
+    "integratedtunnels:part_importer_energy",
+    "integratedtunnels:part_exporter_energy",
+    "integratedtunnels:part_importer_world_energy",
+    "integratedtunnels:part_exporter_world_energy",
+    "integratedtunnels:part_interface_item",
+    "integratedtunnels:part_interface_filter_item",
+    "integratedtunnels:part_importer_item",
+    "integratedtunnels:part_exporter_item",
+    "integratedtunnels:part_importer_world_item",
+    "integratedtunnels:part_exporter_world_item",
+    "integratedtunnels:part_interface_fluid",
+    "integratedtunnels:part_interface_filter_fluid",
+    "integratedtunnels:part_importer_fluid",
+    "integratedtunnels:part_exporter_fluid",
+    "integratedtunnels:part_importer_world_fluid",
+    "integratedtunnels:part_exporter_world_fluid",
+    "integratedtunnels:part_importer_world_block",
+    "integratedtunnels:part_exporter_world_block",
+    "integratedtunnels:part_player_simulator",
+
+    "integratedcrafting:part_interface_crafting",
+    "integratedcrafting:part_crafting_writer",
+
+    "integratedterminals:part_terminal_storage",
+    "integratedterminals:part_terminal_crafting_job"
   ]
 }
