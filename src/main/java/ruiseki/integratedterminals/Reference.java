@@ -28,6 +28,9 @@ public class Reference {
     public static final String TEXTURE_PATH_PARTICLES = "textures/particles/";
     public static final String MODEL_PATH = "models/";
 
+    // OREDICT NAMES
+    public static final String DICT_BLOCKGLASS = "blockGlass";
+
     // Dependencies
     public static final String MOD_DEPENDENCIES = "required-after:okcore;" + "required-after:commoncapabilities;"
         + "required-after:integrateddynamics;"

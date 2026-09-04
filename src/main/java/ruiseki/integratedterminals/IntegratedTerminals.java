@@ -15,6 +15,8 @@ import cpw.mods.fml.common.event.FMLServerStoppingEvent;
 import ruiseki.integratedterminals.api.terminalstorage.ITerminalStorageTabRegistry;
 import ruiseki.integratedterminals.api.terminalstorage.crafting.ITerminalStorageTabIngredientCraftingHandlerRegistry;
 import ruiseki.integratedterminals.api.terminalstorage.location.ITerminalStorageLocationRegistry;
+import ruiseki.integratedterminals.block.BlockChorusGlassConfig;
+import ruiseki.integratedterminals.block.BlockMenrilGlassConfig;
 import ruiseki.integratedterminals.capability.ingredient.IngredientComponentTerminalStorageHandlerConfig;
 import ruiseki.integratedterminals.capability.ingredient.TerminalIngredientComponentCapabilities;
 import ruiseki.integratedterminals.core.client.gui.ExtendedGuiHandler;
@@ -175,6 +177,9 @@ public class IntegratedTerminals extends ModBaseVersionable {
         super.onMainConfigsRegister(configHandler);
 
         configHandler.add(new IngredientComponentTerminalStorageHandlerConfig());
+        configHandler.add(new ItemTerminalStoragePortableConfig());
+        configHandler.add(new BlockChorusGlassConfig());
+        configHandler.add(new BlockMenrilGlassConfig());
         configHandler.add(new ItemTerminalStoragePortableConfig());
     }
 
