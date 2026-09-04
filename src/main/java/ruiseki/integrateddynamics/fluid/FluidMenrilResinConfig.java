@@ -25,6 +25,6 @@ public class FluidMenrilResinConfig extends FluidConfig {
             true,
             "menril_resin",
             null,
-            config -> new FluidMenrilResin(config.getNamedId()));
+            config -> new FluidMenrilResin(config.getNamedId()).setUnlocalizedName(config.getUnlocalizedName()));
     }
 }

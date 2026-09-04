@@ -108,13 +108,13 @@ public class GeneralConfig extends DummyConfig {
         comment = "If client-directed packets should be serialized in a separate thread.",
         isCommandable = true,
         configLocation = ConfigLocation.SERVER)
-    public static boolean packetSerializationEnableMultithreading = true;
+    public static boolean packetSerializationEnableMultithreading = false;
     @ConfigurableProperty(
         category = "core",
         comment = "If client-received packets should be deserialized in a separate thread.",
         isCommandable = true,
         configLocation = ConfigLocation.CLIENT)
-    public static boolean packetDeserializationEnableMultithreading = true;
+    public static boolean packetDeserializationEnableMultithreading = false;
 
     @ConfigurableProperty(
         category = "general",

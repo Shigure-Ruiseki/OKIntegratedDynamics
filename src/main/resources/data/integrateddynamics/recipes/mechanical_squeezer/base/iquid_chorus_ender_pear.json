@@ -1,0 +1,36 @@
+{
+  "type": "integrateddynamics:mechanical_squeezer",
+  "item": "minecraft:ender_pearl",
+  "result": {
+    "fluid": {
+      "fluid": "integrateddynamics:liquid_chorus",
+      "amount": 500
+    },
+    "items": [
+      {
+        "item": {
+          "item": "integrateddynamics:crystalized_chorus_chunk",
+          "count": 2
+        }
+      },
+      {
+        "item": "integrateddynamics:crystalized_chorus_chunk",
+        "chance": 0.5
+      },
+      {
+        "item": "integrateddynamics:crystalized_chorus_chunk",
+        "chance": 0.5
+      }
+    ]
+  },
+  "duration": 15,
+  "conditions": [
+    {
+      "type": "forge:not",
+      "value": {
+        "type": "forge:mod_loaded",
+        "modid": "etfuturum"
+      }
+    }
+  ]
+}

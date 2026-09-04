@@ -1,0 +1,33 @@
+{
+  "type": "integrateddynamics:mechanical_squeezer",
+  "item": "etfuturum:chorus_fruit_popped",
+  "result": {
+    "fluid": {
+      "fluid": "integrateddynamics:liquid_chorus",
+      "amount": 125
+    },
+    "items": [
+      {
+        "item": {
+          "item": "integrateddynamics:crystalized_chorus_chunk",
+          "count": 2
+        }
+      },
+      {
+        "item": "integrateddynamics:crystalized_chorus_chunk",
+        "chance": 0.5
+      },
+      {
+        "item": "integrateddynamics:crystalized_chorus_chunk",
+        "chance": 0.5
+      }
+    ]
+  },
+  "duration": 15,
+  "conditions": [
+    {
+      "type": "forge:mod_loaded",
+      "modid": "etfuturum"
+    }
+  ]
+}
