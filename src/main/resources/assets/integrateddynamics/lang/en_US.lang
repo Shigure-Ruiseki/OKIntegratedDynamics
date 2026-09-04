@@ -155,7 +155,7 @@ item.items.integrateddynamics.enhancement_offset.limit.name=Part offset is alrea
 
 # Fluids
 fluid.fluids.integrateddynamics.menrilresin=Menril Resin
-fluid.fluids.integrateddynamics.liquidchorus=Liquid Chorus
+fluid.fluids.integrateddynamics.liquid_chorus=Liquid Chorus
 
 # Biomes
 biomes.integrateddynamics.biome_meneglin=Meneglin
