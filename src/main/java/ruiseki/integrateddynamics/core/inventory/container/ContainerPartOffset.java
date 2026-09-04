@@ -232,6 +232,6 @@ public class ContainerPartOffset extends ExtendedInventoryContainer {
 
     protected void updatePartOffset() {
         Vector3i offset = new Vector3i(getLastXValue(), getLastYValue(), getLastZValue());
-        getPartType().setTargetOffset(getPartState(), offset);
+        getPartType().setTargetOffset(getPartState(), getTarget().getCenter(), offset);
     }
 }

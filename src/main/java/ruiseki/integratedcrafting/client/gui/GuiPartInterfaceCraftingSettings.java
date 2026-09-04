@@ -22,6 +22,7 @@ import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.client.gui.image.Images;
 import ruiseki.integrateddynamics.core.client.gui.GuiTextFieldDropdown;
+import ruiseki.integrateddynamics.core.client.gui.container.GuiMultipartAspects;
 import ruiseki.integrateddynamics.core.client.gui.container.GuiPartSettings;
 import ruiseki.okcore.client.gui.component.button.GuiButtonCheckbox;
 import ruiseki.okcore.client.gui.component.button.GuiButtonImage;
@@ -56,6 +57,8 @@ public class GuiPartInterfaceCraftingSettings extends GuiPartSettings implements
             target,
             partContainer,
             partType);
+
+        putButtonAction(GuiMultipartAspects.BUTTON_OFFSETS, (buttonId, gui, container) -> onSave());
     }
 
     @Override
@@ -119,7 +122,7 @@ public class GuiPartInterfaceCraftingSettings extends GuiPartSettings implements
             .supportsOffsets()) {
             buttonList.add(
                 new GuiButtonImage(
-                    ContainerPartInterfaceCraftingSettings.BUTTON_OFFSETS,
+                    GuiMultipartAspects.BUTTON_OFFSETS,
                     this.guiLeft - 20,
                     this.guiTop + 10,
                     18,

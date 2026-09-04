@@ -157,7 +157,7 @@ public class PartStateOffsetHandler<P extends IPartType> {
                     if (slot == 2) {
                         offset = new Vector3i(offset.x(), offset.y(), valueRaw);
                     }
-                    boolean valid = partType.setTargetOffset(partState, offset);
+                    boolean valid = partType.setTargetOffset(partState, target.getCenter(), offset);
                     if (!valid) {
                         this.offsetVariablesSlotMessages.put(
                             slot,

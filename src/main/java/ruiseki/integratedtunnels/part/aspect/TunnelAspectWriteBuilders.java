@@ -181,7 +181,7 @@ public class TunnelAspectWriteBuilders {
                     partType.addTargetToNetwork(
                         partStateHolder.getState()
                             .getNetwork(),
-                        target.getTarget(),
+                        target,
                         partStateHolder.getState()
                             .getPriority(),
                         partStateHolder.getState()
@@ -566,7 +566,8 @@ public class TunnelAspectWriteBuilders {
                 PROP_PASSIVE_IO,
                 PROP_CHECK_STACKSIZE,
                 PROP_CHECK_DAMAGE,
-                PROP_CHECK_NBT));
+                PROP_CHECK_NBT,
+                PROP_CRAFT));
         public static final IAspectProperties PROPERTIES_NBT = new AspectProperties(
             ImmutableList.<IAspectPropertyTypeInstance>of(
                 PROP_CHANNEL,
@@ -686,6 +687,7 @@ public class TunnelAspectWriteBuilders {
             PROPERTIES_RATESLOTCHECKSLIST.setValue(PROP_CHECK_STACKSIZE, ValueTypeBoolean.ValueBoolean.of(false));
             PROPERTIES_RATESLOTCHECKSLIST.setValue(PROP_CHECK_DAMAGE, ValueTypeBoolean.ValueBoolean.of(true));
             PROPERTIES_RATESLOTCHECKSLIST.setValue(PROP_CHECK_NBT, ValueTypeBoolean.ValueBoolean.of(true));
+            PROPERTIES_RATESLOTCHECKSLIST.setValue(PROP_CRAFT, ValueTypeBoolean.ValueBoolean.of(false));
 
             PROPERTIES_NBT.setValue(
                 PROP_CHANNEL,
@@ -1937,6 +1939,8 @@ public class TunnelAspectWriteBuilders {
                 .clone();
             public static final IAspectProperties PROPERTIES_SLOT = TunnelAspectWriteBuilders.Item.PROPERTIES_SLOT
                 .clone();
+            public static final IAspectProperties PROPERTIES_RATE = TunnelAspectWriteBuilders.Item.PROPERTIES_RATE
+                .clone();
             public static final IAspectProperties PROPERTIES_RATESLOTCHECKS = TunnelAspectWriteBuilders.Item.PROPERTIES_RATESLOTCHECKS
                 .clone();
             public static final IAspectProperties PROPERTIES_RATESLOTCHECKSPREDICATE = TunnelAspectWriteBuilders.Item.PROPERTIES_RATESLOTCHECKS
@@ -1949,6 +1953,9 @@ public class TunnelAspectWriteBuilders {
                 PROPERTIES_RATESLOT.setValue(World.PROPERTY_ENTITYINDEX, ValueTypeInteger.ValueInteger.of(0));
 
                 PROPERTIES_SLOT.setValue(World.PROPERTY_ENTITYINDEX, ValueTypeInteger.ValueInteger.of(0));
+
+                PROPERTIES_RATE.setValue(World.PROPERTY_ENTITYINDEX, ValueTypeInteger.ValueInteger.of(0));
+                PROPERTIES_RATE.removeValue(PROP_PASSIVE_IO);
 
                 PROPERTIES_RATESLOTPREDICATE.setValue(World.PROPERTY_ENTITYINDEX, ValueTypeInteger.ValueInteger.of(0));
                 PROPERTIES_RATESLOTPREDICATE.removeValue(PROP_PASSIVE_IO);

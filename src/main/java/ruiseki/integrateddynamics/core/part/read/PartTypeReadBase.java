@@ -21,6 +21,7 @@ import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
+import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.integrateddynamics.api.part.PartRenderPosition;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.api.part.aspect.AspectUpdateType;
@@ -135,9 +136,9 @@ public abstract class PartTypeReadBase<P extends IPartTypeReader<P, S>, S extend
     }
 
     @Override
-    public boolean setTargetOffset(S state, Vector3i offset) {
+    public boolean setTargetOffset(S state, PartPos center, Vector3i offset) {
         Vector3i lastOffset = getTargetOffset(state);
-        boolean ret = super.setTargetOffset(state, offset);
+        boolean ret = super.setTargetOffset(state, center, offset);
         if (!lastOffset.equals(offset)) {
             state.resetVariables();
         }

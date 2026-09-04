@@ -169,10 +169,11 @@ public interface IPartType<P extends IPartType<P, S>, S extends IPartState<P>>
 
     /**
      * @param state  The state
+     * @param center The center position.
      * @param offset The target position offset.
      * @return True if the offset was valid
      */
-    public boolean setTargetOffset(S state, Vector3i offset);
+    public boolean setTargetOffset(S state, PartPos center, Vector3i offset);
 
     /**
      * Indicate that the given part should interact with the given side of the target.
@@ -201,7 +202,7 @@ public interface IPartType<P extends IPartType<P, S>, S extends IPartState<P>>
 
     /**
      * Called when an offset variable was inserted or removed from a slot.
-     * 
+     *
      * @param target The target block.
      * @param state  The state.
      */

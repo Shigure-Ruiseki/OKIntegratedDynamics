@@ -103,7 +103,7 @@ public abstract class PartTypeAdapter<P extends IPartType<P, S>, S extends IPart
     }
 
     @Override
-    public boolean setTargetOffset(S state, Vector3i offset) {
+    public boolean setTargetOffset(S state, PartPos center, Vector3i offset) {
         int max = state.getMaxOffset();
         if (offset.x() >= -max && offset.y() >= -max
             && offset.z() >= -max

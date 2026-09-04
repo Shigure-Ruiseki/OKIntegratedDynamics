@@ -32,8 +32,6 @@ import ruiseki.okcore.inventory.container.button.IButtonActionServer;
  */
 public class ContainerPartInterfaceCraftingSettings extends ContainerPartSettings {
 
-    public static final int BUTTON_OFFSETS = 2;
-
     private final int lastChannelInterfaceCraftingValueId;
     private final Map<IngredientComponent<?, ?>, Integer> targetSideOverrideValueIds;
     private final int lastDisableCraftingCheckValueId;
