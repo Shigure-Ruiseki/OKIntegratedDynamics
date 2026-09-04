@@ -21,7 +21,7 @@ import ruiseki.okcore.datastructure.LazyOptional;
 
 /**
  * Interface for positioned network addons that have a filter.
- * 
+ *
  * @author rubensworks
  */
 public abstract class PartTypeInterfacePositionedAddonFiltering<N extends IPositionedAddonsNetwork, T, P extends PartTypeInterfacePositionedAddonFiltering<N, T, P, S>, S extends PartTypeInterfacePositionedAddonFiltering.State<N, T, P, S>>
@@ -41,6 +41,12 @@ public abstract class PartTypeInterfacePositionedAddonFiltering<N extends IPosit
     }
 
     @Override
+    protected void onVariableContentsUpdated(IPartNetwork network, PartTarget target, S state) {
+        super.onVariableContentsUpdated(network, target, state);
+        state.requireAspectUpdate();
+    }
+
+    @Override
     public void onAddingPositionToNetwork(N networkCapability, INetwork network, PartPos pos, int priority,
         int channelInterface, S state) {
         if (state.getTargetFilter() != null) {
@@ -53,8 +59,10 @@ public abstract class PartTypeInterfacePositionedAddonFiltering<N extends IPosit
     @Override
     public void onRemovingPositionFromNetwork(N networkCapability, INetwork network, PartPos pos, S state) {
         networkCapability.removePosition(pos);
-        ((IPositionedAddonsNetworkIngredients<T, ?>) state.getPositionedAddonsNetwork())
-            .setPositionedStorageFilter(pos, null);
+        N addonsNetwork = state.getPositionedAddonsNetwork();
+        if (addonsNetwork != null) {
+            ((IPositionedAddonsNetworkIngredients<T, ?>) addonsNetwork).setPositionedStorageFilter(pos, null);
+        }
     }
 
     // Methods below copied from PartTypeInterfacePositionedAddon

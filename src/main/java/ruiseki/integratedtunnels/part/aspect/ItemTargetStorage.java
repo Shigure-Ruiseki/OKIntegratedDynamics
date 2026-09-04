@@ -5,6 +5,7 @@ import net.minecraft.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
 import ruiseki.commoncapabilities.api.ingredient.storage.IIngredientComponentStorage;
+import ruiseki.commoncapabilities.api.ingredient.storage.IIngredientComponentStorageSlotted;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.api.part.aspect.property.IAspectProperties;
@@ -16,7 +17,7 @@ import ruiseki.integratedtunnels.core.predicate.IngredientPredicate;
 /**
  * @author rubensworks
  */
-public class ItemTargetStorage extends ChanneledTarget<IItemNetwork> implements IItemTarget {
+public class ItemTargetStorage extends ChanneledTarget<IItemNetwork, ItemStack> implements IItemTarget {
 
     private final ITunnelConnection connection;
     private final IIngredientComponentStorage<ItemStack, Integer> storage;
@@ -39,6 +40,8 @@ public class ItemTargetStorage extends ChanneledTarget<IItemNetwork> implements 
             properties.getValue(TunnelAspectWriteBuilders.PROP_ROUNDROBIN)
                 .getRawValue(),
             properties.getValue(TunnelAspectWriteBuilders.PROP_CRAFT)
+                .getRawValue(),
+            properties.getValue(TunnelAspectWriteBuilders.PROP_PASSIVE_IO)
                 .getRawValue());
         this.connection = new TunnelConnectionPositionedNetwork(
             network,
@@ -55,6 +58,11 @@ public class ItemTargetStorage extends ChanneledTarget<IItemNetwork> implements 
     @Override
     public IIngredientComponentStorage<ItemStack, Integer> getItemChannel() {
         return getChanneledNetwork().getChannel(getChannel());
+    }
+
+    @Override
+    public IIngredientComponentStorageSlotted<ItemStack, Integer> getItemChannelSlotted() {
+        return getChanneledNetwork().getChannelSlotted(getChannel());
     }
 
     @Override

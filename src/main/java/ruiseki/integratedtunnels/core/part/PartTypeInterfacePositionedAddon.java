@@ -9,6 +9,7 @@ import net.minecraftforge.common.util.Constants;
 
 import org.jetbrains.annotations.Nullable;
 
+import ruiseki.integrateddynamics.GeneralConfig;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.network.IPositionedAddonsNetwork;
@@ -39,6 +40,11 @@ public abstract class PartTypeInterfacePositionedAddon<N extends IPositionedAddo
     @Override
     public Class<? extends Container> getContainer() {
         return ContainerInterfaceSettings.class;
+    }
+
+    @Override
+    public boolean isUpdate(S state) {
+        return getConsumptionRate(state) > 0 && GeneralConfig.energyConsumptionMultiplier > 0;
     }
 
     @Override

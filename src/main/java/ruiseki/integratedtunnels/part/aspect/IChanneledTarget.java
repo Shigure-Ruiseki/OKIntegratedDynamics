@@ -10,6 +10,7 @@ import ruiseki.integrateddynamics.api.network.IPositionedAddonsNetwork;
 import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
 import ruiseki.integrateddynamics.core.helper.PartHelpers;
+import ruiseki.integratedtunnels.core.part.PartStatePositionedAddon;
 import ruiseki.integratedtunnels.core.part.PartStateRoundRobin;
 
 /**
@@ -17,7 +18,7 @@ import ruiseki.integratedtunnels.core.part.PartStateRoundRobin;
  *
  * @author rubensworks
  */
-public interface IChanneledTarget<N extends IPositionedAddonsNetwork> {
+public interface IChanneledTarget<N extends IPositionedAddonsNetwork, T> {
 
     public INetwork getNetwork();
 
@@ -27,11 +28,17 @@ public interface IChanneledTarget<N extends IPositionedAddonsNetwork> {
 
     public PartStateRoundRobin<?> getPartState();
 
+    public default PartStatePositionedAddon<?, ?, T> getPartStatePositionedAddon() {
+        return (PartStatePositionedAddon<?, ?, T>) getPartState();
+    }
+
     public int getChannel();
 
     public boolean isRoundRobin();
 
     public boolean isCraftIfFailed();
+
+    public boolean isPassiveIO();
 
     public void preTransfer();
 

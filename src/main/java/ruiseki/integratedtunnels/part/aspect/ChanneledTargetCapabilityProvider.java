@@ -17,7 +17,7 @@ import ruiseki.okcore.capabilities.ICapabilityProvider;
  * @author rubensworks
  */
 public abstract class ChanneledTargetCapabilityProvider<N extends IPositionedAddonsNetwork, T, M>
-    extends ChanneledTarget<N> {
+    extends ChanneledTarget<N, T> {
 
     private final ICapabilityProvider capabilityProvider;
     private final ForgeDirection side;
@@ -26,8 +26,8 @@ public abstract class ChanneledTargetCapabilityProvider<N extends IPositionedAdd
 
     public ChanneledTargetCapabilityProvider(INetwork network, @Nullable ICapabilityProvider capabilityProvider,
         ForgeDirection side, N channeledNetwork, @Nullable PartStateRoundRobin<?> partState, int channel,
-        boolean roundRobin, boolean craftIfFailed) {
-        super(network, channeledNetwork, partState, channel, roundRobin, craftIfFailed);
+        boolean roundRobin, boolean craftIfFailed, boolean passiveIO) {
+        super(network, channeledNetwork, partState, channel, roundRobin, craftIfFailed, passiveIO);
         this.capabilityProvider = capabilityProvider;
         this.side = side;
     }

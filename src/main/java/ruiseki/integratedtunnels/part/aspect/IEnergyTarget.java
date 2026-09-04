@@ -17,7 +17,7 @@ import ruiseki.okcore.capabilities.ICapabilityProvider;
 /**
  * @author rubensworks
  */
-public interface IEnergyTarget extends IChanneledTarget<IEnergyNetwork> {
+public interface IEnergyTarget extends IChanneledTarget<IEnergyNetwork, Long> {
 
     public IIngredientComponentStorage<Long, Boolean> getEnergyChannel();
 

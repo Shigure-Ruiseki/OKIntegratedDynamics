@@ -5,6 +5,7 @@ import net.minecraftforge.fluids.FluidStack;
 import org.jetbrains.annotations.Nullable;
 
 import ruiseki.commoncapabilities.api.ingredient.storage.IIngredientComponentStorage;
+import ruiseki.commoncapabilities.api.ingredient.storage.IIngredientComponentStorageSlotted;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.api.part.aspect.property.IAspectProperties;
@@ -16,7 +17,7 @@ import ruiseki.integratedtunnels.core.predicate.IngredientPredicate;
 /**
  * @author rubensworks
  */
-public class FluidTargetStorage extends ChanneledTarget<IFluidNetwork> implements IFluidTarget {
+public class FluidTargetStorage extends ChanneledTarget<IFluidNetwork, FluidStack> implements IFluidTarget {
 
     private final ITunnelConnection connection;
     private final IIngredientComponentStorage<FluidStack, Integer> storage;
@@ -38,6 +39,8 @@ public class FluidTargetStorage extends ChanneledTarget<IFluidNetwork> implement
             properties.getValue(TunnelAspectWriteBuilders.PROP_ROUNDROBIN)
                 .getRawValue(),
             properties.getValue(TunnelAspectWriteBuilders.PROP_CRAFT)
+                .getRawValue(),
+            properties.getValue(TunnelAspectWriteBuilders.PROP_PASSIVE_IO)
                 .getRawValue());
         this.connection = new TunnelConnectionPositionedNetwork(
             network,
@@ -53,6 +56,11 @@ public class FluidTargetStorage extends ChanneledTarget<IFluidNetwork> implement
     @Override
     public IIngredientComponentStorage<FluidStack, Integer> getFluidChannel() {
         return getChanneledNetwork().getChannel(getChannel());
+    }
+
+    @Override
+    public IIngredientComponentStorageSlotted<FluidStack, Integer> getFluidChannelSlotted() {
+        return getChanneledNetwork().getChannelSlotted(getChannel());
     }
 
     @Override

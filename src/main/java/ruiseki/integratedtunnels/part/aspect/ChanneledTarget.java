@@ -10,10 +10,10 @@ import ruiseki.integratedtunnels.core.part.PartStateRoundRobin;
 
 /**
  * A helper class for movement targets with a certain network type.
- * 
+ *
  * @author rubensworks
  */
-public abstract class ChanneledTarget<N extends IPositionedAddonsNetwork> implements IChanneledTarget<N> {
+public abstract class ChanneledTarget<N extends IPositionedAddonsNetwork, T> implements IChanneledTarget<N, T> {
 
     private final INetwork network;
     private final N channeledNetwork;
@@ -22,15 +22,17 @@ public abstract class ChanneledTarget<N extends IPositionedAddonsNetwork> implem
     private final int channel;
     private final boolean roundRobin;
     private final boolean craftIfFailed;
+    private final boolean passiveIO;
 
     public ChanneledTarget(INetwork network, N channeledNetwork, @Nullable PartStateRoundRobin<?> partState,
-        int channel, boolean roundRobin, boolean craftIfFailed) {
+        int channel, boolean roundRobin, boolean craftIfFailed, boolean passiveIO) {
         this.network = network;
         this.channeledNetwork = channeledNetwork;
         this.partState = partState;
         this.channel = channel;
         this.roundRobin = roundRobin;
         this.craftIfFailed = craftIfFailed;
+        this.passiveIO = passiveIO;
     }
 
     @Override
@@ -62,6 +64,11 @@ public abstract class ChanneledTarget<N extends IPositionedAddonsNetwork> implem
     @Override
     public boolean isCraftIfFailed() {
         return craftIfFailed;
+    }
+
+    @Override
+    public boolean isPassiveIO() {
+        return passiveIO;
     }
 
     @Override

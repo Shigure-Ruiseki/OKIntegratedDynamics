@@ -15,7 +15,7 @@ import ruiseki.okcore.helper.FluidHelpers;
 
 /**
  * Interface for fluid handlers.
- * 
+ *
  * @author rubensworks
  */
 public class PartTypeInterfaceFluid extends
@@ -75,7 +75,7 @@ public class PartTypeInterfaceFluid extends
         @Override
         public IFluidTankProperties[] getTankProperties() {
             if (!state.isNetworkAndPositionValid()) {
-                return null;
+                return new IFluidTankProperties[0];
             }
             state.disablePosition();
             IFluidTankProperties[] ret = getFluidHandler().getTankProperties();

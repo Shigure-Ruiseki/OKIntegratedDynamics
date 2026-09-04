@@ -4,8 +4,11 @@ import java.util.Iterator;
 
 import net.minecraft.item.ItemStack;
 
+import org.jetbrains.annotations.NotNull;
+
 import com.google.common.collect.Iterators;
 
+import ruiseki.commoncapabilities.IngredientComponents;
 import ruiseki.commoncapabilities.api.capability.itemhandler.ISlotlessItemHandler;
 import ruiseki.commoncapabilities.capability.itemhandler.SlotlessItemHandlerConfig;
 import ruiseki.integrateddynamics.api.network.INetwork;
@@ -19,12 +22,13 @@ import ruiseki.integratedtunnels.core.part.PartTypeInterfacePositionedAddon;
 import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.helper.ItemHelpers;
+import ruiseki.okcore.ingredient.collection.FilteredIngredientCollectionIterator;
 import ruiseki.okcore.item.capability.CapabilityItemHandler;
 import ruiseki.okcore.item.handler.IItemHandler;
 
 /**
  * Interface for item handlers.
- * 
+ *
  * @author rubensworks
  */
 public class PartTypeInterfaceItem extends
@@ -163,22 +167,56 @@ public class PartTypeInterfaceItem extends
                 return Iterators.forArray();
             }
             state.disablePosition();
-            Iterator<ItemStack> ret = state.getPositionedAddonsNetwork()
+            Iterator<ItemStack> ret;
+            if (!state.getPositionedAddonsNetwork()
                 .getChannel(state.getChannelInterface())
-                .iterator();
+                .iterator()
+                .hasNext()) {
+                // If the target is empty, we can safely forward this call to our index.
+                ret = state.getPositionedAddonsNetwork()
+                    .getChannel(state.getChannelInterface())
+                    .iterator();
+            } else {
+                // If the target is not empty, iterate over all positions except for the target to determine items.
+                // If we would not do this, this would result in duplication of index contents, see
+                // CyclopsMC/IntegratedTerminals#109
+                IItemNetwork network = state.getPositionedAddonsNetwork();
+                ret = Iterators.concat(
+                    network.getPositions(state.getChannel())
+                        .stream()
+                        .filter(pos -> !network.isPositionDisabled(pos))
+                        .map(network::getRawInstances)
+                        .toArray(Iterator[]::new));
+            }
             state.enablePosition();
             return ret;
         }
 
         @Override
-        public Iterator<ItemStack> findItems(ItemStack stack, int matchFlags) {
+        public Iterator<ItemStack> findItems(@NotNull ItemStack stack, int matchFlags) {
             if (!state.isNetworkAndPositionValid()) {
                 return Iterators.forArray();
             }
             state.disablePosition();
-            Iterator<ItemStack> ret = state.getPositionedAddonsNetwork()
+            Iterator<ItemStack> ret;
+            if (!state.getPositionedAddonsNetwork()
                 .getChannel(state.getChannelInterface())
-                .iterator(stack, matchFlags);
+                .iterator(stack, matchFlags)
+                .hasNext()) {
+                // If the target is empty, we can safely forward this call to our index.
+                ret = state.getPositionedAddonsNetwork()
+                    .getChannel(state.getChannelInterface())
+                    .iterator(stack, matchFlags);
+            } else {
+                // If the target is not empty, iterate over all positions except for the target to determine items.
+                // If we would not do this, this would result in duplication of index contents, see
+                // CyclopsMC/IntegratedTerminals#109
+                ret = new FilteredIngredientCollectionIterator<>(
+                    getItems(),
+                    IngredientComponents.ITEMSTACK.getMatcher(),
+                    stack,
+                    matchFlags);
+            }
             state.enablePosition();
             return ret;
         }

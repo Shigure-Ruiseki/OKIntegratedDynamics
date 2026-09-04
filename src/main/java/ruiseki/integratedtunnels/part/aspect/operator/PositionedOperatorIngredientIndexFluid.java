@@ -18,6 +18,10 @@ import ruiseki.okcore.datastructure.DimPos;
  */
 public class PositionedOperatorIngredientIndexFluid extends PositionedOperatorIngredientIndex<FluidStack, Integer> {
 
+    public PositionedOperatorIngredientIndexFluid() {
+        this(null, ForgeDirection.NORTH, -1);
+    }
+
     public PositionedOperatorIngredientIndexFluid(DimPos pos, ForgeDirection side, int channel) {
         super("countbyfluid", new Function(), ValueTypes.OBJECT_FLUIDSTACK, ValueTypes.LONG, pos, side, channel);
     }

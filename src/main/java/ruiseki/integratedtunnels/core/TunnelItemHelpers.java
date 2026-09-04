@@ -46,7 +46,7 @@ public class TunnelItemHelpers {
 
     public static final IngredientPredicate<ItemStack, Integer> MATCH_NONE = new IngredientPredicate<ItemStack, Integer>(
         IngredientComponent.ITEMSTACK,
-        null,
+        ItemHelpers.EMPTY,
         ItemMatch.EXACT,
         false,
         true,
@@ -86,20 +86,26 @@ public class TunnelItemHelpers {
         };
     }
 
-    public static IngredientPredicate<ItemStack, Integer> matchItemStack(final ItemStack itemStack,
-        final boolean checkItem, final boolean checkStackSize, final boolean checkDamage, final boolean checkNbt,
-        final boolean blacklist, final boolean exactAmount) {
+    protected static int getItemStackMatchFlags(boolean checkItem, boolean checkDamage, boolean checkStackSize,
+        boolean checkNbt) {
+
         int matchFlags = ItemMatch.ANY;
         if (checkItem) matchFlags = matchFlags | ItemMatch.ITEM;
         if (checkDamage) matchFlags = matchFlags | ItemMatch.DAMAGE;
         if (checkNbt) matchFlags = matchFlags | ItemMatch.NBT;
         if (checkStackSize) matchFlags = matchFlags | ItemMatch.STACKSIZE;
+        return matchFlags;
+    }
+
+    public static IngredientPredicate<ItemStack, Integer> matchItemStack(final ItemStack itemStack,
+        final boolean checkItem, final boolean checkDamage, final boolean checkStackSize, final boolean checkNbt,
+        final boolean blacklist, final boolean exactAmount) {
         return new IngredientPredicate<ItemStack, Integer>(
             IngredientComponent.ITEMSTACK,
             itemStack.copy(),
-            matchFlags,
+            getItemStackMatchFlags(checkItem, checkDamage, checkStackSize, checkNbt),
             blacklist,
-            itemStack == null && !blacklist,
+            ItemHelpers.isEmpty(itemStack) && !blacklist,
             itemStack.stackSize,
             exactAmount) {
 
@@ -123,6 +129,7 @@ public class TunnelItemHelpers {
             amount,
             exactAmount,
             itemStacks,
+            getItemStackMatchFlags(checkItem, checkDamage, checkStackSize, checkNbt),
             checkStackSize,
             checkItem,
             checkDamage,
@@ -136,13 +143,14 @@ public class TunnelItemHelpers {
 
     public static IngredientPredicate<ItemStack, Integer> matchBlocks(
         final IValueTypeListProxy<ValueObjectTypeBlock, ValueObjectTypeBlock.ValueBlock> blocks,
-        final boolean checkItem, final boolean checkStackSize, final boolean checkDamage, final boolean checkNbt,
+        final boolean checkItem, final boolean checkDamage, final boolean checkStackSize, final boolean checkNbt,
         final boolean blacklist, final int amount, final boolean exactAmount) {
         return new IngredientPredicateBlockList(
             blacklist,
             amount,
             exactAmount,
             blocks,
+            getItemStackMatchFlags(checkItem, checkDamage, checkStackSize, checkNbt),
             checkStackSize,
             checkItem,
             checkDamage,

@@ -39,7 +39,7 @@ public class TunnelFluidHelpers {
 
     public static final IngredientPredicate<FluidStack, Integer> MATCH_NONE = new IngredientPredicate<FluidStack, Integer>(
         IngredientComponent.FLUIDSTACK,
-        null,
+        FluidHelpers.EMPTY,
         FluidMatch.EXACT,
         false,
         true,
@@ -79,17 +79,23 @@ public class TunnelFluidHelpers {
         };
     }
 
-    public static IngredientPredicate<FluidStack, Integer> matchFluidStack(final FluidStack fluidStack,
-        final boolean checkFluid, final boolean checkAmount, final boolean checkNbt, final boolean blacklist,
-        final boolean exactAmount) {
+    protected static int getFluidStackMatchFlags(final boolean checkFluid, final boolean checkAmount,
+        final boolean checkNbt) {
+
         int matchFlags = FluidMatch.ANY;
         if (checkFluid) matchFlags = matchFlags | FluidMatch.FLUID;
         if (checkNbt) matchFlags = matchFlags | FluidMatch.NBT;
         if (checkAmount) matchFlags = matchFlags | FluidMatch.AMOUNT;
+        return matchFlags;
+    }
+
+    public static IngredientPredicate<FluidStack, Integer> matchFluidStack(final FluidStack fluidStack,
+        final boolean checkFluid, final boolean checkAmount, final boolean checkNbt, final boolean blacklist,
+        final boolean exactAmount) {
         return new IngredientPredicate<FluidStack, Integer>(
             IngredientComponent.FLUIDSTACK,
             fluidStack != null ? fluidStack.copy() : null,
-            matchFlags,
+            getFluidStackMatchFlags(checkFluid, checkAmount, checkNbt),
             blacklist,
             fluidStack == null && !blacklist,
             FluidHelpers.getAmount(fluidStack),
@@ -115,6 +121,7 @@ public class TunnelFluidHelpers {
             amount,
             exactAmount,
             fluidStacks,
+            getFluidStackMatchFlags(checkFluid, checkAmount, checkNbt),
             checkFluid,
             checkAmount,
             checkNbt);

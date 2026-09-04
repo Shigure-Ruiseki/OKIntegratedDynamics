@@ -4,6 +4,8 @@ import net.minecraft.item.ItemStack;
 
 import org.jetbrains.annotations.Nullable;
 
+import com.google.common.collect.Iterables;
+
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeListProxy;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueObjectTypeItemStack;
@@ -24,8 +26,17 @@ public class IngredientPredicateItemStackList extends IngredientPredicate<ItemSt
 
     public IngredientPredicateItemStackList(boolean blacklist, int amount, boolean exactAmount,
         IValueTypeListProxy<ValueObjectTypeItemStack, ValueObjectTypeItemStack.ValueItemStack> itemStacks,
-        boolean checkStackSize, boolean checkItem, boolean checkDamage, boolean checkNbt) {
-        super(IngredientComponent.ITEMSTACK, blacklist, false, amount, exactAmount);
+        int matchFlags, boolean checkStackSize, boolean checkItem, boolean checkDamage, boolean checkNbt) {
+        super(
+            IngredientComponent.ITEMSTACK,
+            Iterables.transform(
+                Iterables.filter(itemStacks, itemStack -> !ItemHelpers.isEmpty(itemStack.getRawValue())),
+                stack -> TunnelItemHelpers.prototypeWithCount(stack.getRawValue(), amount)),
+            matchFlags,
+            blacklist,
+            false,
+            amount,
+            exactAmount);
         this.blacklist = blacklist;
         this.itemStacks = itemStacks;
         this.checkStackSize = checkStackSize;
@@ -38,8 +49,19 @@ public class IngredientPredicateItemStackList extends IngredientPredicate<ItemSt
     public boolean test(@Nullable ItemStack input) {
         for (ValueObjectTypeItemStack.ValueItemStack itemStackValue : itemStacks) {
             ItemStack targetStack = itemStackValue.getRawValue();
-            if (!ItemHelpers.isEmpty(targetStack) && TunnelItemHelpers
-                .areItemStackEqual(input, targetStack, checkStackSize, checkItem, checkDamage, checkNbt)) {
+            if (!ItemHelpers.isEmpty(targetStack)
+                && TunnelItemHelpers.areItemStackEqual(input, targetStack, false, checkItem, checkDamage, checkNbt)) { // TODO:
+                                                                                                                       // hardcoded
+                                                                                                                       // 'false'
+                                                                                                                       // may
+                                                                                                                       // have
+                                                                                                                       // to
+                                                                                                                       // be
+                                                                                                                       // removed
+                                                                                                                       // when
+                                                                                                                       // restoring
+                                                                                                                       // exact
+                                                                                                                       // amount
                 return !blacklist;
             }
         }

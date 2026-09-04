@@ -7,6 +7,7 @@ import net.minecraftforge.fluids.FluidStack;
 import org.jetbrains.annotations.Nullable;
 
 import ruiseki.commoncapabilities.api.ingredient.storage.IIngredientComponentStorage;
+import ruiseki.commoncapabilities.api.ingredient.storage.IIngredientComponentStorageSlotted;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.integrateddynamics.api.part.PartTarget;
@@ -19,9 +20,11 @@ import ruiseki.okcore.capabilities.ICapabilityProvider;
 /**
  * @author rubensworks
  */
-public interface IFluidTarget extends IChanneledTarget<IFluidNetwork> {
+public interface IFluidTarget extends IChanneledTarget<IFluidNetwork, FluidStack> {
 
     public IIngredientComponentStorage<FluidStack, Integer> getFluidChannel();
+
+    public IIngredientComponentStorageSlotted<FluidStack, Integer> getFluidChannelSlotted();
 
     public IIngredientComponentStorage<FluidStack, Integer> getStorage();
 

@@ -8,6 +8,8 @@ import javax.annotation.Nullable;
 
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.passive.EntityTameable;
+import net.minecraft.entity.passive.EntityVillager;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
@@ -116,7 +118,7 @@ public class ItemStoragePlayerWrapper implements IIngredientComponentStorage<Ite
         }
 
         PlayerHelpers.setPlayerState(player, pos, (float) offsetX, (float) offsetY, (float) offsetZ, side, sneaking);
-        PlayerHelpers.setHeldItemSilent(player, stack);
+        PlayerHelpers.setHeldItemSilent(player, stack.copy());
 
         if (!continuousClick) {
             cancelDestroyingBlock(player);
@@ -127,6 +129,30 @@ public class ItemStoragePlayerWrapper implements IIngredientComponentStorage<Ite
             int y = pos.getY();
             int z = pos.getZ();
             int sideOrdinal = side.ordinal();
+
+            @SuppressWarnings("unchecked")
+            List<Entity> targetEntities = world
+                .getEntitiesWithinAABB(Entity.class, AxisAlignedBB.getBoundingBox(x, y, z, x + 1, y + 1, z + 1));
+            if (!targetEntities.isEmpty()) {
+                Entity targetEntity = getEntity(targetEntities);
+
+                // Chặn tương tác với Dân làng
+                if (targetEntity instanceof EntityVillager) {
+                    return stack;
+                }
+
+                if (targetEntity instanceof EntityTameable) {
+                    EntityTameable tameable = (EntityTameable) targetEntity;
+                    if (!tameable.isTamed()) {
+                        return stack;
+                    }
+                }
+
+                if (targetEntity.interactFirst(player)) {
+                    returnPlayerInventory(player);
+                    return ItemHelpers.EMPTY;
+                }
+            }
 
             // 1. Fire Event Forge
             PlayerInteractEvent.Action action = pos.isAirBlock(world) ? PlayerInteractEvent.Action.RIGHT_CLICK_AIR

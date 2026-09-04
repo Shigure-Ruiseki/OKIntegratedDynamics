@@ -32,7 +32,7 @@ public class ContainerInterfaceSettings extends ContainerPartSettings {
         ValueNotifierHelpers.setValue(
             this,
             lastChannelInterfaceValueId,
-            ((PartTypeInterfacePositionedAddon.State) getPartState()).getChannelInterface());
+            ((IPartTypeInterfacePositionedAddon.IState) getPartState()).getChannelInterface());
     }
 
     public int getLastChannelInterfaceValueId() {
@@ -46,6 +46,6 @@ public class ContainerInterfaceSettings extends ContainerPartSettings {
     @Override
     protected void updatePartSettings() {
         super.updatePartSettings();
-        ((PartTypeInterfacePositionedAddon.State) getPartState()).setChannelInterface(getLastChannelInterfaceValue());
+        ((IPartTypeInterfacePositionedAddon.IState) getPartState()).setChannelInterface(getLastChannelInterfaceValue());
     }
 }
