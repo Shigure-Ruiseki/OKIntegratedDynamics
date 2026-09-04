@@ -29,7 +29,7 @@ public class BlockMenrilGlassConfig extends BlockConfig {
             true,
             "menril_glass",
             null,
-            config -> new BlockGlassBase(Material.glass, true){
+            config -> new BlockGlassBase(Material.glass, true) {
 
                 @Override
                 public int getRenderBlockPass() {
