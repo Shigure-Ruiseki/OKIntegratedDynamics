@@ -23,7 +23,7 @@ public class FluidLiquidChorusConfig extends FluidConfig {
         super(
             IntegratedDynamics._instance,
             true,
-            "liquidchorus",
+            "liquid_chorus",
             null,
             config -> new FluidLiquidChorus(config.getNamedId()));
     }
