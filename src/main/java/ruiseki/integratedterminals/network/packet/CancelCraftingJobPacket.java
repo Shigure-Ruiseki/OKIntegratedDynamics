@@ -7,7 +7,6 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
-import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
 import ruiseki.integratedterminals.api.terminalstorage.crafting.ITerminalStorageTabIngredientCraftingHandler;
 import ruiseki.integratedterminals.core.client.gui.CraftingJobGuiData;
@@ -18,7 +17,7 @@ import ruiseki.okcore.network.PacketCodec;
 
 /**
  * Packet for opening a live crafting plan gui.
- * 
+ *
  * @author rubensworks
  *
  */
@@ -65,10 +64,12 @@ public class CancelCraftingJobPacket extends PacketCodec {
 
     @Override
     public void actionServer(World world, EntityPlayerMP player) {
-        INetwork network = NetworkHelpers.getNetwork(world, pos, side);
-        ITerminalStorageTabIngredientCraftingHandler handler = getHandler();
-        Object craftingJobId = handler.deserializeCraftingJobId(this.craftingJobId.getTag("id"));
-        handler.cancelCraftingJob(network, channel, craftingJobId);
+        NetworkHelpers.getNetwork(world, pos, side)
+            .ifPresent(network -> {
+                ITerminalStorageTabIngredientCraftingHandler handler = getHandler();
+                Object craftingJobId = handler.deserializeCraftingJobId(this.craftingJobId.getCompoundTag("id"));
+                handler.cancelCraftingJob(network, channel, craftingJobId);
+            });
     }
 
     protected ITerminalStorageTabIngredientCraftingHandler getHandler() {

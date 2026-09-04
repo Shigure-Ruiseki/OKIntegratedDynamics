@@ -96,4 +96,31 @@ public class PartRenderPosition {
     public ImmutableAxisAlignedBB getBoundingBox(ForgeDirection side) {
         return collisionBoxes.get(side);
     }
+
+    @Override
+    public String toString() {
+        return "PartRenderPosition{" + "depthFactor="
+            + depthFactor
+            + ", widthFactor="
+            + widthFactor
+            + ", heightFactor="
+            + heightFactor
+            + ", widthFactorSide="
+            + widthFactorSide
+            + ", heightFactorSide="
+            + heightFactorSide
+            + '}';
+    }
+
+    public String toCompactString() {
+        return "df=" + depthFactor
+            + ",wf="
+            + widthFactor
+            + ",hf="
+            + heightFactor
+            + ",wfs="
+            + widthFactorSide
+            + ",hfs="
+            + heightFactorSide;
+    }
 }

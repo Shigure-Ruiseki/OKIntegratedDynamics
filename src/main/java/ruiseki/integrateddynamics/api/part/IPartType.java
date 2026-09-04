@@ -14,6 +14,8 @@ import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
+import org.joml.Vector3i;
+
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 
 import ruiseki.integrateddynamics.api.network.INetwork;
@@ -153,6 +155,27 @@ public interface IPartType<P extends IPartType<P, S>, S extends IPartState<P>>
     public int getChannel(S state);
 
     /**
+     * @return If this part can handle custom offsets.
+     */
+    public default boolean supportsOffsets() {
+        return true;
+    }
+
+    /**
+     * @param state The state
+     * @return The target position offset.
+     */
+    public Vector3i getTargetOffset(S state);
+
+    /**
+     * @param state  The state
+     * @param center The center position.
+     * @param offset The target position offset.
+     * @return True if the offset was valid
+     */
+    public boolean setTargetOffset(S state, PartPos center, Vector3i offset);
+
+    /**
      * Indicate that the given part should interact with the given side of the target.
      *
      * @param state The state
@@ -176,6 +199,14 @@ public interface IPartType<P extends IPartType<P, S>, S extends IPartState<P>>
      * @return The part target.
      */
     public PartTarget getTarget(PartPos pos, S state);
+
+    /**
+     * Called when an offset variable was inserted or removed from a slot.
+     *
+     * @param target The target block.
+     * @param state  The state.
+     */
+    public void onOffsetVariablesChanged(PartTarget target, S state);
 
     /**
      * @param state The state

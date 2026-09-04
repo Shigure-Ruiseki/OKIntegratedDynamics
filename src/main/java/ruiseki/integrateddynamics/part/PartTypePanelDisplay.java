@@ -1,6 +1,9 @@
 package ruiseki.integrateddynamics.part;
 
+import net.minecraft.block.Block;
+
 import ruiseki.integrateddynamics.GeneralConfig;
+import ruiseki.integrateddynamics.core.block.IgnoredBlockStatus;
 import ruiseki.integrateddynamics.core.part.panel.PartTypePanelVariableDriven;
 
 /**
@@ -13,6 +16,16 @@ public class PartTypePanelDisplay
 
     public PartTypePanelDisplay(String name) {
         super(name);
+    }
+
+    @Override
+    public boolean supportsOffsets() {
+        return false;
+    }
+
+    @Override
+    protected Block createBlock() {
+        return new IgnoredBlockStatus();
     }
 
     @Override

@@ -12,6 +12,7 @@ import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 import ruiseki.integrateddynamics.api.evaluate.variable.IVariable;
 import ruiseki.integrateddynamics.api.item.IAspectVariableFacade;
+import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.part.aspect.IAspect;
 import ruiseki.integrateddynamics.api.part.aspect.IAspectRead;
@@ -21,7 +22,7 @@ import ruiseki.okcore.helper.LangHelpers;
 
 /**
  * Variable facade for variables determined by part aspects.
- * 
+ *
  * @author rubensworks
  */
 @EqualsAndHashCode(callSuper = true)
@@ -44,10 +45,10 @@ public class AspectVariableFacade extends VariableFacadeBase implements IAspectV
     }
 
     @Override
-    public <V extends IValue> IVariable<V> getVariable(IPartNetwork network) {
+    public <V extends IValue> IVariable<V> getVariable(INetwork network, IPartNetwork partNetwork) {
         if (isValid() && getAspect() instanceof IAspectRead
-            && network.hasPartVariable(getPartId(), (IAspectRead<IValue, ?>) getAspect())) {
-            return network.getPartVariable(getPartId(), (IAspectRead) getAspect());
+            && partNetwork.hasPartVariable(getPartId(), (IAspectRead<IValue, ?>) getAspect())) {
+            return partNetwork.getPartVariable(getPartId(), (IAspectRead) getAspect());
         }
         return null;
     }
@@ -58,11 +59,12 @@ public class AspectVariableFacade extends VariableFacadeBase implements IAspectV
     }
 
     @Override
-    public void validate(IPartNetwork network, IValidator validator, IValueType containingValueType) {
+    public void validate(INetwork network, IPartNetwork partNetwork, IValidator validator,
+        IValueType containingValueType) {
         if (!isValid()) {
             validator.addError(new LangHelpers.UnlocalizedString(L10NValues.VARIABLE_ERROR_INVALIDITEM));
         } else if (!(getAspect() instanceof IAspectRead
-            && network.hasPartVariable(getPartId(), (IAspectRead<IValue, ?>) getAspect()))) {
+            && partNetwork.hasPartVariable(getPartId(), (IAspectRead<IValue, ?>) getAspect()))) {
                 validator.addError(
                     new LangHelpers.UnlocalizedString(
                         L10NValues.VARIABLE_ERROR_PARTNOTINNETWORK,

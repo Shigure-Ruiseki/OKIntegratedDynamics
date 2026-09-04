@@ -4,6 +4,9 @@ general.integratedcrafting.description=Craft stuff in Integrated Dynamics networ
 
 # Gui
 gui.integratedcrafting.partsettings.channel.interface=Crafting Channel
+gui.integratedcrafting.partsettings.ingredient=Ingredient Type
+gui.integratedcrafting.partsettings.craftingcheckdisabled=Disable Craft Check
+gui.integratedcrafting.partsettings.blockingmode=Blocking Mode
 
 gui.integratedcrafting.partinterface.slot.message.valid=Recipe is valid for the target.
 gui.integratedcrafting.partinterface.slot.message.invalid=Recipe is not acceptable by the target.
@@ -22,6 +25,9 @@ advancement.integratedcrafting.craft_planks.desc=Use a Crafting Writer to start 
 # Part types
 parttype.parttypes.integratedcrafting.interface_crafting.name=Crafting Interface
 parttype.parttypes.integratedcrafting.interface_crafting.info=Holds crafting variables for crafting in the target machine.
+parttype.parttypes.integratedcrafting.interface_crafting_attuned=Attuned Crafting Interface
+parttype.parttypes.integratedcrafting.interface_crafting_attuned.info=Handles crafting for all recipes exposed by the target machine.
+parttype.parttypes.integratedcrafting.interface_crafting_attuned.unsupported=The target machine does not support recipe handling.
 
 parttype.parttypes.integratedcrafting.crafting_writer.name=Crafting Writer
 parttype.parttypes.integratedcrafting.crafting_writer.info=Starts crafting jobs
@@ -31,6 +37,8 @@ aspect.aspecttypes.integratedcrafting.boolean.ignorestorage.name=Ignore storage 
 aspect.aspecttypes.integratedcrafting.boolean.ignorecrafting.name=Ignore crafting jobs
 aspect.aspecttypes.integratedcrafting.boolean.craftmissing.name=Craft missing ingredients
 aspect.aspecttypes.integratedcrafting.integer.craftamount.name=Craft amount
+aspect.aspecttypes.integratedcrafting.integer.craftdelay=Storage contents craft delay
+aspect.aspecttypes.integratedcrafting.integer.craftdelay.info=Only craft if ingredient is missing from storage for this duration
 
 # Aspects
 

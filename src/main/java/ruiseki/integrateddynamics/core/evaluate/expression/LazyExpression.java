@@ -1,5 +1,9 @@
 package ruiseki.integrateddynamics.core.evaluate.expression;
 
+import org.apache.logging.log4j.Level;
+
+import ruiseki.integrateddynamics.GeneralConfig;
+import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.evaluate.expression.IExpression;
 import ruiseki.integrateddynamics.api.evaluate.expression.ILazyExpressionValueCache;
@@ -39,6 +43,9 @@ public class LazyExpression<V extends IValue> extends VariableAdapter<V> impleme
         if (valueCache.hasValue(id)) {
             return valueCache.getValue(id);
         }
+        if (GeneralConfig.logCardEvaluation) {
+            IntegratedDynamics.clog(Level.INFO, "Evaluating variable card with ID: " + id);
+        }
         IValue value = op.evaluate(input);
         for (IVariable inputVariable : input) {
             inputVariable.addInvalidationListener(this);
@@ -70,12 +77,14 @@ public class LazyExpression<V extends IValue> extends VariableAdapter<V> impleme
             return (V) value;
         } catch (ClassCastException e) {
             errored = true;
-            throw new EvaluationException(
+            EvaluationException e2 = new EvaluationException(
                 String.format(
                     "The evaluation for operator %s returned %s instead of " + "the expected %s.",
                     op,
                     value.getType(),
                     op.getOutputType()));
+            e2.addResolutionListeners(this::invalidate);
+            throw e2;
         }
     }
 
@@ -83,6 +92,9 @@ public class LazyExpression<V extends IValue> extends VariableAdapter<V> impleme
     public void invalidate() {
         valueCache.removeValue(id);
         super.invalidate();
+        for (IVariable inputVariable : input) {
+            inputVariable.removeInvalidationListener(this);
+        }
     }
 
     public IOperator getOperator() {

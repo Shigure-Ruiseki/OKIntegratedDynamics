@@ -1,9 +1,9 @@
 package ruiseki.integratedcrafting.api.crafting;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
@@ -12,6 +12,7 @@ import net.minecraft.nbt.NBTTagIntArray;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraftforge.common.util.Constants;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
@@ -54,11 +55,7 @@ public class CraftingJobDependencyGraph {
     }
 
     public Collection<CraftingJob> getDependencies(CraftingJob craftingJob) {
-        return dependencies.getOrDefault(craftingJob.getId(), new IntArrayList())
-            .stream()
-            .map(craftingJobs::get)
-            .filter(Objects::nonNull)
-            .collect(Collectors.toList());
+        return getCraftingJobs(dependencies.get(craftingJob.getId()));
     }
 
     public boolean hasDependencies(CraftingJob craftingJob) {
@@ -79,11 +76,28 @@ public class CraftingJobDependencyGraph {
     }
 
     public Collection<CraftingJob> getDependents(CraftingJob craftingJob) {
-        return dependents.getOrDefault(craftingJob.getId(), new IntArrayList())
-            .stream()
-            .map(craftingJobs::get)
-            .filter(Objects::nonNull)
-            .collect(Collectors.toList());
+        return getCraftingJobs(dependents.get(craftingJob.getId()));
+    }
+
+    /**
+     * Resolve the given crafting job ids into their crafting jobs, skipping the ids that are unknown.
+     * 
+     * @param craftingJobIds Crafting job ids, may be null if no ids are stored.
+     * @return A new collection with the resolved crafting jobs.
+     */
+    protected Collection<CraftingJob> getCraftingJobs(@Nullable IntCollection craftingJobIds) {
+        if (craftingJobIds == null || craftingJobIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<CraftingJob> resolved = Lists.newArrayListWithCapacity(craftingJobIds.size());
+        IntIterator it = craftingJobIds.iterator();
+        while (it.hasNext()) {
+            CraftingJob craftingJob = this.craftingJobs.get(it.nextInt());
+            if (craftingJob != null) {
+                resolved.add(craftingJob);
+            }
+        }
+        return resolved;
     }
 
     public void addCraftingJobId(CraftingJob craftingJob) {
@@ -95,14 +109,10 @@ public class CraftingJobDependencyGraph {
     }
 
     public void onCraftingJobFinished(CraftingJob craftingJob) {
-        this.onCraftingJobFinished(craftingJob, true);
+        this.onCraftingJobFinished(craftingJob, false);
     }
 
-    public void onCraftingJobFinished(CraftingJob craftingJob, boolean validateDependencies) {
-        // Check if the crafting job can be finished.
-        if (validateDependencies && hasDependencies(craftingJob)) {
-            throw new IllegalStateException("A crafting job was finished while it still has unfinished dependencies.");
-        }
+    public void onCraftingJobFinished(CraftingJob craftingJob, boolean finishInvalidDependencies) {
 
         // Remove the job instance reference
         removeCraftingJobId(craftingJob);
@@ -119,27 +129,29 @@ public class CraftingJobDependencyGraph {
                 int dependent = removedIt.nextInt();
                 IntCollection dependentDependencies = dependencies.get(dependent);
                 dependentDependencies.rem(craftingJob.getId());
-                craftingJobs.get(dependent)
-                    .getDependencyCraftingJobs()
-                    .rem(craftingJob.getId());
-                if (dependentDependencies.isEmpty()) {
-                    dependencies.remove(dependent);
-                    if (!dependents.containsKey(dependent)) {
-                        craftingJobs.remove(dependent);
+                CraftingJob dependentJob = craftingJobs.get(dependent);
+                if (dependentJob != null) {
+                    dependentJob.getDependencyCraftingJobs()
+                        .rem(craftingJob.getId());
+                    if (dependentDependencies.isEmpty()) {
+                        dependencies.remove(dependent);
+                        if (!dependents.containsKey(dependent)) {
+                            craftingJobs.remove(dependent);
+                        }
                     }
                 }
             }
         }
 
         // Remove invalid dependencies that are not present in craftingJobs
-        if (!validateDependencies) {
-            IntCollection removedDependencies = dependencies.remove(craftingJob.getId());
-            if (removedDependencies != null) {
-                IntIterator removedDependenciesIt = removedDependencies.iterator();
-                while (removedDependenciesIt.hasNext()) {
-                    int dependency = removedDependenciesIt.nextInt();
-                    dependents.remove(dependency);
-                    onCraftingJobFinished(craftingJobs.get(dependency), false);
+        IntCollection removedDependencies = dependencies.remove(craftingJob.getId());
+        if (removedDependencies != null) {
+            IntIterator removedDependenciesIt = removedDependencies.iterator();
+            while (removedDependenciesIt.hasNext()) {
+                int dependency = removedDependenciesIt.nextInt();
+                dependents.remove(dependency);
+                if (finishInvalidDependencies) {
+                    onCraftingJobFinished(craftingJobs.get(dependency), true);
                 }
             }
         }
@@ -247,7 +259,7 @@ public class CraftingJobDependencyGraph {
 
         if (markMergeeAsFinished) {
             // Remove the crafting job from the graph
-            this.onCraftingJobFinished(mergee, false);
+            this.onCraftingJobFinished(mergee, true);
         }
     }
 

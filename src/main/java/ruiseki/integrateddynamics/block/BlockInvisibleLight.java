@@ -12,11 +12,9 @@ import net.minecraft.world.World;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import ruiseki.okcore.block.BlockBase;
 import ruiseki.okcore.block.property.BlockProperty;
 import ruiseki.okcore.block.property.IntegerProperty;
-import ruiseki.okcore.config.configurable.ConfigurableBlock;
-import ruiseki.okcore.config.extendedconfig.BlockConfig;
-import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 import ruiseki.okcore.helper.BlockStateHelpers;
 
 /**
@@ -24,7 +22,7 @@ import ruiseki.okcore.helper.BlockStateHelpers;
  *
  * @author rubensworks
  */
-public class BlockInvisibleLight extends ConfigurableBlock {
+public class BlockInvisibleLight extends BlockBase {
 
     @BlockProperty
     public static final IntegerProperty LIGHT = IntegerProperty
@@ -35,24 +33,11 @@ public class BlockInvisibleLight extends ConfigurableBlock {
             }
         });
 
-    private static BlockInvisibleLight _instance = null;
-
-    /**
-     * Get the unique instance.
-     *
-     * @return The instance.
-     */
-    public static BlockInvisibleLight getInstance() {
-        return _instance;
-    }
-
     /**
      * Make a new block instance.
-     *
-     * @param eConfig Config for this block.
      */
-    public BlockInvisibleLight(ExtendedConfig<BlockConfig> eConfig) {
-        super(eConfig, Material.air);
+    public BlockInvisibleLight() {
+        super(Material.air);
 
         setHardness(3.0F);
         setStepSound(soundTypeMetal);

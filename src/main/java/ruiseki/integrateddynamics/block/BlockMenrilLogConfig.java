@@ -23,7 +23,7 @@ public class BlockMenrilLogConfig extends BlockConfig {
      * Make a new instance.
      */
     public BlockMenrilLogConfig() {
-        super(IntegratedDynamics._instance, true, "menril_log", null, BlockMenrilLog.class);
+        super(IntegratedDynamics._instance, true, "menril_log", null, config -> new BlockMenrilLog());
     }
 
     @Override
@@ -33,6 +33,6 @@ public class BlockMenrilLogConfig extends BlockConfig {
 
     @Override
     public void onRegistered() {
-        Blocks.fire.setFireInfo(getBlockInstance(), 5, 20);
+        Blocks.fire.setFireInfo(getInstance(), 5, 20);
     }
 }

@@ -5,6 +5,7 @@ import java.awt.Rectangle;
 import java.io.IOException;
 import java.util.List;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.renderer.texture.TextureManager;
@@ -13,6 +14,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 
 import org.apache.commons.lang3.tuple.Triple;
+import org.jetbrains.annotations.Nullable;
 import org.lwjgl.input.Keyboard;
 
 import com.google.common.collect.Lists;
@@ -23,20 +25,22 @@ import ruiseki.integrateddynamics.api.logicprogrammer.ILogicProgrammerElement;
 import ruiseki.integrateddynamics.api.logicprogrammer.ILogicProgrammerElementType;
 import ruiseki.integrateddynamics.block.BlockLogicProgrammerConfig;
 import ruiseki.integrateddynamics.core.client.gui.subgui.SubGuiHolder;
-import ruiseki.integrateddynamics.core.evaluate.variable.GuiElementValueTypeString;
+import ruiseki.integrateddynamics.core.evaluate.variable.gui.GuiElementValueTypeString;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.integrateddynamics.core.logicprogrammer.LogicProgrammerElementTypes;
 import ruiseki.integrateddynamics.core.logicprogrammer.RenderPattern;
 import ruiseki.integrateddynamics.inventory.container.ContainerLogicProgrammerBase;
-import ruiseki.integrateddynamics.item.ItemLabeller;
+import ruiseki.integrateddynamics.item.ItemLabellerConfig;
 import ruiseki.integrateddynamics.network.packet.LogicProgrammerActivateElementPacket;
 import ruiseki.integrateddynamics.network.packet.LogicProgrammerLabelPacket;
 import ruiseki.integrateddynamics.proxy.ClientProxy;
 import ruiseki.okcore.client.gui.component.button.GuiButtonText;
 import ruiseki.okcore.client.gui.component.input.GuiTextFieldExtended;
 import ruiseki.okcore.client.gui.container.ScrollingGuiContainer;
+import ruiseki.okcore.client.gui.image.Images;
 import ruiseki.okcore.client.renderer.GlStateManager;
 import ruiseki.okcore.helper.Helpers;
+import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.RenderHelpers;
 import ruiseki.okcore.init.ModBase;
@@ -57,12 +61,13 @@ public class GuiLogicProgrammerBase extends ScrollingGuiContainer {
     protected SubGuiOperatorInfo operatorInfoPattern = null;
     protected boolean firstInit = true;
     protected int relativeStep = -1;
+    protected boolean swallowNextCharacter = false;
 
     public GuiLogicProgrammerBase(InventoryPlayer inventoryPlayer, ContainerLogicProgrammerBase container) {
         super(container);
         container.setGui(this);
 
-        this.hasLabeller = inventoryPlayer.hasItemStack(new ItemStack(ItemLabeller.getInstance()));
+        this.hasLabeller = inventoryPlayer.hasItemStack(new ItemStack(ItemLabellerConfig._instance.getInstance()));
     }
 
     @Override
@@ -195,6 +200,16 @@ public class GuiLogicProgrammerBase extends ScrollingGuiContainer {
                     Helpers.RGBToInt(40, 40, 40));
             }
         }
+
+        // Draw arrow on write slot
+        RenderHelpers.bindTexture(texture);
+        drawTexturedModalRect(
+            guiLeft + offsetX + ContainerLogicProgrammerBase.OUTPUT_X - 4,
+            guiTop + offsetY + ContainerLogicProgrammerBase.OUTPUT_Y - 4,
+            subGuiHolder.isEmpty() ? 7 : 3,
+            240,
+            4,
+            4);
     }
 
     protected Rectangle getElementPosition(ContainerLogicProgrammerBase container, int i, boolean absolute) {
@@ -209,6 +224,7 @@ public class GuiLogicProgrammerBase extends ScrollingGuiContainer {
     @Override
     protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
         super.drawGuiContainerForegroundLayer(mouseX, mouseY);
+
         subGuiHolder.drawGuiContainerForegroundLayer(
             this.guiLeft,
             this.guiTop,
@@ -216,6 +232,42 @@ public class GuiLogicProgrammerBase extends ScrollingGuiContainer {
             fontRendererObj,
             mouseX,
             mouseY);
+
+        // Draw usage information
+        if (subGuiHolder.isEmpty()) {
+            // Create
+            Images.ARROW_LEFT.draw(this, offsetX + 85, offsetY + 17);
+            fontRendererObj.drawString(
+                LangHelpers.localize(L10NValues.GUI_LOGICPROGRAMMER_INFO_CREATE),
+                offsetX + 100,
+                offsetY + 23,
+                Helpers.RGBToInt(80, 80, 80));
+
+            // Modify
+            Images.ARROW_DOWN.draw(this, offsetX + 230, offsetY + 90);
+            String modifyComponent = LangHelpers.localize(L10NValues.GUI_LOGICPROGRAMMER_INFO_MODIFY);
+            fontRendererObj.drawString(
+                modifyComponent,
+                offsetX + 230 - fontRendererObj.getStringWidth(modifyComponent),
+                offsetY + 95,
+                Helpers.RGBToInt(80, 80, 80));
+
+            // Tooltip on write slot
+            if (this.func_146978_c(
+                ContainerLogicProgrammerBase.OUTPUT_X,
+                ContainerLogicProgrammerBase.OUTPUT_Y,
+                GuiLogicProgrammerBase.BOX_HEIGHT,
+                GuiLogicProgrammerBase.BOX_HEIGHT,
+                mouseX,
+                mouseY) && ItemHelpers.isEmpty(Minecraft.getMinecraft().thePlayer.inventory.getCurrentItem())
+                && !getContainer().hasWriteItemInSlot()) {
+                this.drawTooltip(
+                    Lists.newArrayList(LangHelpers.localize(L10NValues.GUI_LOGICPROGRAMMER_TOOLTIP_WRITESLOT_MODIFY)),
+                    mouseX - this.guiLeft,
+                    mouseY - this.guiTop);
+            }
+        }
+
         // Draw operator tooltips
         ContainerLogicProgrammerBase container = (ContainerLogicProgrammerBase) getScrollingInventoryContainer();
         for (int i = 0; i < container.getPageSize(); i++) {
@@ -234,43 +286,63 @@ public class GuiLogicProgrammerBase extends ScrollingGuiContainer {
         ILogicProgrammerElement<RenderPattern, GuiLogicProgrammerBase, ContainerLogicProgrammerBase> element) {
         subGuiHolder.addSubGui(operatorInfoPattern = new SubGuiOperatorInfo(element));
         operatorInfoPattern.initGui(guiLeft, guiTop);
-        operatorConfigPattern = element
-            .createSubGui(88, 18, 160, 87, this, (ContainerLogicProgrammerBase) getContainer());
-        if (operatorConfigPattern != null) {
-            subGuiHolder.addSubGui(operatorConfigPattern);
-            operatorConfigPattern.initGui(guiLeft, guiTop);
-        }
+        subGuiHolder.addSubGui(
+            operatorConfigPattern = element.createSubGui(
+                ContainerLogicProgrammerBase.BASE_X,
+                ContainerLogicProgrammerBase.BASE_Y,
+                ContainerLogicProgrammerBase.MAX_WIDTH,
+                ContainerLogicProgrammerBase.MAX_HEIGHT,
+                this,
+                (ContainerLogicProgrammerBase) getContainer()));
+        operatorConfigPattern.initGui(guiLeft, guiTop);
     }
 
     protected void onDeactivateElement(ILogicProgrammerElement element) {
         subGuiHolder.clear();
     }
 
-    public boolean handleElementActivation(ILogicProgrammerElement element) {
+    public boolean handleElementActivation(ILogicProgrammerElement element, boolean sendToServer) {
         boolean activate = false;
-        ContainerLogicProgrammerBase container = (ContainerLogicProgrammerBase) getScrollingInventoryContainer();
+        boolean deselect = false;
+        ContainerLogicProgrammerBase container = getContainer();
         ILogicProgrammerElement newActive = null;
-        onDeactivateElement(element);
-        if (container.getActiveElement() != element) {
+        if (container.getActiveElement() == element) {
+            // Only allow deselection of the current LP element if the write slot is empty
+            if (!container.hasWriteItemInSlot()) {
+                deselect = true;
+                onDeactivateElement(element);
+            }
+        } else {
+            // Swap to another LP element
+            onDeactivateElement(element);
             activate = true;
             newActive = element;
             if (element != null) {
                 onActivateElement(element);
             }
         }
-        container.setActiveElement(
-            newActive,
-            operatorConfigPattern == null ? 0 : operatorConfigPattern.getX(),
-            operatorConfigPattern == null ? 0 : operatorConfigPattern.getY());
-        if (newActive != null) {
-            ILogicProgrammerElementType type = newActive.getType();
-            IntegratedDynamics._instance.getPacketHandler()
-                .sendToServer(new LogicProgrammerActivateElementPacket(type.getName(), type.getName(newActive)));
-        } else {
-            IntegratedDynamics._instance.getPacketHandler()
-                .sendToServer(new LogicProgrammerActivateElementPacket("", ""));
+        if (activate || deselect) {
+            container.setActiveElement(
+                newActive,
+                operatorConfigPattern == null ? 0 : operatorConfigPattern.getX(),
+                operatorConfigPattern == null ? 0 : operatorConfigPattern.getY());
+        }
+        if (sendToServer) {
+            if (newActive != null) {
+                ILogicProgrammerElementType type = newActive.getType();
+                IntegratedDynamics._instance.getPacketHandler()
+                    .sendToServer(new LogicProgrammerActivateElementPacket(type.getName(), type.getName(newActive)));
+            } else if (deselect) {
+                IntegratedDynamics._instance.getPacketHandler()
+                    .sendToServer(new LogicProgrammerActivateElementPacket("", ""));
+            }
         }
         return activate;
+    }
+
+    @Nullable
+    public RenderPattern getOperatorConfigPattern() {
+        return operatorConfigPattern;
     }
 
     protected void setSearchFieldFocussed(boolean focused) {
@@ -286,7 +358,7 @@ public class GuiLogicProgrammerBase extends ScrollingGuiContainer {
 
         // Deactivate current element
         if (elementId < 0) {
-            handleElementActivation(container.getActiveElement());
+            handleElementActivation(container.getActiveElement(), true);
             return false;
         }
 
@@ -296,7 +368,7 @@ public class GuiLogicProgrammerBase extends ScrollingGuiContainer {
                 if (elementId-- == 0) {
                     ILogicProgrammerElement element = container.getVisibleElement(i);
                     if (container.getActiveElement() != element) {
-                        handleElementActivation(element);
+                        handleElementActivation(element, true);
                     }
                     return true;
                 }
@@ -318,10 +390,12 @@ public class GuiLogicProgrammerBase extends ScrollingGuiContainer {
                 if (ClientProxy.FOCUS_LP_SEARCH.isActiveAndMatches(keyCode)) {
                     // Focus search field
                     setSearchFieldFocussed(true);
+                    swallowNextCharacter = true;
                 } else
                     if (isElementFocused && ClientProxy.FOCUS_LP_RENAME.isActiveAndMatches(keyCode) && hasLabeller()) {
                         // Open labeller gui
                         operatorInfoPattern.onButtonEditClick();
+                        swallowNextCharacter = true;
                     } else if (Keyboard.KEY_LEFT == keyCode && (!isElementFocused && isSearchFieldFocussed())) {
                         // Unfocus search field
                         setSearchFieldFocussed(isSearchFieldFocussed());
@@ -367,7 +441,7 @@ public class GuiLogicProgrammerBase extends ScrollingGuiContainer {
                 if (container.isElementVisible(i)) {
                     ILogicProgrammerElement element = container.getVisibleElement(i);
                     if (isPointInRegion(getElementPosition(container, i, false), new Point(mouseX, mouseY))) {
-                        boolean activated = handleElementActivation(element);
+                        boolean activated = handleElementActivation(element, true);
                         relativeStep = activated ? i : -1;
                         if (activated) {
                             container.getActiveElement()

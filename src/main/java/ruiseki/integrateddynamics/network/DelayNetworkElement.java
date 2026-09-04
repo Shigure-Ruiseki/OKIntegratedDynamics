@@ -2,12 +2,13 @@ package ruiseki.integrateddynamics.network;
 
 import net.minecraft.util.ResourceLocation;
 
+import ruiseki.integrateddynamics.GeneralConfig;
 import ruiseki.okcore.Reference;
 import ruiseki.okcore.datastructure.DimPos;
 
 /**
  * Network element for delays.
- * 
+ *
  * @author rubensworks
  */
 public class DelayNetworkElement extends ProxyNetworkElement {
@@ -21,6 +22,11 @@ public class DelayNetworkElement extends ProxyNetworkElement {
     @Override
     public ResourceLocation getGroup() {
         return DelayNetworkElement.GROUP;
+    }
+
+    @Override
+    public int getConsumptionRate() {
+        return GeneralConfig.delayerBaseConsumption;
     }
 
 }

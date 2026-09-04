@@ -2,6 +2,7 @@ package ruiseki.integratedcrafting.api.network;
 
 import java.util.Iterator;
 import java.util.Set;
+import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
@@ -9,6 +10,7 @@ import com.google.common.collect.Multimap;
 
 import ruiseki.commoncapabilities.api.capability.recipehandler.IRecipeDefinition;
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
+import ruiseki.commoncapabilities.api.ingredient.storage.IIngredientComponentStorage;
 import ruiseki.integratedcrafting.api.crafting.CraftingJob;
 import ruiseki.integratedcrafting.api.crafting.CraftingJobDependencyGraph;
 import ruiseki.integratedcrafting.api.crafting.ICraftingInterface;
@@ -102,9 +104,11 @@ public interface ICraftingNetwork {
      *
      * @param craftingJob       The crafting job.
      * @param allowDistribution If the crafting job is allowed to be split over multiple crafting interfaces.
+     * @param storageGetter     The storage getter.
      * @throws UnavailableCraftingInterfacesException If no crafting interfaces were available.
      */
-    public void scheduleCraftingJob(CraftingJob craftingJob, boolean allowDistribution)
+    public void scheduleCraftingJob(CraftingJob craftingJob, boolean allowDistribution,
+        Function<IngredientComponent<?, ?>, IIngredientComponentStorage> storageGetter)
         throws UnavailableCraftingInterfacesException;
 
     /**

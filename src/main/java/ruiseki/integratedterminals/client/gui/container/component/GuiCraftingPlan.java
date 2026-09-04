@@ -5,6 +5,7 @@ import java.awt.Rectangle;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -25,6 +26,7 @@ import org.lwjgl.opengl.GL11;
 
 import com.google.common.collect.Lists;
 
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import ruiseki.commoncapabilities.api.ingredient.IIngredientMatcher;
 import ruiseki.commoncapabilities.api.ingredient.IPrototypedIngredient;
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
@@ -32,7 +34,7 @@ import ruiseki.commoncapabilities.api.ingredient.PrototypedIngredient;
 import ruiseki.integratedterminals.api.terminalstorage.crafting.ITerminalCraftingPlan;
 import ruiseki.integratedterminals.api.terminalstorage.crafting.TerminalCraftingJobStatus;
 import ruiseki.integratedterminals.capability.ingredient.IngredientComponentTerminalStorageHandlerConfig;
-import ruiseki.integratedterminals.client.gui.container.GuiTerminalStorage;
+import ruiseki.integratedterminals.core.client.gui.GuiTerminalStorage;
 import ruiseki.okcore.client.gui.RenderItemExtendedSlotCount;
 import ruiseki.okcore.client.gui.component.GuiScrollBar;
 import ruiseki.okcore.client.gui.image.Image;
@@ -57,7 +59,7 @@ import ruiseki.okcore.helper.RenderHelpers;
  */
 public class GuiCraftingPlan extends Gui {
 
-    private static final int ELEMENT_WIDTH = 221;
+    public static final int ELEMENT_WIDTH = 221;
     private static final int ELEMENT_HEIGHT = 16;
     private static final int ELEMENT_HEIGHT_TOTAL = 18;
 
@@ -92,7 +94,7 @@ public class GuiCraftingPlan extends Gui {
         this.valid = craftingPlan.getStatus()
             .isValid();
         this.scrollBar = new GuiScrollBar(guiLeft + x + 227, guiTop + y + 0, 178, this::setFirstRow, visibleRows);
-        this.scrollBar.setTotalRows(visibleElements.size() - 1);
+        this.scrollBar.setTotalRows(visibleElements.size());
         this.label = LangHelpers.localize(craftingPlan.getUnlocalizedLabel());
         this.tickDuration = craftingPlan.getTickDuration();
         this.channel = craftingPlan.getChannel();
@@ -100,8 +102,25 @@ public class GuiCraftingPlan extends Gui {
     }
 
     public void inheritVisualizationState(GuiCraftingPlan guiCraftingPlan) {
+        // Inherit scroll state
         float lastScroll = guiCraftingPlan.scrollBar.getCurrentScroll();
         this.scrollBar.scrollTo(lastScroll);
+
+        // Inherit toggle state
+        IntOpenHashSet disabledElementIds = new IntOpenHashSet();
+        for (Element element : guiCraftingPlan.elements) {
+            if (!element.isEnabled()) {
+                disabledElementIds.add(element.getId());
+            }
+        }
+        for (Element element : this.elements) {
+            if (disabledElementIds.contains(element.getId())) {
+                element.setEnabled(false);
+            }
+        }
+
+        // Recalculate visible items
+        refreshList();
     }
 
     protected void refreshList() {
@@ -207,6 +226,7 @@ public class GuiCraftingPlan extends Gui {
         x = xOriginal + width - 50;
         if (layer == GuiTerminalStorage.DrawLayer.BACKGROUND) {
             // Draw counters
+            int moved = 0;
             if (element.getStorageQuantity() > 0) {
                 renderItem(new ItemStack(Blocks.chest), x, y, 0.45F);
                 RenderHelpers.drawScaledString(
@@ -219,6 +239,7 @@ public class GuiCraftingPlan extends Gui {
                     16777215,
                     true);
                 y += 8;
+                moved++;
             }
             if (element.getCraftQuantity() > 0) {
                 renderItem(new ItemStack(Blocks.crafting_table), x, y, 0.45F);
@@ -232,8 +253,13 @@ public class GuiCraftingPlan extends Gui {
                     16777215,
                     true);
                 y += 8;
+                moved++;
             }
             if (element.getMissingQuantity() > 0) {
+                if (moved == 2) {
+                    y -= 16;
+                    x -= 44;
+                }
                 renderItem(new ItemStack(Blocks.iron_bars), x, y, 0.45F);
                 RenderHelpers.drawScaledString(
                     Minecraft.getMinecraft().fontRenderer,
@@ -394,7 +420,9 @@ public class GuiCraftingPlan extends Gui {
                 .isEmpty()
                 || !craftingPlan.getDependencies()
                     .isEmpty());
+        int elementId = Objects.hash(craftingPlan.getId()) * 100;
         Element currentElement = new Element(
+            elementId++,
             indent,
             (List) craftingPlan.getOutputs()
                 .stream()
@@ -431,6 +459,7 @@ public class GuiCraftingPlan extends Gui {
                 elements.add(
                     currentElement.addChild(
                         new Element(
+                            elementId++,
                             indent + 1,
                             outputs,
                             0,
@@ -444,6 +473,7 @@ public class GuiCraftingPlan extends Gui {
                 elements.add(
                     currentElement.addChild(
                         new Element(
+                            elementId++,
                             indent + 1,
                             Collections.singletonList(Collections.singletonList(storageIngredient)),
                             storageIngredient.getComponent()
@@ -466,6 +496,7 @@ public class GuiCraftingPlan extends Gui {
 
     public static class Element {
 
+        private final int id;
         private final int indent;
         private final List<List<IPrototypedIngredient<?, ?>>> outputs;
         private final long storageQuantity;
@@ -477,8 +508,9 @@ public class GuiCraftingPlan extends Gui {
 
         private boolean enabled;
 
-        public Element(int indent, List<List<IPrototypedIngredient<?, ?>>> outputs, long storageQuantity,
+        public Element(int id, int indent, List<List<IPrototypedIngredient<?, ?>>> outputs, long storageQuantity,
             long craftQuantity, long missingQuantity, int color, TerminalCraftingJobStatus status) {
+            this.id = id;
             this.indent = indent;
             this.outputs = outputs;
             this.storageQuantity = storageQuantity;
@@ -489,6 +521,10 @@ public class GuiCraftingPlan extends Gui {
             this.children = Lists.newArrayList();
 
             this.enabled = true;
+        }
+
+        public int getId() {
+            return id;
         }
 
         public int getIndent() {

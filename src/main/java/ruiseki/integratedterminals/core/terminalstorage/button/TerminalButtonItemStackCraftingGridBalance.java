@@ -3,6 +3,7 @@ package ruiseki.integratedterminals.core.terminalstorage.button;
 import java.util.List;
 
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.EnumChatFormatting;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -25,13 +26,20 @@ public class TerminalButtonItemStackCraftingGridBalance<T> implements
     ITerminalButton<TerminalStorageTabIngredientComponentClient<T, ?>, TerminalStorageTabIngredientComponentItemStackCraftingCommon, GuiButtonImage> {
 
     @Override
-    public int getX(int guiLeft, int offset) {
-        return guiLeft + 85;
+    public void reloadFromState() {
+
     }
 
     @Override
-    public int getY(int guiTop, int offset) {
-        return guiTop + 67;
+    public int getX(int guiLeft, int offset, int gridXSize, int gridYSize, int playerInventoryOffsetX,
+        int playerInventoryOffsetY) {
+        return guiLeft + (gridXSize / 2) + 32 - (playerInventoryOffsetX > 0 ? 107 : 0);
+    }
+
+    @Override
+    public int getY(int guiTop, int offset, int gridXSize, int gridYSize, int playerInventoryOffsetX,
+        int playerInventoryOffsetY) {
+        return guiTop + gridYSize + 69;
     }
 
     @Override
@@ -65,6 +73,8 @@ public class TerminalButtonItemStackCraftingGridBalance<T> implements
     @Override
     @SideOnly(Side.CLIENT)
     public void getTooltip(EntityPlayer player, boolean tooltipFlag, List<String> lines) {
-        lines.add(LangHelpers.localize("gui." + Reference.MOD_ID + ".terminal_storage.craftinggrid.balance.info"));
+        lines.add(
+            EnumChatFormatting.GRAY
+                + LangHelpers.localize("gui." + Reference.MOD_ID + ".terminal_storage.craftinggrid.balance.info"));
     }
 }

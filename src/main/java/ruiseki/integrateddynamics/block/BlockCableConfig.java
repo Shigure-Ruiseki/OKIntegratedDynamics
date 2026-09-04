@@ -27,7 +27,7 @@ public class BlockCableConfig extends BlockContainerConfig {
      * Make a new instance.
      */
     public BlockCableConfig() {
-        super(IntegratedDynamics._instance, true, "cable", null, BlockCable.class);
+        super(IntegratedDynamics._instance, true, "cable", null, config -> new BlockCable());
     }
 
     @Override

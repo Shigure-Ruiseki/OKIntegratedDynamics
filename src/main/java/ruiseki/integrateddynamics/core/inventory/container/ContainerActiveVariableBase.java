@@ -8,7 +8,6 @@ import ruiseki.integrateddynamics.api.evaluate.variable.IVariable;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueHelpers;
 import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
 import ruiseki.integrateddynamics.core.tileentity.TileActiveVariableBase;
-import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.helper.ValueNotifierHelpers;
 import ruiseki.okcore.inventory.container.TileInventoryContainerConfigurable;
 
@@ -31,20 +30,21 @@ public class ContainerActiveVariableBase<T extends TileActiveVariableBase<?>>
      */
     public ContainerActiveVariableBase(InventoryPlayer inventory, T tile) {
         super(inventory, tile);
-        readValueId = getNextValueId();
-        readColorId = getNextValueId();
+        this.readValueId = getNextValueId();
+        this.readColorId = getNextValueId();
     }
 
     @Override
     public void detectAndSendChanges() {
         super.detectAndSendChanges();
 
-        if (!MinecraftHelpers.isClientSide()) {
-            IVariable variable = getTile().getVariable(NetworkHelpers.getPartNetwork(getTile().getNetwork()));
-            Pair<String, Integer> readValue = ValueHelpers.getSafeReadableValue(variable);
-            ValueNotifierHelpers.setValue(this, readValueId, readValue.getLeft());
-            ValueNotifierHelpers.setValue(this, readColorId, readValue.getRight());
-        }
+        NetworkHelpers.getPartNetwork(tile.getNetwork())
+            .ifPresent(partNetwork -> {
+                IVariable variable = tile.getVariable(partNetwork);
+                Pair<String, Integer> readValue = ValueHelpers.getSafeReadableValue(variable);
+                ValueNotifierHelpers.setValue(this, readValueId, readValue.getLeft());
+                ValueNotifierHelpers.setValue(this, readColorId, readValue.getRight());
+            });
     }
 
     public String getReadValue() {

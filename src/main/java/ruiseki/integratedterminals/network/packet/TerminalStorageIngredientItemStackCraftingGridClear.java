@@ -10,13 +10,13 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.integratedterminals.core.terminalstorage.TerminalStorageTabIngredientComponentItemStackCraftingCommon;
 import ruiseki.integratedterminals.core.terminalstorage.TerminalStorageTabIngredientComponentServer;
-import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorage;
+import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorageBase;
 import ruiseki.okcore.network.CodecField;
 import ruiseki.okcore.network.PacketCodec;
 
 /**
  * Packet for telling the server that the crafting grid must be cleared.
- * 
+ *
  * @author rubensworks
  *
  */
@@ -52,8 +52,8 @@ public class TerminalStorageIngredientItemStackCraftingGridClear extends PacketC
 
     @Override
     public void actionServer(World world, EntityPlayerMP player) {
-        if (player.openContainer instanceof ContainerTerminalStorage) {
-            ContainerTerminalStorage container = ((ContainerTerminalStorage) player.openContainer);
+        if (player.openContainer instanceof ContainerTerminalStorageBase) {
+            ContainerTerminalStorageBase container = ((ContainerTerminalStorageBase) player.openContainer);
             if (container.getTabServer(tabId) instanceof TerminalStorageTabIngredientComponentServer) {
                 TerminalStorageTabIngredientComponentServer<ItemStack, Integer> tabServer = (TerminalStorageTabIngredientComponentServer<ItemStack, Integer>) container
                     .getTabServer(tabId);
@@ -91,6 +91,7 @@ public class TerminalStorageIngredientItemStackCraftingGridClear extends PacketC
                     if (!player.inventory.addItemStackToInventory(itemStack)) {
                         player.dropPlayerItemWithRandomChoice(itemStack, false);
                     }
+                    inventoryCrafting.setInventorySlotContents(i, null);
                 }
             }
         }

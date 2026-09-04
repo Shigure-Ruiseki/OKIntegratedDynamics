@@ -5,19 +5,19 @@ import java.util.List;
 import java.util.Set;
 
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.inventory.InventoryCrafting;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ChatComponentTranslation;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import com.google.common.collect.Sets;
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 
 import cpw.mods.fml.common.event.FMLServerStartedEvent;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cpw.mods.fml.common.gameevent.PlayerEvent;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import ruiseki.integrateddynamics.GeneralConfig;
@@ -36,6 +36,7 @@ import ruiseki.integrateddynamics.core.block.IgnoredBlock;
 import ruiseki.integrateddynamics.core.block.IgnoredBlockStatus;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
+import ruiseki.integrateddynamics.core.part.PartTypes;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.helper.BlockStateHelpers;
 import ruiseki.okcore.helper.CapabilityHelpers;
@@ -164,35 +165,35 @@ public class PartTypeConnectorOmniDirectional
         return state;
     }
 
-    @SubscribeEvent
-    public void onCrafted(PlayerEvent.ItemCraftedEvent event) {
+    public static ItemStack transformCraftingOutput(InventoryCrafting inventory, ItemStack staticOutput) {
         // When crafting the item, either copy the group id from the existing item or generate a new id.
-        if (event.crafting.getItem() == this.getItem()) {
-            int groupId = -1, stackCount = 0;
-            for (int i = 0; i < event.craftMatrix.getSizeInventory(); i++) {
-                ItemStack slotStack = event.craftMatrix.getStackInSlot(i);
-                if (slotStack != null) {
-                    ++stackCount;
-                    if (groupId == -1 && slotStack.getItem() == this.getItem() && slotStack.hasTagCompound()) {
-                        NBTTagCompound tag = slotStack.getTagCompound();
-                        if (tag.hasKey(NBT_KEY_ID, MinecraftHelpers.NBTTag_Types.NBTTagInt.ordinal())) {
-                            groupId = tag.getInteger(NBT_KEY_ID);
-                        }
+        int groupId = -1, stackCount = 0;
+        for (int i = 0; i < inventory.getSizeInventory(); i++) {
+            ItemStack slotStack = inventory.getStackInSlot(i);
+            if (slotStack != null) {
+                ++stackCount;
+                if (groupId == -1 && slotStack.getItem() == PartTypes.CONNECTOR_OMNI.getItem()
+                    && slotStack.hasTagCompound()) {
+                    NBTTagCompound tag = slotStack.getTagCompound();
+                    if (tag.hasKey(NBT_KEY_ID, Constants.NBT.TAG_INT)) {
+                        groupId = tag.getInteger(NBT_KEY_ID);
                     }
                 }
             }
-            if (stackCount == 1) {
-                groupId = -1; // If we're resetting a connector, give it a new ID
-            }
-
-            if (!MinecraftHelpers.isClientSide()) {
-                if (groupId < 0) {
-                    groupId = generateGroupId();
-                }
-                NBTTagCompound tag = ItemNBTHelpers.getNBT(event.crafting);
-                tag.setInteger(NBT_KEY_ID, groupId);
-            }
         }
+        if (stackCount == 1) {
+            groupId = -1; // If we're resetting a connector, give it a new ID
+        }
+
+        if (groupId < 0) {
+            groupId = generateGroupId();
+        }
+
+        staticOutput = staticOutput.copy();
+        NBTTagCompound tag = ItemNBTHelpers.getNBT(staticOutput);
+        tag.setInteger(NBT_KEY_ID, groupId);
+
+        return staticOutput;
     }
 
     @Override

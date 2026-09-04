@@ -14,14 +14,12 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import ruiseki.integrateddynamics.api.block.IFacadeable;
 import ruiseki.integrateddynamics.capability.facadeable.FacadeableConfig;
-import ruiseki.okcore.config.configurable.ConfigurableItem;
-import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
-import ruiseki.okcore.config.extendedconfig.ItemConfig;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.helper.BlockHelpers;
 import ruiseki.okcore.helper.CapabilityHelpers;
 import ruiseki.okcore.helper.ItemNBTHelpers;
 import ruiseki.okcore.helper.LangHelpers;
+import ruiseki.okcore.item.ItemBase;
 
 /**
  * An item that represents a facade of a certain type.
@@ -30,26 +28,14 @@ import ruiseki.okcore.helper.LangHelpers;
  */
 @EqualsAndHashCode(callSuper = false)
 @Data
-public class ItemFacade extends ConfigurableItem {
-
-    private static ItemFacade _instance = null;
-
-    /**
-     * Get the unique instance.
-     *
-     * @return The instance.
-     */
-    public static ItemFacade getInstance() {
-        return _instance;
-    }
+public class ItemFacade extends ItemBase {
 
     /**
      * Make a new item instance.
      *
-     * @param eConfig Config for this blockState.
      */
-    public ItemFacade(ExtendedConfig<ItemConfig> eConfig) {
-        super(eConfig);
+    public ItemFacade() {
+        super();
     }
 
     public BlockState getFacadeBlock(ItemStack itemStack) {

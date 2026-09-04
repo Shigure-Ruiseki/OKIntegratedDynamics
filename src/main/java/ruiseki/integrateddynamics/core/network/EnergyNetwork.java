@@ -11,16 +11,16 @@ import ruiseki.integrateddynamics.api.network.INetworkElement;
 
 /**
  * A network that can hold energy.
- * 
+ *
  * @author rubensworks
  */
-public class EnergyNetwork extends PositionedAddonsNetworkIngredients<Integer, Boolean> implements IEnergyNetwork {
+public class EnergyNetwork extends PositionedAddonsNetworkIngredients<Long, Boolean> implements IEnergyNetwork {
 
     @Getter
     @Setter
     private INetwork network;
 
-    public EnergyNetwork(IngredientComponent<Integer, Boolean> component) {
+    public EnergyNetwork(IngredientComponent<Long, Boolean> component) {
         super(component);
     }
 
@@ -35,20 +35,20 @@ public class EnergyNetwork extends PositionedAddonsNetworkIngredients<Integer, B
 
     @Override
     public void onSkipUpdate(INetworkElement element) {
-        if (element instanceof IEnergyConsumingNetworkElement) {
-            ((IEnergyConsumingNetworkElement) element).postUpdate(getNetwork(), false);
+        if (element instanceof IEnergyConsumingNetworkElement consumingNetworkElement) {
+            consumingNetworkElement.postUpdate(getNetwork(), false);
         }
     }
 
     @Override
     public void postUpdate(INetworkElement element) {
-        if (element instanceof IEnergyConsumingNetworkElement) {
+        if (element instanceof IEnergyConsumingNetworkElement consumingNetworkElement) {
             int multiplier = GeneralConfig.energyConsumptionMultiplier;
             if (multiplier > 0) {
-                int consumptionRate = ((IEnergyConsumingNetworkElement) element).getConsumptionRate() * multiplier;
+                int consumptionRate = consumingNetworkElement.getConsumptionRate() * multiplier;
                 getChannel(element.getChannel()).extract(consumptionRate, false);
             }
-            ((IEnergyConsumingNetworkElement) element).postUpdate(getNetwork(), true);
+            consumingNetworkElement.postUpdate(getNetwork(), true);
         }
     }
 
@@ -58,7 +58,9 @@ public class EnergyNetwork extends PositionedAddonsNetworkIngredients<Integer, B
         if (multiplier == 0) return 0;
         int consumption = 0;
         for (INetworkElement element : getNetwork().getElements()) {
-            consumption += ((IEnergyConsumingNetworkElement) element).getConsumptionRate() * multiplier;
+            if (element instanceof IEnergyConsumingNetworkElement consuming) {
+                consumption += consuming.getConsumptionRate() * multiplier;
+            }
         }
         return consumption;
     }

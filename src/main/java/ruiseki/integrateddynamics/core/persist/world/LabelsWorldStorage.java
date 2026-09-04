@@ -119,6 +119,9 @@ public class LabelsWorldStorage extends WorldStorage {
      * @return The corresponding variable onLabelPacket or null.
      */
     public synchronized String getLabel(int variableId) {
+        if (variableId < 0) {
+            return null;
+        }
         return labels.get(variableId);
     }
 
@@ -133,8 +136,8 @@ public class LabelsWorldStorage extends WorldStorage {
     @Override
     public void afterLoad() {
         super.afterLoad();
-        // Fix all null labels
-        // TODO: remove in 1.13
+        // Fix all null labels (#1038)
+        // This should not be able to occur, but it does, no idea why...
         labels.entrySet()
             .removeIf(integerStringEntry -> integerStringEntry.getValue() == null);
     }

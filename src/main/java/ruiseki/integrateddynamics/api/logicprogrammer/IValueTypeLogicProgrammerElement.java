@@ -3,6 +3,9 @@ package ruiseki.integrateddynamics.api.logicprogrammer;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.inventory.Container;
 
+import org.jetbrains.annotations.Nullable;
+
+import ruiseki.integrateddynamics.api.client.gui.subgui.IGuiInputElementValueType;
 import ruiseki.integrateddynamics.api.client.gui.subgui.ISubGuiBox;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
@@ -29,11 +32,15 @@ public interface IValueTypeLogicProgrammerElement<S extends ISubGuiBox, G extend
     public IValue getValue();
 
     /**
-     * Set the currently stored value in the given sub gui.
-     * This is useful when the gui is reused for multiple elements where the actual value is stored in this element.
-     *
-     * @param subGui The sub gui to put the currently stored value in.
+     * @param value The new value.
      */
-    public void setValueInGui(S subGui);
+    public void setValue(IValue value);
 
+    /**
+     * @return Create an inner gui element for modifying the value, may be null if it doesn't apply.
+     * @param <G2> The type of gui.
+     * @param <C2> The type of container.
+     */
+    @Nullable
+    public <G2 extends Gui, C2 extends Container> IGuiInputElementValueType<?, G2, C2> createInnerGuiElement();
 }

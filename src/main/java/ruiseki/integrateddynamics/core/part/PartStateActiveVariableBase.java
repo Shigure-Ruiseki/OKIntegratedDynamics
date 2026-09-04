@@ -50,13 +50,16 @@ public abstract class PartStateActiveVariableBase<P extends IPartType> extends P
     private SimpleInventory inventory;
     @NBTPersist
     private List<LangHelpers.UnlocalizedString> globalErrorMessages = Lists.newLinkedList();
+    @Getter
+    @Setter
+    private boolean retryEvaluation = false;
 
     public PartStateActiveVariableBase(int inventorySize) {
         this.inventory = new SingularInventory(inventorySize);
         this.inventory.addDirtyMarkListener(this); // No need to remove myself eventually. If I am removed, inv is also
                                                    // removed.
         variableContainer = new VariableContainerDefault();
-        addVolatileCapability(VariableContainerConfig.CAPABILITY, variableContainer);
+        addVolatileCapability(VariableContainerConfig.CAPABILITY, LazyOptional.of(() -> variableContainer));
     }
 
     /**
@@ -66,10 +69,13 @@ public abstract class PartStateActiveVariableBase<P extends IPartType> extends P
         return this.inventory;
     }
 
-    protected void validate(IPartNetwork network) {
+    protected void validate(INetwork network, IPartNetwork partNetwork) {
         // Note that this is only called server-side, so these errors are sent via NBT to the client(s).
-        this.currentVariableFacade
-            .validate(network, new PartStateActiveVariableBase.Validator(this), currentVariableFacade.getOutputType());
+        this.currentVariableFacade.validate(
+            network,
+            partNetwork,
+            new PartStateActiveVariableBase.Validator(this),
+            currentVariableFacade.getOutputType());
     }
 
     protected void onCorruptedState() {
@@ -83,12 +89,12 @@ public abstract class PartStateActiveVariableBase<P extends IPartType> extends P
      * @return If there is an active variable present for this state.
      */
     public boolean hasVariable() {
-        return getGlobalErrors().isEmpty() && !getInventory().isEmpty();
+        return (getGlobalErrors().isEmpty() || isRetryEvaluation()) && !getInventory().isEmpty();
     }
 
     /**
      * Get the active variable in this state.
-     * 
+     *
      * @param <V>         The variable value type.
      * @param network     The network.
      * @param partNetwork The part network.
@@ -104,7 +110,7 @@ public abstract class PartStateActiveVariableBase<P extends IPartType> extends P
                 .values()) {
                 if (facade != null) {
                     currentVariableFacade = facade;
-                    validate(partNetwork);
+                    validate(network, partNetwork);
                 }
             }
             this.checkedForWriteVariable = true;
@@ -113,7 +119,7 @@ public abstract class PartStateActiveVariableBase<P extends IPartType> extends P
             onCorruptedState();
             return null;
         }
-        return currentVariableFacade.getVariable(partNetwork);
+        return currentVariableFacade.getVariable(network, partNetwork);
     }
 
     /**
@@ -132,13 +138,13 @@ public abstract class PartStateActiveVariableBase<P extends IPartType> extends P
 
         // Refresh any contained variables
         PartPos center = target.getCenter();
-        INetwork network = NetworkHelpers.getNetwork(
+        NetworkHelpers.getNetwork(
             center.getPos()
                 .getWorld(),
             center.getPos()
                 .getBlockPos(),
-            center.getSide());
-        variableContainer.refreshVariables(network, inventory, false);
+            center.getSide())
+            .ifPresent(network -> variableContainer.refreshVariables(network, inventory, false));
     }
 
     /**
@@ -154,6 +160,7 @@ public abstract class PartStateActiveVariableBase<P extends IPartType> extends P
      * @param error The message to add.
      */
     public void addGlobalError(LangHelpers.UnlocalizedString error) {
+        setRetryEvaluation(false);
         if (error == null) {
             globalErrorMessages.clear();
         } else {

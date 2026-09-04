@@ -15,7 +15,6 @@ import ruiseki.integrateddynamics.core.block.IgnoredBlockStatus;
 import ruiseki.integrateddynamics.core.part.PartStateBase;
 import ruiseki.integrateddynamics.core.part.PartTypeBase;
 import ruiseki.okcore.capabilities.Capability;
-import ruiseki.okcore.config.extendedconfig.BlockConfig;
 import ruiseki.okcore.datastructure.DimPos;
 import ruiseki.okcore.datastructure.LazyOptional;
 
@@ -32,8 +31,18 @@ public abstract class PartTypeConnector<P extends PartTypeConnector<P, S>, S ext
     }
 
     @Override
-    protected Block createBlock(BlockConfig blockConfig) {
-        return new IgnoredBlockStatus(blockConfig);
+    public boolean supportsOffsets() {
+        return false;
+    }
+
+    @Override
+    public boolean isUpdate(S state) {
+        return getConsumptionRate(state) > 0 || super.isUpdate(state);
+    }
+
+    @Override
+    protected Block createBlock() {
+        return new IgnoredBlockStatus();
     }
 
     @Override

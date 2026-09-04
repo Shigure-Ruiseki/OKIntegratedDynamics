@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -54,9 +55,11 @@ import net.minecraftforge.oredict.OreDictionary;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 
+import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multiset;
 import com.google.common.collect.Sets;
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 import com.gtnewhorizon.gtnhlib.blockstate.registry.BlockPropertyRegistry;
@@ -128,6 +131,8 @@ import ruiseki.okcore.energy.capability.CapabilityEnergy;
 import ruiseki.okcore.helper.BlockHelpers;
 import ruiseki.okcore.helper.BlockStateHelpers;
 import ruiseki.okcore.helper.CapabilityHelpers;
+import ruiseki.okcore.helper.FluidHelpers;
+import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.item.capability.CapabilityItemHandler;
@@ -244,7 +249,7 @@ public final class Operators {
             .build());
 
     /**
-     * Arithmetic MULTIPLY operator with two input integers and one output integer.
+     * Arithmetic MULTIPLY operator with two input numbers and one output number.
      */
     public static final IOperator ARITHMETIC_MULTIPLICATION = REGISTRY.register(
         OperatorBuilders.ARITHMETIC_2.symbol("*")
@@ -255,7 +260,7 @@ public final class Operators {
             .build());
 
     /**
-     * Arithmetic DIVIDE operator with two input integers and one output integer.
+     * Arithmetic DIVIDE operator with two input numbers and one output number.
      */
     public static final IOperator ARITHMETIC_DIVISION = REGISTRY.register(
         OperatorBuilders.ARITHMETIC_2.symbol("/")
@@ -266,7 +271,7 @@ public final class Operators {
             .build());
 
     /**
-     * Arithmetic MAX operator with two input integers and one output integer.
+     * Arithmetic MAX operator with two input numbers and one output number.
      */
     public static final IOperator ARITHMETIC_MAXIMUM = REGISTRY.register(
         OperatorBuilders.ARITHMETIC_2_PREFIX.symbol("max")
@@ -276,7 +281,7 @@ public final class Operators {
             .build());
 
     /**
-     * Arithmetic MIN operator with two input integers and one output integer.
+     * Arithmetic MIN operator with two input numbers and one output number.
      */
     public static final IOperator ARITHMETIC_MINIMUM = REGISTRY.register(
         OperatorBuilders.ARITHMETIC_2_PREFIX.symbol("min")
@@ -286,54 +291,66 @@ public final class Operators {
             .build());
 
     /**
+     * Arithmetic INCREMENT operator with one input numbers and one output number.
+     */
+    public static final IOperator ARITHMETIC_INCREMENT = REGISTRY.register(
+        OperatorBuilders.ARITHMETIC_1_SUFFIX.symbol("++")
+            .operatorName("increment")
+            .function(variables -> ValueTypes.CATEGORY_NUMBER.increment(variables.getVariables()[0]))
+            .build());
+
+    /**
+     * Arithmetic DECREMENT operator with one input numbers and one output number.
+     */
+    public static final IOperator ARITHMETIC_DECREMENT = REGISTRY.register(
+        OperatorBuilders.ARITHMETIC_1_SUFFIX.symbol("--")
+            .operatorName("decrement")
+            .function(variables -> ValueTypes.CATEGORY_NUMBER.decrement(variables.getVariables()[0]))
+            .build());
+
+    /**
+     * Arithmetic MODULO operator with two input numbers and one output number.
+     */
+    public static final IOperator ARITHMETIC_MODULUS = REGISTRY.register(
+        OperatorBuilders.ARITHMETIC_2.symbol("%")
+            .operatorName("modulus")
+            .function(
+                variables -> ValueTypes.CATEGORY_NUMBER
+                    .modulus(variables.getVariables()[0], variables.getVariables()[1]))
+            .build());
+
+    /**
      * ----------------------------------- INTEGER OPERATORS -----------------------------------
      */
 
     private static final ValueTypeInteger.ValueInteger ZERO = ValueTypeInteger.ValueInteger.of(0);
 
     /**
-     * Integer MODULO operator with two input integers and one output integer.
+     * ----------------------------------- DOUBLE OPERATORS -----------------------------------
      */
-    public static final IOperator INTEGER_MODULUS = REGISTRY.register(
-        OperatorBuilders.INTEGER_2.symbol("%")
-            .operatorName("modulus")
-            .function(variables -> {
-                ValueTypeInteger.ValueInteger b = variables.getValue(1, ValueTypes.INTEGER);
-                if (b.getRawValue() == 0) { // You can not divide by zero
-                    throw new EvaluationException("Division by zero");
-                } else if (b.getRawValue() == 1) { // If b is neutral element for division
-                    return ZERO;
-                } else {
-                    ValueTypeInteger.ValueInteger a = variables.getValue(0, ValueTypes.INTEGER);
-                    return ValueTypeInteger.ValueInteger.of(a.getRawValue() % b.getRawValue());
 
-                }
+    /**
+     * Integer SQRT operator with two input numbers and one output number.
+     */
+    public static final IOperator DOUBLE_SQRT = REGISTRY.register(
+        OperatorBuilders.DOUBLE_1_PREFIX.symbol("sqrt")
+            .operatorName("sqrt")
+            .function(variables -> {
+                ValueTypeDouble.ValueDouble a = variables.getValue(0, ValueTypes.DOUBLE);
+                return ValueTypeDouble.ValueDouble.of(Math.sqrt(a.getRawValue()));
             })
             .build());
 
     /**
-     * Integer INCREMENT operator with one input integers and one output integer.
+     * Integer POW operator with two input numbers and one output number.
      */
-    public static final IOperator INTEGER_INCREMENT = REGISTRY.register(
-        OperatorBuilders.INTEGER_1_SUFFIX.symbol("++")
-            .operatorName("increment")
+    public static final IOperator DOUBLE_POW = REGISTRY.register(
+        OperatorBuilders.DOUBLE_2.symbol("pow")
+            .operatorName("pow")
             .function(variables -> {
-                ValueTypeInteger.ValueInteger a = variables.getValue(0, ValueTypes.INTEGER);
-                return ValueTypeInteger.ValueInteger.of(a.getRawValue() + 1);
-
-            })
-            .build());
-
-    /**
-     * Integer INCREMENT operator with one input integers and one output integer.
-     */
-    public static final IOperator INTEGER_DECREMENT = REGISTRY.register(
-        OperatorBuilders.INTEGER_1_SUFFIX.symbol("--")
-            .operatorName("decrement")
-            .function(variables -> {
-                ValueTypeInteger.ValueInteger a = variables.getValue(0, ValueTypes.INTEGER);
-                return ValueTypeInteger.ValueInteger.of(a.getRawValue() - 1);
-
+                ValueTypeDouble.ValueDouble a = variables.getValue(0, ValueTypes.DOUBLE);
+                ValueTypeDouble.ValueDouble b = variables.getValue(1, ValueTypes.DOUBLE);
+                return ValueTypeDouble.ValueDouble.of(Math.pow(a.getRawValue(), b.getRawValue()));
             })
             .build());
 
@@ -445,7 +462,7 @@ public final class Operators {
      */
 
     /**
-     * Binary AND operator with two input integers and one output integers.
+     * Binary AND operator with two input numbers and one output numbers.
      */
     public static final IOperator BINARY_AND = REGISTRY.register(
         OperatorBuilders.BINARY_2.symbol("&")
@@ -459,7 +476,7 @@ public final class Operators {
             .build());
 
     /**
-     * Binary OR operator with two input integers and one output integers.
+     * Binary OR operator with two input numbers and one output numbers.
      */
     public static final IOperator BINARY_OR = REGISTRY.register(
         OperatorBuilders.BINARY_2.symbol("|")
@@ -805,7 +822,7 @@ public final class Operators {
                         .matcher(str.getRawValue());
                     if (m.find()) {
                         String result = m.group(group.getRawValue());
-                        return ValueTypeString.ValueString.of(result);
+                        return ValueTypeString.ValueString.of(result == null ? "" : result);
                     } else {
                         throw new EvaluationException(
                             "The regular expression in regex_group must match the given string.");
@@ -836,8 +853,8 @@ public final class Operators {
                     if (m.find()) {
                         List<ValueTypeString.ValueString> values = Lists.newArrayList();
                         for (int i = 0; i <= m.groupCount(); i++) {
-                            values.add(ValueTypeString.ValueString.of(m.group(i)));
-
+                            String result = m.group(i);
+                            values.add(ValueTypeString.ValueString.of(result == null ? "" : result));
                         }
                         return ValueTypeList.ValueList.ofList(ValueTypes.STRING, values);
                     } else {
@@ -872,7 +889,10 @@ public final class Operators {
                         .matcher(str.getRawValue());
                     List<ValueTypeString.ValueString> values = Lists.newArrayList();
                     while (m.find()) {
-                        values.add(ValueTypeString.ValueString.of(m.group(group.getRawValue())));
+                        String match = m.group(group.getRawValue());
+                        if (match != null) {
+                            values.add(ValueTypeString.ValueString.of(match));
+                        }
                     }
                     return ValueTypeList.ValueList.ofList(ValueTypes.STRING, values);
                 } catch (PatternSyntaxException e) {
@@ -925,8 +945,13 @@ public final class Operators {
                             .replaceAll(pattern.getRawValue(), replacement.getRawValue()));
                 } catch (PatternSyntaxException e) {
                     throw new EvaluationException(e.getMessage());
+                } catch (IndexOutOfBoundsException e) {
+                    throw new EvaluationException(
+                        LangHelpers.localize(
+                            L10NValues.OPERATOR_ERROR_REPLACEREGEX_INVALIDGROUP,
+                            replacement.getRawValue(),
+                            e.getMessage()));
                 }
-
             })
             .build());
 
@@ -1007,12 +1032,31 @@ public final class Operators {
             .build());
 
     /**
-     * ----------------------------------- DOUBLE OPERATORS -----------------------------------
-     *
-     * @@ -534,36 +451,27 @@ public IValue evaluate(OperatorBase.SafeVariablesGetter variables) throws Evalua
+     * Throw a custom error
      */
-    public static final IOperator DOUBLE_ROUND = REGISTRY.register(
-        OperatorBuilders.DOUBLE_1_PREFIX.inputType(ValueTypes.CATEGORY_NUMBER)
+    public static final IOperator STRING_ERROR = REGISTRY.register(
+        OperatorBuilders.STRING_2.symbol("error")
+            .operatorName("string_error")
+            .inputType(ValueTypes.STRING)
+            .renderPattern(IConfigRenderPattern.SUFFIX_1_LONG)
+            .function(
+                (variables) -> {
+                    throw new EvaluationException(
+                        LangHelpers.localize(
+                            variables.getValue(0, ValueTypes.STRING)
+                                .getRawValue()));
+                })
+            .build());
+
+    /**
+     * ----------------------------------- NUMBER OPERATORS -----------------------------------
+     */
+
+    /**
+     * Number round operator with one input double and one output integers.
+     */
+    public static final IOperator NUMBER_ROUND = REGISTRY.register(
+        OperatorBuilders.NUMBER_1_PREFIX.inputType(ValueTypes.CATEGORY_NUMBER)
             .output(ValueTypes.INTEGER)
             .symbol("|| ||")
             .operatorName("round")
@@ -1020,10 +1064,10 @@ public final class Operators {
             .build());
 
     /**
-     * Double ceil operator with one input double and one output integers.
+     * Number ceil operator with one input double and one output integers.
      */
-    public static final IOperator DOUBLE_CEIL = REGISTRY.register(
-        OperatorBuilders.DOUBLE_1_PREFIX.inputType(ValueTypes.CATEGORY_NUMBER)
+    public static final IOperator NUMBER_CEIL = REGISTRY.register(
+        OperatorBuilders.NUMBER_1_PREFIX.inputType(ValueTypes.CATEGORY_NUMBER)
             .output(ValueTypes.INTEGER)
             .symbol("⌈ ⌉")
             .operatorName("ceil")
@@ -1031,14 +1075,62 @@ public final class Operators {
             .build());
 
     /**
-     * Double floor operator with one input double and one output integers.
+     * Number floor operator with one input double and one output integers.
      */
-    public static final IOperator DOUBLE_FLOOR = REGISTRY.register(
-        OperatorBuilders.DOUBLE_1_PREFIX.inputType(ValueTypes.CATEGORY_NUMBER)
+    public static final IOperator NUMBER_FLOOR = REGISTRY.register(
+        OperatorBuilders.NUMBER_1_PREFIX.inputType(ValueTypes.CATEGORY_NUMBER)
             .output(ValueTypes.INTEGER)
             .symbol("⌊ ⌋")
             .operatorName("floor")
             .function(variables -> ValueTypes.CATEGORY_NUMBER.floor(variables.getVariables()[0]))
+            .build());
+
+    /**
+     * Accepts a number, and returns a string roughly representing that number
+     */
+    public static final IOperator NUMBER_COMPACT = REGISTRY.register(
+        OperatorBuilders.NUMBER_1_LONG.inputType(ValueTypes.CATEGORY_NUMBER)
+            .output(ValueTypes.STRING)
+            .symbolOperator("compact")
+            .function(variables -> ValueTypes.CATEGORY_NUMBER.compact(variables.getVariables()[0]))
+            .build());
+    /**
+     * Cast any number to a double
+     */
+    public static final IOperator NUMBER_CAST_DOUBLE = REGISTRY.register(
+        OperatorBuilders.NUMBER_1_PREFIX.inputType(ValueTypes.CATEGORY_NUMBER)
+            .output(ValueTypes.DOUBLE)
+            .symbol("(double)")
+            .operatorName("cast_double")
+            .function(
+                variables -> variables.getVariables()[0].getValue()
+                    .cast(ValueTypes.DOUBLE))
+            .build());
+
+    /**
+     * Cast any number to a double
+     */
+    public static final IOperator NUMBER_CAST_LONG = REGISTRY.register(
+        OperatorBuilders.NUMBER_1_PREFIX.inputType(ValueTypes.CATEGORY_NUMBER)
+            .output(ValueTypes.LONG)
+            .symbol("(long)")
+            .operatorName("cast_long")
+            .function(
+                variables -> variables.getVariables()[0].getValue()
+                    .cast(ValueTypes.LONG))
+            .build());
+
+    /**
+     * Cast any number to a double
+     */
+    public static final IOperator NUMBER_CAST_INTEGER = REGISTRY.register(
+        OperatorBuilders.NUMBER_1_PREFIX.inputType(ValueTypes.CATEGORY_NUMBER)
+            .output(ValueTypes.INTEGER)
+            .symbol("(integer)")
+            .operatorName("cast_integer")
+            .function(
+                variables -> variables.getVariables()[0].getValue()
+                    .cast(ValueTypes.INTEGER))
             .build());
 
     /**
@@ -1178,16 +1270,27 @@ public final class Operators {
             .renderPattern(IConfigRenderPattern.PREFIX_2_LONG)
             .output(ValueTypes.BOOLEAN)
             .symbolOperator("contains")
-            .function(variables -> {
-                ValueTypeList.ValueList valueList = variables.getValue(0, ValueTypes.LIST);
-                IValueTypeListProxy<IValueType<IValue>, IValue> list = valueList.getRawValue();
-                IValue input = variables.getValue(1);
-                for (IValue value : list) {
-                    if (value.equals(input)) {
-                        return ValueTypeBoolean.ValueBoolean.of(true);
+            .function(new OperatorBase.IFunction() {
+
+                @Override
+                public IValue evaluate(OperatorBase.SafeVariablesGetter variables) throws EvaluationException {
+                    ValueTypeList.ValueList valueList = variables.getValue(0, ValueTypes.LIST);
+                    IValueTypeListProxy<IValueType<IValue>, IValue> list = valueList.getRawValue();
+                    if (list.isInfinite()) {
+                        throw new EvaluationException(
+                            LangHelpers.localize(
+                                L10NValues.OPERATOR_ERROR_INFINITELIST_ILLEGAL,
+                                LIST_CONTAINS.getLocalizedNameFull()));
                     }
+                    IValue input = variables.getValue(1);
+                    for (IValue value : list) {
+                        if (value.equals(input)) {
+                            return ValueTypeBoolean.ValueBoolean.of(true);
+                        }
+                    }
+                    return ValueTypeBoolean.ValueBoolean.of(false);
                 }
-                return ValueTypeBoolean.ValueBoolean.of(false);
+
             })
             .build());
 
@@ -1200,18 +1303,30 @@ public final class Operators {
             .renderPattern(IConfigRenderPattern.INFIX)
             .output(ValueTypes.BOOLEAN)
             .symbolOperator("contains_p")
-            .function(variables -> {
-                ValueTypeList.ValueList valueList = variables.getValue(0, ValueTypes.LIST);
-                IValueTypeListProxy<IValueType<IValue>, IValue> list = valueList.getRawValue();
-                IOperator operator = OperatorBuilders.getSafePredictate(variables.getValue(1, ValueTypes.OPERATOR));
-                for (IValue value : list) {
-                    IValue result = ValueHelpers.evaluateOperator(operator, value);
-                    ValueHelpers.validatePredicateOutput(operator, result);
-                    if (((ValueTypeBoolean.ValueBoolean) result).getRawValue()) {
-                        return ValueTypeBoolean.ValueBoolean.of(true);
+            .function(new OperatorBase.IFunction() {
+
+                @Override
+                public IValue evaluate(OperatorBase.SafeVariablesGetter variables) throws EvaluationException {
+                    ValueTypeList.ValueList valueList = variables.getValue(0, ValueTypes.LIST);
+                    IValueTypeListProxy<IValueType<IValue>, IValue> list = valueList.getRawValue();
+                    if (list.isInfinite()) {
+                        throw new EvaluationException(
+                            LangHelpers.localize(
+                                L10NValues.OPERATOR_ERROR_INFINITELIST_ILLEGAL,
+                                LIST_CONTAINS_PREDICATE.getLocalizedNameFull()));
+
                     }
+                    IOperator operator = OperatorBuilders.getSafePredictate(variables.getValue(1, ValueTypes.OPERATOR));
+                    for (IValue value : list) {
+                        IValue result = ValueHelpers.evaluateOperator(operator, value);
+                        ValueHelpers.validatePredicateOutput(operator, result);
+                        if (((ValueTypeBoolean.ValueBoolean) result).getRawValue()) {
+                            return ValueTypeBoolean.ValueBoolean.of(true);
+                        }
+                    }
+                    return ValueTypeBoolean.ValueBoolean.of(false);
                 }
-                return ValueTypeBoolean.ValueBoolean.of(false);
+
             })
             .build());
 
@@ -1450,6 +1565,101 @@ public final class Operators {
             .build());
 
     /**
+     * Test list equality using set semantics.
+     */
+    public static final IOperator LIST_EQUALS_SET = REGISTRY.register(
+        OperatorBuilders.LIST.inputTypes(new IValueType[] { ValueTypes.LIST, ValueTypes.LIST })
+            .renderPattern(IConfigRenderPattern.INFIX)
+            .output(ValueTypes.BOOLEAN)
+            .symbol("=set=")
+            .operatorName("equals_set")
+            .function(new OperatorBase.IFunction() {
+
+                @Override
+                public IValue evaluate(OperatorBase.SafeVariablesGetter variables) throws EvaluationException {
+                    ValueTypeList.ValueList valueList0 = variables.getValue(0, ValueTypes.LIST);
+                    IValueTypeListProxy a = valueList0.getRawValue();
+                    if (a.isInfinite()) {
+                        throw new EvaluationException(
+                            LangHelpers.localize(
+                                L10NValues.OPERATOR_ERROR_INFINITELIST_ILLEGAL,
+                                LIST_EQUALS_SET.getLocalizedNameFull()));
+                    }
+                    ValueTypeList.ValueList valueList1 = variables.getValue(1, ValueTypes.LIST);
+                    IValueTypeListProxy b = valueList1.getRawValue();
+                    if (b.isInfinite()) {
+                        throw new EvaluationException(
+                            LangHelpers.localize(
+                                L10NValues.OPERATOR_ERROR_INFINITELIST_ILLEGAL,
+                                LIST_EQUALS_SET.getLocalizedNameFull()));
+                    }
+                    if (!ValueHelpers.correspondsTo(a.getValueType(), b.getValueType())) {
+                        throw new EvaluationException(
+                            LangHelpers.localize(
+                                L10NValues.VALUETYPE_ERROR_INVALIDLISTVALUETYPE,
+                                LangHelpers.localize(
+                                    (a.getValueType()
+                                        .getUnlocalizedName()),
+                                    LangHelpers.localize(
+                                        b.getValueType()
+                                            .getUnlocalizedName()))));
+                    }
+                    Set<Object> setA = Sets.newHashSet(a);
+                    Set<Object> setB = Sets.newHashSet(b);
+                    return ValueTypeBoolean.ValueBoolean.of(setA.equals(setB));
+                }
+
+            })
+            .build());
+
+    /**
+     * Test list equality using multiset semantics.
+     */
+    public static final IOperator LIST_EQUALS_MULTISET = REGISTRY.register(
+        OperatorBuilders.LIST.inputTypes(new IValueType[] { ValueTypes.LIST, ValueTypes.LIST })
+            .renderPattern(IConfigRenderPattern.INFIX)
+            .output(ValueTypes.BOOLEAN)
+            .symbol("=multiset=")
+            .operatorName("equals_multiset")
+            .function(new OperatorBase.IFunction() {
+
+                @Override
+                public IValue evaluate(OperatorBase.SafeVariablesGetter variables) throws EvaluationException {
+                    ValueTypeList.ValueList valueList0 = variables.getValue(0, ValueTypes.LIST);
+                    IValueTypeListProxy a = valueList0.getRawValue();
+                    if (a.isInfinite()) {
+                        throw new EvaluationException(
+                            LangHelpers.localize(
+                                L10NValues.OPERATOR_ERROR_INFINITELIST_ILLEGAL,
+                                LIST_EQUALS_MULTISET.getLocalizedNameFull()));
+                    }
+                    ValueTypeList.ValueList valueList1 = variables.getValue(1, ValueTypes.LIST);
+                    IValueTypeListProxy b = valueList1.getRawValue();
+                    if (b.isInfinite()) {
+                        throw new EvaluationException(
+                            LangHelpers.localize(
+                                L10NValues.OPERATOR_ERROR_INFINITELIST_ILLEGAL,
+                                LIST_EQUALS_MULTISET.getLocalizedNameFull()));
+                    }
+                    if (!ValueHelpers.correspondsTo(a.getValueType(), b.getValueType())) {
+                        throw new EvaluationException(
+                            LangHelpers.localize(
+                                L10NValues.VALUETYPE_ERROR_INVALIDLISTVALUETYPE,
+                                LangHelpers.localize(
+                                    a.getValueType()
+                                        .getUnlocalizedName()),
+                                LangHelpers.localize(
+                                    b.getValueType()
+                                        .getUnlocalizedName())));
+                    }
+                    Multiset<Object> setA = HashMultiset.create(a);
+                    Multiset<Object> setB = HashMultiset.create(b);
+                    return ValueTypeBoolean.ValueBoolean.of(setA.equals(setB));
+                }
+            })
+            .build());
+
+    /**
      * ----------------------------------- BLOCK OBJECT OPERATORS -----------------------------------
      */
 
@@ -1601,7 +1811,7 @@ public final class Operators {
             .operatorName("planttype")
             .function(variables -> {
                 ValueObjectTypeBlock.ValueBlock a = variables.getValue(0, ValueTypes.OBJECT_BLOCK);
-                String type = "None";
+                String type = "none";
                 if (a.getRawValue()
                     .isPresent()
                     && a.getRawValue()
@@ -1796,13 +2006,9 @@ public final class Operators {
             .symbolOperator("rarity")
             .function(variables -> {
                 ValueObjectTypeItemStack.ValueItemStack a = variables.getValue(0, ValueTypes.OBJECT_ITEMSTACK);
-                return ValueTypeString.ValueString.of(
-                    a.getRawValue()
-                        .isPresent()
-                            ? a.getRawValue()
-                                .get()
-                                .getRarity().rarityName
-                            : "");
+                ItemStack itemStack = a.getRawValue();
+                return ValueTypeString.ValueString
+                    .of(!ItemHelpers.isEmpty(itemStack) ? itemStack.getRarity().rarityName : "");
             })
             .build());
 
@@ -1818,18 +2024,13 @@ public final class Operators {
                 ValueObjectTypeItemStack.ValueItemStack a = variables.getValue(0, ValueTypes.OBJECT_ITEMSTACK);
                 ValueObjectTypeBlock.ValueBlock b = variables.getValue(1, ValueTypes.OBJECT_BLOCK);
                 double strength = 0.0D;
-                if (a.getRawValue()
-                    .isPresent()
-                    && b.getRawValue()
-                        .isPresent()) {
-                    ItemStack itemStack = a.getRawValue()
-                        .get();
-                    BlockState blockState = b.getRawValue()
-                        .get();
-                    if (blockState.getBlock() != null) {
-                        strength = itemStack.func_150997_a(blockState.getBlock()); // hoặc
-                                                                                   // itemStack.getDestroySpeed(blockState)
-                    }
+
+                ItemStack itemStack = a.getRawValue();
+                BlockState blockState = b.getRawValue()
+                    .get();
+
+                if (!ItemHelpers.isEmpty(itemStack) && blockState != null && blockState.getBlock() != null) {
+                    strength = itemStack.func_150997_a(blockState.getBlock());
                 }
                 return ValueTypeDouble.ValueDouble.of(strength);
             })
@@ -1848,22 +2049,18 @@ public final class Operators {
                 ValueObjectTypeItemStack.ValueItemStack a = variables.getValue(0, ValueTypes.OBJECT_ITEMSTACK);
                 ValueObjectTypeBlock.ValueBlock b = variables.getValue(1, ValueTypes.OBJECT_BLOCK);
                 boolean canHarvest = false;
-                if (a.getRawValue()
-                    .isPresent()
-                    && b.getRawValue()
-                        .isPresent()) {
-                    ItemStack itemStack = a.getRawValue()
-                        .get();
-                    BlockState blockState = b.getRawValue()
-                        .get();
-                    if (blockState.getBlock() != null) {
-                        Block block = blockState.getBlock();
-                        if (block.getMaterial()
-                            .isToolNotRequired()) {
-                            canHarvest = true;
-                        } else {
-                            canHarvest = itemStack.func_150998_b(block); // hoặc itemStack.canHarvestBlock(blockState)
-                        }
+
+                ItemStack itemStack = a.getRawValue();
+                BlockState blockState = b.getRawValue()
+                    .get();
+
+                if (!ItemHelpers.isEmpty(itemStack) && blockState.getBlock() != null) {
+                    Block block = blockState.getBlock();
+                    if (block.getMaterial()
+                        .isToolNotRequired()) {
+                        canHarvest = true;
+                    } else {
+                        canHarvest = itemStack.func_150998_b(block);
                     }
                 }
                 return ValueTypeBoolean.ValueBoolean.of(canHarvest);
@@ -1879,13 +2076,10 @@ public final class Operators {
             .function(variables -> {
                 ValueObjectTypeItemStack.ValueItemStack a = variables.getValue(0, ValueTypes.OBJECT_ITEMSTACK);
                 BlockState blockState = null;
-                if (a.getRawValue()
-                    .isPresent()) {
-                    ItemStack itemStack = a.getRawValue()
-                        .get();
-                    if (itemStack.getItem() instanceof ItemBlock) {
-                        blockState = BlockHelpers.getBlockStateFromItemStack(itemStack);
-                    }
+                ItemStack itemStack = a.getRawValue();
+
+                if (!ItemHelpers.isEmpty(itemStack) && itemStack.getItem() instanceof ItemBlock) {
+                    blockState = BlockHelpers.getBlockStateFromItemStack(itemStack);
                 }
                 return ValueObjectTypeBlock.ValueBlock.of(blockState);
             })
@@ -1902,6 +2096,7 @@ public final class Operators {
                 OperatorBuilders.FUNCTION_ITEMSTACK_TO_BOOLEAN
                     .build(itemStack -> itemStack != null && Helpers.getFluidStack(itemStack) != null))
             .build());
+
     /**
      * The fluidstack from the stack
      */
@@ -1910,13 +2105,11 @@ public final class Operators {
             .symbolOperator("fluidstack")
             .function(variables -> {
                 ValueObjectTypeItemStack.ValueItemStack a = variables.getValue(0, ValueTypes.OBJECT_ITEMSTACK);
-                return ValueObjectTypeFluidStack.ValueFluidStack.of(
-                    a.getRawValue()
-                        .isPresent()
-                            ? Helpers.getFluidStack(
-                                a.getRawValue()
-                                    .get())
-                            : null);
+                ItemStack itemStack = a.getRawValue();
+                if (ItemHelpers.isEmpty(itemStack)) {
+                    return ValueObjectTypeFluidStack.ValueFluidStack.of(FluidHelpers.EMPTY);
+                }
+                return ValueObjectTypeFluidStack.ValueFluidStack.of(Helpers.getFluidStack(itemStack));
             })
             .build());
 
@@ -1944,22 +2137,18 @@ public final class Operators {
                 ValueObjectTypeItemStack.ValueItemStack valueStack1 = variables
                     .getValue(1, ValueTypes.OBJECT_ITEMSTACK);
 
-                boolean equal = false;
-                if (valueStack0.getRawValue()
-                    .isPresent()
-                    && valueStack1.getRawValue()
-                        .isPresent()) {
-                    ItemStack a = valueStack0.getRawValue()
-                        .get();
-                    ItemStack b = valueStack1.getRawValue()
-                        .get();
+                ItemStack a = valueStack0.getRawValue();
+                ItemStack b = valueStack1.getRawValue();
+
+                boolean isEmptyA = ItemHelpers.isEmpty(a);
+                boolean isEmptyB = ItemHelpers.isEmpty(b);
+
+                boolean equal;
+                if (!isEmptyA && !isEmptyB) {
                     equal = a.isItemEqual(b) && ItemMatch.areItemStacksEqual(a, b, ItemMatch.NBT);
-                } else if (!valueStack0.getRawValue()
-                    .isPresent()
-                    && !valueStack1.getRawValue()
-                        .isPresent()) {
-                            equal = true;
-                        }
+                } else {
+                    equal = isEmptyA && isEmptyB;
+                }
 
                 return ValueTypeBoolean.ValueBoolean.of(equal);
             })
@@ -1977,27 +2166,23 @@ public final class Operators {
                 ValueObjectTypeItemStack.ValueItemStack valueStack1 = variables
                     .getValue(1, ValueTypes.OBJECT_ITEMSTACK);
 
-                boolean equal = false;
-                if (valueStack0.getRawValue()
-                    .isPresent()
-                    && valueStack1.getRawValue()
-                        .isPresent()) {
-                    equal = ItemMatch.areItemStacksEqual(
-                        valueStack0.getRawValue()
-                            .get(),
-                        valueStack1.getRawValue()
-                            .get(),
-                        ItemMatch.ITEM | ItemMatch.DAMAGE);
-                } else if (!valueStack0.getRawValue()
-                    .isPresent()
-                    && !valueStack1.getRawValue()
-                        .isPresent()) {
-                            equal = true;
-                        }
+                ItemStack a = valueStack0.getRawValue();
+                ItemStack b = valueStack1.getRawValue();
+
+                boolean isEmptyA = ItemHelpers.isEmpty(a);
+                boolean isEmptyB = ItemHelpers.isEmpty(b);
+
+                boolean equal;
+                if (!isEmptyA && !isEmptyB) {
+                    equal = ItemMatch.areItemStacksEqual(a, b, ItemMatch.ITEM | ItemMatch.DAMAGE);
+                } else {
+                    equal = isEmptyA && isEmptyB;
+                }
 
                 return ValueTypeBoolean.ValueBoolean.of(equal);
             })
             .build());
+
     /**
      * If the raw items of the given stacks are equal, ignoring NBT and damage value.
      */
@@ -2011,23 +2196,18 @@ public final class Operators {
                 ValueObjectTypeItemStack.ValueItemStack valueStack1 = variables
                     .getValue(1, ValueTypes.OBJECT_ITEMSTACK);
 
-                boolean equal = false;
-                if (valueStack0.getRawValue()
-                    .isPresent()
-                    && valueStack1.getRawValue()
-                        .isPresent()) {
-                    equal = ItemMatch.areItemStacksEqual(
-                        valueStack0.getRawValue()
-                            .get(),
-                        valueStack1.getRawValue()
-                            .get(),
-                        ItemMatch.ITEM);
-                } else if (!valueStack0.getRawValue()
-                    .isPresent()
-                    && !valueStack1.getRawValue()
-                        .isPresent()) {
-                            equal = true;
-                        }
+                ItemStack a = valueStack0.getRawValue();
+                ItemStack b = valueStack1.getRawValue();
+
+                boolean isEmptyA = ItemHelpers.isEmpty(a);
+                boolean isEmptyB = ItemHelpers.isEmpty(b);
+
+                boolean equal;
+                if (!isEmptyA && !isEmptyB) {
+                    equal = ItemMatch.areItemStacksEqual(a, b, ItemMatch.ITEM);
+                } else {
+                    equal = isEmptyA && isEmptyB;
+                }
 
                 return ValueTypeBoolean.ValueBoolean.of(equal);
             })
@@ -2041,15 +2221,14 @@ public final class Operators {
             .symbolOperator("mod")
             .function(new IterativeFunction(Lists.newArrayList((OperatorBase.SafeVariablesGetter variables) -> {
                 ValueObjectTypeItemStack.ValueItemStack a = variables.getValue(0, ValueTypes.OBJECT_ITEMSTACK);
-                return a.getRawValue()
-                    .isPresent()
-                        ? new ResourceLocation(
-                            GameData.getItemRegistry()
-                                .getNameForObject(
-                                    a.getRawValue()
-                                        .get()
-                                        .getItem()))
-                        : null;
+                ItemStack itemStack = a.getRawValue();
+
+                if (!ItemHelpers.isEmpty(itemStack) && itemStack.getItem() != null) {
+                    String name = GameData.getItemRegistry()
+                        .getNameForObject(itemStack.getItem());
+                    return name != null ? new ResourceLocation(name) : null;
+                }
+                return null;
             }, OperatorBuilders.PROPAGATOR_RESOURCELOCATION_MODNAME)))
             .build());
 
@@ -2098,12 +2277,11 @@ public final class Operators {
             .operatorName("oredict")
             .function(variables -> {
                 ValueObjectTypeItemStack.ValueItemStack a = variables.getValue(0, ValueTypes.OBJECT_ITEMSTACK);
+                ItemStack itemStack = a.getRawValue();
                 ImmutableList.Builder<ValueTypeString.ValueString> builder = ImmutableList.builder();
-                if (a.getRawValue()
-                    .isPresent()) {
-                    for (int i : OreDictionary.getOreIDs(
-                        a.getRawValue()
-                            .get())) {
+
+                if (!ItemHelpers.isEmpty(itemStack)) {
+                    for (int i : OreDictionary.getOreIDs(itemStack)) {
                         builder.add(ValueTypeString.ValueString.of(OreDictionary.getOreName(i)));
                     }
                 }
@@ -2141,13 +2319,12 @@ public final class Operators {
             .function(variables -> {
                 ValueObjectTypeItemStack.ValueItemStack a = variables.getValue(0, ValueTypes.OBJECT_ITEMSTACK);
                 ValueTypeInteger.ValueInteger b = variables.getValue(1, ValueTypes.INTEGER);
-                if (a.getRawValue()
-                    .isPresent()) {
-                    ItemStack itemStack = a.getRawValue()
-                        .get()
-                        .copy();
-                    itemStack.stackSize = b.getRawValue();
-                    return ValueObjectTypeItemStack.ValueItemStack.of(itemStack);
+                ItemStack itemStack = a.getRawValue();
+
+                if (!ItemHelpers.isEmpty(itemStack)) {
+                    ItemStack newStack = itemStack.copy();
+                    newStack.stackSize = b.getRawValue();
+                    return ValueObjectTypeItemStack.ValueItemStack.of(newStack);
                 }
                 return a;
             })
@@ -2195,13 +2372,11 @@ public final class Operators {
             .operatorName("hasinventory")
             .function(variables -> {
                 ValueObjectTypeItemStack.ValueItemStack a = variables.getValue(0, ValueTypes.OBJECT_ITEMSTACK);
-                boolean hasInventory = a.getRawValue()
-                    .isPresent()
-                    && CapabilityHelpers.getCapability(
-                        a.getRawValue()
-                            .get(),
-                        CapabilityItemHandler.ITEM_HANDLER)
-                        .isPresent();
+                ItemStack itemStack = a.getRawValue();
+
+                boolean hasInventory = !ItemHelpers.isEmpty(itemStack)
+                    && CapabilityHelpers.getCapability(itemStack, CapabilityItemHandler.ITEM_HANDLER) != null;
+
                 return ValueTypeBoolean.ValueBoolean.of(hasInventory);
             })
             .build());
@@ -2215,11 +2390,10 @@ public final class Operators {
             .operatorName("isplantable")
             .function(variables -> {
                 ValueObjectTypeItemStack.ValueItemStack a = variables.getValue(0, ValueTypes.OBJECT_ITEMSTACK);
-                boolean isPlantable = a.getRawValue()
-                    .isPresent()
-                    && a.getRawValue()
-                        .get()
-                        .getItem() instanceof IPlantable;
+                ItemStack itemStack = a.getRawValue();
+
+                boolean isPlantable = !ItemHelpers.isEmpty(itemStack) && itemStack.getItem() instanceof IPlantable;
+
                 return ValueTypeBoolean.ValueBoolean.of(isPlantable);
             })
             .build());
@@ -2233,19 +2407,15 @@ public final class Operators {
             .operatorName("inventorysize")
             .function(variables -> {
                 ValueObjectTypeItemStack.ValueItemStack a = variables.getValue(0, ValueTypes.OBJECT_ITEMSTACK);
+                ItemStack itemStack = a.getRawValue();
                 int size = 0;
-                if (a.getRawValue()
-                    .isPresent()) {
-                    ItemStack itemStack = a.getRawValue()
-                        .get();
-                    if (CapabilityHelpers.getCapability(itemStack, CapabilityItemHandler.ITEM_HANDLER)
-                        .isPresent()) {
-                        IItemHandler itemHandler = CapabilityHelpers
-                            .getCapability(itemStack, CapabilityItemHandler.ITEM_HANDLER)
-                            .getOrNull();
-                        if (itemHandler != null) {
-                            size = itemHandler.getSlots();
-                        }
+
+                if (!ItemHelpers.isEmpty(itemStack)) {
+                    IItemHandler itemHandler = CapabilityHelpers
+                        .getCapability(itemStack, CapabilityItemHandler.ITEM_HANDLER)
+                        .getOrNull();
+                    if (itemHandler != null) {
+                        size = itemHandler.getSlots();
                     }
                 }
                 return ValueTypeInteger.ValueInteger.of(size);
@@ -2261,15 +2431,12 @@ public final class Operators {
             .operatorName("planttype")
             .function(variables -> {
                 ValueObjectTypeItemStack.ValueItemStack a = variables.getValue(0, ValueTypes.OBJECT_ITEMSTACK);
-                String type = "None";
-                if (a.getRawValue()
-                    .isPresent()) {
-                    ItemStack itemStack = a.getRawValue()
-                        .get();
-                    if (itemStack.getItem() instanceof IPlantable) {
-                        type = ((IPlantable) itemStack.getItem()).getPlantType(null, 0, 0, 0)
-                            .name();
-                    }
+                ItemStack itemStack = a.getRawValue();
+                String type = "none";
+
+                if (!ItemHelpers.isEmpty(itemStack) && itemStack.getItem() instanceof IPlantable) {
+                    type = ((IPlantable) itemStack.getItem()).getPlantType(null, 0, 0, 0)
+                        .name();
                 }
                 return ValueTypeString.ValueString.of(type);
             })
@@ -2283,15 +2450,13 @@ public final class Operators {
             .symbolOperator("inventory")
             .function(variables -> {
                 ValueObjectTypeItemStack.ValueItemStack a = variables.getValue(0, ValueTypes.OBJECT_ITEMSTACK);
-                if (a.getRawValue()
-                    .isPresent()) {
-                    ItemStack itemStack = a.getRawValue()
-                        .get();
-                    if (CapabilityHelpers.getCapability(itemStack, CapabilityItemHandler.ITEM_HANDLER)
-                        .isPresent()) {
-                        IItemHandler itemHandler = CapabilityHelpers
-                            .getCapability(itemStack, CapabilityItemHandler.ITEM_HANDLER)
-                            .getOrNull();
+                ItemStack itemStack = a.getRawValue();
+
+                if (!ItemHelpers.isEmpty(itemStack)) {
+                    IItemHandler itemHandler = CapabilityHelpers
+                        .getCapability(itemStack, CapabilityItemHandler.ITEM_HANDLER)
+                        .getOrNull();
+                    if (itemHandler != null) {
                         List<ValueObjectTypeItemStack.ValueItemStack> values = Lists
                             .newArrayListWithCapacity(itemHandler.getSlots());
                         for (int i = 0; i < itemHandler.getSlots(); i++) {
@@ -2312,15 +2477,12 @@ public final class Operators {
             .symbolOperator("plant")
             .function(variables -> {
                 ValueObjectTypeItemStack.ValueItemStack a = variables.getValue(0, ValueTypes.OBJECT_ITEMSTACK);
+                ItemStack itemStack = a.getRawValue();
                 BlockState plant = null;
-                if (a.getRawValue()
-                    .isPresent()) {
-                    ItemStack itemStack = a.getRawValue()
-                        .get();
-                    if (itemStack.getItem() instanceof IPlantable) {
-                        IPlantable plantable = (IPlantable) itemStack.getItem();
-                        plant = BlockStateHelpers.getState(plantable.getPlant(null, 0, 0, 0), 0);
-                    }
+
+                if (!ItemHelpers.isEmpty(itemStack) && itemStack.getItem() instanceof IPlantable) {
+                    IPlantable plantable = (IPlantable) itemStack.getItem();
+                    plant = BlockStateHelpers.getState(plantable.getPlant(null, 0, 0, 0), 0);
                 }
                 return ValueObjectTypeBlock.ValueBlock.of(plant);
             })
@@ -2344,7 +2506,6 @@ public final class Operators {
                 return ValueObjectTypeItemStack.ValueItemStack.of(itemStack);
             }))
             .build());
-
     /**
      * Get the total item count of the given item in a list.
      */
@@ -2354,8 +2515,9 @@ public final class Operators {
             .symbol("item_list_count")
             .operatorName("itemlistcount")
             .function(variables -> {
-                ValueTypeList.ValueList a = variables.getValue(0, ValueTypes.LIST);
+                ValueTypeList.ValueList<IValueType<IValue>, IValue> a = variables.getValue(0, ValueTypes.LIST);
                 ValueObjectTypeItemStack.ValueItemStack b = variables.getValue(1, ValueTypes.OBJECT_ITEMSTACK);
+
                 if (!ValueHelpers.correspondsTo(
                     a.getRawValue()
                         .getValueType(),
@@ -2368,30 +2530,30 @@ public final class Operators {
                     throw new EvaluationException(error.localize());
                 }
 
-                if (!b.getRawValue()
-                    .isPresent()) {
+                ItemStack itemStack = b.getRawValue();
+                if (ItemHelpers.isEmpty(itemStack)) {
                     return ValueTypeInteger.ValueInteger.of(0);
                 }
 
-                ItemStack itemStack = b.getRawValue()
-                    .get();
                 int count = 0;
+                for (IValue listValueRaw : a.getRawValue()) {
+                    if (listValueRaw.getType()
+                        .correspondsTo(ValueTypes.OBJECT_ITEMSTACK)) {
+                        ValueObjectTypeItemStack.ValueItemStack listValue = (ValueObjectTypeItemStack.ValueItemStack) listValueRaw;
+                        ItemStack listItem = listValue.getRawValue();
 
-                for (ValueObjectTypeItemStack.ValueItemStack listValue : (IValueTypeListProxy<ValueObjectTypeItemStack, ValueObjectTypeItemStack.ValueItemStack>) a
-                    .getRawValue()) {
-                    if (listValue.getRawValue()
-                        .isPresent()) {
-                        ItemStack listItem = listValue.getRawValue()
-                            .get();
-                        if (itemStack.isItemEqual(listItem) && ItemStack.areItemStackTagsEqual(itemStack, listItem)) {
-                            count += listItem.stackSize;
+                        if (!ItemHelpers.isEmpty(listItem)) {
+                            if (itemStack.isItemEqual(listItem)
+                                && ItemStack.areItemStackTagsEqual(itemStack, listItem)) {
+                                count += listItem.stackSize;
+                            }
                         }
                     }
                 }
-
                 return ValueTypeInteger.ValueInteger.of(count);
             })
             .build());
+
     /**
      * Item Stack NBT operator with one input itemstack and one output NBT tag.
      */
@@ -2400,14 +2562,13 @@ public final class Operators {
             .symbol("NBT()")
             .operatorName("nbt")
             .function(input -> {
-                ValueObjectTypeItemStack.ValueItemStack itemStack = input.getValue(0, ValueTypes.OBJECT_ITEMSTACK);
-                NBTTagCompound tag = null;
-                if (itemStack.getRawValue()
-                    .isPresent()) {
-                    tag = itemStack.getRawValue()
-                        .get()
-                        .getTagCompound();
-                }
+                ValueObjectTypeItemStack.ValueItemStack itemStackValue = input.getValue(0, ValueTypes.OBJECT_ITEMSTACK);
+                ItemStack itemStack = itemStackValue.getRawValue();
+
+                NBTTagCompound tag = (!ItemHelpers.isEmpty(itemStack) && itemStack.getTagCompound() != null)
+                    ? itemStack.getTagCompound()
+                    : new NBTTagCompound();
+
                 return ValueTypeNbt.ValueNbt.of(tag);
             })
             .build());
@@ -2422,6 +2583,69 @@ public final class Operators {
             .function(
                 OperatorBuilders.FUNCTION_ITEMSTACK_TO_BOOLEAN
                     .build(itemStack -> itemStack != null && itemStack.hasTagCompound()))
+            .build());
+
+    /**
+     * Get an itemstack with the given nbt tag
+     */
+    public static final IOperator OBJECT_ITEMSTACK_WITH_TAG = REGISTRY.register(
+        OperatorBuilders.ITEMSTACK_2_LONG.inputTypes(ValueTypes.OBJECT_ITEMSTACK, ValueTypes.NBT)
+            .output(ValueTypes.OBJECT_ITEMSTACK)
+            .symbol("item_with_tag")
+            .operatorName("itemwithtag")
+            .function(variables -> {
+                ItemStack inputItem = variables.getValue(0, ValueTypes.OBJECT_ITEMSTACK)
+                    .getRawValue()
+                    .copy();
+                ValueTypeNbt.ValueNbt tag = variables.getValue(1, ValueTypes.NBT);
+                inputItem.setTagCompound((NBTTagCompound) tag.getRawValue());
+                return ValueObjectTypeItemStack.ValueItemStack.of(inputItem);
+            })
+            .build());
+
+    /**
+     * Get the tooltip of an itemstack in list form.
+     */
+    public static final IOperator OBJECT_ITEMSTACK_TOOLTIP = REGISTRY.register(
+        OperatorBuilders.ITEMSTACK_1_SUFFIX_LONG.output(ValueTypes.LIST)
+            .symbol("tooltip")
+            .operatorName("tooltip")
+            .function(input -> {
+                ValueObjectTypeItemStack.ValueItemStack itemStack = input.getValue(0, ValueTypes.OBJECT_ITEMSTACK);
+                return ValueTypeList.ValueList.ofList(
+                    ValueTypes.STRING,
+                    itemStack.getRawValue()
+                        .getTooltip(null, false)
+                        .stream()
+                        .map(c -> ValueTypeString.ValueString.of(c))
+                        .toList());
+            })
+            .build());
+    /**
+     * Get the tooltip of an itemstack in list form, using the provided player entity as the player context.
+     */
+    public static final IOperator OBJECT_ITEMSTACK_ENTITY_TOOLTIP = REGISTRY.register(
+        OperatorBuilders.ENTITY_1_ITEMSTACK_1.inputTypes(ValueTypes.OBJECT_ENTITY, ValueTypes.OBJECT_ITEMSTACK)
+            .output(ValueTypes.LIST)
+            .symbol("entity_item_tooltip")
+            .operatorName("entityitemtooltip")
+            .function(variables -> {
+                ValueObjectTypeEntity.ValueEntity a = variables.getValue(0, ValueTypes.OBJECT_ENTITY);
+                ValueObjectTypeItemStack.ValueItemStack itemStack = variables.getValue(1, ValueTypes.OBJECT_ITEMSTACK);
+                if (a.getRawValue()
+                    .isPresent()
+                    && a.getRawValue()
+                        .get() instanceof EntityPlayer entity) {
+                    return ValueTypeList.ValueList.ofList(
+                        ValueTypes.STRING,
+                        itemStack.getRawValue()
+                            .getTooltip(entity, false)
+                            .stream()
+                            .map(c -> ValueTypeString.ValueString.of(c))
+                            .toList());
+                }
+                return ValueTypes.LIST.getDefault();
+            })
             .build());
 
     /**
@@ -2967,7 +3191,6 @@ public final class Operators {
                 return ValueTypeBoolean.ValueBoolean.of(inLove);
             })
             .build());
-
     /**
      * If the entity can be bred with the given item.
      */
@@ -2980,18 +3203,16 @@ public final class Operators {
             .function(variables -> {
                 ValueObjectTypeEntity.ValueEntity a = variables.getValue(0, ValueTypes.OBJECT_ENTITY);
                 ValueObjectTypeItemStack.ValueItemStack b = variables.getValue(1, ValueTypes.OBJECT_ITEMSTACK);
+
+                Entity entity = a.getRawValue()
+                    .get();
+                ItemStack itemStack = b.getRawValue();
+
                 boolean canBreedWith = false;
-                if (a.getRawValue()
-                    .isPresent()
-                    && b.getRawValue()
-                        .isPresent()
-                    && a.getRawValue()
-                        .get() instanceof EntityAnimal) {
-                    canBreedWith = ((EntityAnimal) a.getRawValue()
-                        .get()).isBreedingItem(
-                            b.getRawValue()
-                                .get());
+                if (entity instanceof EntityAnimal && !ItemHelpers.isEmpty(itemStack)) {
+                    canBreedWith = ((EntityAnimal) entity).isBreedingItem(itemStack);
                 }
+
                 return ValueTypeBoolean.ValueBoolean.of(canBreedWith);
             })
             .build());
@@ -3180,13 +3401,17 @@ public final class Operators {
             .function(variables -> {
                 ValueObjectTypeFluidStack.ValueFluidStack valueFluidStack = variables
                     .getValue(0, ValueTypes.OBJECT_FLUIDSTACK);
-                Optional<FluidStack> a = valueFluidStack.getRawValue();
-                return ValueObjectTypeBlock.ValueBlock.of(
-                    a.isPresent() ? BlockStateHelpers.getState(
-                        a.get()
-                            .getFluid()
-                            .getBlock(),
-                        0) : null);
+                FluidStack fluidStack = valueFluidStack.getRawValue();
+
+                if (!FluidHelpers.isEmpty(fluidStack) && fluidStack.getFluid()
+                    .getBlock() != null) {
+                    return ValueObjectTypeBlock.ValueBlock.of(
+                        BlockStateHelpers.getState(
+                            fluidStack.getFluid()
+                                .getBlock(),
+                            0));
+                }
+                return ValueTypes.OBJECT_BLOCK.getDefault();
             })
             .build());
 
@@ -3248,14 +3473,16 @@ public final class Operators {
             .function(variables -> {
                 ValueObjectTypeFluidStack.ValueFluidStack valueFluidStack = variables
                     .getValue(0, ValueTypes.OBJECT_FLUIDSTACK);
-                Optional<FluidStack> a = valueFluidStack.getRawValue();
-                return ValueTypeString.ValueString.of(
-                    a.isPresent() ? a.get()
-                        .getFluid()
-                        .getRarity(a.get()).rarityName : "");
+                FluidStack fluidStack = valueFluidStack.getRawValue();
+
+                String rarityName = "";
+                if (!FluidHelpers.isEmpty(fluidStack)) {
+                    rarityName = fluidStack.getFluid()
+                        .getRarity(fluidStack).rarityName;
+                }
+                return ValueTypeString.ValueString.of(rarityName);
             })
             .build());
-
     /**
      * If the fluid types of the two given fluidstacks are equal
      */
@@ -3268,13 +3495,14 @@ public final class Operators {
                     .getValue(0, ValueTypes.OBJECT_FLUIDSTACK);
                 ValueObjectTypeFluidStack.ValueFluidStack valueFluidStack1 = variables
                     .getValue(1, ValueTypes.OBJECT_FLUIDSTACK);
-                Optional<FluidStack> a = valueFluidStack0.getRawValue();
-                Optional<FluidStack> b = valueFluidStack1.getRawValue();
+
+                FluidStack a = valueFluidStack0.getRawValue();
+                FluidStack b = valueFluidStack1.getRawValue();
+
                 boolean equal = false;
-                if (a.isPresent() && b.isPresent()) {
-                    equal = a.get()
-                        .isFluidEqual(b.get());
-                } else if (!a.isPresent() && !b.isPresent()) {
+                if (!FluidHelpers.isEmpty(a) && !FluidHelpers.isEmpty(b)) {
+                    equal = a.isFluidEqual(b);
+                } else if (FluidHelpers.isEmpty(a) && FluidHelpers.isEmpty(b)) {
                     equal = true;
                 }
                 return ValueTypeBoolean.ValueBoolean.of(equal);
@@ -3290,52 +3518,25 @@ public final class Operators {
             .function(variables -> {
                 ValueObjectTypeFluidStack.ValueFluidStack a = variables.getValue(0, ValueTypes.OBJECT_FLUIDSTACK);
                 String modName = "";
+                FluidStack fluidStack = a.getRawValue();
 
-                if (a.getRawValue()
-                    .isPresent()) {
-                    Fluid fluid = a.getRawValue()
-                        .get()
-                        .getFluid();
-                    if (fluid != null) {
-                        String modId = null;
+                if (!FluidHelpers.isEmpty(fluidStack)) {
+                    Fluid fluid = fluidStack.getFluid();
+                    String modId = FluidHelpers.getModId(fluid);
 
-                        if (fluid.getBlock() != null) {
-                            String blockName = GameData.getBlockRegistry()
-                                .getNameForObject(fluid.getBlock());
-                            if (blockName != null && blockName.contains(":")) {
-                                modId = blockName.split(":")[0];
-                            }
-                        }
+                    if (modId == null || modId.isEmpty()) {
+                        modId = "minecraft";
+                    }
 
-                        if (modId == null || modId.isEmpty()) {
-                            String iconName = null;
-                            if (fluid.getStillIcon() != null) {
-                                iconName = fluid.getStillIcon()
-                                    .getIconName();
-                            } else if (fluid.getFlowingIcon() != null) {
-                                iconName = fluid.getFlowingIcon()
-                                    .getIconName();
-                            }
-
-                            if (iconName != null && iconName.contains(":")) {
-                                modId = iconName.split(":")[0];
-                            }
-                        }
-
-                        if (modId == null || modId.isEmpty()) {
-                            modId = "minecraft";
-                        }
-
-                        ModContainer modContainer = Loader.instance()
-                            .getIndexedModList()
-                            .get(modId);
-                        if (modContainer != null) {
-                            modName = modContainer.getName();
-                        } else if ("minecraft".equals(modId)) {
-                            modName = "Minecraft";
-                        } else {
-                            modName = modId;
-                        }
+                    ModContainer modContainer = Loader.instance()
+                        .getIndexedModList()
+                        .get(modId);
+                    if (modContainer != null) {
+                        modName = modContainer.getName();
+                    } else if ("minecraft".equals(modId)) {
+                        modName = "Minecraft";
+                    } else {
+                        modName = modId;
                     }
                 }
                 return ValueTypeString.ValueString.of(modName);
@@ -3351,13 +3552,32 @@ public final class Operators {
             .operatorName("nbt")
             .function(input -> {
                 ValueObjectTypeFluidStack.ValueFluidStack fluidStack = input.getValue(0, ValueTypes.OBJECT_FLUIDSTACK);
-                if (fluidStack.getRawValue()
-                    .isPresent()) {
-                    return ValueTypeNbt.ValueNbt.of(
-                        fluidStack.getRawValue()
-                            .get().tag);
+                FluidStack rawStack = fluidStack.getRawValue();
+
+                if (!FluidHelpers.isEmpty(rawStack) && rawStack.tag != null) {
+                    return ValueTypeNbt.ValueNbt.of(rawStack.tag);
                 }
                 return ValueTypes.NBT.getDefault();
+            })
+            .build());
+
+    /**
+     * Create a new fluidstack with the given amount.
+     */
+    public static final IOperator OBJECT_FLUIDSTACK_WITH_AMOUNT = REGISTRY.register(
+        OperatorBuilders.FLUIDSTACK_2.inputTypes(ValueTypes.OBJECT_FLUIDSTACK, ValueTypes.INTEGER)
+            .output(ValueTypes.OBJECT_FLUIDSTACK)
+            .symbolOperator("with_amount")
+            .function(variables -> {
+                ValueObjectTypeFluidStack.ValueFluidStack valueFluidStack = variables
+                    .getValue(0, ValueTypes.OBJECT_FLUIDSTACK);
+                ValueTypeInteger.ValueInteger valueInteger = variables.getValue(1, ValueTypes.INTEGER);
+
+                FluidStack fluidStack = valueFluidStack.getRawValue();
+                int newAmount = valueInteger.getRawValue();
+
+                FluidStack newStack = FluidHelpers.copyWithAmount(fluidStack, newAmount);
+                return ValueObjectTypeFluidStack.ValueFluidStack.of(newStack);
             })
             .build());
 
@@ -4258,9 +4478,10 @@ public final class Operators {
                     .getValue(0, ValueTypes.OBJECT_INGREDIENTS);
                 ValueTypeInteger.ValueInteger index = variables.getValue(1, ValueTypes.INTEGER);
                 ValueObjectTypeItemStack.ValueItemStack itemStack = variables.getValue(2, ValueTypes.OBJECT_ITEMSTACK);
-                if (!value.getRawValue()
-                    .isPresent()) {
-                    return value;
+                if (value.getRawValue()
+                    .isEmpty()) {
+                    value = ValueObjectTypeIngredients.ValueIngredients
+                        .of(new MixedIngredients(Maps.newIdentityHashMap()));
                 }
                 IMixedIngredients baseIngredients = value.getRawValue()
                     .get();
@@ -4269,11 +4490,9 @@ public final class Operators {
                         baseIngredients,
                         index.getRawValue(),
                         IngredientComponent.ITEMSTACK,
-                        itemStack.getRawValue()
-                            .get()));
+                        itemStack.getRawValue()));
             })
             .build());
-
     /**
      * Set an ingredient fluid
      */
@@ -4284,21 +4503,25 @@ public final class Operators {
                 ValueObjectTypeIngredients.ValueIngredients value = variables
                     .getValue(0, ValueTypes.OBJECT_INGREDIENTS);
                 ValueTypeInteger.ValueInteger index = variables.getValue(1, ValueTypes.INTEGER);
-                ValueObjectTypeFluidStack.ValueFluidStack fluidStack = variables
+                ValueObjectTypeFluidStack.ValueFluidStack valueFluidStack = variables
                     .getValue(2, ValueTypes.OBJECT_FLUIDSTACK);
-                if (!value.getRawValue()
-                    .isPresent()) {
-                    return value;
+
+                if (value.getRawValue()
+                    .isEmpty()) {
+                    value = ValueObjectTypeIngredients.ValueIngredients
+                        .of(new MixedIngredients(Maps.newIdentityHashMap()));
                 }
+
                 IMixedIngredients baseIngredients = value.getRawValue()
                     .get();
+                FluidStack fluidStack = valueFluidStack.getRawValue();
+
                 return ValueObjectTypeIngredients.ValueIngredients.of(
                     new ExtendedIngredientsSingle<>(
                         baseIngredients,
                         index.getRawValue(),
                         IngredientComponent.FLUIDSTACK,
-                        fluidStack.getRawValue()
-                            .orElse(null)));
+                        FluidHelpers.isEmpty(fluidStack) ? FluidHelpers.EMPTY : fluidStack));
             })
             .build());
 
@@ -4313,10 +4536,11 @@ public final class Operators {
                 ValueObjectTypeIngredients.ValueIngredients value = variables
                     .getValue(0, ValueTypes.OBJECT_INGREDIENTS);
                 ValueTypeInteger.ValueInteger index = variables.getValue(1, ValueTypes.INTEGER);
-                ValueTypeInteger.ValueInteger energy = variables.getValue(2, ValueTypes.INTEGER);
-                if (!value.getRawValue()
-                    .isPresent()) {
-                    return value;
+                ValueTypeLong.ValueLong energy = variables.getValue(2, ValueTypes.LONG);
+                if (value.getRawValue()
+                    .isEmpty()) {
+                    value = ValueObjectTypeIngredients.ValueIngredients
+                        .of(new MixedIngredients(Maps.newIdentityHashMap()));
                 }
                 IMixedIngredients baseIngredients = value.getRawValue()
                     .get();
@@ -4340,9 +4564,10 @@ public final class Operators {
                     .getValue(0, ValueTypes.OBJECT_INGREDIENTS);
                 ValueTypeList.ValueList<ValueObjectTypeItemStack, ValueObjectTypeItemStack.ValueItemStack> list = variables
                     .getValue(1, ValueTypes.LIST);
-                if (!valueIngredients.getRawValue()
-                    .isPresent()) {
-                    return valueIngredients;
+                if (valueIngredients.getRawValue()
+                    .isEmpty()) {
+                    valueIngredients = ValueObjectTypeIngredients.ValueIngredients
+                        .of(new MixedIngredients(Maps.newIdentityHashMap()));
                 }
                 IMixedIngredients baseIngredients = valueIngredients.getRawValue()
                     .get();
@@ -4365,9 +4590,10 @@ public final class Operators {
                     .getValue(0, ValueTypes.OBJECT_INGREDIENTS);
                 ValueTypeList.ValueList<ValueObjectTypeFluidStack, ValueObjectTypeFluidStack.ValueFluidStack> list = variables
                     .getValue(1, ValueTypes.LIST);
-                if (!valueIngredients.getRawValue()
-                    .isPresent()) {
-                    return valueIngredients;
+                if (valueIngredients.getRawValue()
+                    .isEmpty()) {
+                    valueIngredients = ValueObjectTypeIngredients.ValueIngredients
+                        .of(new MixedIngredients(Maps.newIdentityHashMap()));
                 }
                 IMixedIngredients baseIngredients = valueIngredients.getRawValue()
                     .get();
@@ -4391,9 +4617,10 @@ public final class Operators {
                     .getValue(0, ValueTypes.OBJECT_INGREDIENTS);
                 ValueTypeList.ValueList<ValueTypeInteger, ValueTypeInteger.ValueInteger> list = variables
                     .getValue(1, ValueTypes.LIST);
-                if (!valueIngredients.getRawValue()
-                    .isPresent()) {
-                    return valueIngredients;
+                if (valueIngredients.getRawValue()
+                    .isEmpty()) {
+                    valueIngredients = ValueObjectTypeIngredients.ValueIngredients
+                        .of(new MixedIngredients(Maps.newIdentityHashMap()));
                 }
                 IMixedIngredients baseIngredients = valueIngredients.getRawValue()
                     .get();

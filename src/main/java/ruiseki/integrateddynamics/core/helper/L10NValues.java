@@ -14,6 +14,8 @@ public class L10NValues {
     public static final String GENERAL_ENERGY_UNIT = "general." + NS + ".energy_unit.name";
     public static final String GENERAL_ERROR_NONETWORK = "general." + NS + ".error.no_network";
     public static final String GENERAL_ITEM_ID = "item.items." + NS + ".general.id";
+    public static final String GENERAL_TRUE = "general." + NS + ".true";
+    public static final String GENERAL_FALSE = "general." + NS + ".false";
 
     public static final String PART_PANEL_ERROR_INVALIDTYPE = "parttype.parttypes." + NS
         + ".data_driven_panel.error.invalid_type";
@@ -28,11 +30,24 @@ public class L10NValues {
     public static final String PART_TOOLTIP_MONODIRECTIONALCONNECTOR_GROUP = "parttype.parttypes." + NS
         + ".tooltip.monodirectionalconnector.group";
     public static final String PART_TOOLTIP_NOASPECTS = "parttype.parttypes." + NS + ".tooltip.noaspects";
+    public static final String PART_TOOLTIP_MAXOFFSET = "parttype." + NS + ".tooltip.maxoffset";
 
     public static final String GUI_RENAME = "gui." + NS + ".button.rename";
     public static final String GUI_LOGICPROGRAMMER_FILTER = "gui." + NS + ".logicprogrammer.filter";
+    public static final String GUI_LOGICPROGRAMMER_INFO_CREATE = "gui." + NS + ".logicprogrammer.info.create";
+    public static final String GUI_LOGICPROGRAMMER_INFO_MODIFY = "gui." + NS + ".logicprogrammer.info.modify";
+    public static final String GUI_LOGICPROGRAMMER_TOOLTIP_WRITESLOT_CREATE = "gui." + NS
+        + ".logicprogrammer.tooltip.writeslot.create";
+    public static final String GUI_LOGICPROGRAMMER_TOOLTIP_WRITESLOT_MODIFY = "gui." + NS
+        + ".logicprogrammer.tooltip.writeslot.modify";
     public static final String GUI_INPUT = "gui." + NS + ".input";
     public static final String GUI_OUTPUT = "gui." + NS + ".output";
+    public static final String GUI_RECIPE_STRICTNBT = "gui." + NS + ".recipe.strictnbt";
+    public static final String GUI_RECIPE_TAGVARIANTS = "gui." + NS + ".recipe.tagvariants";
+    public static final String GUI_RECIPE_REUSABLE = "gui." + NS + ".recipe.reusable";
+    // 0: value
+    public static final String GUI_MECHANICAL_SQUEEZER_TOGGLEFLUIDAUTOEJECT = "gui." + NS
+        + ".mechanical_squeezer.togglefluidautoeject";
 
     public static final String VALUE_ERROR = "valuetype." + NS + ".error.value";
     public static final String VALUETYPE_VALUETYPE = "valuetype." + NS + ".value_type";
@@ -59,6 +74,8 @@ public class L10NValues {
     public static final String ASPECT_TOOLTIP_VALUETYPENAME = "aspect." + NS + ".tooltip.value_type_name";
     public static final String ASPECT_ERROR_PARTNOTINNETWORK = "variable." + NS + ".error.part_not_in_network";
     public static final String ASPECT_ERROR_INVALIDTYPE = "aspect." + NS + ".error.invalid_type";
+    public static final String ASPECT_ERROR_NOVALUEINTERFACE = "aspect." + NS + ".error.no_value_interface";
+    public static final String ASPECT_ERROR_NOVALUEINTERFACEVALUE = "aspect." + NS + ".error.no_value_interface_value";
     public static final String ASPECT_ERROR_RECURSION = "aspect." + NS + ".error.recursion";
 
     public static final String PROXY_TOOLTIP_PROXYID = "proxy." + NS + ".tooltip.proxy_id";
@@ -101,4 +118,49 @@ public class L10NValues {
     public static final String OPERATOR_ERROR_WRONGINPUTLENGTHVIRTIUAL = "operator." + NS
         + ".error.wrong_input_length_virtual";
     public static final String OPERATOR_ERROR_RECURSIONLIMIT = "operator." + NS + ".error.operator_recursion_limit";
+    // 0: expression, 1: message
+    public static final String OPERATOR_ERROR_NBT_PATH_EXPRESSION = "operator." + NS
+        + ".error.operator_nbt_path_expression";
+    // 0: value-type-from, 1: value-type-to
+    public static final String OPERATOR_ERROR_CAST_NOMAPPING = "operator." + NS + ".error.cast.no_mapping";
+    // 0: value-type-from, 1: value-type-to, 2: value
+    public static final String OPERATOR_ERROR_CAST_ILLEGAL = "operator." + NS + ".error.cast.illegal";
+    // 0: value-type-from-actual, 1: value-type-from-expected, 2: value-type-to
+    public static final String OPERATOR_ERROR_CAST_UNEXPECTED = "operator." + NS + ".error.cast.unexpected";
+    public static final String OPERATOR_ERROR_DIVIDEBYZERO = "operator." + NS + ".error.divide_by_zero";
+    // 0: string-value, 1: value-type
+    public static final String OPERATOR_ERROR_PARSE = "operator." + NS + ".error.parse";
+    // 0: value
+    public static final String OPERATOR_ERROR_NO_DESERIALIZER = "operator." + NS + ".error.no_derserializer";
+    // 0: regex-value
+    public static final String OPERATOR_ERROR_REGEX_INVALID = "operator." + NS + ".error.regex.invalid";
+    public static final String OPERATOR_ERROR_SUBSTRING_TOGREATERTHANFROM = "operator." + NS
+        + ".error.substring.to_greater_than_from";
+    public static final String OPERATOR_ERROR_SUBSTRING_INDEXNEGATIVE = "operator." + NS
+        + ".error.substring.index_negative";
+    public static final String OPERATOR_ERROR_SUBSTRING_LONGERTHANSTRING = "operator." + NS
+        + ".error.substring.longer_than_string";
+    public static final String OPERATOR_ERROR_GROUP_INDEXNEGATIVE = "operator." + NS + ".error.group.index_negative";
+    // 0: regex-value, 1: value
+    public static final String OPERATOR_ERROR_GROUP_NOMATCH = "operator." + NS + ".error.group.no_match";
+    // 0: regex-value, 1: value, 2: group
+    public static final String OPERATOR_ERROR_GROUP_NOMATCHGROUP = "operator." + NS + ".error.group.no_match_group";
+    public static final String OPERATOR_ERROR_REGEXSCAN_INDEXNEGATIVE = "operator." + NS
+        + ".error.regex_scan.index_negative";
+    // 0: regex-value, 1: value, 2: group
+    public static final String OPERATOR_ERROR_REGEXSCAN_NOMATCHGROUP = "operator." + NS
+        + ".error.regex_scan.no_match_group";
+    // 0: replacement-value, 1: message
+    public static final String OPERATOR_ERROR_REPLACEREGEX_INVALIDGROUP = "operator." + NS
+        + ".error.replace_regex.invalid_group";
+    // 0: operation
+    public static final String OPERATOR_ERROR_INFINITELIST_ILLEGAL = "operator." + NS + ".error.infinite_list.illegal";
+    // 0: index, 1: length
+    public static final String OPERATOR_ERROR_INDEXOUTOFBOUNDS = "operator." + NS + ".error.index_out_of_bounds";
+    public static final String OPERATOR_ERROR_SLICE_TOGREATERTHANFROM = "operator." + NS
+        + ".error.slice.to_greater_than_from";
+    public static final String OPERATOR_ERROR_SLICE_INDEXNEGATIVE = "operator." + NS + ".error.slice.index_negative";
+    // 0: operator
+    public static final String OPERATOR_ERROR_OPERATORNOTFOUND = "operator." + NS + ".error.operator_not_found";
+    public static final String OPERATOR_ERROR_REDUCE_EMPTY = "operator." + NS + ".error.reduce.empty";
 }

@@ -1,5 +1,6 @@
 package ruiseki.integrateddynamics.block;
 
+import net.minecraft.block.Block;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.inventory.Container;
 
@@ -22,23 +23,10 @@ public class BlockDelay extends BlockContainerGuiCabled {
     @BlockProperty
     public static final DirectionProperty FACING = DirectionProperty.facing();
 
-    private static BlockDelay _instance = null;
-
-    /**
-     * Get the unique instance.
-     *
-     * @return The instance.
-     */
-    public static BlockDelay getInstance() {
-        return _instance;
-    }
-
     /**
      * Make a new block instance.
-     *
-     * @param eConfig Config for this block.
      */
-    public BlockDelay(ExtendedConfig<BlockConfig> eConfig) {
+    public BlockDelay(ExtendedConfig<BlockConfig, Block> eConfig) {
         super(eConfig, TileDelay.class);
     }
 

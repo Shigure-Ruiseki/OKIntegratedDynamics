@@ -36,13 +36,14 @@ import ruiseki.integratedterminals.api.ingredient.IIngredientInstanceSorter;
 import ruiseki.integratedterminals.capability.ingredient.sorter.ItemStackIdSorter;
 import ruiseki.integratedterminals.capability.ingredient.sorter.ItemStackNameSorter;
 import ruiseki.integratedterminals.capability.ingredient.sorter.ItemStackQuantitySorter;
-import ruiseki.integratedterminals.client.gui.container.GuiTerminalStorage;
+import ruiseki.integratedterminals.core.client.gui.GuiTerminalStorage;
 import ruiseki.integratedterminals.core.helpers.TerminalClientUtils;
 import ruiseki.integratedterminals.core.terminalstorage.query.SearchMode;
 import ruiseki.okcore.client.gui.RenderItemExtendedSlotCount;
 import ruiseki.okcore.client.renderer.GlStateManager;
 import ruiseki.okcore.helper.GuiHelpers;
 import ruiseki.okcore.helper.ItemHandlerHelpers;
+import ruiseki.okcore.helper.TagHelpers;
 
 /**
  * Terminal storage handler for items.
@@ -80,6 +81,12 @@ public class IngredientComponentTerminalStorageHandlerItemStack
             return;
         }
 
+        // Make a copy of the item to make sure that any changes in the NBT tag that the mod may make during rendering
+        // does not propagate into our client-side index. Otherwise, the client may think it has different items than
+        // the server, which will cause these items not to be extractable by the client from the terminal.
+        // See https://github.com/CyclopsMC/IntegratedTerminals/issues/106
+        final ItemStack instanceCopy = instance.copy();
+
         RenderItemExtendedSlotCount renderItem = RenderItemExtendedSlotCount.getInstance();
         GlStateManager.pushMatrix();
         GlStateManager.enableBlend();
@@ -94,18 +101,18 @@ public class IngredientComponentTerminalStorageHandlerItemStack
                 .renderItemAndEffectIntoGUI(
                     TerminalClientUtils.getFontRenderer(),
                     TerminalClientUtils.getTextureManager(),
-                    instance,
+                    instanceCopy,
                     x,
                     y);
             renderItem.renderItemOverlayIntoGUI(
                 TerminalClientUtils.getFontRenderer(),
                 TerminalClientUtils.getTextureManager(),
-                instance,
+                instanceCopy,
                 x,
                 y,
                 label);
         } else {
-            GuiHelpers.preItemToolTip(instance);
+            GuiHelpers.preItemToolTip(instanceCopy);
             GuiHelpers.renderTooltip(
                 gui,
                 x,
@@ -116,14 +123,14 @@ public class IngredientComponentTerminalStorageHandlerItemStack
                 mouseY,
                 () -> {
                     // Safe call to getTooltip
-                    List<String> lines = TerminalClientUtils.getTooltip(instance);
+                    List<String> lines = TerminalClientUtils.getTooltip(instanceCopy);
                     if (lines == null) {
                         lines = Lists.newArrayList();
                     }
                     if (additionalTooltipLines != null) {
                         lines.addAll(additionalTooltipLines);
                     }
-                    addQuantityTooltip(lines, instance);
+                    addQuantityTooltip(lines, instanceCopy);
                     return lines;
                 });
             GuiHelpers.postItemToolTip();
@@ -134,7 +141,8 @@ public class IngredientComponentTerminalStorageHandlerItemStack
 
     @Override
     public String formatQuantity(ItemStack instance) {
-        return String.format("%,d", (instance != null && instance.getItem() != null) ? instance.stackSize : 0);
+        return String
+            .format(Locale.ROOT, "%,d", (instance != null && instance.getItem() != null) ? instance.stackSize : 0);
     }
 
     @Override
@@ -165,11 +173,20 @@ public class IngredientComponentTerminalStorageHandlerItemStack
     @Override
     public int throwIntoWorld(IIngredientComponentStorage<ItemStack, Integer> storage, ItemStack maxInstance,
         EntityPlayer player) {
-        if (maxInstance == null || maxInstance.getItem() == null) {
+        if (maxInstance == null || maxInstance.getItem() == null || maxInstance.stackSize <= 0) {
             return 0;
         }
-        ItemStack extracted = storage.extract(maxInstance, ItemMatch.EXACT, false);
-        if (extracted != null) {
+
+        ItemStack targetInstance = maxInstance.copy();
+        int maxStackSize = targetInstance.getMaxStackSize();
+        if (targetInstance.stackSize > maxStackSize) {
+            targetInstance.stackSize = maxStackSize;
+        }
+
+        ItemStack extracted = storage.extract(targetInstance, ItemMatch.EXACT, false);
+        if (extracted != null && extracted.stackSize > 0) {
+            extracted.stackSize = Math.min(extracted.stackSize, maxStackSize);
+
             player.dropPlayerItemWithRandomChoice(extracted, true);
             return extracted.stackSize;
         }
@@ -185,6 +202,11 @@ public class IngredientComponentTerminalStorageHandlerItemStack
 
         IIngredientMatcher<ItemStack, Integer> matcher = IngredientComponent.ITEMSTACK.getMatcher();
 
+        // Limit transfer to 64 at a time
+        if (maxInstance.stackSize > 64) {
+            maxInstance.stackSize = 64;
+        }
+
         Slot containerSlot = container.getSlot(containerSlotIndex);
         if (transferFullSelection && player != null && player.inventory.getItemStack() == null) {
             // Pick up container slot contents if not empty
@@ -192,6 +214,7 @@ public class IngredientComponentTerminalStorageHandlerItemStack
             if (containerStack != null
                 && !matcher.matches(containerStack, maxInstance, matcher.getExactMatchNoQuantityCondition())
                 && containerSlot.canTakeStack(player)) {
+                containerSlot.onPickupFromSlot(player, containerStack);
                 player.inventory.setItemStack(containerStack);
                 containerSlot.putStack(null);
             }
@@ -252,20 +275,26 @@ public class IngredientComponentTerminalStorageHandlerItemStack
 
     @Override
     public void extractMaxFromContainerSlot(IIngredientComponentStorage<ItemStack, Integer> storage,
-        Container container, int containerSlot, InventoryPlayer playerInventory) {
+        Container container, int containerSlot, InventoryPlayer playerInventory, int limit) {
         Slot slot = container.getSlot(containerSlot);
-        ItemStack toMove = slot.getStack();
-        if (toMove != null && toMove.getItem() != null) {
-            slot.putStack(null);
-            ItemStack remainingStack = storage.insert(toMove, false);
-            if (remainingStack != null) {
-                if (!slot.getHasStack()) {
-                    slot.putStack(remainingStack);
-                } else {
-                    playerInventory.addItemStackToInventory(remainingStack);
+        if (slot.canTakeStack(playerInventory.player)) {
+            ItemStack toMove = slot.decrStackSize(limit == -1 ? Integer.MAX_VALUE : limit);
+            if (toMove != null) {
+                // The following code is a bit convoluted to handle cases where the container and the storage point to
+                // the same inventory.
+                ItemStack remainingStack = storage.insert(toMove, false);
+                if (remainingStack != null) {
+                    // Check if the slot is still empty, because the storage may be linked to the container in some
+                    // exotic cases (e.g. player interfaces).
+                    if (!slot.getHasStack()) {
+                        slot.putStack(remainingStack);
+                    } else {
+                        // Simply add the remainder to the player's container
+                        playerInventory.addItemStackToInventory(remainingStack);
+                    }
                 }
+                container.detectAndSendChanges();
             }
-            container.detectAndSendChanges();
         }
     }
 
@@ -314,6 +343,18 @@ public class IngredientComponentTerminalStorageHandlerItemStack
                     if (i == null || i.getItem() == null) return false;
                     return Arrays.stream(OreDictionary.getOreIDs(i))
                         .mapToObj(OreDictionary::getOreName)
+                        .anyMatch(
+                            name -> name != null && name.toLowerCase(Locale.ENGLISH)
+                                .contains(lowerQuery));
+                };
+            case TAG:
+                return i -> {
+                    if (i == null || i.getItem() == null) return false;
+                    return TagHelpers.getTags(i)
+                        .stream()
+                        .map(
+                            tagKey -> tagKey.location()
+                                .toString())
                         .anyMatch(
                             name -> name != null && name.toLowerCase(Locale.ENGLISH)
                                 .contains(lowerQuery));

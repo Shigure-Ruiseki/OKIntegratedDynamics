@@ -11,6 +11,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.init.Items;
 import net.minecraft.inventory.Container;
+import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.fluids.FluidStack;
 
@@ -29,17 +30,18 @@ import ruiseki.integratedterminals.api.ingredient.IIngredientInstanceSorter;
 import ruiseki.integratedterminals.capability.ingredient.sorter.FluidStackIdSorter;
 import ruiseki.integratedterminals.capability.ingredient.sorter.FluidStackNameSorter;
 import ruiseki.integratedterminals.capability.ingredient.sorter.FluidStackQuantitySorter;
-import ruiseki.integratedterminals.client.gui.container.GuiTerminalStorage;
+import ruiseki.integratedterminals.core.client.gui.GuiTerminalStorage;
 import ruiseki.integratedterminals.core.terminalstorage.query.SearchMode;
 import ruiseki.okcore.client.gui.RenderItemExtendedSlotCount;
 import ruiseki.okcore.client.renderer.GlStateManager;
-import ruiseki.okcore.fluid.FluidHelpers;
 import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
 import ruiseki.okcore.fluid.handler.IFluidHandlerItem;
 import ruiseki.okcore.fluid.handler.IFluidTankProperties;
 import ruiseki.okcore.helper.CapabilityHelpers;
+import ruiseki.okcore.helper.FluidHelpers;
 import ruiseki.okcore.helper.GuiHelpers;
 import ruiseki.okcore.helper.LangHelpers;
+import ruiseki.okcore.helper.TagHelpers;
 import ruiseki.okcore.ingredient.storage.InconsistentIngredientInsertionException;
 import ruiseki.okcore.ingredient.storage.IngredientStorageHelpers;
 
@@ -113,7 +115,7 @@ public class IngredientComponentTerminalStorageHandlerFluidStack
     public String formatQuantity(FluidStack instance) {
         return LangHelpers.localize(
             "gui.integratedterminals.terminal_storage.tooltip.fluid.amount",
-            String.format("%,d", FluidHelpers.getAmount(instance)));
+            String.format(Locale.ROOT, "%,d", FluidHelpers.getAmount(instance)));
     }
 
     @Override
@@ -228,25 +230,29 @@ public class IngredientComponentTerminalStorageHandlerFluidStack
 
     @Override
     public void extractMaxFromContainerSlot(IIngredientComponentStorage<FluidStack, Integer> storage,
-        Container container, int containerSlot, InventoryPlayer playerInventory) {
-        ItemStack toMoveStack = container.getSlot(containerSlot)
-            .getStack();
-        IFluidHandlerItem fluidHandler = CapabilityHelpers
-            .getCapability(toMoveStack, CapabilityFluidHandler.FLUID_HANDLER_ITEM)
-            .getOrNull();
-        if (fluidHandler != null) {
-            IIngredientComponentStorage<FluidStack, Integer> itemStorage = getFluidStorage(
-                storage.getComponent(),
-                fluidHandler);
-            try {
-                IngredientStorageHelpers.moveIngredientsIterative(itemStorage, storage, Long.MAX_VALUE, false);
-            } catch (InconsistentIngredientInsertionException e) {
-                // Ignore
-            }
+        Container container, int containerSlot, InventoryPlayer playerInventory, int limit) {
+        Slot slot = container.getSlot(containerSlot);
+        if (slot.canTakeStack(playerInventory.player)) {
+            ItemStack toMoveStack = slot.getStack();
+            CapabilityHelpers.getCapability(toMoveStack, CapabilityFluidHandler.FLUID_HANDLER_ITEM)
+                .ifPresent(fluidHandler -> {
+                    IIngredientComponentStorage<FluidStack, Integer> itemStorage = getFluidStorage(
+                        storage.getComponent(),
+                        fluidHandler);
+                    try {
+                        IngredientStorageHelpers.moveIngredientsIterative(
+                            itemStorage,
+                            storage,
+                            limit == -1 ? Long.MAX_VALUE : limit,
+                            false);
+                    } catch (InconsistentIngredientInsertionException e) {
+                        // Ignore
+                    }
 
-            container.getSlot(containerSlot)
-                .putStack(fluidHandler.getContainer());
-            container.detectAndSendChanges();
+                    container.getSlot(containerSlot)
+                        .putStack(fluidHandler.getContainer());
+                    container.detectAndSendChanges();
+                });
         }
     }
 
@@ -296,6 +302,18 @@ public class IngredientComponentTerminalStorageHandlerFluidStack
                 return i -> false; // Fluids have no tooltip
             case DICT:
                 return i -> false; // There is no fluid dictionary
+            case TAG:
+                return i -> {
+                    if (i == null || i.getFluid() == null) return false;
+                    return TagHelpers.getTags(i)
+                        .stream()
+                        .map(
+                            tagKey -> tagKey.location()
+                                .toString())
+                        .anyMatch(
+                            tagName -> tagName != null && tagName.toLowerCase(Locale.ENGLISH)
+                                .contains(query.toLowerCase(Locale.ENGLISH)));
+                };
             case DEFAULT:
                 return i -> i != null && i.getLocalizedName()
                     .toLowerCase(Locale.ENGLISH)

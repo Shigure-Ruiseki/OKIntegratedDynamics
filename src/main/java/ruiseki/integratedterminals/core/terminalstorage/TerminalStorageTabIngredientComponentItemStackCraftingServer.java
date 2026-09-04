@@ -7,11 +7,10 @@ import net.minecraft.util.ResourceLocation;
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.IPositionedAddonsNetworkIngredients;
-import ruiseki.integrateddynamics.api.part.PartPos;
 
 /**
  * A server-side storage terminal ingredient tab for crafting with {@link ItemStack} instances.
- * 
+ *
  * @author rubensworks
  */
 public class TerminalStorageTabIngredientComponentItemStackCraftingServer
@@ -19,8 +18,8 @@ public class TerminalStorageTabIngredientComponentItemStackCraftingServer
 
     public TerminalStorageTabIngredientComponentItemStackCraftingServer(ResourceLocation name, INetwork network,
         IngredientComponent<ItemStack, Integer> ingredientComponent,
-        IPositionedAddonsNetworkIngredients<ItemStack, Integer> ingredientNetwork, PartPos pos, EntityPlayerMP player) {
-        super(name, network, ingredientComponent, ingredientNetwork, pos, player);
+        IPositionedAddonsNetworkIngredients<ItemStack, Integer> ingredientNetwork, EntityPlayerMP player) {
+        super(name, network, ingredientComponent, ingredientNetwork, player);
     }
 
     @Override

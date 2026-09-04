@@ -106,7 +106,7 @@ public interface INetwork extends IFullNetworkListener, INBTSerializable {
      *
      * @param capability The capability to get.
      * @param <T>        The capability type.
-     * @return The capability instance.
+     * @return The optional capability instance.
      */
     @NotNull
     public <T> LazyOptional<T> getCapability(@NotNull Capability<T> capability);

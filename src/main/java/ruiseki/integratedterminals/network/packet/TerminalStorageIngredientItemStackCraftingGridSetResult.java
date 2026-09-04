@@ -8,13 +8,13 @@ import net.minecraft.world.World;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.integratedterminals.core.terminalstorage.TerminalStorageTabIngredientComponentItemStackCraftingCommon;
-import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorage;
+import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorageBase;
 import ruiseki.okcore.network.CodecField;
 import ruiseki.okcore.network.PacketCodec;
 
 /**
  * Packet for telling the server that the crafting grid must be cleared.
- * 
+ *
  * @author rubensworks
  *
  */
@@ -42,8 +42,8 @@ public class TerminalStorageIngredientItemStackCraftingGridSetResult extends Pac
     @Override
     @SideOnly(Side.CLIENT)
     public void actionClient(World world, EntityPlayer player) {
-        if (player.openContainer instanceof ContainerTerminalStorage) {
-            ContainerTerminalStorage container = ((ContainerTerminalStorage) player.openContainer);
+        if (player.openContainer instanceof ContainerTerminalStorageBase) {
+            ContainerTerminalStorageBase container = ((ContainerTerminalStorageBase) player.openContainer);
             TerminalStorageTabIngredientComponentItemStackCraftingCommon tabCommon = (TerminalStorageTabIngredientComponentItemStackCraftingCommon) container
                 .getTabCommon(tabId);
             tabCommon.getSlotCrafting()

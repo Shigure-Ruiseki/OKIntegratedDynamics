@@ -20,11 +20,15 @@ import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.INetworkCraftingHandlerRegistry;
 import ruiseki.integrateddynamics.api.network.IPositionedAddonsNetworkIngredients;
 import ruiseki.integrateddynamics.api.part.PartPos;
+import ruiseki.integrateddynamics.api.part.aspect.IAspectWrite;
+import ruiseki.integrateddynamics.api.part.aspect.property.IAspectProperties;
+import ruiseki.integrateddynamics.core.part.write.PartStateWriterBase;
 import ruiseki.integratedtunnels.GeneralConfig;
 import ruiseki.integratedtunnels.IntegratedTunnels;
 import ruiseki.integratedtunnels.core.predicate.IngredientPredicate;
 import ruiseki.integratedtunnels.part.aspect.ITunnelConnection;
-import ruiseki.okcore.helper.ItemStackHelpers;
+import ruiseki.integratedtunnels.part.aspect.TunnelAspectWriteBuilders;
+import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.ingredient.storage.InconsistentIngredientInsertionException;
 import ruiseki.okcore.ingredient.storage.IngredientStorageHelpers;
@@ -34,9 +38,10 @@ import ruiseki.okcore.ingredient.storage.IngredientStorageHelpers;
  */
 public class TunnelHelpers {
 
-    private static final Cache<ITunnelConnection, Boolean> CACHE_INV_CHECKS = CacheBuilder.newBuilder()
+    private static final Cache<ITunnelConnection, Integer> CACHE_INV_CHECKS = CacheBuilder.newBuilder()
         .expireAfterWrite(
-            GeneralConfig.inventoryUnchangedTickTimeout * (1000 / MinecraftHelpers.SECOND_IN_TICKS),
+            (GeneralConfig.inventoryUnchangedTickCount + GeneralConfig.inventoryUnchangedTickTimeout)
+                * (1000 / MinecraftHelpers.SECOND_IN_TICKS),
             TimeUnit.MILLISECONDS)
         .build();
 
@@ -64,14 +69,22 @@ public class TunnelHelpers {
         try {
             try {
                 if (ingredientPredicate.hasMatchFlags()) {
-                    return IngredientStorageHelpers.moveIngredientsSlotted(
-                        source,
-                        sourceSlot,
-                        destination,
-                        destinationSlot,
-                        ingredientPredicate.getInstance(),
-                        ingredientPredicate.getMatchFlags(),
-                        simulate);
+                    IIngredientMatcher<T, M> matcher = ingredientPredicate.getIngredientComponent()
+                        .getMatcher();
+                    for (T instance : ingredientPredicate.getInstances()) {
+                        T movedInstance = IngredientStorageHelpers.moveIngredientsSlotted(
+                            source,
+                            sourceSlot,
+                            destination,
+                            destinationSlot,
+                            instance,
+                            ingredientPredicate.getMatchFlags(),
+                            simulate);
+                        if (!matcher.isEmpty(movedInstance)) {
+                            return movedInstance;
+                        }
+                    }
+                    return matcher.getEmptyInstance();
                 } else {
                     return IngredientStorageHelpers.moveIngredientsSlotted(
                         source,
@@ -88,7 +101,7 @@ public class TunnelHelpers {
                 // If we are moving items, emit them in the world, otherwise they go lost.
                 if (GeneralConfig.ejectItemsOnInconsistentSimulationMovement && e.getIngredientComponent()
                     .equals(IngredientComponent.ITEMSTACK)) {
-                    ItemStackHelpers.spawnItemStack(
+                    ItemHelpers.spawnItemStack(
                         movementPosition.getPos()
                             .getWorld(),
                         movementPosition.getPos()
@@ -147,13 +160,12 @@ public class TunnelHelpers {
             .getMatcher();
 
         // Don't craft if we still have a running crafting job for the instance.
-        if (craftIfFailed && isCrafting(
-            network,
-            ingredientsNetwork,
-            channel,
-            ingredientPredicate.getInstance(),
-            ingredientPredicate.getMatchFlags())) {
-            return matcher.getEmptyInstance();
+        if (craftIfFailed) {
+            for (T instance : ingredientPredicate.getInstances()) {
+                if (isCrafting(network, ingredientsNetwork, channel, instance, ingredientPredicate.getMatchFlags())) {
+                    return matcher.getEmptyInstance();
+                }
+            }
         }
 
         // Don't do any expensive transfers if the to-be-moved stack is empty
@@ -162,7 +174,8 @@ public class TunnelHelpers {
         }
 
         // Don't do anything if we are sleeping for this connection
-        if (CACHE_INV_CHECKS.getIfPresent(connection) != null) {
+        Integer sleepCheck = CACHE_INV_CHECKS.getIfPresent(connection);
+        if (sleepCheck != null && sleepCheck >= GeneralConfig.inventoryUnchangedTickCount) {
             return matcher.getEmptyInstance();
         }
 
@@ -177,7 +190,9 @@ public class TunnelHelpers {
             false);
         if (matcher.isEmpty(moved)) {
             // Mark this connection as 'sleeping' if nothing was moved
-            CACHE_INV_CHECKS.put(connection, true);
+            CACHE_INV_CHECKS.put(connection, sleepCheck == null ? 1 : sleepCheck + 1);
+        } else if (sleepCheck != null) {
+            CACHE_INV_CHECKS.invalidate(connection);
         }
 
         // Schedule a new observation for the network, as its contents may have changed
@@ -185,40 +200,43 @@ public class TunnelHelpers {
 
         // Craft if we moved nothing, and the flag is enabled.
         if (craftIfFailed && matcher.isEmpty(moved)) {
-            // If we don't have to move exact instances,
-            // only request the crafting of 1.
-            T craftInstance = ingredientPredicate.getInstance();
-            if (!ingredientPredicate.isExactQuantity()) {
-                craftInstance = matcher.withQuantity(craftInstance, 1);
-            }
+            for (T instance : ingredientPredicate.getInstances()) {
+                // If we don't have to move exact instances,
+                // only request the crafting of 1.
+                T craftInstance = instance;
+                if (!ingredientPredicate.isExactQuantity()) {
+                    craftInstance = matcher.withQuantity(craftInstance, 1);
+                }
 
-            // Don't allow crafting jobs to be started if we detect a case where movement failed,
-            // but the required ingredient is in fact present in the network.
-            // This is to avoid cases where crafting jobs would be started before a previous movement was observed,
-            // and the crafting job output thereby not being detected upon the next observement.
-            IIngredientPositionsIndex<T, M> index = ingredientsNetwork.getChannelIndex(channel);
-            if (index.getQuantity(ingredientPredicate.getInstance()) >= matcher.getQuantity(craftInstance)) {
-                return moved;
-            }
+                // Don't allow crafting jobs to be started if we detect a case where movement failed,
+                // but the required ingredient is in fact present in the network.
+                // This is to avoid cases where crafting jobs would be started before a previous movement was observed,
+                // and the crafting job output thereby not being detected upon the next observement.
+                IIngredientPositionsIndex<T, M> index = ingredientsNetwork.getChannelIndex(channel);
+                if (index.getQuantity(instance) >= matcher.getQuantity(craftInstance)) {
+                    return moved;
+                }
 
-            // Only craft if the target accepts the crafting output completely
-            boolean targetAcceptsCraftingResult;
-            if (destinationSlot >= 0) {
-                targetAcceptsCraftingResult = destination instanceof IIngredientComponentStorageSlotted
-                    && matcher.isEmpty(
-                        ((IIngredientComponentStorageSlotted<T, M>) destination)
-                            .insert(destinationSlot, craftInstance, true));
-            } else {
-                targetAcceptsCraftingResult = matcher.isEmpty(destination.insert(craftInstance, true));
-            }
+                // Only craft if the target accepts the crafting output completely
+                boolean targetAcceptsCraftingResult;
+                if (destinationSlot >= 0) {
+                    targetAcceptsCraftingResult = destination instanceof IIngredientComponentStorageSlotted
+                        && matcher.isEmpty(
+                            ((IIngredientComponentStorageSlotted<T, M>) destination)
+                                .insert(destinationSlot, craftInstance, true));
+                } else {
+                    targetAcceptsCraftingResult = matcher.isEmpty(destination.insert(craftInstance, true));
+                }
 
-            if (targetAcceptsCraftingResult) {
-                requestCrafting(
-                    network,
-                    ingredientsNetwork,
-                    channel,
-                    craftInstance,
-                    ingredientPredicate.getMatchFlags());
+                if (targetAcceptsCraftingResult) {
+                    requestCrafting(
+                        network,
+                        ingredientsNetwork,
+                        channel,
+                        craftInstance,
+                        ingredientPredicate.getMatchFlags());
+                    break;
+                }
             }
         }
 
@@ -274,5 +292,25 @@ public class TunnelHelpers {
                 ingredientsNetwork.getComponent(),
                 instance,
                 matchCondition);
+    }
+
+    /**
+     * Determine the channel for passive interaction of a part.
+     * This prefers the active aspect's channel property, and falls back to the part's energy channel.
+     *
+     * @param partStateBase The part's state.
+     * @return The channel.
+     */
+    public static int getPassiveInteractionChannel(PartStateWriterBase<?> partStateBase) {
+        int channel = partStateBase.getChannel();
+        IAspectWrite aspect = partStateBase.getActiveAspect();
+        if (aspect != null) {
+            IAspectProperties properties = partStateBase.getAspectProperties(aspect);
+            if (properties != null) {
+                channel = properties.getValue(TunnelAspectWriteBuilders.PROP_CHANNEL)
+                    .getRawValue();
+            }
+        }
+        return channel;
     }
 }

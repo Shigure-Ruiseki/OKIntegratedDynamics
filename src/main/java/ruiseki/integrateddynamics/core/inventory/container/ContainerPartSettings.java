@@ -67,7 +67,7 @@ public class ContainerPartSettings extends ExtendedInventoryContainer {
         this.partType = partType;
         this.world = player.getEntityWorld();
         ChunkCoordinates coordinates = player.getPlayerCoordinates();
-        this.pos = new BlockPos(coordinates.posX, coordinates.posY, coordinates.posZ);
+        this.pos = new BlockPos(coordinates);
 
         addPlayerInventory(player.inventory, 27, getPlayerInventoryOffsetY());
 
@@ -160,7 +160,7 @@ public class ContainerPartSettings extends ExtendedInventoryContainer {
                 getPartType().setUpdateInterval(getPartState(), getLastUpdateValue());
                 DimPos dimPos = getTarget().getCenter()
                     .getPos();
-                INetwork network = NetworkHelpers.getNetwork(
+                INetwork network = NetworkHelpers.getNetworkChecked(
                     dimPos.getWorld(),
                     dimPos.getBlockPos(),
                     getTarget().getCenter()
@@ -168,10 +168,7 @@ public class ContainerPartSettings extends ExtendedInventoryContainer {
 
                 PartTarget target = getTarget();
                 updatePartSettings();
-                if (getPartState().getTargetSideOverride() != null) {
-                    target = target.forTargetSide(getPartState().getTargetSideOverride());
-                }
-                PartNetworkElement networkElement = new PartNetworkElement(getPartType(), target);
+                PartNetworkElement networkElement = new PartNetworkElement<>(getPartType(), target.getCenter());
                 network.setPriorityAndChannel(networkElement, getLastPriorityValue(), getLastChannelValue());
             }
         } catch (PartStateException e) {

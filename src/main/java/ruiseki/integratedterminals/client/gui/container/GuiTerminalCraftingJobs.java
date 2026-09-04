@@ -9,7 +9,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.ResourceLocation;
 
 import ruiseki.commoncapabilities.api.ingredient.IPrototypedIngredient;
@@ -20,10 +19,11 @@ import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integratedterminals.IntegratedTerminals;
 import ruiseki.integratedterminals.Reference;
-import ruiseki.integratedterminals.api.terminalstorage.crafting.ITerminalCraftingPlan;
+import ruiseki.integratedterminals.api.terminalstorage.crafting.ITerminalCraftingPlanFlat;
 import ruiseki.integratedterminals.capability.ingredient.IngredientComponentTerminalStorageHandlerConfig;
 import ruiseki.integratedterminals.client.gui.container.component.GuiCraftingPlan;
 import ruiseki.integratedterminals.core.client.gui.CraftingJobGuiData;
+import ruiseki.integratedterminals.core.client.gui.GuiTerminalStorage;
 import ruiseki.integratedterminals.core.terminalstorage.crafting.HandlerWrappedTerminalCraftingPlan;
 import ruiseki.integratedterminals.inventory.container.ContainerTerminalCraftingJobs;
 import ruiseki.integratedterminals.network.packet.CancelCraftingJobPacket;
@@ -75,8 +75,7 @@ public class GuiTerminalCraftingJobs extends GuiContainerExtended {
                 guiTop + 198,
                 120,
                 20,
-                EnumChatFormatting.BOLD
-                    + LangHelpers.localize("gui.integratedterminals.terminal_crafting_job.craftingplan.cancel_all"),
+                LangHelpers.localize("gui.integratedterminals.terminal_crafting_job.craftingplan.cancel_all"),
                 true));
     }
 
@@ -152,7 +151,7 @@ public class GuiTerminalCraftingJobs extends GuiContainerExtended {
     protected void drawCraftingPlan(HandlerWrappedTerminalCraftingPlan craftingPlan, int x, int y,
         GuiTerminalStorage.DrawLayer layer, float partialTick, int mouseX, int mouseY) {
         int xOriginal = x;
-        ITerminalCraftingPlan<?> plan = craftingPlan.getCraftingPlan();
+        ITerminalCraftingPlanFlat<?> plan = craftingPlan.getCraftingPlanFlat();
 
         // Draw background color if hovering
         if (layer == GuiTerminalStorage.DrawLayer.BACKGROUND && RenderHelpers
@@ -200,7 +199,8 @@ public class GuiTerminalCraftingJobs extends GuiContainerExtended {
                 16777215,
                 true);
 
-            int dependencies = getDependencies(plan);
+            int dependencies = plan.getEntries()
+                .size();
             String dependenciesString = LangHelpers
                 .localize("gui.integratedterminals.terminal_crafting_job.craftingplan.dependencies", dependencies);
             RenderHelpers.drawScaledString(
@@ -241,14 +241,6 @@ public class GuiTerminalCraftingJobs extends GuiContainerExtended {
         }
     }
 
-    protected static int getDependencies(ITerminalCraftingPlan<?> plan) {
-        int count = 1;
-        for (ITerminalCraftingPlan<?> dependency : plan.getDependencies()) {
-            count += getDependencies(dependency);
-        }
-        return count;
-    }
-
     @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
         super.drawScreen(mouseX, mouseY, partialTicks);
@@ -285,7 +277,7 @@ public class GuiTerminalCraftingJobs extends GuiContainerExtended {
                 center.getSide(),
                 getContainer().getChannel(),
                 craftingJob.getHandler(),
-                craftingJob.getCraftingPlan()
+                craftingJob.getCraftingPlanFlat()
                     .getId());
             IntegratedTerminals._instance.getPacketHandler()
                 .sendToServer(new CancelCraftingJobPacket(data));
@@ -308,7 +300,7 @@ public class GuiTerminalCraftingJobs extends GuiContainerExtended {
         if (mouseX > OUTPUT_SLOT_X && mouseX < OUTPUT_SLOT_X + LINE_WIDTH
             && mouseY > OUTPUT_SLOT_Y
             && mouseY < OUTPUT_SLOT_Y + GuiHelpers.SLOT_SIZE * scrollBar.getVisibleRows()) {
-            int index = (mouseY - OUTPUT_SLOT_Y) / GuiHelpers.SLOT_SIZE;
+            int index = (((int) mouseY) - OUTPUT_SLOT_Y) / GuiHelpers.SLOT_SIZE;
             List<HandlerWrappedTerminalCraftingPlan> plans = getVisiblePlans();
             if (index >= 0 && index < plans.size()) {
                 return plans.get(index);
@@ -319,7 +311,6 @@ public class GuiTerminalCraftingJobs extends GuiContainerExtended {
 
     @Override
     protected void mouseClicked(int mouseX, int mouseY, int mouseButton) {
-        super.mouseClicked(mouseX, mouseY, mouseButton);
         HandlerWrappedTerminalCraftingPlan plan = getHoveredPlan(mouseX, mouseY);
         if (plan != null) {
             PartPos pos = getContainer().getTarget()
@@ -331,6 +322,7 @@ public class GuiTerminalCraftingJobs extends GuiContainerExtended {
                 getContainer().getChannel(),
                 plan);
         }
+        super.mouseClicked(mouseX, mouseY, mouseButton);
     }
 
     public void setFirstRow(int firstRow) {

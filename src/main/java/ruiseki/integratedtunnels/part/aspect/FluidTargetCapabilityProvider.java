@@ -7,6 +7,7 @@ import org.jetbrains.annotations.Nullable;
 
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
 import ruiseki.commoncapabilities.api.ingredient.storage.IIngredientComponentStorage;
+import ruiseki.commoncapabilities.api.ingredient.storage.IIngredientComponentStorageSlotted;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.api.part.aspect.property.IAspectProperties;
@@ -43,6 +44,8 @@ public class FluidTargetCapabilityProvider extends ChanneledTargetCapabilityProv
             properties.getValue(TunnelAspectWriteBuilders.PROP_ROUNDROBIN)
                 .getRawValue(),
             properties.getValue(TunnelAspectWriteBuilders.PROP_CRAFT)
+                .getRawValue(),
+            properties.getValue(TunnelAspectWriteBuilders.PROP_PASSIVE_IO)
                 .getRawValue());
         this.connection = new TunnelConnectionPositionedNetworkCapabilityProvider(
             network,
@@ -63,6 +66,11 @@ public class FluidTargetCapabilityProvider extends ChanneledTargetCapabilityProv
     @Override
     public IIngredientComponentStorage<FluidStack, Integer> getFluidChannel() {
         return getChanneledNetwork().getChannel(getChannel());
+    }
+
+    @Override
+    public IIngredientComponentStorageSlotted<FluidStack, Integer> getFluidChannelSlotted() {
+        return getChanneledNetwork().getChannelSlotted(getChannel());
     }
 
     @Override

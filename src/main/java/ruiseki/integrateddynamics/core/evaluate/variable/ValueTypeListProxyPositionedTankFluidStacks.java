@@ -1,12 +1,14 @@
 package ruiseki.integrateddynamics.core.evaluate.variable;
 
 import net.minecraftforge.common.util.ForgeDirection;
+import net.minecraftforge.fluids.FluidStack;
 
 import ruiseki.okcore.datastructure.DimPos;
+import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
 import ruiseki.okcore.fluid.handler.IFluidHandler;
-import ruiseki.okcore.fluid.handler.IFluidTankProperties;
 import ruiseki.okcore.helper.CapabilityHelpers;
+import ruiseki.okcore.helper.FluidHelpers;
 import ruiseki.okcore.persist.nbt.INBTProvider;
 
 /**
@@ -28,27 +30,25 @@ public class ValueTypeListProxyPositionedTankFluidStacks
         this(null, null);
     }
 
-    protected IFluidHandler getTank() {
-        return CapabilityHelpers
-            .getCapability(getPos().getWorld(), getPos().getBlockPos(), CapabilityFluidHandler.FLUID_HANDLER, getSide())
-            .getOrNull();
+    protected LazyOptional<IFluidHandler> getTank() {
+        return CapabilityHelpers.getCapability(getPos(), CapabilityFluidHandler.FLUID_HANDLER, getSide());
     }
 
     @Override
     public int getLength() {
-        IFluidHandler tank = getTank();
-        if (tank == null) {
-            return 0;
-        }
-        IFluidTankProperties[] tanks = tank.getTankProperties();
-        if (tanks == null) {
-            return 0;
-        }
-        return tanks.length;
+        return getTank().map(fluidHandler -> fluidHandler.getTankProperties().length)
+            .orElse(0);
     }
 
     @Override
     public ValueObjectTypeFluidStack.ValueFluidStack get(int index) {
-        return ValueObjectTypeFluidStack.ValueFluidStack.of(getTank().getTankProperties()[index].getContents());
+        FluidStack result = getTank().map(fluidHandler -> {
+            FluidStack stack = fluidHandler.getTankProperties()[index].getContents();
+            FluidStack copy = FluidHelpers.copy(stack);
+            return copy != null ? copy : FluidHelpers.EMPTY;
+        })
+            .orElse(FluidHelpers.EMPTY);
+
+        return ValueObjectTypeFluidStack.ValueFluidStack.of(result);
     }
 }

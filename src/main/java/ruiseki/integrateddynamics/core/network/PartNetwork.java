@@ -69,14 +69,14 @@ public class PartNetwork extends FullNetworkListenerAdapter implements IPartNetw
     @Override
     public IPartState getPartState(int partId) {
         PartPos partPos = partPositions.get(partId);
-        return PartHelpers.getPartContainer(partPos.getPos(), partPos.getSide())
+        return PartHelpers.getPartContainerChecked(partPos.getPos(), partPos.getSide())
             .getPartState(partPos.getSide());
     }
 
     @Override
     public IPartType getPartType(int partId) {
         PartPos partPos = partPositions.get(partId);
-        return PartHelpers.getPartContainer(partPos.getPos(), partPos.getSide())
+        return PartHelpers.getPartContainerChecked(partPos.getPos(), partPos.getSide())
             .getPart(partPos.getSide());
     }
 
@@ -92,8 +92,9 @@ public class PartNetwork extends FullNetworkListenerAdapter implements IPartNetw
             return false;
         }
         PartPos partPos = partPositions.get(partId);
-        IPartContainer partContainer = PartHelpers.getPartContainer(partPos.getPos(), partPos.getSide());
-        return partContainer != null && partContainer.hasPart(partPos.getSide());
+        return PartHelpers.getPartContainer(partPos.getPos(), partPos.getSide())
+            .map(partContainer -> partContainer.hasPart(partPos.getSide()))
+            .orElse(false);
     }
 
     @Override
@@ -147,13 +148,10 @@ public class PartNetwork extends FullNetworkListenerAdapter implements IPartNetw
             for (PartPos partPos : partPositions.values()) {
                 if (partPos.getPos()
                     .isLoaded()) {
-                    IPartContainer partContainer = PartHelpers.getPartContainer(partPos.getPos(), partPos.getSide());
-                    IVariableContainer variableContainer = partContainer
-                        .getCapability(VariableContainerConfig.CAPABILITY, partPos.getSide())
-                        .getOrNull();
-                    if (variableContainer != null) {
-                        compositeMap.addElement(variableContainer.getVariableCache());
-                    }
+                    IPartContainer partContainer = PartHelpers
+                        .getPartContainerChecked(partPos.getPos(), partPos.getSide());
+                    partContainer.getCapability(VariableContainerConfig.CAPABILITY, partPos.getSide())
+                        .ifPresent(variableContainer -> compositeMap.addElement(variableContainer.getVariableCache()));
                 }
             }
             compositeVariableCache = compositeMap;

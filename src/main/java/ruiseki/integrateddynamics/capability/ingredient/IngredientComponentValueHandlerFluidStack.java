@@ -38,8 +38,7 @@ public class IngredientComponentValueHandlerFluidStack implements
     @Override
     @Nullable
     public FluidStack toInstance(ValueObjectTypeFluidStack.ValueFluidStack value) {
-        return value.getRawValue()
-            .orElse(null);
+        return value.getRawValue();
     }
 
 }

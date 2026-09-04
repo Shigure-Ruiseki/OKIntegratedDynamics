@@ -19,12 +19,12 @@ import ruiseki.commoncapabilities.ingredient.storage.IngredientComponentStorageW
 import ruiseki.integratedterminals.core.terminalstorage.TerminalStorageTabIngredientComponentItemStackCraftingCommon;
 import ruiseki.integratedterminals.core.terminalstorage.TerminalStorageTabIngredientComponentServer;
 import ruiseki.integratedterminals.core.terminalstorage.button.TerminalButtonItemStackCraftingGridAutoRefill;
-import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorage;
+import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorageBase;
 import ruiseki.okcore.item.capability.wrapper.PlayerInvWrapper;
 
 /**
  * A crafting slot that will automatically auto-refill from the storage (if enabled).
- * 
+ *
  * @author rubensworks
  */
 public class SlotCraftingAutoRefill extends SlotCrafting {
@@ -32,12 +32,13 @@ public class SlotCraftingAutoRefill extends SlotCrafting {
     private final InventoryCrafting inventoryCrafting;
     private final TerminalStorageTabIngredientComponentItemStackCraftingCommon tabCommon;
     private final TerminalStorageTabIngredientComponentServer<ItemStack, Integer> tabServer;
-    private final ContainerTerminalStorage container;
+    private final ContainerTerminalStorageBase container;
 
     public SlotCraftingAutoRefill(EntityPlayer player, InventoryCrafting inventoryCrafting, IInventory inventoryIn,
         int slotIndex, int xPosition, int yPosition,
         TerminalStorageTabIngredientComponentItemStackCraftingCommon tabCommon,
-        TerminalStorageTabIngredientComponentServer<ItemStack, Integer> tabServer, ContainerTerminalStorage container) {
+        TerminalStorageTabIngredientComponentServer<ItemStack, Integer> tabServer,
+        ContainerTerminalStorageBase container) {
         super(player, inventoryCrafting, inventoryIn, slotIndex, xPosition, yPosition);
         this.inventoryCrafting = inventoryCrafting;
         this.tabCommon = tabCommon;

@@ -3,7 +3,6 @@ package ruiseki.integrateddynamics.core.item;
 import java.util.List;
 
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
@@ -21,16 +20,15 @@ import ruiseki.integrateddynamics.api.block.cable.ICableFakeable;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartState;
 import ruiseki.integrateddynamics.api.part.IPartType;
-import ruiseki.integrateddynamics.block.BlockCable;
+import ruiseki.integrateddynamics.api.part.PartPos;
+import ruiseki.integrateddynamics.block.BlockCableConfig;
 import ruiseki.integrateddynamics.core.helper.CableHelpers;
-import ruiseki.integrateddynamics.core.helper.L10NValues;
+import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
 import ruiseki.integrateddynamics.core.helper.PartHelpers;
 import ruiseki.integrateddynamics.item.ItemBlockCable;
-import ruiseki.okcore.config.configurable.ConfigurableItem;
-import ruiseki.okcore.config.extendedconfig.ItemConfig;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.helper.LangHelpers;
-import ruiseki.okcore.helper.MinecraftHelpers;
+import ruiseki.okcore.item.ItemBase;
 
 /**
  * An item that can place parts.
@@ -39,7 +37,7 @@ import ruiseki.okcore.helper.MinecraftHelpers;
  */
 @EqualsAndHashCode(callSuper = false)
 @Data
-public class ItemPart<P extends IPartType<P, S>, S extends IPartState<P>> extends ConfigurableItem {
+public class ItemPart<P extends IPartType<P, S>, S extends IPartState<P>> extends ItemBase {
 
     private static final List<IUseAction> USE_ACTIONS = Lists.newArrayList();
 
@@ -48,11 +46,10 @@ public class ItemPart<P extends IPartType<P, S>, S extends IPartState<P>> extend
     /**
      * Make a new item instance.
      *
-     * @param eConfig Config for this blockState.
-     * @param part    The part this item will place.
+     * @param part The part this item will place.
      */
-    public ItemPart(ItemConfig eConfig, IPartType<P, S> part) {
-        super(eConfig);
+    public ItemPart(IPartType<P, S> part) {
+        super();
         this.part = part;
     }
 
@@ -85,8 +82,9 @@ public class ItemPart<P extends IPartType<P, S>, S extends IPartState<P>> extend
         float hitX, float hitY, float hitZ) {
         BlockPos pos = new BlockPos(x, y, z);
         ForgeDirection side = ForgeDirection.getOrientation(sideInt);
-        IPartContainer partContainerFirst = PartHelpers.getPartContainer(world, pos, side);
-        if (partContainerFirst != null) {
+        IPartContainer partContainerFirst = PartHelpers.getPartContainer(world, pos, side)
+            .getOrNull();
+        if (partContainerFirst != null && !partContainerFirst.hasPart(side)) {
             // Add part to existing cable
             if (PartHelpers.addPart(world, pos, side, getPart(), itemStack)) {
                 if (world.isRemote) {
@@ -103,7 +101,7 @@ public class ItemPart<P extends IPartType<P, S>, S extends IPartState<P>> extend
             ForgeDirection targetSide = side.getOpposite();
             if (target.getBlock(world)
                 .isReplaceable(world, target.getX(), target.getY(), target.getZ())) {
-                ItemBlockCable itemBlockCable = (ItemBlockCable) Item.getItemFromBlock(BlockCable.getInstance());
+                ItemBlockCable itemBlockCable = (ItemBlockCable) BlockCableConfig._instance.getItemInstance();
                 itemStack.stackSize++; // Temporarily grow, because ItemBlock will shrink it.
                 if (itemBlockCable.onItemUse(
                     itemStack,
@@ -118,9 +116,11 @@ public class ItemPart<P extends IPartType<P, S>, S extends IPartState<P>> extend
                     hitX,
                     hitY,
                     hitZ)) {
-                    IPartContainer partContainer = PartHelpers.getPartContainer(world, target, targetSide);
+                    IPartContainer partContainer = PartHelpers.getPartContainer(world, target, targetSide)
+                        .getOrNull();
                     if (partContainer != null) {
-                        ICableFakeable cableFakeable = CableHelpers.getCableFakeable(world, target, targetSide);
+                        ICableFakeable cableFakeable = CableHelpers.getCableFakeable(world, target, targetSide)
+                            .getOrNull();
                         if (!world.isRemote) {
                             PartHelpers.addPart(world, target, side.getOpposite(), getPart(), itemStack);
                             if (cableFakeable != null) {
@@ -143,8 +143,18 @@ public class ItemPart<P extends IPartType<P, S>, S extends IPartState<P>> extend
                 }
                 itemStack.stackSize--; // Shrink manually if failed
             } else {
-                IPartContainer partContainer = PartHelpers.getPartContainer(world, target, targetSide);
+                IPartContainer partContainer = PartHelpers.getPartContainer(world, target, targetSide)
+                    .getOrNull();
                 if (partContainer != null) {
+                    // Edge-case: if the pos was a full network block (part of the same network as target), make sure
+                    // that we disconnect this part of the network first
+                    if (!world.isRemote && NetworkHelpers.getNetwork(PartPos.of(world, pos, side))
+                        .isPresent() && partContainer.canAddPart(targetSide, getPart())) {
+                        CableHelpers.getCable(world, target, targetSide)
+                            .ifPresent(
+                                cable -> CableHelpers.disconnectCable(world, target, targetSide, cable, targetSide));
+                    }
+
                     // Add part to existing cable
                     if (PartHelpers.addPart(world, target, side.getOpposite(), getPart(), itemStack)) {
                         if (world.isRemote) {
@@ -172,12 +182,6 @@ public class ItemPart<P extends IPartType<P, S>, S extends IPartState<P>> extend
     @SideOnly(Side.CLIENT)
     @Override
     public void addInformation(ItemStack itemStack, EntityPlayer entityPlayer, List list, boolean par4) {
-        if (itemStack.getTagCompound() != null && itemStack.getTagCompound()
-            .hasKey("id", MinecraftHelpers.NBTTag_Types.NBTTagInt.ordinal())) {
-            int id = itemStack.getTagCompound()
-                .getInteger("id");
-            list.add(LangHelpers.localize(L10NValues.GENERAL_ITEM_ID, id));
-        }
         getPart().loadTooltip(itemStack, list);
         LangHelpers.addOptionalInfo(list, getPart().getUnlocalizedNameBase());
         super.addInformation(itemStack, entityPlayer, list, par4);

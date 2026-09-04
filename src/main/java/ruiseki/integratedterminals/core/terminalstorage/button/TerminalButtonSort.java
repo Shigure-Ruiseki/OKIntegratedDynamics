@@ -32,6 +32,7 @@ public class TerminalButtonSort<T> implements
     private final IIngredientInstanceSorter<T> instanceSorter;
     private final TerminalStorageState state;
     private final String buttonName;
+    private final ITerminalStorageTabClient<?> clientTab;
 
     private Comparator<T> effectiveSorter;
     private boolean active;
@@ -42,17 +43,25 @@ public class TerminalButtonSort<T> implements
         this.instanceSorter = instanceSorter;
         this.state = state;
         this.buttonName = "sort_" + instanceSorter.getTranslationKey();
+        this.clientTab = clientTab;
 
-        if (state.hasButton(
-            clientTab.getName()
-                .toString(),
-            this.buttonName)) {
-            NBTTagCompound data = (NBTTagCompound) state.getButton(
-                clientTab.getName()
-                    .toString(),
-                this.buttonName);
-            this.active = data.getBoolean("active");
-            this.descending = data.getBoolean("descending");
+        reloadFromState();
+    }
+
+    @Override
+    public void reloadFromState() {
+        String tabName = clientTab.getTabSettingsName()
+            .toString();
+
+        if (state.hasButton(tabName, this.buttonName)) {
+            NBTTagCompound data = (NBTTagCompound) state.getButton(tabName, this.buttonName);
+            if (data != null) {
+                this.active = data.getBoolean("active");
+                this.descending = data.getBoolean("descending");
+            } else {
+                this.active = false;
+                this.descending = true;
+            }
         } else {
             this.active = false;
             this.descending = true;
@@ -90,7 +99,7 @@ public class TerminalButtonSort<T> implements
         data.setBoolean("active", active);
         data.setBoolean("descending", descending);
         state.setButton(
-            clientTab.getName()
+            clientTab.getTabSettingsName()
                 .toString(),
             this.buttonName,
             data);

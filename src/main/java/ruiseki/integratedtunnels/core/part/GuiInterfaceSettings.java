@@ -8,10 +8,14 @@ import net.minecraft.util.ResourceLocation;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartTarget;
+import ruiseki.integrateddynamics.client.gui.image.Images;
+import ruiseki.integrateddynamics.core.client.gui.container.GuiMultipartAspects;
 import ruiseki.integrateddynamics.core.client.gui.container.GuiPartSettings;
 import ruiseki.integratedtunnels.IntegratedTunnels;
 import ruiseki.integratedtunnels.Reference;
+import ruiseki.okcore.client.gui.component.button.GuiButtonImage;
 import ruiseki.okcore.client.gui.component.input.GuiNumberField;
+import ruiseki.okcore.client.gui.image.IImage;
 import ruiseki.okcore.helper.Helpers;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.ValueNotifierHelpers;
@@ -32,6 +36,12 @@ public class GuiInterfaceSettings extends GuiPartSettings {
             target,
             partContainer,
             partType);
+        putButtonAction(GuiMultipartAspects.BUTTON_OFFSETS, (buttonId, gui, container) -> onSave());
+    }
+
+    @Override
+    protected ContainerInterfaceSettings getContainer() {
+        return (ContainerInterfaceSettings) super.getContainer();
     }
 
     protected ResourceLocation constructResourceLocation() {
@@ -49,10 +59,8 @@ public class GuiInterfaceSettings extends GuiPartSettings {
         super.onSave();
         try {
             int channelInterface = numberFieldChannelInterface.getInt();
-            ValueNotifierHelpers.setValue(
-                getContainer(),
-                ((ContainerInterfaceSettings) getContainer()).getLastChannelInterfaceValueId(),
-                channelInterface);
+            ValueNotifierHelpers
+                .setValue(getContainer(), getContainer().getLastChannelInterfaceValueId(), channelInterface);
         } catch (NumberFormatException e) {}
     }
 
@@ -76,6 +84,29 @@ public class GuiInterfaceSettings extends GuiPartSettings {
         numberFieldChannelInterface.setCanLoseFocus(true);
 
         this.refreshValues();
+
+        if (getContainer().getPartType()
+            .supportsOffsets()) {
+            buttonList.add(
+                new GuiButtonImage(
+                    GuiMultipartAspects.BUTTON_OFFSETS,
+                    this.guiLeft - 20,
+                    this.guiTop + 10,
+                    18,
+                    18,
+                    new IImage[] { Images.BUTTON_BACKGROUND_INACTIVE, Images.BUTTON_MIDDLE_OFFSET },
+                    0,
+                    0,
+                    false));
+        }
+    }
+
+    @Override
+    public void onGuiClosed() {
+        // Auto-save the settings when the gui is closed,
+        // so that the save button becomes optional.
+        onSave();
+        super.onGuiClosed();
     }
 
     @Override
@@ -115,9 +146,8 @@ public class GuiInterfaceSettings extends GuiPartSettings {
     @Override
     public void onUpdate(int valueId, NBTTagCompound value) {
         super.onUpdate(valueId, value);
-        if (valueId == ((ContainerInterfaceSettings) getContainer()).getLastChannelInterfaceValueId()) {
-            numberFieldChannelInterface.setText(
-                Integer.toString(((ContainerInterfaceSettings) getContainer()).getLastChannelInterfaceValue()));
+        if (valueId == getContainer().getLastChannelInterfaceValueId()) {
+            numberFieldChannelInterface.setText(Integer.toString(getContainer().getLastChannelInterfaceValue()));
         }
     }
 }

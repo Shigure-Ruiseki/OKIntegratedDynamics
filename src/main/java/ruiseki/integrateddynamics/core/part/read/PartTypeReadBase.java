@@ -11,6 +11,7 @@ import net.minecraft.world.IBlockAccess;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector3i;
 
 import com.google.common.collect.Sets;
 
@@ -20,6 +21,7 @@ import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
+import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.integrateddynamics.api.part.PartRenderPosition;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.api.part.aspect.AspectUpdateType;
@@ -87,6 +89,15 @@ public abstract class PartTypeReadBase<P extends IPartTypeReader<P, S>, S extend
         for (IAspect aspect : getUpdateAspects(AspectUpdateType.NETWORK_TICK)) {
             aspect.update(network, partNetwork, this, target, state);
         }
+
+        // Special case: if we have an offset, also update block-update-based aspects, because we can't rely on just
+        // block updates.
+        if (!this.getTargetOffset(state)
+            .equals(new Vector3i(0, 0, 0))) {
+            for (IAspect aspect : getUpdateAspects(AspectUpdateType.BLOCK_UPDATE)) {
+                aspect.update(network, partNetwork, this, target, state);
+            }
+        }
     }
 
     @Override
@@ -118,10 +129,20 @@ public abstract class PartTypeReadBase<P extends IPartTypeReader<P, S>, S extend
                         aspect.getUnlocalizedName(),
                         this));
             }
-            variable = aspect.createNewVariable(target);
+            variable = aspect.createNewVariable(() -> getTarget(target.getCenter(), partState));
             partState.setVariable(aspect, variable);
         }
         return variable;
+    }
+
+    @Override
+    public boolean setTargetOffset(S state, PartPos center, Vector3i offset) {
+        Vector3i lastOffset = getTargetOffset(state);
+        boolean ret = super.setTargetOffset(state, center, offset);
+        if (!lastOffset.equals(offset)) {
+            state.resetVariables();
+        }
+        return ret;
     }
 
     @Override

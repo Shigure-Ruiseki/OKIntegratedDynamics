@@ -1,10 +1,13 @@
 package ruiseki.integratedterminals.core.terminalstorage;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -12,6 +15,7 @@ import net.minecraft.inventory.Container;
 import net.minecraft.network.play.server.S2FPacketSetSlot;
 import net.minecraft.util.ResourceLocation;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.Nullable;
 
 import com.google.common.base.Predicate;
@@ -32,8 +36,8 @@ import ruiseki.integrateddynamics.api.evaluate.variable.IVariable;
 import ruiseki.integrateddynamics.api.ingredient.IIngredientComponentStorageObservable;
 import ruiseki.integrateddynamics.api.ingredient.IIngredientPositionsIndex;
 import ruiseki.integrateddynamics.api.network.INetwork;
+import ruiseki.integrateddynamics.api.network.IPositionedAddonsNetwork;
 import ruiseki.integrateddynamics.api.network.IPositionedAddonsNetworkIngredients;
-import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.integrateddynamics.capability.ingredient.IIngredientComponentValueHandler;
 import ruiseki.integrateddynamics.capability.ingredient.IngredientComponentValueHandlerConfig;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueHelpers;
@@ -51,15 +55,17 @@ import ruiseki.integratedterminals.api.terminalstorage.crafting.ITerminalCraftin
 import ruiseki.integratedterminals.api.terminalstorage.crafting.ITerminalStorageTabIngredientCraftingHandler;
 import ruiseki.integratedterminals.capability.ingredient.IngredientComponentTerminalStorageHandlerConfig;
 import ruiseki.integratedterminals.core.terminalstorage.crafting.HandlerWrappedTerminalCraftingOption;
+import ruiseki.integratedterminals.core.terminalstorage.crafting.PendingCraftingJobOutputs;
 import ruiseki.integratedterminals.core.terminalstorage.crafting.TerminalStorageTabIngredientCraftingHandlers;
 import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientChangeEventPacket;
+import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientCraftingJobsPacket;
 import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientCraftingOptionsPacket;
 import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientMaxQuantityPacket;
 import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientUpdateActiveStorageIngredientPacket;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.ingredient.collection.IIngredientCollapsedCollectionMutable;
 import ruiseki.okcore.ingredient.collection.IngredientArrayList;
-import ruiseki.okcore.ingredient.collection.IngredientCollectionPrototypeMap;
+import ruiseki.okcore.ingredient.collection.IngredientCollectionHelpers;
 import ruiseki.okcore.ingredient.collection.diff.IngredientCollectionDiff;
 import ruiseki.okcore.ingredient.collection.diff.IngredientCollectionDiffHelpers;
 import ruiseki.okcore.ingredient.collection.diff.IngredientCollectionDiffManager;
@@ -74,15 +80,17 @@ import ruiseki.okcore.ingredient.collection.diff.IngredientCollectionDiffManager
 public class TerminalStorageTabIngredientComponentServer<T, M>
     implements ITerminalStorageTabServer, IIngredientComponentStorageObservable.IIndexChangeObserver<T, M> {
 
+    private final ExecutorService packetSerializer = Executors.newFixedThreadPool(1);
+
     private final ResourceLocation name;
     private final INetwork network;
     private final IngredientComponent<T, M> ingredientComponent;
     private final IPositionedAddonsNetworkIngredients<T, M> ingredientNetwork;
-    private final PartPos pos;
     private final EntityPlayerMP player;
     private final IIngredientComponentValueHandler<?, ?, T, M> valueHandler;
     private final Int2ObjectMap<Collection<HandlerWrappedTerminalCraftingOption<T>>> craftingOptions;
 
+    @Nullable
     private Predicate<T> ingredientsFilter;
 
     // These collections are needed to perform server-side filtering
@@ -90,15 +98,18 @@ public class TerminalStorageTabIngredientComponentServer<T, M>
     private final Int2ObjectMap<IIngredientCollapsedCollectionMutable<T, M>> unfilteredIngredientsViews;
     private final Int2ObjectMap<IngredientCollectionDiffManager<T, M>> filteredDiffManagers;
     private boolean initialized; // True if the first change event has been sent to the client.
+    private boolean sentCraftingOptionsFiltered;
+    private long nextCraftingJobsUpdate;
+    private int craftingJobsChannel; // The channel the last pending crafting job outputs were collected for.
+    private boolean sentCraftingJobs; // True if a non-empty set of pending crafting job outputs was sent to the client.
 
     public TerminalStorageTabIngredientComponentServer(ResourceLocation name, INetwork network,
         IngredientComponent<T, M> ingredientComponent, IPositionedAddonsNetworkIngredients<T, M> ingredientNetwork,
-        PartPos pos, EntityPlayerMP player) {
+        EntityPlayerMP player) {
         this.name = name;
         this.network = network;
         this.ingredientComponent = ingredientComponent;
         this.ingredientNetwork = ingredientNetwork;
-        this.pos = pos;
         this.player = player;
         this.valueHandler = Objects.requireNonNull(
             ingredientComponent.getCapability(IngredientComponentValueHandlerConfig.CAPABILITY)
@@ -106,9 +117,12 @@ public class TerminalStorageTabIngredientComponentServer<T, M>
             "No value handler was found for " + ingredientComponent.getName());
         this.craftingOptions = new Int2ObjectOpenHashMap<>();
 
-        this.ingredientsFilter = (instance) -> true;
+        this.ingredientsFilter = null;
         this.unfilteredIngredientsViews = new Int2ObjectOpenHashMap<>();
         this.filteredDiffManagers = new Int2ObjectOpenHashMap<>();
+        this.nextCraftingJobsUpdate = 0;
+        this.craftingJobsChannel = IPositionedAddonsNetwork.WILDCARD_CHANNEL;
+        this.sentCraftingJobs = false;
 
         // Schedule an observation on creation, as the channel may not have been indexed yet.
         ingredientNetwork.scheduleObservation();
@@ -178,18 +192,57 @@ public class TerminalStorageTabIngredientComponentServer<T, M>
 
     @Override
     public void deInit() {
+        this.packetSerializer.shutdownNow();
         this.ingredientNetwork.removeObserver(this);
     }
 
     @Override
-    public void updateActive() {
+    public void updateActive(int channel) {
         this.ingredientNetwork.scheduleObservation();
+        updatePendingCraftingJobOutputs(channel);
+    }
+
+    /**
+     * Collect the outputs that all running crafting jobs are still expected to produce,
+     * and send them to the client, so that they can be indicated in the storage terminal.
+     *
+     * As crafting job statuses change frequently,
+     * this is throttled by {@link GeneralConfig#guiTerminalCraftingJobsUpdateFrequency}.
+     *
+     * @param channel The channel that is being shown in the terminal.
+     */
+    protected void updatePendingCraftingJobOutputs(int channel) {
+        // Don't wait for the next update when the shown channel changed, as the client has no outputs for it yet.
+        if (channel == this.craftingJobsChannel && System.currentTimeMillis() < this.nextCraftingJobsUpdate) {
+            return;
+        }
+        this.craftingJobsChannel = channel;
+        this.nextCraftingJobsUpdate = System.currentTimeMillis() + GeneralConfig.guiTerminalCraftingJobsUpdateFrequency;
+
+        PendingCraftingJobOutputs<T, M> pendingCraftingJobOutputs = PendingCraftingJobOutputs
+            .collectFromNetwork(this.ingredientComponent, this.network, channel);
+
+        // Don't send anything as long as no crafting jobs are running,
+        // but do send one final (empty) update once the last job has finished.
+        boolean hasCraftingJobs = !pendingCraftingJobOutputs.isEmpty();
+        if (!hasCraftingJobs && !this.sentCraftingJobs) {
+            return;
+        }
+        this.sentCraftingJobs = hasCraftingJobs;
+
+        IntegratedTerminals._instance.getPacketHandler()
+            .sendToPlayer(
+                new TerminalStorageIngredientCraftingJobsPacket(
+                    this.getName()
+                        .toString(),
+                    pendingCraftingJobOutputs),
+                player);
     }
 
     protected IIngredientCollapsedCollectionMutable<T, M> getUnfilteredIngredientsView(int channel) {
         IIngredientCollapsedCollectionMutable<T, M> ingredientsView = unfilteredIngredientsViews.get(channel);
         if (ingredientsView == null) {
-            ingredientsView = new IngredientCollectionPrototypeMap<>(this.ingredientComponent);
+            ingredientsView = IngredientCollectionHelpers.createCollapsedCollection(this.ingredientComponent);
             unfilteredIngredientsViews.put(channel, ingredientsView);
         }
         return ingredientsView;
@@ -206,6 +259,11 @@ public class TerminalStorageTabIngredientComponentServer<T, M>
 
     public void updateFilter(List<IVariable<ValueTypeOperator.ValueOperator>> variables,
         TerminalStorageTabIngredientComponentCommon<?, ?> errorListener) {
+        if (variables.isEmpty()) {
+            this.ingredientsFilter = null;
+            return;
+        }
+
         this.ingredientsFilter = (instance) -> false;
         Predicate<T> newFilter = (instance) -> true;
         try {
@@ -259,6 +317,7 @@ public class TerminalStorageTabIngredientComponentServer<T, M>
         this.ingredientsFilter = newFilter;
     }
 
+    @Nullable
     protected Predicate<T> getIngredientsFilter() {
         return this.ingredientsFilter;
     }
@@ -274,57 +333,116 @@ public class TerminalStorageTabIngredientComponentServer<T, M>
         IngredientCollectionDiffHelpers.applyDiff(ingredientComponent, diffIn, getUnfilteredIngredientsView(channel));
 
         // Re-filter our complete unfiltered view
-        reApplyFilter();
+        reApplyFilter(event);
     }
 
-    protected void reApplyFilter() {
+    protected void reApplyFilter(@Nullable IIngredientComponentStorageObservable.StorageChangeEvent<T, M> event) {
         boolean firstChannel = true;
-        for (int channel : this.unfilteredIngredientsViews.keySet()) {
+        for (int channel : event == null ? this.unfilteredIngredientsViews.keySet()
+            : Collections.singleton(event.getChannel())) {
+            long maxQuantity = this.ingredientNetwork.getChannel(channel)
+                .getMaxQuantity();
             Predicate<T> ingredientsFilter = getIngredientsFilter();
-            Iterator<T> newFilteredIngredients = getUnfilteredIngredientsView(channel).stream()
-                .filter(ingredientsFilter::apply)
-                .iterator();
+            if (ingredientsFilter != null || event == null) {
+                Iterator<T> newFilteredIngredients = getUnfilteredIngredientsView(channel).stream()
+                    .filter(ingredientsFilter == null ? (instance) -> true : ingredientsFilter::apply)
+                    .iterator();
 
-            // Send out the diff between the last filtered view
-            IngredientCollectionDiffManager<T, M> filteredDiffManager = getFilteredDiffManager(channel);
-            IngredientCollectionDiff<T, M> diffOut = filteredDiffManager.onChange(newFilteredIngredients);
-            if (!initialized || diffOut.hasAdditions()) {
-                this.sendToClient(
-                    new IIngredientComponentStorageObservable.StorageChangeEvent<>(
-                        channel,
-                        null,
-                        IIngredientComponentStorageObservable.Change.ADDITION,
-                        false,
-                        diffOut.getAdditions()));
-            }
-            if (diffOut.hasDeletions()) {
-                this.sendToClient(
-                    new IIngredientComponentStorageObservable.StorageChangeEvent<>(
-                        channel,
-                        null,
-                        IIngredientComponentStorageObservable.Change.DELETION,
-                        diffOut.isCompletelyEmpty(),
-                        diffOut.getDeletions()));
+                // Send out the diff between the last filtered view
+                IngredientCollectionDiffManager<T, M> filteredDiffManager = getFilteredDiffManager(channel);
+                IngredientCollectionDiff<T, M> diffOut = filteredDiffManager.onChange(newFilteredIngredients);
+                if (!initialized || diffOut.hasAdditions()) {
+                    this.sendToClient(
+                        new IIngredientComponentStorageObservable.StorageChangeEvent<>(
+                            channel,
+                            null,
+                            IIngredientComponentStorageObservable.Change.ADDITION,
+                            false,
+                            diffOut.getAdditions()),
+                        maxQuantity);
+                }
+                if (diffOut.hasDeletions()) {
+                    this.sendToClient(
+                        new IIngredientComponentStorageObservable.StorageChangeEvent<>(
+                            channel,
+                            null,
+                            IIngredientComponentStorageObservable.Change.DELETION,
+                            diffOut.isCompletelyEmpty(),
+                            diffOut.getDeletions()),
+                        maxQuantity);
+                }
+            } else {
+                // If the filter is null (=show all ingredients), forward the diff to the client as-is.
+                // This allows us to skip the expensive filteredDiffManager.onChange call.
+                if (!initialized || event.getDiff()
+                    .hasAdditions()) {
+                    this.sendToClient(
+                        new IIngredientComponentStorageObservable.StorageChangeEvent<>(
+                            channel,
+                            null,
+                            IIngredientComponentStorageObservable.Change.ADDITION,
+                            false,
+                            event.getDiff()
+                                .getAdditions()),
+                        maxQuantity);
+                }
+                if (event.getDiff()
+                    .hasDeletions()) {
+                    this.sendToClient(
+                        new IIngredientComponentStorageObservable.StorageChangeEvent<>(
+                            channel,
+                            null,
+                            IIngredientComponentStorageObservable.Change.DELETION,
+                            event.getDiff()
+                                .isCompletelyEmpty(),
+                            event.getDiff()
+                                .getDeletions()),
+                        maxQuantity);
+                }
+
+                // Also apply the diff to our diff manager
+                IngredientCollectionDiffManager<T, M> filteredDiffManager = getFilteredDiffManager(channel);
+                if (event.getDiff()
+                    .hasAdditions()) {
+                    filteredDiffManager.getInstancesCache()
+                        .addAll(
+                            event.getDiff()
+                                .getAdditions());
+                }
+                if (event.getDiff()
+                    .hasDeletions()) {
+                    filteredDiffManager.getInstancesCache()
+                        .removeAll(
+                            event.getDiff()
+                                .getDeletions());
+                }
             }
 
             // Filter crafting options and re-send to client
             Collection<HandlerWrappedTerminalCraftingOption<T>> channeledCraftingOptions = this.craftingOptions
                 .get(channel);
             if (channeledCraftingOptions != null) {
-                List<HandlerWrappedTerminalCraftingOption<T>> channeledCraftingOptionsFiltered = channeledCraftingOptions
-                    .stream()
-                    .filter(o -> {
-                        Iterator<T> it = o.getCraftingOption()
-                            .getOutputs();
-                        while (it.hasNext()) {
-                            if (ingredientsFilter.apply(it.next())) {
-                                return true;
+                Collection<HandlerWrappedTerminalCraftingOption<T>> channeledCraftingOptionsFiltered;
+                if (ingredientsFilter != null) {
+                    channeledCraftingOptionsFiltered = channeledCraftingOptions.stream()
+                        .filter(o -> {
+                            Iterator<T> it = o.getCraftingOption()
+                                .getOutputs();
+                            while (it.hasNext()) {
+                                if (ingredientsFilter.apply(it.next())) {
+                                    return true;
+                                }
                             }
-                        }
-                        return false;
-                    })
-                    .collect(Collectors.toList());
-                this.sendCraftingOptionsToClient(channel, channeledCraftingOptionsFiltered, true, firstChannel);
+                            return false;
+                        })
+                        .collect(Collectors.toList());
+                } else {
+                    channeledCraftingOptionsFiltered = channeledCraftingOptions;
+                }
+                if (ingredientsFilter != null || this.sentCraftingOptionsFiltered) {
+                    this.sendCraftingOptionsToClient(channel, channeledCraftingOptionsFiltered, true, firstChannel);
+                }
+                this.sentCraftingOptionsFiltered = ingredientsFilter != null;
             }
 
             firstChannel = false;
@@ -333,9 +451,8 @@ public class TerminalStorageTabIngredientComponentServer<T, M>
         initialized = true;
     }
 
-    protected void sendToClient(IIngredientComponentStorageObservable.StorageChangeEvent<T, M> event) {
-        long maxQuantity = this.ingredientNetwork.getChannel(event.getChannel())
-            .getMaxQuantity();
+    protected void sendToClient(IIngredientComponentStorageObservable.StorageChangeEvent<T, M> event,
+        long maxQuantity) {
 
         // Only allow ingredient collection of a max given size to be sent in a packet
         if (event.getInstances()
@@ -359,6 +476,7 @@ public class TerminalStorageTabIngredientComponentServer<T, M>
                         event.getChannel()),
                     player);
         } else {
+            List<IngredientArrayList<T, M>> chunks = Lists.newArrayList();
             IngredientArrayList<T, M> buffer = new IngredientArrayList<>(
                 event.getInstances()
                     .getComponent(),
@@ -369,13 +487,7 @@ public class TerminalStorageTabIngredientComponentServer<T, M>
                 // If our buffer reaches its capacity,
                 // flush it, and create a new buffer
                 if (buffer.size() == GeneralConfig.terminalStoragePacketMaxInstances) {
-                    sendToClient(
-                        new IIngredientComponentStorageObservable.StorageChangeEvent<>(
-                            event.getChannel(),
-                            event.getPos(),
-                            event.getChangeType(),
-                            event.isCompleteChange(),
-                            buffer));
+                    chunks.add(buffer);
                     buffer = new IngredientArrayList<>(
                         event.getInstances()
                             .getComponent(),
@@ -385,21 +497,39 @@ public class TerminalStorageTabIngredientComponentServer<T, M>
 
             // Our buffer can contain some remaining instances, make sure to flush them as well.
             if (!buffer.isEmpty()) {
-                sendToClient(
-                    new IIngredientComponentStorageObservable.StorageChangeEvent<>(
-                        event.getChannel(),
-                        event.getPos(),
-                        event.getChangeType(),
-                        event.isCompleteChange(),
-                        buffer));
+                chunks.add(buffer);
+            }
+
+            for (IngredientArrayList<T, M> chunk : chunks) {
+                if (GeneralConfig.packetSerializationEnableMultithreading) {
+                    packetSerializer.execute(
+                        () -> sendToClient(
+                            new IIngredientComponentStorageObservable.StorageChangeEvent<>(
+                                event.getChannel(),
+                                event.getPos(),
+                                event.getChangeType(),
+                                event.isCompleteChange(),
+                                chunk),
+                            maxQuantity));
+                } else {
+                    sendToClient(
+                        new IIngredientComponentStorageObservable.StorageChangeEvent<>(
+                            event.getChannel(),
+                            event.getPos(),
+                            event.getChangeType(),
+                            event.isCompleteChange(),
+                            chunk),
+                        maxQuantity);
+                }
             }
         }
     }
 
     private void sendCraftingOptionsToClient(int channel,
-        List<HandlerWrappedTerminalCraftingOption<T>> channeledCraftingOptions, boolean reset, boolean firstChannel) {
+        Collection<HandlerWrappedTerminalCraftingOption<T>> channeledCraftingOptions, boolean reset,
+        boolean firstChannel) {
         // Only allow collection of a max given size to be sent in a packet
-        if (channeledCraftingOptions.size() <= GeneralConfig.terminalStoragePacketMaxInstances) {
+        if (channeledCraftingOptions.size() <= GeneralConfig.terminalStoragePacketMaxRecipes) {
             IntegratedTerminals._instance.getPacketHandler()
                 .sendToPlayer(
                     new TerminalStorageIngredientCraftingOptionsPacket(
@@ -411,24 +541,34 @@ public class TerminalStorageTabIngredientComponentServer<T, M>
                         firstChannel),
                     player);
         } else {
+            List<Pair<Boolean, List<HandlerWrappedTerminalCraftingOption<T>>>> chunks = Lists.newArrayList();
             List<HandlerWrappedTerminalCraftingOption<T>> buffer = Lists
-                .newArrayListWithExpectedSize(GeneralConfig.terminalStoragePacketMaxInstances);
+                .newArrayListWithExpectedSize(GeneralConfig.terminalStoragePacketMaxRecipes);
 
             for (HandlerWrappedTerminalCraftingOption<T> instance : channeledCraftingOptions) {
                 buffer.add(instance);
 
                 // If our buffer reaches its capacity,
                 // flush it, and create a new buffer
-                if (buffer.size() == GeneralConfig.terminalStoragePacketMaxInstances) {
-                    sendCraftingOptionsToClient(channel, buffer, reset, firstChannel);
+                if (buffer.size() == GeneralConfig.terminalStoragePacketMaxRecipes) {
+                    chunks.add(Pair.of(reset, buffer));
                     reset = false; // Only reset in first packet
-                    buffer = Lists.newArrayListWithExpectedSize(GeneralConfig.terminalStoragePacketMaxInstances);
+                    buffer = Lists.newArrayListWithExpectedSize(GeneralConfig.terminalStoragePacketMaxRecipes);
                 }
             }
 
             // Our buffer can contain some remaining instances, make sure to flush them as well.
             if (!buffer.isEmpty()) {
-                sendCraftingOptionsToClient(channel, buffer, reset, firstChannel);
+                chunks.add(Pair.of(reset, buffer));
+            }
+
+            for (Pair<Boolean, List<HandlerWrappedTerminalCraftingOption<T>>> chunk : chunks) {
+                if (GeneralConfig.packetSerializationEnableMultithreading) {
+                    packetSerializer.execute(
+                        () -> sendCraftingOptionsToClient(channel, chunk.getRight(), chunk.getLeft(), firstChannel));
+                } else {
+                    sendCraftingOptionsToClient(channel, chunk.getRight(), chunk.getLeft(), firstChannel);
+                }
             }
         }
     }
@@ -459,6 +599,15 @@ public class TerminalStorageTabIngredientComponentServer<T, M>
             case STORAGE_PLACE_WORLD:
                 viewHandler.throwIntoWorld(storage, activeStorageInstance, player);
                 break;
+            case STORAGE_QUICK_MOVE_INCREMENTAL:
+                viewHandler.insertMaxIntoContainer(
+                    storage,
+                    container,
+                    0,
+                    4 * 9,
+                    ingredientComponent.getMatcher()
+                        .withQuantity(hoveringStorageInstance, viewHandler.getIncrementalInstanceMovementQuantity()));
+                break;
             case STORAGE_PLACE_PLAYER:
                 T movedInstance = viewHandler.insertIntoContainer(
                     storage,
@@ -487,7 +636,15 @@ public class TerminalStorageTabIngredientComponentServer<T, M>
                 updateActivePlayerStack = true;
                 break;
             case PLAYER_QUICK_MOVE:
-                viewHandler.extractMaxFromContainerSlot(storage, container, hoveredContainerSlot, player.inventory);
+                viewHandler.extractMaxFromContainerSlot(storage, container, hoveredContainerSlot, player.inventory, -1);
+                break;
+            case PLAYER_QUICK_MOVE_INCREMENTAL:
+                viewHandler.extractMaxFromContainerSlot(
+                    storage,
+                    container,
+                    hoveredContainerSlot,
+                    player.inventory,
+                    viewHandler.getIncrementalInstanceMovementQuantity());
                 break;
         }
 

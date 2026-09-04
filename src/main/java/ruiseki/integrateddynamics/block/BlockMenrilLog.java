@@ -1,34 +1,19 @@
 package ruiseki.integrateddynamics.block;
 
-import ruiseki.okcore.config.configurable.ConfigurableBlockLog;
-import ruiseki.okcore.config.extendedconfig.BlockConfig;
-import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
+import ruiseki.okcore.block.BlockLogBase;
 
 /**
  * Menril log block.
  *
  * @author rubensworks
  */
-public class BlockMenrilLog extends ConfigurableBlockLog {
-
-    private static BlockMenrilLog _instance = null;
-
-    /**
-     * Get the unique instance.
-     *
-     * @return The instance.
-     */
-    public static BlockMenrilLog getInstance() {
-        return _instance;
-    }
+public class BlockMenrilLog extends BlockLogBase {
 
     /**
      * Make a new block instance.
-     *
-     * @param eConfig Config for this block.
      */
-    public BlockMenrilLog(ExtendedConfig<BlockConfig> eConfig) {
-        super(eConfig);
+    public BlockMenrilLog() {
+        super();
         this.setHardness(2.0F);
         this.setStepSound(soundTypeWood);
     }

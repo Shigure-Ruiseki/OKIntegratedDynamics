@@ -10,7 +10,7 @@ import ruiseki.okcore.datastructure.DimPos;
  * Multiple instances for the same 'element' can be created, so the comparator implementation must
  * make sure that these instances are considered equal.
  * These instances are used as a simple way of referring to these elements.
- *
+ * 
  * @author rubensworks
  */
 public interface IPathElement extends Comparable<IPathElement> {
@@ -24,4 +24,5 @@ public interface IPathElement extends Comparable<IPathElement> {
      * @return The set of all path elements that can be reached from here.
      */
     public Set<ISidedPathElement> getReachableElements();
+
 }

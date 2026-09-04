@@ -4,7 +4,10 @@ import java.util.Iterator;
 
 import javax.annotation.Nonnull;
 
+import com.google.common.collect.Iterators;
+
 import ruiseki.integrateddynamics.api.network.IPositionedAddonsNetworkIngredients;
+import ruiseki.integrateddynamics.api.network.PositionedAddonsNetworkIngredientsFilter;
 import ruiseki.integrateddynamics.api.part.PartPos;
 
 /**
@@ -90,6 +93,10 @@ public class IngredientChannelPositioned<T, M> extends IngredientChannelAdapter<
                     }
                     this.lastPos = this.network.getPositionedStorage(pos)
                         .iterator(prototype, matchFlags);
+                    PositionedAddonsNetworkIngredientsFilter<T> filter = this.network.getPositionedStorageFilter(pos);
+                    if (filter != null) {
+                        this.lastPos = Iterators.filter(this.lastPos, filter::testView);
+                    }
                 } else {
                     this.lastPos = null;
                 }

@@ -7,13 +7,15 @@ import ruiseki.integrateddynamics.network.packet.ItemStackRenamePacket;
 import ruiseki.integrateddynamics.network.packet.LogicProgrammerActivateElementPacket;
 import ruiseki.integrateddynamics.network.packet.LogicProgrammerLabelPacket;
 import ruiseki.integrateddynamics.network.packet.LogicProgrammerSetElementInventory;
+import ruiseki.integrateddynamics.network.packet.LogicProgrammerValueTypeBooleanValueChangedPacket;
 import ruiseki.integrateddynamics.network.packet.LogicProgrammerValueTypeIngredientsValueChangedPacket;
 import ruiseki.integrateddynamics.network.packet.LogicProgrammerValueTypeListValueChangedPacket;
 import ruiseki.integrateddynamics.network.packet.LogicProgrammerValueTypeOperatorValueChangedPacket;
+import ruiseki.integrateddynamics.network.packet.LogicProgrammerValueTypeRecipeSlotPropertiesChangedPacket;
 import ruiseki.integrateddynamics.network.packet.LogicProgrammerValueTypeStringValueChangedPacket;
 import ruiseki.integrateddynamics.network.packet.NetworkDiagnosticsNetworkPacket;
-import ruiseki.integrateddynamics.network.packet.NetworkDiagnosticsOpenClient;
 import ruiseki.integrateddynamics.network.packet.NetworkDiagnosticsSubscribePacket;
+import ruiseki.integrateddynamics.network.packet.NetworkDiagnosticsTriggerClient;
 import ruiseki.integrateddynamics.network.packet.PlayerTeleportPacket;
 import ruiseki.okcore.init.ModBase;
 import ruiseki.okcore.network.PacketHandler;
@@ -41,10 +43,12 @@ public class CommonProxy extends CommonProxyComponent {
         packetHandler.register(LogicProgrammerValueTypeOperatorValueChangedPacket.class);
         packetHandler.register(NetworkDiagnosticsSubscribePacket.class);
         packetHandler.register(NetworkDiagnosticsNetworkPacket.class);
-        packetHandler.register(NetworkDiagnosticsOpenClient.class);
+        packetHandler.register(NetworkDiagnosticsTriggerClient.class);
         packetHandler.register(PlayerTeleportPacket.class);
         packetHandler.register(LogicProgrammerSetElementInventory.class);
         packetHandler.register(LogicProgrammerValueTypeIngredientsValueChangedPacket.class);
+        packetHandler.register(LogicProgrammerValueTypeBooleanValueChangedPacket.class);
+        packetHandler.register(LogicProgrammerValueTypeRecipeSlotPropertiesChangedPacket.class);
 
         IntegratedDynamics.clog("Registered packet handler.");
     }

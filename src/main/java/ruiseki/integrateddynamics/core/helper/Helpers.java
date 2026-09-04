@@ -1,12 +1,17 @@
 package ruiseki.integrateddynamics.core.helper;
 
 import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
 import java.util.stream.Stream;
 
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+import net.minecraftforge.fluids.FluidContainerRegistry;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.IFluidBlock;
 import net.minecraftforge.oredict.OreDictionary;
@@ -17,9 +22,10 @@ import com.google.common.collect.Lists;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
 import ruiseki.okcore.datastructure.NonNullList;
-import ruiseki.okcore.fluid.FluidHelpers;
 import ruiseki.okcore.fluid.handler.IFluidHandler;
 import ruiseki.okcore.fluid.handler.IFluidTankProperties;
+import ruiseki.okcore.helper.FluidHelpers;
+import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.TileHelpers;
 
@@ -131,8 +137,8 @@ public final class Helpers {
         addInterfaceRetriever(new IInterfaceRetriever() {
 
             @Override
-            public <C> C getInterface(IBlockAccess world, BlockPos pos, Class<C> clazz) {
-                return TileHelpers.getSafeTile(world, pos, clazz);
+            public <C> Optional<C> getInterface(IBlockAccess world, BlockPos pos, Class<C> clazz) {
+                return Optional.ofNullable(TileHelpers.getSafeTile(world, pos, clazz));
             }
         });
     }
@@ -144,17 +150,16 @@ public final class Helpers {
      * @param pos   The position.
      * @param clazz The class to find.
      * @param <C>   The class type.
-     * @return The instance or null.
+     * @return The optional instance.
      */
-    private static <C> C getInterface(IBlockAccess world, BlockPos pos, Class<C> clazz) {
-        C instance;
+    private static <C> Optional<C> getInterface(IBlockAccess world, BlockPos pos, Class<C> clazz) {
         for (IInterfaceRetriever interfaceRetriever : INTERFACE_RETRIEVERS) {
-            instance = interfaceRetriever.getInterface(world, pos, clazz);
-            if (instance != null) {
-                return instance;
+            Optional<C> optionalInstance = interfaceRetriever.getInterface(world, pos, clazz);
+            if (optionalInstance.isPresent()) {
+                return optionalInstance;
             }
         }
-        return null;
+        return Optional.empty();
     }
 
     /**
@@ -163,11 +168,11 @@ public final class Helpers {
      * @param dimPos The dimensional position.
      * @param clazz  The class to find.
      * @param <C>    The class type.
-     * @return The instance or null.
+     * @return The optional instance.
      */
-    public static <C> C getInterface(DimPos dimPos, Class<C> clazz) {
+    public static <C> Optional<C> getInterface(DimPos dimPos, Class<C> clazz) {
         World world = dimPos.getWorld();
-        return world != null ? getInterface(world, dimPos.getBlockPos(), clazz) : null;
+        return world != null ? getInterface(world, dimPos.getBlockPos(), clazz) : Optional.empty();
     }
 
     /**
@@ -178,14 +183,59 @@ public final class Helpers {
      * @return The localized string.
      */
     public static String getLocalizedEnergyLevel(int stored, int capacity) {
-        return String.format("%,d", stored) + " / "
-            + String.format("%,d", capacity)
+        return String.format(Locale.ROOT, "%,d", stored) + " / "
+            + String.format(Locale.ROOT, "%,d", capacity)
             + " "
             + LangHelpers.localize(L10NValues.GENERAL_ENERGY_UNIT);
     }
 
+    // This is copied from Forge's TPSCommand
+    public static double calculateTps(long[] times) {
+        double worldTickTime = mean(times) * 1.0E-6D;
+        double worldTPS = Math.min(1000.0 / worldTickTime, 20);
+        return worldTPS;
+    }
+
+    public static long mean(long[] values) {
+        long sum = 0L;
+        for (long v : values) sum += v;
+        return sum / values.length;
+    }
+
+    /**
+     * Helper find ItemStack (Bucket/Container)
+     */
+    public static ItemStack getItemStackFromFluid(FluidStack fluidStack) {
+        if (fluidStack == null || fluidStack.getFluid() == null) {
+            return ItemHelpers.EMPTY;
+        }
+
+        for (FluidContainerRegistry.FluidContainerData data : FluidContainerRegistry
+            .getRegisteredFluidContainerData()) {
+            if (data.fluid != null && data.fluid.getFluid() == fluidStack.getFluid()) {
+                return data.filledContainer.copy();
+            }
+        }
+
+        ItemStack filledBucket = FluidContainerRegistry
+            .fillFluidContainer(fluidStack, FluidContainerRegistry.EMPTY_BUCKET);
+
+        return filledBucket != null ? filledBucket : ItemHelpers.EMPTY;
+    }
+
     public static void addInterfaceRetriever(IInterfaceRetriever interfaceRetriever) {
         INTERFACE_RETRIEVERS.add(interfaceRetriever);
+    }
+
+    public static void returnItemToPlayer(EntityPlayer player, ItemStack itemStack) {
+        if (!player.isDead && (!(player instanceof EntityPlayerMP)
+            || !((EntityPlayerMP) player).playerNetServerHandler.netManager.isChannelOpen())) {
+            if (!player.inventory.addItemStackToInventory(itemStack)) {
+                player.dropPlayerItemWithRandomChoice(itemStack, false);
+            }
+        } else {
+            player.dropPlayerItemWithRandomChoice(itemStack, false);
+        }
     }
 
     public static interface IInterfaceRetriever {
@@ -197,10 +247,14 @@ public final class Helpers {
          * @param pos   The position.
          * @param clazz The class to find.
          * @param <C>   The class type.
-         * @return The instance or null.
+         * @return The optional instance.
          */
-        public <C> C getInterface(IBlockAccess world, BlockPos pos, Class<C> clazz);
+        public <C> Optional<C> getInterface(IBlockAccess world, BlockPos pos, Class<C> clazz);
 
     }
 
+    @SuppressWarnings("unchecked")
+    public static <T extends Exception, R> R sneakyThrow(Exception t) throws T {
+        throw (T) t;
+    }
 }

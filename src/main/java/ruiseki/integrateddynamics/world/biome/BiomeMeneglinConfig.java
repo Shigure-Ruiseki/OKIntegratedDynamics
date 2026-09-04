@@ -6,7 +6,6 @@ import net.minecraftforge.common.BiomeManager;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.Reference;
 import ruiseki.okcore.config.ConfigurableProperty;
-import ruiseki.okcore.config.ConfigurableTypeCategory;
 import ruiseki.okcore.config.extendedconfig.BiomeConfig;
 
 /**
@@ -25,14 +24,14 @@ public class BiomeMeneglinConfig extends BiomeConfig {
     /**
      * The weight of spawning.
      */
-    @ConfigurableProperty(category = ConfigurableTypeCategory.BIOME, comment = "The weight of spawning.")
+    @ConfigurableProperty(category = "biome", comment = "The weight of spawning.")
     public static int spawnWeight = 5;
 
     /**
      * List of dimension IDs in which the meneglin biome should not generate.
      */
     @ConfigurableProperty(
-        category = ConfigurableTypeCategory.WORLDGENERATION,
+        category = "world_generation",
         comment = "List of dimension IDs in which the meneglin biome should not generate.")
     public static int[] meneglinBiomeDimensionBlacklist = new int[] { -1, 1 };
 
@@ -40,18 +39,23 @@ public class BiomeMeneglinConfig extends BiomeConfig {
      * Make a new instance.
      */
     public BiomeMeneglinConfig() {
-        super(IntegratedDynamics._instance, Reference.BIOME_MENEGLIN, "biome_meneglin", null, BiomeMeneglin.class);
+        super(
+            IntegratedDynamics._instance,
+            Reference.BIOME_MENEGLIN,
+            "biome_meneglin",
+            null,
+            config -> new BiomeMeneglin(config.getId()));
     }
 
     @Override
     public void registerBiomeDictionary() {
         if (spawnWeight > 0) {
-            BiomeManager.addBiome(BiomeManager.BiomeType.COOL, new BiomeManager.BiomeEntry(getBiome(), spawnWeight));
+            BiomeManager.addBiome(BiomeManager.BiomeType.COOL, new BiomeManager.BiomeEntry(getInstance(), spawnWeight));
         }
-        BiomeManager.addSpawnBiome(getBiome());
-        BiomeManager.addStrongholdBiome(getBiome());
-        BiomeManager.addVillageBiome(getBiome(), true);
-        BiomeDictionary.registerBiomeType(getBiome(), BiomeDictionary.Type.COLD, BiomeDictionary.Type.MAGICAL);
+        BiomeManager.addSpawnBiome(getInstance());
+        BiomeManager.addStrongholdBiome(getInstance());
+        BiomeManager.addVillageBiome(getInstance(), true);
+        BiomeDictionary.registerBiomeType(getInstance(), BiomeDictionary.Type.COLD, BiomeDictionary.Type.MAGICAL);
     }
 
 }

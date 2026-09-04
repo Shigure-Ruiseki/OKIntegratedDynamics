@@ -3,7 +3,7 @@ package ruiseki.integrateddynamics.capability.ingredient;
 import org.jetbrains.annotations.Nullable;
 
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
-import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeInteger;
+import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeLong;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.okcore.helper.LangHelpers;
@@ -12,37 +12,37 @@ import ruiseki.okcore.helper.LangHelpers;
  * @author rubensworks
  */
 public class IngredientComponentValueHandlerEnergy
-    implements IIngredientComponentValueHandler<ValueTypeInteger, ValueTypeInteger.ValueInteger, Integer, Boolean> {
+    implements IIngredientComponentValueHandler<ValueTypeLong, ValueTypeLong.ValueLong, Long, Boolean> {
 
-    private final IngredientComponent<Integer, Boolean> ingredientComponent;
+    private final IngredientComponent<Long, Boolean> ingredientComponent;
 
-    public IngredientComponentValueHandlerEnergy(IngredientComponent<Integer, Boolean> ingredientComponent) {
+    public IngredientComponentValueHandlerEnergy(IngredientComponent<Long, Boolean> ingredientComponent) {
         this.ingredientComponent = ingredientComponent;
     }
 
     @Override
-    public ValueTypeInteger getValueType() {
-        return ValueTypes.INTEGER;
+    public ValueTypeLong getValueType() {
+        return ValueTypes.LONG;
     }
 
     @Override
-    public IngredientComponent<Integer, Boolean> getComponent() {
+    public IngredientComponent<Long, Boolean> getComponent() {
         return ingredientComponent;
     }
 
     @Override
-    public ValueTypeInteger.ValueInteger toValue(@Nullable Integer instance) {
-        return ValueTypeInteger.ValueInteger.of(instance);
+    public ValueTypeLong.ValueLong toValue(@Nullable Long instance) {
+        return ValueTypeLong.ValueLong.of(instance);
     }
 
     @Nullable
     @Override
-    public Integer toInstance(ValueTypeInteger.ValueInteger value) {
+    public Long toInstance(ValueTypeLong.ValueLong value) {
         return value.getRawValue();
     }
 
     @Override
-    public String toCompactString(ValueTypeInteger.ValueInteger ingredientValue) {
+    public String toCompactString(ValueTypeLong.ValueLong ingredientValue) {
         String value = getValueType().toCompactString(ingredientValue);
         value += " " + LangHelpers.localize(L10NValues.GENERAL_ENERGY_UNIT);
         return value;

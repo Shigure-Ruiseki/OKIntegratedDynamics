@@ -3,8 +3,7 @@ package ruiseki.integratedterminals.core.terminalstorage.button;
 import java.util.List;
 
 import net.minecraft.entity.player.EntityPlayer;
-
-import org.lwjgl.input.Keyboard;
+import net.minecraft.util.EnumChatFormatting;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -17,6 +16,7 @@ import ruiseki.integratedterminals.core.terminalstorage.TerminalStorageTabIngred
 import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientItemStackCraftingGridClear;
 import ruiseki.okcore.client.gui.component.button.GuiButtonImage;
 import ruiseki.okcore.helper.LangHelpers;
+import ruiseki.okcore.helper.MinecraftHelpers;
 
 /**
  * A button for clearing the crafting grid.
@@ -27,13 +27,20 @@ public class TerminalButtonItemStackCraftingGridClear<T> implements
     ITerminalButton<TerminalStorageTabIngredientComponentClient<T, ?>, TerminalStorageTabIngredientComponentItemStackCraftingCommon, GuiButtonImage> {
 
     @Override
-    public int getX(int guiLeft, int offset) {
-        return guiLeft + 85;
+    public void reloadFromState() {
+
     }
 
     @Override
-    public int getY(int guiTop, int offset) {
-        return guiTop + 57;
+    public int getX(int guiLeft, int offset, int gridXSize, int gridYSize, int playerInventoryOffsetX,
+        int playerInventoryOffsetY) {
+        return guiLeft + (gridXSize / 2) + 32 - (playerInventoryOffsetX > 0 ? 107 : 0);
+    }
+
+    @Override
+    public int getY(int guiTop, int offset, int gridXSize, int gridYSize, int playerInventoryOffsetX,
+        int playerInventoryOffsetY) {
+        return guiTop + gridYSize + 59;
     }
 
     @Override
@@ -52,7 +59,7 @@ public class TerminalButtonItemStackCraftingGridClear<T> implements
     public void onClick(TerminalStorageTabIngredientComponentClient<T, ?> clientTab,
         TerminalStorageTabIngredientComponentItemStackCraftingCommon commomTab, GuiButtonImage guiButton, int channel,
         int mouseButton) {
-        boolean toStorage = (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT));
+        boolean toStorage = !MinecraftHelpers.isShifted();
         TerminalButtonItemStackCraftingGridClear.clearGrid(commomTab, channel, toStorage);
     }
 
@@ -64,7 +71,9 @@ public class TerminalButtonItemStackCraftingGridClear<T> implements
     @Override
     @SideOnly(Side.CLIENT)
     public void getTooltip(EntityPlayer player, boolean tooltipFlag, List<String> lines) {
-        lines.add(LangHelpers.localize("gui." + Reference.MOD_ID + ".terminal_storage.craftinggrid.clear.info"));
+        lines.add(
+            EnumChatFormatting.GRAY
+                + LangHelpers.localize("gui." + Reference.MOD_ID + ".terminal_storage.craftinggrid.clear.info"));
     }
 
     public static void clearGrid(TerminalStorageTabIngredientComponentItemStackCraftingCommon commomTab, int channel,

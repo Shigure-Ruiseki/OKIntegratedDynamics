@@ -6,27 +6,34 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 
+import com.google.common.collect.Iterables;
+
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import lombok.Data;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.evaluate.operator.IOperator;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
+import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeCategory;
 import ruiseki.integrateddynamics.api.item.IOperatorVariableFacade;
 import ruiseki.integrateddynamics.api.item.IVariableFacade;
+import ruiseki.integrateddynamics.api.item.IVariableFacadeHandler;
 import ruiseki.integrateddynamics.api.item.IVariableFacadeHandlerRegistry;
 import ruiseki.integrateddynamics.api.logicprogrammer.IConfigRenderPattern;
 import ruiseki.integrateddynamics.api.logicprogrammer.ILogicProgrammerElement;
 import ruiseki.integrateddynamics.api.logicprogrammer.ILogicProgrammerElementType;
-import ruiseki.integrateddynamics.block.BlockLogicProgrammer;
+import ruiseki.integrateddynamics.block.BlockLogicProgrammerConfig;
 import ruiseki.integrateddynamics.client.gui.GuiLogicProgrammerBase;
 import ruiseki.integrateddynamics.core.evaluate.operator.Operators;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueHelpers;
+import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeVariableFacade;
+import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
 import ruiseki.integrateddynamics.core.item.OperatorVariableFacade;
 import ruiseki.integrateddynamics.inventory.container.ContainerLogicProgrammerBase;
-import ruiseki.integrateddynamics.item.ItemVariable;
+import ruiseki.integrateddynamics.item.ItemVariableConfig;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
+import ruiseki.okcore.inventory.SimpleInventory;
 
 /**
  * Element for operator.
@@ -124,7 +131,44 @@ public class OperatorLPElement
             Operators.REGISTRY,
             new OperatorVariableFacadeFactory(operator, variableIds),
             player,
-            BlockLogicProgrammer.getInstance());
+            BlockLogicProgrammerConfig._instance.getInstance());
+    }
+
+    @Override
+    public void loadElement(IVariableFacade variableFacade) {
+        if (variableFacade instanceof OperatorVariableFacade operatorVariableFacade) {
+            int[] variableIds = operatorVariableFacade.getVariableIds();
+            this.inputVariables = new IVariableFacade[variableIds.length];
+            for (int i = 0; i < variableIds.length; i++) {
+                IValueType valueType = operator.getInputTypes()[i];
+                if (valueType instanceof IValueTypeCategory<?>valueTypeCategory) {
+                    valueType = Iterables.getFirst(valueTypeCategory.getElements(), ValueTypes.BOOLEAN);
+                }
+                this.inputVariables[i] = new ValueTypeVariableFacade<>(
+                    variableIds[i],
+                    valueType,
+                    valueType.getDefault());
+            }
+        }
+    }
+
+    @Override
+    public void setValueInGui(RenderPattern subGui) {
+        setValueInContainer((ContainerLogicProgrammerBase) subGui.container);
+    }
+
+    @Override
+    public void setValueInContainer(ContainerLogicProgrammerBase container) {
+        SimpleInventory inputSlots = container.getTemporaryInputSlots();
+        for (int i = 0; i < inputSlots.getSizeInventory(); i++) {
+            ItemStack itemStack = IntegratedDynamics._instance.getRegistryManager()
+                .getRegistry(IVariableFacadeHandlerRegistry.class)
+                .writeVariableFacadeItem(
+                    new ItemStack(ItemVariableConfig._instance.getInstance()),
+                    inputVariables[i],
+                    (IVariableFacadeHandler) ValueTypes.REGISTRY);
+            inputSlots.setInventorySlotContents(i, itemStack);
+        }
     }
 
     @Override
@@ -171,7 +215,7 @@ public class OperatorLPElement
 
     @Override
     public boolean isItemValidForSlot(int slotId, ItemStack itemStack) {
-        return itemStack.getItem() == ItemVariable.getInstance();
+        return itemStack.getItem() == ItemVariableConfig._instance.getInstance();
     }
 
     @Override

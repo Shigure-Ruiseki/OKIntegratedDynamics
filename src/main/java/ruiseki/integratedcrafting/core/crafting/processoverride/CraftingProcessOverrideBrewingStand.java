@@ -11,8 +11,10 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntityBrewingStand;
 import net.minecraftforge.common.util.ForgeDirection;
 
+import ruiseki.commoncapabilities.api.capability.recipehandler.IRecipeDefinition;
 import ruiseki.commoncapabilities.api.ingredient.IMixedIngredients;
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
+import ruiseki.integratedcrafting.api.crafting.CraftingJob;
 import ruiseki.integratedcrafting.api.crafting.ICraftingProcessOverride;
 import ruiseki.integratedcrafting.api.crafting.ICraftingResultsSink;
 import ruiseki.integrateddynamics.api.part.PartPos;
@@ -24,7 +26,7 @@ import ruiseki.okcore.item.handler.IItemHandler;
 /**
  * A crafting process override for brewing stands
  * Overrides side restrictions, allowing dynamic insertion into valid slots.
- * 
+ *
  * @author rubensworks
  */
 public class CraftingProcessOverrideBrewingStand implements ICraftingProcessOverride {
@@ -64,7 +66,7 @@ public class CraftingProcessOverrideBrewingStand implements ICraftingProcessOver
 
     @Override
     public boolean craft(Function<IngredientComponent<?, ?>, PartPos> targetGetter, IMixedIngredients ingredients,
-        ICraftingResultsSink resultsSink, boolean simulate) {
+        IRecipeDefinition recipe, ICraftingResultsSink resultsSink, CraftingJob craftingJob, boolean simulate) {
 
         List<ItemStack> instances = ingredients.getInstances(IngredientComponent.ITEMSTACK);
         if (instances.size() != 4 || ingredients.getComponents()

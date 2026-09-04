@@ -32,7 +32,7 @@ import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
 import ruiseki.integrateddynamics.core.ingredient.IngredientComponentHandlers;
 import ruiseki.okcore.client.renderer.GlStateManager;
 import ruiseki.okcore.helper.Helpers;
-import ruiseki.okcore.helper.ItemStackHelpers;
+import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.helper.LangHelpers;
 
 /**
@@ -163,7 +163,7 @@ public class RecipeValueTypeWorldRenderer implements IValueTypeWorldRenderer {
                     .stream()
                     .map(prototypedIngredient -> {
                         if (!matcher.hasCondition(prototypedIngredient.getCondition(), ItemMatch.DAMAGE)) {
-                            return ItemStackHelpers.getSubItems(prototypedIngredient.getPrototype())
+                            return ItemHelpers.getSubItems(prototypedIngredient.getPrototype())
                                 .stream()
                                 .map(
                                     stack -> new PrototypedIngredient(

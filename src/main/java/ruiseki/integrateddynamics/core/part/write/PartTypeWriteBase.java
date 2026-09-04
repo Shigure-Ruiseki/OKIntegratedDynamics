@@ -35,13 +35,11 @@ import ruiseki.integrateddynamics.core.block.IgnoredBlock;
 import ruiseki.integrateddynamics.core.block.IgnoredBlockStatus;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
-import ruiseki.integrateddynamics.core.network.event.NetworkElementAddEvent;
 import ruiseki.integrateddynamics.core.network.event.VariableContentsUpdatedEvent;
 import ruiseki.integrateddynamics.core.part.PartTypeAspects;
 import ruiseki.integrateddynamics.core.part.event.PartWriterAspectEvent;
 import ruiseki.integrateddynamics.inventory.container.ContainerPartWriter;
 import ruiseki.integrateddynamics.part.aspect.Aspects;
-import ruiseki.okcore.config.extendedconfig.BlockConfig;
 import ruiseki.okcore.helper.BlockStateHelpers;
 import ruiseki.okcore.helper.LangHelpers;
 
@@ -66,28 +64,16 @@ public abstract class PartTypeWriteBase<P extends IPartTypeWriter<P, S>, S exten
     @Override
     protected Map<Class<? extends INetworkEvent>, IEventAction> constructNetworkEventActions() {
         Map<Class<? extends INetworkEvent>, IEventAction> actions = super.constructNetworkEventActions();
-        actions.put(VariableContentsUpdatedEvent.class, new IEventAction<P, S, VariableContentsUpdatedEvent>() {
-
-            @Override
-            public void onAction(INetwork network, PartTarget target, S state, VariableContentsUpdatedEvent event) {
-                IPartNetwork partNetwork = NetworkHelpers.getPartNetwork(network);
-                onVariableContentsUpdated(partNetwork, target, state);
-            }
-        });
-        actions.put(NetworkElementAddEvent.Post.class, new IEventAction<P, S, NetworkElementAddEvent.Post>() {
-
-            @Override
-            public void onAction(INetwork network, PartTarget target, S state, NetworkElementAddEvent.Post event) {
-                IPartNetwork partNetwork = NetworkHelpers.getPartNetwork(network);
-                onVariableContentsUpdated(partNetwork, target, state);
-            }
-        });
+        IEventAction<P, S, INetworkEvent> updateEventListener = (network, target, state, event) -> NetworkHelpers
+            .getPartNetwork(network)
+            .ifPresent(partNetwork -> onVariableContentsUpdated(partNetwork, target, state));
+        actions.put(VariableContentsUpdatedEvent.class, updateEventListener);
         return actions;
     }
 
     @Override
-    protected Block createBlock(BlockConfig blockConfig) {
-        return new IgnoredBlockStatus(blockConfig);
+    protected Block createBlock() {
+        return new IgnoredBlockStatus();
     }
 
     @Override
@@ -117,14 +103,14 @@ public abstract class PartTypeWriteBase<P extends IPartTypeWriter<P, S>, S exten
         }
         state.getInventory()
             .clear();
-        state.triggerAspectInfoUpdate((P) this, target, null);
+        state.triggerAspectInfoUpdate((P) this, target, null, false);
         super.addDrops(target, state, itemStacks, dropMainElement, saveState);
     }
 
     @Override
     public void beforeNetworkKill(INetwork network, IPartNetwork partNetwork, PartTarget target, S state) {
         super.beforeNetworkKill(network, partNetwork, target, state);
-        state.triggerAspectInfoUpdate((P) this, target, null);
+        state.triggerAspectInfoUpdate((P) this, target, null, true);
     }
 
     @Override
@@ -159,6 +145,9 @@ public abstract class PartTypeWriteBase<P extends IPartTypeWriter<P, S>, S exten
 
     @Override
     public void updateActivation(PartTarget target, S partState, @Nullable EntityPlayer player) {
+        boolean isNetworkInitializing = player == null; // TODO: in next major, also add isNetworkInitializing param to
+                                                        // updateActivation so we don't need this hack!
+
         // Check inside the inventory for a variable item and determine everything with that.
         int activeIndex = -1;
         for (int i = 0; i < partState.getInventory()
@@ -170,24 +159,28 @@ public abstract class PartTypeWriteBase<P extends IPartTypeWriter<P, S>, S exten
             }
         }
         IAspectWrite aspect = activeIndex == -1 ? null : getWriteAspects().get(activeIndex);
-        partState.triggerAspectInfoUpdate((P) this, target, aspect);
+        partState.triggerAspectInfoUpdate((P) this, target, aspect, isNetworkInitializing);
 
-        INetwork network = NetworkHelpers.getNetwork(target.getCenter());
-        if (aspect != null) {
-            IPartNetwork partNetwork = NetworkHelpers.getPartNetwork(network);
-            MinecraftForge.EVENT_BUS.post(
-                new PartWriterAspectEvent<>(
-                    network,
-                    partNetwork,
-                    target,
-                    (P) this,
-                    partState,
-                    player,
-                    aspect,
-                    partState.getInventory()
-                        .getStackInSlot(activeIndex)));
+        INetwork network = NetworkHelpers.getNetwork(target.getCenter())
+            .orElse(null);
+        if (network != null && aspect != null) {
+            IPartNetwork partNetwork = NetworkHelpers.getPartNetwork(network)
+                .orElse(null);
+            if (partNetwork != null) {
+                MinecraftForge.EVENT_BUS.post(
+                    new PartWriterAspectEvent<>(
+                        network,
+                        partNetwork,
+                        target,
+                        (P) this,
+                        partState,
+                        player,
+                        aspect,
+                        partState.getInventory()
+                            .getStackInSlot(activeIndex)));
+            }
         }
-        if (network != null) {
+        if (network != null && !isNetworkInitializing) {
             network.getEventBus()
                 .post(new VariableContentsUpdatedEvent(network));
         }

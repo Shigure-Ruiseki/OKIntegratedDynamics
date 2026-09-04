@@ -6,11 +6,11 @@ import org.jetbrains.annotations.Nullable;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-import ruiseki.integratedterminals.client.gui.container.GuiTerminalStorage;
+import ruiseki.integratedterminals.core.client.gui.GuiTerminalStorage;
 
 /**
  * A single slot in a storage terminal
- * 
+ *
  * @author rubensworks
  */
 public interface ITerminalStorageSlot {

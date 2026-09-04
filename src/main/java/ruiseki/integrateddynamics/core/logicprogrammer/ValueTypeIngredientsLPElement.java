@@ -1,8 +1,10 @@
 package ruiseki.integrateddynamics.core.logicprogrammer;
 
 import java.io.IOException;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
@@ -21,6 +23,7 @@ import ruiseki.commoncapabilities.api.ingredient.MixedIngredients;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.client.gui.subgui.ISubGuiBox;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
+import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 import ruiseki.integrateddynamics.api.ingredient.IIngredientComponentHandler;
 import ruiseki.integrateddynamics.api.logicprogrammer.IConfigRenderPattern;
 import ruiseki.integrateddynamics.api.logicprogrammer.ILogicProgrammerElementType;
@@ -48,6 +51,9 @@ import ruiseki.okcore.helper.RenderHelpers;
  * @author rubensworks
  */
 public class ValueTypeIngredientsLPElement extends ValueTypeLPElementBase {
+
+    protected static final int OFFSET_X = 31;
+    protected static final int OFFSET_Y = 21;
 
     private IngredientComponent currentType = IngredientComponent.ITEMSTACK;
     private Map<IngredientComponent, Integer> lengths = Maps.newHashMap();
@@ -115,6 +121,86 @@ public class ValueTypeIngredientsLPElement extends ValueTypeLPElementBase {
             : serverValue;
     }
 
+    @Override
+    public void setValue(IValue value) {
+        ValueObjectTypeIngredients.ValueIngredients valueIngredients = (ValueObjectTypeIngredients.ValueIngredients) value;
+        if (!MinecraftHelpers.isClientSide()) {
+            setServerValue(valueIngredients);
+        }
+
+        valueIngredients.getRawValue()
+            .ifPresent(ingredients -> {
+                // Select itemstack by default if it has instances
+                if (ingredients.getComponents()
+                    .contains(IngredientComponent.ITEMSTACK)) {
+                    currentType = IngredientComponent.ITEMSTACK;
+                } else {
+                    currentType = null;
+                }
+
+                for (IngredientComponent<?, ?> ingredientComponent : ingredients.getComponents()) {
+                    IIngredientComponentHandler handler = IngredientComponentHandlers.REGISTRY
+                        .getComponentHandler(ingredientComponent);
+
+                    // If no itemstacks in ingredient, select any other
+                    if (currentType == null) {
+                        currentType = ingredientComponent;
+                    }
+
+                    // Save length per ingredient component
+                    lengths.put(
+                        ingredientComponent,
+                        ingredients.getInstances(ingredientComponent)
+                            .size());
+
+                    // Initialize LP elements for all instances of this ingredient component
+                    Map<Integer, IValueTypeLogicProgrammerElement> entries = Maps.newHashMap();
+                    List<?> instances = ingredients.getInstances(ingredientComponent);
+                    for (int i = 0; i < instances.size(); i++) {
+                        initializeElementFromInstanceValue(entries, handler, instances.get(i), i);
+                    }
+                    subElements.put(ingredientComponent, entries);
+                }
+            });
+    }
+
+    protected <VT extends IValueType<V>, V extends IValue, T, M> void initializeElementFromInstanceValue(
+        Map<Integer, IValueTypeLogicProgrammerElement> entries, IIngredientComponentHandler<VT, V, T, M> handler,
+        T instance, int instanceIndex) {
+        IValue instanceValue = handler.toValue(instance);
+        IValueTypeLogicProgrammerElement lpElement = instanceValue.getType()
+            .createLogicProgrammerElement();
+        lpElement.setValue(instanceValue);
+        entries.put(instanceIndex, lpElement);
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public void setValueInGui(ISubGuiBox subGui) {
+        if (!subElements.get(currentType)
+            .isEmpty()) {
+            setActiveElement(0);
+        }
+    }
+
+    @Override
+    public void setValueInContainer(ContainerLogicProgrammerBase container) {
+        if (!subElements.get(currentType)
+            .isEmpty()) {
+            IValueTypeLogicProgrammerElement subElement = setActiveElement(0);
+            int x = RenderPatternCommon.calculateX(
+                ContainerLogicProgrammerBase.BASE_X,
+                ContainerLogicProgrammerBase.MAX_WIDTH,
+                subElement.getRenderPattern()) + ContainerLogicProgrammerBase.BASE_X - OFFSET_X;
+            int y = RenderPatternCommon.calculateY(
+                ContainerLogicProgrammerBase.BASE_Y,
+                ContainerLogicProgrammerBase.MAX_HEIGHT,
+                subElement.getRenderPattern()) + ContainerLogicProgrammerBase.BASE_Y - OFFSET_Y;
+            container.setElementInventory(subElement, x, y);
+            subElement.setValueInContainer(container);
+        }
+    }
+
     public int getLength() {
         return lengths.get(currentType);
     }
@@ -131,19 +217,29 @@ public class ValueTypeIngredientsLPElement extends ValueTypeLPElementBase {
                 .size() - 1);
     }
 
-    public void setActiveElement(int index) {
+    public IValueTypeLogicProgrammerElement setActiveElement(int index) {
         activeElement = index;
-        if (index >= 0 && !subElements.get(currentType)
-            .containsKey(index)) {
-            subElements.get(currentType)
-                .put(
-                    index,
-                    IngredientComponentHandlers.REGISTRY.getComponentHandler(currentType)
-                        .getValueType()
-                        .createLogicProgrammerElement());
+        IValueTypeLogicProgrammerElement subElement = null;
+        if (index >= 0) {
+            if (!subElements.get(currentType)
+                .containsKey(index)) {
+                subElements.get(currentType)
+                    .put(
+                        index,
+                        subElement = IngredientComponentHandlers.REGISTRY.getComponentHandler(currentType)
+                            .getValueType()
+                            .createLogicProgrammerElement());
+            } else {
+                subElement = subElements.get(currentType)
+                    .get(index);
+            }
         }
-        masterGui.setActiveElement(activeElement);
-        masterGui.container.onDirty();
+        if (masterGui != null) {
+            masterGui.setActiveElement(activeElement);
+            masterGui.container.onDirty();
+        }
+        return subElement;
+
     }
 
     public void removeElement(int index) {
@@ -260,6 +356,7 @@ public class ValueTypeIngredientsLPElement extends ValueTypeLPElementBase {
         public void setActiveElement(int index) {
             if (elementSubGui != null) {
                 subGuiHolder.removeSubGui(elementSubGui);
+                (gui.getContainer()).setElementInventory(null, 0, 0);
             }
             if (index >= 0) {
                 subGuiHolder.addSubGui(
@@ -310,7 +407,7 @@ public class ValueTypeIngredientsLPElement extends ValueTypeLPElementBase {
         extends RenderPattern<ValueTypeIngredientsLPElement, GuiLogicProgrammerBase, ContainerLogicProgrammerBase>
         implements IInputListener {
 
-        private GuiArrowedListField<IngredientComponent> valueTypeSelector = null;
+        private GuiArrowedListField<IngredientComponent<?, ?>> valueTypeSelector = null;
         private GuiButton arrowAdd;
 
         public SelectionSubGui(ValueTypeIngredientsLPElement element, int baseX, int baseY, int maxWidth, int maxHeight,
@@ -323,14 +420,27 @@ public class ValueTypeIngredientsLPElement extends ValueTypeLPElementBase {
             return super.getHeight() / 4;
         }
 
-        protected static List<IngredientComponent> getValueTypes() {
-            return Lists.newArrayList(IngredientComponentHandlers.REGISTRY.getComponents());
+        protected static List<IngredientComponent<?, ?>> getValueTypes() {
+            // By coincidence, sorting by name (in reverse) is sufficient to achieve the order we want,
+            // for the following known ingredient components:
+            // - minecraft:itemstack
+            // - minecraft:fluidstack
+            // - minecraft:energy
+            // - mekanism:chemicalstack
+            return IngredientComponentHandlers.REGISTRY.getComponents()
+                .stream()
+                .sorted(
+                    Comparator.comparing(
+                        (IngredientComponent<?, ?> component) -> component.getName()
+                            .toString())
+                        .reversed())
+                .collect(Collectors.toList());
         }
 
         @Override
         public void initGui(int guiLeft, int guiTop) {
             super.initGui(guiLeft, guiTop);
-            valueTypeSelector = new GuiArrowedListField<IngredientComponent>(
+            valueTypeSelector = new GuiArrowedListField<>(
                 0,
                 Minecraft.getMinecraft().fontRenderer,
                 getX() + guiLeft + getWidth() / 2 - 50,
@@ -401,12 +511,15 @@ public class ValueTypeIngredientsLPElement extends ValueTypeLPElementBase {
         private GuiButtonArrow arrowRight;
         private GuiButton arrowRemove;
 
+        private RenderPattern subGui;
+        private IValueTypeLogicProgrammerElement subElement;
+
         public ListElementSubGui(ValueTypeIngredientsLPElement element, int baseX, int baseY, int maxWidth,
             int maxHeight, GuiLogicProgrammerBase gui, ContainerLogicProgrammerBase container) {
             super(element, baseX, baseY, maxWidth, maxHeight, gui, container);
-            RenderPattern subGui = element.subElementGuis.get(element.currentType)
+            this.subGui = element.subElementGuis.get(element.currentType)
                 .get(element.activeElement);
-            IValueTypeLogicProgrammerElement subElement = element.subElements.get(element.currentType)
+            this.subElement = element.subElements.get(element.currentType)
                 .get(element.activeElement);
             if (subGui == null) {
                 subGui = (RenderPattern) subElement
@@ -414,8 +527,8 @@ public class ValueTypeIngredientsLPElement extends ValueTypeLPElementBase {
                 element.subElementGuis.get(element.currentType)
                     .put(element.activeElement, subGui);
             }
-            int x = getX() + baseX - 24;
-            int y = getY() + baseY - 23;
+            int x = getX() + baseX - OFFSET_X;
+            int y = getY() + baseY - OFFSET_Y;
             gui.getContainer()
                 .setElementInventory(subElement, x, y);
             subElement.setValueInGui(subGui);
@@ -460,6 +573,8 @@ public class ValueTypeIngredientsLPElement extends ValueTypeLPElementBase {
             arrowLeft.enabled = element.activeElement > 0;
             arrowRight.enabled = element.activeElement < element.getLength() - 1;
             arrowRemove.enabled = element.getLength() > 0;
+            subElement.setValueInGui(subGui);
+            subElement.setValueInContainer(subGui.container);
         }
 
         @Override

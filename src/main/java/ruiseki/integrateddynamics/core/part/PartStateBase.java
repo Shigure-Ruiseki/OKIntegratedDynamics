@@ -3,6 +3,7 @@ package ruiseki.integrateddynamics.core.part;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraftforge.common.MinecraftForge;
@@ -10,7 +11,11 @@ import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector3i;
 
+import com.google.common.collect.Maps;
+
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import ruiseki.integrateddynamics.GeneralConfig;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.network.INetwork;
@@ -21,13 +26,17 @@ import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.api.part.aspect.IAspect;
 import ruiseki.integrateddynamics.api.part.aspect.property.IAspectProperties;
+import ruiseki.integrateddynamics.core.evaluate.InventoryVariableEvaluator;
 import ruiseki.integrateddynamics.core.part.aspect.property.AspectProperties;
 import ruiseki.integrateddynamics.part.aspect.Aspects;
 import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.capabilities.CapabilityDispatcher;
 import ruiseki.okcore.datastructure.LazyOptional;
+import ruiseki.okcore.datastructure.NonNullList;
+import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.persist.IDirtyMarkListener;
+import ruiseki.okcore.persist.nbt.NBTClassType;
 
 /**
  * A default implementation of the {@link IPartState}.
@@ -42,10 +51,15 @@ public abstract class PartStateBase<P extends IPartType> implements IPartState<P
     private int updateInterval = getDefaultUpdateInterval();
     private int priority = 0;
     private int channel = 0;
+    private int maxOffset;
+    private Vector3i targetOffset = new Vector3i(0, 0, 0);
     private ForgeDirection targetSide = null;
     private int id = -1;
     private Map<IAspect, IAspectProperties> aspectProperties = new IdentityHashMap<>();
     private boolean enabled = true;
+    private final Map<String, NonNullList<ItemStack>> inventoriesNamed = Maps.newHashMap();
+    private final PartStateOffsetHandler<P> offsetHandler = new PartStateOffsetHandler<>();
+
     private CapabilityDispatcher capabilities = null;
     private IdentityHashMap<Capability<?>, LazyOptional<?>> volatileCapabilities = new IdentityHashMap<>();
 
@@ -63,6 +77,32 @@ public abstract class PartStateBase<P extends IPartType> implements IPartState<P
         if (this.capabilities != null) {
             tag.setTag("OKCaps", this.capabilities.serializeNBT());
         }
+        tag.setInteger("maxOffset", this.maxOffset);
+        tag.setInteger("offsetX", this.targetOffset.x());
+        tag.setInteger("offsetY", this.targetOffset.y());
+        tag.setInteger("offsetZ", this.targetOffset.z());
+
+        // Write inventoriesNamed
+        NBTTagList namedInventoriesList = new NBTTagList();
+        for (Map.Entry<String, NonNullList<ItemStack>> entry : this.inventoriesNamed.entrySet()) {
+            NBTTagCompound listEntry = new NBTTagCompound();
+            listEntry.setString("tabName", entry.getKey());
+            listEntry.setInteger(
+                "itemCount",
+                entry.getValue()
+                    .size());
+
+            ItemHelpers.saveAllItems(listEntry, entry.getValue());
+            namedInventoriesList.appendTag(listEntry);
+        }
+        tag.setTag("inventoriesNamed", namedInventoriesList);
+
+        // Write offsetVariablesSlotMessages
+        NBTTagCompound errorsTag = new NBTTagCompound();
+        for (Int2ObjectMap.Entry<String> entry : this.offsetHandler.offsetVariablesSlotMessages.int2ObjectEntrySet()) {
+            NBTClassType.writeNbt(String.class, String.valueOf(entry.getIntKey()), entry.getValue(), errorsTag);
+        }
+        tag.setTag("offsetVariablesSlotMessages", errorsTag);
     }
 
     @Override
@@ -79,6 +119,32 @@ public abstract class PartStateBase<P extends IPartType> implements IPartState<P
         this.enabled = tag.getBoolean("enabled");
         if (this.capabilities != null && tag.hasKey("OKCaps")) {
             this.capabilities.deserializeNBT(tag.getCompoundTag("OKCaps"));
+        }
+        this.maxOffset = tag.getInteger("maxOffset");
+        this.targetOffset = new Vector3i(
+            tag.getInteger("offsetX"),
+            tag.getInteger("offsetY"),
+            tag.getInteger("offsetZ"));
+
+        // Read inventoriesNamed
+        this.inventoriesNamed.clear();
+        NBTTagList namedInventoriesList = tag.getTagList("inventoriesNamed", Constants.NBT.TAG_COMPOUND);
+        for (int i = 0; i < namedInventoriesList.tagCount(); i++) {
+            NBTTagCompound listEntry = namedInventoriesList.getCompoundTagAt(i);
+            String tabName = listEntry.getString("tabName");
+            int itemCount = listEntry.getInteger("itemCount");
+
+            NonNullList<ItemStack> list = NonNullList.withSize(itemCount, null);
+            ItemHelpers.loadAllItems(listEntry, list);
+            this.inventoriesNamed.put(tabName, list);
+        }
+
+        // Read offsetVariablesSlotMessages
+        this.offsetHandler.offsetVariablesSlotMessages.clear();
+        NBTTagCompound errorsTag = tag.getCompoundTag("offsetVariablesSlotMessages");
+        for (String slot : errorsTag.func_150296_c()) {
+            String unlocalizedString = NBTClassType.readNbt(String.class, slot, errorsTag);
+            this.offsetHandler.offsetVariablesSlotMessages.put(Integer.parseInt(slot), unlocalizedString);
         }
     }
 
@@ -163,6 +229,17 @@ public abstract class PartStateBase<P extends IPartType> implements IPartState<P
     }
 
     @Override
+    public Vector3i getTargetOffset() {
+        return targetOffset;
+    }
+
+    @Override
+    public void setTargetOffset(Vector3i targetOffset) {
+        this.targetOffset = targetOffset;
+        this.markDirty();
+    }
+
+    @Override
     public void setTargetSideOverride(ForgeDirection targetSide) {
         this.targetSide = targetSide;
     }
@@ -171,6 +248,11 @@ public abstract class PartStateBase<P extends IPartType> implements IPartState<P
     @Override
     public ForgeDirection getTargetSideOverride() {
         return targetSide;
+    }
+
+    @Override
+    public void markDirty() {
+        this.dirty = true;
     }
 
     @Override
@@ -237,6 +319,25 @@ public abstract class PartStateBase<P extends IPartType> implements IPartState<P
         return enabled;
     }
 
+    public NonNullList<ItemStack> getInventoryNamed(String name) {
+        return this.inventoriesNamed.get(name);
+    }
+
+    public void setInventoryNamed(String name, NonNullList<ItemStack> inventory) {
+        this.inventoriesNamed.put(name, inventory);
+        onDirty();
+    }
+
+    @Override
+    public Map<String, NonNullList<ItemStack>> getInventoriesNamed() {
+        return this.inventoriesNamed;
+    }
+
+    @Override
+    public void clearInventoriesNamed() {
+        this.inventoriesNamed.clear();
+    }
+
     /**
      * Gathers the capabilities of this part state.
      * Don't call this unless you know what you're doing!
@@ -259,10 +360,6 @@ public abstract class PartStateBase<P extends IPartType> implements IPartState<P
     }
 
     @Override
-    public <T> void addVolatileCapability(Capability<T> capability, T value) {
-        addVolatileCapability(capability, LazyOptional.of(() -> value));
-    }
-
     public <T> void addVolatileCapability(Capability<T> capability, LazyOptional<T> lazyOptional) {
         volatileCapabilities.put(capability, lazyOptional);
     }
@@ -277,5 +374,43 @@ public abstract class PartStateBase<P extends IPartType> implements IPartState<P
 
     protected int getDefaultUpdateInterval() {
         return GeneralConfig.defaultPartUpdateFreq;
+    }
+
+    @Override
+    public void initializeOffsets() {
+        this.offsetHandler.initializeVariableEvaluators(this.offsetHandler.getOffsetVariablesInventory(this));
+    }
+
+    @Override
+    public void updateOffsetVariables(P partType, INetwork network, IPartNetwork partNetwork, PartTarget target) {
+        this.offsetHandler.updateOffsetVariables(partType, this, network, partNetwork, target);
+    }
+
+    @Nullable
+    @Override
+    public String getOffsetVariableError(int slot) {
+        return this.offsetHandler.getOffsetVariableError(slot);
+    }
+
+    @Override
+    public boolean requiresOffsetUpdates() {
+        return this.offsetHandler.offsetVariableEvaluators.stream()
+            .anyMatch(InventoryVariableEvaluator::hasVariable);
+    }
+
+    @Override
+    public void markOffsetVariablesChanged() {
+        this.offsetHandler.markOffsetVariablesChanged();
+    }
+
+    @Override
+    public int getMaxOffset() {
+        return maxOffset;
+    }
+
+    @Override
+    public void setMaxOffset(int maxOffset) {
+        this.maxOffset = maxOffset;
+        markDirty();
     }
 }

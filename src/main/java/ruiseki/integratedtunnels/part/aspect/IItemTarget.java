@@ -7,6 +7,7 @@ import net.minecraft.tileentity.TileEntity;
 import org.jetbrains.annotations.Nullable;
 
 import ruiseki.commoncapabilities.api.ingredient.storage.IIngredientComponentStorage;
+import ruiseki.commoncapabilities.api.ingredient.storage.IIngredientComponentStorageSlotted;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.integrateddynamics.api.part.PartTarget;
@@ -19,9 +20,11 @@ import ruiseki.okcore.capabilities.ICapabilityProvider;
 /**
  * @author rubensworks
  */
-public interface IItemTarget extends IChanneledTarget<IItemNetwork> {
+public interface IItemTarget extends IChanneledTarget<IItemNetwork, ItemStack> {
 
     public IIngredientComponentStorage<ItemStack, Integer> getItemChannel();
+
+    public IIngredientComponentStorageSlotted<ItemStack, Integer> getItemChannelSlotted();
 
     public IIngredientComponentStorage<ItemStack, Integer> getStorage();
 

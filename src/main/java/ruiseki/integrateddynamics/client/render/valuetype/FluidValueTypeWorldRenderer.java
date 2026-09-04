@@ -1,7 +1,5 @@
 package ruiseki.integrateddynamics.client.render.valuetype;
 
-import java.util.Optional;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.Tessellator;
@@ -19,6 +17,7 @@ import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueObjectTypeFluidStack;
 import ruiseki.okcore.client.renderer.GlStateManager;
+import ruiseki.okcore.helper.FluidHelpers;
 import ruiseki.okcore.helper.Helpers;
 import ruiseki.okcore.helper.RenderHelpers;
 
@@ -33,9 +32,8 @@ public class FluidValueTypeWorldRenderer implements IValueTypeWorldRenderer {
     public void renderValue(IPartContainer partContainer, double x, double y, double z, float partialTick,
         int destroyStage, ForgeDirection direction, IPartType partType, IValue value,
         TileEntityRendererDispatcher rendererDispatcher, float alpha) {
-        Optional<FluidStack> fluidStackOptional = ((ValueObjectTypeFluidStack.ValueFluidStack) value).getRawValue();
-        if (fluidStackOptional.isPresent() && fluidStackOptional.get() != null) {
-            FluidStack fluidStack = fluidStackOptional.get();
+        FluidStack fluidStack = ((ValueObjectTypeFluidStack.ValueFluidStack) value).getRawValue();
+        if (!FluidHelpers.isEmpty(fluidStack)) {
 
             // Render Fluid Texture Quad
             GlStateManager.pushMatrix();

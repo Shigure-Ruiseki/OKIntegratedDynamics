@@ -5,8 +5,14 @@ import ruiseki.integratedterminals.IntegratedTerminals;
 import ruiseki.integratedterminals.network.packet.CancelCraftingJobPacket;
 import ruiseki.integratedterminals.network.packet.OpenCraftingJobsGuiPacket;
 import ruiseki.integratedterminals.network.packet.OpenCraftingJobsPlanGuiPacket;
+import ruiseki.integratedterminals.network.packet.PacketSetCraftingDataItem;
+import ruiseki.integratedterminals.network.packet.PacketSetCraftingDataPart;
+import ruiseki.integratedterminals.network.packet.TerminalStorageChangeGuiState;
 import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientChangeEventPacket;
+import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientCraftingJobsPacket;
 import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientCraftingOptionsPacket;
+import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientItemOpenGenericPacket;
+import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientItemOpenPacket;
 import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientItemStackCraftingGridBalance;
 import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientItemStackCraftingGridClear;
 import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientItemStackCraftingGridSetAutoRefill;
@@ -15,7 +21,7 @@ import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientItemS
 import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientMaxQuantityPacket;
 import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientOpenCraftingJobAmountGuiPacket;
 import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientOpenCraftingPlanGuiPacket;
-import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientOpenPacket;
+import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientPartOpenPacket;
 import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientSlotClickPacket;
 import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientUpdateActiveStorageIngredientPacket;
 import ruiseki.integratedterminals.proxy.guiprovider.GuiProviders;
@@ -41,11 +47,17 @@ public class CommonProxy extends CommonProxyComponent {
         super.registerPacketHandlers(packetHandler);
 
         // Register packets.
-        packetHandler.register(TerminalStorageIngredientOpenPacket.class);
+        packetHandler.register(TerminalStorageIngredientPartOpenPacket.class);
+        packetHandler.register(TerminalStorageIngredientItemOpenPacket.class);
+        packetHandler.register(TerminalStorageIngredientItemOpenGenericPacket.class);
+        packetHandler.register(TerminalStorageChangeGuiState.class);
         packetHandler.register(TerminalStorageIngredientChangeEventPacket.class);
         packetHandler.register(TerminalStorageIngredientCraftingOptionsPacket.class);
+        packetHandler.register(TerminalStorageIngredientCraftingJobsPacket.class);
         packetHandler.register(TerminalStorageIngredientMaxQuantityPacket.class);
         packetHandler.register(TerminalStorageIngredientSlotClickPacket.class);
+        packetHandler.register(PacketSetCraftingDataPart.class);
+        packetHandler.register(PacketSetCraftingDataItem.class);
         packetHandler.register(TerminalStorageIngredientOpenCraftingPlanGuiPacket.class);
         packetHandler.register(TerminalStorageIngredientOpenCraftingJobAmountGuiPacket.class);
         packetHandler.register(TerminalStorageIngredientUpdateActiveStorageIngredientPacket.class);

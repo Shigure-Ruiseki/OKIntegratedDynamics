@@ -37,6 +37,7 @@ public abstract class ContainerMultipart<P extends IPartType<P, S> & IGuiContain
     extends ExtendedInventoryContainer implements IDirtyMarkListener {
 
     public static final int BUTTON_SETTINGS = 1;
+    public static final int BUTTON_OFFSETS = 2;
     private static final int PAGE_SIZE = 3;
 
     private final PartTarget target;
@@ -94,6 +95,27 @@ public abstract class ContainerMultipart<P extends IPartType<P, S> & IGuiContain
                 }
             }
         });
+
+        putButtonAction(GuiMultipart.BUTTON_OFFSETS, new IButtonActionServer<InventoryContainer>() {
+
+            @Override
+            public void onAction(int buttonId, InventoryContainer container) {
+                if (!world.isRemote) {
+                    IGuiContainerProvider gui = ((PartTypeConfigurable<?, ?>) getPartType()).getOffsetsGuiProvider();
+                    IntegratedDynamics._instance.getGuiHandler()
+                        .setTemporaryData(
+                            ExtendedGuiHandler.PART,
+                            getTarget().getCenter()
+                                .getSide()); // Pass the side as extra data to the gui
+                    BlockPos cPos = getTarget().getCenter()
+                        .getPos()
+                        .getBlockPos();
+                    ContainerMultipart.this.player
+                        .openGui(gui.getModGui(), gui.getGuiID(), world, cPos.getX(), cPos.getY(), cPos.getZ());
+                }
+            }
+        });
+
     }
 
     @SuppressWarnings("unchecked")

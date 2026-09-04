@@ -62,6 +62,8 @@ public class AspectWriteBuilders {
         AspectBuilder.forWriteType(ValueTypes.BOOLEAN));
     public static final AspectBuilder<ValueTypeInteger.ValueInteger, ValueTypeInteger, Triple<PartTarget, IAspectProperties, ValueTypeInteger.ValueInteger>> BUILDER_INTEGER = getValue(
         AspectBuilder.forWriteType(ValueTypes.INTEGER));
+    public static final AspectBuilder<ValueTypeLong.ValueLong, ValueTypeLong, Triple<PartTarget, IAspectProperties, ValueTypeLong.ValueLong>> BUILDER_LONG = getValue(
+        AspectBuilder.forWriteType(ValueTypes.LONG));
     public static final AspectBuilder<ValueTypeDouble.ValueDouble, ValueTypeDouble, Triple<PartTarget, IAspectProperties, ValueTypeDouble.ValueDouble>> BUILDER_DOUBLE = getValue(
         AspectBuilder.forWriteType(ValueTypes.DOUBLE));
     public static final AspectBuilder<ValueTypeString.ValueString, ValueTypeString, Triple<PartTarget, IAspectProperties, ValueTypeString.ValueString>> BUILDER_STRING = getValue(
@@ -112,8 +114,7 @@ public class AspectWriteBuilders {
             input.getLeft(),
             input.getMiddle(),
             input.getRight()
-                .getRawValue()
-                .orElse(null));
+                .getRawValue());
 
     public static final IAspectValuePropagator<Triple<PartTarget, IAspectProperties, ValueTypeString.ValueString>, Triple<PartTarget, IAspectProperties, String>> PROP_GET_STRING = input -> Triple
         .of(
@@ -135,8 +136,7 @@ public class AspectWriteBuilders {
             input.getLeft(),
             input.getMiddle(),
             input.getRight()
-                .getRawValue()
-                .orElse(null));
+                .getRawValue());
 
     public static final IAspectValuePropagator<Triple<PartTarget, IAspectProperties, ValueTypeNbt.ValueNbt>, Triple<PartTarget, IAspectProperties, NBTTagCompound>> PROP_GET_NBT = input -> Triple
         .of(
@@ -264,16 +264,13 @@ public class AspectWriteBuilders {
 
         public static final IAspectPropertyTypeInstance<ValueTypeDouble, ValueTypeDouble.ValueDouble> PROP_OFFSET_X = new AspectPropertyTypeInstance<>(
             ValueTypes.DOUBLE,
-            "aspect.aspecttypes.integrateddynamics.double.offset_x.name",
-            AspectReadBuilders.VALIDATOR_DOUBLE_POSITIVE);
+            "aspect.aspecttypes.integrateddynamics.double.offset_x");
         public static final IAspectPropertyTypeInstance<ValueTypeDouble, ValueTypeDouble.ValueDouble> PROP_OFFSET_Y = new AspectPropertyTypeInstance<>(
             ValueTypes.DOUBLE,
-            "aspect.aspecttypes.integrateddynamics.double.offset_y.name",
-            AspectReadBuilders.VALIDATOR_DOUBLE_POSITIVE);
+            "aspect.aspecttypes.integrateddynamics.double.offset_y");
         public static final IAspectPropertyTypeInstance<ValueTypeDouble, ValueTypeDouble.ValueDouble> PROP_OFFSET_Z = new AspectPropertyTypeInstance<>(
             ValueTypes.DOUBLE,
-            "aspect.aspecttypes.integrateddynamics.double.offset_z.name",
-            AspectReadBuilders.VALIDATOR_DOUBLE_POSITIVE);
+            "aspect.aspecttypes.integrateddynamics.double.offset_z");
         public static final IAspectPropertyTypeInstance<ValueTypeInteger, ValueTypeInteger.ValueInteger> PROP_PARTICLES = new AspectPropertyTypeInstance<>(
             ValueTypes.INTEGER,
             "aspect.aspecttypes.integrateddynamics.integer.particles.name",

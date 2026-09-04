@@ -1,0 +1,45 @@
+{
+    "__comment": "Model generated using Mr_crayfish's Model Creator (http://mrcrayfish.com/modelcreator/)",
+    "textures": {
+        "texture": "integrateddynamics:models/squeezer"
+    },
+    "elements": [
+        {
+            "__comment": "Base",
+            "from": [ 0, 8, 2 ],
+            "to": [ 16, 10, 14 ],
+            "faces": {
+                "down":  { "uv": [ 3.5, 1, 11.5, 7 ], "texture": "#texture" },
+                "up":    { "uv": [ 3.5, 1, 11.5, 7 ], "texture": "#texture", "cullface": "up" },
+                "north": { "uv": [ 3.5, 9.5, 9.5, 8.5 ], "texture": "#texture" },
+                "south": { "uv": [ 3.5, 9.5, 9.5, 8.5 ], "texture": "#texture" },
+                "west":  { "uv": [ 3.5, 9.5, 9.5, 8.5 ], "texture": "#texture", "cullface": "west" },
+                "east":  { "uv": [ 3.5, 9.5, 9.5, 8.5 ], "texture": "#texture", "cullface": "east" }
+            }
+        },
+        {
+            "__comment": "Base_left",
+            "from": [ 2, 8, 0 ],
+            "to": [ 14, 10, 2 ],
+            "faces": {
+                "down":  { "uv": [ 4.5, 1, 10.5, 0 ], "texture": "#texture" },
+                "up":    { "uv": [ 4.5, 0, 10.5, 1 ], "texture": "#texture", "cullface": "up" },
+                "north": { "uv": [ 3.5, 9.5, 9.5, 8.5 ], "texture": "#texture", "cullface": "north" },
+                "west":  { "uv": [ 3.5, 9.5, 4.5, 8.5 ], "texture": "#texture" },
+                "east":  { "uv": [ 3.5, 9.5, 4.5, 8.5 ], "texture": "#texture" }
+            }
+        },
+        {
+            "__comment": "Base_right",
+            "from": [ 2, 8, 14 ],
+            "to": [ 14, 10, 16 ],
+            "faces": {
+                "down":  { "uv": [ 4.5, 8, 10.5, 7 ], "texture": "#texture" },
+                "up":    { "uv": [ 4.5, 7, 10.5, 8 ], "texture": "#texture", "cullface": "up" },
+                "south": { "uv": [ 3.5, 9.5, 9.5, 8.5 ], "texture": "#texture", "cullface": "south" },
+                "west":  { "uv": [ 3.5, 9.5, 4.5, 8.5 ], "texture": "#texture" },
+                "east":  { "uv": [ 3.5, 9.5, 4.5, 8.5 ], "texture": "#texture" }
+            }
+        }
+    ]
+}

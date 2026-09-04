@@ -12,7 +12,6 @@ import lombok.EqualsAndHashCode;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
-import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartState;
 import ruiseki.integrateddynamics.api.part.IPartType;
@@ -175,19 +174,10 @@ public class ContainerAspectSettings extends ExtendedInventoryContainer {
 
                 // Changing the properties might cause some erroring variables to become valid again, so trigger an
                 // update.
-                INetwork network = NetworkHelpers.getNetwork(
-                    getTarget().getCenter()
-                        .getPos()
-                        .getWorld(),
-                    getTarget().getCenter()
-                        .getPos()
-                        .getBlockPos(),
-                    getTarget().getCenter()
-                        .getSide());
-                if (network != null) {
-                    network.getEventBus()
-                        .post(new VariableContentsUpdatedEvent(network));
-                }
+                NetworkHelpers.getNetwork(target.getCenter())
+                    .ifPresent(
+                        network -> network.getEventBus()
+                            .post(new VariableContentsUpdatedEvent(network)));
             }
         }
     }

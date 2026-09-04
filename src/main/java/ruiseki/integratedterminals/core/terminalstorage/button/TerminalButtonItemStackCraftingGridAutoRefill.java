@@ -32,6 +32,7 @@ public class TerminalButtonItemStackCraftingGridAutoRefill<T> implements
 
     private final TerminalStorageState state;
     private final String buttonName;
+    private final ITerminalStorageTabClient<?> clientTab;
 
     private AutoRefillType active;
 
@@ -39,21 +40,34 @@ public class TerminalButtonItemStackCraftingGridAutoRefill<T> implements
         ITerminalStorageTabClient<?> clientTab) {
         this.state = state;
         this.buttonName = "itemstack_grid_autorefill";
+        this.clientTab = clientTab;
 
-        if (state.hasButton(
-            clientTab.getName()
-                .toString(),
-            this.buttonName)) {
-            NBTTagCompound data = (NBTTagCompound) state.getButton(
-                clientTab.getName()
-                    .toString(),
-                this.buttonName);
-            this.active = AutoRefillType.values()[data.getInteger("active")];
+        reloadFromState();
+
+        notifyServer((TerminalStorageTabIngredientComponentClient<T, ?>) clientTab);
+    }
+
+    @Override
+    public void reloadFromState() {
+        String tabName = clientTab.getTabSettingsName()
+            .toString();
+
+        if (state.hasButton(tabName, this.buttonName)) {
+            NBTTagCompound data = (NBTTagCompound) state.getButton(tabName, this.buttonName);
+            if (data != null && data.hasKey("active")) {
+                int activeIndex = data.getInteger("active");
+                AutoRefillType[] values = AutoRefillType.values();
+                if (activeIndex >= 0 && activeIndex < values.length) {
+                    this.active = values[activeIndex];
+                } else {
+                    this.active = AutoRefillType.STORAGE;
+                }
+            } else {
+                this.active = AutoRefillType.STORAGE;
+            }
         } else {
             this.active = AutoRefillType.STORAGE;
         }
-
-        notifyServer((TerminalStorageTabIngredientComponentClient<T, ?>) clientTab);
     }
 
     protected void notifyServer(TerminalStorageTabIngredientComponentClient<T, ?> clientTab) {
@@ -88,7 +102,7 @@ public class TerminalButtonItemStackCraftingGridAutoRefill<T> implements
         NBTTagCompound data = new NBTTagCompound();
         data.setInteger("active", active.ordinal());
         state.setButton(
-            clientTab.getName()
+            clientTab.getTabSettingsName()
                 .toString(),
             this.buttonName,
             data);

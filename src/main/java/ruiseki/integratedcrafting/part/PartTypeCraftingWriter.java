@@ -33,7 +33,7 @@ public class PartTypeCraftingWriter
 
     @Override
     public PartStateWriterBase<PartTypeCraftingWriter> constructDefaultState() {
-        return new PartStateWriterBase<>(
+        return new State(
             Aspects.REGISTRY.getAspects(this)
                 .size());
     }
@@ -53,4 +53,20 @@ public class PartTypeCraftingWriter
         return IntegratedDynamics._instance;
     }
 
+    public static class State extends PartStateWriterBase<PartTypeCraftingWriter> {
+
+        protected long initialTickCraftingTrigger = -1;
+
+        public State(int inventorySize) {
+            super(inventorySize);
+        }
+
+        public long getInitialTickCraftingTrigger() {
+            return initialTickCraftingTrigger;
+        }
+
+        public void setInitialTickCraftingTrigger(long initialTickCraftingTrigger) {
+            this.initialTickCraftingTrigger = initialTickCraftingTrigger;
+        }
+    }
 }

@@ -26,7 +26,7 @@ import ruiseki.integrateddynamics.core.evaluate.variable.ValueObjectTypeIngredie
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueObjectTypeItemStack;
 import ruiseki.integrateddynamics.core.ingredient.IngredientComponentHandlers;
 import ruiseki.okcore.client.renderer.GlStateManager;
-import ruiseki.okcore.helper.ItemStackHelpers;
+import ruiseki.okcore.helper.ItemHelpers;
 
 /**
  * A value type world renderer for blocks.
@@ -90,14 +90,13 @@ public class IngredientsValueTypeWorldRenderer implements IValueTypeWorldRendere
 
                     if (renderValue instanceof ValueObjectTypeItemStack.ValueItemStack) {
                         ValueObjectTypeItemStack.ValueItemStack itemValue = (ValueObjectTypeItemStack.ValueItemStack) renderValue;
-                        if (itemValue.getRawValue()
-                            .isPresent()) {
-                            ItemStack itemStackRaw = itemValue.getRawValue()
-                                .get();
+                        ItemStack itemStackRaw = itemValue.getRawValue();
+
+                        if (!ItemHelpers.isEmpty(itemStackRaw)) {
                             if (itemStackRaw.getItemDamage() == OreDictionary.WILDCARD_VALUE) {
-                                List<ItemStack> subItems = ItemStackHelpers.getSubItems(itemStackRaw);
+                                List<ItemStack> subItems = ItemHelpers.getSubItems(itemStackRaw);
                                 int subtick = ((int) Minecraft.getMinecraft().theWorld.getWorldTime()) / 10;
-                                ItemStack itemStack = prepareElementForTick(subItems, subtick, () -> null);
+                                ItemStack itemStack = prepareElementForTick(subItems, subtick, () -> ItemHelpers.EMPTY);
                                 renderValue = ValueObjectTypeItemStack.ValueItemStack.of(itemStack);
                             }
                         }

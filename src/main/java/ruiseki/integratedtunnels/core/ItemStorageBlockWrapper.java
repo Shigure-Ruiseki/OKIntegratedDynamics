@@ -38,6 +38,7 @@ import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.helper.BlockHelpers;
 import ruiseki.okcore.helper.BlockStateHelpers;
 import ruiseki.okcore.helper.Helpers;
+import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.ingredient.collection.FilteredIngredientCollectionIterator;
 
 /**
@@ -154,7 +155,7 @@ public class ItemStorageBlockWrapper implements IIngredientComponentStorage<Item
                                 int damage = block.damageDropped(meta);
                                 drops = Lists.newArrayList(new ItemStack(item, 1, damage));
                             } else {
-                                drops = new ArrayList<ItemStack>();
+                                drops = new ArrayList<>();
                             }
                         } else {
                             drops = Lists
@@ -176,15 +177,9 @@ public class ItemStorageBlockWrapper implements IIngredientComponentStorage<Item
                             if (breakOnNoDrops) {
                                 removeBlock(state, player);
                             }
-                            drops = new ArrayList<ItemStack>();
+                            drops = new ArrayList<>();
                         } else {
-                            Iterator<ItemStack> it = drops.iterator();
-                            while (it.hasNext()) {
-                                ItemStack next = it.next();
-                                if (next == null || next.stackSize <= 0) {
-                                    it.remove();
-                                }
-                            }
+                            drops.removeIf(ItemHelpers::isEmpty);
                         }
                         if (world.rand.nextFloat() <= dropChance) {
                             return cachedDrops = drops;
@@ -193,7 +188,7 @@ public class ItemStorageBlockWrapper implements IIngredientComponentStorage<Item
                 }
             }
         }
-        return new ArrayList<ItemStack>();
+        return new ArrayList<>();
     }
 
     protected IBlockPlaceHandler getBlockPlaceHandler(ItemStack itemStack, World world, BlockPos pos,
@@ -204,10 +199,9 @@ public class ItemStorageBlockWrapper implements IIngredientComponentStorage<Item
     }
 
     protected ItemStack setItemStack(ItemStack itemStack, boolean simulate) {
-        if (itemStack != null && itemStack.stackSize == 1) {
+        if (!ItemHelpers.isEmpty(itemStack) && itemStack.stackSize == 1) {
             Item item = itemStack.getItem();
-            if (item instanceof ItemBlock) {
-                ItemBlock itemBlock = (ItemBlock) item;
+            if (item instanceof ItemBlock itemBlock) {
 
                 EntityPlayer player = PlayerHelpers.getFakePlayer(world);
 
@@ -217,18 +211,21 @@ public class ItemStorageBlockWrapper implements IIngredientComponentStorage<Item
                     world,
                     pos,
                     opposite,
-                    0,
-                    0,
-                    0,
+                    0.5F,
+                    0.5F,
+                    0.5F,
                     player);
+
                 if (blockPlaceHandler != null) {
                     if (!simulate) {
-                        blockPlaceHandler.placeBlock(itemStack, world, pos, opposite, 0, 0, 0, player);
+                        blockPlaceHandler.placeBlock(itemStack, world, pos, opposite, 0.5F, 0.5F, 0.5F, player);
                     }
-                    return null;
+                    return ItemHelpers.EMPTY;
                 } else {
                     Block block = itemBlock.field_150939_a;
-                    if (world.canPlaceEntityOnSide(
+
+                    // Check if placement on the targeted face is valid
+                    boolean canPlace = world.canPlaceEntityOnSide(
                         block,
                         pos.getX(),
                         pos.getY(),
@@ -236,39 +233,45 @@ public class ItemStorageBlockWrapper implements IIngredientComponentStorage<Item
                         false,
                         opposite.ordinal(),
                         player,
-                        itemStack)) {
-                        if (!simulate) {
-                            int placeX = pos.getX() - opposite.offsetX;
-                            int placeY = pos.getY() - opposite.offsetY;
-                            int placeZ = pos.getZ() - opposite.offsetZ;
-                            if (itemBlock.onItemUse(
-                                itemStack,
-                                player,
-                                world,
-                                placeX,
-                                placeY,
-                                placeZ,
-                                opposite.ordinal(),
-                                0.5F,
-                                0.5F,
-                                0.5F)) {
-                                if (GeneralConfig.worldInteractionEvents) {
-                                    BlockState placedState = BlockStateHelpers.getState(world, pos);
-                                    Block placedBlock = placedState.getBlock();
-                                    world.playSoundEffect(
-                                        pos.getX() + 0.5D,
-                                        pos.getY() + 0.5D,
-                                        pos.getZ() + 0.5D,
-                                        placedBlock.stepSound.soundName,
-                                        (placedBlock.stepSound.getVolume() + 1.0F) / 2.0F,
-                                        placedBlock.stepSound.getPitch() * 0.8F);
-                                }
-                                if (blockUpdate) {
-                                    sendBlockUpdate();
-                                }
-                            }
+                        itemStack);
+
+                    if (canPlace) {
+                        if (simulate) {
+                            // Successfully validated simulation step without altering the world
+                            return ItemHelpers.EMPTY;
                         }
-                        return null;
+
+                        // Pass target pos directly: onItemUse handles side offsets internally
+                        if (itemBlock.onItemUse(
+                            itemStack,
+                            player,
+                            world,
+                            pos.getX(),
+                            pos.getY(),
+                            pos.getZ(),
+                            opposite.ordinal(),
+                            0.5F,
+                            0.5F,
+                            0.5F)) {
+
+                            if (GeneralConfig.worldInteractionEvents) {
+                                BlockState placedState = BlockStateHelpers.getState(world, pos);
+                                Block placedBlock = placedState.getBlock();
+                                world.playSoundEffect(
+                                    pos.getX() + 0.5D,
+                                    pos.getY() + 0.5D,
+                                    pos.getZ() + 0.5D,
+                                    placedBlock.stepSound.soundName,
+                                    (placedBlock.stepSound.getVolume() + 1.0F) / 2.0F,
+                                    placedBlock.stepSound.getPitch() * 0.8F);
+                            }
+
+                            if (blockUpdate) {
+                                sendBlockUpdate();
+                            }
+
+                            return ItemHelpers.EMPTY;
+                        }
                     }
                 }
             }
@@ -298,22 +301,23 @@ public class ItemStorageBlockWrapper implements IIngredientComponentStorage<Item
 
     @Override
     public ItemStack insert(@Nonnull ItemStack stack, boolean simulate) {
-        if (stack == null || stack.stackSize <= 0) {
-            return null;
+        if (ItemHelpers.isEmpty(stack)) {
+            return ItemHelpers.EMPTY;
         }
 
         List<ItemStack> itemStacks = getItemStacks();
         if (!itemStacks.isEmpty()) {
             ItemStack itemStack = itemStacks.get(0);
-            if (itemStack != null && itemStack.stackSize > 0) {
+            if (!ItemHelpers.isEmpty(itemStack)) {
                 return stack;
             }
         }
 
-        ItemStack remaining = stack.copy();
-        ItemStack single = remaining.splitStack(1);
-        if (setItemStack(single, simulate) == null) {
-            return remaining.stackSize <= 0 ? null : remaining;
+        ItemStack remaining = ItemHelpers.copy(stack);
+        ItemStack single = ItemHelpers.split(remaining, 1);
+
+        if (ItemHelpers.isEmpty(setItemStack(single, simulate))) {
+            return ItemHelpers.isEmpty(remaining) ? ItemHelpers.EMPTY : remaining;
         }
 
         return stack;
@@ -322,7 +326,7 @@ public class ItemStorageBlockWrapper implements IIngredientComponentStorage<Item
     public void postExtract() {
         boolean allEmpty = true;
         for (ItemStack stack : getItemStacks()) {
-            if (stack != null && stack.stackSize > 0) {
+            if (!ItemHelpers.isEmpty(stack)) {
                 allEmpty = false;
                 break;
             }
@@ -336,8 +340,8 @@ public class ItemStorageBlockWrapper implements IIngredientComponentStorage<Item
 
     @Override
     public ItemStack extract(@Nonnull ItemStack prototype, Integer matchCondition, boolean simulate) {
-        if (prototype == null || prototype.stackSize <= 0) {
-            return null;
+        if (ItemHelpers.isEmpty(prototype)) {
+            return ItemHelpers.EMPTY;
         }
 
         IIngredientMatcher<ItemStack, Integer> matcher = getComponent().getMatcher();
@@ -345,28 +349,28 @@ public class ItemStorageBlockWrapper implements IIngredientComponentStorage<Item
             .getMatchCondition();
         Integer subMatchCondition = matcher.withoutCondition(matchCondition, quantityFlag);
         List<ItemStack> itemStacks = getItemStacks();
+
         if (itemStacks.isEmpty()) {
-            return null;
+            return ItemHelpers.EMPTY;
         }
 
         ListIterator<ItemStack> it = itemStacks.listIterator();
         while (it.hasNext()) {
             ItemStack itemStack = it.next();
-            if (itemStack != null && matcher.matches(prototype, itemStack, subMatchCondition)
+            if (!ItemHelpers.isEmpty(itemStack) && matcher.matches(prototype, itemStack, subMatchCondition)
                 && (!matcher.hasCondition(matchCondition, quantityFlag)
                     || itemStack.stackSize >= prototype.stackSize)) {
 
-                itemStack = itemStack.copy();
-                ItemStack ret = itemStack.splitStack(Helpers.castSafe(prototype.stackSize));
+                itemStack = ItemHelpers.copy(itemStack);
+                int extractCount = Math.min(itemStack.stackSize, Helpers.castSafe(prototype.stackSize));
+                ItemStack ret = ItemHelpers.split(itemStack, extractCount);
+
                 if (!simulate) {
-                    if (itemStack.stackSize <= 0) {
+                    if (ItemHelpers.isEmpty(itemStack)) {
                         it.remove();
                     } else {
                         it.set(itemStack);
                     }
-                }
-
-                if (!simulate) {
                     this.extracted = true;
                     postExtract();
                 }
@@ -375,24 +379,27 @@ public class ItemStorageBlockWrapper implements IIngredientComponentStorage<Item
             }
         }
 
-        return null;
+        return ItemHelpers.EMPTY;
     }
 
     @Override
     public ItemStack extract(long maxQuantity, boolean simulate) {
         List<ItemStack> itemStacks = getItemStacks();
         if (itemStacks.isEmpty()) {
-            return null;
-        }
-        ItemStack itemStack = itemStacks.get(0);
-        if (itemStack == null) {
-            return null;
+            return ItemHelpers.EMPTY;
         }
 
-        itemStack = itemStack.copy();
-        ItemStack ret = itemStack.splitStack(Helpers.castSafe(maxQuantity));
+        ItemStack itemStack = itemStacks.get(0);
+        if (ItemHelpers.isEmpty(itemStack)) {
+            return ItemHelpers.EMPTY;
+        }
+
+        itemStack = ItemHelpers.copy(itemStack);
+        int extractCount = Math.min(itemStack.stackSize, Helpers.castSafe(maxQuantity));
+        ItemStack ret = ItemHelpers.split(itemStack, extractCount);
+
         if (!simulate) {
-            if (itemStack.stackSize <= 0) {
+            if (ItemHelpers.isEmpty(itemStack)) {
                 itemStacks.remove(0);
             } else {
                 itemStacks.set(0, itemStack);

@@ -5,10 +5,12 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 import ruiseki.commoncapabilities.api.capability.recipehandler.IRecipeDefinition;
 import ruiseki.commoncapabilities.api.ingredient.IPrototypedIngredient;
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
+import ruiseki.commoncapabilities.api.ingredient.storage.IIngredientComponentStorage;
 import ruiseki.integratedcrafting.api.network.ICraftingNetwork;
 import ruiseki.integrateddynamics.api.part.PrioritizedPartPos;
 
@@ -37,6 +39,15 @@ public interface ICraftingInterface {
     public void scheduleCraftingJob(CraftingJob craftingJob);
 
     /**
+     * Extract the required ingredients from storage and store them in the job.
+     *
+     * @param craftingJob   The crafting job.
+     * @param storageGetter The storage getter.
+     */
+    public void fillCraftingJobBufferFromStorage(CraftingJob craftingJob,
+        Function<IngredientComponent<?, ?>, IIngredientComponentStorage> storageGetter);
+
+    /**
      * @return Get the number of scheduled and running crafting jobs in this interface.
      */
     public int getCraftingJobsCount();
@@ -47,12 +58,13 @@ public interface ICraftingInterface {
     public Iterator<CraftingJob> getCraftingJobs();
 
     /**
-     * Get the pending outputs for the given crafting job.
+     * Get the pending outputs for the given crafting job,
+     * where the list indicates the different entries running in parallel.
      *
      * @param craftingJobId A crafting job id.
      * @return A collection of all pending prototype-based ingredients.
      */
-    public Map<IngredientComponent<?, ?>, List<IPrototypedIngredient<?, ?>>> getPendingCraftingJobOutputs(
+    public List<Map<IngredientComponent<?, ?>, List<IPrototypedIngredient<?, ?>>>> getPendingCraftingJobOutputs(
         int craftingJobId);
 
     /**

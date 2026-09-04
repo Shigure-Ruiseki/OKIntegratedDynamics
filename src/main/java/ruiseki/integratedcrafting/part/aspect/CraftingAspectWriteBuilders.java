@@ -8,10 +8,12 @@ import org.apache.commons.lang3.tuple.Triple;
 import com.google.common.collect.ImmutableList;
 
 import ruiseki.commoncapabilities.api.capability.recipehandler.IRecipeDefinition;
+import ruiseki.commoncapabilities.api.ingredient.IIngredientMatcher;
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
 import ruiseki.integratedcrafting.IntegratedCrafting;
 import ruiseki.integratedcrafting.api.network.ICraftingNetwork;
 import ruiseki.integratedcrafting.core.CraftingHelpers;
+import ruiseki.integratedcrafting.part.PartTypeCraftingWriter;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.IPositionedAddonsNetworkIngredients;
 import ruiseki.integrateddynamics.api.part.PartPos;
@@ -23,7 +25,9 @@ import ruiseki.integrateddynamics.core.evaluate.variable.ValueObjectTypeItemStac
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueObjectTypeRecipe;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeBoolean;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeInteger;
+import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeLong;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
+import ruiseki.integrateddynamics.core.helper.PartHelpers;
 import ruiseki.integrateddynamics.core.part.aspect.build.AspectBuilder;
 import ruiseki.integrateddynamics.core.part.aspect.build.IAspectValuePropagator;
 import ruiseki.integrateddynamics.core.part.aspect.property.AspectProperties;
@@ -50,6 +54,9 @@ public class CraftingAspectWriteBuilders {
     public static final IAspectPropertyTypeInstance<ValueTypeInteger, ValueTypeInteger.ValueInteger> PROP_CRAFT_AMOUNT = new AspectPropertyTypeInstance<>(
         ValueTypes.INTEGER,
         "aspect.aspecttypes.integratedcrafting.integer.craftamount.name");
+    public static final IAspectPropertyTypeInstance<ValueTypeInteger, ValueTypeInteger.ValueInteger> PROP_CRAFT_DELAY = new AspectPropertyTypeInstance<>(
+        ValueTypes.INTEGER,
+        "aspect.aspecttypes.integratedcrafting.integer.craftdelay");
     public static final IAspectProperties PROPERTIES_CRAFTING_RECIPE = new AspectProperties(
         ImmutableList.<IAspectPropertyTypeInstance>of(
             PROP_CHANNEL,
@@ -61,7 +68,8 @@ public class CraftingAspectWriteBuilders {
             PROP_CHANNEL,
             PROP_IGNORE_STORAGE,
             PROP_IGNORE_CRAFTING,
-            PROP_CRAFT_MISSING));
+            PROP_CRAFT_MISSING,
+            PROP_CRAFT_DELAY));
     static {
         PROPERTIES_CRAFTING_RECIPE.setValue(
             PROP_CHANNEL,
@@ -76,6 +84,7 @@ public class CraftingAspectWriteBuilders {
         PROPERTIES_CRAFTING.setValue(PROP_IGNORE_STORAGE, ValueTypeBoolean.ValueBoolean.of(false));
         PROPERTIES_CRAFTING.setValue(PROP_IGNORE_CRAFTING, ValueTypeBoolean.ValueBoolean.of(false));
         PROPERTIES_CRAFTING.setValue(PROP_CRAFT_MISSING, ValueTypeBoolean.ValueBoolean.of(true));
+        PROPERTIES_CRAFTING.setValue(PROP_CRAFT_DELAY, ValueTypeInteger.ValueInteger.of(0));
     }
 
     public static final AspectBuilder<ValueObjectTypeRecipe.ValueRecipe, ValueObjectTypeRecipe, Triple<PartTarget, IAspectProperties, IRecipeDefinition>> BUILDER_RECIPE = AspectWriteBuilders.BUILDER_RECIPE
@@ -90,10 +99,10 @@ public class CraftingAspectWriteBuilders {
         .byMod(IntegratedCrafting._instance)
         .appendKind("craft")
         .handle(AspectWriteBuilders.PROP_GET_FLUIDSTACK);
-    public static final AspectBuilder<ValueTypeInteger.ValueInteger, ValueTypeInteger, Triple<PartTarget, IAspectProperties, Integer>> BUILDER_INTEGER = AspectWriteBuilders.BUILDER_INTEGER
+    public static final AspectBuilder<ValueTypeLong.ValueLong, ValueTypeLong, Triple<PartTarget, IAspectProperties, Long>> BUILDER_LONG = AspectWriteBuilders.BUILDER_LONG
         .byMod(IntegratedCrafting._instance)
         .appendKind("craft")
-        .handle(AspectWriteBuilders.PROP_GET_INTEGER);
+        .handle(AspectWriteBuilders.PROP_GET_LONG);
 
     public static final IAspectValuePropagator<Triple<PartTarget, IAspectProperties, ItemStack>, CraftingJobData<ItemStack, Integer>> PROP_ITEMSTACK_CRAFTINGDATA = input -> {
         PartTarget partTarget = input.getLeft();
@@ -111,11 +120,11 @@ public class CraftingAspectWriteBuilders {
         return new CraftingJobData<>(properties, ingredientComponent, instance, partTarget.getCenter());
     };
 
-    public static final IAspectValuePropagator<Triple<PartTarget, IAspectProperties, Integer>, CraftingJobData<Integer, Boolean>> PROP_ENERGY_CRAFTINGDATA = input -> {
+    public static final IAspectValuePropagator<Triple<PartTarget, IAspectProperties, Long>, CraftingJobData<Long, Boolean>> PROP_ENERGY_CRAFTINGDATA = input -> {
         PartTarget partTarget = input.getLeft();
         IAspectProperties properties = input.getMiddle();
-        Integer instance = input.getRight();
-        IngredientComponent<Integer, Boolean> ingredientComponent = IngredientComponent.ENERGY;
+        Long instance = input.getRight();
+        IngredientComponent<Long, Boolean> ingredientComponent = IngredientComponent.ENERGY;
         return new CraftingJobData<>(properties, ingredientComponent, instance, partTarget.getCenter());
     };
 
@@ -126,7 +135,7 @@ public class CraftingAspectWriteBuilders {
         IRecipeDefinition recipe = input.getRight();
         if (recipe != null) {
             INetwork network = CraftingHelpers.getNetworkChecked(center);
-            ICraftingNetwork craftingNetwork = CraftingHelpers.getCraftingNetwork(network);
+            ICraftingNetwork craftingNetwork = CraftingHelpers.getCraftingNetworkChecked(network);
             if (craftingNetwork != null) {
                 int channel = properties.getValue(PROP_CHANNEL)
                     .getRawValue();
@@ -159,8 +168,8 @@ public class CraftingAspectWriteBuilders {
             IAspectProperties properties = input.getProperties();
             T instance = input.getInstance();
 
-            M matchCondition = ingredientComponent.getMatcher()
-                .getExactMatchNoQuantityCondition();
+            IIngredientMatcher<T, M> matcher = ingredientComponent.getMatcher();
+            M matchCondition = matcher.getExactMatchNoQuantityCondition();
             if (!ingredientComponent.getMatcher()
                 .isEmpty(instance)) {
                 INetwork network = input.getNetwork();
@@ -174,6 +183,8 @@ public class CraftingAspectWriteBuilders {
                         .getRawValue();
                     boolean craftMissing = properties.getValue(PROP_CRAFT_MISSING)
                         .getRawValue();
+                    int craftDelay = properties.getValue(PROP_CRAFT_DELAY)
+                        .getRawValue();
 
                     if ((ignoreStorage || !CraftingHelpers.hasStorageInstance(
                         network,
@@ -184,16 +195,64 @@ public class CraftingAspectWriteBuilders {
                             .getExactMatchCondition()))
                         && (ignoreCrafting || !CraftingHelpers
                             .isCrafting(craftingNetwork, channel, ingredientComponent, instance, matchCondition))) {
-                        CraftingHelpers.calculateAndScheduleCraftingJob(
-                            network,
-                            channel,
-                            ingredientComponent,
-                            instance,
-                            matchCondition,
-                            craftMissing,
-                            true,
-                            CraftingHelpers.getGlobalCraftingJobIdentifier(),
-                            null);
+                        // Handle craft delay (only if we are checking storage)
+                        boolean allowCraft;
+                        if (craftDelay > 0 && !ignoreStorage) {
+                            PartTypeCraftingWriter.State partState = (PartTypeCraftingWriter.State) PartHelpers
+                                .getPart(input.getCenter())
+                                .getState();
+                            long initialTick = partState.getInitialTickCraftingTrigger();
+                            long currentTick = input.getCenter()
+                                .getPos()
+                                .getWorld()
+                                .getWorldTime();
+                            if (initialTick >= 0) {
+                                if (currentTick - initialTick >= craftDelay) {
+                                    partState.setInitialTickCraftingTrigger(-1);
+                                    allowCraft = true;
+                                } else {
+                                    allowCraft = false;
+                                }
+                            } else {
+                                partState.setInitialTickCraftingTrigger(currentTick);
+                                allowCraft = false;
+                            }
+                        } else {
+                            allowCraft = true;
+                        }
+
+                        // If delay check passed, trigger a new crafting job
+                        if (allowCraft) {
+                            // If a quantity of > 1 was set, only craft the missing quantity.
+                            if (matcher.getQuantity(instance) > 1) {
+                                long missingQuantity = matcher.getQuantity(instance)
+                                    - CraftingHelpers.getStorageInstanceQuantity(
+                                        network,
+                                        channel,
+                                        ingredientComponent,
+                                        instance,
+                                        ingredientComponent.getMatcher()
+                                            .getExactMatchCondition());
+                                instance = matcher.withQuantity(instance, missingQuantity);
+                            }
+
+                            CraftingHelpers.calculateAndScheduleCraftingJob(
+                                network,
+                                channel,
+                                ingredientComponent,
+                                instance,
+                                matchCondition,
+                                craftMissing,
+                                true,
+                                CraftingHelpers.getGlobalCraftingJobIdentifier(),
+                                null);
+                        }
+                    } else {
+                        // Reset initial tick crafting trigger
+                        if (craftDelay > 0) {
+                            ((PartTypeCraftingWriter.State) PartHelpers.getPart(input.getCenter())
+                                .getState()).setInitialTickCraftingTrigger(-1);
+                        }
                     }
                 }
             }

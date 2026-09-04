@@ -78,9 +78,13 @@ public interface ITerminalCraftingPlan<I> {
 
     /**
      * Mark this plan as errored.
-     * 
+     *
      * @param unlocalizedError An unlocalized error message.
      */
     public void setError(String unlocalizedError);
 
+    /**
+     * @return A flattened copy of this plan.
+     */
+    public ITerminalCraftingPlanFlat<I> flatten();
 }

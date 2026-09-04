@@ -14,6 +14,7 @@ import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import cpw.mods.fml.common.event.FMLServerStoppingEvent;
 import ruiseki.integratedterminals.api.terminalstorage.ITerminalStorageTabRegistry;
 import ruiseki.integratedterminals.api.terminalstorage.crafting.ITerminalStorageTabIngredientCraftingHandlerRegistry;
+import ruiseki.integratedterminals.api.terminalstorage.location.ITerminalStorageLocationRegistry;
 import ruiseki.integratedterminals.capability.ingredient.IngredientComponentTerminalStorageHandlerConfig;
 import ruiseki.integratedterminals.capability.ingredient.TerminalIngredientComponentCapabilities;
 import ruiseki.integratedterminals.core.client.gui.ExtendedGuiHandler;
@@ -21,6 +22,9 @@ import ruiseki.integratedterminals.core.terminalstorage.TerminalStorageTabIngred
 import ruiseki.integratedterminals.core.terminalstorage.TerminalStorageTabRegistry;
 import ruiseki.integratedterminals.core.terminalstorage.TerminalStorageTabs;
 import ruiseki.integratedterminals.core.terminalstorage.crafting.TerminalStorageTabIngredientCraftingHandlers;
+import ruiseki.integratedterminals.core.terminalstorage.location.TerminalStorageLocationRegistry;
+import ruiseki.integratedterminals.core.terminalstorage.location.TerminalStorageLocations;
+import ruiseki.integratedterminals.item.ItemTerminalStoragePortableConfig;
 import ruiseki.integratedterminals.modcompat.integratedcrafting.IntegratedCraftingModCompat;
 import ruiseki.integratedterminals.part.TerminalPartTypes;
 import ruiseki.okcore.client.gui.GuiHandler;
@@ -91,11 +95,14 @@ public class IntegratedTerminals extends ModBaseVersionable {
         getRegistryManager().addRegistry(
             ITerminalStorageTabIngredientCraftingHandlerRegistry.class,
             TerminalStorageTabIngredientCraftingHandlerRegistry.getInstance());
+        getRegistryManager()
+            .addRegistry(ITerminalStorageLocationRegistry.class, TerminalStorageLocationRegistry.getInstance());
 
         TerminalPartTypes.load();
         TerminalIngredientComponentCapabilities.load();
         TerminalStorageTabs.load();
         TerminalStorageTabIngredientCraftingHandlers.load();
+        TerminalStorageLocations.load();
     }
 
     /**
@@ -168,6 +175,7 @@ public class IntegratedTerminals extends ModBaseVersionable {
         super.onMainConfigsRegister(configHandler);
 
         configHandler.add(new IngredientComponentTerminalStorageHandlerConfig());
+        configHandler.add(new ItemTerminalStoragePortableConfig());
     }
 
     @Override

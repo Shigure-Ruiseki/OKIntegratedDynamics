@@ -17,6 +17,7 @@ import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueObjectTypeItemStack;
 import ruiseki.okcore.helper.Helpers;
+import ruiseki.okcore.helper.ItemHelpers;
 
 /**
  * A value type world renderer for items (Minecraft 1.7.10 Port).
@@ -33,11 +34,9 @@ public class ItemValueTypeWorldRenderer implements IValueTypeWorldRenderer {
         TileEntityRendererDispatcher rendererDispatcher, float alpha) {
 
         ValueObjectTypeItemStack.ValueItemStack valueItemStack = (ValueObjectTypeItemStack.ValueItemStack) value;
-        if (valueItemStack.getRawValue()
-            .isPresent()) {
-            ItemStack itemStack = valueItemStack.getRawValue()
-                .get();
+        ItemStack itemStack = valueItemStack.getRawValue();
 
+        if (!ItemHelpers.isEmpty(itemStack)) {
             // ItemStack
             renderItemStack(itemStack, alpha);
 

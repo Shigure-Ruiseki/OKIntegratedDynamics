@@ -2,7 +2,6 @@ package ruiseki.integrateddynamics.core.logicprogrammer;
 
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.texture.TextureManager;
-import net.minecraft.inventory.IInventory;
 
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -13,6 +12,7 @@ import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 import ruiseki.integrateddynamics.api.logicprogrammer.IConfigRenderPattern;
 import ruiseki.integrateddynamics.client.gui.GuiLogicProgrammerBase;
 import ruiseki.integrateddynamics.inventory.container.ContainerLogicProgrammerBase;
+import ruiseki.okcore.inventory.SimpleInventory;
 
 /**
  * @author rubensworks
@@ -40,7 +40,7 @@ class OperatorLPElementRenderPattern
         IValueType[] valueTypes = operator.getInputTypes();
         for (int i = 0; i < valueTypes.length; i++) {
             IValueType valueType = valueTypes[i];
-            IInventory temporaryInputSlots = container.getTemporaryInputSlots();
+            SimpleInventory temporaryInputSlots = container.getTemporaryInputSlots();
             if (temporaryInputSlots.getStackInSlot(i) == null) {
                 Pair<Integer, Integer> slotPosition = configRenderPattern.getSlotPositions()[i];
                 if (gui.func_146978_c(

@@ -2,7 +2,6 @@ package ruiseki.integratedcrafting.core.crafting.processoverride;
 
 import java.util.Map;
 import java.util.UUID;
-import java.util.WeakHashMap;
 import java.util.function.Function;
 
 import net.minecraft.block.BlockWorkbench;
@@ -12,11 +11,14 @@ import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.util.FakePlayer;
 
+import com.google.common.collect.MapMaker;
 import com.mojang.authlib.GameProfile;
 
 import cpw.mods.fml.common.FMLCommonHandler;
+import ruiseki.commoncapabilities.api.capability.recipehandler.IRecipeDefinition;
 import ruiseki.commoncapabilities.api.ingredient.IMixedIngredients;
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
+import ruiseki.integratedcrafting.api.crafting.CraftingJob;
 import ruiseki.integratedcrafting.api.crafting.ICraftingProcessOverride;
 import ruiseki.integratedcrafting.api.crafting.ICraftingResultsSink;
 import ruiseki.integrateddynamics.api.part.PartPos;
@@ -24,7 +26,7 @@ import ruiseki.okcore.helper.CraftingHelpers;
 
 /**
  * A crafting process override for crafting tables (Minecraft 1.7.10).
- * 
+ *
  * @author rubensworks
  */
 public class CraftingProcessOverrideCraftingTable implements ICraftingProcessOverride {
@@ -32,7 +34,11 @@ public class CraftingProcessOverrideCraftingTable implements ICraftingProcessOve
     private static final GameProfile PROFILE = new GameProfile(
         UUID.fromString("41C82C87-7AfB-4024-BB57-13D2C99CAE77"),
         "[IntegratedCrafting]");
-    private static final Map<WorldServer, FakePlayer> FAKE_PLAYERS = new WeakHashMap<>();
+    // Weak keys AND values: the FakePlayer value holds a reference to its ServerLevel key,
+    // so a WeakHashMap (weak keys only) would keep the key alive forever and leak.
+    private static final Map<WorldServer, FakePlayer> FAKE_PLAYERS = new MapMaker().weakKeys()
+        .weakValues()
+        .makeMap();
 
     public static FakePlayer getFakePlayer(WorldServer world) {
         FakePlayer fakePlayer = FAKE_PLAYERS.get(world);
@@ -59,7 +65,7 @@ public class CraftingProcessOverrideCraftingTable implements ICraftingProcessOve
 
     @Override
     public boolean craft(Function<IngredientComponent<?, ?>, PartPos> targetGetter, IMixedIngredients ingredients,
-        ICraftingResultsSink resultsSink, boolean simulate) {
+        IRecipeDefinition recipe, ICraftingResultsSink resultsSink, CraftingJob craftingJob, boolean simulate) {
         PartPos target = targetGetter.apply(IngredientComponent.ITEMSTACK);
         if (target == null || target.getPos() == null
             || target.getPos()
@@ -68,14 +74,14 @@ public class CraftingProcessOverrideCraftingTable implements ICraftingProcessOve
         }
 
         CraftingGrid grid = new CraftingGrid(ingredients, 3, 3);
-        IRecipe recipe = CraftingHelpers.findMatchingRecipeCached(
+        IRecipe recipeCached = CraftingHelpers.findMatchingRecipeCached(
             grid,
             target.getPos()
                 .getWorld(),
             true);
 
-        if (recipe != null) {
-            ItemStack result = recipe.getCraftingResult(grid);
+        if (recipeCached != null) {
+            ItemStack result = recipeCached.getCraftingResult(grid);
 
             if (result == null) {
                 return false;
@@ -104,7 +110,7 @@ public class CraftingProcessOverrideCraftingTable implements ICraftingProcessOve
                             ItemStack containerStack = stack.getItem()
                                 .getContainerItem(stack);
                             if (containerStack != null) {
-                                resultsSink.addResult(IngredientComponent.ITEMSTACK, containerStack.copy());
+                                craftingJob.addToIngredientsStorageBuffer(IngredientComponent.ITEMSTACK, stack);
                             }
                         }
                     }

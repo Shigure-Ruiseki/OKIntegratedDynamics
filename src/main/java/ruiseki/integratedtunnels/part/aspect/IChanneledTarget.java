@@ -10,14 +10,15 @@ import ruiseki.integrateddynamics.api.network.IPositionedAddonsNetwork;
 import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
 import ruiseki.integrateddynamics.core.helper.PartHelpers;
+import ruiseki.integratedtunnels.core.part.PartStatePositionedAddon;
 import ruiseki.integratedtunnels.core.part.PartStateRoundRobin;
 
 /**
  * A helper class for movement targets with a certain network type.
- * 
+ *
  * @author rubensworks
  */
-public interface IChanneledTarget<N extends IPositionedAddonsNetwork> {
+public interface IChanneledTarget<N extends IPositionedAddonsNetwork, T> {
 
     public INetwork getNetwork();
 
@@ -27,11 +28,17 @@ public interface IChanneledTarget<N extends IPositionedAddonsNetwork> {
 
     public PartStateRoundRobin<?> getPartState();
 
+    public default PartStatePositionedAddon<?, ?, T> getPartStatePositionedAddon() {
+        return (PartStatePositionedAddon<?, ?, T>) getPartState();
+    }
+
     public int getChannel();
 
     public boolean isRoundRobin();
 
     public boolean isCraftIfFailed();
+
+    public boolean isPassiveIO();
 
     public void preTransfer();
 
@@ -43,7 +50,8 @@ public interface IChanneledTarget<N extends IPositionedAddonsNetwork> {
                 .getWorld(),
             pos.getPos()
                 .getBlockPos(),
-            pos.getSide());
+            pos.getSide())
+            .getOrNull();
         if (network == null) {
             IntegratedDynamics.clog(Level.ERROR, "Could not get the network for transfer as no network was found.");
             throw new PartStateException(pos.getPos(), pos.getSide());

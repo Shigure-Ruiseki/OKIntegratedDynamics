@@ -10,7 +10,6 @@ import net.minecraftforge.common.util.ForgeDirection;
 import ruiseki.integrateddynamics.Configs;
 import ruiseki.integrateddynamics.block.BlockMenrilLeavesConfig;
 import ruiseki.integrateddynamics.block.BlockMenrilLogConfig;
-import ruiseki.integrateddynamics.block.BlockMenrilLogFilled;
 import ruiseki.integrateddynamics.block.BlockMenrilLogFilledConfig;
 import ruiseki.integrateddynamics.block.BlockMenrilSaplingConfig;
 import ruiseki.okcore.world.gen.WorldGeneratorTree;
@@ -41,17 +40,17 @@ public class WorldGeneratorMenrilTree extends WorldGeneratorTree {
 
     @Override
     public Block getLeaves() {
-        return BlockMenrilLeavesConfig._instance.getBlockInstance();
+        return BlockMenrilLeavesConfig._instance.getInstance();
     }
 
     @Override
     public Block getLogs() {
-        return BlockMenrilLogConfig._instance.getBlockInstance();
+        return BlockMenrilLogConfig._instance.getInstance();
     }
 
     @Override
     public BlockSapling getSapling() {
-        return (BlockSapling) BlockMenrilSaplingConfig._instance.getBlockInstance();
+        return (BlockSapling) BlockMenrilSaplingConfig._instance.getInstance();
     }
 
     @Override
@@ -155,7 +154,7 @@ public class WorldGeneratorMenrilTree extends WorldGeneratorTree {
             boolean filled = Configs.isEnabled(BlockMenrilLogFilledConfig.class)
                 && BlockMenrilLogFilledConfig.filledMenrilLogChance > 0
                 && rand.nextInt(BlockMenrilLogFilledConfig.filledMenrilLogChance) == 0;
-            Block log = filled ? BlockMenrilLogFilled.getInstance() : getLogs();
+            Block log = filled ? BlockMenrilLogFilledConfig._instance.getInstance() : getLogs();
             setBlockAndNotifyAdequately(world, x, y, z, log, 0);
         }
     }

@@ -10,8 +10,7 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.integratedterminals.api.terminalstorage.ITerminalStorageTabCommon;
 import ruiseki.integratedterminals.core.terminalstorage.TerminalStorageTabIngredientComponentItemStackCraftingCommon;
-import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorage;
-import ruiseki.integratedterminals.part.PartTypeTerminalStorage;
+import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorageBase;
 import ruiseki.okcore.helper.ItemHandlerHelpers;
 import ruiseki.okcore.item.capability.wrapper.PlayerMainInvWrapper;
 import ruiseki.okcore.network.CodecField;
@@ -19,7 +18,7 @@ import ruiseki.okcore.network.PacketCodec;
 
 /**
  * Packet for sending a storage slot click event from client to server.
- * 
+ *
  * @author rubensworks
  *
  */
@@ -29,14 +28,18 @@ public class TerminalStorageIngredientItemStackCraftingGridShiftClickOutput exte
     private String tabId;
     @CodecField
     private int channel;
+    @CodecField
+    private boolean craftOnce;
 
     public TerminalStorageIngredientItemStackCraftingGridShiftClickOutput() {
 
     }
 
-    public TerminalStorageIngredientItemStackCraftingGridShiftClickOutput(String tabId, int channel) {
+    public TerminalStorageIngredientItemStackCraftingGridShiftClickOutput(String tabId, int channel,
+        boolean craftOnce) {
         this.tabId = tabId;
         this.channel = channel;
+        this.craftOnce = craftOnce;
     }
 
     @Override
@@ -52,12 +55,13 @@ public class TerminalStorageIngredientItemStackCraftingGridShiftClickOutput exte
 
     @Override
     public void actionServer(World world, EntityPlayerMP player) {
-        if (player.openContainer instanceof ContainerTerminalStorage) {
-            ContainerTerminalStorage container = ((ContainerTerminalStorage) player.openContainer);
+        if (player.openContainer instanceof ContainerTerminalStorageBase) {
+            ContainerTerminalStorageBase<?> container = ((ContainerTerminalStorageBase) player.openContainer);
             ITerminalStorageTabCommon tabCommon = container.getTabCommon(tabId);
             if (tabCommon instanceof TerminalStorageTabIngredientComponentItemStackCraftingCommon) {
                 TerminalStorageTabIngredientComponentItemStackCraftingCommon tabCommonCrafting = (TerminalStorageTabIngredientComponentItemStackCraftingCommon) tabCommon;
-                PartTypeTerminalStorage.State partState = container.getPartState();
+                ITerminalStorageTabCommon.IVariableInventory variableInventory = container.getVariableInventory()
+                    .get();
 
                 SlotCrafting slotCrafting = tabCommonCrafting.getSlotCrafting();
                 if (slotCrafting == null || slotCrafting.getStack() == null) {
@@ -103,12 +107,13 @@ public class TerminalStorageIngredientItemStackCraftingGridShiftClickOutput exte
                         ItemHandlerHelpers.giveItemToPlayer(player, resultStack.copy());
 
                         // Re-calculate recipe output
-                        tabCommonCrafting.updateCraftingResult(player, player.openContainer, partState);
+                        tabCommonCrafting.updateCraftingResult(player, player.openContainer, variableInventory);
                     } else {
                         break;
                     }
 
-                } while (slotCrafting.getStack() != null && craftedAmount < currentCraftingItem.getMaxStackSize());
+                } while (!this.craftOnce && slotCrafting.getStack() != null
+                    && craftedAmount < currentCraftingItem.getMaxStackSize());
             }
         }
     }

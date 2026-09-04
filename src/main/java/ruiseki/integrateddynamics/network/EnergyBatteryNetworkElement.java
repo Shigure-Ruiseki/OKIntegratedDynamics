@@ -8,7 +8,6 @@ import net.minecraft.world.IBlockAccess;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import ruiseki.integrateddynamics.api.network.IEnergyNetwork;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.INetworkElement;
 import ruiseki.integrateddynamics.api.network.IPositionedAddonsNetwork;
@@ -68,7 +67,7 @@ public class EnergyBatteryNetworkElement extends NetworkElementBase {
     @Override
     public boolean onNetworkAddition(INetwork network) {
         PartPos pos = PartPos.of(getPos(), null);
-        boolean added = NetworkHelpers.getEnergyNetwork(network)
+        boolean added = NetworkHelpers.getEnergyNetworkChecked(network)
             .addPosition(pos, 0, IPositionedAddonsNetwork.DEFAULT_CHANNEL);
         scheduleNetworkObservation(network, pos);
         return added;
@@ -78,15 +77,15 @@ public class EnergyBatteryNetworkElement extends NetworkElementBase {
     public void onNetworkRemoval(INetwork network) {
         PartPos pos = PartPos.of(getPos(), null);
         scheduleNetworkObservation(network, pos);
-        NetworkHelpers.getEnergyNetwork(network)
+        NetworkHelpers.getEnergyNetworkChecked(network)
             .removePosition(pos);
     }
 
     protected void scheduleNetworkObservation(INetwork network, PartPos pos) {
-        IEnergyNetwork energyNetwork = NetworkHelpers.getEnergyNetwork(network);
-        if (energyNetwork != null) {
-            energyNetwork.scheduleObservationForced(IPositionedAddonsNetwork.DEFAULT_CHANNEL, pos);
-        }
+        NetworkHelpers.getEnergyNetwork(network)
+            .ifPresent(
+                energyNetwork -> energyNetwork
+                    .scheduleObservationForced(IPositionedAddonsNetwork.DEFAULT_CHANNEL, pos));
     }
 
     @Override
@@ -138,4 +137,8 @@ public class EnergyBatteryNetworkElement extends NetworkElementBase {
                     .getCanonicalName());
     }
 
+    @Override
+    public boolean isLoaded() {
+        return INetworkElement.shouldTick(this.getPos());
+    }
 }

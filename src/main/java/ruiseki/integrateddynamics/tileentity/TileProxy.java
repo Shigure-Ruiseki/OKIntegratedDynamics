@@ -48,6 +48,7 @@ public class TileProxy extends TileActiveVariableBase<ProxyNetworkElement> {
 
     @Setter
     private EntityPlayer lastPlayer = null;
+    private boolean writeVariable;
 
     public TileProxy() {
         this(3);
@@ -61,6 +62,10 @@ public class TileProxy extends TileActiveVariableBase<ProxyNetworkElement> {
 
     public TileProxy(int inventorySize) {
         super(inventorySize, "proxy");
+        registerCapabilityResolvers();
+    }
+
+    protected void registerCapabilityResolvers() {
         this.capabilityCache.addCapabilityResolver(
             BasicCapabilityResolver
                 .create(NetworkElementProviderConfig.CAPABILITY, () -> new NetworkElementProviderSingleton() {
@@ -131,6 +136,15 @@ public class TileProxy extends TileActiveVariableBase<ProxyNetworkElement> {
     public void onDirty() {
         super.onDirty();
         if (!worldObj.isRemote) {
+            this.writeVariable = true;
+        }
+    }
+
+    @Override
+    protected void updateTileEntity() {
+        super.updateTileEntity();
+
+        if (!worldObj.isRemote && this.writeVariable) {
             if (getStackInSlot(getSlotWriteIn()) != null && getStackInSlot(getSlotWriteOut()) == null) {
                 // Write proxy reference
                 ItemStack outputStack = writeProxyInfo(

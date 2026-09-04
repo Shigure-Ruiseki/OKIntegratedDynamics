@@ -3,6 +3,8 @@ package ruiseki.integrateddynamics.core.evaluate.variable;
 import net.minecraft.util.EnumChatFormatting;
 
 import lombok.ToString;
+import ruiseki.integrateddynamics.core.logicprogrammer.ValueTypeBooleanLPElement;
+import ruiseki.integrateddynamics.core.logicprogrammer.ValueTypeLPElementBase;
 import ruiseki.okcore.helper.Helpers;
 
 /**
@@ -49,6 +51,11 @@ public class ValueTypeBoolean extends ValueTypeBase<ValueTypeBoolean.ValueBoolea
             throw new IllegalArgumentException(String.format("Value \"%s\" could not be parsed to a boolean.", value));
         }
         return ValueBoolean.of(b);
+    }
+
+    @Override
+    public ValueTypeLPElementBase createLogicProgrammerElement() {
+        return new ValueTypeBooleanLPElement(this);
     }
 
     @ToString

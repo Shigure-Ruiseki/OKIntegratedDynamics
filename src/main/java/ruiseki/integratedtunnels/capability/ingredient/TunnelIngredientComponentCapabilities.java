@@ -17,7 +17,7 @@ import ruiseki.okcore.modcompat.capabilities.DefaultCapabilityProvider;
 
 /**
  * Value handlers for ingredient components.
- * 
+ *
  * @author rubensworks
  */
 public class TunnelIngredientComponentCapabilities {
@@ -38,7 +38,7 @@ public class TunnelIngredientComponentCapabilities {
                     return new DefaultCapabilityProvider<>(
                         () -> PositionedAddonsNetworkIngredientsHandlerConfig.CAPABILITY,
                         (network) -> network.getCapability(ItemNetworkConfig.CAPABILITY)
-                            .getOrNull());
+                            .cast());
                 }
             });
         attacherManager.addAttacher(
@@ -52,7 +52,7 @@ public class TunnelIngredientComponentCapabilities {
                     return new DefaultCapabilityProvider<>(
                         () -> PositionedAddonsNetworkIngredientsHandlerConfig.CAPABILITY,
                         (network) -> network.getCapability(FluidNetworkConfig.CAPABILITY)
-                            .getOrNull());
+                            .cast());
                 }
             });
     }

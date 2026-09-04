@@ -22,9 +22,13 @@ import ruiseki.integrateddynamics.api.item.IVariableFacadeHandlerRegistry;
 import ruiseki.integrateddynamics.api.logicprogrammer.ILogicProgrammerElement;
 import ruiseki.integrateddynamics.api.logicprogrammer.ILogicProgrammerElementType;
 import ruiseki.integrateddynamics.client.gui.GuiLogicProgrammerBase;
+import ruiseki.integrateddynamics.core.helper.Helpers;
+import ruiseki.integrateddynamics.core.inventory.container.slot.SlotVariable;
 import ruiseki.integrateddynamics.core.logicprogrammer.LogicProgrammerElementTypes;
 import ruiseki.integrateddynamics.core.persist.world.LabelsWorldStorage;
 import ruiseki.integrateddynamics.item.ItemVariable;
+import ruiseki.integrateddynamics.item.ItemVariableConfig;
+import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.inventory.IGuiContainerProvider;
@@ -43,6 +47,11 @@ public abstract class ContainerLogicProgrammerBase extends ScrollingInventoryCon
 
     public static final int OUTPUT_X = 232;
     public static final int OUTPUT_Y = 110;
+
+    public static final int BASE_X = 88;
+    public static final int BASE_Y = 18;
+    public static final int MAX_WIDTH = 160;
+    public static final int MAX_HEIGHT = 87;
 
     protected static final IItemPredicate<ILogicProgrammerElement> FILTERER = new IItemPredicate<ILogicProgrammerElement>() {
 
@@ -103,10 +112,19 @@ public abstract class ContainerLogicProgrammerBase extends ScrollingInventoryCon
     }
 
     protected void initializeSlotsPre() {
-        addSlotToContainer(new SlotSingleItem(writeSlot, 0, OUTPUT_X, OUTPUT_Y, ItemVariable.getInstance()));
-        SlotSingleItem filterSlotIn1 = new SlotSingleItem(filterSlots, 0, 6, 218, ItemVariable.getInstance());
-        SlotSingleItem filterSlotIn2 = new SlotSingleItem(filterSlots, 1, 24, 218, ItemVariable.getInstance());
-        SlotSingleItem filterSlotOut = new SlotSingleItem(filterSlots, 2, 58, 218, ItemVariable.getInstance());
+        addSlotToContainer(new SlotVariable(writeSlot, 0, OUTPUT_X, OUTPUT_Y) {
+
+            @Override
+            public void onSlotChanged() {
+                // We don't call super here to avoid dirty mark listeners to be called twice, which can cause issues
+                // with loading and immediate overwriting.
+                // This is because SimpleInventory will already call dirty mark listeners when calling setItem.
+                // Strictly this behaviour in SimpleInventory is not required, but due to backwards-compat, we keep it.
+            }
+        });
+        SlotSingleItem filterSlotIn1 = new SlotVariable(filterSlots, 0, 6, 218);
+        SlotSingleItem filterSlotIn2 = new SlotVariable(filterSlots, 1, 24, 218);
+        SlotSingleItem filterSlotOut = new SlotVariable(filterSlots, 2, 58, 218);
         filterSlotIn1.setPhantom(true);
         filterSlotIn2.setPhantom(true);
         filterSlotOut.setPhantom(true);
@@ -227,10 +245,7 @@ public abstract class ContainerLogicProgrammerBase extends ScrollingInventoryCon
     public void onContainerClosed(EntityPlayer player) {
         super.onContainerClosed(player);
         if (!player.worldObj.isRemote) {
-            ItemStack itemStack = writeSlot.getStackInSlot(0);
-            if (itemStack != null) {
-                player.dropPlayerItemWithRandomChoice(itemStack, false);
-            }
+            returnWriteItemToPlayer();
         }
     }
 
@@ -242,7 +257,7 @@ public abstract class ContainerLogicProgrammerBase extends ScrollingInventoryCon
     protected void labelCurrent() {
         ItemStack itemStack = writeSlot.getStackInSlot(0);
         if (itemStack != null) {
-            IVariableFacade variableFacade = ItemVariable.getInstance()
+            IVariableFacade variableFacade = ((ItemVariable) ItemVariableConfig._instance.getInstance())
                 .getVariableFacade(itemStack);
             if (this.lastLabel != null && variableFacade.isValid()) {
                 LabelsWorldStorage.getInstance(IntegratedDynamics._instance)
@@ -269,26 +284,45 @@ public abstract class ContainerLogicProgrammerBase extends ScrollingInventoryCon
 
         ItemStack itemStack = writeSlot.getStackInSlot(0);
         if (canWriteActiveElement() && itemStack != null) {
+            // If the variable has a vanilla custom name, make sure we inherit it as variable label
+            if (itemStack.hasDisplayName()) {
+                this.lastLabel = itemStack.getDisplayName();
+            }
             ItemStack outputStack = writeElementInfo();
             writeSlot.removeDirtyMarkListener(this);
+            writeSlot.removeDirtyMarkListener(loadConfigListener);
             writeSlot.setInventorySlotContents(0, outputStack);
             if (!StringUtils.isNullOrEmpty(this.lastLabel)) {
                 labelCurrent();
             }
             writeSlot.addDirtyMarkListener(this);
+            writeSlot.addDirtyMarkListener(loadConfigListener);
         }
     }
 
     protected void loadConfigFrom(ItemStack itemStack) {
-        // Only do this client-side, a packet will be sent to do the same server-side.
-        if (MinecraftHelpers.isClientSide()) {
-            IVariableFacadeHandlerRegistry registry = IntegratedDynamics._instance.getRegistryManager()
-                .getRegistry(IVariableFacadeHandlerRegistry.class);
-            IVariableFacade variableFacade = registry.handle(itemStack);
-            for (ILogicProgrammerElement element : getElements()) {
-                if (element.isFor(variableFacade)) {
-                    getGui().handleElementActivation(element);
+        IVariableFacadeHandlerRegistry registry = IntegratedDynamics._instance.getRegistryManager()
+            .getRegistry(IVariableFacadeHandlerRegistry.class);
+        IVariableFacade variableFacade = registry.handle(itemStack);
+        for (ILogicProgrammerElement element : getUnfilteredItems()) {
+            if (element.isFor(variableFacade)) {
+                writeSlot.removeDirtyMarkListener(this);
+                writeSlot.removeDirtyMarkListener(loadConfigListener);
+                if (MinecraftHelpers.isClientSide()) {
+                    getGui().handleElementActivation(element, false);
+                } else {
+                    setActiveElement(element, 0, 0);
                 }
+                temporaryInputSlots.removeDirtyMarkListener(this);
+                element.loadElement(variableFacade);
+                if (MinecraftHelpers.isClientSide()) {
+                    element.setValueInGui(getGui().getOperatorConfigPattern());
+                } else {
+                    element.setValueInContainer(this);
+                }
+                writeSlot.addDirtyMarkListener(this);
+                writeSlot.addDirtyMarkListener(loadConfigListener);
+                temporaryInputSlots.addDirtyMarkListener(this);
             }
         }
     }
@@ -297,12 +331,20 @@ public abstract class ContainerLogicProgrammerBase extends ScrollingInventoryCon
         return this.lastError;
     }
 
-    public IInventory getTemporaryInputSlots() {
+    public SimpleInventory getTemporaryInputSlots() {
         return this.temporaryInputSlots;
     }
 
     public boolean hasWriteItemInSlot() {
         return this.writeSlot.getStackInSlot(0) != null;
+    }
+
+    public void returnWriteItemToPlayer() {
+        if (hasWriteItemInSlot()) {
+            ItemStack itemStack = writeSlot.getStackInSlot(0);
+            Helpers.returnItemToPlayer(player, itemStack);
+            writeSlot.setInventorySlotContents(0, null);
+        }
     }
 
     @Override
@@ -330,17 +372,12 @@ public abstract class ContainerLogicProgrammerBase extends ScrollingInventoryCon
 
         @Override
         public void onDirty() {
-            // Currently disabled, this requires quite complex negotiation between C and S, not too mention
-            // any other players having the gui open!
-            /*
-             * if ((temporaryInputSlots == null || temporaryInputSlots.isEmpty())
-             * && (activeElement == null || activeElement.canCurrentlyReadFromOtherItem())) {
-             * ItemStack itemStack = writeSlot.getStackInSlot(0);
-             * if (itemStack != null) {
-             * ContainerLogicProgrammer.this.loadConfigFrom(itemStack);
-             * }
-             * }
-             */
+            if (activeElement == null) {
+                ItemStack itemStack = writeSlot.getStackInSlot(0);
+                if (!ItemHelpers.isEmpty(itemStack)) {
+                    ContainerLogicProgrammerBase.this.loadConfigFrom(itemStack);
+                }
+            }
         }
 
     }

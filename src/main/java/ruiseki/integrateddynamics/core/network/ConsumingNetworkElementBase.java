@@ -11,6 +11,11 @@ import ruiseki.integrateddynamics.api.network.INetwork;
 public abstract class ConsumingNetworkElementBase extends NetworkElementBase implements IEnergyConsumingNetworkElement {
 
     @Override
+    public boolean isUpdate() {
+        return getConsumptionRate() > 0 || super.isUpdate();
+    }
+
+    @Override
     public int getConsumptionRate() {
         return 0;
     }

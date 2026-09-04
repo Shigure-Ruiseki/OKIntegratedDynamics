@@ -14,7 +14,7 @@ import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeNullable;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeUniquelyNamed;
 import ruiseki.integrateddynamics.core.logicprogrammer.ValueTypeItemStackLPElement;
 import ruiseki.integrateddynamics.core.logicprogrammer.ValueTypeLPElementBase;
-import ruiseki.okcore.helper.ItemStackHelpers;
+import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.helper.LangHelpers;
 
 /**
@@ -32,13 +32,13 @@ public class ValueObjectTypeItemStack extends ValueObjectTypeBase<ValueObjectTyp
     }
 
     public static String getItemStackDisplayNameUsSafe(ItemStack itemStack) throws NoSuchMethodException {
-        return itemStack != null
+        return !ItemHelpers.isEmpty(itemStack)
             ? (itemStack.getDisplayName() + (itemStack.stackSize > 1 ? " (" + itemStack.stackSize + ")" : ""))
             : "";
     }
 
     public static String getItemStackDisplayNameSafe(ItemStack itemStack) {
-        if (itemStack == null) {
+        if (ItemHelpers.isEmpty(itemStack)) {
             return "";
         }
         // Certain mods may call client-side only methods,
@@ -52,29 +52,25 @@ public class ValueObjectTypeItemStack extends ValueObjectTypeBase<ValueObjectTyp
 
     @Override
     public ValueItemStack getDefault() {
-        return ValueItemStack.of(null);
+        return ValueItemStack.of(ItemHelpers.EMPTY);
     }
 
     @Override
     public String toCompactString(ValueItemStack value) {
-        if (value.getRawValue()
-            .isPresent()) {
-            return ValueObjectTypeItemStack.getItemStackDisplayNameSafe(
-                value.getRawValue()
-                    .get());
+        ItemStack itemStack = value.getRawValue();
+        if (!ItemHelpers.isEmpty(itemStack)) {
+            return ValueObjectTypeItemStack.getItemStackDisplayNameSafe(itemStack);
         }
         return "";
     }
 
     @Override
     public String serialize(ValueItemStack value) {
-        if (!value.getRawValue()
-            .isPresent()) {
+        ItemStack itemStack = value.getRawValue();
+        if (ItemHelpers.isEmpty(itemStack)) {
             return "";
         }
         NBTTagCompound tag = new NBTTagCompound();
-        ItemStack itemStack = value.getRawValue()
-            .get();
         itemStack.writeToNBT(tag);
         tag.setInteger("Count", itemStack.stackSize);
         return tag.toString();
@@ -83,21 +79,23 @@ public class ValueObjectTypeItemStack extends ValueObjectTypeBase<ValueObjectTyp
     @Override
     public ValueItemStack deserialize(String value) {
         if (Strings.isNullOrEmpty(value)) {
-            return ValueItemStack.of(null);
+            return ValueItemStack.of(ItemHelpers.EMPTY);
         }
         try {
             NBTTagCompound tag = (NBTTagCompound) JsonToNBT.func_150315_a(value);
             // Forge returns air for tags with negative count,
             // so we set it to 1 for deserialization and fix it afterwards.
             int realCount = tag.getInteger("Count");
+            // Consider the tag immutable, to avoid changes elsewhere
+            tag = (NBTTagCompound) tag.copy();
             tag.setByte("Count", (byte) 1);
             ItemStack itemStack = ItemStack.loadItemStackFromNBT(tag);
-            if (itemStack != null) {
+            if (!ItemHelpers.isEmpty(itemStack)) {
                 itemStack.stackSize = realCount;
             }
             return ValueItemStack.of(itemStack);
         } catch (NBTException e) {
-            return ValueItemStack.of(null);
+            return ValueItemStack.of(ItemHelpers.EMPTY);
         }
     }
 
@@ -108,8 +106,7 @@ public class ValueObjectTypeItemStack extends ValueObjectTypeBase<ValueObjectTyp
 
     @Override
     public boolean isNull(ValueItemStack a) {
-        return !a.getRawValue()
-            .isPresent();
+        return ItemHelpers.isEmpty(a.getRawValue());
     }
 
     @Override
@@ -132,43 +129,65 @@ public class ValueObjectTypeItemStack extends ValueObjectTypeBase<ValueObjectTyp
                 public ValueObjectTypeItemStack.ValueItemStack getValue(ItemStack itemStack) {
                     return ValueObjectTypeItemStack.ValueItemStack.of(itemStack);
                 }
+
+                @Override
+                public ItemStack getValueAsItemStack(ValueItemStack value) {
+                    return value.getRawValue();
+                }
             });
     }
 
     @Override
     public String getUniqueName(ValueItemStack value) {
-        if (value.getRawValue()
-            .isPresent()) {
-            ItemStack itemStack = value.getRawValue()
-                .get();
-            if (itemStack.getItem() != null) {
-                return GameData.getItemRegistry()
-                    .getNameForObject(itemStack.getItem())
-                    + (itemStack.getItemDamage() > 0 ? " " + itemStack.getItemDamage() : "");
-            }
+        ItemStack itemStack = value.getRawValue();
+        if (!ItemHelpers.isEmpty(itemStack) && itemStack.getItem() != null) {
+            return GameData.getItemRegistry()
+                .getNameForObject(itemStack.getItem())
+                + (itemStack.getItemDamage() > 0 ? " " + itemStack.getItemDamage() : "");
         }
         return "";
     }
 
     @ToString
-    public static class ValueItemStack extends ValueOptionalBase<ItemStack> {
+    public static class ValueItemStack extends ValueBase {
+
+        private final ItemStack itemStack;
 
         private ValueItemStack(ItemStack itemStack) {
-            super(ValueTypes.OBJECT_ITEMSTACK, itemStack);
+            super(ValueTypes.OBJECT_ITEMSTACK);
+            this.itemStack = ItemHelpers.copy(itemStack);
         }
 
         public static ValueItemStack of(ItemStack itemStack) {
             return new ValueItemStack(itemStack);
         }
 
+        public ItemStack getRawValue() {
+            return this.itemStack;
+        }
+
         @Override
-        protected boolean isEqual(ItemStack a, ItemStack b) {
+        public boolean equals(Object o) {
+
+            if (this == o) return true;
+            if (!(o instanceof ValueItemStack)) return false;
+            ValueItemStack that = (ValueItemStack) o;
+
+            ItemStack a = this.getRawValue();
+            ItemStack b = that.getRawValue();
+
+            if (ItemHelpers.isEmpty(a) && ItemHelpers.isEmpty(b)) {
+                return true;
+            }
+            if (ItemHelpers.isEmpty(a) || ItemHelpers.isEmpty(b)) {
+                return false;
+            }
             return ItemMatch.areItemStacksEqual(a, b, ItemMatch.EXACT);
         }
 
         @Override
         public int hashCode() {
-            return 37 + (getRawValue().isPresent() ? ItemStackHelpers.getItemStackHashCode(getRawValue().get()) : 0);
+            return 37 + (!ItemHelpers.isEmpty(getRawValue()) ? ItemHelpers.getItemStackHashCode(getRawValue()) : 0);
         }
     }
 }

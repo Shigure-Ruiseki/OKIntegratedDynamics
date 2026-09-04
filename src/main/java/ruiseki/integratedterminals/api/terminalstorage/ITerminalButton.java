@@ -16,24 +16,39 @@ import cpw.mods.fml.relauncher.SideOnly;
 public interface ITerminalButton<C extends ITerminalStorageTabClient, O extends ITerminalStorageTabCommon, B extends GuiButton> {
 
     /**
+     * Reload the button's visual representation based on the container's state.
+     */
+    public void reloadFromState();
+
+    /**
      * Calculate the final X position for this button.
-     * 
-     * @param guiLeft Gui left X
-     * @param offset  X offset.
+     *
+     * @param guiLeft                Gui left X
+     * @param offset                 X offset.
+     * @param gridXSize              The X size of the grid.
+     * @param gridYSize              The Y size of the grid.
+     * @param playerInventoryOffsetX The X offset of the player inventory.
+     * @param playerInventoryOffsetY The Y offset of the player inventory.
      * @return The final X position.
      */
-    public default int getX(int guiLeft, int offset) {
+    public default int getX(int guiLeft, int offset, int gridXSize, int gridYSize, int playerInventoryOffsetX,
+        int playerInventoryOffsetY) {
         return guiLeft + offset;
     }
 
     /**
      * Calculate the final Y position for this button.
-     * 
-     * @param guiTop Gui top Y
-     * @param offset Y offset.
+     *
+     * @param guiTop                 Gui top Y
+     * @param offset                 Y offset.
+     * @param gridXSize              The X size of the grid.
+     * @param gridYSize              The Y size of the grid.
+     * @param playerInventoryOffsetX The X offset of the player inventory.
+     * @param playerInventoryOffsetY The Y offset of the player inventory.
      * @return The final Y position.
      */
-    public default int getY(int guiTop, int offset) {
+    public default int getY(int guiTop, int offset, int gridXSize, int gridYSize, int playerInventoryOffsetX,
+        int playerInventoryOffsetY) {
         return guiTop + offset;
     }
 
@@ -46,7 +61,7 @@ public interface ITerminalButton<C extends ITerminalStorageTabClient, O extends 
 
     /**
      * Create a gui button for displaying this button.
-     * 
+     *
      * @param x The button X position.
      * @param y The button Y position.
      * @return The gui button.
@@ -56,7 +71,7 @@ public interface ITerminalButton<C extends ITerminalStorageTabClient, O extends 
 
     /**
      * Callback for when the gui button has been clicked.
-     * 
+     *
      * @param clientTab   The client tab in which the button was clicked.
      * @param commonTab   The common tab in which the button was clicked.
      * @param guiButton   The gui button.
@@ -73,7 +88,7 @@ public interface ITerminalButton<C extends ITerminalStorageTabClient, O extends 
 
     /**
      * Get the tooltip of this sorter.
-     * 
+     *
      * @param player      The player that is requesting the tooltip.
      * @param tooltipFlag The tooltip flag.
      * @param lines       The tooltip lines.

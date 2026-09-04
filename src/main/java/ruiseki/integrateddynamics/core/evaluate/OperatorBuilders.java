@@ -57,6 +57,8 @@ import ruiseki.integrateddynamics.core.ingredient.IngredientComponentHandlers;
 import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.energy.capability.CapabilityEnergy;
 import ruiseki.okcore.helper.CapabilityHelpers;
+import ruiseki.okcore.helper.FluidHelpers;
+import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.helper.LangHelpers;
 
 /**
@@ -115,6 +117,9 @@ public class OperatorBuilders {
             }
             return ValueTypes.CATEGORY_NUMBER.getLowestType(types);
         });
+    public static final OperatorBuilder<OperatorBase.SafeVariablesGetter> ARITHMETIC_1_SUFFIX = ARITHMETIC
+        .inputTypes(1, ValueTypes.CATEGORY_NUMBER)
+        .renderPattern(IConfigRenderPattern.SUFFIX_1);
     public static final OperatorBuilder<OperatorBase.SafeVariablesGetter> ARITHMETIC_2 = ARITHMETIC
         .inputTypes(2, ValueTypes.CATEGORY_NUMBER)
         .renderPattern(IConfigRenderPattern.INFIX);
@@ -173,6 +178,20 @@ public class OperatorBuilders {
     public static final OperatorBuilder<OperatorBase.SafeVariablesGetter> DOUBLE_1_PREFIX = DOUBLE
         .inputTypes(1, ValueTypes.DOUBLE)
         .renderPattern(IConfigRenderPattern.PREFIX_1);
+    public static final OperatorBuilder<OperatorBase.SafeVariablesGetter> DOUBLE_2 = DOUBLE
+        .inputTypes(2, ValueTypes.DOUBLE)
+        .renderPattern(IConfigRenderPattern.INFIX);
+
+    // --------------- Number builders ---------------
+    public static final OperatorBuilder<OperatorBase.SafeVariablesGetter> NUMBER = OperatorBuilder
+        .forType(ValueTypes.CATEGORY_NUMBER)
+        .appendKind("number");
+    public static final OperatorBuilder<OperatorBase.SafeVariablesGetter> NUMBER_1_PREFIX = NUMBER
+        .inputTypes(1, ValueTypes.CATEGORY_NUMBER)
+        .renderPattern(IConfigRenderPattern.PREFIX_1);
+    public static final OperatorBuilder<OperatorBase.SafeVariablesGetter> NUMBER_1_LONG = NUMBER
+        .inputTypes(1, ValueTypes.CATEGORY_NUMBER)
+        .renderPattern(IConfigRenderPattern.SUFFIX_1_LONG);
 
     // --------------- Nullable builders ---------------
     public static final OperatorBuilder<OperatorBase.SafeVariablesGetter> NULLABLE = OperatorBuilder
@@ -195,6 +214,8 @@ public class OperatorBuilders {
         .appendKind("block");
     public static final OperatorBuilder BLOCK_1_SUFFIX_LONG = BLOCK.inputTypes(1, ValueTypes.OBJECT_BLOCK)
         .renderPattern(IConfigRenderPattern.SUFFIX_1_LONG);
+    public static final OperatorBuilder BLOCK_INFIX_VERYLONG = BLOCK.inputTypes(2, ValueTypes.OBJECT_BLOCK)
+        .renderPattern(IConfigRenderPattern.INFIX_VERYLONG);
     public static final IOperatorValuePropagator<OperatorBase.SafeVariablesGetter, Optional<Block.SoundType>> BLOCK_SOUND = input -> {
         ValueObjectTypeBlock.ValueBlock block = input.getValue(0, ValueTypes.OBJECT_BLOCK);
         if (block.getRawValue()
@@ -230,8 +251,7 @@ public class OperatorBuilders {
         .begin()
         .appendPre(input -> {
             ValueObjectTypeItemStack.ValueItemStack value = input.getValue(0, ValueTypes.OBJECT_ITEMSTACK);
-            return value.getRawValue()
-                .orElse(null);
+            return value.getRawValue();
         });
     public static final IterativeFunction.PrePostBuilder<ItemStack, Integer> FUNCTION_ITEMSTACK_TO_INT = FUNCTION_ITEMSTACK
         .appendPost(PROPAGATOR_INTEGER_VALUE);
@@ -241,17 +261,10 @@ public class OperatorBuilders {
         .begin()
         .appendPre(input -> {
             ValueObjectTypeItemStack.ValueItemStack a = input.getValue(0, ValueTypes.OBJECT_ITEMSTACK);
-            if (a.getRawValue()
-                .isPresent()
-                && CapabilityHelpers.getCapability(
-                    a.getRawValue()
-                        .get(),
-                    CapabilityEnergy.ENERGY)
-                    .isPresent()) {
-                return CapabilityHelpers.getCapability(
-                    a.getRawValue()
-                        .get(),
-                    CapabilityEnergy.ENERGY)
+            ItemStack itemStack = a.getRawValue();
+
+            if (!ItemHelpers.isEmpty(itemStack)) {
+                return CapabilityHelpers.getCapability(itemStack, CapabilityEnergy.ENERGY)
                     .getOrNull();
             }
             return null;
@@ -270,6 +283,9 @@ public class OperatorBuilders {
     public static final OperatorBuilder<OperatorBase.SafeVariablesGetter> ENTITY_1_SUFFIX_LONG = ENTITY
         .inputTypes(1, ValueTypes.OBJECT_ENTITY)
         .renderPattern(IConfigRenderPattern.SUFFIX_1_LONG);
+    public static final OperatorBuilder<OperatorBase.SafeVariablesGetter> ENTITY_1_ITEMSTACK_1 = ENTITY
+        .inputTypes(new IValueType[] { ValueTypes.OBJECT_ENTITY, ValueTypes.OBJECT_ITEMSTACK })
+        .renderPattern(IConfigRenderPattern.INFIX_LONG);
     public static final IterativeFunction.PrePostBuilder<Entity, IValue> FUNCTION_ENTITY = IterativeFunction.PrePostBuilder
         .begin()
         .appendPre(input -> {
@@ -295,15 +311,18 @@ public class OperatorBuilders {
     public static final OperatorBuilder<OperatorBase.SafeVariablesGetter> FLUIDSTACK_2 = FLUIDSTACK
         .inputTypes(2, ValueTypes.OBJECT_FLUIDSTACK)
         .renderPattern(IConfigRenderPattern.INFIX);
+    public static final OperatorBuilder<OperatorBase.SafeVariablesGetter> FLUIDSTACK_2_LONG = FLUIDSTACK
+        .inputTypes(2, ValueTypes.OBJECT_FLUIDSTACK)
+        .renderPattern(IConfigRenderPattern.INFIX_LONG);
+    public static final OperatorBuilder<OperatorBase.SafeVariablesGetter> FLUIDSTACK_1_PREFIX_LONG = FLUIDSTACK
+        .inputTypes(1, ValueTypes.OBJECT_FLUIDSTACK)
+        .renderPattern(IConfigRenderPattern.PREFIX_1_LONG);
     public static final IterativeFunction.PrePostBuilder<FluidStack, IValue> FUNCTION_FLUIDSTACK = IterativeFunction.PrePostBuilder
         .begin()
         .appendPre(input -> {
             ValueObjectTypeFluidStack.ValueFluidStack a = input.getValue(0, ValueTypes.OBJECT_FLUIDSTACK);
-            return a.getRawValue()
-                .isPresent()
-                    ? a.getRawValue()
-                        .get()
-                    : null;
+            FluidStack fluidStack = a.getRawValue();
+            return !FluidHelpers.isEmpty(fluidStack) ? fluidStack : FluidHelpers.EMPTY;
         });
     public static final IterativeFunction.PrePostBuilder<FluidStack, Integer> FUNCTION_FLUIDSTACK_TO_INT = FUNCTION_FLUIDSTACK
         .appendPost(PROPAGATOR_INTEGER_VALUE);
@@ -314,26 +333,29 @@ public class OperatorBuilders {
     public static final IterativeFunction.PrePostBuilder<Pair<IOperator, OperatorBase.SafeVariablesGetter>, IValue> FUNCTION_OPERATOR_TAKE_OPERATOR = IterativeFunction.PrePostBuilder
         .begin()
         .appendPre(input -> {
-            ValueTypeOperator.ValueOperator value = input.getValue(0, ValueTypes.OPERATOR);
-            IOperator innerOperator = value.getRawValue();
-            if (innerOperator.getRequiredInputLength() == 1) {
-                IValue applyingValue = input.getValue(1);
-                LangHelpers.UnlocalizedString error = innerOperator
-                    .validateTypes(new IValueType[] { applyingValue.getType() });
-                if (error != null) {
-                    throw new EvaluationException(error.localize());
-                }
-            } else {
-                if (!ValueHelpers.correspondsTo(input.getVariables()[1].getType(), innerOperator.getInputTypes()[0])) {
-                    LangHelpers.UnlocalizedString error = new LangHelpers.UnlocalizedString(
-                        L10NValues.OPERATOR_ERROR_WRONGCURRYINGTYPE,
-                        new LangHelpers.UnlocalizedString(innerOperator.getUnlocalizedName()),
-                        new LangHelpers.UnlocalizedString(
-                            input.getVariables()[0].getType()
-                                .getUnlocalizedName()),
-                        0,
-                        new LangHelpers.UnlocalizedString(innerOperator.getInputTypes()[0].getUnlocalizedName()));
-                    throw new EvaluationException(error.localize());
+            IOperator innerOperator = input.getValue(0, ValueTypes.OPERATOR)
+                .getRawValue();
+            if (input.getVariables().length > 1) {
+                if (innerOperator.getRequiredInputLength() == 1) {
+                    IValue applyingValue = input.getValue(1);
+                    String error = innerOperator.validateTypes(new IValueType[] { applyingValue.getType() })
+                        .localize();
+                    if (error != null) {
+                        throw new EvaluationException(error);
+                    }
+                } else if (innerOperator.getRequiredInputLength() > 0) {
+                    if (!ValueHelpers
+                        .correspondsTo(input.getVariables()[1].getType(), innerOperator.getInputTypes()[0])) {
+                        String error = LangHelpers.localize(
+                            L10NValues.OPERATOR_ERROR_WRONGCURRYINGTYPE,
+                            LangHelpers.localize(innerOperator.getUnlocalizedName()),
+                            LangHelpers.localize(
+                                input.getVariables()[1].getType()
+                                    .getUnlocalizedName()),
+                            0,
+                            LangHelpers.localize(innerOperator.getInputTypes()[0].getUnlocalizedName()));
+                        throw new EvaluationException(error);
+                    }
                 }
             }
             return Pair.<IOperator, OperatorBase.SafeVariablesGetter>of(
@@ -710,7 +732,6 @@ public class OperatorBuilders {
         .renderPattern(IConfigRenderPattern.PREFIX_2_LONG);
 
     // --------------- Capability helpers ---------------
-
     /**
      * Helper function to create an operator function builder for deriving capabilities from an itemstack.
      *
@@ -723,17 +744,10 @@ public class OperatorBuilders {
         return IterativeFunction.PrePostBuilder.begin()
             .appendPre(input -> {
                 ValueObjectTypeItemStack.ValueItemStack a = input.getValue(0);
-                if (a.getRawValue()
-                    .isPresent()
-                    && CapabilityHelpers.getCapability(
-                        a.getRawValue()
-                            .get(),
-                        capabilityReference.getReference())
-                        .isPresent()) {
-                    return CapabilityHelpers.getCapability(
-                        a.getRawValue()
-                            .get(),
-                        capabilityReference.getReference())
+                ItemStack itemStack = a.getRawValue();
+
+                if (!ItemHelpers.isEmpty(itemStack) && capabilityReference != null) {
+                    return CapabilityHelpers.getCapability(itemStack, capabilityReference.getReference())
                         .getOrNull();
                 }
                 return null;

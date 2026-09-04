@@ -12,8 +12,10 @@ import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.item.IVariableFacade;
 import ruiseki.integrateddynamics.api.item.IVariableFacadeHandlerRegistry;
 import ruiseki.integrateddynamics.client.gui.GuiLabeller;
+import ruiseki.integrateddynamics.core.helper.Helpers;
 import ruiseki.integrateddynamics.core.persist.world.LabelsWorldStorage;
 import ruiseki.integrateddynamics.item.ItemLabeller;
+import ruiseki.integrateddynamics.item.ItemLabellerConfig;
 import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.inventory.SimpleInventory;
 import ruiseki.okcore.inventory.container.ItemInventoryContainer;
@@ -39,7 +41,7 @@ public class ContainerLabeller extends ItemInventoryContainer<ItemLabeller> {
      * @param itemIndex The index of the item in use inside the player inventory.
      */
     public ContainerLabeller(EntityPlayer player, int itemIndex) {
-        super(player.inventory, ItemLabeller.getInstance(), itemIndex);
+        super(player.inventory, (ItemLabeller) ItemLabellerConfig._instance.getInstance(), itemIndex);
         this.temporaryInputSlots = new SimpleInventory(1, "temporaryInput", 1);
         addSlotToContainer(new SlotExtended(temporaryInputSlots, 0, 8, 8));
         this.addPlayerInventory(player.inventory, 8, 31);
@@ -92,7 +94,7 @@ public class ContainerLabeller extends ItemInventoryContainer<ItemLabeller> {
         if (!player.worldObj.isRemote) {
             ItemStack itemStack = temporaryInputSlots.getStackInSlot(0);
             if (itemStack != null) {
-                player.dropPlayerItemWithRandomChoice(itemStack, false);
+                Helpers.returnItemToPlayer(player, itemStack);
             }
         }
     }

@@ -4,6 +4,7 @@ import java.util.List;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.EnumChatFormatting;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -24,7 +25,7 @@ import ruiseki.okcore.helper.LangHelpers;
 
 /**
  * A button for clearing the crafting grid.
- * 
+ *
  * @author rubensworks
  */
 public class TerminalButtonFilterCrafting<T> implements
@@ -32,15 +33,22 @@ public class TerminalButtonFilterCrafting<T> implements
 
     private final TerminalStorageState state;
     private final String buttonName;
+    private final ITerminalStorageTabClient<?> clientTab;
 
     private FilterType active;
 
     public TerminalButtonFilterCrafting(TerminalStorageState state, ITerminalStorageTabClient<?> clientTab) {
         this.state = state;
         this.buttonName = "filter_crafting";
+        this.clientTab = clientTab;
 
+        reloadFromState();
+    }
+
+    @Override
+    public void reloadFromState() {
         if (state.hasButton(
-            clientTab.getName()
+            clientTab.getTabSettingsName()
                 .toString(),
             this.buttonName)) {
             NBTTagCompound data = (NBTTagCompound) state.getButton(
@@ -75,7 +83,7 @@ public class TerminalButtonFilterCrafting<T> implements
         NBTTagCompound data = new NBTTagCompound();
         data.setInteger("active", active.ordinal());
         state.setButton(
-            clientTab.getName()
+            clientTab.getTabSettingsName()
                 .toString(),
             this.buttonName,
             data);
@@ -91,7 +99,9 @@ public class TerminalButtonFilterCrafting<T> implements
     @Override
     @SideOnly(Side.CLIENT)
     public void getTooltip(EntityPlayer player, boolean tooltipFlag, List<String> lines) {
-        lines.add(LangHelpers.localize("gui." + Reference.MOD_ID + ".terminal_storage.crafting.filter.info"));
+        lines.add(
+            EnumChatFormatting.GRAY
+                + LangHelpers.localize("gui." + Reference.MOD_ID + ".terminal_storage.crafting.filter.info"));
         lines.add(LangHelpers.localize(active.getLabel()));
     }
 

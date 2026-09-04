@@ -74,6 +74,11 @@ public class TileDelay extends TileProxy {
                 return list;
             }
         };
+        registerCapabilityResolvers();
+    }
+
+    @Override
+    protected void registerCapabilityResolvers() {
         this.capabilityCache.addCapabilityResolver(
             BasicCapabilityResolver
                 .create(NetworkElementProviderConfig.CAPABILITY, () -> new NetworkElementProviderSingleton() {
@@ -169,8 +174,14 @@ public class TileDelay extends TileProxy {
                 getValues().poll();
             }
 
+            IPartNetwork partNetwork = NetworkHelpers.getPartNetwork(getNetwork())
+                .getOrNull();
+            if (partNetwork == null) {
+                return;
+            }
+
             // Add new value to the queue
-            IVariable<?> variable = super.getVariable(NetworkHelpers.getPartNetwork(getNetwork()));
+            IVariable<?> variable = super.getVariable(partNetwork);
             IValue value = null;
             if (variable != null) {
                 try {

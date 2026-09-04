@@ -4,6 +4,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector3i;
 
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
@@ -91,6 +92,25 @@ public class PartTarget {
      */
     public PartTarget forTargetSide(ForgeDirection targetSide) {
         return new PartTarget(center, PartPos.of(target.getPos(), targetSide));
+    }
+
+    /**
+     * Create a new instance with the given target offset.
+     * 
+     * @param offset The offset of the target.
+     * @return A new {@link PartTarget} instance.
+     */
+    public PartTarget forOffset(Vector3i offset) {
+        // Lấy vị trí target hiện tại
+        DimPos targetPos = target.getPos();
+
+        // Tạo vị trí DimPos mới bằng cách cộng offset vào BlockPos của target
+        DimPos newTargetPos = DimPos.of(
+            targetPos.getWorld(),
+            targetPos.getBlockPos()
+                .add(offset.x, offset.y, offset.z));
+
+        return new PartTarget(center, PartPos.of(newTargetPos, target.getSide()));
     }
 
     @Override

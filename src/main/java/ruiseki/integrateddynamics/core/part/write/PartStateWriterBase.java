@@ -9,6 +9,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import com.google.common.collect.Maps;
 
 import ruiseki.integrateddynamics.api.item.IVariableFacade;
+import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.api.part.aspect.IAspect;
@@ -30,6 +31,11 @@ public class PartStateWriterBase<P extends IPartTypeWriter> extends PartStateAct
     implements IPartStateWriter<P> {
 
     private IAspectWrite activeAspect = null;
+    /**
+     * Whether {@link IAspectWrite#onActivate} has been called for {@link #activeAspect}.
+     * This is not persisted, as aspects are always deactivated when their network is killed.
+     */
+    private boolean activeAspectActivated = false;
     private Map<String, List<LangHelpers.UnlocalizedString>> errorMessages = Maps.newHashMap();
     private boolean firstTick = true;
 
@@ -58,11 +64,12 @@ public class PartStateWriterBase<P extends IPartTypeWriter> extends PartStateAct
     }
 
     @Override
-    protected void validate(IPartNetwork network) {
+    protected void validate(INetwork network, IPartNetwork partNetwork) {
         // Note that this is only called server-side, so these errors are sent via NBT to the client(s).
         if (getActiveAspect() != null) {
             this.currentVariableFacade.validate(
                 network,
+                partNetwork,
                 new PartStateWriterBase.Validator(this, getActiveAspect()),
                 getActiveAspect().getValueType());
         }
@@ -72,6 +79,7 @@ public class PartStateWriterBase<P extends IPartTypeWriter> extends PartStateAct
     protected void onCorruptedState() {
         super.onCorruptedState();
         this.activeAspect = null;
+        this.activeAspectActivated = false;
     }
 
     @Override
@@ -80,16 +88,33 @@ public class PartStateWriterBase<P extends IPartTypeWriter> extends PartStateAct
     }
 
     @Override
-    public void triggerAspectInfoUpdate(P partType, PartTarget target, IAspectWrite newAspect) {
-        onVariableContentsUpdated(partType, target);
+    public void triggerAspectInfoUpdate(P partType, PartTarget target, IAspectWrite newAspect,
+        boolean isNetworkInitializing) {
+        if (!isNetworkInitializing) {
+            // We skip network content updates during network init,
+            // as it will be called once for all parts right after network init.
+            // This is to avoid re-updating variable contents many times during network init, which can get expensive.
+            onVariableContentsUpdated(partType, target);
+        }
+
+        // Aspects are activated and deactivated at most once,
+        // as networks are killed and revived without the aspect itself changing.
         IAspectWrite activeAspect = getActiveAspect();
-        if (activeAspect != null && activeAspect != newAspect) {
+        if (activeAspect != null && this.activeAspectActivated && activeAspect != newAspect) {
             activeAspect.onDeactivate(partType, target, this);
+            this.activeAspectActivated = false;
         }
-        if (newAspect != null && activeAspect != newAspect) {
+        if (newAspect != null && !this.activeAspectActivated) {
             newAspect.onActivate(partType, target, this);
+            this.activeAspectActivated = true;
         }
-        this.activeAspect = newAspect;
+
+        // Only forget the aspect outside of network (re)initialization.
+        // Otherwise, a part that is saved while its network is being killed
+        // would persist a null aspect, and lose its configuration after a world restart.
+        if (newAspect != null || !isNetworkInitializing) {
+            this.activeAspect = newAspect;
+        }
     }
 
     @Override

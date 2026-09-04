@@ -7,7 +7,6 @@ import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.core.item.ItemBlockEnergyContainerAutoSupply;
 import ruiseki.okcore.config.ConfigurableProperty;
-import ruiseki.okcore.config.ConfigurableTypeCategory;
 import ruiseki.okcore.config.extendedconfig.BlockContainerConfig;
 
 /**
@@ -26,7 +25,7 @@ public class BlockEnergyBatteryConfig extends BlockContainerConfig {
      * The default capacity of an energy battery.
      */
     @ConfigurableProperty(
-        category = ConfigurableTypeCategory.MACHINE,
+        category = "machine",
         comment = "The default capacity of an energy battery.",
         minimalValue = 0)
     public static int capacity = 1000000;
@@ -35,7 +34,7 @@ public class BlockEnergyBatteryConfig extends BlockContainerConfig {
      * The 1/X fraction of the battery capacity that is allowed to be transfered per tick.
      */
     @ConfigurableProperty(
-        category = ConfigurableTypeCategory.MACHINE,
+        category = "machine",
         comment = "The 1/X fraction of the battery capacity that is allowed to be transfered per tick.",
         isCommandable = true,
         minimalValue = 0)
@@ -45,7 +44,7 @@ public class BlockEnergyBatteryConfig extends BlockContainerConfig {
      * The minimum energy transfer rate per tick.
      */
     @ConfigurableProperty(
-        category = ConfigurableTypeCategory.MACHINE,
+        category = "machine",
         comment = "The minimum energy transfer rate per tick.",
         isCommandable = true,
         minimalValue = 0)
@@ -55,14 +54,14 @@ public class BlockEnergyBatteryConfig extends BlockContainerConfig {
      * The maximum capacity possible by combining batteries.
      */
     @ConfigurableProperty(
-        category = ConfigurableTypeCategory.MACHINE,
+        category = "machine",
         comment = "The maximum capacity possible by combining batteries. (Make sure that you do not cross the max int size.)")
     public static int maxCapacity = 655360000;
     /**
      * The maximum capacity visible in the creative tabs.
      */
     @ConfigurableProperty(
-        category = ConfigurableTypeCategory.MACHINE,
+        category = "machine",
         comment = "The maximum capacity visible in the creative tabs. (Make sure that you do not cross the max int size.)")
     public static int maxCreativeCapacity = 40960000;
 
@@ -70,7 +69,7 @@ public class BlockEnergyBatteryConfig extends BlockContainerConfig {
      * Make a new instance.
      */
     public BlockEnergyBatteryConfig() {
-        super(IntegratedDynamics._instance, true, "energy_battery", null, BlockEnergyBattery.class);
+        super(IntegratedDynamics._instance, true, "energy_battery", null, config -> new BlockEnergyBattery());
     }
 
     @Override

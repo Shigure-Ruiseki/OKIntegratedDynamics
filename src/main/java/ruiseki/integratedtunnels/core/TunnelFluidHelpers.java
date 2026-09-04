@@ -30,7 +30,7 @@ import ruiseki.integratedtunnels.core.predicate.IngredientPredicateFluidStackNbt
 import ruiseki.integratedtunnels.core.predicate.IngredientPredicateFluidStackOperator;
 import ruiseki.integratedtunnels.part.aspect.ITunnelConnection;
 import ruiseki.okcore.datastructure.BlockPos;
-import ruiseki.okcore.fluid.FluidHelpers;
+import ruiseki.okcore.helper.FluidHelpers;
 
 /**
  * @author rubensworks
@@ -39,7 +39,7 @@ public class TunnelFluidHelpers {
 
     public static final IngredientPredicate<FluidStack, Integer> MATCH_NONE = new IngredientPredicate<FluidStack, Integer>(
         IngredientComponent.FLUIDSTACK,
-        null,
+        FluidHelpers.EMPTY,
         FluidMatch.EXACT,
         false,
         true,
@@ -79,17 +79,23 @@ public class TunnelFluidHelpers {
         };
     }
 
-    public static IngredientPredicate<FluidStack, Integer> matchFluidStack(final FluidStack fluidStack,
-        final boolean checkFluid, final boolean checkAmount, final boolean checkNbt, final boolean blacklist,
-        final boolean exactAmount) {
+    protected static int getFluidStackMatchFlags(final boolean checkFluid, final boolean checkAmount,
+        final boolean checkNbt) {
+
         int matchFlags = FluidMatch.ANY;
         if (checkFluid) matchFlags = matchFlags | FluidMatch.FLUID;
         if (checkNbt) matchFlags = matchFlags | FluidMatch.NBT;
         if (checkAmount) matchFlags = matchFlags | FluidMatch.AMOUNT;
+        return matchFlags;
+    }
+
+    public static IngredientPredicate<FluidStack, Integer> matchFluidStack(final FluidStack fluidStack,
+        final boolean checkFluid, final boolean checkAmount, final boolean checkNbt, final boolean blacklist,
+        final boolean exactAmount) {
         return new IngredientPredicate<FluidStack, Integer>(
             IngredientComponent.FLUIDSTACK,
             fluidStack != null ? fluidStack.copy() : null,
-            matchFlags,
+            getFluidStackMatchFlags(checkFluid, checkAmount, checkNbt),
             blacklist,
             fluidStack == null && !blacklist,
             FluidHelpers.getAmount(fluidStack),
@@ -115,6 +121,7 @@ public class TunnelFluidHelpers {
             amount,
             exactAmount,
             fluidStacks,
+            getFluidStackMatchFlags(checkFluid, checkAmount, checkNbt),
             checkFluid,
             checkAmount,
             checkNbt);
@@ -153,7 +160,7 @@ public class TunnelFluidHelpers {
 
     /**
      * Place fluids from the given source in the world.
-     * 
+     *
      * @param network            The network in which the movement is happening.
      * @param ingredientsNetwork The network in which the movement is happening.
      * @param channel            The channel.
@@ -203,7 +210,7 @@ public class TunnelFluidHelpers {
 
     /**
      * Place fluids from the given source in the world.
-     * 
+     *
      * @param network            The network in which the movement is happening.
      * @param ingredientsNetwork The ingredients network in which the movement is happening.
      * @param channel            The channel.
@@ -246,7 +253,7 @@ public class TunnelFluidHelpers {
 
     /**
      * Helper function to get a copy of the given fluidstack with the given amount.
-     * 
+     *
      * @param prototype A prototype fluidstack.
      * @param count     A new amount.
      * @return A copy of the given fluidstack with the given count.

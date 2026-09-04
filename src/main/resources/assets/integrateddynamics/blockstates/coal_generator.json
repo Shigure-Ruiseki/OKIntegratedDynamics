@@ -1,0 +1,12 @@
+{
+  "variants": {
+    "facing=north,lit=false": { "model": "integrateddynamics:block/coal_generator" },
+    "facing=south,lit=false": { "model": "integrateddynamics:block/coal_generator", "y": 180 },
+    "facing=east,lit=false":  { "model": "integrateddynamics:block/coal_generator", "y": 270 },
+    "facing=west,lit=false":  { "model": "integrateddynamics:block/coal_generator", "y": 90 },
+    "facing=north,lit=true": { "model": "integrateddynamics:block/coal_generator_on" },
+    "facing=south,lit=true": { "model": "integrateddynamics:block/coal_generator_on", "y": 180 },
+    "facing=east,lit=true":  { "model": "integrateddynamics:block/coal_generator_on", "y": 270 },
+    "facing=west,lit=true":  { "model": "integrateddynamics:block/coal_generator_on", "y": 90 }
+  }
+}

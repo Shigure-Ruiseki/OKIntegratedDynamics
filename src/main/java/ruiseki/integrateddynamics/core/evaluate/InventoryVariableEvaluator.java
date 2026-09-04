@@ -61,7 +61,8 @@ public class InventoryVariableEvaluator<V extends IValue> implements IVariableFa
      *                                 if the variable has changed.
      */
     public void refreshVariable(INetwork network, boolean sendVariablesUpdateEvent) {
-        IPartNetwork partNetwork = NetworkHelpers.getPartNetwork(network);
+        IPartNetwork partNetwork = NetworkHelpers.getPartNetwork(network)
+            .getOrNull();
 
         int lastVariabledId = this.variableStored == null ? -1 : this.variableStored.getId();
         int variableId = -1;
@@ -81,7 +82,7 @@ public class InventoryVariableEvaluator<V extends IValue> implements IVariableFa
         } else if (this.variableStored != null) {
             preValidate();
             try {
-                variableStored.validate(partNetwork, this, containingValueType);
+                variableStored.validate(network, partNetwork, this, containingValueType);
             } catch (IllegalArgumentException e) {
                 addError(new LangHelpers.UnlocalizedString(e.getMessage()));
             }
@@ -94,15 +95,14 @@ public class InventoryVariableEvaluator<V extends IValue> implements IVariableFa
 
     @Nullable
     public IVariable<V> getVariable(INetwork network) {
-        return getVariable(NetworkHelpers.getPartNetwork(network));
-
+        return getVariable(network, NetworkHelpers.getPartNetworkChecked(network));
     }
 
     @Nullable
-    public IVariable<V> getVariable(IPartNetwork network) {
+    public IVariable<V> getVariable(INetwork network, IPartNetwork partNetwork) {
         if (getVariableFacade() == null || !getErrors().isEmpty()) return null;
         try {
-            return getVariableFacade().getVariable(network);
+            return getVariableFacade().getVariable(network, partNetwork);
         } catch (IllegalArgumentException e) {
             addError(new LangHelpers.UnlocalizedString(e.getMessage()));
             return null;
@@ -134,6 +134,7 @@ public class InventoryVariableEvaluator<V extends IValue> implements IVariableFa
     @Override
     public void addError(LangHelpers.UnlocalizedString error) {
         errors.add(error);
+        onErrorsChanged();
     }
 
     public void onErrorsChanged() {

@@ -48,6 +48,11 @@ public interface IFullNetworkListener {
     public void update();
 
     /**
+     * This guaranteed network updating should be called each tick, even in safe-mode.
+     */
+    public void updateGuaranteed();
+
+    /**
      * Remove the given path element from the network.
      * If the path element had any network elements registered in the network, these will be killed and removed as well.
      *
@@ -95,7 +100,7 @@ public interface IFullNetworkListener {
     /**
      * Invalidate the given element.
      * Called when the element's chunk is being unloaded.
-     * 
+     *
      * @param element The network element to invalidate.
      */
     public void invalidateElement(INetworkElement element);
@@ -103,7 +108,7 @@ public interface IFullNetworkListener {
     /**
      * Revalidate the given element.
      * Called when the element's chunk is being reloaded.
-     * 
+     *
      * @param element The network element to invalidate.
      */
     public void revalidateElement(INetworkElement element);

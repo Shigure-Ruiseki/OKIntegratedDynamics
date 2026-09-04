@@ -10,9 +10,7 @@ import net.minecraftforge.common.util.ForgeDirection;
 import ruiseki.commoncapabilities.api.capability.wrench.DefaultWrench;
 import ruiseki.commoncapabilities.capability.wrench.WrenchConfig;
 import ruiseki.okcore.capabilities.ICapabilityProvider;
-import ruiseki.okcore.config.configurable.ConfigurableItem;
-import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
-import ruiseki.okcore.config.extendedconfig.ItemConfig;
+import ruiseki.okcore.item.ItemBase;
 import ruiseki.okcore.modcompat.capabilities.DefaultCapabilityProvider;
 
 /**
@@ -20,26 +18,14 @@ import ruiseki.okcore.modcompat.capabilities.DefaultCapabilityProvider;
  *
  * @author rubensworks
  */
-public class ItemWrench extends ConfigurableItem {
-
-    private static ItemWrench _instance = null;
-
-    /**
-     * Get the unique instance.
-     *
-     * @return The instance.
-     */
-    public static ItemWrench getInstance() {
-        return _instance;
-    }
+public class ItemWrench extends ItemBase {
 
     /**
      * Make a new item instance.
      *
-     * @param eConfig Config for this blockState.
      */
-    public ItemWrench(ExtendedConfig<ItemConfig> eConfig) {
-        super(eConfig);
+    public ItemWrench() {
+        super();
     }
 
     @Override

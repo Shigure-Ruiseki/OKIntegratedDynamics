@@ -14,8 +14,10 @@ import com.google.common.collect.Lists;
 import ruiseki.commoncapabilities.api.ingredient.IIngredientMatcher;
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
 import ruiseki.commoncapabilities.api.ingredient.storage.IIngredientComponentStorage;
+import ruiseki.integrateddynamics.api.network.INetworkIngredientsChannel;
 import ruiseki.integrateddynamics.api.network.IPartPosIteratorHandler;
 import ruiseki.integrateddynamics.api.network.IPositionedAddonsNetworkIngredients;
+import ruiseki.integrateddynamics.api.network.PositionedAddonsNetworkIngredientsFilter;
 import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.okcore.datastructure.Wrapper;
 import ruiseki.okcore.ingredient.collection.IIngredientMapMutable;
@@ -27,7 +29,7 @@ import ruiseki.okcore.ingredient.collection.IngredientHashMap;
  * @param <T> The instance type.
  * @param <M> The matching condition parameter.
  */
-public abstract class IngredientChannelAdapter<T, M> implements IIngredientComponentStorage<T, M> {
+public abstract class IngredientChannelAdapter<T, M> implements INetworkIngredientsChannel<T, M> {
 
     private final IPositionedAddonsNetworkIngredients<T, M> network;
     private final int channel;
@@ -68,6 +70,26 @@ public abstract class IngredientChannelAdapter<T, M> implements IIngredientCompo
     protected abstract Iterator<PartPos> getNonEmptyPositions();
 
     protected abstract Iterator<PartPos> getMatchingPositions(@Nonnull T prototype, M matchFlags);
+
+    @Override
+    public Iterable<PartPos> findNonFullPositions() {
+        return () -> getPartPosIteratorData(this::getNonFullPositions, channel).getRight();
+    }
+
+    @Override
+    public Iterable<PartPos> findAllPositions() {
+        return () -> getPartPosIteratorData(this::getAllPositions, channel).getRight();
+    }
+
+    @Override
+    public Iterable<PartPos> findNonEmptyPositions() {
+        return () -> getPartPosIteratorData(this::getNonEmptyPositions, channel).getRight();
+    }
+
+    @Override
+    public Iterable<PartPos> findMatchingPositions(@Nonnull T prototype, M matchFlags) {
+        return () -> getPartPosIteratorData(() -> this.getMatchingPositions(prototype, matchFlags), channel).getRight();
+    }
 
     @Override
     public long getMaxQuantity() {
@@ -114,6 +136,11 @@ public abstract class IngredientChannelAdapter<T, M> implements IIngredientCompo
 
     @Override
     public T insert(@Nonnull T ingredient, boolean simulate) {
+        // First run the ingredient instance through the pre-consumers.
+        for (IIngredientChannelInsertPreConsumer<T> insertPreConsumer : network.getInsertPreConsumers()) {
+            ingredient = insertPreConsumer.insert(this.channel, ingredient, simulate);
+        }
+
         IIngredientMatcher<T, M> matcher = getComponent().getMatcher();
 
         // Quickly return if the to-be-inserted ingredient was already empty
@@ -141,11 +168,19 @@ public abstract class IngredientChannelAdapter<T, M> implements IIngredientCompo
         Iterator<PartPos> it = partPosIteratorData.getRight();
         while (it.hasNext()) {
             PartPos pos = it.next();
+
             // Skip if the position is not loaded or disabled
             if (!pos.getPos()
                 .isLoaded() || network.isPositionDisabled(pos)) {
                 continue;
             }
+
+            // Skip if a filter was set that doesn't match the ingredient
+            PositionedAddonsNetworkIngredientsFilter<T> filter = this.network.getPositionedStorageFilter(pos);
+            if (filter != null && !filter.testInsertion(ingredient)) {
+                continue;
+            }
+
             this.network.disablePosition(pos);
             long quantityBefore = matcher.getQuantity(ingredient);
             ingredient = this.network.getPositionedStorage(pos)
@@ -190,14 +225,33 @@ public abstract class IngredientChannelAdapter<T, M> implements IIngredientCompo
         Iterator<PartPos> it = partPosIteratorData.getRight();
         while (it.hasNext()) {
             PartPos pos = it.next();
+
             // Skip if the position is not loaded or disabled
             if (!pos.getPos()
                 .isLoaded() || network.isPositionDisabled(pos)) {
                 continue;
             }
+
+            // Obtain storage
             this.network.disablePosition(pos);
-            T extracted = this.network.getPositionedStorage(pos)
-                .extract(maxQuantity, simulate);
+            IIngredientComponentStorage<T, M> positionedStorage = this.network.getPositionedStorage(pos);
+
+            // If we do an effective extraction, first simulate to check if it matches the filter
+            PositionedAddonsNetworkIngredientsFilter<T> filter = this.network.getPositionedStorageFilter(pos);
+            if (filter != null && !simulate) {
+                T extractedSimulated = positionedStorage.extract(maxQuantity, true);
+                if (!filter.testExtraction(extractedSimulated)) {
+                    continue;
+                }
+            }
+
+            T extracted = positionedStorage.extract(maxQuantity, simulate);
+
+            // If simulating, just check the output
+            if (filter != null && simulate && !filter.testExtraction(extracted)) {
+                continue;
+            }
+
             this.network.enablePosition(pos);
             if (!matcher.isEmpty(extracted)) {
                 if (!simulate) {
@@ -278,6 +332,12 @@ public abstract class IngredientChannelAdapter<T, M> implements IIngredientCompo
             this.network.enablePosition(pos);
             T storagePrototype = getComponent().getMatcher()
                 .withQuantity(extractedSimulated, 1);
+
+            // Skip if a filter was set that doesn't match the simulated extraction
+            PositionedAddonsNetworkIngredientsFilter<T> filter = this.network.getPositionedStorageFilter(pos);
+            if (filter != null && !filter.testExtraction(extractedSimulated)) {
+                continue;
+            }
 
             // Get existing value from temporary mapping
             Pair<Wrapper<Long>, List<PartPos>> existingValue = validInstancesCollapsed.get(storagePrototype);

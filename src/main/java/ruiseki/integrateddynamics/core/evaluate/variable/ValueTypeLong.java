@@ -1,8 +1,11 @@
 package ruiseki.integrateddynamics.core.evaluate.variable;
 
+import java.util.Locale;
+
 import net.minecraft.util.EnumChatFormatting;
 
 import lombok.ToString;
+import ruiseki.integrateddynamics.GeneralConfig;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeNumber;
 import ruiseki.okcore.helper.Helpers;
 
@@ -83,6 +86,21 @@ public class ValueTypeLong extends ValueTypeBase<ValueTypeLong.ValueLong>
     }
 
     @Override
+    public ValueLong increment(ValueLong a) {
+        return ValueLong.of(a.getRawValue() + 1L);
+    }
+
+    @Override
+    public ValueLong decrement(ValueLong a) {
+        return ValueLong.of(a.getRawValue() - 1L);
+    }
+
+    @Override
+    public ValueLong modulus(ValueLong a, ValueLong b) {
+        return ValueLong.of(a.getRawValue() % b.getRawValue());
+    }
+
+    @Override
     public boolean greaterThan(ValueLong a, ValueLong b) {
         return a.getRawValue() > b.getRawValue();
     }
@@ -105,6 +123,34 @@ public class ValueTypeLong extends ValueTypeBase<ValueTypeLong.ValueLong>
     @Override
     public ValueTypeInteger.ValueInteger floor(ValueLong a) {
         return ValueTypeInteger.ValueInteger.of((int) a.getRawValue());
+    }
+
+    @Override
+    public ValueTypeString.ValueString compact(ValueLong a) {
+        long value = a.getRawValue();
+        return ValueTypeString.ValueString.of(formatCompactLong(value));
+    }
+
+    private static String formatCompactLong(long value) {
+        if (value == Long.MIN_VALUE) return formatCompactLong(Long.MIN_VALUE + 1);
+        if (value < 0) return "-" + formatCompactLong(-value);
+        if (value < 1000) return Long.toString(value);
+
+        final String[] suffixes = new String[] { "", "K", "M", "B", "T", "P", "E" };
+        int index = (int) (Math.log10(value) / 3);
+        if (index >= suffixes.length) index = suffixes.length - 1;
+
+        double num = value / Math.pow(10, index * 3);
+
+        int maxDigits = GeneralConfig.numberCompactMaximumFractionDigits;
+        if (maxDigits <= 0) {
+            return String.format(Locale.US, "%.0f%s", num, suffixes[index]);
+        }
+
+        String pattern = "%." + maxDigits + "f%s";
+        String formatted = String.format(Locale.US, pattern, num, suffixes[index]);
+
+        return formatted.replaceAll("(\\.\\d*?[1-9])0+|\\.(0+)", "$1");
     }
 
     @Override

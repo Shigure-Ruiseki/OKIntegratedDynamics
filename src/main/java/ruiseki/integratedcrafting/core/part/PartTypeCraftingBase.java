@@ -10,16 +10,16 @@ import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartRenderPosition;
 import ruiseki.integrateddynamics.core.client.gui.container.GuiPartSettings;
 import ruiseki.integrateddynamics.core.inventory.container.ContainerPartSettings;
-import ruiseki.integrateddynamics.core.part.PartTypeBase;
+import ruiseki.integrateddynamics.core.part.PartTypeConfigurable;
 import ruiseki.okcore.init.ModBase;
 
 /**
  * Base part for a crafting part.
- * 
+ *
  * @author rubensworks
  */
 public abstract class PartTypeCraftingBase<P extends IPartType<P, S>, S extends IPartState<P>>
-    extends PartTypeBase<P, S> {
+    extends PartTypeConfigurable<P, S> {
 
     public PartTypeCraftingBase(String name) {
         super(name, new PartRenderPosition(0.1875F, 0.1875F, 0.625F, 0.625F));
@@ -38,11 +38,6 @@ public abstract class PartTypeCraftingBase<P extends IPartType<P, S>, S extends 
     @Override
     public Class<? super P> getPartTypeClass() {
         return IPartType.class;
-    }
-
-    @Override
-    protected boolean hasGui() {
-        return true;
     }
 
     @Override

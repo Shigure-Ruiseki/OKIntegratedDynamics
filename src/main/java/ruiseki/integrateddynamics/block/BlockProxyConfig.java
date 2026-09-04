@@ -8,7 +8,7 @@ import ruiseki.okcore.config.extendedconfig.BlockContainerConfig;
 
 /**
  * Config for {@link BlockProxy}.
- * 
+ *
  * @author rubensworks
  */
 public class BlockProxyConfig extends BlockContainerConfig {
@@ -22,7 +22,7 @@ public class BlockProxyConfig extends BlockContainerConfig {
      * Make a new instance.
      */
     public BlockProxyConfig() {
-        super(IntegratedDynamics._instance, true, "proxy", null, BlockProxy.class);
+        super(IntegratedDynamics._instance, true, "proxy", null, BlockProxy::new);
     }
 
     @Override

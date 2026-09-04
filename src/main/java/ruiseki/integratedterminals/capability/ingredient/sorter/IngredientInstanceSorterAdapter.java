@@ -3,6 +3,7 @@ package ruiseki.integratedterminals.capability.ingredient.sorter;
 import java.util.List;
 
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.EnumChatFormatting;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -13,7 +14,7 @@ import ruiseki.okcore.helper.LangHelpers;
 
 /**
  * An adapter implementation of {@link IIngredientInstanceSorter}.
- * 
+ *
  * @author rubensworks
  */
 public abstract class IngredientInstanceSorterAdapter<T> implements IIngredientInstanceSorter<T> {
@@ -39,6 +40,6 @@ public abstract class IngredientInstanceSorterAdapter<T> implements IIngredientI
     @Override
     @SideOnly(Side.CLIENT)
     public void getTooltip(EntityPlayer player, boolean tooltipFlag, List<String> lines) {
-        lines.add(LangHelpers.localize(this.unlocalizedName + ".info"));
+        lines.add(EnumChatFormatting.GRAY + LangHelpers.localize(this.unlocalizedName + ".info"));
     }
 }

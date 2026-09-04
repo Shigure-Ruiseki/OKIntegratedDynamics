@@ -12,6 +12,7 @@ import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.evaluate.operator.IOperator;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
+import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeCategory;
 import ruiseki.integrateddynamics.api.evaluate.variable.IVariable;
 import ruiseki.integrateddynamics.api.item.IVariableFacade;
 import ruiseki.integrateddynamics.core.evaluate.operator.CurriedOperator;
@@ -95,6 +96,30 @@ public class ValueHelpers {
      */
     public static boolean correspondsTo(IValueType t1, IValueType t2) {
         return t1.correspondsTo(t2) || t2.correspondsTo(t1);
+    }
+
+    /**
+     * Check if the variable corresponds to the given type.
+     *
+     * @param variable Variable.
+     * @param type     First type.
+     * @return If they correspond to each.
+     */
+    public static boolean correspondsTo(IVariable<?> variable, IValueType type) {
+        // Special case when the variable type is ANY, but the actual contained value is more specific.
+        // This can for example occur in Integrated Scripting when applying a scripted operator.
+        // See CyclopsMC/IntegratedScripting#20
+        if (type != ValueTypes.CATEGORY_ANY && variable.getType() == ValueTypes.CATEGORY_ANY) {
+            try {
+                IValue value = variable.getValue();
+                return ValueHelpers.correspondsTo(type, value.getType());
+            } catch (EvaluationException e) {
+                // Ignore error
+                return false;
+            }
+        }
+
+        return ValueHelpers.correspondsTo(type, variable.getType());
     }
 
     /**
@@ -257,5 +282,36 @@ public class ValueHelpers {
             }
         }
         return Pair.of(readValue, readValueColor);
+    }
+
+    /**
+     * If the given variable has type ANY, attempt to cast the type to the given category type, or throw.
+     *
+     * @param variable      The variable.
+     * @param operator      An operator to include in the error message.
+     * @param category      The category to check.
+     * @param categoryClazz The category class.
+     * @param <V>           The value type.
+     * @param <C>           The category type.
+     * @return The cast value type.
+     * @throws EvaluationException If casting failed.
+     */
+    public static <V extends IValue, C extends IValueType<V>> C variableUnpackAnyType(IVariable variable,
+        IOperator operator, IValueTypeCategory<V> category, Class<? super C> categoryClazz) throws EvaluationException {
+        IValueType type = variable.getType();
+        if (type == ValueTypes.CATEGORY_ANY) {
+            type = variable.getValue()
+                .getType();
+            if (!categoryClazz.isInstance(type)) {
+                throw new EvaluationException(
+                    new LangHelpers.UnlocalizedString(
+                        L10NValues.OPERATOR_ERROR_WRONGTYPE,
+                        operator.getLocalizedNameFull(),
+                        LangHelpers.localize(type.getUnlocalizedName()),
+                        "0",
+                        LangHelpers.localize(category.getUnlocalizedName())).localize());
+            }
+        }
+        return (C) type;
     }
 }

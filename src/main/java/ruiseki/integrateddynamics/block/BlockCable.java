@@ -1,8 +1,10 @@
 package ruiseki.integrateddynamics.block;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Random;
 
 import net.minecraft.block.Block;
@@ -12,9 +14,9 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.AxisAlignedBB;
-import net.minecraft.util.IIcon;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
+import net.minecraft.world.Explosion;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
@@ -34,9 +36,11 @@ import lombok.Setter;
 import lombok.experimental.Delegate;
 import ruiseki.integrateddynamics.api.block.IDynamicLight;
 import ruiseki.integrateddynamics.api.block.IDynamicRedstone;
+import ruiseki.integrateddynamics.api.block.cable.ICableFakeable;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartState;
 import ruiseki.integrateddynamics.api.part.IPartType;
+import ruiseki.integrateddynamics.api.part.PartRenderPosition;
 import ruiseki.integrateddynamics.block.collidable.CollidableComponentCableCenter;
 import ruiseki.integrateddynamics.block.collidable.CollidableComponentCableConnections;
 import ruiseki.integrateddynamics.block.collidable.CollidableComponentFacade;
@@ -44,32 +48,59 @@ import ruiseki.integrateddynamics.block.collidable.CollidableComponentParts;
 import ruiseki.integrateddynamics.capability.dynamiclight.DynamicLightConfig;
 import ruiseki.integrateddynamics.capability.dynamicredstone.DynamicRedstoneConfig;
 import ruiseki.integrateddynamics.client.model.CableModel;
+import ruiseki.integrateddynamics.client.model.CableRenderState;
 import ruiseki.integrateddynamics.core.helper.CableHelpers;
 import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
 import ruiseki.integrateddynamics.core.helper.PartHelpers;
 import ruiseki.integrateddynamics.core.helper.WrenchHelpers;
 import ruiseki.integrateddynamics.core.tileentity.TileMultipartTicking;
 import ruiseki.integrateddynamics.item.ItemBlockCable;
+import ruiseki.okcore.block.BlockTile;
 import ruiseki.okcore.block.collidable.CollidableComponent;
 import ruiseki.okcore.block.collidable.ICollidable;
 import ruiseki.okcore.block.collidable.ICollidableParent;
 import ruiseki.okcore.block.collidable.ImmutableAxisAlignedBB;
-import ruiseki.okcore.client.icon.Icon;
-import ruiseki.okcore.config.configurable.ConfigurableBlockContainer;
-import ruiseki.okcore.config.extendedconfig.BlockConfig;
-import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
+import ruiseki.okcore.block.property.BlockProperty;
+import ruiseki.okcore.block.property.IProperty;
+import ruiseki.okcore.block.property.UnlistedProperty;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.EnumFacingMap;
 import ruiseki.okcore.helper.CapabilityHelpers;
-import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.helper.RenderHelpers;
 import ruiseki.okcore.helper.TileHelpers;
 
-public class BlockCable extends ConfigurableBlockContainer
+public class BlockCable extends BlockTile
     implements ICollidable<ForgeDirection>, ICollidableParent, IBlockModelProvider, BlockModelInfo {
 
     public static final float BLOCK_HARDNESS = 3.0F;
     public static final Material BLOCK_MATERIAL = Material.glass;
+
+    // Properties
+    @BlockProperty
+    public static final IProperty<Boolean> REALCABLE = new UnlistedProperty<>("realcable", Boolean.class, false);
+    @BlockProperty
+    public static final IProperty<Boolean>[] CONNECTED = new IProperty[6];
+    @BlockProperty
+    public static final IProperty<PartRenderPosition>[] PART_RENDERPOSITIONS = new IProperty[6];
+    @BlockProperty
+    public static final IProperty<Optional> FACADE = new UnlistedProperty<>("facade", Optional.class, Optional.empty());
+    static {
+        for (ForgeDirection side : ForgeDirection.VALID_DIRECTIONS) {
+            CONNECTED[side.ordinal()] = new UnlistedProperty<>("connect-" + side.name(), Boolean.class, false);
+            PART_RENDERPOSITIONS[side.ordinal()] = new UnlistedProperty<>(
+                "partRenderPosition-" + side.name(),
+                PartRenderPosition.class,
+                PartRenderPosition.NONE);
+        }
+    }
+    @BlockProperty
+    public static final IProperty<IPartContainer> PARTCONTAINER = new UnlistedProperty<>(
+        "partcontainer",
+        IPartContainer.class);
+    @BlockProperty
+    public static final IProperty<CableRenderState> RENDERSTATE = new UnlistedProperty<>(
+        "renderState",
+        CableRenderState.class);
 
     // Collision boxes
     public final static ImmutableAxisAlignedBB CABLE_CENTER_BOUNDINGBOX = ImmutableAxisAlignedBB
@@ -105,40 +136,19 @@ public class BlockCable extends ConfigurableBlockContainer
     @Delegate
     private ICollidable<ForgeDirection> collidableComponent = new CollidableComponent<>(this, COLLIDABLE_COMPONENTS);
 
-    private static BlockCable _instance = null;
-
     public static boolean IS_MCMP_CONVERTING = false;
 
-    @SideOnly(Side.CLIENT)
-    @Icon(location = "blocks/cable")
-    public IIcon texture;
     @Setter
     private boolean disableCollisionBox = false;
 
     /**
-     * Get the unique instance.
-     *
-     * @return The instance.
-     */
-    public static BlockCable getInstance() {
-        return _instance;
-    }
-
-    /**
      * Make a new block instance.
-     *
-     * @param eConfig Config for this block.
      */
-    public BlockCable(ExtendedConfig<BlockConfig> eConfig) {
-        super(eConfig, BLOCK_MATERIAL, TileMultipartTicking.class);
+    public BlockCable() {
+        super(BLOCK_MATERIAL, TileMultipartTicking.class);
 
         setHardness(BLOCK_HARDNESS);
         setStepSound(soundTypeMetal);
-        if (MinecraftHelpers.isClientSide()) {
-            eConfig.getMod()
-                .getIconProvider()
-                .registerIconHolderObject(this);
-        }
     }
 
     @Override
@@ -166,6 +176,17 @@ public class BlockCable extends ConfigurableBlockContainer
     @Override
     public ArrayList<ItemStack> getDrops(World world, int x, int y, int z, int meta, int fortune) {
         return Lists.newArrayList();
+    }
+
+    @Override
+    public void onBlockExploded(World world, int x, int y, int z, Explosion explosion) {
+        BlockPos blockPos = new BlockPos(x, y, z);
+        CableHelpers.setRemovingCable(true);
+        CableHelpers.onCableRemoving(world, blockPos, true, false);
+        Collection<ForgeDirection> connectedCables = CableHelpers.getExternallyConnectedCables(world, blockPos);
+        super.onBlockExploded(world, x, y, z, explosion);
+        CableHelpers.onCableRemoved(world, blockPos, connectedCables);
+        CableHelpers.setRemovingCable(false);
     }
 
     @Override
@@ -210,7 +231,8 @@ public class BlockCable extends ConfigurableBlockContainer
                         return true;
                     } else if (CableHelpers.isNoFakeCable(world, pos, side)) {
                         // Delegate activated call to part
-                        IPartContainer partContainer = PartHelpers.getPartContainer(world, pos, side);
+                        IPartContainer partContainer = PartHelpers.getPartContainer(world, pos, side)
+                            .getOrNull();
                         return partContainer.getPart(positionHit)
                             .onPartActivated(
                                 world,
@@ -244,8 +266,13 @@ public class BlockCable extends ConfigurableBlockContainer
     @Override
     public void onBlockAdded(World world, int x, int y, int z) {
         super.onBlockAdded(world, x, y, z);
+        BlockPos pos = new BlockPos(x, y, z);
         if (!world.isRemote) {
-            CableHelpers.onCableAdded(world, new BlockPos(x, y, z));
+            ICableFakeable cableFakeable = CableHelpers.getCableFakeable(world, pos, null)
+                .getOrNull();
+            if (cableFakeable != null && cableFakeable.isRealCable()) {
+                CableHelpers.onCableAdded(world, pos);
+            }
         }
     }
 
@@ -385,7 +412,8 @@ public class BlockCable extends ConfigurableBlockContainer
         if (CableHelpers.hasFacade(world, pos)) {
             return true;
         }
-        IPartContainer partContainer = PartHelpers.getPartContainer(world, pos, side);
+        IPartContainer partContainer = PartHelpers.getPartContainer(world, pos, side)
+            .getOrNull();
         if (partContainer != null && partContainer.hasPart(side)) {
             IPartType partType = partContainer.getPart(side);
             return partType.isSolid(partContainer.getPartState(side));

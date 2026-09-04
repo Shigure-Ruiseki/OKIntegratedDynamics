@@ -34,6 +34,7 @@ import ruiseki.integrateddynamics.api.logicprogrammer.ILogicProgrammerElementTyp
 import ruiseki.integrateddynamics.api.network.INetworkCraftingHandlerRegistry;
 import ruiseki.integrateddynamics.api.part.IPartTypeRegistry;
 import ruiseki.integrateddynamics.api.part.aspect.IAspectRegistry;
+import ruiseki.integrateddynamics.block.BlockCableConfig;
 import ruiseki.integrateddynamics.capability.ingredient.IngredientComponentCapabilities;
 import ruiseki.integrateddynamics.capability.network.NetworkCapabilityConstructors;
 import ruiseki.integrateddynamics.client.render.part.PartOverlayRendererRegistry;
@@ -70,16 +71,16 @@ import ruiseki.integrateddynamics.core.part.PartTypes;
 import ruiseki.integrateddynamics.core.part.aspect.AspectRegistry;
 import ruiseki.integrateddynamics.core.persist.world.LabelsWorldStorage;
 import ruiseki.integrateddynamics.core.persist.world.NetworkWorldStorage;
-import ruiseki.integrateddynamics.modcompat.nei.NEIModCompat;
 import ruiseki.integrateddynamics.part.PartTypeConnectorOmniDirectional;
 import ruiseki.integrateddynamics.part.aspect.Aspects;
 import ruiseki.okcore.client.gui.GuiHandler;
 import ruiseki.okcore.config.ConfigHandler;
+import ruiseki.okcore.config.extendedconfig.BlockItemConfigReference;
 import ruiseki.okcore.helper.MinecraftHelpers;
+import ruiseki.okcore.init.ItemCreativeTab;
 import ruiseki.okcore.init.ModBaseVersionable;
 import ruiseki.okcore.item.BucketRegistry;
 import ruiseki.okcore.item.IBucketRegistry;
-import ruiseki.okcore.modcompat.ModCompatLoader;
 import ruiseki.okcore.persist.world.GlobalCounters;
 import ruiseki.okcore.proxy.ICommonProxy;
 
@@ -127,12 +128,6 @@ public class IntegratedDynamics extends ModBaseVersionable {
         root.then(new CommandNetworkDiagnostics(this).make());
         root.then(new CommandCrash(this).make());
         return root;
-    }
-
-    @Override
-    protected void loadModCompats(ModCompatLoader modCompatLoader) {
-        super.loadModCompats(modCompatLoader);
-        modCompatLoader.addModCompat(new NEIModCompat());
     }
 
     @Mod.EventHandler
@@ -241,7 +236,7 @@ public class IntegratedDynamics extends ModBaseVersionable {
 
     @Override
     public CreativeTabs constructDefaultCreativeTab() {
-        return null;
+        return new ItemCreativeTab(this, new BlockItemConfigReference(BlockCableConfig.class));
     }
 
     @Override

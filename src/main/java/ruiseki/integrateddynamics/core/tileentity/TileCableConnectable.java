@@ -5,6 +5,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import lombok.Getter;
 import lombok.experimental.Delegate;
 import ruiseki.integrateddynamics.api.block.cable.ICable;
+import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.INetworkCarrier;
 import ruiseki.integrateddynamics.capability.cable.CableConfig;
 import ruiseki.integrateddynamics.capability.cable.CableTile;
@@ -82,7 +83,10 @@ public class TileCableConnectable extends TileEntityOK implements TileEntityOK.I
     public void onChunkUnload() {
         super.onChunkUnload();
         if (getWorldObj() != null && !getWorldObj().isRemote) {
-            NetworkHelpers.invalidateNetworkElements(getWorldObj(), getPos(), this);
+            INetwork network = networkCarrier.getNetwork();
+            if (network != null) {
+                NetworkHelpers.invalidateNetworkElements(getWorldObj(), getPos(), this);
+            }
         }
     }
 }

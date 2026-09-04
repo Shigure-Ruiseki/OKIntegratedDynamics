@@ -7,6 +7,7 @@ import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeNullable;
 import ruiseki.integrateddynamics.api.evaluate.variable.IVariable;
+import ruiseki.integrateddynamics.core.evaluate.operator.Operators;
 import ruiseki.okcore.helper.Helpers;
 
 /**
@@ -21,12 +22,9 @@ public class ValueTypeCategoryNullable extends ValueTypeCategoryBase<IValue> {
     }
 
     public boolean isNull(IVariable a) throws EvaluationException {
-        try {
-            return ((IValueTypeNullable) a.getType()).isNull(a.getValue());
-        } catch (ClassCastException e) {
-            // This can happen with 'any' types.
-            return false;
-        }
+        IValueTypeNullable<IValue> type = ValueHelpers
+            .variableUnpackAnyType(a, Operators.NULLABLE_ISNULL, this, IValueTypeNullable.class);
+        return type.isNull(a.getValue());
     }
 
     @Override

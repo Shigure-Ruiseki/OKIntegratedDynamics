@@ -13,13 +13,11 @@ import com.gtnewhorizon.gtnhlib.blockstate.core.InvalidPropertyTextException;
 
 import ruiseki.okcore.block.property.BlockProperty;
 import ruiseki.okcore.block.property.IProperty;
-import ruiseki.okcore.config.extendedconfig.BlockConfig;
-import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 
 /**
  * A block that is not visible to the player.
  * Just used for providing models, until a better way for doing this comes around.
- * 
+ *
  * @author rubensworks
  */
 public class IgnoredBlockStatus extends IgnoredBlock {
@@ -29,11 +27,9 @@ public class IgnoredBlockStatus extends IgnoredBlock {
 
     /**
      * Make a new blockState instance.
-     *
-     * @param eConfig Config for this blockState.
      */
-    public IgnoredBlockStatus(ExtendedConfig<BlockConfig> eConfig) {
-        super(eConfig);
+    public IgnoredBlockStatus() {
+        super();
     }
 
     public static class PropertyStatus implements IProperty<Status> {
@@ -84,7 +80,7 @@ public class IgnoredBlockStatus extends IgnoredBlock {
 
         /**
          * Create a new PropertyStatus with all Enum constants of the given class.
-         * 
+         *
          * @param name  The property name.
          * @param clazz The property class.
          * @return The property
@@ -95,7 +91,7 @@ public class IgnoredBlockStatus extends IgnoredBlock {
 
         /**
          * Create a new PropertyStatus with filtered Enum constants of the given class.
-         * 
+         *
          * @param name   The property name.
          * @param clazz  The property class.
          * @param filter The filter for checking property values.
@@ -107,7 +103,7 @@ public class IgnoredBlockStatus extends IgnoredBlock {
 
         /**
          * Create a new PropertyStatus with specific allowed property values.
-         * 
+         *
          * @param name   The property name.
          * @param clazz  The property class.
          * @param values The possible property values.

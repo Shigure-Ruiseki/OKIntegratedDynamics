@@ -11,7 +11,7 @@ import ruiseki.integratedtunnels.part.aspect.TunnelAspects;
 
 /**
  * A part that can import items from the world.
- * 
+ *
  * @author rubensworks
  */
 public class PartTypeImporterWorldItem
@@ -32,6 +32,7 @@ public class PartTypeImporterWorldItem
 
                     TunnelAspects.Write.World.ENTITY_ITEM_BOOLEAN_IMPORT,
                     TunnelAspects.Write.World.ENTITY_ITEM_INTEGER_IMPORT,
+                    TunnelAspects.Write.World.ENTITY_ITEM_INTEGER_SLOT_IMPORT,
                     TunnelAspects.Write.World.ENTITY_ITEM_ITEMSTACK_IMPORT,
                     TunnelAspects.Write.World.ENTITY_ITEM_LISTITEMSTACK_IMPORT,
                     TunnelAspects.Write.World.ENTITY_ITEM_PREDICATEITEMSTACK_IMPORT,

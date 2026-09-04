@@ -45,7 +45,7 @@ import ruiseki.integrateddynamics.core.helper.WrenchHelpers;
 import ruiseki.integrateddynamics.core.network.event.NetworkElementAddEvent;
 import ruiseki.integrateddynamics.core.network.event.VariableContentsUpdatedEvent;
 import ruiseki.integrateddynamics.core.part.PartStateActiveVariableBase;
-import ruiseki.integrateddynamics.inventory.container.ContainerPartDisplay;
+import ruiseki.integrateddynamics.inventory.container.ContainerPartPanelVariableDriven;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.helper.BlockHelpers;
 import ruiseki.okcore.helper.BlockStateHelpers;
@@ -67,22 +67,11 @@ public abstract class PartTypePanelVariableDriven<P extends PartTypePanelVariabl
     @Override
     protected Map<Class<? extends INetworkEvent>, IEventAction> constructNetworkEventActions() {
         Map<Class<? extends INetworkEvent>, IEventAction> actions = super.constructNetworkEventActions();
-        actions.put(VariableContentsUpdatedEvent.class, new IEventAction<P, S, VariableContentsUpdatedEvent>() {
-
-            @Override
-            public void onAction(INetwork network, PartTarget target, S state, VariableContentsUpdatedEvent event) {
-                IPartNetwork partNetwork = NetworkHelpers.getPartNetwork(network);
-                onVariableContentsUpdated(partNetwork, target, state);
-            }
-        });
-        actions.put(NetworkElementAddEvent.Post.class, new IEventAction<P, S, NetworkElementAddEvent.Post>() {
-
-            @Override
-            public void onAction(INetwork network, PartTarget target, S state, NetworkElementAddEvent.Post event) {
-                IPartNetwork partNetwork = NetworkHelpers.getPartNetwork(network);
-                onVariableContentsUpdated(partNetwork, target, state);
-            }
-        });
+        IEventAction<P, S, INetworkEvent> updateEventListener = (network, target, state, event) -> NetworkHelpers
+            .getPartNetwork(network)
+            .ifPresent(partNetwork -> onVariableContentsUpdated(partNetwork, target, state));
+        actions.put(VariableContentsUpdatedEvent.class, updateEventListener);
+        actions.put(NetworkElementAddEvent.Post.class, updateEventListener);
         return actions;
     }
 
@@ -104,18 +93,6 @@ public abstract class PartTypePanelVariableDriven<P extends PartTypePanelVariabl
     }
 
     @Override
-    public void beforeNetworkKill(INetwork network, IPartNetwork partNetwork, PartTarget target, S state) {
-        super.beforeNetworkKill(network, partNetwork, target, state);
-        state.onVariableContentsUpdated((P) this, target);
-    }
-
-    @Override
-    public void afterNetworkAlive(INetwork network, IPartNetwork partNetwork, PartTarget target, S state) {
-        super.afterNetworkAlive(network, partNetwork, target, state);
-        state.onVariableContentsUpdated((P) this, target);
-    }
-
-    @Override
     public boolean isUpdate(S state) {
         return true;
     }
@@ -130,9 +107,21 @@ public abstract class PartTypePanelVariableDriven<P extends PartTypePanelVariabl
                 IVariable variable = state.getVariable(network, partNetwork);
                 if (variable != null) {
                     newValue = variable.getValue();
+
+                    if (state.isRetryEvaluation()) {
+                        state.setRetryEvaluation(false);
+                        state.addGlobalError(null);
+                    }
                 }
             } catch (EvaluationException e) {
-                state.addGlobalError(new LangHelpers.UnlocalizedString(e.getLocalizedMessage()));
+                if (!state.isRetryEvaluation()) {
+                    state.addGlobalError(new LangHelpers.UnlocalizedString(e.getLocalizedMessage()));
+                    if (e.isRetryEvaluation()) {
+                        state.setRetryEvaluation(true);
+                    } else {
+                        e.addResolutionListeners(() -> state.onVariableContentsUpdated((P) this, target));
+                    }
+                }
             }
         }
         if (!ValueHelpers.areValuesEqual(lastValue, newValue)) {
@@ -194,6 +183,7 @@ public abstract class PartTypePanelVariableDriven<P extends PartTypePanelVariabl
                     .materialize(newValue);
             } catch (EvaluationException e) {
                 state.addGlobalError(new LangHelpers.UnlocalizedString(e.getLocalizedMessage()));
+                e.addResolutionListeners(() -> state.addGlobalError(null)); // TODO: also change here?
             }
             state.setDisplayValue(materializedValue);
         }
@@ -206,7 +196,7 @@ public abstract class PartTypePanelVariableDriven<P extends PartTypePanelVariabl
 
     @Override
     public Class<? extends Container> getContainer() {
-        return ContainerPartDisplay.class;
+        return ContainerPartPanelVariableDriven.class;
     }
 
     @Override

@@ -4,7 +4,7 @@ import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.Slot;
 
-import ruiseki.integrateddynamics.item.ItemVariable;
+import ruiseki.integrateddynamics.item.ItemVariableConfig;
 import ruiseki.integrateddynamics.tileentity.TileVariablestore;
 import ruiseki.okcore.inventory.container.TileInventoryContainerConfigurable;
 import ruiseki.okcore.inventory.slot.SlotSingleItem;
@@ -33,7 +33,7 @@ public class ContainerVariablestore extends TileInventoryContainerConfigurable<T
         if (inventory instanceof InventoryPlayer) {
             return super.createNewSlot(inventory, index, row, column);
         }
-        return new SlotSingleItem(inventory, index, row, column, ItemVariable.getInstance());
+        return new SlotSingleItem(inventory, index, row, column, ItemVariableConfig._instance.getInstance());
     }
 
 }

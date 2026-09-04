@@ -48,6 +48,20 @@ public interface ITerminalStorageTabIngredientCraftingHandler<O extends ITermina
     public <T, M> Collection<O> getCraftingOptions(TerminalStorageTabIngredientComponentServer<T, M> tab, int channel);
 
     /**
+     * Get all crafting options in the given tab that produce the given output instance.
+     * 
+     * @param tab            An ingredient tab.
+     * @param channel        The channel to get the options for.
+     * @param instance       The expect output instance.
+     * @param matchCondition The expected output match condition.
+     * @param <T>            The instance type.
+     * @param <M>            The matching condition parameter.
+     * @return Crafting options.
+     */
+    public <T, M> Collection<O> getCraftingOptionsWithOutput(TerminalStorageTabIngredientComponentServer<T, M> tab,
+        int channel, T instance, M matchCondition);
+
+    /**
      * Serialize a crafting option to NBT.
      *
      * @param craftingOption A crafting option.
@@ -100,6 +114,28 @@ public interface ITerminalStorageTabIngredientCraftingHandler<O extends ITermina
     public default ITerminalCraftingPlan<I> deserializeCraftingPlan(NBTTagCompound tag)
         throws IllegalArgumentException {
         return TerminalCraftingPlanStatic.deserialize(tag, this);
+    }
+
+    /**
+     * Serialize a flat crafting plan to NBT.
+     *
+     * @param craftingPlan A flat crafting plan.
+     * @return An NBT tag.
+     */
+    public default NBTTagCompound serializeCraftingPlanFlat(ITerminalCraftingPlanFlat<I> craftingPlan) {
+        return TerminalCraftingPlanFlatStatic.serialize((TerminalCraftingPlanFlatStatic) craftingPlan, this);
+    }
+
+    /**
+     * Deserialize a flat crafting plan from NBT.
+     *
+     * @param tag An NBT tag representing a flat crafting plan.
+     * @return A crafting option.
+     * @throws IllegalArgumentException If the given tag was invalid.
+     */
+    public default ITerminalCraftingPlanFlat<I> deserializeCraftingPlanFlat(NBTTagCompound tag)
+        throws IllegalArgumentException {
+        return TerminalCraftingPlanFlatStatic.deserialize(tag, this);
     }
 
     /**

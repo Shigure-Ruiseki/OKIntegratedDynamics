@@ -6,29 +6,29 @@ import net.minecraft.inventory.Container;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.IBlockAccess;
 import net.minecraftforge.common.util.Constants;
+import net.minecraftforge.common.util.ForgeDirection;
 
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector3i;
 
+import ruiseki.integrateddynamics.GeneralConfig;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.network.IPositionedAddonsNetwork;
-import ruiseki.integrateddynamics.api.network.IPositionedAddonsNetworkIngredients;
-import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.core.part.PartStateBase;
 import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.LazyOptional;
-import ruiseki.okcore.helper.CapabilityHelpers;
 
 /**
- * Interface for positioned network addons.
- * 
+ * Interface for positioned network addons that do not have a filter.
+ *
  * @author rubensworks
  */
-public abstract class PartTypeInterfacePositionedAddon<N extends IPositionedAddonsNetwork, T, P extends IPartType<P, S>, S extends PartTypeInterfacePositionedAddon.State<P, N, T>>
-    extends PartTypeTunnel<P, S> {
+public abstract class PartTypeInterfacePositionedAddon<N extends IPositionedAddonsNetwork, T, P extends PartTypeInterfacePositionedAddon<N, T, P, S>, S extends IPartTypeInterfacePositionedAddon.IState<N, T, P, S>>
+    extends PartTypeTunnel<P, S> implements IPartTypeInterfacePositionedAddon<N, T, P, S> {
 
     public PartTypeInterfacePositionedAddon(String name) {
         super(name);
@@ -44,48 +44,50 @@ public abstract class PartTypeInterfacePositionedAddon<N extends IPositionedAddo
         return ContainerInterfaceSettings.class;
     }
 
-    protected abstract Capability<N> getNetworkCapability();
-
-    protected abstract Capability<T> getTargetCapability();
-
-    protected boolean isTargetCapabilityValid(T capability) {
-        return capability != null;
+    @Override
+    public boolean isUpdate(S state) {
+        return getConsumptionRate(state) > 0 && GeneralConfig.energyConsumptionMultiplier > 0;
     }
+
+    @Override
+    public void onAddingPositionToNetwork(N networkCapability, INetwork network, PartPos pos, int priority,
+        int channelInterface, S state) {
+        networkCapability.addPosition(pos, priority, channelInterface);
+    }
+
+    @Override
+    public void onRemovingPositionFromNetwork(N networkCapability, INetwork network, PartPos pos, S state) {
+        networkCapability.removePosition(pos);
+    }
+
+    // Methods below copied to PartTypeInterfacePositionedAddonFiltering
 
     @Override
     public void afterNetworkReAlive(INetwork network, IPartNetwork partNetwork, PartTarget target, S state) {
         super.afterNetworkReAlive(network, partNetwork, target, state);
-        addTargetToNetwork(network, target.getTarget(), state.getPriority(), state.getChannelInterface(), state);
-    }
-
-    protected void scheduleNetworkObservation(PartTarget target, S state) {
-        IPositionedAddonsNetwork positionedAddonsNetwork = state.getPositionedAddonsNetwork();
-        if (positionedAddonsNetwork instanceof IPositionedAddonsNetworkIngredients) {
-            ((IPositionedAddonsNetworkIngredients) positionedAddonsNetwork)
-                .scheduleObservationForced(state.getChannelInterface(), target.getTarget());
-        }
+        addTargetToNetwork(network, target, state.getPriority(), state.getChannelInterface(), state);
     }
 
     @Override
     public void onNetworkRemoval(INetwork network, IPartNetwork partNetwork, PartTarget target, S state) {
         super.onNetworkRemoval(network, partNetwork, target, state);
         scheduleNetworkObservation(target, state);
-        removeTargetFromNetwork(network, target.getTarget(), state);
+        removeTargetFromNetwork(network, state);
     }
 
     @Override
     public void onNetworkAddition(INetwork network, IPartNetwork partNetwork, PartTarget target, S state) {
         super.onNetworkAddition(network, partNetwork, target, state);
-        addTargetToNetwork(network, target.getTarget(), state.getPriority(), state.getChannelInterface(), state);
+        addTargetToNetwork(network, target, state.getPriority(), state.getChannelInterface(), state);
         scheduleNetworkObservation(target, state);
     }
 
     @Override
-    public void onBlockNeighborChange(@Nullable INetwork network, @Nullable IPartNetwork partNetwork, PartTarget target,
-        S state, IBlockAccess world, Block neighborBlock, BlockPos neighbourBlockPos) {
-        super.onBlockNeighborChange(network, partNetwork, target, state, world, neighborBlock, neighbourBlockPos);
+    public void onBlockNeighborChange(INetwork network, IPartNetwork partNetwork, PartTarget target, S state,
+        IBlockAccess world, Block neighbourBlock, BlockPos neighbourBlockPos) {
+        super.onBlockNeighborChange(network, partNetwork, target, state, world, neighbourBlock, neighbourBlockPos);
         if (network != null) {
-            updateTargetInNetwork(network, target.getTarget(), state.getPriority(), state.getChannelInterface(), state);
+            updateTargetInNetwork(network, target, state.getPriority(), state.getChannelInterface(), state);
         }
     }
 
@@ -94,67 +96,58 @@ public abstract class PartTypeInterfacePositionedAddon<N extends IPositionedAddo
         int priority, int channel) {
         // We need to do this because the energy network is not automagically aware of the priority changes,
         // so we have to re-add it.
-        removeTargetFromNetwork(network, target.getTarget(), state);
+        removeTargetFromNetwork(network, state);
         super.setPriorityAndChannel(network, partNetwork, target, state, priority, channel);
-        addTargetToNetwork(network, target.getTarget(), priority, state.getChannelInterface(), state);
+        addTargetToNetwork(network, target, priority, state.getChannelInterface(), state);
     }
 
-    protected T getTargetCapabilityInstance(PartPos pos) {
-        return CapabilityHelpers.getCapability(pos.getPos(), getTargetCapability(), pos.getSide())
-            .getOrNull();
+    @Override
+    public boolean setTargetOffset(S state, PartPos center, Vector3i offset) {
+        // Remove interface before changing offset, and re-add after,
+        // because the target offset might change the interface.
+        INetwork network = state.getNetwork();
+        if (network != null) {
+            removeTargetFromNetwork(network, state);
+        }
+        boolean ret = super.setTargetOffset(state, center, offset);
+        if (network != null) {
+            PartTarget target = getTarget(center, state);
+            addTargetToNetwork(network, target, state.getPriority(), state.getChannelInterface(), state);
+            // Force an observation, so that the network index does not linger on the old target
+            scheduleNetworkObservation(target, state);
+        }
+        return ret;
     }
 
-    protected void addTargetToNetwork(INetwork network, PartPos pos, int priority, int channelInterface, S state) {
-        if (network.getCapability(getNetworkCapability())
-            .isPresent()) {
-            T capability = getTargetCapabilityInstance(pos);
-            boolean validTargetCapability = isTargetCapabilityValid(capability);
-            if (validTargetCapability) {
-                N networkCapability = network.getCapability(getNetworkCapability())
-                    .getOrNull();
-                networkCapability.addPosition(pos, priority, channelInterface);
-            }
-            state.setPositionedAddonsNetwork(
-                network.getCapability(getNetworkCapability())
-                    .getOrNull());
-            state.setPos(pos);
-            state.setValidTargetCapability(validTargetCapability);
+    @Override
+    public void setTargetSideOverride(S state, @Nullable ForgeDirection side) {
+        // Remove interface before changing the target side, and re-add after,
+        // because the target side determines the position of this interface in the network.
+        INetwork network = state.getNetwork();
+        PartPos center = state.getCenter();
+        if (network != null && center != null) {
+            removeTargetFromNetwork(network, state);
+        }
+        super.setTargetSideOverride(state, side);
+        if (network != null && center != null) {
+            PartTarget target = getTarget(center, state);
+            addTargetToNetwork(network, target, state.getPriority(), state.getChannelInterface(), state);
+            // Force an observation, so that the network index does not linger on the old target side
+            scheduleNetworkObservation(target, state);
         }
     }
 
-    protected void removeTargetFromNetwork(INetwork network, PartPos pos, S state) {
-        if (network.getCapability(getNetworkCapability())
-            .isPresent()) {
-            N networkCapability = network.getCapability(getNetworkCapability())
-                .getOrNull();
-            networkCapability.removePosition(pos);
-        }
-        state.setPositionedAddonsNetwork(null);
-        state.setPos(null);
-        state.setValidTargetCapability(false);
-    }
-
-    protected void updateTargetInNetwork(INetwork network, PartPos pos, int priority, int channelInterface, S state) {
-        if (network.getCapability(getNetworkCapability())
-            .isPresent()) {
-            T capability = getTargetCapabilityInstance(pos);
-            boolean validTargetCapability = isTargetCapabilityValid(capability);
-            boolean wasValidTargetCapability = state.isValidTargetCapability();
-            // Only trigger a change if the capability presence has changed.
-            if (validTargetCapability != wasValidTargetCapability) {
-                removeTargetFromNetwork(network, pos, state);
-                addTargetToNetwork(network, pos, priority, channelInterface, state);
-            }
-        }
-    }
-
-    public static abstract class State<P extends IPartType, N extends IPositionedAddonsNetwork, T>
-        extends PartStateBase<P> {
+    public static abstract class State<N extends IPositionedAddonsNetwork, T, P extends PartTypeInterfacePositionedAddon<N, T, P, S>, S extends State<N, T, P, S>>
+        extends PartStateBase<P> implements IPartTypeInterfacePositionedAddon.IState<N, T, P, S> {
 
         private N positionedAddonsNetwork = null;
         private PartPos pos = null;
+        private PartPos center = null;
         private boolean validTargetCapability = false;
         private int channelInterface = 0;
+
+        private INetwork network;
+        private IPartNetwork partNetwork;
 
         @Override
         public void readFromNBT(NBTTagCompound tag) {
@@ -172,68 +165,73 @@ public abstract class PartTypeInterfacePositionedAddon<N extends IPositionedAddo
             tag.setInteger("channelInterface", channelInterface);
         }
 
+        @Override
         public void setChannelInterface(int channelInterface) {
             this.channelInterface = channelInterface;
             sendUpdate();
         }
 
+        @Override
         public int getChannelInterface() {
             return channelInterface;
         }
 
-        protected abstract Capability<T> getTargetCapability();
-
+        @Override
+        @Nullable
         public N getPositionedAddonsNetwork() {
             return positionedAddonsNetwork;
         }
 
+        @Override
         public void setPositionedAddonsNetwork(N positionedAddonsNetwork) {
             this.positionedAddonsNetwork = positionedAddonsNetwork;
         }
 
+        @Override
         public boolean isValidTargetCapability() {
             return validTargetCapability;
         }
 
+        @Override
         public void setValidTargetCapability(boolean validTargetCapability) {
             this.validTargetCapability = validTargetCapability;
         }
 
+        @Override
         public PartPos getPos() {
             return pos;
         }
 
+        @Override
         public void setPos(PartPos pos) {
             this.pos = pos;
         }
 
-        protected void disablePosition() {
-            N positionedNetwork = getPositionedAddonsNetwork();
-            PartPos pos = getPos();
-            if (positionedNetwork != null) {
-                positionedNetwork.disablePosition(pos);
-            }
+        @Nullable
+        @Override
+        public PartPos getCenter() {
+            return center;
         }
 
-        protected void enablePosition() {
-            N positionedNetwork = getPositionedAddonsNetwork();
-            PartPos pos = getPos();
-            if (positionedNetwork != null) {
-                positionedNetwork.enablePosition(pos);
-            }
+        @Override
+        public void setCenter(@Nullable PartPos center) {
+            this.center = center;
         }
 
-        protected boolean isPositionEnabled() {
-            N positionedNetwork = getPositionedAddonsNetwork();
-            PartPos pos = getPos();
-            if (positionedNetwork != null) {
-                return !positionedNetwork.isPositionDisabled(pos);
-            }
-            return true;
+        @Override
+        public void setNetworks(@Nullable INetwork network, @Nullable IPartNetwork partNetwork) {
+            this.network = network;
+            this.partNetwork = partNetwork;
         }
 
-        protected boolean isNetworkAndPositionValid() {
-            return getPositionedAddonsNetwork() != null && isPositionEnabled();
+        @Override
+        public @Nullable INetwork getNetwork() {
+            return network;
+        }
+
+        @Override
+        public @Nullable IPartNetwork getPartNetwork() {
+            return partNetwork;
         }
 
         @Override

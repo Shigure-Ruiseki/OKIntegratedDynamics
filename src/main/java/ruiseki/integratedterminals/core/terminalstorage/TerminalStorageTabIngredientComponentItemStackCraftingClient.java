@@ -2,8 +2,6 @@ package ruiseki.integratedterminals.core.terminalstorage;
 
 import java.util.List;
 
-import javax.annotation.Nullable;
-
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.init.Blocks;
 import net.minecraft.inventory.Container;
@@ -15,19 +13,20 @@ import org.lwjgl.input.Keyboard;
 import com.google.common.collect.Lists;
 
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
+import ruiseki.integratedterminals.GeneralConfig;
 import ruiseki.integratedterminals.IntegratedTerminals;
-import ruiseki.integratedterminals.Reference;
 import ruiseki.integratedterminals.api.terminalstorage.ITerminalButton;
 import ruiseki.integratedterminals.api.terminalstorage.ITerminalStorageTabClient;
 import ruiseki.integratedterminals.api.terminalstorage.ITerminalStorageTabCommon;
-import ruiseki.integratedterminals.client.gui.container.GuiTerminalStorage;
+import ruiseki.integratedterminals.api.terminalstorage.event.TerminalStorageScreenSizeEvent;
+import ruiseki.integratedterminals.core.client.gui.GuiTerminalStorage;
 import ruiseki.integratedterminals.core.terminalstorage.button.TerminalButtonItemStackCraftingGridAutoRefill;
 import ruiseki.integratedterminals.core.terminalstorage.button.TerminalButtonItemStackCraftingGridBalance;
 import ruiseki.integratedterminals.core.terminalstorage.button.TerminalButtonItemStackCraftingGridClear;
-import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorage;
+import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorageBase;
 import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientItemStackCraftingGridShiftClickOutput;
+import ruiseki.okcore.helper.GuiHelpers;
 import ruiseki.okcore.helper.LangHelpers;
-import ruiseki.okcore.init.ModBase;
 
 /**
  * A client-side storage terminal ingredient tab for crafting with {@link ItemStack} instances.
@@ -39,10 +38,15 @@ public class TerminalStorageTabIngredientComponentItemStackCraftingClient
 
     private final ItemStack icon;
 
-    public TerminalStorageTabIngredientComponentItemStackCraftingClient(ContainerTerminalStorage container,
+    public TerminalStorageTabIngredientComponentItemStackCraftingClient(ContainerTerminalStorageBase container,
         ResourceLocation name, IngredientComponent<?, ?> ingredientComponent) {
         super(container, name, ingredientComponent);
         this.icon = new ItemStack(Blocks.crafting_table);
+    }
+
+    @Override
+    public ResourceLocation getTabSettingsName() {
+        return GeneralConfig.syncItemStorageAndCraftingTabStates ? ingredientComponent.getName() : getName();
     }
 
     @Override
@@ -67,38 +71,50 @@ public class TerminalStorageTabIngredientComponentItemStackCraftingClient
                 LangHelpers.localize(this.ingredientComponent.getTranslationKey())));
     }
 
-    @Override
-    public int getSlotOffsetX() {
-        return ITerminalStorageTabClient.DEFAULT_SLOT_OFFSET_X + 108;
+    protected boolean isCraftingGridCenter() {
+        return TerminalStorageScreenSizeEvent.getWidthHeight()
+            .getLeft() < 374
+            || getRowColumnProvider().getRowsAndColumns()
+                .columns() < 17
+            || GeneralConfig.guiStorageForceCraftingGridCenter;
     }
 
     @Override
-    public int getSlotRowLength() {
-        return 3;
+    public int getSlotVisibleRows() {
+        if (isCraftingGridCenter()) {
+            return Math.max(2, super.getSlotVisibleRows() - 4);
+        }
+        return super.getSlotVisibleRows();
     }
 
-    @Nullable
     @Override
-    public ResourceLocation getBackgroundTexture() {
-        return new ResourceLocation(
-            Reference.MOD_ID,
-            IntegratedTerminals._instance.getReferenceValue(ModBase.REFKEY_TEXTURE_PATH_GUI)
-                + "part_terminal_storage_crafting.png");
+    public int getPlayerInventoryOffsetX() {
+        return super.getPlayerInventoryOffsetX() + (isCraftingGridCenter() ? 0 : 60);
+    }
+
+    @Override
+    public int getPlayerInventoryOffsetY() {
+        return super.getPlayerInventoryOffsetY() + (isCraftingGridCenter() ? 68 : 0);
     }
 
     @Override
     public boolean handleClick(Container container, int channel, int hoveringStorageSlot, int mouseButton,
-        boolean hasClickedOutside, boolean hasClickedInStorage, int hoveredContainerSlot) {
+        boolean hasClickedOutside, boolean hasClickedInStorage, int hoveredContainerSlot, boolean isQuickMove) {
         int craftingResultSlotIndex = TerminalStorageTabIngredientComponentItemStackCraftingCommon
             .getCraftingResultSlotIndex(container, getName());
         boolean shift = (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT));
         if (hoveredContainerSlot == craftingResultSlotIndex && shift) {
             IntegratedTerminals._instance.getPacketHandler()
                 .sendToServer(
-                    new TerminalStorageIngredientItemStackCraftingGridShiftClickOutput(getName().toString(), channel));
+                    new TerminalStorageIngredientItemStackCraftingGridShiftClickOutput(
+                        getName().toString(),
+                        channel,
+                        GeneralConfig.shiftClickCraftingResultLimit));
             return true;
         }
-        if (hoveredContainerSlot > craftingResultSlotIndex && hoveredContainerSlot <= craftingResultSlotIndex + 9
+        // Don't act on (non-shift) clicks here.
+        if (!isQuickMove && hoveredContainerSlot > craftingResultSlotIndex
+            && hoveredContainerSlot <= craftingResultSlotIndex + 9
             && getActiveSlotId() < 0) {
             return false;
         }
@@ -109,7 +125,24 @@ public class TerminalStorageTabIngredientComponentItemStackCraftingClient
             mouseButton,
             hasClickedOutside,
             hasClickedInStorage,
-            hoveredContainerSlot);
+            hoveredContainerSlot,
+            isQuickMove);
+    }
+
+    @Override
+    public void onTabBackgroundRender(GuiTerminalStorage<?, ?> screen, float f, int mouseX, int mouseY) {
+        super.onTabBackgroundRender(screen, f, mouseX, mouseY);
+        // Render crafting grid
+        screen.drawTexturedModalRect(
+            screen.guiLeft + (screen.getGridXSize() / 2)
+                - (9 * GuiHelpers.SLOT_SIZE / 2)
+                + 51
+                - (isCraftingGridCenter() ? 0 : 107),
+            screen.guiTop + 52 + screen.getGridYSize(),
+            0,
+            117,
+            120,
+            68);
     }
 
     @Override
@@ -121,5 +154,14 @@ public class TerminalStorageTabIngredientComponentItemStackCraftingClient
         ITerminalStorageTabClient<?> tabClient = container.getTabClient(name);
         tabCommon = container.getTabCommon(name);
         tabClient.onCommonSlotRender(gui, layer, partialTick, x, y, mouseX, mouseY, slot, tabCommon);
+    }
+
+    @Override
+    public boolean isQuickMovePrevented(int slotIndex) {
+        // Prevent quick move on the crafting result slot to stop accidental mass crafting due to inventory mods
+        // spamming quick moves
+        int craftingResultSlotIndex = TerminalStorageTabIngredientComponentItemStackCraftingCommon
+            .getCraftingResultSlotIndex(container, getName());
+        return slotIndex == craftingResultSlotIndex;
     }
 }

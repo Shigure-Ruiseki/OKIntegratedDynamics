@@ -1,12 +1,12 @@
 package ruiseki.integrateddynamics.core.evaluate.variable;
 
-import java.util.Optional;
-
+import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.JsonToNBT;
 import net.minecraft.nbt.NBTException;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fluids.IFluidBlock;
 
 import lombok.ToString;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeNamed;
@@ -16,6 +16,8 @@ import ruiseki.integrateddynamics.core.helper.Helpers;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.integrateddynamics.core.logicprogrammer.ValueTypeItemStackLPElement;
 import ruiseki.integrateddynamics.core.logicprogrammer.ValueTypeLPElementBase;
+import ruiseki.okcore.helper.FluidHelpers;
+import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.helper.LangHelpers;
 
 /**
@@ -34,25 +36,24 @@ public class ValueObjectTypeFluidStack extends ValueObjectTypeBase<ValueObjectTy
 
     @Override
     public ValueFluidStack getDefault() {
-        return ValueFluidStack.of(null);
+        return ValueFluidStack.of(FluidHelpers.EMPTY);
     }
 
     @Override
     public String toCompactString(ValueFluidStack value) {
-        Optional<FluidStack> fluidStack = value.getRawValue();
-        return fluidStack.isPresent() ? String.format(
-            "%s (%s mB)",
-            fluidStack.get()
-                .getLocalizedName(),
-            fluidStack.get().amount) : "";
+        FluidStack fluidStack = value.getRawValue();
+        return !FluidHelpers.isEmpty(fluidStack)
+            ? String.format("%s (%s mB)", fluidStack.getLocalizedName(), fluidStack.amount)
+            : "";
     }
 
     @Override
     public String serialize(ValueFluidStack value) {
         NBTTagCompound tag = new NBTTagCompound();
-        Optional<FluidStack> fluidStack = value.getRawValue();
-        if (fluidStack.isPresent()) fluidStack.get()
-            .writeToNBT(tag);
+        FluidStack fluidStack = value.getRawValue();
+        if (!FluidHelpers.isEmpty(fluidStack)) {
+            fluidStack.writeToNBT(tag);
+        }
         return tag.toString();
     }
 
@@ -74,8 +75,7 @@ public class ValueObjectTypeFluidStack extends ValueObjectTypeBase<ValueObjectTy
 
     @Override
     public boolean isNull(ValueFluidStack a) {
-        return !a.getRawValue()
-            .isPresent();
+        return a == null || FluidHelpers.isEmpty(a.getRawValue());
     }
 
     @Override
@@ -91,43 +91,67 @@ public class ValueObjectTypeFluidStack extends ValueObjectTypeBase<ValueObjectTy
 
                 @Override
                 public LangHelpers.UnlocalizedString validate(ItemStack itemStack) {
-                    return itemStack != null && Helpers.getFluidStack(itemStack) != null ? null
-                        : new LangHelpers.UnlocalizedString(L10NValues.VALUETYPE_OBJECT_FLUID_ERROR_NOFLUID);
+                    return ItemHelpers.isEmpty(itemStack) || FluidHelpers.getFluidHandler(itemStack)
+                        .isPresent()
+                        || (itemStack.getItem() instanceof ItemBlock blockItem && blockItem instanceof IFluidBlock)
+                            ? null
+                            : new LangHelpers.UnlocalizedString(L10NValues.VALUETYPE_OBJECT_FLUID_ERROR_NOFLUID);
                 }
 
                 @Override
                 public ValueObjectTypeFluidStack.ValueFluidStack getValue(ItemStack itemStack) {
                     return ValueObjectTypeFluidStack.ValueFluidStack.of(Helpers.getFluidStack(itemStack));
                 }
+
+                @Override
+                public ItemStack getValueAsItemStack(ValueFluidStack value) {
+                    if (value == null || FluidHelpers.isEmpty(value.getRawValue())) {
+                        return ItemHelpers.EMPTY;
+                    }
+
+                    FluidStack fluidStack = value.getRawValue();
+                    return Helpers.getItemStackFromFluid(fluidStack);
+                }
             });
     }
 
     @Override
     public String getUniqueName(ValueFluidStack value) {
-        Optional<FluidStack> fluidStack = value.getRawValue();
-        return fluidStack.isPresent() ? String.format(
+        FluidStack fluidStack = value.getRawValue();
+        return !FluidHelpers.isEmpty(fluidStack) ? String.format(
             "%s %s",
-            fluidStack.get()
-                .getFluid()
+            fluidStack.getFluid()
                 .getName(),
-            fluidStack.get().amount) : "";
+            fluidStack.amount) : "";
     }
 
     @ToString
-    public static class ValueFluidStack extends ValueOptionalBase<FluidStack> {
+    public static class ValueFluidStack extends ValueBase {
+
+        private final FluidStack fluidStack;
 
         private ValueFluidStack(FluidStack fluidStack) {
-            super(ValueTypes.OBJECT_FLUIDSTACK, fluidStack);
+            super(ValueTypes.OBJECT_FLUIDSTACK);
+            this.fluidStack = fluidStack;
         }
 
         public static ValueFluidStack of(FluidStack fluidStack) {
             return new ValueFluidStack(fluidStack);
         }
 
+        public FluidStack getRawValue() {
+            return fluidStack;
+        }
+
         @Override
-        protected boolean isEqual(FluidStack a, FluidStack b) {
-            return a.isFluidStackIdentical(b);
+        public boolean equals(Object o) {
+            return o instanceof ValueFluidStack
+                && FluidStack.areFluidStackTagsEqual(this.getRawValue(), ((ValueFluidStack) o).getRawValue());
+        }
+
+        @Override
+        public int hashCode() {
+            return fluidStack != null ? fluidStack.hashCode() : 0;
         }
     }
-
 }

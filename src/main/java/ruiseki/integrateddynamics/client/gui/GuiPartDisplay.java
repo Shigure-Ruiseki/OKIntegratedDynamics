@@ -14,7 +14,7 @@ import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.core.client.gui.container.GuiMultipart;
 import ruiseki.integrateddynamics.core.part.panel.PartTypePanelVariableDriven;
-import ruiseki.integrateddynamics.inventory.container.ContainerPartDisplay;
+import ruiseki.integrateddynamics.inventory.container.ContainerPartPanelVariableDriven;
 import ruiseki.okcore.client.gui.component.button.GuiButtonText;
 import ruiseki.okcore.client.key.KeyConflictContext;
 import ruiseki.okcore.client.key.KeyModifier;
@@ -47,7 +47,7 @@ public class GuiPartDisplay<P extends PartTypePanelVariableDriven<P, S>, S exten
      */
     public GuiPartDisplay(EntityPlayer player, PartTarget partTarget, IPartContainer partContainer,
         IPartType partType) {
-        super(new ContainerPartDisplay<>(player, partTarget, partContainer, partType));
+        super(new ContainerPartPanelVariableDriven<>(player, partTarget, partContainer, partType));
     }
 
     @Override
@@ -74,8 +74,8 @@ public class GuiPartDisplay<P extends PartTypePanelVariableDriven<P, S>, S exten
     protected void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY) {
         super.drawGuiContainerBackgroundLayer(partialTicks, mouseX, mouseY);
 
-        String readValue = ((ContainerPartDisplay<?, ?>) getContainer()).getReadValue();
-        int readValueColor = ((ContainerPartDisplay<?, ?>) getContainer()).getReadValueColor();
+        String readValue = ((ContainerPartPanelVariableDriven<?, ?>) getContainer()).getReadValue();
+        int readValueColor = ((ContainerPartPanelVariableDriven<?, ?>) getContainer()).getReadValueColor();
         boolean ok = false;
         if (readValue != null) {
             ok = true;
@@ -154,7 +154,7 @@ public class GuiPartDisplay<P extends PartTypePanelVariableDriven<P, S>, S exten
     }
 
     protected void valueToClipboard() {
-        String readValue = ((ContainerPartDisplay<?, ?>) getContainer()).getReadValue();
+        String readValue = ((ContainerPartPanelVariableDriven<?, ?>) getContainer()).getReadValue();
         if (readValue != null) {
             setClipboardString(readValue);
         }

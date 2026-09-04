@@ -12,6 +12,7 @@ import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 import ruiseki.integrateddynamics.api.evaluate.variable.IVariable;
 import ruiseki.integrateddynamics.api.item.IProxyVariableFacade;
+import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueHelpers;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
@@ -62,14 +63,14 @@ public class ProxyVariableFacade extends VariableFacadeBase implements IProxyVar
     }
 
     @Override
-    public <V extends IValue> IVariable<V> getVariable(IPartNetwork network) {
+    public <V extends IValue> IVariable<V> getVariable(INetwork network, IPartNetwork partNetwork) {
         if (isValid()) {
             // Check if we are entering an infinite recursion (e.g. proxies refering to each other)
             if (this.isGettingVariable) {
                 throw new VariableRecursionException("Detected infinite recursion for variable references.");
             }
             this.isGettingVariable = true;
-            IVariable<V> variable = getTargetVariable(network);
+            IVariable<V> variable = getTargetVariable(partNetwork);
             this.isGettingVariable = false;
             return variable;
         }
@@ -99,18 +100,19 @@ public class ProxyVariableFacade extends VariableFacadeBase implements IProxyVar
     }
 
     @Override
-    public void validate(IPartNetwork network, IValidator validator, IValueType containingValueType) {
+    public void validate(INetwork network, IPartNetwork partNetwork, IValidator validator,
+        IValueType containingValueType) {
         if (!isValid()) {
             validator.addError(new LangHelpers.UnlocalizedString(L10NValues.VARIABLE_ERROR_INVALIDITEM));
-        } else if (network.getProxy(proxyId) == null) {
+        } else if (partNetwork.getProxy(proxyId) == null) {
             validator.addError(getProxyNotInNetworkError());
 
-        } else if (getTargetVariable(network) == null) {
+        } else if (getTargetVariable(partNetwork) == null) {
             validator.addError(getProxyInvalidError());
 
-        } else if (!ValueHelpers.correspondsTo(containingValueType, getTargetVariable(network).getType())) {
-            validator
-                .addError(getProxyInvalidTypeError(network, containingValueType, getTargetVariable(network).getType()));
+        } else if (!ValueHelpers.correspondsTo(containingValueType, getTargetVariable(partNetwork).getType())) {
+            validator.addError(
+                getProxyInvalidTypeError(partNetwork, containingValueType, getTargetVariable(partNetwork).getType()));
 
         }
 
@@ -119,7 +121,7 @@ public class ProxyVariableFacade extends VariableFacadeBase implements IProxyVar
             throw new VariableRecursionException("Detected infinite recursion for variable references.");
         }
         this.isValidatingVariable = true;
-        getVariable(network);
+        getVariable(network, partNetwork);
         this.isValidatingVariable = false;
     }
 

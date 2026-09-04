@@ -1,5 +1,7 @@
 package ruiseki.integrateddynamics.core.part.aspect;
 
+import java.util.function.Supplier;
+
 import org.apache.commons.lang3.tuple.Pair;
 
 import lombok.Getter;
@@ -29,7 +31,7 @@ public abstract class LazyAspectVariable<V extends IValue> extends VariableAdapt
     @Getter
     private final IValueType<V> type;
     @Getter
-    private final PartTarget target;
+    private final Supplier<PartTarget> targetSupplier;
     @Getter
     private final IAspectRead<V, ?> aspect;
     @NonNull
@@ -38,10 +40,14 @@ public abstract class LazyAspectVariable<V extends IValue> extends VariableAdapt
 
     private boolean isGettingValue = false;
 
-    public LazyAspectVariable(IValueType<V> type, PartTarget target, IAspectRead<V, ?> aspect) {
+    public LazyAspectVariable(IValueType<V> type, Supplier<PartTarget> targetSupplier, IAspectRead<V, ?> aspect) {
         this.type = type;
-        this.target = target;
+        this.targetSupplier = targetSupplier;
         this.aspect = aspect;
+    }
+
+    public PartTarget getTarget() {
+        return targetSupplier.get();
     }
 
     @Override
@@ -63,7 +69,12 @@ public abstract class LazyAspectVariable<V extends IValue> extends VariableAdapt
                         new LangHelpers.UnlocalizedString(getAspect().getUnlocalizedName())).localize());
             }
             this.isGettingValue = true;
-            this.value = getValueLazy();
+            try {
+                this.value = getValueLazy();
+            } catch (EvaluationException e) {
+                this.isGettingValue = false;
+                throw e;
+            }
             this.isGettingValue = false;
         }
         return this.value;

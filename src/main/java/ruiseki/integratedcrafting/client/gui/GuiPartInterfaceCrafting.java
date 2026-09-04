@@ -10,12 +10,10 @@ import ruiseki.integratedcrafting.IntegratedCrafting;
 import ruiseki.integratedcrafting.Reference;
 import ruiseki.integratedcrafting.inventory.container.ContainerPartInterfaceCrafting;
 import ruiseki.integratedcrafting.part.PartTypeInterfaceCrafting;
-import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
+import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartTarget;
-import ruiseki.integrateddynamics.core.client.gui.ExtendedGuiHandler;
 import ruiseki.integrateddynamics.core.client.gui.container.GuiMultipart;
-import ruiseki.okcore.client.gui.component.button.GuiButtonImage;
 import ruiseki.okcore.client.gui.image.IImage;
 import ruiseki.okcore.client.gui.image.Images;
 import ruiseki.okcore.client.renderer.GlStateManager;
@@ -30,8 +28,6 @@ import ruiseki.okcore.init.ModBase;
  */
 public class GuiPartInterfaceCrafting extends GuiMultipart<PartTypeInterfaceCrafting, PartTypeInterfaceCrafting.State> {
 
-    public static final int BUTTON_SETTINGS = 1;
-
     /**
      * Make a new instance.
      *
@@ -41,32 +37,13 @@ public class GuiPartInterfaceCrafting extends GuiMultipart<PartTypeInterfaceCraf
      * @param partType      The targeted part type.
      */
     public GuiPartInterfaceCrafting(EntityPlayer player, PartTarget partTarget, IPartContainer partContainer,
-        PartTypeInterfaceCrafting partType) {
+        IPartType partType) {
         super(new ContainerPartInterfaceCrafting(player, partTarget, partContainer, partType));
-
-        putButtonAction(BUTTON_SETTINGS, (buttonId, gui, container) -> {
-            IntegratedDynamics._instance.getGuiHandler()
-                .setTemporaryData(
-                    ExtendedGuiHandler.PART,
-                    getTarget().getCenter()
-                        .getSide()); // Pass the side as extra data to the gui
-        });
     }
 
     @Override
     public void initGui() {
         super.initGui();
-        buttonList.add(
-            new GuiButtonImage(
-                BUTTON_SETTINGS,
-                this.guiLeft + 155,
-                this.guiTop + 4,
-                15,
-                15,
-                Images.CONFIG_BOARD,
-                -2,
-                -3,
-                true));
     }
 
     @Override

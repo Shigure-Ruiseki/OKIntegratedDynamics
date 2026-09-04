@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Set;
 
 import net.minecraft.client.gui.inventory.GuiContainer;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
@@ -13,24 +14,46 @@ import org.jetbrains.annotations.Nullable;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-import ruiseki.integratedterminals.client.gui.container.GuiTerminalStorage;
+import ruiseki.integratedterminals.core.client.gui.GuiTerminalStorage;
 
 /**
  * A client-side terminal storage tab.
- * 
+ *
  * @author rubensworks
  */
 public interface ITerminalStorageTabClient<S extends ITerminalStorageSlot> {
 
-    public static final int DEFAULT_SLOT_OFFSET_X = 31;
-    public static final int DEFAULT_SLOT_OFFSET_Y = 39;
+    public static final int DEFAULT_SLOT_OFFSET_X = 32;
+    public static final int DEFAULT_SLOT_OFFSET_Y = 40;
     public static final int DEFAULT_SLOT_VISIBLE_ROWS = 5;
     public static final int DEFAULT_SLOT_ROW_LENGTH = 9;
+
+    /**
+     * When this tab is selected by the player.
+     *
+     * @param channel The channel.
+     */
+    public void onSelect(int channel);
+
+    /**
+     * When this tab is deselected by the player.
+     *
+     * @param channel The channel.
+     */
+    public void onDeselect(int channel);
 
     /**
      * @return The unique tab name, as inherited from {@link ITerminalStorageTab#getName()}.
      */
     public ResourceLocation getName();
+
+    /**
+     * @return The tab name that will be used to store {@link TerminalStorageState} settings inside a tab.
+     *         This can be used to modify in what tab certain settings are stored.
+     */
+    public default ResourceLocation getTabSettingsName() {
+        return getName();
+    }
 
     /**
      * @return An icon for the tab.
@@ -44,7 +67,7 @@ public interface ITerminalStorageTabClient<S extends ITerminalStorageSlot> {
 
     /**
      * Get the currently active filter.
-     * 
+     *
      * @param channel The channel to get the filter for.
      * @return The active filter.
      */
@@ -52,7 +75,7 @@ public interface ITerminalStorageTabClient<S extends ITerminalStorageSlot> {
 
     /**
      * Set a filter for instances in slots.
-     * 
+     *
      * @param filter  A string-based filter, which could be a regex.
      * @param channel The channel to filter in.
      */
@@ -60,7 +83,7 @@ public interface ITerminalStorageTabClient<S extends ITerminalStorageSlot> {
 
     /**
      * Get a subset of slots.
-     * 
+     *
      * @param channel A channel id.
      * @param offset  A slot offset.
      * @param limit   A slot limit.
@@ -70,13 +93,18 @@ public interface ITerminalStorageTabClient<S extends ITerminalStorageSlot> {
     public List<S> getSlots(int channel, int offset, int limit);
 
     /**
+     * @return The current provider of row and column count.
+     */
+    public ITerminalRowColumnProvider getRowColumnProvider();
+
+    /**
      * @return If this tab is enabled.
      */
     public boolean isEnabled();
 
     /**
      * Get the total number of slots in the given channel
-     * 
+     *
      * @param channel A channel id.
      * @return A slot count.
      */
@@ -100,7 +128,7 @@ public interface ITerminalStorageTabClient<S extends ITerminalStorageSlot> {
 
     /**
      * Called when a mouse click happens in a gui.
-     * 
+     *
      * @param container            The active container.
      * @param channel              The active channel.
      * @param hoveringStorageSlot  The storage slot id that is being hovered. -1 if none.
@@ -109,10 +137,11 @@ public interface ITerminalStorageTabClient<S extends ITerminalStorageSlot> {
      * @param hasClickedInStorage  If the player has clicked inside the storage space.
      *                             This can be true even if the storage slot is -1.
      * @param hoveredContainerSlot The container slot id that is being hovered. -1 if none.
+     * @param isQuickMove          If the click comes from a quickMoveStack action
      * @return If further click processing should stop.
      */
     public boolean handleClick(Container container, int channel, int hoveringStorageSlot, int mouseButton,
-        boolean hasClickedOutside, boolean hasClickedInStorage, int hoveredContainerSlot);
+        boolean hasClickedOutside, boolean hasClickedInStorage, int hoveredContainerSlot, boolean isQuickMove);
 
     /**
      * @return The active storage slot id.
@@ -125,8 +154,30 @@ public interface ITerminalStorageTabClient<S extends ITerminalStorageSlot> {
     public int getActiveSlotQuantity();
 
     /**
+     * Dictates if a slot can have {@link #handleClick} called on it by
+     * {@link ruiseki.integratedterminals.inventory.container.ContainerTerminalStorageBase#transferStackInSlot(EntityPlayer, int)}
+     *
+     * @param slotIndex The index of the slot in question
+     * @return If vanilla quick move actions should apply to the given slot
+     */
+    default public boolean isQuickMovePrevented(int slotIndex) {
+        return false;
+    };
+
+    /**
+     * Dictates if a slot can have {@link #handleClick} called on it by
+     * {@link ruiseki.integratedterminals.inventory.container.ContainerTerminalStorageBase#transferStackInSlot(EntityPlayer, int)}
+     *
+     * @param slot The slot in question
+     * @return If vanilla quick move actions should apply to the given slot
+     */
+    default public boolean isQuickMovePrevented(Slot slot) {
+        return isQuickMovePrevented(slot.getSlotIndex());
+    }
+
+    /**
      * Set the active quantity.
-     * 
+     *
      * @param quantity A quantity to set.
      */
     void setActiveSlotQuantity(int quantity);
@@ -145,11 +196,21 @@ public interface ITerminalStorageTabClient<S extends ITerminalStorageSlot> {
     }
 
     public default int getSlotVisibleRows() {
-        return DEFAULT_SLOT_VISIBLE_ROWS;
+        return getRowColumnProvider().getRowsAndColumns()
+            .rows();
     }
 
     public default int getSlotRowLength() {
-        return DEFAULT_SLOT_ROW_LENGTH;
+        return getRowColumnProvider().getRowsAndColumns()
+            .columns();
+    }
+
+    public default int getPlayerInventoryOffsetX() {
+        return 0;
+    }
+
+    public default int getPlayerInventoryOffsetY() {
+        return 0;
     }
 
     /**
@@ -160,6 +221,10 @@ public interface ITerminalStorageTabClient<S extends ITerminalStorageSlot> {
         return null;
     }
 
+    public default void onTabBackgroundRender(GuiTerminalStorage<?, ?> screen, float f, int mouseX, int mouseY) {
+
+    }
+
     public default void onCommonSlotRender(GuiContainer gui, GuiTerminalStorage.DrawLayer layer, float partialTick,
         int x, int y, int mouseX, int mouseY, int slot, ITerminalStorageTabCommon tabCommon) {
 
@@ -167,7 +232,7 @@ public interface ITerminalStorageTabClient<S extends ITerminalStorageSlot> {
 
     /**
      * Check if we can drag over the current slot with an active instance.
-     * 
+     *
      * @param channel The active channel.
      * @param slot    The slot to drag over.
      * @return If we can drag over the slot.
@@ -176,7 +241,7 @@ public interface ITerminalStorageTabClient<S extends ITerminalStorageSlot> {
 
     /**
      * Calculate the quantity that will be added to the given stack based on the drag mode and the given list of slots.
-     * 
+     *
      * @param dragSlots The list of slots to drag over.
      * @param dragMode  The drag mode.
      * @param stack     The stack to calculate the quantity for.
@@ -187,7 +252,7 @@ public interface ITerminalStorageTabClient<S extends ITerminalStorageSlot> {
 
     /**
      * Drag the given quantity into the given slot with the currently active instance.
-     * 
+     *
      * @param container The active container.
      * @param channel   The active channel.
      * @param slot      The slot to drag into.

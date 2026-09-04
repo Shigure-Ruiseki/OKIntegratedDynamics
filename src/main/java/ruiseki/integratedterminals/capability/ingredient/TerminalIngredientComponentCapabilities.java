@@ -54,13 +54,13 @@ public class TerminalIngredientComponentCapabilities {
             });
 
         attacherManager.addAttacher(
-            new IngredientComponentCapabilityAttacherAdapter<Integer, Boolean>(
+            new IngredientComponentCapabilityAttacherAdapter<Long, Boolean>(
                 IngredientComponentCapabilities.INGREDIENT_ENERGY_NAME,
                 capabilityIngredientComponentViewHandler) {
 
                 @Override
                 public ICapabilityProvider createCapabilityProvider(
-                    IngredientComponent<Integer, Boolean> ingredientComponent) {
+                    IngredientComponent<Long, Boolean> ingredientComponent) {
                     return new DefaultCapabilityProvider<>(
                         () -> IngredientComponentTerminalStorageHandlerConfig.CAPABILITY,
                         new IngredientComponentTerminalStorageHandlerEnergy(ingredientComponent));

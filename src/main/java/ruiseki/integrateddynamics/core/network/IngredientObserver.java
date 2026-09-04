@@ -1,15 +1,14 @@
 package ruiseki.integrateddynamics.core.network;
 
-import java.util.ConcurrentModificationException;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -24,8 +23,6 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntLinkedOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
-import ruiseki.commoncapabilities.api.capability.inventorystate.IInventoryState;
-import ruiseki.commoncapabilities.capability.inventorystate.InventoryStateConfig;
 import ruiseki.integrateddynamics.GeneralConfig;
 import ruiseki.integrateddynamics.api.ingredient.IIngredientComponentStorageObservable;
 import ruiseki.integrateddynamics.api.network.IPositionedAddonsNetworkIngredients;
@@ -33,7 +30,6 @@ import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.api.part.PrioritizedPartPos;
 import ruiseki.integrateddynamics.core.network.diagnostics.NetworkDiagnostics;
-import ruiseki.okcore.helper.CapabilityHelpers;
 import ruiseki.okcore.ingredient.collection.diff.IngredientCollectionDiff;
 import ruiseki.okcore.ingredient.collection.diff.IngredientCollectionDiffManager;
 
@@ -48,6 +44,7 @@ public class IngredientObserver<T, M> {
         .newFixedThreadPool(GeneralConfig.ingredientNetworkObserverThreads);
 
     private final IPositionedAddonsNetworkIngredients<T, M> network;
+    private final ConcurrentWorldIngredientsProxy<T, M> worldProxy;
 
     private final Set<IIngredientComponentStorageObservable.IIndexChangeObserver<T, M>> changeObservers;
     private final Int2ObjectMap<Map<PartPos, Integer>> observeTargetTickIntervals;
@@ -58,9 +55,12 @@ public class IngredientObserver<T, M> {
     private final Int2ObjectMap<List<PrioritizedPartPos>> lastRemoved;
     private final Map<PartPos, Integer> lastInventoryStates;
     private Future<?> lastObserverBarrier;
+    private boolean runningObserverSync;
+    private boolean initialObservation;
 
     public IngredientObserver(IPositionedAddonsNetworkIngredients<T, M> network) {
         this.network = network;
+        this.worldProxy = new ConcurrentWorldIngredientsProxy<>(network);
         this.changeObservers = Sets.newIdentityHashSet();
         this.observeTargetTickIntervals = new Int2ObjectOpenHashMap<>();
         this.observeTargetTicks = new Int2ObjectOpenHashMap<>();
@@ -70,6 +70,8 @@ public class IngredientObserver<T, M> {
         this.lastInventoryStates = Maps.newHashMap();
 
         this.lastObserverBarrier = null;
+        this.runningObserverSync = false;
+        this.initialObservation = true;
     }
 
     public IPositionedAddonsNetworkIngredients<T, M> getNetwork() {
@@ -118,8 +120,8 @@ public class IngredientObserver<T, M> {
             .getTickCounter();
     }
 
-    protected void emitEvent(IIngredientComponentStorageObservable.StorageChangeEvent<T, M> event) {
-        if (GeneralConfig.ingredientNetworkObserverEnableMultithreading) {
+    protected void emitEvent(IIngredientComponentStorageObservable.StorageChangeEvent<T, M> event, boolean forceSync) {
+        if (GeneralConfig.ingredientNetworkObserverEnableMultithreading && !forceSync) {
             // Make sure we are running on the main server thread to avoid concurrency exceptions
             ServerThreadUtil.addScheduledTask(() -> {
                 for (IIngredientComponentStorageObservable.IIndexChangeObserver<T, M> observer : getObserversCopy()) {
@@ -157,34 +159,55 @@ public class IngredientObserver<T, M> {
     }
 
     /**
+     * @param forceSync If observation should happen synchronously.
      * @return If an observation job was successfully started if it was needed.
      */
-    protected boolean observe() {
+    protected boolean observe(boolean forceSync) {
         if (!this.changeObservers.isEmpty()) {
-            if (GeneralConfig.ingredientNetworkObserverEnableMultithreading) {
-                // If we still have an uncompleted job from the previous tick, wait for it to finish first!
-                if (this.lastObserverBarrier != null) {
-                    try {
-                        this.lastObserverBarrier.get(1, TimeUnit.SECONDS);
-                    } catch (TimeoutException e) {
-                        return false; // Don't start new jobs when the previous one is still running.
-                    } catch (InterruptedException | ExecutionException e) {
-                        if (e instanceof ExecutionException
-                            && !(e.getCause() instanceof ConcurrentModificationException)) {
-                            e.printStackTrace();
-                        }
-                    }
+            // If we forcefully observe sync, make sure that no async observers are still running
+            if (forceSync && GeneralConfig.ingredientNetworkObserverEnableMultithreading
+                && this.lastObserverBarrier != null
+                && !this.lastObserverBarrier.isDone()) {
+                try {
+                    this.lastObserverBarrier.get();
+                } catch (InterruptedException | ExecutionException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            if (GeneralConfig.ingredientNetworkObserverEnableMultithreading && !forceSync) {
+                // If we still have an uncompleted job (sync or async) from the previous tick, don't start a new one
+                // yet!
+                if ((this.lastObserverBarrier != null && !this.lastObserverBarrier.isDone())
+                    || this.runningObserverSync) {
+                    return false;
                 }
 
+                // Run the world proxy in the world thread
+                this.worldProxy.onWorldTick();
+
+                // Schedule the observation job
                 this.lastObserverBarrier = WORKER_POOL.submit(() -> {
                     for (int channel : getChannels()) {
-                        observe(channel);
+                        observe(channel, false);
                     }
+                    this.initialObservation = false;
                 });
             } else {
-                for (int channel : getChannels()) {
-                    observe(channel);
+                // If we have an uncompleted sync observer, don't start a new one yet!
+                if (this.runningObserverSync) {
+                    return false;
                 }
+
+                // Run the world proxy in the world thread
+                this.worldProxy.onWorldTick();
+
+                this.runningObserverSync = true;
+                for (int channel : getChannels()) {
+                    observe(channel, true);
+                }
+                this.runningObserverSync = false;
+                this.initialObservation = false;
             }
         }
         return true;
@@ -194,7 +217,7 @@ public class IngredientObserver<T, M> {
         return Sets.newHashSet(getNetwork().getPrioritizedPositions(channel));
     }
 
-    protected void observe(int channel) {
+    protected void observe(int channel, boolean forceSync) {
         int currentTick = getCurrentTick();
 
         // Prepare ticking collections
@@ -257,16 +280,10 @@ public class IngredientObserver<T, M> {
                 }
 
                 if (!skipPosition) {
-                    IInventoryState inventoryState = CapabilityHelpers.getCapability(
-                        partPos.getPartPos()
-                            .getPos(),
-                        InventoryStateConfig.CAPABILITY,
-                        partPos.getPartPos()
-                            .getSide())
-                        .getOrNull();
-                    if (inventoryState != null) {
+                    Optional<Integer> newInventoryStateBoxed = this.worldProxy.getInventoryState(partPos.getPartPos());
+                    if (newInventoryStateBoxed.isPresent()) {
                         Integer lastState = this.lastInventoryStates.get(partPos.getPartPos());
-                        int newState = inventoryState.getHash();
+                        int newState = newInventoryStateBoxed.get();
                         if (lastState != null && lastState == newState) {
                             // Skip this position if it hasn't not changed
                             skipPosition = true;
@@ -284,8 +301,9 @@ public class IngredientObserver<T, M> {
                     }
 
                     // Emit event of diff
-                    IngredientCollectionDiff<T, M> diff = diffManager
-                        .onChange(getNetwork().getRawInstances(partPos.getPartPos()));
+                    Iterator<T> instances = this.worldProxy.getInstances(partPos.getPartPos())
+                        .iterator();
+                    IngredientCollectionDiff<T, M> diff = diffManager.onChange(instances);
                     boolean hasChanges = false;
                     if (diff.hasAdditions()) {
                         hasChanges = true;
@@ -295,7 +313,9 @@ public class IngredientObserver<T, M> {
                                 partPos,
                                 IIngredientComponentStorageObservable.Change.ADDITION,
                                 false,
-                                diff.getAdditions()));
+                                diff.getAdditions(),
+                                this.initialObservation),
+                            forceSync);
                     }
                     if (diff.hasDeletions()) {
                         hasChanges = true;
@@ -305,7 +325,9 @@ public class IngredientObserver<T, M> {
                                 partPos,
                                 IIngredientComponentStorageObservable.Change.DELETION,
                                 diff.isCompletelyEmpty(),
-                                diff.getDeletions()));
+                                diff.getDeletions(),
+                                this.initialObservation),
+                            forceSync);
                     }
 
                     // Update the next tick value
@@ -379,7 +401,9 @@ public class IngredientObserver<T, M> {
                                 partPos,
                                 IIngredientComponentStorageObservable.Change.DELETION,
                                 diff.isCompletelyEmpty(),
-                                diff.getDeletions()));
+                                diff.getDeletions(),
+                                this.initialObservation),
+                            forceSync);
                     }
                 }
             }
@@ -396,6 +420,9 @@ public class IngredientObserver<T, M> {
     }
 
     public void resetTickInterval(int channel, PartPos targetPos) {
+        // Reset the world proxy
+        this.worldProxy.setRead(targetPos);
+
         // Reset the channel ticks
         Map<PartPos, Integer> channelTicks = this.observeTargetTicks.get(channel);
         if (channelTicks == null) {

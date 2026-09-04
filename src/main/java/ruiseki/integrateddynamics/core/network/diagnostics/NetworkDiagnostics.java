@@ -21,7 +21,6 @@ import ruiseki.integrateddynamics.api.network.IPositionedAddonsNetworkIngredient
 import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.integrateddynamics.core.persist.world.NetworkWorldStorage;
 import ruiseki.integrateddynamics.network.packet.NetworkDiagnosticsNetworkPacket;
-import ruiseki.okcore.helper.LangHelpers;
 
 /**
  * @author rubensworks
@@ -90,9 +89,8 @@ public class NetworkDiagnostics {
                         pos.getPos()
                             .getBlockPos(),
                         pos.getSide(),
-                        LangHelpers.localize(
-                            partNetworkElement.getPart()
-                                .getUnlocalizedName()),
+                        partNetworkElement.getPart()
+                            .getUnlocalizedName(),
                         lastSecondDurationNs));
             } else {
                 // If needed, we can send the other part types later on as well

@@ -12,10 +12,8 @@ import net.minecraft.world.World;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.Reference;
 import ruiseki.integrateddynamics.item.ItemMenrilBerriesConfig;
+import ruiseki.okcore.block.BlockLeavesBase;
 import ruiseki.okcore.config.ConfigurableProperty;
-import ruiseki.okcore.config.ConfigurableTypeCategory;
-import ruiseki.okcore.config.configurable.ConfigurableBlockLeaves;
-import ruiseki.okcore.config.configurable.IConfigurable;
 import ruiseki.okcore.config.extendedconfig.BlockConfig;
 
 /**
@@ -35,7 +33,7 @@ public class BlockMenrilLeavesConfig extends BlockConfig {
      * A 1/x chance menril berries will be dropped when breaking a leaves block.
      */
     @ConfigurableProperty(
-        category = ConfigurableTypeCategory.BLOCK,
+        category = "block",
         comment = "A 1/x chance menril berries will be dropped when breaking a leaves block.",
         isCommandable = true,
         minimalValue = 0)
@@ -45,16 +43,11 @@ public class BlockMenrilLeavesConfig extends BlockConfig {
      * Make a new instance.
      */
     public BlockMenrilLeavesConfig() {
-        super(IntegratedDynamics._instance, true, "menril_leaves", null, null);
-    }
-
-    @Override
-    protected IConfigurable initSubInstance() {
-        return (ConfigurableBlockLeaves) new ConfigurableBlockLeaves(this) {
+        super(IntegratedDynamics._instance, true, "menril_leaves", null, config -> new BlockLeavesBase() {
 
             @Override
             public Item getItemDropped(int meta, Random random, int i1) {
-                return Item.getItemFromBlock(BlockMenrilSaplingConfig._instance.getBlockInstance());
+                return Item.getItemFromBlock(BlockMenrilSaplingConfig._instance.getInstance());
             }
 
             @Override
@@ -62,7 +55,7 @@ public class BlockMenrilLeavesConfig extends BlockConfig {
                 ArrayList<ItemStack> drops = super.getDrops(world, x, y, z, metadata, fortune);
                 if (!world.isRemote) {
                     if (world.rand.nextInt(berriesDropChance) == 0) {
-                        drops.add(new ItemStack(ItemMenrilBerriesConfig._instance.getItemInstance()));
+                        drops.add(new ItemStack(ItemMenrilBerriesConfig._instance.getInstance()));
                     }
                 }
                 return drops;
@@ -75,7 +68,7 @@ public class BlockMenrilLeavesConfig extends BlockConfig {
         }.setHardness(0.2F)
             .setLightLevel(0.65F)
             .setLightOpacity(1)
-            .setStepSound(Block.soundTypeGrass);
+            .setStepSound(Block.soundTypeGrass));
     }
 
     @Override
@@ -85,7 +78,7 @@ public class BlockMenrilLeavesConfig extends BlockConfig {
 
     @Override
     public void onRegistered() {
-        Blocks.fire.setFireInfo(getBlockInstance(), 5, 20);
+        Blocks.fire.setFireInfo(getInstance(), 5, 20);
     }
 
 }

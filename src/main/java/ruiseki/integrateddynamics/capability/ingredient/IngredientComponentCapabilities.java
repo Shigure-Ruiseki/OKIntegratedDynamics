@@ -58,13 +58,13 @@ public class IngredientComponentCapabilities {
                 }
             });
         attacherManager.addAttacher(
-            new IngredientComponentCapabilityAttacherAdapter<Integer, Boolean>(
+            new IngredientComponentCapabilityAttacherAdapter<Long, Boolean>(
                 INGREDIENT_ENERGY_NAME,
                 capabilityIngredientComponentValueHandler) {
 
                 @Override
                 public ICapabilityProvider createCapabilityProvider(
-                    IngredientComponent<Integer, Boolean> ingredientComponent) {
+                    IngredientComponent<Long, Boolean> ingredientComponent) {
                     return new DefaultCapabilityProvider<>(
                         () -> IngredientComponentValueHandlerConfig.CAPABILITY,
                         new IngredientComponentValueHandlerEnergy(ingredientComponent));
@@ -72,7 +72,7 @@ public class IngredientComponentCapabilities {
             });
 
         // Network handler
-        ResourceLocation networkHandler = new ResourceLocation(Reference.MOD_ID, "networkHandler");
+        ResourceLocation networkHandler = new ResourceLocation(Reference.MOD_ID, "network_handler");
         attacherManager.addAttacher(
             new IngredientComponentCapabilityAttacherAdapter<Integer, Boolean>(INGREDIENT_ENERGY_NAME, networkHandler) {
 
@@ -82,7 +82,7 @@ public class IngredientComponentCapabilities {
                     return new DefaultCapabilityProvider<>(
                         () -> PositionedAddonsNetworkIngredientsHandlerConfig.CAPABILITY,
                         (network) -> network.getCapability(EnergyNetworkConfig.CAPABILITY)
-                            .getOrNull());
+                            .cast());
                 }
             });
     }

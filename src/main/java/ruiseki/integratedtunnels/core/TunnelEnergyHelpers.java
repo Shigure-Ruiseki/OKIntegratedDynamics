@@ -14,7 +14,7 @@ public class TunnelEnergyHelpers {
 
     /**
      * Move energy from source to target.
-     * 
+     *
      * @param network            The network in which the movement is happening.
      * @param ingredientsNetwork The ingredients network in which the movement is happening.
      * @param channel            The channel.
@@ -26,11 +26,11 @@ public class TunnelEnergyHelpers {
      * @return The moved energy amount.
      * @throws EvaluationException If illegal movement occured and further movement should stop.
      */
-    public static int moveEnergy(INetwork network,
-        IPositionedAddonsNetworkIngredients<Integer, Boolean> ingredientsNetwork, int channel,
-        IIngredientComponentStorage<Integer, Boolean> source, IIngredientComponentStorage<Integer, Boolean> target,
-        int amount, boolean exact, boolean craftIfFailed) throws EvaluationException {
-        int moved;
+    public static long moveEnergy(INetwork network,
+        IPositionedAddonsNetworkIngredients<Long, Boolean> ingredientsNetwork, int channel,
+        IIngredientComponentStorage<Long, Boolean> source, IIngredientComponentStorage<Long, Boolean> target,
+        long amount, boolean exact, boolean craftIfFailed) throws EvaluationException {
+        long moved;
         try {
             moved = IngredientStorageHelpers.moveIngredients(source, target, amount, exact, false);
         } catch (InconsistentIngredientInsertionException e) {

@@ -17,6 +17,7 @@ import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.integrateddynamics.core.logicprogrammer.ValueTypeItemStackLPElement;
 import ruiseki.integrateddynamics.core.logicprogrammer.ValueTypeLPElementBase;
 import ruiseki.okcore.helper.BlockHelpers;
+import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.helper.LangHelpers;
 
 /**
@@ -125,6 +126,13 @@ public class ValueObjectTypeBlock extends ValueObjectTypeBase<ValueObjectTypeBlo
                 public ValueObjectTypeBlock.ValueBlock getValue(ItemStack itemStack) {
                     return ValueObjectTypeBlock.ValueBlock
                         .of(itemStack == null ? null : BlockHelpers.getBlockStateFromItemStack(itemStack));
+                }
+
+                @Override
+                public ItemStack getValueAsItemStack(ValueBlock value) {
+                    return value.getRawValue()
+                        .map(BlockHelpers::getItemStackFromBlockState)
+                        .orElse(ItemHelpers.EMPTY);
                 }
             });
     }

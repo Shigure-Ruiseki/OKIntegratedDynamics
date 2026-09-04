@@ -2,29 +2,28 @@ package ruiseki.integratedtunnels.part;
 
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
-import net.minecraftforge.common.util.FakePlayer;
 
 import org.jetbrains.annotations.Nullable;
 
 import ruiseki.integrateddynamics.api.part.PartTarget;
-import ruiseki.integratedtunnels.core.FakePlayerHelpers;
+import ruiseki.integratedtunnels.core.ExtendedFakePlayer;
 import ruiseki.integratedtunnels.core.ItemStoragePlayerWrapper;
 import ruiseki.integratedtunnels.core.part.PartStateRoundRobin;
 
 /**
  * A part state for holding a temporary player inventory.
- * 
+ *
  * @author rubensworks
  */
 public class PartStatePlayerSimulator extends PartStateRoundRobin<PartTypePlayerSimulator> {
 
-    private FakePlayer player = null;
+    private ExtendedFakePlayer player = null;
 
     public PartStatePlayerSimulator(int inventorySize) {
         super(inventorySize);
     }
 
-    public @Nullable FakePlayer getPlayer() {
+    public @Nullable ExtendedFakePlayer getPlayer() {
         return player;
     }
 
@@ -34,7 +33,7 @@ public class PartStatePlayerSimulator extends PartStateRoundRobin<PartTypePlayer
             .getWorld();
         if (!world.isRemote) {
             if (player == null) {
-                player = FakePlayerHelpers.initFakePlayer((WorldServer) world);
+                player = new ExtendedFakePlayer((WorldServer) world);
             }
             ItemStoragePlayerWrapper.cancelDestroyingBlock(player);
         }

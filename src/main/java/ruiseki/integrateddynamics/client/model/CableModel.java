@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.IIcon;
@@ -27,8 +28,8 @@ import ruiseki.integrateddynamics.Reference;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartRenderPosition;
-import ruiseki.integrateddynamics.core.helper.CableHelpers;
-import ruiseki.integrateddynamics.core.helper.PartHelpers;
+import ruiseki.integrateddynamics.block.BlockCable;
+import ruiseki.integrateddynamics.core.tileentity.TileMultipartTicking;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.helper.QuadBuilderHelpers;
 
@@ -91,9 +92,7 @@ public class CableModel implements BakedModel {
     public List<ModelQuadView> getQuads(BakedModelQuadContext context) {
         try {
             IIcon cableIcon = getParticle(context);
-            if (cableIcon == null) {
-                return Collections.emptyList();
-            }
+            if (cableIcon == null) return Collections.emptyList();
 
             ensureStaticCache(cableIcon);
 
@@ -104,20 +103,32 @@ public class CableModel implements BakedModel {
             IBlockAccess world = worldContext.getWorld();
             BlockPos pos = new BlockPos(worldContext.getX(), worldContext.getY(), worldContext.getZ());
 
-            List<ModelQuadView> combinedQuads = new ArrayList<>(48);
-            boolean realCable = CableHelpers.isNoFakeCable(world, pos, null);
-            IPartContainer partContainer = PartHelpers.getPartContainer(world, pos, null);
+            if (!(pos.getTileEntity(world) instanceof TileMultipartTicking tile)) return Collections.emptyList();
+
+            BlockState blockState = tile.getConnectionState();
+            if (blockState == null) return Collections.emptyList();
+
+            CableRenderState renderState = blockState.getPropertyValue(BlockCable.RENDERSTATE);
+            if (renderState == null) return Collections.emptyList();
+
+            List<ModelQuadView> combinedQuads = new ArrayList<>(64);
+            boolean realCable = renderState.isRealCable();
+
+            IPartContainer partContainer = blockState.getPropertyValue(BlockCable.PARTCONTAINER);
+            var partDataMap = renderState.getPartData();
+            var connectedMap = renderState.getConnected();
 
             if (realCable) {
                 combinedQuads.addAll(CACHED_CENTER_CORE_QUADS);
             }
 
             for (ForgeDirection side : ForgeDirection.VALID_DIRECTIONS) {
-                boolean hasPart = partContainer != null && partContainer.hasPart(side);
-                boolean isConnected = realCable && CableHelpers.isCableConnected(world, pos, side);
+                boolean isConnected = Boolean.TRUE.equals(connectedMap != null ? connectedMap.get(side) : null);
+                var partHolder = partDataMap != null ? partDataMap.get(side) : null;
+                boolean hasPart = partHolder != null;
 
                 if (hasPart) {
-                    IPartType<?, ?> part = partContainer.getPart(side);
+                    IPartType<?, ?> part = partHolder.getPart();
                     if (part != null) {
                         if (realCable) {
                             PartRenderPosition renderPos = part.getPartRenderPosition();
@@ -129,15 +140,20 @@ public class CableModel implements BakedModel {
                             }
                         }
 
-                        BlockState partState = part.getBlockState(partContainer, side);
-                        if (partState != null) {
-                            BakedModel partModel = ModelRegistry.getBakedModel(partState);
-                            if (partModel != null) {
-                                combinedQuads.addAll(partModel.getQuads(context));
+                        if (partContainer != null) {
+                            BlockState partState = part.getBlockState(partContainer, side);
+                            if (partState != null) {
+                                BakedModel partModel = ModelRegistry.getBakedModel(partState);
+                                if (partModel != null) {
+                                    List<ModelQuadView> partQuads = partModel.getQuads(context);
+                                    if (partQuads != null && !partQuads.isEmpty()) {
+                                        combinedQuads.addAll(partQuads);
+                                    }
+                                }
                             }
                         }
                     }
-                } else if (isConnected) {
+                } else if (realCable && isConnected) {
                     List<ModelQuadView> connQuads = CACHED_STANDARD_CONNECTIONS.get(side);
                     if (connQuads != null) {
                         combinedQuads.addAll(connQuads);
@@ -145,47 +161,41 @@ public class CableModel implements BakedModel {
                 }
             }
 
-            BlockState facade = CableHelpers.getFacade(world, pos);
-            if (facade != null) {
-                IIcon facadeIcon = facade.getBlock()
-                    .getIcon(0, facade.getBlockMeta(0));
-                if (facadeIcon == null) {
-                    facadeIcon = facade.getBlock()
-                        .getBlockTextureFromSide(0);
-                }
+            Optional<BlockState> facadeOpt = blockState.getPropertyValue(BlockCable.FACADE);
+            if (facadeOpt != null && facadeOpt.isPresent()) {
+                BlockState facade = facadeOpt.get();
+                for (ForgeDirection side : ForgeDirection.VALID_DIRECTIONS) {
+                    boolean isConnected = Boolean.TRUE.equals(connectedMap != null ? connectedMap.get(side) : null);
+                    boolean hasPart = partDataMap != null && partDataMap.containsKey(side);
+                    IIcon facadeIcon = facade.getBlock()
+                        .getIcon(world, worldContext.getX(), worldContext.getY(), worldContext.getZ(), side.ordinal());
 
-                if (facadeIcon != null) {
-                    for (ForgeDirection side : ForgeDirection.VALID_DIRECTIONS) {
-                        boolean isConnected = CableHelpers.isCableConnected(world, pos, side);
-                        boolean hasPart = partContainer != null && partContainer.hasPart(side);
-
-                        PartRenderPosition partRenderPosition = PartRenderPosition.NONE;
-                        if (hasPart) {
-                            IPartType<?, ?> part = partContainer.getPart(side);
-                            if (part != null) {
-                                partRenderPosition = part.getPartRenderPosition();
-                            }
-                        } else if (isConnected) {
-                            partRenderPosition = CABLE_RENDERPOSITION;
+                    PartRenderPosition partRenderPosition = PartRenderPosition.NONE;
+                    if (hasPart) {
+                        var partHolder = partDataMap.get(side);
+                        if (partHolder != null && partHolder.getPart() != null) {
+                            partRenderPosition = partHolder.getPart()
+                                .getPartRenderPosition();
                         }
-
-                        combinedQuads.addAll(getFacadeQuads(facadeIcon, side, partRenderPosition));
+                    } else if (isConnected) {
+                        partRenderPosition = CABLE_RENDERPOSITION;
                     }
+
+                    getFacadeQuads(combinedQuads, facadeIcon, side, partRenderPosition);
                 }
             }
 
             return combinedQuads;
         } catch (Throwable t) {
             IntegratedDynamics.clog(Level.ERROR, "Fatal error building quads for CableModel at context", t);
-            return CACHED_CENTER_CORE_QUADS;
+            return Collections.emptyList();
         }
     }
 
-    public static List<ModelQuadView> getFacadeQuads(IIcon texture, ForgeDirection side,
+    public static void getFacadeQuads(List<ModelQuadView> dest, IIcon texture, ForgeDirection side,
         PartRenderPosition partRenderPosition) {
-        List<ModelQuadView> ret = new ArrayList<>(8);
         if (partRenderPosition == null || partRenderPosition == PartRenderPosition.NONE) {
-            addBakedQuad(ret, 0F, 1F, 0F, 1F, 1F, texture, side);
+            addBakedQuad(dest, 0F, 1F, 0F, 1F, 1F, texture, side);
         } else {
             float w = partRenderPosition.getWidthFactorSide();
             float h = partRenderPosition.getHeightFactorSide();
@@ -200,18 +210,23 @@ public class CableModel implements BakedModel {
             float z2 = z1 + h;
             float z3 = 1F;
 
-            addBakedQuad(ret, x0, x1, z0, z1, 1F, texture, side); // 1
-            addBakedQuad(ret, x1, x2, z0, z1, 1F, texture, side); // 2
-            addBakedQuad(ret, x2, x3, z0, z1, 1F, texture, side); // 3
+            addBakedQuad(dest, x0, x1, z0, z1, 1F, texture, side);
+            addBakedQuad(dest, x1, x2, z0, z1, 1F, texture, side);
+            addBakedQuad(dest, x2, x3, z0, z1, 1F, texture, side);
 
-            addBakedQuad(ret, x0, x1, z1, z2, 1F, texture, side); // 4
-            // P (Skipped Part)
-            addBakedQuad(ret, x2, x3, z1, z2, 1F, texture, side); // 5
+            addBakedQuad(dest, x0, x1, z1, z2, 1F, texture, side);
+            addBakedQuad(dest, x2, x3, z1, z2, 1F, texture, side);
 
-            addBakedQuad(ret, x0, x1, z2, z3, 1F, texture, side); // 6
-            addBakedQuad(ret, x1, x2, z2, z3, 1F, texture, side); // 7
-            addBakedQuad(ret, x2, x3, z2, z3, 1F, texture, side); // 8
+            addBakedQuad(dest, x0, x1, z2, z3, 1F, texture, side);
+            addBakedQuad(dest, x1, x2, z2, z3, 1F, texture, side);
+            addBakedQuad(dest, x2, x3, z2, z3, 1F, texture, side);
         }
+    }
+
+    public static List<ModelQuadView> getFacadeQuads(IIcon texture, ForgeDirection side,
+        PartRenderPosition partRenderPosition) {
+        List<ModelQuadView> ret = new ArrayList<>(8);
+        getFacadeQuads(ret, texture, side, partRenderPosition);
         return ret;
     }
 
@@ -272,9 +287,9 @@ public class CableModel implements BakedModel {
 
     public static ArrayList<ModelQuadView> buildCustomConnectionSegment(ForgeDirection side, float targetDepth,
         IIcon icon) {
-        ArrayList<ModelQuadView> quads = new ArrayList<>();
-        float min = CableModel.MIN; // 0.375f
-        float max = CableModel.MAX; // 0.625f
+        ArrayList<ModelQuadView> quads = new ArrayList<>(5);
+        float min = CableModel.MIN;
+        float max = CableModel.MAX;
 
         float x0 = min, y0 = min, z0 = min;
         float x1 = max, y1 = max, z1 = max;

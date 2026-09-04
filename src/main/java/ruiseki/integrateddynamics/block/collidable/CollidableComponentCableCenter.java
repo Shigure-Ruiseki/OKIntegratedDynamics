@@ -12,6 +12,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import ruiseki.integrateddynamics.block.BlockCable;
+import ruiseki.integrateddynamics.block.BlockCableConfig;
 import ruiseki.integrateddynamics.core.helper.CableHelpers;
 import ruiseki.okcore.block.collidable.ICollidable;
 import ruiseki.okcore.datastructure.BlockPos;
@@ -40,7 +41,7 @@ public class CollidableComponentCableCenter implements ICollidable.IComponent<Fo
 
     @Override
     public ItemStack getPickBlock(World world, BlockPos pos, ForgeDirection direction) {
-        return new ItemStack(BlockCable.getInstance());
+        return new ItemStack(BlockCableConfig._instance.getInstance());
     }
 
     @Override

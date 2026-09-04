@@ -9,6 +9,7 @@ import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 import net.minecraftforge.client.MinecraftForgeClient;
 import net.minecraftforge.common.util.ForgeDirection;
@@ -16,6 +17,7 @@ import net.minecraftforge.common.util.ForgeDirection;
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 
 import lombok.Getter;
+import ruiseki.integrateddynamics.GeneralConfig;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.INetworkElement;
@@ -34,6 +36,8 @@ import ruiseki.integrateddynamics.core.client.gui.ExtendedGuiHandler;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.integrateddynamics.core.item.ItemPart;
 import ruiseki.integrateddynamics.core.network.PartNetworkElement;
+import ruiseki.integrateddynamics.item.ItemEnhancement;
+import ruiseki.integrateddynamics.item.ItemEnhancementConfig;
 import ruiseki.okcore.config.configurabletypeaction.BlockAction;
 import ruiseki.okcore.config.configurabletypeaction.ItemAction;
 import ruiseki.okcore.config.extendedconfig.BlockConfig;
@@ -42,6 +46,7 @@ import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
 import ruiseki.okcore.helper.BlockStateHelpers;
 import ruiseki.okcore.helper.Helpers;
+import ruiseki.okcore.helper.ItemNBTHelpers;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.init.IInitListener;
@@ -63,7 +68,7 @@ public abstract class PartTypeBase<P extends IPartType<P, S>, S extends IPartSta
     @Getter
     private final Block block;
     @Getter
-    private final int guiID;
+    protected int guiID;
     @Getter
     private final String name;
     @Getter
@@ -71,6 +76,16 @@ public abstract class PartTypeBase<P extends IPartType<P, S>, S extends IPartSta
     private final Map<Class<? extends INetworkEvent>, IEventAction> networkEventActions;
 
     public PartTypeBase(String name, PartRenderPosition partRenderPosition) {
+        this.name = name;
+        this.block = registerBlock();
+        this.item = registerItem();
+        this.partRenderPosition = partRenderPosition;
+
+        networkEventActions = constructNetworkEventActions();
+        registerGui();
+    }
+
+    protected void registerGui() {
         if (hasGui()) {
             this.guiID = Helpers.getNewId(getModGui(), Helpers.IDType.GUI);
             getModGui().getGuiHandler()
@@ -78,12 +93,6 @@ public abstract class PartTypeBase<P extends IPartType<P, S>, S extends IPartSta
         } else {
             this.guiID = -1;
         }
-        this.name = name;;
-        this.block = registerBlock();
-        this.item = registerItem();
-        this.partRenderPosition = partRenderPosition;
-
-        networkEventActions = constructNetworkEventActions();
     }
 
     protected ModBase getMod() {
@@ -101,11 +110,10 @@ public abstract class PartTypeBase<P extends IPartType<P, S>, S extends IPartSta
     /**
      * Factory method for creating a block instance.
      *
-     * @param blockConfig The config to register the block for.
      * @return The block instance.
      */
-    protected Block createBlock(BlockConfig blockConfig) {
-        return new IgnoredBlock(blockConfig);
+    protected Block createBlock() {
+        return new IgnoredBlock();
     }
 
     /**
@@ -123,11 +131,12 @@ public abstract class PartTypeBase<P extends IPartType<P, S>, S extends IPartSta
             }
 
             @Override
-            public Block getBlockInstance() {
+            public Block getInstance() {
                 return PartTypeBase.this.getBlock();
             }
         };
-        Block block = createBlock(blockConfig);
+        Block block = createBlock();
+        block.setBlockName(blockConfig.getNamedId());
         BlockAction.register(block, blockConfig, blockConfig.getTargetTab());
         return block;
     }
@@ -135,11 +144,10 @@ public abstract class PartTypeBase<P extends IPartType<P, S>, S extends IPartSta
     /**
      * Factory method for creating a item instance.
      *
-     * @param itemConfig The config to register the item for.
      * @return The item instance.
      */
-    protected Item createItem(ItemConfig itemConfig) {
-        return new ItemPart<P, S>(itemConfig, this);
+    protected Item createItem() {
+        return new ItemPart<P, S>(this);
     }
 
     /**
@@ -161,7 +169,8 @@ public abstract class PartTypeBase<P extends IPartType<P, S>, S extends IPartSta
                 return PartTypeBase.this.getUnlocalizedName();
             }
         };
-        Item item = createItem(itemConfig);
+        Item item = createItem();
+        item.setUnlocalizedName(itemConfig.getUnlocalizedName());
         ItemAction.register(item, itemConfig, itemConfig.getTargetTab());
         return item;
     }
@@ -185,7 +194,7 @@ public abstract class PartTypeBase<P extends IPartType<P, S>, S extends IPartSta
 
     @Override
     public INetworkElement createNetworkElement(IPartContainer partContainer, DimPos pos, ForgeDirection side) {
-        return new PartNetworkElement(this, getTarget(PartPos.of(pos, side), (S) partContainer.getPartState(side)));
+        return new PartNetworkElement(this, PartPos.of(pos, side));
     }
 
     protected boolean hasGui() {
@@ -205,15 +214,54 @@ public abstract class PartTypeBase<P extends IPartType<P, S>, S extends IPartSta
             return false;
         }
 
-        if (hasGui()) {
-            getModGui().getGuiHandler()
-                .setTemporaryData(ExtendedGuiHandler.PART, side); // Pass the side as extra data to the gui
-            if (!world.isRemote && hasGui()) {
-                player.openGui(getModGui().getModId(), getGuiID(), world, pos.getX(), pos.getY(), pos.getZ());
+        // Consume enhancement
+        if (heldItem != null) {
+            if (heldItem.getItem() instanceof ItemEnhancement) {
+                return ((ItemEnhancement) heldItem.getItem()).applyEnhancement(this, partState, heldItem, player);
             }
+        }
+
+        if (hasGui()) {
+            openGui(world, pos, partState, player, heldItem, side, hitX, hitY, hitZ);
             return true;
         }
         return false;
+    }
+
+    protected void openGui(World world, BlockPos pos, S partState, EntityPlayer player, ItemStack heldItem,
+        ForgeDirection side, float hitX, float hitY, float hitZ) {
+        getModGui().getGuiHandler()
+            .setTemporaryData(ExtendedGuiHandler.PART, side); // Pass the side as extra data to the gui
+        if (!world.isRemote && hasGui()) {
+            player.openGui(getModGui().getModId(), getGuiID(), world, pos.getX(), pos.getY(), pos.getZ());
+        }
+    }
+
+    @Override
+    public void addDrops(PartTarget target, S state, List<ItemStack> itemStacks, boolean dropMainElement,
+        boolean saveState) {
+        super.addDrops(target, state, itemStacks, dropMainElement, saveState);
+        // Save enhancements
+        if (!saveState && state.getMaxOffset() > 0) {
+            // Drop Part Offset items each with as maximum the GeneralConfig.enchancementOffsetPartDropValue offset
+            // value.
+            int remainingOffset = state.getMaxOffset();
+            while (remainingOffset > 0) {
+                int offset;
+                if (remainingOffset < GeneralConfig.enchancementOffsetPartDropValue) {
+                    offset = remainingOffset;
+                } else {
+                    offset = GeneralConfig.enchancementOffsetPartDropValue;
+                }
+                remainingOffset -= offset;
+
+                ItemStack itemStack = new ItemStack(ItemEnhancementConfig._instance.getInstance());
+                ((ItemEnhancement) ItemEnhancementConfig._instance.getInstance())
+                    .setEnhancementValue(itemStack, offset);
+                itemStacks.add(itemStack);
+            }
+            state.setMaxOffset(0);
+        }
     }
 
     @Override
@@ -229,6 +277,27 @@ public abstract class PartTypeBase<P extends IPartType<P, S>, S extends IPartSta
             lines.add(LangHelpers.localize(L10NValues.PART_TOOLTIP_DISABLED));
         }
         lines.add(LangHelpers.localize(L10NValues.GENERAL_ITEM_ID, state.getId()));
+
+        if (state.getMaxOffset() > 0) {
+            lines.add(LangHelpers.localize(L10NValues.PART_TOOLTIP_MAXOFFSET, state.getMaxOffset()));
+        }
+    }
+
+    @Override
+    public void loadTooltip(ItemStack itemStack, List<String> lines) {
+        if (itemStack.getTagCompound() != null) {
+            NBTTagCompound tag = ItemNBTHelpers.getNBT(itemStack);
+            if (tag.hasKey("id", MinecraftHelpers.NBTTag_Types.NBTTagInt.ordinal())) {
+                int id = tag.getInteger("id");
+                lines.add(LangHelpers.localize(L10NValues.GENERAL_ITEM_ID, id));
+            }
+            if (tag.hasKey("maxOffset", MinecraftHelpers.NBTTag_Types.NBTTagInt.ordinal())) {
+                int maxOffset = tag.getInteger("maxOffset");
+                lines.add(LangHelpers.localize(L10NValues.PART_TOOLTIP_MAXOFFSET, maxOffset));
+            }
+        }
+
+        super.loadTooltip(itemStack, lines);
     }
 
     /**

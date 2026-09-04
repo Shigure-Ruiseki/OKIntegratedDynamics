@@ -35,7 +35,7 @@ import ruiseki.okcore.datastructure.DimPos;
 import ruiseki.okcore.datastructure.EnumFacingMap;
 import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.helper.InventoryHelpers;
-import ruiseki.okcore.helper.ItemStackHelpers;
+import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
 
 /**
@@ -141,14 +141,17 @@ public abstract class PartContainerDefault implements IPartContainer {
                     return null;
                 }
 
+                // Don't drop main element when in creative mode
+                if (player != null && player.capabilities.isCreativeMode) {
+                    dropMainElement = false;
+                }
+
                 // Drop all parts types as item.
                 List<ItemStack> itemStacks = Lists.newLinkedList();
                 networkElement.addDrops(itemStacks, dropMainElement, saveState);
                 for (ItemStack itemStack : itemStacks) {
                     if (player != null) {
-                        if (!player.capabilities.isCreativeMode) {
-                            ItemStackHelpers.spawnItemStackToPlayer(getWorld(), getPos(), itemStack, player);
-                        }
+                        ItemHelpers.spawnItemStackToPlayer(getWorld(), getPos(), itemStack, player);
                     } else {
                         InventoryHelpers.dropItems(getWorld(), itemStack, getPos());
                     }
@@ -170,10 +173,10 @@ public abstract class PartContainerDefault implements IPartContainer {
                 if (player != null) {
                     if (player != null) {
                         if (!player.capabilities.isCreativeMode) {
-                            ItemStackHelpers.spawnItemStackToPlayer(getWorld(), getPos(), itemStack, player);
+                            ItemHelpers.spawnItemStackToPlayer(getWorld(), getPos(), itemStack, player);
                         }
                     } else {
-                        ItemStackHelpers.spawnItemStack(getWorld(), getPos(), itemStack);
+                        ItemHelpers.spawnItemStack(getWorld(), getPos(), itemStack);
                     }
                 }
             }
@@ -208,7 +211,7 @@ public abstract class PartContainerDefault implements IPartContainer {
     @Override
     public <T> LazyOptional<T> getCapability(@NotNull Capability<T> capability, @Nullable ForgeDirection facing) {
         INetwork network = getNetwork();
-        IPartNetwork partNetwork = getPartNetwork();
+        IPartNetwork partNetwork = getPartNetwork().getOrNull();
         DimPos pos = getPosition();
         if (facing == null) {
             for (Map.Entry<ForgeDirection, PartHelpers.PartStateHolder<?, ?>> entry : partData.entrySet()) {
@@ -255,7 +258,7 @@ public abstract class PartContainerDefault implements IPartContainer {
 
     protected abstract INetwork getNetwork();
 
-    protected IPartNetwork getPartNetwork() {
+    protected LazyOptional<IPartNetwork> getPartNetwork() {
         return NetworkHelpers.getPartNetwork(getNetwork());
     }
 

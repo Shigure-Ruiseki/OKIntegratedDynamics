@@ -35,7 +35,9 @@ public class PartStateReaderBase<P extends IPartTypeReader> extends PartStateBas
 
     @Override
     public void resetVariables() {
-        this.aspectVariables.clear();
+        for (IAspectVariable variable : this.aspectVariables.values()) {
+            variable.invalidate();
+        }
     }
 
     @Override

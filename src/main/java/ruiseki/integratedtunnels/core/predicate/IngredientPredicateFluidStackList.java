@@ -4,10 +4,13 @@ import net.minecraftforge.fluids.FluidStack;
 
 import org.jetbrains.annotations.Nullable;
 
+import com.google.common.collect.Iterables;
+
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeListProxy;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueObjectTypeFluidStack;
 import ruiseki.integratedtunnels.core.TunnelFluidHelpers;
+import ruiseki.okcore.helper.FluidHelpers;
 
 /**
  * @author rubensworks
@@ -22,8 +25,17 @@ public class IngredientPredicateFluidStackList extends IngredientPredicate<Fluid
 
     public IngredientPredicateFluidStackList(boolean blacklist, int amount, boolean exactAmount,
         IValueTypeListProxy<ValueObjectTypeFluidStack, ValueObjectTypeFluidStack.ValueFluidStack> fluidStacks,
-        boolean checkFluid, boolean checkAmount, boolean checkNbt) {
-        super(IngredientComponent.FLUIDSTACK, blacklist, false, amount, exactAmount);
+        int matchFlags, boolean checkFluid, boolean checkAmount, boolean checkNbt) {
+        super(
+            IngredientComponent.FLUIDSTACK,
+            Iterables.transform(
+                Iterables.filter(fluidStacks, fluidStack -> !FluidHelpers.isEmpty(fluidStack.getRawValue())),
+                stack -> TunnelFluidHelpers.prototypeWithCount(stack.getRawValue(), amount)),
+            matchFlags,
+            blacklist,
+            false,
+            amount,
+            exactAmount);
         this.blacklist = blacklist;
         this.fluidStacks = fluidStacks;
         this.checkFluid = checkFluid;
@@ -33,16 +45,19 @@ public class IngredientPredicateFluidStackList extends IngredientPredicate<Fluid
 
     @Override
     public boolean test(@Nullable FluidStack input) {
-        for (ValueObjectTypeFluidStack.ValueFluidStack fluidStack : fluidStacks) {
-            if (fluidStack.getRawValue()
-                .isPresent()
-                && TunnelFluidHelpers.areFluidStackEqual(
-                    input,
-                    fluidStack.getRawValue()
-                        .get(),
-                    checkFluid,
-                    checkAmount,
-                    checkNbt)) {
+        for (ValueObjectTypeFluidStack.ValueFluidStack valueFluidStack : fluidStacks) {
+            FluidStack targetStack = valueFluidStack.getRawValue();
+            if (!FluidHelpers.isEmpty(targetStack)
+                && TunnelFluidHelpers.areFluidStackEqual(input, targetStack, checkFluid, false, checkNbt)) { // TODO:
+                                                                                                             // hardcoded
+                                                                                                             // 'false'
+                                                                                                             // may have
+                                                                                                             // to be
+                                                                                                             // removed
+                                                                                                             // when
+                                                                                                             // restoring
+                                                                                                             // exact
+                                                                                                             // amount
                 return !blacklist;
             }
         }

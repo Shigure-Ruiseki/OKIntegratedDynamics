@@ -1,10 +1,13 @@
 package ruiseki.integrateddynamics.core.block;
 
+import java.util.Collection;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
+import net.minecraft.world.Explosion;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
@@ -12,8 +15,7 @@ import net.minecraftforge.common.util.ForgeDirection;
 import ruiseki.integrateddynamics.core.helper.CableHelpers;
 import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
 import ruiseki.integrateddynamics.core.helper.WrenchHelpers;
-import ruiseki.okcore.config.configurable.ConfigurableBlockContainer;
-import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
+import ruiseki.okcore.block.BlockTile;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.tileentity.TileEntityOK;
 
@@ -22,16 +24,15 @@ import ruiseki.okcore.tileentity.TileEntityOK;
  *
  * @author rubensworks
  */
-public abstract class BlockContainerCabled extends ConfigurableBlockContainer {
+public abstract class BlockContainerCabled extends BlockTile {
 
     /**
      * Make a new block instance.
      *
-     * @param eConfig    Config for this block.
      * @param tileEntity The part class
      */
-    public BlockContainerCabled(ExtendedConfig eConfig, Class<? extends TileEntityOK> tileEntity) {
-        super(eConfig, Material.anvil, tileEntity);
+    public BlockContainerCabled(Class<? extends TileEntityOK> tileEntity) {
+        super(Material.anvil, tileEntity);
 
         setHardness(5.0F);
         setStepSound(soundTypeMetal);
@@ -53,8 +54,9 @@ public abstract class BlockContainerCabled extends ConfigurableBlockContainer {
     @Override
     public void onBlockAdded(World world, int x, int y, int z) {
         super.onBlockAdded(world, x, y, z);
-        if (!world.isRemote) {
-            CableHelpers.onCableAdded(world, new BlockPos(x, y, z));
+        BlockPos pos = new BlockPos(x, y, z);
+        if (!world.isRemote && pos.getBlock(world) != this) {
+            CableHelpers.onCableAdded(world, pos);
         }
     }
 
@@ -77,6 +79,17 @@ public abstract class BlockContainerCabled extends ConfigurableBlockContainer {
         super.onPostBlockDestroyed(world, x, y, z);
         BlockPos pos = new BlockPos(x, y, z);
         CableHelpers.onCableRemoved(world, pos, CableHelpers.getExternallyConnectedCables(world, pos));
+    }
+
+    @Override
+    public void onBlockExploded(World world, int x, int y, int z, Explosion explosion) {
+        BlockPos blockPos = new BlockPos(x, y, z);
+        CableHelpers.setRemovingCable(true);
+        CableHelpers.onCableRemoving(world, blockPos, true, false);
+        Collection<ForgeDirection> connectedCables = CableHelpers.getExternallyConnectedCables(world, blockPos);
+        super.onBlockExploded(world, x, y, z, explosion);
+        CableHelpers.onCableRemoved(world, blockPos, connectedCables);
+        CableHelpers.setRemovingCable(false);
     }
 
     @Override

@@ -1,16 +1,20 @@
 package ruiseki.integrateddynamics.api.network;
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 
 import org.jetbrains.annotations.Nullable;
 
+import com.google.common.collect.Iterators;
+
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
 import ruiseki.commoncapabilities.api.ingredient.storage.IIngredientComponentStorage;
+import ruiseki.commoncapabilities.api.ingredient.storage.IIngredientComponentStorageSlotted;
 import ruiseki.commoncapabilities.api.ingredient.storage.IIngredientComponentStorageWrapperHandler;
-import ruiseki.commoncapabilities.api.ingredient.storage.IngredientComponentStorageEmpty;
 import ruiseki.integrateddynamics.api.ingredient.IIngredientComponentStorageObservable;
 import ruiseki.integrateddynamics.api.part.PartPos;
+import ruiseki.integrateddynamics.core.network.IIngredientChannelInsertPreConsumer;
 import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.capabilities.ICapabilityProvider;
 import ruiseki.okcore.datastructure.DimPos;
@@ -18,7 +22,7 @@ import ruiseki.okcore.helper.TileHelpers;
 
 /**
  * An ingredient network that can hold prioritized positions.
- * 
+ *
  * @param <T> The instance type.
  * @param <M> The matching condition parameter, may be Void. Instances MUST properly implement the equals method.
  * @author rubensworks
@@ -38,28 +42,46 @@ public interface IPositionedAddonsNetworkIngredients<T, M>
 
     /**
      * Get the storage at the given position.
-     * 
+     *
      * @param pos A position.
      * @return The storage, or an empty storage if none is available.
      */
-    public default IIngredientComponentStorage<T, M> getPositionedStorage(PartPos pos) {
-        IIngredientComponentStorage<T, M> storage = getPositionedStorageUnsafe(pos);
-        return storage == null ? new IngredientComponentStorageEmpty<>(getComponent()) : storage;
-    }
+    public IIngredientComponentStorage<T, M> getPositionedStorage(PartPos pos);
+
+    /**
+     * Set an ingredient filter for the given storage position.
+     * Unsets the filter if null is provided.
+     *
+     * @param pos    A position.
+     * @param filter An ingredient filter.
+     */
+    public void setPositionedStorageFilter(PartPos pos, @Nullable PositionedAddonsNetworkIngredientsFilter<T> filter);
+
+    /**
+     * @param pos A position.
+     * @return An optional ingredient filter for the given storage position.
+     */
+    @Nullable
+    public PositionedAddonsNetworkIngredientsFilter<T> getPositionedStorageFilter(PartPos pos);
 
     /**
      * Get all instances at the target position.
-     * 
+     *
      * @param pos A part position.
      * @return A collection of instances. This can not be a view, and must be a deep copy of the target.
      */
     public default Iterator<T> getRawInstances(PartPos pos) {
-        return getPositionedStorage(pos).iterator();
+        Iterator<T> it = getPositionedStorage(pos).iterator();
+        PositionedAddonsNetworkIngredientsFilter<T> filter = getPositionedStorageFilter(pos);
+        if (filter != null) {
+            it = Iterators.filter(it, filter::testView);
+        }
+        return it;
     }
 
     /**
      * Get the storage at the given position.
-     * 
+     *
      * @param pos A position.
      * @return The storage.
      */
@@ -72,15 +94,23 @@ public interface IPositionedAddonsNetworkIngredients<T, M>
 
     /**
      * Get the storage at the given channel.
-     * 
+     *
      * @param channel A channel id.
      * @return A storage.
      */
-    public IIngredientComponentStorage<T, M> getChannel(int channel);
+    public INetworkIngredientsChannel<T, M> getChannel(int channel);
+
+    /**
+     * Get the slotted storage at the given channel.
+     *
+     * @param channel A channel id.
+     * @return A slotted storage.
+     */
+    public IIngredientComponentStorageSlotted<T, M> getChannelSlotted(int channel);
 
     /**
      * Get the external storage at the given channel.
-     * 
+     *
      * @param capability A capability to wrap the channel in.
      * @param channel    A channel id.
      * @param <S>        The external storage type.
@@ -95,7 +125,7 @@ public interface IPositionedAddonsNetworkIngredients<T, M>
 
     /**
      * Get the last tick duration of the index observer.
-     * 
+     *
      * @return Duration in nanoseconds
      */
     public Map<PartPos, Long> getLastSecondDurationIndex();
@@ -104,5 +134,24 @@ public interface IPositionedAddonsNetworkIngredients<T, M>
      * Reset the last second duration count.
      */
     public void resetLastSecondDurationsIndex();
+
+    /**
+     * Register an insert pre-consumer.
+     *
+     * @param preConsumer The consumer.
+     */
+    public void registerInsertPreConsumer(IIngredientChannelInsertPreConsumer<T> preConsumer);
+
+    /**
+     * Unregister an insert pre-consumer.
+     *
+     * @param preConsumer The consumer.
+     */
+    public void unregisterInsertPreConsumer(IIngredientChannelInsertPreConsumer<T> preConsumer);
+
+    /**
+     * @return All registered insert pre-consumers.
+     */
+    public Collection<IIngredientChannelInsertPreConsumer<T>> getInsertPreConsumers();
 
 }

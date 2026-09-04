@@ -5,7 +5,7 @@ import ruiseki.okcore.config.extendedconfig.ItemConfig;
 
 /**
  * Config for the facade.
- * 
+ *
  * @author rubensworks
  */
 public class ItemFacadeConfig extends ItemConfig {
@@ -19,7 +19,7 @@ public class ItemFacadeConfig extends ItemConfig {
      * Make a new instance.
      */
     public ItemFacadeConfig() {
-        super(IntegratedDynamics._instance, true, "facade", null, ItemFacade.class);
+        super(IntegratedDynamics._instance, true, "facade", null, config -> new ItemFacade());
     }
 
 }

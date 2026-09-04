@@ -4,52 +4,42 @@ import java.util.Iterator;
 import java.util.List;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import net.minecraft.block.Block;
-import net.minecraft.command.IEntitySelector;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.passive.EntityTameable;
+import net.minecraft.entity.passive.EntityVillager;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.AxisAlignedBB;
-import net.minecraft.util.MathHelper;
 import net.minecraft.world.WorldServer;
-import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-
-import org.jetbrains.annotations.Nullable;
 
 import com.google.common.collect.Iterators;
 
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
 import ruiseki.commoncapabilities.api.ingredient.storage.IIngredientComponentStorage;
 import ruiseki.okcore.datastructure.BlockPos;
-import ruiseki.okcore.helper.ItemStackHelpers;
+import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.inventory.PlayerInventoryIterator;
 
 /**
- * An item storage for player interaction simulation (1.7.10 GTNH Compatible).
+ * An item storage for player interaction simulation (1.7.10 Backport).
  *
  * @author rubensworks
  */
 public class ItemStoragePlayerWrapper implements IIngredientComponentStorage<ItemStack, Integer> {
 
-    private static final IEntitySelector CAN_BE_ATTACKED = new IEntitySelector() {
-
-        @Override
-        public boolean isEntityApplicable(Entity entity) {
-            return entity.canAttackWithItem();
-        }
-    };
-
-    private final FakePlayer player;
+    private final ExtendedFakePlayer player;
     private final WorldServer world;
     private final BlockPos pos;
-    private final float offsetX;
-    private final float offsetY;
-    private final float offsetZ;
+    private final double offsetX;
+    private final double offsetY;
+    private final double offsetZ;
     private final ForgeDirection side;
     private final boolean rightClick;
     private final boolean sneaking;
@@ -57,17 +47,17 @@ public class ItemStoragePlayerWrapper implements IIngredientComponentStorage<Ite
     private final int entityIndex;
     private final IIngredientComponentStorage<ItemStack, Integer> playerReturnHandler;
 
-    public ItemStoragePlayerWrapper(@Nullable FakePlayer player, WorldServer world, BlockPos pos, double offsetX,
-        double offsetY, double offsetZ, ForgeDirection side, boolean rightClick, boolean sneaking,
+    public ItemStoragePlayerWrapper(@Nullable ExtendedFakePlayer player, WorldServer world, BlockPos pos,
+        double offsetX, double offsetY, double offsetZ, ForgeDirection side, boolean rightClick, boolean sneaking,
         boolean continuousClick, int entityIndex, IIngredientComponentStorage<ItemStack, Integer> playerReturnHandler) {
         this.player = player;
         this.world = world;
         this.pos = pos;
         this.continuousClick = continuousClick;
         this.entityIndex = entityIndex;
-        this.offsetX = (float) offsetX;
-        this.offsetY = (float) offsetY;
-        this.offsetZ = (float) offsetZ;
+        this.offsetX = offsetX;
+        this.offsetY = offsetY;
+        this.offsetZ = offsetZ;
         this.side = side;
         this.rightClick = rightClick;
         this.sneaking = sneaking;
@@ -90,9 +80,9 @@ public class ItemStoragePlayerWrapper implements IIngredientComponentStorage<Ite
         PlayerInventoryIterator it = new PlayerInventoryIterator(player);
         while (it.hasNext()) {
             ItemStack itemStack = it.next();
-            if (itemStack != null && itemStack.stackSize > 0) {
+            if (!ItemHelpers.isEmpty(itemStack)) {
                 ItemStack remaining = this.playerReturnHandler.insert(itemStack, false);
-                ItemStackHelpers.spawnItemStackToPlayer(world, pos, remaining, player);
+                ItemHelpers.spawnItemStackToPlayer(world, pos, remaining, player);
                 it.remove();
             }
         }
@@ -121,141 +111,174 @@ public class ItemStoragePlayerWrapper implements IIngredientComponentStorage<Ite
     @Override
     public ItemStack insert(@Nonnull ItemStack stack, boolean simulate) {
         if (simulate) {
-            // We can ALWAYS click with items, so consume the whole item when simulating.
-            return null;
+            return ItemHelpers.EMPTY;
         }
         if (player == null) {
             return stack;
         }
 
-        PlayerHelpers.setPlayerState(player, pos, offsetX, offsetY, offsetZ, side, sneaking);
-        PlayerHelpers.setHeldItemSilent(player, stack);
+        PlayerHelpers.setPlayerState(player, pos, (float) offsetX, (float) offsetY, (float) offsetZ, side, sneaking);
+        PlayerHelpers.setHeldItemSilent(player, stack.copy());
 
         if (!continuousClick) {
             cancelDestroyingBlock(player);
         }
 
-        int x = pos.getX();
-        int y = pos.getY();
-        int z = pos.getZ();
-        int sideOrdinal = side.ordinal();
-
         if (rightClick) {
-            // 1. Use item first (onItemUseFirst)
-            if (stack != null && stack.stackSize > 0) {
-                if (stack.getItem()
-                    .onItemUseFirst(stack, player, world, x, y, z, sideOrdinal, offsetX, offsetY, offsetZ)) {
-                    returnPlayerInventory(player);
-                    return null;
-                }
-            }
+            int x = pos.getX();
+            int y = pos.getY();
+            int z = pos.getZ();
+            int sideOrdinal = side.ordinal();
 
-            // 2. Activate block
-            Block block = world.getBlock(x, y, z);
-            boolean doesSneakBypass = stack != null && stack.getItem()
-                .doesSneakBypassUse(world, x, y, z, player);
-            if (!player.isSneaking() || stack == null || doesSneakBypass) {
-                if (block.onBlockActivated(world, x, y, z, player, sideOrdinal, offsetX, offsetY, offsetZ)) {
-                    returnPlayerInventory(player);
-                    return null;
-                }
-            }
+            @SuppressWarnings("unchecked")
+            List<Entity> targetEntities = world
+                .getEntitiesWithinAABB(Entity.class, AxisAlignedBB.getBoundingBox(x, y, z, x + 1, y + 1, z + 1));
+            if (!targetEntities.isEmpty()) {
+                Entity targetEntity = getEntity(targetEntities);
 
-            // 3. Right Click Event via Forge
-            if (stack != null && stack.stackSize > 0) {
-                PlayerInteractEvent event = ForgeEventFactory
-                    .onPlayerInteract(player, PlayerInteractEvent.Action.RIGHT_CLICK_AIR, x, y, z, sideOrdinal, world);
-                if (event.isCanceled()) {
+                // Chặn tương tác với Dân làng
+                if (targetEntity instanceof EntityVillager) {
                     return stack;
                 }
 
-                ItemStack copyBeforeUse = stack.copy();
-                ItemStack result = stack.getItem()
-                    .onItemRightClick(stack, world, player);
-                if (result != copyBeforeUse || (result != null && result.stackSize != copyBeforeUse.stackSize)) {
-                    PlayerHelpers.setHeldItemSilent(player, result);
-                    if (result != null && result.stackSize <= 0) {
-                        PlayerHelpers.setHeldItemSilent(player, null);
-                        ForgeEventFactory.onPlayerDestroyItem(player, copyBeforeUse);
+                if (targetEntity instanceof EntityTameable) {
+                    EntityTameable tameable = (EntityTameable) targetEntity;
+                    if (!tameable.isTamed()) {
+                        return stack;
                     }
+                }
+
+                if (targetEntity.interactFirst(player)) {
                     returnPlayerInventory(player);
-                    return null;
+                    return ItemHelpers.EMPTY;
                 }
             }
 
-            // 4. Use item on block (onItemUse)
-            if (stack != null && stack.stackSize > 0) {
-                BlockPos targetPos = pos;
-                int reachDistance = MathHelper
-                    .clamp_int((int) player.theItemInWorldManager.getBlockReachDistance(), 0, 10);
-                int i = 0;
-                while (i++ < reachDistance && world.isAirBlock(targetPos.getX(), targetPos.getY(), targetPos.getZ())) {
-                    targetPos = targetPos.offset(side.getOpposite());
-                }
+            // 1. Fire Event Forge
+            PlayerInteractEvent.Action action = pos.isAirBlock(world) ? PlayerInteractEvent.Action.RIGHT_CLICK_AIR
+                : PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK;
+            PlayerInteractEvent event = ForgeEventFactory.onPlayerInteract(player, action, x, y, z, sideOrdinal, world);
+            if (event.isCanceled()) {
+                return stack;
+            }
 
+            // 2. Item Use First
+            if (!ItemHelpers.isEmpty(stack) && stack.getItem()
+                .onItemUseFirst(
+                    stack,
+                    player,
+                    world,
+                    x,
+                    y,
+                    z,
+                    sideOrdinal,
+                    (float) offsetX,
+                    (float) offsetY,
+                    (float) offsetZ)) {
+                returnPlayerInventory(player);
+                return ItemHelpers.EMPTY;
+            }
+
+            // 3. Block Activation
+            Block block = world.getBlock(x, y, z);
+            if (!player.isSneaking() || ItemHelpers.isEmpty(stack)) {
+                if (block.onBlockActivated(
+                    world,
+                    x,
+                    y,
+                    z,
+                    player,
+                    sideOrdinal,
+                    (float) offsetX,
+                    (float) offsetY,
+                    (float) offsetZ)) {
+                    returnPlayerInventory(player);
+                    return ItemHelpers.EMPTY;
+                }
+            }
+
+            // 4. ON ITEM USE (Bonemeal)
+            if (!ItemHelpers.isEmpty(stack)) {
                 if (stack.getItem()
                     .onItemUse(
                         stack,
                         player,
                         world,
-                        targetPos.getX(),
-                        targetPos.getY(),
-                        targetPos.getZ(),
+                        x,
+                        y,
+                        z,
                         sideOrdinal,
-                        offsetX,
-                        offsetY,
-                        offsetZ)) {
+                        (float) offsetX,
+                        (float) offsetY,
+                        (float) offsetZ)) {
+
                     if (stack.stackSize <= 0) {
-                        PlayerHelpers.setHeldItemSilent(player, null);
+                        PlayerHelpers.setHeldItemSilent(player, ItemHelpers.EMPTY);
                     }
+
                     returnPlayerInventory(player);
-                    return null;
+                    return ItemHelpers.EMPTY;
                 }
             }
 
-            // 5. Interact with entity
-            AxisAlignedBB box = AxisAlignedBB.getBoundingBox(x, y, z, x + 1.0D, y + 1.0D, z + 1.0D);
-            @SuppressWarnings("unchecked")
-            List<Entity> entities = world.getEntitiesWithinAABB(Entity.class, box);
-            if (entities != null && !entities.isEmpty()) {
-                Entity entity = getEntity(entities);
-                if (player.interactWith(entity)) {
-                    returnPlayerInventory(player);
-                    return null;
-                }
-            } else {
+            // 5. Food, Bow, Potion
+            if (!ItemHelpers.isEmpty(stack)) {
+                ItemStack result = stack.useItemRightClick(world, player);
+                PlayerHelpers.setHeldItemSilent(player, result);
                 returnPlayerInventory(player);
-                return null;
+                return ItemHelpers.EMPTY;
             }
         } else {
-            // Left click handling
+            // Left-click / Attack sequence
+            int x = pos.getX();
+            int y = pos.getY();
+            int z = pos.getZ();
+
+            PlayerInteractEvent event = ForgeEventFactory
+                .onPlayerInteract(player, PlayerInteractEvent.Action.LEFT_CLICK_BLOCK, x, y, z, side.ordinal(), world);
+            if (event.isCanceled()) {
+                world.markBlockForUpdate(x, y, z);
+                return stack;
+            }
+
             if (!world.isAirBlock(x, y, z)) {
-                // Break block
-                int durabilityRemaining = player.theItemInWorldManager.durabilityRemainingOnBlock;
-                if (durabilityRemaining < 0) {
-                    player.theItemInWorldManager.onBlockClicked(x, y, z, sideOrdinal);
-                } else if (durabilityRemaining >= 9) {
+                Block block = world.getBlock(x, y, z);
+                int destroyProgress = player.theItemInWorldManager.durabilityRemainingOnBlock;
+
+                if (destroyProgress < 0) {
+                    block.onBlockClicked(world, x, y, z, player);
+                    float hardness = block.getPlayerRelativeBlockHardness(player, world, x, y, z);
+                    if (hardness >= 1.0F) {
+                        player.theItemInWorldManager.tryHarvestBlock(x, y, z);
+                    } else {
+                        player.theItemInWorldManager.initialDamage = player.theItemInWorldManager.curblockDamage;
+                        player.theItemInWorldManager.isDestroyingBlock = true;
+                        player.theItemInWorldManager.posX = x;
+                        player.theItemInWorldManager.posY = y;
+                        player.theItemInWorldManager.posZ = z;
+                        player.theItemInWorldManager.durabilityRemainingOnBlock = (int) (hardness * 10.0F);
+                    }
+                } else if (destroyProgress >= 9) {
                     player.theItemInWorldManager.tryHarvestBlock(x, y, z);
                     cancelDestroyingBlock(player);
                 } else {
                     player.theItemInWorldManager.updateBlockRemoving();
                 }
                 returnPlayerInventory(player);
-                return null;
+                return ItemHelpers.EMPTY;
             } else {
-                // Attack entity
                 cancelDestroyingBlock(player);
 
-                AxisAlignedBB box = AxisAlignedBB.getBoundingBox(x, y, z, x + 1.0D, y + 1.0D, z + 1.0D);
                 @SuppressWarnings("unchecked")
-                List<Entity> entities = world.selectEntitiesWithinAABB(Entity.class, box, CAN_BE_ATTACKED);
-                if (entities != null && !entities.isEmpty()) {
+                List<Entity> entities = world
+                    .getEntitiesWithinAABB(Entity.class, AxisAlignedBB.getBoundingBox(x, y, z, x + 1, y + 1, z + 1));
+                if (!entities.isEmpty()) {
                     Entity entity = getEntity(entities);
-                    player.attackTargetEntityWithCurrentItem(entity);
-                    returnPlayerInventory(player);
-                    return null;
-                } else {
-                    return stack;
+                    if (entity.canAttackWithItem()) {
+                        player.attackTargetEntityWithCurrentItem(entity);
+                        returnPlayerInventory(player);
+                        return ItemHelpers.EMPTY;
+                    }
                 }
             }
         }
@@ -264,12 +287,12 @@ public class ItemStoragePlayerWrapper implements IIngredientComponentStorage<Ite
     }
 
     @Override
-    public ItemStack extract(ItemStack prototype, Integer matchCondition, boolean simulate) {
-        return null;
+    public ItemStack extract(@Nonnull ItemStack prototype, Integer matchCondition, boolean simulate) {
+        return ItemHelpers.EMPTY;
     }
 
     @Override
     public ItemStack extract(long maxQuantity, boolean simulate) {
-        return null;
+        return ItemHelpers.EMPTY;
     }
 }

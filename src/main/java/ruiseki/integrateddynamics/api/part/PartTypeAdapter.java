@@ -2,6 +2,8 @@ package ruiseki.integrateddynamics.api.part;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 
@@ -14,12 +16,14 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector3i;
 
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.network.IPartNetworkElement;
 import ruiseki.integrateddynamics.api.network.event.INetworkEvent;
 import ruiseki.okcore.datastructure.BlockPos;
+import ruiseki.okcore.datastructure.NonNullList;
 import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.init.IInitListener;
 
@@ -94,6 +98,25 @@ public abstract class PartTypeAdapter<P extends IPartType<P, S>, S extends IPart
     }
 
     @Override
+    public Vector3i getTargetOffset(S state) {
+        return state.getTargetOffset();
+    }
+
+    @Override
+    public boolean setTargetOffset(S state, PartPos center, Vector3i offset) {
+        int max = state.getMaxOffset();
+        if (offset.x() >= -max && offset.y() >= -max
+            && offset.z() >= -max
+            && offset.x() <= max
+            && offset.y() <= max
+            && offset.z() <= max) {
+            state.setTargetOffset(offset);
+            return true;
+        }
+        return false;
+    }
+
+    @Override
     public void setTargetSideOverride(S state, @Nullable ForgeDirection side) {
         state.setTargetSideOverride(side);
     }
@@ -111,17 +134,32 @@ public abstract class PartTypeAdapter<P extends IPartType<P, S>, S extends IPart
         if (sideOverride != null) {
             target = target.forTargetSide(sideOverride);
         }
+        Vector3i offset = getTargetOffset(state);
+        if (offset.equals(new Vector3i(0, 0, 0))) {
+            target = target.forOffset(offset);
+        }
         return target;
+    }
+
+    protected boolean hasOffsetVariables(S state) {
+        NonNullList<ItemStack> inventory = state.getInventoryNamed("offsetVariablesInventory");
+        return inventory != null && inventory.stream()
+            .anyMatch(Objects::nonNull);
+    }
+
+    @Override
+    public void onOffsetVariablesChanged(PartTarget target, S state) {
+        state.markOffsetVariablesChanged();
     }
 
     @Override
     public boolean isUpdate(S state) {
-        return false;
+        return hasOffsetVariables(state);
     }
 
     @Override
     public void update(INetwork network, IPartNetwork partNetwork, PartTarget target, S state) {
-
+        state.updateOffsetVariables((P) this, network, partNetwork, target);
     }
 
     @Override
@@ -136,7 +174,8 @@ public abstract class PartTypeAdapter<P extends IPartType<P, S>, S extends IPart
 
     @Override
     public void afterNetworkReAlive(INetwork network, IPartNetwork partNetwork, PartTarget target, S state) {
-
+        // This resets any errored offset variables and forces them to reload.
+        state.markOffsetVariablesChanged();
     }
 
     @Override
@@ -188,11 +227,22 @@ public abstract class PartTypeAdapter<P extends IPartType<P, S>, S extends IPart
         if (dropMainElement) {
             itemStacks.add(getItemStack(state, saveState));
         }
+
+        // Drop contents of named inventories
+        for (Map.Entry<String, NonNullList<ItemStack>> entry : state.getInventoriesNamed()
+            .entrySet()) {
+            for (ItemStack itemStack : entry.getValue()) {
+                if (itemStack != null) {
+                    itemStacks.add(itemStack);
+                }
+            }
+        }
+        state.clearInventoriesNamed();
     }
 
     @Override
     public void onNetworkAddition(INetwork network, IPartNetwork partNetwork, PartTarget target, S state) {
-
+        state.initializeOffsets();
     }
 
     @Override

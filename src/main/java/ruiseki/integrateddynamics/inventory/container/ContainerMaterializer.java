@@ -1,0 +1,33 @@
+package ruiseki.integrateddynamics.inventory.container;
+
+import net.minecraft.entity.player.InventoryPlayer;
+
+import ruiseki.integrateddynamics.core.inventory.container.ContainerActiveVariableBase;
+import ruiseki.integrateddynamics.core.inventory.container.slot.SlotVariable;
+import ruiseki.integrateddynamics.tileentity.TileMaterializer;
+import ruiseki.integrateddynamics.tileentity.TileProxy;
+import ruiseki.okcore.inventory.slot.SlotRemoveOnly;
+
+/**
+ * Container for the materializer.
+ * 
+ * @author rubensworks
+ */
+public class ContainerMaterializer extends ContainerActiveVariableBase<TileMaterializer> {
+
+    /**
+     * Make a new instance.
+     * 
+     * @param inventory The player inventory.
+     * @param tile      The part.
+     */
+    public ContainerMaterializer(InventoryPlayer inventory, TileMaterializer tile) {
+        super(inventory, tile);
+        addSlotToContainer(new SlotVariable(tile, TileProxy.SLOT_READ, 81, 25));
+        addSlotToContainer(new SlotVariable(tile, TileProxy.SLOT_WRITE_IN, 56, 78));
+        addSlotToContainer(new SlotRemoveOnly(tile, TileProxy.SLOT_WRITE_OUT, 104, 78));
+        addPlayerInventory(inventory, offsetX + 9, offsetY + 107);
+        tile.setLastPlayer(inventory.player);
+    }
+
+}

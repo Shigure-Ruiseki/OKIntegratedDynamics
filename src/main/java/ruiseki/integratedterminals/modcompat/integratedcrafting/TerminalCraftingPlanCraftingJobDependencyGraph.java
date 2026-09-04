@@ -12,7 +12,7 @@ import ruiseki.integratedterminals.api.terminalstorage.crafting.TerminalCrafting
 
 /**
  * An extension of {@link TerminalCraftingPlanStatic} that saves a {@link CraftingJobDependencyGraph}.
- * 
+ *
  * @author rubensworks
  */
 public class TerminalCraftingPlanCraftingJobDependencyGraph extends TerminalCraftingPlanStatic<Integer> {
@@ -22,8 +22,9 @@ public class TerminalCraftingPlanCraftingJobDependencyGraph extends TerminalCraf
     public TerminalCraftingPlanCraftingJobDependencyGraph(int id, List<ITerminalCraftingPlan<Integer>> dependencies,
         List<IPrototypedIngredient<?, ?>> outputs, TerminalCraftingJobStatus status, long craftingQuantity,
         List<IPrototypedIngredient<?, ?>> storageIngredients,
-        List<List<IPrototypedIngredient<?, ?>>> lastMissingIngredients, String unlocalizedLabel, long tickDuration,
-        int channel, @Nullable String initiatorName, CraftingJobDependencyGraph craftingJobDependencyGraph) {
+        List<List<IPrototypedIngredient<?, ?>>> lastMissingIngredients, TerminalCraftingPlanStatic.Label label,
+        long tickDuration, int channel, @Nullable String initiatorName,
+        CraftingJobDependencyGraph craftingJobDependencyGraph) {
         super(
             id,
             dependencies,
@@ -32,7 +33,7 @@ public class TerminalCraftingPlanCraftingJobDependencyGraph extends TerminalCraf
             craftingQuantity,
             storageIngredients,
             lastMissingIngredients,
-            unlocalizedLabel,
+            label,
             tickDuration,
             channel,
             initiatorName);

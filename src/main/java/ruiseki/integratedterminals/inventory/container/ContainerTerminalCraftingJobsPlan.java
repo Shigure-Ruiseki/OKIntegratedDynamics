@@ -1,5 +1,7 @@
 package ruiseki.integratedterminals.inventory.container;
 
+import java.util.List;
+
 import javax.annotation.Nullable;
 
 import net.minecraft.entity.player.EntityPlayer;
@@ -13,31 +15,32 @@ import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
 import ruiseki.integratedterminals.GeneralConfig;
 import ruiseki.integratedterminals.api.terminalstorage.crafting.ITerminalCraftingPlan;
+import ruiseki.integratedterminals.api.terminalstorage.crafting.ITerminalCraftingPlanFlat;
 import ruiseki.integratedterminals.core.client.gui.CraftingJobGuiData;
 import ruiseki.integratedterminals.proxy.guiprovider.GuiProviders;
 import ruiseki.okcore.inventory.container.ExtendedInventoryContainer;
 
 /**
  * A container for visualizing a live crafting plan.
- * 
+ *
  * @author rubensworks
  */
 public class ContainerTerminalCraftingJobsPlan extends ExtendedInventoryContainer {
 
     private final World world;
     private final PartTarget target;
-    private final IPartContainer partContainer;
-    private final IPartType partType;
     private final CraftingJobGuiData craftingJobGuiData;
     private final int craftingPlanNotifierId;
+    private final int craftingPlanFlatNotifierId;
 
     private long lastUpdate;
     @Nullable
     private ITerminalCraftingPlan craftingPlan;
+    private ITerminalCraftingPlanFlat craftingPlanFlat;
 
     /**
      * Make a new instance.
-     * 
+     *
      * @param target             The target.
      * @param player             The player.
      * @param partContainer      The part container.
@@ -46,17 +49,14 @@ public class ContainerTerminalCraftingJobsPlan extends ExtendedInventoryContaine
      */
     public ContainerTerminalCraftingJobsPlan(final EntityPlayer player, PartTarget target, IPartContainer partContainer,
         IPartType partType, CraftingJobGuiData craftingJobGuiData) {
-        super(player.inventory, GuiProviders.GUI_TERMINAL_STORAGE_CRAFTNG_PLAN);
+        super(player.inventory, GuiProviders.GUI_TERMINAL_STORAGE_CRAFTING_PLAN_PART);
 
-        this.world = target.getCenter()
-            .getPos()
-            .getWorld();
+        this.world = player.worldObj;
         this.target = target;
-        this.partContainer = partContainer;
-        this.partType = partType;
         this.craftingJobGuiData = craftingJobGuiData;
 
         this.craftingPlanNotifierId = getNextValueId();
+        this.craftingPlanFlatNotifierId = getNextValueId();
     }
 
     public CraftingJobGuiData getCraftingJobGuiData() {
@@ -70,6 +70,10 @@ public class ContainerTerminalCraftingJobsPlan extends ExtendedInventoryContaine
     @Nullable
     public ITerminalCraftingPlan getCraftingPlan() {
         return craftingPlan;
+    }
+
+    public ITerminalCraftingPlanFlat getCraftingPlanFlat() {
+        return craftingPlanFlat;
     }
 
     @Override
@@ -87,17 +91,30 @@ public class ContainerTerminalCraftingJobsPlan extends ExtendedInventoryContaine
         return craftingPlanNotifierId;
     }
 
+    public int getCraftingPlanFlatNotifierId() {
+        return craftingPlanFlatNotifierId;
+    }
+
     protected void updateCraftingPlan() {
-        INetwork network = NetworkHelpers.getNetwork(target.getCenter());
+        INetwork network = NetworkHelpers.getNetwork(target.getCenter())
+            .getOrNull();
         this.craftingPlan = craftingJobGuiData.getHandler()
             .getCraftingJob(network, this.craftingJobGuiData.getChannel(), craftingJobGuiData.getCraftingJob());
         if (this.craftingPlan != null) {
+            ITerminalCraftingPlan plan = this.craftingPlan;
+            if (!ContainerTerminalCraftingJobsPlan.isPlanTooLarge(plan)) {
+                setValue(
+                    this.craftingPlanNotifierId,
+                    this.craftingJobGuiData.getHandler()
+                        .serializeCraftingPlan(plan));
+            }
             setValue(
-                this.craftingPlanNotifierId,
+                this.craftingPlanFlatNotifierId,
                 this.craftingJobGuiData.getHandler()
-                    .serializeCraftingPlan(this.craftingPlan));
+                    .serializeCraftingPlanFlat(plan.flatten()));
         } else {
             setValue(this.craftingPlanNotifierId, new NBTTagCompound());
+            setValue(this.craftingPlanFlatNotifierId, new NBTTagCompound());
         }
     }
 
@@ -120,8 +137,30 @@ public class ContainerTerminalCraftingJobsPlan extends ExtendedInventoryContaine
             } catch (IllegalArgumentException e) {
                 this.craftingPlan = null;
             }
+        } else if (valueId == this.craftingPlanFlatNotifierId) {
+            try {
+                this.craftingPlanFlat = craftingJobGuiData.getHandler()
+                    .deserializeCraftingPlanFlat(value);
+            } catch (IllegalArgumentException e) {
+                this.craftingPlanFlat = null;
+            }
         }
 
         super.onUpdate(valueId, value);
+    }
+
+    public static boolean isPlanTooLarge(ITerminalCraftingPlan craftingPlan) {
+        return getPlanSize(craftingPlan) > GeneralConfig.terminalStorageMaxTreePlanSize;
+    }
+
+    public static int getPlanSize(ITerminalCraftingPlan craftingPlan) {
+        List<ITerminalCraftingPlan<?>> deps = craftingPlan.getDependencies();
+        if (deps.isEmpty()) {
+            return 1;
+        } else {
+            return deps.stream()
+                .mapToInt(ContainerTerminalCraftingJobsPlan::getPlanSize)
+                .sum();
+        }
     }
 }

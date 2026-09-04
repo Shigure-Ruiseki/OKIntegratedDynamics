@@ -1,6 +1,5 @@
 package ruiseki.integrateddynamics.block;
 
-import net.minecraft.block.material.Material;
 import net.minecraftforge.event.terraingen.DecorateBiomeEvent;
 
 import org.apache.commons.lang3.ArrayUtils;
@@ -11,8 +10,7 @@ import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.Reference;
 import ruiseki.integrateddynamics.world.biome.MeneglinBiomeDecorator;
 import ruiseki.integrateddynamics.world.gen.WorldGeneratorMenrilTree;
-import ruiseki.okcore.config.configurable.ConfigurableBlockSapling;
-import ruiseki.okcore.config.configurable.IConfigurable;
+import ruiseki.okcore.block.BlockSaplingBase;
 import ruiseki.okcore.config.extendedconfig.BlockConfig;
 
 /**
@@ -32,12 +30,12 @@ public class BlockMenrilSaplingConfig extends BlockConfig {
      * Make a new instance.
      */
     public BlockMenrilSaplingConfig() {
-        super(IntegratedDynamics._instance, true, "menril_sapling", null, null);
-    }
-
-    @Override
-    protected IConfigurable initSubInstance() {
-        return new ConfigurableBlockSapling(this, Material.plants, new WorldGeneratorMenrilTree(false));
+        super(
+            IntegratedDynamics._instance,
+            true,
+            "menril_sapling",
+            null,
+            config -> new BlockSaplingBase(new WorldGeneratorMenrilTree(false)));
     }
 
     @Override

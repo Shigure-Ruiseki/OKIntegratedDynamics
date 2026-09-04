@@ -47,6 +47,7 @@ import ruiseki.integrateddynamics.capability.network.EnergyNetworkConfig;
 import ruiseki.integrateddynamics.capability.valueinterface.ValueInterfaceConfig;
 import ruiseki.integrateddynamics.core.evaluate.operator.Operators;
 import ruiseki.integrateddynamics.core.evaluate.operator.PositionedOperator;
+import ruiseki.integrateddynamics.core.evaluate.operator.PositionedOperatorNetworkVariableById;
 import ruiseki.integrateddynamics.core.evaluate.operator.PositionedOperatorRecipeHandlerInputs;
 import ruiseki.integrateddynamics.core.evaluate.operator.PositionedOperatorRecipeHandlerOutput;
 import ruiseki.integrateddynamics.core.evaluate.operator.PositionedOperatorRecipeHandlerRecipeByInput;
@@ -69,6 +70,8 @@ import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeOperator;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeString;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
 import ruiseki.integrateddynamics.core.helper.EnergyHelpers;
+import ruiseki.integrateddynamics.core.helper.Helpers;
+import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.integrateddynamics.core.part.aspect.build.AspectBuilder;
 import ruiseki.integrateddynamics.core.part.aspect.build.IAspectValuePropagator;
 import ruiseki.integrateddynamics.part.aspect.read.AspectReadBuilders;
@@ -80,6 +83,7 @@ import ruiseki.okcore.fluid.capability.wrapper.BlockLiquidWrapper;
 import ruiseki.okcore.fluid.handler.IFluidTankProperties;
 import ruiseki.okcore.helper.BlockStateHelpers;
 import ruiseki.okcore.helper.CapabilityHelpers;
+import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
 
 /**
@@ -569,7 +573,6 @@ public class Aspects {
                 .buildRead();
 
             public static final IAspectRead<ValueObjectTypeItemStack.ValueItemStack, ValueObjectTypeItemStack> OBJECT_ITEM_STACK_SLOT = AspectReadBuilders.Inventory.BUILDER_ITEMSTACK
-                .handleTexture("read/inventory/itemstack")
                 .handle(AspectReadBuilders.PROP_GET_ITEMSTACK)
                 .buildRead();
 
@@ -642,7 +645,6 @@ public class Aspects {
                                 .getTarget()
                                 .getSide())))
                 .appendKind("recipeoutputbyinput")
-                .handleTexture("read/operator/recipehandler/recipeinput")
                 .buildRead();
             static {
                 Operators.REGISTRY.registerSerializer(
@@ -661,7 +663,6 @@ public class Aspects {
                                 .getTarget()
                                 .getSide())))
                 .appendKind("recipeinputsbyoutput")
-                .handleTexture("read/operator/recipehandler/recipeoutput")
                 .buildRead();
             static {
                 Operators.REGISTRY.registerSerializer(
@@ -680,7 +681,6 @@ public class Aspects {
                                 .getTarget()
                                 .getSide())))
                 .appendKind("recipesbyinput")
-                .handleTexture("read/operator/recipehandler/recipeinputlist")
                 .buildRead();
             static {
                 Operators.REGISTRY.registerSerializer(
@@ -699,7 +699,6 @@ public class Aspects {
                                 .getTarget()
                                 .getSide())))
                 .appendKind("recipesbyoutput")
-                .handleTexture("read/operator/recipehandler/recipeoutputlist")
                 .buildRead();
             static {
                 Operators.REGISTRY.registerSerializer(
@@ -718,7 +717,6 @@ public class Aspects {
                                 .getTarget()
                                 .getSide())))
                 .appendKind("recipebyinput")
-                .handleTexture("read/operator/recipehandler/recipeinputsingle")
                 .buildRead();
             static {
                 Operators.REGISTRY.registerSerializer(
@@ -737,7 +735,6 @@ public class Aspects {
                                 .getTarget()
                                 .getSide())))
                 .appendKind("recipebyoutput")
-                .handleTexture("read/operator/recipehandler/recipeoutputsingle")
                 .buildRead();
             static {
                 Operators.REGISTRY.registerSerializer(
@@ -749,7 +746,8 @@ public class Aspects {
             public static final IAspectValuePropagator<Pair<PartTarget, IAspectProperties>, IEnergyStorage> PROP_GET = input -> EnergyHelpers
                 .getEnergyStorage(
                     input.getLeft()
-                        .getTarget());
+                        .getTarget())
+                .getOrNull();
 
             public static final AspectBuilder<ValueTypeBoolean.ValueBoolean, ValueTypeBoolean, IEnergyStorage> BUILDER_BOOLEAN = AspectReadBuilders.BUILDER_BOOLEAN
                 .handle(PROP_GET, "fe");
@@ -827,7 +825,7 @@ public class Aspects {
                     (network) -> network != null && network.getCapability(EnergyNetworkConfig.CAPABILITY)
                         .isPresent() ? network.getCapability(EnergyNetworkConfig.CAPABILITY)
                             .getOrNull()
-                            .getPositions()
+                            .getPrioritizedPositions()
                             .size() : 0)
                 .handle(AspectReadBuilders.PROP_GET_INTEGER, "energy")
                 .appendKind("batterycount")
@@ -864,15 +862,38 @@ public class Aspects {
                         .getTarget();
                     IValueInterface valueInterface = CapabilityHelpers
                         .getCapability(target.getPos(), ValueInterfaceConfig.CAPABILITY, target.getSide())
-                        .getOrNull();
-                    if (valueInterface != null) {
-                        return valueInterface.getValue()
-                            .orElseThrow(() -> new EvaluationException("No valid value interface value was found."));
-                    }
-                    throw new EvaluationException("No valid value interface was found.");
+                        .orElseThrow(() -> {
+                            EvaluationException error = new EvaluationException(
+                                LangHelpers.localize(L10NValues.ASPECT_ERROR_NOVALUEINTERFACE));
+                            error.setRetryEvaluation(true);
+                            return error;
+                        });
+                    return valueInterface.getValue()
+                        .orElseThrow(
+                            () -> new EvaluationException(
+                                LangHelpers.localize(L10NValues.ASPECT_ERROR_NOVALUEINTERFACE)));
                 })
                 .appendKind("value")
                 .buildRead();
+            public static final IAspectRead<ValueTypeOperator.ValueOperator, ValueTypeOperator> OPERATOR_GETVARIABLEBYID = AspectReadBuilders.BUILDER_OPERATOR
+                .appendKind("network")
+                .handle(
+                    input -> ValueTypeOperator.ValueOperator.of(
+                        new PositionedOperatorNetworkVariableById(
+                            input.getLeft()
+                                .getTarget()
+                                .getPos(),
+                            input.getLeft()
+                                .getTarget()
+                                .getSide())))
+                .appendKind("variablebyid")
+                .buildRead();
+            static {
+                Operators.REGISTRY.registerSerializer(
+                    new PositionedOperator.Serializer(
+                        PositionedOperatorNetworkVariableById.class,
+                        "positioned_network_variable_by_id"));
+            }
         }
 
         public static final class Redstone {
@@ -952,9 +973,10 @@ public class Aspects {
             public static final IAspectRead<ValueTypeInteger.ValueInteger, ValueTypeInteger> INTEGER_TICKTIME = AspectReadBuilders.World.BUILDER_INTEGER
                 .handle(AspectReadBuilders.World.PROP_GET_WORLD)
                 .handle(
-                    (world) -> (int) DoubleMath.mean(
+                    (world) -> (int) (Helpers.mean(
                         FMLCommonHandler.instance()
-                            .getMinecraftServerInstance().worldTickTimes.get(world.provider.dimensionId)))
+                            .getMinecraftServerInstance().worldTickTimes.get(world.provider.dimensionId))
+                        * 1.0E-6D))
                 .handle(AspectReadBuilders.PROP_GET_INTEGER, "ticktime")
                 .buildRead();
 
@@ -978,31 +1000,10 @@ public class Aspects {
                 .buildRead();
             public static final IAspectRead<ValueTypeDouble.ValueDouble, ValueTypeDouble> DOUBLE_TPS = AspectReadBuilders.World.BUILDER_DOUBLE
                 .handle(AspectReadBuilders.World.PROP_GET_WORLD)
-                .handle(world -> {
-                    if (world == null || FMLCommonHandler.instance()
-                        .getMinecraftServerInstance() == null) {
-                        return 20.0D;
-                    }
-
-                    int dimId = world.provider.dimensionId;
-                    long[] times = FMLCommonHandler.instance()
-                        .getMinecraftServerInstance().worldTickTimes.get(dimId);
-
-                    if (times == null || times.length == 0) {
-                        return 20.0D;
-                    }
-
-                    long totalTime = 0;
-                    for (long time : times) {
-                        totalTime += time;
-                    }
-
-                    double meanTickTimeMs = (totalTime / (double) times.length) * 1.0E-6D;
-                    if (meanTickTimeMs <= 0) return 20.0D;
-
-                    double tps = 1000.0D / meanTickTimeMs;
-                    return Math.min(20.0D, tps);
-                })
+                .handle(
+                    world -> Helpers.calculateTps(
+                        FMLCommonHandler.instance()
+                            .getMinecraftServerInstance().worldTickTimes.get(world.provider.dimensionId)))
                 .handle(AspectReadBuilders.PROP_GET_DOUBLE, "tps")
                 .buildRead();
 
@@ -1137,7 +1138,6 @@ public class Aspects {
 
                         return null;
                     })
-                    .handleTexture("write/double/effect/particle")
                     .buildWrite();
             }
         }

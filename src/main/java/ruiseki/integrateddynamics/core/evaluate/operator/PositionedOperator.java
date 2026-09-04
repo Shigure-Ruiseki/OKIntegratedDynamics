@@ -19,7 +19,7 @@ import ruiseki.okcore.persist.nbt.NBTClassType;
 
 /**
  * An abstract operator that is based on something positioned.
- * 
+ *
  * @author rubensworks
  */
 public abstract class PositionedOperator extends OperatorBase implements INBTProvider {

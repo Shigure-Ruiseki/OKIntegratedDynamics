@@ -19,16 +19,22 @@ import org.apache.logging.log4j.Level;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
+import it.unimi.dsi.fastutil.ints.Int2IntMap;
+import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import ruiseki.commoncapabilities.api.capability.recipehandler.IRecipeDefinition;
+import ruiseki.commoncapabilities.api.ingredient.IIngredientMatcher;
 import ruiseki.commoncapabilities.api.ingredient.IIngredientSerializer;
 import ruiseki.commoncapabilities.api.ingredient.IMixedIngredients;
 import ruiseki.commoncapabilities.api.ingredient.IPrototypedIngredient;
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
+import ruiseki.commoncapabilities.api.ingredient.IngredientInstanceWrapper;
 import ruiseki.commoncapabilities.api.ingredient.MixedIngredients;
 import ruiseki.commoncapabilities.api.ingredient.PrototypedIngredient;
+import ruiseki.commoncapabilities.api.ingredient.storage.IIngredientComponentStorage;
 import ruiseki.integratedcrafting.GeneralConfig;
 import ruiseki.integratedcrafting.IntegratedCrafting;
 import ruiseki.integratedcrafting.api.crafting.CraftingJob;
@@ -37,10 +43,11 @@ import ruiseki.integratedcrafting.api.crafting.CraftingJobStatus;
 import ruiseki.integratedcrafting.api.crafting.ICraftingProcessOverride;
 import ruiseki.integratedcrafting.api.crafting.ICraftingResultsSink;
 import ruiseki.integratedcrafting.api.network.ICraftingNetwork;
-import ruiseki.integrateddynamics.api.ingredient.IIngredientComponentStorageObservable;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.IPositionedAddonsNetworkIngredients;
 import ruiseki.integrateddynamics.api.part.PartPos;
+import ruiseki.okcore.ingredient.collection.IIngredientCollectionMutable;
+import ruiseki.okcore.ingredient.collection.IngredientCollectionPrototypeMap;
 
 /**
  * A CraftingJobHandler maintains a list of processing and pending crafting job.
@@ -49,28 +56,34 @@ import ruiseki.integrateddynamics.api.part.PartPos;
  * the handler will observe the target position for changes in the processing job.
  * Also, it will try initiating pending jobs into the target if none was running.
  *
+ * If blockingJobsMode is true, then a multi-amount job will only be crafted one-by-one.
+ * If false, then as much as possible of that job will be crafted at once.
+ *
  * @author rubensworks
  */
 public class CraftingJobHandler {
 
     private final int maxProcessingJobs;
+    private boolean blockingJobsMode;
     private final ICraftingResultsSink resultsSink;
     private final Collection<ICraftingProcessOverride> craftingProcessOverrides;
 
     private final Int2ObjectMap<CraftingJob> allCraftingJobs;
     private final Int2ObjectMap<CraftingJob> processingCraftingJobs;
-    private final Int2ObjectMap<Map<IngredientComponent<?, ?>, List<IPrototypedIngredient<?, ?>>>> processingCraftingJobsPendingIngredients;
+    private final Int2ObjectMap<List<Map<IngredientComponent<?, ?>, List<IPrototypedIngredient<?, ?>>>>> processingCraftingJobsPendingIngredients;
     private final Int2ObjectMap<CraftingJob> pendingCraftingJobs;
     private final Object2IntMap<IngredientComponent<?, ?>> ingredientObserverCounters;
-    private final Map<IngredientComponent<?, ?>, IIngredientComponentStorageObservable.IIndexChangeObserver<?, ?>> ingredientObservers;
+    private final Map<IngredientComponent<?, ?>, PendingCraftingJobResultIndexObserver<?, ?>> ingredientObservers;
     private final List<IngredientComponent<?, ?>> observersPendingCreation;
     private final List<IngredientComponent<?, ?>> observersPendingDeletion;
     private final Int2ObjectMap<CraftingJob> finishedCraftingJobs;
     private final Map<IngredientComponent<?, ?>, ForgeDirection> ingredientComponentTargetOverrides;
+    private final Int2IntMap nonBlockingJobsRunningAmount;
 
-    public CraftingJobHandler(int maxProcessingJobs, Collection<ICraftingProcessOverride> craftingProcessOverrides,
-        ICraftingResultsSink resultsSink) {
+    public CraftingJobHandler(int maxProcessingJobs, boolean blockingJobsMode,
+        Collection<ICraftingProcessOverride> craftingProcessOverrides, ICraftingResultsSink resultsSink) {
         this.maxProcessingJobs = maxProcessingJobs;
+        this.blockingJobsMode = blockingJobsMode;
         this.resultsSink = resultsSink;
         this.craftingProcessOverrides = craftingProcessOverrides;
 
@@ -84,41 +97,48 @@ public class CraftingJobHandler {
         this.observersPendingDeletion = Lists.newArrayList();
         this.finishedCraftingJobs = new Int2ObjectOpenHashMap<>();
         this.ingredientComponentTargetOverrides = Maps.newIdentityHashMap();
+        this.nonBlockingJobsRunningAmount = new Int2IntOpenHashMap();
     }
 
     public void writeToNBT(NBTTagCompound tag) {
+        tag.setBoolean("blockingJobsMode", this.blockingJobsMode);
+
         NBTTagList processingCraftingJobs = new NBTTagList();
         for (CraftingJob processingCraftingJob : this.processingCraftingJobs.values()) {
-            NBTTagCompound entryTag = new NBTTagCompound();
-            entryTag.setTag("craftingJob", CraftingJob.serialize(processingCraftingJob));
+            NBTTagCompound entriesTag = new NBTTagCompound();
+            entriesTag.setTag("craftingJob", CraftingJob.serialize(processingCraftingJob));
 
-            Map<IngredientComponent<?, ?>, List<IPrototypedIngredient<?, ?>>> ingredients = this.processingCraftingJobsPendingIngredients
+            List<Map<IngredientComponent<?, ?>, List<IPrototypedIngredient<?, ?>>>> ingredientsEntries = this.processingCraftingJobsPendingIngredients
                 .get(processingCraftingJob.getId());
-            NBTTagList pendingIngredientInstances = new NBTTagList();
-            for (Map.Entry<IngredientComponent<?, ?>, List<IPrototypedIngredient<?, ?>>> ingredientComponentListEntry : ingredients
-                .entrySet()) {
-                NBTTagCompound ingredientInstance = new NBTTagCompound();
+            NBTTagList pendingEntries = new NBTTagList();
+            if (ingredientsEntries != null) {
+                for (Map<IngredientComponent<?, ?>, List<IPrototypedIngredient<?, ?>>> ingredients : ingredientsEntries) {
+                    NBTTagList pendingIngredientInstances = new NBTTagList();
+                    for (Map.Entry<IngredientComponent<?, ?>, List<IPrototypedIngredient<?, ?>>> ingredientComponentListEntry : ingredients
+                        .entrySet()) {
+                        NBTTagCompound ingredientInstance = new NBTTagCompound();
 
-                IngredientComponent<?, ?> ingredientComponent = ingredientComponentListEntry.getKey();
-                ingredientInstance.setString(
-                    "ingredientComponent",
-                    ingredientComponent.getName()
-                        .toString());
+                        IngredientComponent<?, ?> ingredientComponent = ingredientComponentListEntry.getKey();
+                        ingredientInstance.setString(
+                            "ingredientComponent",
+                            ingredientComponent.getRegistryName()
+                                .toString());
 
-                NBTTagList instances = new NBTTagList();
-                IIngredientSerializer serializer = ingredientComponent.getSerializer();
-                for (IPrototypedIngredient<?, ?> prototypedIngredient : ingredientComponentListEntry.getValue()) {
-                    NBTTagCompound instance = new NBTTagCompound();
-                    instance.setTag("prototype", serializer.serializeInstance(prototypedIngredient.getPrototype()));
-                    instance.setTag("condition", serializer.serializeCondition(prototypedIngredient.getCondition()));
-                    instances.appendTag(instance);
+                        NBTTagList instances = new NBTTagList();
+                        for (IPrototypedIngredient<?, ?> prototypedIngredient : ingredientComponentListEntry
+                            .getValue()) {
+                            NBTTagCompound instance = IPrototypedIngredient.serialize(prototypedIngredient);
+                            instances.appendTag(instance);
+                        }
+                        ingredientInstance.setTag("instances", instances);
+
+                        pendingIngredientInstances.appendTag(ingredientInstance);
+                    }
+                    pendingEntries.appendTag(pendingIngredientInstances);
                 }
-                ingredientInstance.setTag("instances", instances);
-
-                pendingIngredientInstances.appendTag(ingredientInstance);
             }
-            entryTag.setTag("pendingIngredientInstances", pendingIngredientInstances);
-            processingCraftingJobs.appendTag(entryTag);
+            entriesTag.setTag("pendingIngredientInstanceEntries", pendingEntries);
+            processingCraftingJobs.appendTag(entriesTag);
         }
         tag.setTag("processingCraftingJobs", processingCraftingJobs);
 
@@ -128,92 +148,180 @@ public class CraftingJobHandler {
         }
         tag.setTag("pendingCraftingJobs", pendingCraftingJobs);
 
+        NBTTagList finishedCraftingJobs = new NBTTagList();
+        for (CraftingJob craftingJob : this.finishedCraftingJobs.values()) {
+            finishedCraftingJobs.appendTag(CraftingJob.serialize(craftingJob));
+        }
+        tag.setTag("finishedCraftingJobs", finishedCraftingJobs);
+
         NBTTagList targetOverrides = new NBTTagList();
         for (Map.Entry<IngredientComponent<?, ?>, ForgeDirection> entry : this.ingredientComponentTargetOverrides
             .entrySet()) {
-            NBTTagCompound overrideEntry = new NBTTagCompound();
-            overrideEntry.setString(
-                "component",
-                entry.getKey()
-                    .getName()
-                    .toString());
-            overrideEntry.setInteger(
-                "direction",
-                entry.getValue()
-                    .ordinal());
-            targetOverrides.appendTag(overrideEntry);
+            if (entry.getKey() != null && entry.getValue() != null) {
+                NBTTagCompound overrideEntry = new NBTTagCompound();
+                overrideEntry.setString(
+                    "component",
+                    entry.getKey()
+                        .getRegistryName()
+                        .toString());
+                overrideEntry.setInteger(
+                    "direction",
+                    entry.getValue()
+                        .ordinal());
+                targetOverrides.appendTag(overrideEntry);
+            }
         }
         tag.setTag("targetOverrides", targetOverrides);
+
+        NBTTagCompound nonBlockingJobsRunningAmount = new NBTTagCompound();
+        for (Int2IntMap.Entry entry : this.nonBlockingJobsRunningAmount.int2IntEntrySet()) {
+            nonBlockingJobsRunningAmount.setInteger(String.valueOf(entry.getIntKey()), entry.getIntValue());
+        }
+        tag.setTag("nonBlockingJobsRunningAmount", nonBlockingJobsRunningAmount);
     }
 
     public void readFromNBT(NBTTagCompound tag) {
+        if (tag.hasKey("blockingJobsMode")) {
+            this.blockingJobsMode = tag.getBoolean("blockingJobsMode");
+        }
+
         NBTTagList processingCraftingJobs = tag.getTagList("processingCraftingJobs", Constants.NBT.TAG_COMPOUND);
-        for (Object entry : processingCraftingJobs.tagList) {
-            NBTTagCompound entryTag = (NBTTagCompound) entry;
-            Map<IngredientComponent<?, ?>, List<IPrototypedIngredient<?, ?>>> pendingIngredientInstances = Maps
-                .newIdentityHashMap();
-            NBTTagList pendingIngredientsList = entryTag
-                .getTagList("pendingIngredientInstances", Constants.NBT.TAG_COMPOUND);
-            for (Object pendingIngredient : pendingIngredientsList.tagList) {
-                NBTTagCompound pendingIngredientTag = (NBTTagCompound) pendingIngredient;
-                String componentName = pendingIngredientTag.getString("ingredientComponent");
-                IngredientComponent<?, ?> ingredientComponent = IngredientComponent.REGISTRY
-                    .getValue(new ResourceLocation(componentName));
-                if (ingredientComponent == null) {
-                    throw new IllegalArgumentException("Could not find the ingredient component type " + componentName);
-                }
-                IIngredientSerializer serializer = ingredientComponent.getSerializer();
+        for (int i = 0; i < processingCraftingJobs.tagCount(); i++) {
+            NBTTagCompound entryTag = processingCraftingJobs.getCompoundTagAt(i);
 
-                List<IPrototypedIngredient<?, ?>> pendingIngredients = Lists.newArrayList();
-                for (Object instanceTagUnsafe : pendingIngredientTag
-                    .getTagList("instances", Constants.NBT.TAG_COMPOUND).tagList) {
-                    NBTTagCompound instanceTag = (NBTTagCompound) instanceTagUnsafe;
-                    Object instance = serializer.deserializeInstance(instanceTag.getTag("prototype"));
-                    Object condition = serializer.deserializeCondition(instanceTag.getTag("condition"));
-                    pendingIngredients.add(new PrototypedIngredient(ingredientComponent, instance, condition));
-                }
+            List<Map<IngredientComponent<?, ?>, List<IPrototypedIngredient<?, ?>>>> pendingIngredientInstanceEntries = Lists
+                .newArrayList();
+            if (entryTag.hasKey("pendingIngredientInstances")) {
+                // Compatibility for older NBT structures
+                Map<IngredientComponent<?, ?>, List<IPrototypedIngredient<?, ?>>> pendingIngredientInstances = Maps
+                    .newIdentityHashMap();
+                NBTTagList pendingIngredientsList = entryTag
+                    .getTagList("pendingIngredientInstances", Constants.NBT.TAG_COMPOUND);
+                for (int j = 0; j < pendingIngredientsList.tagCount(); j++) {
+                    NBTTagCompound pendingIngredientTag = pendingIngredientsList.getCompoundTagAt(j);
+                    String componentName = pendingIngredientTag.getString("ingredientComponent");
+                    IngredientComponent<?, ?> ingredientComponent = IngredientComponent.REGISTRY
+                        .getValue(new ResourceLocation(componentName));
+                    if (ingredientComponent == null) {
+                        throw new IllegalArgumentException(
+                            "Could not find the ingredient component type " + componentName);
+                    }
+                    IIngredientSerializer serializer = ingredientComponent.getSerializer();
 
-                pendingIngredientInstances.put(ingredientComponent, pendingIngredients);
+                    List<IPrototypedIngredient<?, ?>> pendingIngredients = Lists.newArrayList();
+                    NBTTagList instancesList = pendingIngredientTag.getTagList("instances", Constants.NBT.TAG_COMPOUND);
+                    for (int k = 0; k < instancesList.tagCount(); k++) {
+                        NBTTagCompound instanceTag = instancesList.getCompoundTagAt(k);
+                        Object instance = serializer.deserializeInstance(instanceTag.getTag("prototype"));
+                        Object condition = serializer.deserializeCondition(instanceTag.getTag("condition"));
+                        pendingIngredients.add(new PrototypedIngredient(ingredientComponent, instance, condition));
+                    }
+
+                    pendingIngredientInstances.put(ingredientComponent, pendingIngredients);
+                }
+                pendingIngredientInstanceEntries.add(pendingIngredientInstances);
+            } else {
+                NBTTagList ingredientsEntries = entryTag
+                    .getTagList("pendingIngredientInstanceEntries", Constants.NBT.TAG_LIST);
+                for (int j = 0; j < ingredientsEntries.tagCount(); j++) {
+                    NBTTagList pendingIngredientsList = (NBTTagList) ingredientsEntries.tagList.get(j);
+
+                    Map<IngredientComponent<?, ?>, List<IPrototypedIngredient<?, ?>>> pendingIngredientInstances = Maps
+                        .newIdentityHashMap();
+                    for (int k = 0; k < pendingIngredientsList.tagCount(); k++) {
+                        NBTTagCompound pendingIngredientTag = pendingIngredientsList.getCompoundTagAt(k);
+                        String componentName = pendingIngredientTag.getString("ingredientComponent");
+                        IngredientComponent<?, ?> ingredientComponent = IngredientComponent.REGISTRY
+                            .getValue(new ResourceLocation(componentName));
+                        if (ingredientComponent == null) {
+                            throw new IllegalArgumentException(
+                                "Could not find the ingredient component type " + componentName);
+                        }
+                        IIngredientSerializer<?, ?> serializer = ingredientComponent.getSerializer();
+
+                        List<IPrototypedIngredient<?, ?>> pendingIngredients = Lists.newArrayList();
+                        NBTTagList instancesList = pendingIngredientTag
+                            .getTagList("instances", Constants.NBT.TAG_COMPOUND);
+                        for (int l = 0; l < instancesList.tagCount(); l++) {
+                            NBTTagCompound instanceTag = instancesList.getCompoundTagAt(l);
+                            Object instance = serializer.deserializeInstance(instanceTag.getTag("prototype"));
+                            Object condition = serializer.deserializeCondition(instanceTag.getTag("condition"));
+                            pendingIngredients.add(new PrototypedIngredient(ingredientComponent, instance, condition));
+                        }
+
+                        pendingIngredientInstances.put(ingredientComponent, pendingIngredients);
+                    }
+
+                    pendingIngredientInstanceEntries.add(pendingIngredientInstances);
+                }
             }
 
             CraftingJob craftingJob = CraftingJob.deserialize(entryTag.getCompoundTag("craftingJob"));
 
             this.processingCraftingJobs.put(craftingJob.getId(), craftingJob);
             this.allCraftingJobs.put(craftingJob.getId(), craftingJob);
-            this.processingCraftingJobsPendingIngredients.put(craftingJob.getId(), pendingIngredientInstances);
-
+            this.processingCraftingJobsPendingIngredients.put(craftingJob.getId(), pendingIngredientInstanceEntries);
         }
 
         NBTTagList pendingCraftingJobs = tag.getTagList("pendingCraftingJobs", Constants.NBT.TAG_COMPOUND);
-        for (Object craftingJob : pendingCraftingJobs.tagList) {
-            CraftingJob craftingJobInstance = CraftingJob.deserialize((NBTTagCompound) craftingJob);
+        for (int i = 0; i < pendingCraftingJobs.tagCount(); i++) {
+            NBTTagCompound craftingJobTag = pendingCraftingJobs.getCompoundTagAt(i);
+            CraftingJob craftingJobInstance = CraftingJob.deserialize(craftingJobTag);
             this.pendingCraftingJobs.put(craftingJobInstance.getId(), craftingJobInstance);
             this.allCraftingJobs.put(craftingJobInstance.getId(), craftingJobInstance);
         }
 
+        NBTTagList finishedCraftingJobs = tag.getTagList("finishedCraftingJobs", Constants.NBT.TAG_COMPOUND);
+        for (int i = 0; i < finishedCraftingJobs.tagCount(); i++) {
+            NBTTagCompound craftingJob = finishedCraftingJobs.getCompoundTagAt(i);
+            CraftingJob craftingJobInstance = CraftingJob.deserialize(craftingJob);
+            this.finishedCraftingJobs.put(craftingJobInstance.getId(), craftingJobInstance);
+            this.allCraftingJobs.put(craftingJobInstance.getId(), craftingJobInstance);
+        }
+
         // Add required observers to a list so that they will be created in the next tick
-        for (Map<IngredientComponent<?, ?>, List<IPrototypedIngredient<?, ?>>> value : this.processingCraftingJobsPendingIngredients
+        for (List<Map<IngredientComponent<?, ?>, List<IPrototypedIngredient<?, ?>>>> valueEntries : this.processingCraftingJobsPendingIngredients
             .values()) {
-            // It's possible that the same component is added multiple times over different jobs,
-            // this is because we want to make sure our counters are correct.
-            observersPendingCreation.addAll(value.keySet());
+            for (Map<IngredientComponent<?, ?>, List<IPrototypedIngredient<?, ?>>> value : valueEntries) {
+                observersPendingCreation.addAll(value.keySet());
+            }
         }
 
         this.ingredientComponentTargetOverrides.clear();
         NBTTagList targetOverrides = tag.getTagList("targetOverrides", Constants.NBT.TAG_COMPOUND);
-        for (Object overrideObj : targetOverrides.tagList) {
-            NBTTagCompound overrideEntry = (NBTTagCompound) overrideObj;
-
+        for (int i = 0; i < targetOverrides.tagCount(); i++) {
+            NBTTagCompound overrideEntry = targetOverrides.getCompoundTagAt(i);
             String componentName = overrideEntry.getString("component");
+            int directionOrdinal = overrideEntry.getInteger("direction");
+
             IngredientComponent<?, ?> component = IngredientComponent.REGISTRY
                 .getValue(new ResourceLocation(componentName));
-            if (component != null) {
-                int dirIndex = overrideEntry.getInteger("direction");
-                if (dirIndex >= 0 && dirIndex < ForgeDirection.VALID_DIRECTIONS.length) {
-                    this.ingredientComponentTargetOverrides.put(component, ForgeDirection.VALID_DIRECTIONS[dirIndex]);
-                }
+            if (component != null && directionOrdinal >= 0
+                && directionOrdinal < ForgeDirection.VALID_DIRECTIONS.length) {
+                this.ingredientComponentTargetOverrides
+                    .put(component, ForgeDirection.VALID_DIRECTIONS[directionOrdinal]);
             }
         }
+
+        this.nonBlockingJobsRunningAmount.clear();
+        NBTTagCompound nonBlockingJobsRunningAmount = tag.getCompoundTag("nonBlockingJobsRunningAmount");
+        for (String key : nonBlockingJobsRunningAmount.func_150296_c()) {
+            int craftingJobId = Integer.parseInt(key);
+            int amount = nonBlockingJobsRunningAmount.getInteger(key);
+            this.nonBlockingJobsRunningAmount.put(craftingJobId, amount);
+        }
+    }
+
+    public boolean setBlockingJobsMode(boolean blockingJobsMode) {
+        if (this.blockingJobsMode != blockingJobsMode) {
+            this.blockingJobsMode = blockingJobsMode;
+            return true;
+        }
+        return false;
+    }
+
+    public boolean isBlockingJobsMode() {
+        return blockingJobsMode;
     }
 
     public boolean canScheduleCraftingJobs() {
@@ -223,9 +331,40 @@ public class CraftingJobHandler {
     public void scheduleCraftingJob(CraftingJob craftingJob) {
         this.pendingCraftingJobs.put(craftingJob.getId(), craftingJob);
         this.allCraftingJobs.put(craftingJob.getId(), craftingJob);
+        if (!this.isBlockingJobsMode()) {
+            this.nonBlockingJobsRunningAmount.put(craftingJob.getId(), 0);
+        }
     }
 
-    public Int2ObjectMap<Map<IngredientComponent<?, ?>, List<IPrototypedIngredient<?, ?>>>> getProcessingCraftingJobsPendingIngredients() {
+    public void fillCraftingJobBufferFromStorage(CraftingJob craftingJob,
+        Function<IngredientComponent<?, ?>, IIngredientComponentStorage> storageGetter) {
+        if (!craftingJob.getIngredientsStorageBuffer()
+            .isEmpty()) {
+            throw new IllegalStateException("Re-filling a non-empty crafting job buffer is illegal");
+        }
+        // Determine the ingredients to extract. We can not reuse the ingredientsStorage value from the crafting job, as
+        // this may have been modified due to job splitting.
+
+        // If this job has dependencies, skip reusable ingredients so that they remain available for other jobs.
+        // They will be lazily extracted in the update loop once the dependencies have finished.
+        boolean skipReusableIngredients = !craftingJob.getDependencyCraftingJobs()
+            .isEmpty();
+        Pair<Map<IngredientComponent<?, ?>, List<?>>, Map<IngredientComponent<?, ?>, MissingIngredients<?, ?>>> inputResult = CraftingHelpers
+            .getRecipeInputs(
+                storageGetter,
+                craftingJob.getRecipe(),
+                false,
+                Maps.newIdentityHashMap(),
+                Maps.newIdentityHashMap(),
+                true,
+                craftingJob.getAmount(),
+                skipReusableIngredients);
+        IMixedIngredients buffer = new MixedIngredients(inputResult.getLeft());
+        craftingJob.setIngredientsStorageBuffer(CraftingHelpers.compressMixedIngredients(buffer));
+        craftingJob.setLastMissingIngredients(inputResult.getRight());
+    }
+
+    public Int2ObjectMap<List<Map<IngredientComponent<?, ?>, List<IPrototypedIngredient<?, ?>>>>> getProcessingCraftingJobsPendingIngredients() {
         return processingCraftingJobsPendingIngredients;
     }
 
@@ -241,23 +380,34 @@ public class CraftingJobHandler {
         return pendingCraftingJobs.values();
     }
 
-    public void markCraftingJobProcessing(CraftingJob craftingJob,
-        Map<IngredientComponent<?, ?>, List<IPrototypedIngredient<?, ?>>> pendingIngredients) {
-        if (this.pendingCraftingJobs.remove(craftingJob.getId()) != null) {
-            setCraftingJobProcessingPendingIngredients(craftingJob, pendingIngredients);
+    public void unmarkCraftingJobProcessing(CraftingJob craftingJob) {
+        if (this.processingCraftingJobs.remove(craftingJob.getId()) != null) {
+            this.processingCraftingJobsPendingIngredients.remove(craftingJob.getId());
+            this.pendingCraftingJobs.put(craftingJob.getId(), craftingJob);
         }
     }
 
-    public void setCraftingJobProcessingPendingIngredients(CraftingJob craftingJob,
+    public void addCraftingJobProcessingPendingIngredientsEntry(CraftingJob craftingJob,
         Map<IngredientComponent<?, ?>, List<IPrototypedIngredient<?, ?>>> pendingIngredients) {
         if (pendingIngredients.isEmpty()) {
             this.processingCraftingJobs.remove(craftingJob.getId());
-            this.processingCraftingJobsPendingIngredients.remove(craftingJob.getId());
+
             this.allCraftingJobs.remove(craftingJob.getId());
+            this.nonBlockingJobsRunningAmount.remove(craftingJob.getId());
+            this.processingCraftingJobsPendingIngredients.remove(craftingJob.getId());
+
         } else {
             this.processingCraftingJobs.put(craftingJob.getId(), craftingJob);
-            this.processingCraftingJobsPendingIngredients.put(craftingJob.getId(), pendingIngredients);
+
             this.allCraftingJobs.put(craftingJob.getId(), craftingJob);
+
+            List<Map<IngredientComponent<?, ?>, List<IPrototypedIngredient<?, ?>>>> pendingIngredientsEntries = this.processingCraftingJobsPendingIngredients
+                .get(craftingJob.getId());
+            if (pendingIngredientsEntries == null) {
+                pendingIngredientsEntries = Lists.newArrayList();
+                this.processingCraftingJobsPendingIngredients.put(craftingJob.getId(), pendingIngredientsEntries);
+            }
+            pendingIngredientsEntries.add(pendingIngredients);
         }
     }
 
@@ -269,12 +419,13 @@ public class CraftingJobHandler {
         int count = ingredientObserverCounters.getInt(ingredientComponent);
         if (count == 0) {
             IPositionedAddonsNetworkIngredients<T, M> ingredientsNetwork = CraftingHelpers
-                .getIngredientsNetwork(network, ingredientComponent);
+                .getIngredientsNetworkChecked(network, ingredientComponent);
+            ICraftingNetwork craftingNetwork = CraftingHelpers.getCraftingNetworkChecked(network);
             PendingCraftingJobResultIndexObserver<T, M> observer = new PendingCraftingJobResultIndexObserver<>(
                 ingredientComponent,
-                this);
-            ingredientsNetwork.addObserver(observer);
-            ingredientsNetwork.scheduleObservation();
+                this,
+                craftingNetwork);
+            ingredientsNetwork.registerInsertPreConsumer(observer);
             ingredientObservers.put(ingredientComponent, observer);
         }
         ingredientObserverCounters.put(ingredientComponent, count + 1);
@@ -287,10 +438,10 @@ public class CraftingJobHandler {
         ingredientObserverCounters.put(ingredientComponent, count);
         if (count == 0) {
             IPositionedAddonsNetworkIngredients<T, M> ingredientsNetwork = CraftingHelpers
-                .getIngredientsNetwork(network, ingredientComponent);
-            IIngredientComponentStorageObservable.IIndexChangeObserver<T, M> observer = (IIngredientComponentStorageObservable.IIndexChangeObserver<T, M>) ingredientObservers
+                .getIngredientsNetworkChecked(network, ingredientComponent);
+            PendingCraftingJobResultIndexObserver<T, M> observer = (PendingCraftingJobResultIndexObserver<T, M>) ingredientObservers
                 .remove(ingredientComponent);
-            ingredientsNetwork.removeObserver(observer);
+            ingredientsNetwork.unregisterInsertPreConsumer(observer);
         }
     }
 
@@ -310,15 +461,23 @@ public class CraftingJobHandler {
         // Needed so that we remove the job in the next tick
         CraftingJob craftingJob = this.allCraftingJobs.get(craftingJobId);
         this.finishedCraftingJobs.put(craftingJobId, craftingJob);
-        craftingJob.setAmount(1);
+        craftingJob.setAmount(0);
     }
 
-    public void reRegisterObservers(INetwork network) {
-        for (Map.Entry<IngredientComponent<?, ?>, IIngredientComponentStorageObservable.IIndexChangeObserver<?, ?>> entry : ingredientObservers
-            .entrySet()) {
-            IPositionedAddonsNetworkIngredients ingredientsNetwork = CraftingHelpers
-                .getIngredientsNetwork(network, entry.getKey());
-            ingredientsNetwork.addObserver(entry.getValue());
+    public void onCraftingJobEntryFinished(ICraftingNetwork craftingNetwork, int craftingJobId) {
+        CraftingJob craftingJob = this.allCraftingJobs.get(craftingJobId);
+        craftingJob.setAmount(craftingJob.getAmount() - 1);
+
+        if (this.nonBlockingJobsRunningAmount.containsKey(craftingJobId)) {
+            this.nonBlockingJobsRunningAmount
+                .put(craftingJobId, this.nonBlockingJobsRunningAmount.get(craftingJobId) - 1);
+        }
+
+        // We mark each dependent job that it may attempt to be started,
+        // because its (partially) finished dependency may have produced ingredients to already start part of this job.
+        for (CraftingJob dependent : craftingNetwork.getCraftingJobDependencyGraph()
+            .getDependents(craftingJob)) {
+            dependent.setIgnoreDependencyCheck(true);
         }
     }
 
@@ -341,15 +500,23 @@ public class CraftingJobHandler {
 
         // Notify the network of finalized crafting jobs
         if (finishedCraftingJobs.size() > 0) {
+            ICraftingNetwork craftingNetwork = CraftingHelpers.getCraftingNetworkChecked(network);
             for (CraftingJob finishedCraftingJob : finishedCraftingJobs.values()) {
-                if (finishedCraftingJob.getAmount() == 1) {
-                    // If only a single amount for the job was remaining, remove it from the network
-                    ICraftingNetwork craftingNetwork = CraftingHelpers.getCraftingNetwork(network);
+                if (finishedCraftingJob.getAmount() == 0) {
+                    // If the job is fully finished, remove it from the network
                     craftingNetwork.onCraftingJobFinished(finishedCraftingJob);
                     allCraftingJobs.remove(finishedCraftingJob.getId());
+                    nonBlockingJobsRunningAmount.remove(finishedCraftingJob.getId());
+
+                    if (!finishedCraftingJob.getIngredientsStorageBuffer()
+                        .isEmpty()) {
+                        CraftingHelpers.insertIngredientsGuaranteed(
+                            finishedCraftingJob.getIngredientsStorageBuffer(),
+                            CraftingHelpers.getNetworkStorageGetter(network, channel, false),
+                            this.resultsSink);
+                    }
                 } else {
-                    // If more than one amount was remaining, decrement it and re-add it to the pending jobs list
-                    finishedCraftingJob.setAmount(finishedCraftingJob.getAmount() - 1);
+                    // Re-add it to the pending jobs list if entries are remaining
                     pendingCraftingJobs.put(finishedCraftingJob.getId(), finishedCraftingJob);
                 }
             }
@@ -363,35 +530,67 @@ public class CraftingJobHandler {
         if (processingJobs > 0) {
             for (IngredientComponent<?, ?> ingredientComponent : ingredientObservers.keySet()) {
                 IPositionedAddonsNetworkIngredients<?, ?> ingredientsNetwork = CraftingHelpers
-                    .getIngredientsNetwork(network, ingredientComponent);
+                    .getIngredientsNetworkChecked(network, ingredientComponent);
                 ingredientsNetwork.scheduleObservation();
             }
         }
 
-        if (processingJobs < this.maxProcessingJobs) {
+        // Process the jobs that are in non-blocking mode and still require amounts to be processed by re-trying
+        // insertion
+        if (!this.nonBlockingJobsRunningAmount.isEmpty()) {
+            for (Int2IntMap.Entry entry : this.nonBlockingJobsRunningAmount.int2IntEntrySet()) {
+                int craftingJobId = entry.getIntKey();
+                int runningAmount = entry.getIntValue();
+                CraftingJob craftingJob = this.allCraftingJobs.get(craftingJobId); // Could be null, but not sure why:
+                                                                                   // CyclopsMC/IntegratedCrafting#161
+                if (runningAmount > 0 && craftingJob != null && runningAmount < craftingJob.getAmount()) {
+                    insertLoopNonBlocking(network, channel, targetPos, craftingJob);
+                }
+            }
+        }
+
+        // Only look for a job to start if this handler has room for one, and has something to start.
+        // Skipping this block for an idle handler avoids a crafting network lookup for every idle tick.
+        if (processingJobs < this.maxProcessingJobs && !this.pendingCraftingJobs.isEmpty()) {
             // Handle crafting jobs
             CraftingJob startingCraftingJob = null;
-            ICraftingNetwork craftingNetwork = CraftingHelpers.getCraftingNetwork(network);
+            ICraftingNetwork craftingNetwork = CraftingHelpers.getCraftingNetworkChecked(network);
             CraftingJobDependencyGraph dependencyGraph = craftingNetwork.getCraftingJobDependencyGraph();
             for (CraftingJob pendingCraftingJob : getPendingCraftingJobs()) {
                 // Make sure that this crafting job has no incomplete dependency jobs
-                if (dependencyGraph.hasDependencies(pendingCraftingJob)) {
+                // This check can be overridden if the ignoreDependencyCheck flag is set
+                // (which is done once a dependent finishes a job entry).
+                // This override only applies for a single tick.
+                if (dependencyGraph.hasDependencies(pendingCraftingJob)
+                    && !pendingCraftingJob.isIgnoreDependencyCheck()) {
                     continue;
+                }
+                if (pendingCraftingJob.isIgnoreDependencyCheck()) {
+                    pendingCraftingJob.setIgnoreDependencyCheck(false);
                 }
 
                 // Check if pendingCraftingJob can start and set as startingCraftingJob
                 // This requires checking the available ingredients AND if the crafting handler can accept it.
+                IRecipeDefinition recipe = pendingCraftingJob.getRecipe();
                 Pair<Map<IngredientComponent<?, ?>, List<?>>, Map<IngredientComponent<?, ?>, MissingIngredients<?, ?>>> inputs = CraftingHelpers
                     .getRecipeInputs(
-                        CraftingHelpers.getNetworkStorageGetter(network, pendingCraftingJob.getChannel(), false),
-                        pendingCraftingJob.getRecipe(),
+                        CraftingHelpers.getCraftingJobBufferStorageGetter(pendingCraftingJob),
+                        recipe,
                         true,
+                        Maps.newIdentityHashMap(),
                         Maps.newIdentityHashMap(),
                         true,
                         1);
                 if (inputs.getRight()
                     .isEmpty()) { // If we have no missing ingredients
-                    if (insertCrafting(targetPos, new MixedIngredients(inputs.getLeft()), network, channel, true)) {
+                    if (insertCrafting(
+                        targetPos,
+                        new MixedIngredients(inputs.getLeft()),
+                        recipe,
+                        pendingCraftingJob,
+                        network,
+                        channel,
+                        true)) {
                         startingCraftingJob = pendingCraftingJob;
                         startingCraftingJob.setInvalidInputs(false);
                         break;
@@ -399,83 +598,180 @@ public class CraftingJobHandler {
                         pendingCraftingJob.setInvalidInputs(true);
                     }
                 } else {
-                    // Register listeners for pending ingredients
-                    if (pendingCraftingJob.getLastMissingIngredients()
-                        .isEmpty()) {
-                        for (IngredientComponent<?, ?> component : inputs.getRight()
-                            .keySet()) {
-                            registerIngredientObserver(component, network);
+                    // For the missing ingredients that are reusable,
+                    // trigger a crafting job for them if no job is running yet.
+                    // This special case is needed because reusable ingredients are usually durability-based,
+                    // and may be consumed _during_ a bulk crafting job.
+                    for (IngredientComponent<?, ?> component : inputs.getRight()
+                        .keySet()) {
+                        MissingIngredients<?, ?> missingIngredients = inputs.getRight()
+                            .get(component);
+                        for (MissingIngredients.Element<?, ?> element : missingIngredients.getElements()) {
+                            if (element.isInputReusable()) {
+                                IIngredientComponentStorage storage = CraftingHelpers
+                                    .getNetworkStorage(network, channel, component, true);
+                                for (MissingIngredients.PrototypedWithRequested alternative : element
+                                    .getAlternatives()) {
+                                    // First check if we can extract it from storage.
+                                    Object extractedFromStorage = storage.extract(
+                                        alternative.getRequestedPrototype()
+                                            .getPrototype(),
+                                        alternative.getRequestedPrototype()
+                                            .getCondition(),
+                                        false);
+                                    if (!((IIngredientMatcher) component.getMatcher()).isEmpty(extractedFromStorage)) {
+                                        pendingCraftingJob.addToIngredientsStorageBuffer(
+                                            (IngredientComponent<? super Object, ? extends Object>) component,
+                                            extractedFromStorage);
+                                        break;
+                                    }
+
+                                    // Try to start crafting jobs for each alternative until one of them succeeds.
+                                    if (CraftingHelpers.isCrafting(
+                                        craftingNetwork,
+                                        channel,
+                                        alternative.getRequestedPrototype()
+                                            .getComponent(),
+                                        alternative.getRequestedPrototype()
+                                            .getPrototype(),
+                                        alternative.getRequestedPrototype()
+                                            .getCondition())) {
+                                        // Break loop if we have found an existing job for our dependency
+                                        // This may occur if a crafting job was triggered in a parallelized job
+                                        break;
+                                    }
+                                    CraftingJob craftingJob = CraftingHelpers.calculateAndScheduleCraftingJob(
+                                        network,
+                                        channel,
+                                        alternative.getRequestedPrototype()
+                                            .getComponent(),
+                                        alternative.getRequestedPrototype()
+                                            .getPrototype(),
+                                        alternative.getRequestedPrototype()
+                                            .getCondition(),
+                                        true,
+                                        true,
+                                        CraftingHelpers.getGlobalCraftingJobIdentifier(),
+                                        null);
+                                    if (craftingJob != null) {
+                                        pendingCraftingJob.addDependency(craftingJob);
+                                        // Break loop once we have found a valid job
+                                        break;
+                                    }
+                                }
+                            }
                         }
                     }
-
-                    pendingCraftingJob.setLastMissingIngredients(inputs.getRight());
                 }
             }
 
             // Start the crafting job
             if (startingCraftingJob != null) {
-                // If the job previously had missing in ingredients, unregister the observers that were previously
-                // created for it.
-                if (!startingCraftingJob.getLastMissingIngredients()
-                    .isEmpty()) {
-                    for (IngredientComponent<?, ?> component : startingCraftingJob.getLastMissingIngredients()
-                        .keySet()) {
-                        unregisterIngredientObserver(component, network);
-                    }
-                    startingCraftingJob.setLastMissingIngredients(Maps.newIdentityHashMap());
-                }
+                // Check if the job was started while blocking mode was enabled in this handler
+                boolean blockingMode = !nonBlockingJobsRunningAmount.containsKey(startingCraftingJob.getId())
+                    || startingCraftingJob.getAmount() == 1;
 
-                // Remove ingredients from network
-                IMixedIngredients ingredients = CraftingHelpers.getRecipeInputs(
+                // Start the actual crafting
+                boolean couldCraft = consumeAndInsertCrafting(
+                    blockingMode,
                     network,
-                    startingCraftingJob.getChannel(),
-                    startingCraftingJob.getRecipe(),
-                    false,
-                    1);
+                    channel,
+                    targetPos,
+                    startingCraftingJob);
 
-                // This may not be null, error if it is null!
-                if (ingredients != null) {
-                    // Update state with expected outputs
-                    markCraftingJobProcessing(
-                        startingCraftingJob,
-                        CraftingHelpers.getRecipeOutputs(startingCraftingJob.getRecipe()));
-
-                    // Push the ingredients to the crafting interface
-                    if (insertCrafting(targetPos, ingredients, network, channel, false)) {
-                        // Register listeners for pending ingredients
-                        for (IngredientComponent<?, ?> component : startingCraftingJob.getRecipe()
-                            .getOutput()
-                            .getComponents()) {
-                            registerIngredientObserver(component, network);
-                        }
-                    } else {
-                        // If we reach this point, the target does not accept the recipe inputs,
-                        // even though they were acceptable in simulation mode.
-                        // The failed ingredients were already re-inserted into the network at this point,
-                        // so we just silently remove the job.
-                        onCraftingJobFinished(startingCraftingJob);
-                    }
-                } else {
-                    IntegratedCrafting.clog(
-                        Level.WARN,
-                        "Failed to extract ingredients for crafting job " + startingCraftingJob.getId());
+                // Keep inserting as much as possible if non-blocking
+                if (couldCraft && !blockingMode) {
+                    nonBlockingJobsRunningAmount.put(startingCraftingJob.getId(), 1);
+                    insertLoopNonBlocking(network, channel, targetPos, startingCraftingJob);
                 }
             }
         }
     }
 
-    protected boolean insertCrafting(PartPos target, IMixedIngredients ingredients, INetwork network, int channel,
-        boolean simulate) {
+    protected boolean insertCrafting(PartPos target, IMixedIngredients ingredients, IRecipeDefinition recipe,
+        CraftingJob craftingJob, INetwork network, int channel, boolean simulate) {
         Function<IngredientComponent<?, ?>, PartPos> targetGetter = getTargetGetter(target);
         // First check our crafting overrides
         for (ICraftingProcessOverride craftingProcessOverride : this.craftingProcessOverrides) {
             if (craftingProcessOverride.isApplicable(target)) {
-                return craftingProcessOverride.craft(targetGetter, ingredients, this.resultsSink, simulate);
+                try {
+                    return craftingProcessOverride
+                        .craft(targetGetter, ingredients, recipe, this.resultsSink, craftingJob, simulate);
+                } catch (IllegalArgumentException e) {
+                    return false;
+                }
             }
         }
 
         // Fallback to default crafting insertion
         return CraftingHelpers.insertCrafting(targetGetter, ingredients, network, channel, simulate);
+    }
+
+    protected void insertLoopNonBlocking(INetwork network, int channel, PartPos targetPos, CraftingJob craftingJob) {
+        // If in non-blocking mode, try to push as much as possible into the target
+        while (nonBlockingJobsRunningAmount.get(craftingJob.getId()) < craftingJob.getAmount()) {
+            IRecipeDefinition recipe = craftingJob.getRecipe();
+            IMixedIngredients ingredientsSimulated = CraftingHelpers
+                .getRecipeInputsFromCraftingJobBuffer(craftingJob, recipe, true, 1);
+            if (ingredientsSimulated == null
+                || !insertCrafting(targetPos, ingredientsSimulated, recipe, craftingJob, network, channel, true)) {
+                break;
+            }
+            if (!consumeAndInsertCrafting(true, network, channel, targetPos, craftingJob)) {
+                break;
+            }
+            nonBlockingJobsRunningAmount
+                .put(craftingJob.getId(), nonBlockingJobsRunningAmount.get(craftingJob.getId()) + 1);
+        }
+    }
+
+    protected boolean consumeAndInsertCrafting(boolean blockingMode, INetwork network, int channel, PartPos targetPos,
+        CraftingJob startingCraftingJob) {
+        // Remove ingredients from network
+        IRecipeDefinition recipe = startingCraftingJob.getRecipe();
+        IMixedIngredients ingredients = CraftingHelpers
+            .getRecipeInputsFromCraftingJobBuffer(startingCraftingJob, recipe, false, 1);
+
+        // This may not be null, error if it is null!
+        if (ingredients != null) {
+            this.pendingCraftingJobs.remove(startingCraftingJob.getId());
+
+            // Update state with expected outputs
+            addCraftingJobProcessingPendingIngredientsEntry(
+                startingCraftingJob,
+                CraftingHelpers.getRecipeOutputs(startingCraftingJob.getRecipe()));
+
+            // Register listeners for pending ingredients
+            for (IngredientComponent<?, ?> component : startingCraftingJob.getRecipe()
+                .getOutput()
+                .getComponents()) {
+                registerIngredientObserver(component, network);
+            }
+
+            // Push the ingredients to the crafting interface
+            if (!insertCrafting(targetPos, ingredients, recipe, startingCraftingJob, network, channel, false)) {
+                // Unregister listeners again for pending ingredients
+                for (IngredientComponent<?, ?> component : startingCraftingJob.getRecipe()
+                    .getOutput()
+                    .getComponents()) {
+                    unregisterIngredientObserver(component, network);
+                }
+
+                // If we reach this point, the target does not accept the recipe inputs,
+                // even though they were acceptable in simulation mode.
+                // The failed ingredients were already re-inserted into the network at this point,
+                // so we mark the job as failed, and add it again to the queue.
+                startingCraftingJob.setInvalidInputs(true);
+                unmarkCraftingJobProcessing(startingCraftingJob);
+                return false;
+            } else {
+                return true;
+            }
+        } else {
+            IntegratedCrafting
+                .clog(Level.WARN, "Failed to extract ingredients for crafting job " + startingCraftingJob.getId());
+            return false;
+        }
     }
 
     public CraftingJobStatus getCraftingJobStatus(ICraftingNetwork network, int channel, int craftingJobId) {
@@ -533,4 +829,27 @@ public class CraftingJobHandler {
         };
     }
 
+    /**
+     * This method is called right before a crafting interface's result buffer is flushed to the network.
+     * This will first try to pass the instance along to crafting jobs that have pending ingredients.
+     * The remaining instance that could not be inserted into any of those crafting jobs is returned.
+     *
+     * @param instanceWrapper The instance that would be inserted into the network.
+     * @param channel         The channel.
+     * @return The remaining instance that was not consumed by observers.
+     * @param <T> The ingredient type.
+     * @param <M> The match condition.
+     */
+    public <T, M> IngredientInstanceWrapper<T, M> beforeFlushIngredientToNetwork(
+        IngredientInstanceWrapper<T, M> instanceWrapper, int channel) {
+        PendingCraftingJobResultIndexObserver<T, M> observer = (PendingCraftingJobResultIndexObserver<T, M>) ingredientObservers
+            .get(instanceWrapper.getComponent());
+        if (observer != null) {
+            IIngredientCollectionMutable<T, M> instances = new IngredientCollectionPrototypeMap<>(
+                instanceWrapper.getComponent());
+            instances.add(instanceWrapper.getInstance());
+            return observer.addIngredient(instanceWrapper, channel, false);
+        }
+        return instanceWrapper;
+    }
 }

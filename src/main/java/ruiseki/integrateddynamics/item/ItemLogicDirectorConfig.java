@@ -1,13 +1,12 @@
 package ruiseki.integrateddynamics.item;
 
 import ruiseki.integrateddynamics.IntegratedDynamics;
-import ruiseki.okcore.config.configurable.ConfigurableItem;
-import ruiseki.okcore.config.configurable.IConfigurable;
 import ruiseki.okcore.config.extendedconfig.ItemConfig;
+import ruiseki.okcore.item.ItemBase;
 
 /**
  * Config for the Logic Director.
- * 
+ *
  * @author rubensworks
  *
  */
@@ -22,12 +21,6 @@ public class ItemLogicDirectorConfig extends ItemConfig {
      * Make a new instance.
      */
     public ItemLogicDirectorConfig() {
-        super(IntegratedDynamics._instance, true, "logic_director", null, null);
+        super(IntegratedDynamics._instance, true, "logic_director", null, config -> new ItemBase());
     }
-
-    @Override
-    protected IConfigurable initSubInstance() {
-        return new ConfigurableItem(this);
-    }
-
 }

@@ -3,6 +3,7 @@ package ruiseki.integratedcrafting.core.network;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
@@ -18,6 +19,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntListIterator;
 import ruiseki.commoncapabilities.api.capability.recipehandler.IRecipeDefinition;
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
+import ruiseki.commoncapabilities.api.ingredient.storage.IIngredientComponentStorage;
 import ruiseki.integratedcrafting.api.crafting.CraftingJob;
 import ruiseki.integratedcrafting.api.crafting.CraftingJobDependencyGraph;
 import ruiseki.integratedcrafting.api.crafting.ICraftingInterface;
@@ -226,7 +228,8 @@ public class CraftingNetwork implements ICraftingNetwork {
     }
 
     @Override
-    public void scheduleCraftingJob(CraftingJob craftingJob, boolean allowDistribution)
+    public void scheduleCraftingJob(CraftingJob craftingJob, boolean allowDistribution,
+        Function<IngredientComponent<?, ?>, IIngredientComponentStorage> storageGetter)
         throws UnavailableCraftingInterfacesException {
         Multimap<IRecipeDefinition, ICraftingInterface> recipeInterfaces = getRecipeCraftingInterfaces(
             craftingJob.getChannel());
@@ -249,7 +252,7 @@ public class CraftingNetwork implements ICraftingNetwork {
                 getCraftingJobDependencyGraph(),
                 CraftingHelpers.getGlobalCraftingJobIdentifier());
             for (CraftingJob splitCraftingJob : splitCraftingJobs) {
-                scheduleCraftingJob(splitCraftingJob, false);
+                scheduleCraftingJob(splitCraftingJob, false, storageGetter);
             }
             return;
         }
@@ -263,11 +266,16 @@ public class CraftingNetwork implements ICraftingNetwork {
             if (bestCraftingInterface == null || jobCount < bestCraftingInterfaceJobCount) {
                 bestCraftingInterfaceJobCount = jobCount;
                 bestCraftingInterface = craftingInterface;
+                if (bestCraftingInterfaceJobCount == 0) {
+                    break; // Break early, as we won't find a better interface than one with zero jobs
+                }
             }
         }
 
         // This should not be null, but let's check to be sure.
         if (bestCraftingInterface != null) {
+            // Extract from storage
+            bestCraftingInterface.fillCraftingJobBufferFromStorage(craftingJob, storageGetter);
             // Schedule the job in the interface
             bestCraftingInterface.scheduleCraftingJob(craftingJob);
             addCraftingJob(craftingJob.getChannel(), craftingJob, bestCraftingInterface);

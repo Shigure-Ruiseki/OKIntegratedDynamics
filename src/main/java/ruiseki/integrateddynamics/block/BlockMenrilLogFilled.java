@@ -8,42 +8,27 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 
 import ruiseki.integrateddynamics.item.ItemCrystalizedMenrilChunkConfig;
-import ruiseki.okcore.config.configurable.ConfigurableBlockLog;
-import ruiseki.okcore.config.extendedconfig.BlockConfig;
-import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
+import ruiseki.okcore.block.BlockLogBase;
 
 /**
  * Menril wood block that is filled.
  *
  * @author rubensworks
  */
-public class BlockMenrilLogFilled extends ConfigurableBlockLog {
-
-    private static BlockMenrilLogFilled _instance = null;
-
-    /**
-     * Get the unique instance.
-     *
-     * @return The instance.
-     */
-    public static BlockMenrilLogFilled getInstance() {
-        return _instance;
-    }
+public class BlockMenrilLogFilled extends BlockLogBase {
 
     /**
      * Make a new block instance.
-     *
-     * @param eConfig Config for this block.
      */
-    public BlockMenrilLogFilled(ExtendedConfig<BlockConfig> eConfig) {
-        super(eConfig);
+    public BlockMenrilLogFilled() {
+        super();
         this.setHardness(2.5F);
         this.setStepSound(soundTypeWood);
     }
 
     @Override
     public Item getItemDropped(int meta, Random random, int fortune) {
-        return Item.getItemFromBlock(BlockMenrilLog.getInstance());
+        return Item.getItemFromBlock(BlockMenrilLogConfig._instance.getInstance());
     }
 
     @Override
@@ -52,7 +37,7 @@ public class BlockMenrilLogFilled extends ConfigurableBlockLog {
         drops.add(new ItemStack(getItemDropped(metadata, world.rand, fortune)));
         drops.add(
             new ItemStack(
-                ItemCrystalizedMenrilChunkConfig._instance.getItemInstance(),
+                ItemCrystalizedMenrilChunkConfig._instance.getInstance(),
                 1 + world.rand.nextInt(3 + fortune)));
         return drops;
     }

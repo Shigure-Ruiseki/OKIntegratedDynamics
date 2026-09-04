@@ -17,16 +17,17 @@ import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
 import ruiseki.integratedterminals.api.ingredient.IIngredientComponentTerminalStorageHandler;
 import ruiseki.integratedterminals.api.terminalstorage.ITerminalStorageTabClient;
 import ruiseki.integratedterminals.api.terminalstorage.crafting.ITerminalCraftingOption;
-import ruiseki.integratedterminals.client.gui.container.GuiTerminalStorage;
+import ruiseki.integratedterminals.core.client.gui.GuiTerminalStorage;
 import ruiseki.integratedterminals.core.terminalstorage.TerminalStorageTabIngredientComponentClient;
 import ruiseki.integratedterminals.core.terminalstorage.crafting.HandlerWrappedTerminalCraftingOption;
+import ruiseki.integratedterminals.core.terminalstorage.crafting.PendingCraftingJobOutput;
 import ruiseki.okcore.client.gui.RenderItemExtendedSlotCount;
 import ruiseki.okcore.client.renderer.GlStateManager;
 import ruiseki.okcore.helper.LangHelpers;
 
 /**
  * An ingredient slot for a crafting option.
- * 
+ *
  * @param <T> The instance type.
  * @param <M> The matching condition parameter.
  * @author rubensworks
@@ -47,14 +48,14 @@ public class TerminalStorageSlotIngredientCraftingOption<T, M> extends TerminalS
     public void drawGuiContainerLayer(GuiContainer gui, GuiTerminalStorage.DrawLayer layer, float partialTick, int x,
         int y, int mouseX, int mouseY, ITerminalStorageTabClient tab, int channel, @Nullable String label) {
         IIngredientComponentTerminalStorageHandler<T, M> viewHandler = getIngredientComponentViewHandler();
+        long maxQuantity = ((TerminalStorageTabIngredientComponentClient) tab).getMaxQuantity(channel);
+        PendingCraftingJobOutput<T> pendingCraftingJobOutput = getPendingCraftingJobOutput(tab, channel, label);
         if (layer == GuiTerminalStorage.DrawLayer.BACKGROUND) {
-            long maxQuantity = ((TerminalStorageTabIngredientComponentClient) tab).getMaxQuantity(channel);
             viewHandler
                 .drawInstance(getInstance(), maxQuantity, null, gui, layer, partialTick, x, y, mouseX, mouseY, null);
             drawCraftLabel(x, y);
         } else {
-            long maxQuantity = ((TerminalStorageTabIngredientComponentClient) tab).getMaxQuantity(channel);
-            getIngredientComponentViewHandler().drawInstance(
+            viewHandler.drawInstance(
                 getInstance(),
                 maxQuantity,
                 label,
@@ -65,12 +66,16 @@ public class TerminalStorageSlotIngredientCraftingOption<T, M> extends TerminalS
                 y,
                 mouseX,
                 mouseY,
-                getTooltipLines());
+                getTooltipLines(pendingCraftingJobOutput));
         }
+        drawCraftingJobOverlay(gui, layer, x, y, pendingCraftingJobOutput);
     }
 
-    protected List<String> getTooltipLines() {
+    protected List<String> getTooltipLines(@Nullable PendingCraftingJobOutput<T> pendingCraftingJobOutput) {
         List<String> tooltipLines = Lists.newArrayList();
+        if (pendingCraftingJobOutput != null) {
+            addCraftingJobTooltipLines(tooltipLines, pendingCraftingJobOutput);
+        }
         tooltipLines.add(
             EnumChatFormatting.YELLOW
                 + LangHelpers.localize("gui.integratedterminals.terminal_storage.tooltip.requirements"));
@@ -89,6 +94,18 @@ public class TerminalStorageSlotIngredientCraftingOption<T, M> extends TerminalS
             }
         }
         return tooltipLines;
+    }
+
+    @Nullable
+    @Override
+    @SideOnly(Side.CLIENT)
+    protected PendingCraftingJobOutput<T> getPendingCraftingJobOutput(ITerminalStorageTabClient tab, int channel,
+        @Nullable String label) {
+        // The same instance can also be shown as a stored ingredient.
+        // In that case, only that slot indicates the running crafting jobs, to avoid indicating them twice.
+        return ((TerminalStorageTabIngredientComponentClient<T, M>) tab).isShownAsStoredInstance(channel, getInstance())
+            ? null
+            : super.getPendingCraftingJobOutput(tab, channel, label);
     }
 
     public HandlerWrappedTerminalCraftingOption<T> getCraftingOption() {

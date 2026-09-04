@@ -19,7 +19,7 @@ public class ItemVariableConfig extends ItemConfig {
      * Make a new instance.
      */
     public ItemVariableConfig() {
-        super(IntegratedDynamics._instance, true, "variable", null, ItemVariable.class);
+        super(IntegratedDynamics._instance, true, "variable", null, config -> new ItemVariable());
     }
 
     @Override

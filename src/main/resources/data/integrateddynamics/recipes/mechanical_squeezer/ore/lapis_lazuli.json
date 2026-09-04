@@ -1,0 +1,24 @@
+{
+  "type": "integrateddynamics:mechanical_squeezer",
+  "item": "minecraft:lapis_ore",
+  "result": {
+    "items": [
+      {
+        "item": {
+          "item": "minecraft:dye",
+          "meta": 11,
+          "count": 12
+        }
+      },
+      {
+        "item": {
+          "item": "minecraft:dye",
+          "meta": 11,
+          "count": 2
+        },
+        "chance": 0.5
+      }
+    ]
+  },
+  "duration": 40
+}

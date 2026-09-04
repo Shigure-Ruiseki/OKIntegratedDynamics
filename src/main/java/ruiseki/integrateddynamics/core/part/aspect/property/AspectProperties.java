@@ -73,6 +73,11 @@ public class AspectProperties implements IAspectProperties {
     }
 
     @Override
+    public <T extends IValueType<V>, V extends IValue> void removeValue(IAspectPropertyTypeInstance<T, V> type) {
+        values.remove(type);
+    }
+
+    @Override
     public NBTTagCompound serializeNBT() {
         NBTTagCompound tag = new NBTTagCompound();
         NBTTagList map = new NBTTagList();
