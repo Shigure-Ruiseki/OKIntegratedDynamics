@@ -147,6 +147,7 @@ item.items.integrateddynamics.on_the_dynamics_of_integration.name=On the Dynamic
 item.items.integrateddynamics.on_the_dynamics_of_integration.info=A complete mod reference guide with tutorials
 item.items.integrateddynamics.crystalized_chorus_chunk.name=Crystalized Chorus Chunk
 item.items.integrateddynamics.logic_director.name=Logic Director
+item.items.integrateddynamics.proto_chorus.name=Proto Chorus
 item.items.integrateddynamics.enhancement_offset.name=Part Enhancement: Offset
 item.items.integrateddynamics.enhancement_offset.info.name=Increases the max offset of a part by right-clicking
 item.items.integrateddynamics.enhancement_offset.tooltip.name=Offset increase: %s

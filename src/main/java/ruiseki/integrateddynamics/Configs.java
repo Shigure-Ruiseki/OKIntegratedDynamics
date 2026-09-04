@@ -71,6 +71,7 @@ import ruiseki.integrateddynamics.item.ItemLabellerConfig;
 import ruiseki.integrateddynamics.item.ItemLogicDirectorConfig;
 import ruiseki.integrateddynamics.item.ItemMenrilBerriesConfig;
 import ruiseki.integrateddynamics.item.ItemPortableLogicProgrammerConfig;
+import ruiseki.integrateddynamics.item.ItemProtoChorusConfig;
 import ruiseki.integrateddynamics.item.ItemVariableConfig;
 import ruiseki.integrateddynamics.item.ItemVariableTransformerConfig;
 import ruiseki.integrateddynamics.item.ItemWrenchConfig;
@@ -159,6 +160,7 @@ public class Configs {
         // configHandler.add(new ItemOnTheDynamicsOfIntegrationConfig());
         configHandler.add(new ItemCrystalizedChorusChunkConfig());
         configHandler.add(new ItemLogicDirectorConfig());
+        configHandler.add(new ItemProtoChorusConfig());
         configHandler.add(new ItemEnhancementConfig());
 
         // Biomes
