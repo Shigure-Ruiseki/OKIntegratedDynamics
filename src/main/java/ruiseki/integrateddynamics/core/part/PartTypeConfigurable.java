@@ -53,12 +53,28 @@ public abstract class PartTypeConfigurable<P extends IPartType<P, S>, S extends 
         }
     }
 
+    protected Class<? extends Container> getSettingsContainer() {
+        return ContainerPartSettings.class;
+    }
+
+    protected Class<? extends GuiScreen> getSettingsGui() {
+        return GuiPartSettings.class;
+    }
+
+    protected Class<? extends Container> getOffsetsContainer() {
+        return ContainerPartOffset.class;
+    }
+
+    protected Class<? extends GuiScreen> getOffsetsGui() {
+        return GuiPartOffset.class;
+    }
+
     protected IGuiContainerProvider constructSettingsGuiProvider(int guiId) {
-        return new GuiProviderSettings(guiId, getModGui());
+        return new GuiProvider(guiId, getModGui(), getSettingsContainer(), getSettingsGui());
     }
 
     protected IGuiContainerProvider constructPartOffsetsGuiProvider(int guiId) {
-        return new GuiProviderOffsets(guiId, getModGui());
+        return new GuiProvider(guiId, getModGui(), getOffsetsContainer(), getOffsetsGui());
     }
 
     public boolean hasSettings() {
@@ -66,37 +82,33 @@ public abstract class PartTypeConfigurable<P extends IPartType<P, S>, S extends 
     }
 
     @Data
-    public static class GuiProviderSettings implements IGuiContainerProvider {
+    public static class GuiProvider implements IGuiContainerProvider {
 
         private final int guiID;
         private final ModBase modGui;
+        private final Class<? extends Container> container;
+        private final Class<? extends GuiScreen> gui;
+
+        public GuiProvider(int guiID, ModBase modGui) {
+            this(guiID, modGui, ContainerPartSettings.class, GuiPartSettings.class);
+        }
+
+        public GuiProvider(int guiID, ModBase modGui, Class<? extends Container> container,
+            Class<? extends GuiScreen> gui) {
+            this.guiID = guiID;
+            this.modGui = modGui;
+            this.container = container;
+            this.gui = gui;
+        }
 
         @Override
         public Class<? extends Container> getContainer() {
-            return ContainerPartSettings.class;
+            return container;
         }
 
         @Override
         public Class<? extends GuiScreen> getGui() {
-            return GuiPartSettings.class;
+            return gui;
         }
     }
-
-    @Data
-    public static class GuiProviderOffsets implements IGuiContainerProvider {
-
-        private final int guiID;
-        private final ModBase modGui;
-
-        @Override
-        public Class<? extends Container> getContainer() {
-            return ContainerPartOffset.class;
-        }
-
-        @Override
-        public Class<? extends GuiScreen> getGui() {
-            return GuiPartOffset.class;
-        }
-    }
-
 }

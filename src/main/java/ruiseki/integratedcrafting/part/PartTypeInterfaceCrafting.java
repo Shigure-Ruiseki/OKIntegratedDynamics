@@ -51,7 +51,6 @@ import ruiseki.integrateddynamics.core.evaluate.InventoryVariableEvaluator;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueObjectTypeRecipe;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
 import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
-import ruiseki.integrateddynamics.core.part.PartTypeConfigurable;
 import ruiseki.integrateddynamics.core.part.event.PartVariableDrivenVariableContentsUpdatedEvent;
 import ruiseki.okcore.datastructure.DimPos;
 import ruiseki.okcore.helper.BlockStateHelpers;
@@ -76,9 +75,7 @@ public class PartTypeInterfaceCrafting
         super(name);
         getModGui().getGuiHandler()
             .registerGUI(
-                (settingsGuiProvider = new PartTypeConfigurable.GuiProviderSettings(
-                    Helpers.getNewId(getModGui(), Helpers.IDType.GUI),
-                    getModGui()) {
+                (settingsGuiProvider = new GuiProvider(Helpers.getNewId(getModGui(), Helpers.IDType.GUI), getModGui()) {
 
                     @Override
                     public Class<? extends Container> getContainer() {

@@ -8,14 +8,10 @@ import net.minecraft.util.ResourceLocation;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartTarget;
-import ruiseki.integrateddynamics.client.gui.image.Images;
-import ruiseki.integrateddynamics.core.client.gui.container.GuiMultipartAspects;
 import ruiseki.integrateddynamics.core.client.gui.container.GuiPartSettings;
 import ruiseki.integratedtunnels.IntegratedTunnels;
 import ruiseki.integratedtunnels.Reference;
-import ruiseki.okcore.client.gui.component.button.GuiButtonImage;
 import ruiseki.okcore.client.gui.component.input.GuiNumberField;
-import ruiseki.okcore.client.gui.image.IImage;
 import ruiseki.okcore.helper.Helpers;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.ValueNotifierHelpers;
@@ -36,7 +32,6 @@ public class GuiInterfaceSettings extends GuiPartSettings {
             target,
             partContainer,
             partType);
-        putButtonAction(GuiMultipartAspects.BUTTON_OFFSETS, (buttonId, gui, container) -> onSave());
     }
 
     @Override
@@ -84,21 +79,6 @@ public class GuiInterfaceSettings extends GuiPartSettings {
         numberFieldChannelInterface.setCanLoseFocus(true);
 
         this.refreshValues();
-
-        if (getContainer().getPartType()
-            .supportsOffsets()) {
-            buttonList.add(
-                new GuiButtonImage(
-                    GuiMultipartAspects.BUTTON_OFFSETS,
-                    this.guiLeft - 20,
-                    this.guiTop + 10,
-                    18,
-                    18,
-                    new IImage[] { Images.BUTTON_BACKGROUND_INACTIVE, Images.BUTTON_MIDDLE_OFFSET },
-                    0,
-                    0,
-                    false));
-        }
     }
 
     @Override
