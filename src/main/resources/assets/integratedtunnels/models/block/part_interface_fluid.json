@@ -1,6 +1,6 @@
 {
   "parent": "integratedtunnels:block/connector",
   "textures": {
-    "texture": "integratedtunnels:blocks/parts/interface_fluid"
+    "texture": "integratedtunnels:parts/interface_fluid"
   }
 }

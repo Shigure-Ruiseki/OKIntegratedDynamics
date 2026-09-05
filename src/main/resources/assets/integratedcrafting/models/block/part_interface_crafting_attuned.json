@@ -1,6 +1,6 @@
 {
   "parent": "integratedcrafting:block/interface_crafting",
   "textures": {
-    "texture" : "integratedcrafting:blocks/parts/interface_crafting_attuned"
+    "texture": "integratedcrafting:parts/interface_crafting_attuned"
   }
 }

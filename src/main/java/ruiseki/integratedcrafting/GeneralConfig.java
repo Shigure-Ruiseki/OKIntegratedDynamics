@@ -2,7 +2,6 @@ package ruiseki.integratedcrafting;
 
 import ruiseki.okcore.config.ConfigLocation;
 import ruiseki.okcore.config.ConfigurableProperty;
-import ruiseki.okcore.config.ConfigurableType;
 import ruiseki.okcore.config.extendedconfig.DummyConfig;
 import ruiseki.okcore.tracking.Versions;
 
@@ -69,11 +68,6 @@ public class GeneralConfig extends DummyConfig {
         isCommandable = true,
         configLocation = ConfigLocation.SERVER)
     public static boolean logRecipeValidationFailures = true;
-
-    /**
-     * The type of this config.
-     */
-    public static ConfigurableType TYPE = ConfigurableType.DUMMY;
 
     /**
      * Create a new instance.

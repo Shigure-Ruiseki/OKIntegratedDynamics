@@ -1,7 +1,7 @@
 {
   "parent": "integrateddynamics:block/part_writer",
   "textures": {
-    "back" : "integratedcrafting:blocks/parts/crafting_writer_back",
-    "front": "integratedcrafting:blocks/parts/crafting_writer_front_active"
+    "back": "integratedcrafting:parts/crafting_writer_back",
+    "front": "integratedcrafting:parts/crafting_writer_front_active"
   }
 }

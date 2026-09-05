@@ -1,7 +1,7 @@
 {
   "parent": "integratedterminals:block/terminal",
   "textures": {
-    "back" : "integratedterminals:blocks/parts/terminal_back",
-    "front": "integratedterminals:blocks/parts/terminal_storage"
+    "back": "integratedterminals:parts/terminal_back",
+    "front": "integratedterminals:parts/terminal_storage"
   }
 }

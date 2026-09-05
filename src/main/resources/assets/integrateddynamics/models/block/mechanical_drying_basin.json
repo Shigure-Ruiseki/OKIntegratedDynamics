@@ -2,8 +2,8 @@
   "parent": "block/block",
   "ambientocclusion": false,
   "textures": {
-    "texture": "integrateddynamics:block/mechanical_drying_basin_off",
-    "particle": "integrateddynamics:block/menril_log"
+    "texture": "integrateddynamics:blocks/mechanical_drying_basin_off",
+    "particle": "integrateddynamics:blocks/menril_log"
   },
   "elements": [
     {

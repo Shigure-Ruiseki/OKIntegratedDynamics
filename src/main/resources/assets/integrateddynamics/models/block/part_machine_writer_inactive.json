@@ -1,7 +1,7 @@
 {
   "parent": "integrateddynamics:block/part_writer",
   "textures": {
-    "back": "integrateddynamics:blocks/parts/machine_reader_back",
-    "front": "integrateddynamics:blocks/parts/machine_writer_front_inactive"
+    "back": "integrateddynamics:parts/machine_reader_back",
+    "front": "integrateddynamics:parts/machine_writer_front_inactive"
   }
 }
