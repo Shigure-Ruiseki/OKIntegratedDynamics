@@ -105,8 +105,8 @@ public class PartTarget {
 
         DimPos newTargetPos = DimPos.of(
             targetPos.getDimensionId(),
-            targetPos.getBlockPos().add(offset.x, offset.y, offset.z)
-        );
+            targetPos.getBlockPos()
+                .add(offset.x, offset.y, offset.z));
 
         return new PartTarget(center, PartPos.of(newTargetPos, target.getSide()));
     }
