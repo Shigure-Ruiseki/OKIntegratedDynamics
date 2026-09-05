@@ -811,7 +811,7 @@ public class TunnelAspectWriteBuilders {
             }
 
             IngredientPredicate<ItemStack, Integer> itemStackMatcher = TunnelItemHelpers
-                .matchItemStack(prototype, checkItem, checkStackSize, checkDamage, checkNbt, blacklist, exactAmount);
+                .matchItemStack(prototype, checkItem, checkDamage, checkStackSize, checkNbt, blacklist, exactAmount);
             int slot = properties.getValue(PROP_SLOT)
                 .getRawValue();
             return Triple.of(
@@ -934,7 +934,7 @@ public class TunnelAspectWriteBuilders {
             }
 
             IngredientPredicate<ItemStack, Integer> itemStackMatcher = TunnelItemHelpers
-                .matchItemStack(prototype, checkItem, false, checkDamage, false, blacklist, exactAmount);
+                .matchItemStack(prototype, checkItem, checkDamage, false, false, blacklist, exactAmount);
             int slot = properties.getValue(PROP_SLOT)
                 .getRawValue();
             return Triple.of(
