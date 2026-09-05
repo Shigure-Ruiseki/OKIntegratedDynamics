@@ -5,6 +5,8 @@ import net.minecraft.inventory.Container;
 
 import com.google.common.collect.Lists;
 
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.commoncapabilities.capability.itemhandler.SlotlessItemHandlerConfig;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
@@ -68,6 +70,7 @@ public class PartTypeInterfaceFilteringItem extends
     }
 
     @Override
+    @SideOnly(Side.CLIENT)
     protected Class<? extends GuiScreen> getSettingsGui() {
         return GuiInterfaceSettings.class;
     }

@@ -3,6 +3,8 @@ package ruiseki.integrateddynamics.core.part;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.inventory.Container;
 
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import lombok.Data;
 import lombok.Getter;
 import ruiseki.integrateddynamics.api.part.IPartState;
@@ -14,6 +16,7 @@ import ruiseki.integrateddynamics.core.client.gui.container.GuiPartSettings;
 import ruiseki.integrateddynamics.core.inventory.container.ContainerPartOffset;
 import ruiseki.integrateddynamics.core.inventory.container.ContainerPartSettings;
 import ruiseki.okcore.helper.Helpers;
+import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.init.ModBase;
 import ruiseki.okcore.inventory.IGuiContainerProvider;
 
@@ -57,6 +60,7 @@ public abstract class PartTypeConfigurable<P extends IPartType<P, S>, S extends 
         return ContainerPartSettings.class;
     }
 
+    @SideOnly(Side.CLIENT)
     protected Class<? extends GuiScreen> getSettingsGui() {
         return GuiPartSettings.class;
     }
@@ -65,16 +69,25 @@ public abstract class PartTypeConfigurable<P extends IPartType<P, S>, S extends 
         return ContainerPartOffset.class;
     }
 
+    @SideOnly(Side.CLIENT)
     protected Class<? extends GuiScreen> getOffsetsGui() {
         return GuiPartOffset.class;
     }
 
     protected IGuiContainerProvider constructSettingsGuiProvider(int guiId) {
-        return new GuiProvider(guiId, getModGui(), getSettingsContainer(), getSettingsGui());
+        return new GuiProvider(
+            guiId,
+            getModGui(),
+            getSettingsContainer(),
+            MinecraftHelpers.isClientSide() ? getSettingsGui() : null);
     }
 
     protected IGuiContainerProvider constructPartOffsetsGuiProvider(int guiId) {
-        return new GuiProvider(guiId, getModGui(), getOffsetsContainer(), getOffsetsGui());
+        return new GuiProvider(
+            guiId,
+            getModGui(),
+            getOffsetsContainer(),
+            MinecraftHelpers.isClientSide() ? getOffsetsGui() : null);
     }
 
     public boolean hasSettings() {
@@ -88,10 +101,6 @@ public abstract class PartTypeConfigurable<P extends IPartType<P, S>, S extends 
         private final ModBase modGui;
         private final Class<? extends Container> container;
         private final Class<? extends GuiScreen> gui;
-
-        public GuiProvider(int guiID, ModBase modGui) {
-            this(guiID, modGui, ContainerPartSettings.class, GuiPartSettings.class);
-        }
 
         public GuiProvider(int guiID, ModBase modGui, Class<? extends Container> container,
             Class<? extends GuiScreen> gui) {
@@ -107,6 +116,7 @@ public abstract class PartTypeConfigurable<P extends IPartType<P, S>, S extends 
         }
 
         @Override
+        @SideOnly(Side.CLIENT)
         public Class<? extends GuiScreen> getGui() {
             return gui;
         }
