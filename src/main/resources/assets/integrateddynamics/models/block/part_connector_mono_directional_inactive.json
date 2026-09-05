@@ -1,7 +1,7 @@
 {
   "parent": "integrateddynamics:block/part_connector_mono_directional",
   "textures": {
-    "back": "integrateddynamics:blocks/parts/part_connector_mono_directional_back",
-    "front": "integrateddynamics:blocks/parts/part_connector_mono_directional_front_inactive"
+    "back": "integrateddynamics:parts/part_connector_mono_directional_back",
+    "front": "integrateddynamics:parts/part_connector_mono_directional_front_inactive"
   }
 }

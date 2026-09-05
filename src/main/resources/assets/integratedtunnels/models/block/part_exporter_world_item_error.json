@@ -1,6 +1,6 @@
 {
   "parent": "integratedtunnels:block/world_interface",
   "textures": {
-    "texture": "integratedtunnels:blocks/parts/exporter_world_item_error"
+    "texture": "integratedtunnels:parts/exporter_world_item_error"
   }
 }

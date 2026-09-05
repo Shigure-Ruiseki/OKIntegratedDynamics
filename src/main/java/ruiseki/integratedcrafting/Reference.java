@@ -5,7 +5,7 @@ import ruiseki.integrateddynamics.Tags;
 /**
  * Class that can hold basic static things that are better not hard-coded
  * like mod details, texture paths, ID's...
- * 
+ *
  * @author rubensworks (aka kroeserr)
  *
  */
@@ -30,6 +30,7 @@ public class Reference {
     // Dependencies
     public static final String MOD_DEPENDENCIES = "required-after:okcore;" + "required-after:commoncapabilities;"
         + "required-after:integrateddynamics;"
+        + "required-after:gtnhlib@[0.11.45,);"
         + "after:jfmuy;"
         + "after:Waila;";
 }

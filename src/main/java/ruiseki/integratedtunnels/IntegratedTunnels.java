@@ -91,9 +91,6 @@ public class IntegratedTunnels extends ModBaseVersionable {
 
         MinecraftForge.EVENT_BUS.register(new TunnelNetworkCapabilityConstructors());
 
-        // Register value list proxies
-        TunnelValueTypeListProxyFactories.load();
-
         // Inject aspects into ID parts
         AspectRegistry.getInstance()
             .register(
