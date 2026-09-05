@@ -96,19 +96,17 @@ public class PartTarget {
 
     /**
      * Create a new instance with the given target offset.
-     * 
+     *
      * @param offset The offset of the target.
      * @return A new {@link PartTarget} instance.
      */
     public PartTarget forOffset(Vector3i offset) {
-        // Lấy vị trí target hiện tại
         DimPos targetPos = target.getPos();
 
-        // Tạo vị trí DimPos mới bằng cách cộng offset vào BlockPos của target
         DimPos newTargetPos = DimPos.of(
-            targetPos.getWorld(),
-            targetPos.getBlockPos()
-                .add(offset.x, offset.y, offset.z));
+            targetPos.getDimensionId(),
+            targetPos.getBlockPos().add(offset.x, offset.y, offset.z)
+        );
 
         return new PartTarget(center, PartPos.of(newTargetPos, target.getSide()));
     }

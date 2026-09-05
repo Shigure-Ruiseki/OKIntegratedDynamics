@@ -46,7 +46,6 @@ import ruiseki.integrateddynamics.api.evaluate.variable.IVariable;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.part.PartTarget;
-import ruiseki.integrateddynamics.core.client.gui.ExtendedGuiHandler;
 import ruiseki.integrateddynamics.core.evaluate.InventoryVariableEvaluator;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueObjectTypeRecipe;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
@@ -55,7 +54,6 @@ import ruiseki.integrateddynamics.core.part.event.PartVariableDrivenVariableCont
 import ruiseki.okcore.datastructure.DimPos;
 import ruiseki.okcore.helper.BlockStateHelpers;
 import ruiseki.okcore.helper.CapabilityHelpers;
-import ruiseki.okcore.helper.Helpers;
 import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.inventory.IGuiContainerProvider;
@@ -69,29 +67,24 @@ import ruiseki.okcore.inventory.SimpleInventory;
 public class PartTypeInterfaceCrafting
     extends PartTypeInterfaceCraftingBase<PartTypeInterfaceCrafting, PartTypeInterfaceCrafting.State> {
 
-    private final IGuiContainerProvider settingsGuiProvider;
-
     public PartTypeInterfaceCrafting(String name) {
         super(name);
-        getModGui().getGuiHandler()
-            .registerGUI(
-                (settingsGuiProvider = new GuiProvider(Helpers.getNewId(getModGui(), Helpers.IDType.GUI), getModGui()) {
-
-                    @Override
-                    public Class<? extends Container> getContainer() {
-                        return ContainerPartInterfaceCraftingSettings.class;
-                    }
-
-                    @Override
-                    public Class<? extends GuiScreen> getGui() {
-                        return GuiPartInterfaceCraftingSettings.class;
-                    }
-                }),
-                ExtendedGuiHandler.PART);
     }
 
-    public IGuiContainerProvider getSettingsGuiProvider() {
-        return settingsGuiProvider;
+    @Override
+    protected IGuiContainerProvider constructSettingsGuiProvider(int guiId) {
+        return new GuiProviderBase(guiId, getModGui()) {
+
+            @Override
+            public Class<? extends Container> getContainer() {
+                return ContainerPartInterfaceCraftingSettings.class;
+            }
+
+            @Override
+            public Class<? extends GuiScreen> getGui() {
+                return GuiPartInterfaceCraftingSettings.class;
+            }
+        };
     }
 
     @Override

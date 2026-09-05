@@ -5,8 +5,6 @@ import net.minecraft.inventory.Container;
 
 import com.google.common.collect.Lists;
 
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.commoncapabilities.capability.itemhandler.SlotlessItemHandlerConfig;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
@@ -23,6 +21,7 @@ import ruiseki.integratedtunnels.core.part.PartTypeInterfacePositionedAddonFilte
 import ruiseki.integratedtunnels.part.aspect.TunnelAspects;
 import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.datastructure.LazyOptional;
+import ruiseki.okcore.inventory.IGuiContainerProvider;
 import ruiseki.okcore.item.capability.CapabilityItemHandler;
 import ruiseki.okcore.item.handler.IItemHandler;
 
@@ -65,14 +64,19 @@ public class PartTypeInterfaceFilteringItem extends
     }
 
     @Override
-    protected Class<? extends Container> getSettingsContainer() {
-        return ContainerInterfaceSettings.class;
-    }
+    protected IGuiContainerProvider constructSettingsGuiProvider(int guiId) {
+        return new GuiProviderBase(guiId, getModGui()) {
 
-    @Override
-    @SideOnly(Side.CLIENT)
-    protected Class<? extends GuiScreen> getSettingsGui() {
-        return GuiInterfaceSettings.class;
+            @Override
+            public Class<? extends Container> getContainer() {
+                return ContainerInterfaceSettings.class;
+            }
+
+            @Override
+            public Class<? extends GuiScreen> getGui() {
+                return GuiInterfaceSettings.class;
+            }
+        };
     }
 
     @Override
