@@ -3,6 +3,8 @@ package ruiseki.integrateddynamics.core.part;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.inventory.Container;
 
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import lombok.Data;
 import lombok.Getter;
 import ruiseki.integrateddynamics.api.part.IPartState;
@@ -54,11 +56,35 @@ public abstract class PartTypeConfigurable<P extends IPartType<P, S>, S extends 
     }
 
     protected IGuiContainerProvider constructSettingsGuiProvider(int guiId) {
-        return new GuiProviderSettings(guiId, getModGui());
+        return new GuiProviderBase(guiId, getModGui()) {
+
+            @Override
+            public Class<? extends Container> getContainer() {
+                return ContainerPartSettings.class;
+            }
+
+            @Override
+            @SideOnly(Side.CLIENT)
+            public Class<? extends GuiScreen> getGui() {
+                return GuiPartSettings.class;
+            }
+        };
     }
 
     protected IGuiContainerProvider constructPartOffsetsGuiProvider(int guiId) {
-        return new GuiProviderOffsets(guiId, getModGui());
+        return new GuiProviderBase(guiId, getModGui()) {
+
+            @Override
+            public Class<? extends Container> getContainer() {
+                return ContainerPartOffset.class;
+            }
+
+            @Override
+            @SideOnly(Side.CLIENT)
+            public Class<? extends GuiScreen> getGui() {
+                return GuiPartOffset.class;
+            }
+        };
     }
 
     public boolean hasSettings() {
@@ -66,36 +92,14 @@ public abstract class PartTypeConfigurable<P extends IPartType<P, S>, S extends 
     }
 
     @Data
-    public static class GuiProviderSettings implements IGuiContainerProvider {
+    public static abstract class GuiProviderBase implements IGuiContainerProvider {
 
         private final int guiID;
         private final ModBase modGui;
 
-        @Override
-        public Class<? extends Container> getContainer() {
-            return ContainerPartSettings.class;
-        }
-
-        @Override
-        public Class<? extends GuiScreen> getGui() {
-            return GuiPartSettings.class;
-        }
-    }
-
-    @Data
-    public static class GuiProviderOffsets implements IGuiContainerProvider {
-
-        private final int guiID;
-        private final ModBase modGui;
-
-        @Override
-        public Class<? extends Container> getContainer() {
-            return ContainerPartOffset.class;
-        }
-
-        @Override
-        public Class<? extends GuiScreen> getGui() {
-            return GuiPartOffset.class;
+        public GuiProviderBase(int guiID, ModBase modGui) {
+            this.guiID = guiID;
+            this.modGui = modGui;
         }
     }
 

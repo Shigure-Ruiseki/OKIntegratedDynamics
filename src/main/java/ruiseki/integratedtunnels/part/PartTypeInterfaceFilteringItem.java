@@ -1,5 +1,8 @@
 package ruiseki.integratedtunnels.part;
 
+import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.inventory.Container;
+
 import com.google.common.collect.Lists;
 
 import ruiseki.commoncapabilities.capability.itemhandler.SlotlessItemHandlerConfig;
@@ -12,16 +15,19 @@ import ruiseki.integrateddynamics.part.aspect.Aspects;
 import ruiseki.integratedtunnels.GeneralConfig;
 import ruiseki.integratedtunnels.api.network.IItemNetwork;
 import ruiseki.integratedtunnels.capability.network.ItemNetworkConfig;
+import ruiseki.integratedtunnels.core.part.ContainerInterfaceSettings;
+import ruiseki.integratedtunnels.core.part.GuiInterfaceSettings;
 import ruiseki.integratedtunnels.core.part.PartTypeInterfacePositionedAddonFiltering;
 import ruiseki.integratedtunnels.part.aspect.TunnelAspects;
 import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.datastructure.LazyOptional;
+import ruiseki.okcore.inventory.IGuiContainerProvider;
 import ruiseki.okcore.item.capability.CapabilityItemHandler;
 import ruiseki.okcore.item.handler.IItemHandler;
 
 /**
  * Interface for filtering item handlers.
- * 
+ *
  * @author rubensworks
  */
 public class PartTypeInterfaceFilteringItem extends
@@ -55,6 +61,22 @@ public class PartTypeInterfaceFilteringItem extends
         return new PartTypeInterfaceFilteringItem.State(
             Aspects.REGISTRY.getWriteAspects(this)
                 .size());
+    }
+
+    @Override
+    protected IGuiContainerProvider constructSettingsGuiProvider(int guiId) {
+        return new GuiProviderBase(guiId, getModGui()) {
+
+            @Override
+            public Class<? extends Container> getContainer() {
+                return ContainerInterfaceSettings.class;
+            }
+
+            @Override
+            public Class<? extends GuiScreen> getGui() {
+                return GuiInterfaceSettings.class;
+            }
+        };
     }
 
     @Override
