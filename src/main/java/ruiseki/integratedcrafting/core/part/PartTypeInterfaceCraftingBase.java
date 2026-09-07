@@ -37,6 +37,7 @@ import ruiseki.integratedcrafting.core.CraftingJobHandler;
 import ruiseki.integratedcrafting.core.CraftingProcessOverrides;
 import ruiseki.integratedcrafting.ingredient.storage.IngredientComponentStorageSlottedInsertProxy;
 import ruiseki.integrateddynamics.api.network.INetwork;
+import ruiseki.integrateddynamics.api.network.INetworkIngredientsChannel;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.network.IPositionedAddonsNetworkIngredients;
 import ruiseki.integrateddynamics.api.part.PartPos;
@@ -44,6 +45,7 @@ import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.api.part.PrioritizedPartPos;
 import ruiseki.integrateddynamics.capability.network.PositionedAddonsNetworkIngredientsHandlerConfig;
 import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
+import ruiseki.integrateddynamics.core.network.IIngredientChannelInsertPreConsumer;
 import ruiseki.integrateddynamics.core.part.PartStateBase;
 import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.datastructure.LazyOptional;
@@ -161,28 +163,45 @@ public abstract class PartTypeInterfaceCraftingBase<P extends PartTypeInterfaceC
         return state.getDefaultUpdateInterval();
     }
 
+    /**
+     * Flush a crafting result into the network.
+     *
+     * The crafting jobs of this crafting interface get the first chance to claim the result,
+     * after which the remainder is inserted into the network storage.
+     * The part that was claimed here is passed along to the network insertion,
+     * so that the crafting interfaces observing it can not claim that same part a second time.
+     *
+     * @param wrapper The crafting result to flush.
+     * @param craftingJobHandler The crafting job handler of this crafting interface.
+     * @param network The network.
+     * @param channel The channel.
+     * @return The part of the result that could not be flushed, or null if it was flushed completely.
+     */
     @Nullable
-    protected static <T, M> IngredientInstanceWrapper<T, M> insertIntoNetwork(IngredientInstanceWrapper<T, M> wrapper,
-        INetwork network, int channel) {
-        IPositionedAddonsNetworkIngredients<T, M> storageNetwork = wrapper.getComponent()
+    protected static <T, M> IngredientInstanceWrapper<T, M> flushIngredientToNetwork(IngredientInstanceWrapper<T, M> wrapper,
+                                                                                     CraftingJobHandler craftingJobHandler,
+                                                                                     INetwork network, int channel) {
+        // First try to give the ingredient to pending crafting jobs of this crafting interface.
+        IIngredientChannelInsertPreConsumer.Result<T> claimed = craftingJobHandler
+            .beforeFlushIngredientToNetwork(wrapper, channel);
+
+        IngredientComponent<T, M> component = wrapper.getComponent();
+        IPositionedAddonsNetworkIngredients<T, M> storageNetwork = component
             .getCapability(PositionedAddonsNetworkIngredientsHandlerConfig.CAPABILITY)
-            .map(
-                n -> (IPositionedAddonsNetworkIngredients<T, M>) n.getStorage(network)
-                    .orElse(null))
+            .map(n -> (IPositionedAddonsNetworkIngredients<T, M>) n.getStorage(network).orElse(null))
             .orElse(null);
         if (storageNetwork != null) {
-            IIngredientComponentStorage<T, M> storage = storageNetwork.getChannel(channel);
-            T remaining = storage.insert(wrapper.getInstance(), false);
-            if (wrapper.getComponent()
-                .getMatcher()
-                .isEmpty(remaining)) {
+            INetworkIngredientsChannel<T, M> storage = storageNetwork.getChannel(channel);
+            T remaining = storage.insert(claimed.remaining(), claimed.unclaimed(), false);
+            if (component.getMatcher().isEmpty(remaining)) {
                 return null;
             } else {
-                return new IngredientInstanceWrapper<>(wrapper.getComponent(), remaining);
+                return new IngredientInstanceWrapper<>(component, remaining);
             }
         }
-        return wrapper;
+        return new IngredientInstanceWrapper<>(component, claimed.remaining());
     }
+
 
     @Override
     public void update(INetwork network, IPartNetwork partNetwork, PartTarget target, S state) {
@@ -514,19 +533,15 @@ public abstract class PartTypeInterfaceCraftingBase<P extends PartTypeInterfaceC
             return side;
         }
 
+
         public void flushInventoryOutputBuffer(INetwork network) {
             // Try to insert each ingredient in the buffer into the network.
-            ListIterator<IngredientInstanceWrapper<?, ?>> outputBufferIt = this.getInventoryOutputBuffer()
-                .listIterator();
+            ListIterator<IngredientInstanceWrapper<?, ?>> outputBufferIt = this.getInventoryOutputBuffer().listIterator();
             while (outputBufferIt.hasNext()) {
                 IngredientInstanceWrapper<?, ?> remainingInstance = outputBufferIt.next();
 
-                // First try to give the ingredients to pending crafting jobs.
-                remainingInstance = getCraftingJobHandler()
-                    .beforeFlushIngredientToNetwork(remainingInstance, channelCrafting);
-
-                // If none of the jobs need it, dump it into the network.
-                remainingInstance = insertIntoNetwork(remainingInstance, network, this.getChannelCrafting());
+                remainingInstance = flushIngredientToNetwork(remainingInstance, getCraftingJobHandler(),
+                    network, this.getChannelCrafting());
                 if (remainingInstance == null) {
                     outputBufferIt.remove();
                 } else {

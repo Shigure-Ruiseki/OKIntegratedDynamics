@@ -46,8 +46,7 @@ import ruiseki.integratedcrafting.api.network.ICraftingNetwork;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.IPositionedAddonsNetworkIngredients;
 import ruiseki.integrateddynamics.api.part.PartPos;
-import ruiseki.okcore.ingredient.collection.IIngredientCollectionMutable;
-import ruiseki.okcore.ingredient.collection.IngredientCollectionPrototypeMap;
+import ruiseki.integrateddynamics.core.network.IIngredientChannelInsertPreConsumer;
 
 /**
  * A CraftingJobHandler maintains a list of processing and pending crafting job.
@@ -836,20 +835,20 @@ public class CraftingJobHandler {
      *
      * @param instanceWrapper The instance that would be inserted into the network.
      * @param channel         The channel.
-     * @return The remaining instance that was not consumed by observers.
+     * @return The remaining instance that was not consumed by observers,
+     *         and the part of it that no crafting interface has claimed.
      * @param <T> The ingredient type.
      * @param <M> The match condition.
      */
-    public <T, M> IngredientInstanceWrapper<T, M> beforeFlushIngredientToNetwork(
+    public <T, M> IIngredientChannelInsertPreConsumer.Result<T> beforeFlushIngredientToNetwork(
         IngredientInstanceWrapper<T, M> instanceWrapper, int channel) {
+        T instance = instanceWrapper.getInstance();
         PendingCraftingJobResultIndexObserver<T, M> observer = (PendingCraftingJobResultIndexObserver<T, M>) ingredientObservers
             .get(instanceWrapper.getComponent());
         if (observer != null) {
-            IIngredientCollectionMutable<T, M> instances = new IngredientCollectionPrototypeMap<>(
-                instanceWrapper.getComponent());
-            instances.add(instanceWrapper.getInstance());
-            return observer.addIngredient(instanceWrapper, channel, false);
+            return observer.addIngredient(instance, instance, channel, false);
+
         }
-        return instanceWrapper;
+        return new IIngredientChannelInsertPreConsumer.Result<>(instance, instance);
     }
 }
