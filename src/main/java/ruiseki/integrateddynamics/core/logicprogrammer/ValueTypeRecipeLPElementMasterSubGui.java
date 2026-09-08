@@ -19,7 +19,7 @@ public class ValueTypeRecipeLPElementMasterSubGui
     extends RenderPattern<ValueTypeRecipeLPElement, GuiLogicProgrammerBase, ContainerLogicProgrammerBase> {
 
     protected final ValueTypeRecipeLPElementRecipeSubGui subGuiRecipe;
-    protected final List<ValueTypeRecipeLPElementPropertiesSubGui> propertiesSubGuis;
+    protected final List<ValueTypeRecipeAdapterLPElementPropertiesSubGui> propertiesSubGuis;
     protected final int baseX;
     protected final int baseY;
 

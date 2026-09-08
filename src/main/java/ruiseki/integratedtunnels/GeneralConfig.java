@@ -2,9 +2,7 @@ package ruiseki.integratedtunnels;
 
 import ruiseki.okcore.config.ConfigLocation;
 import ruiseki.okcore.config.ConfigurableProperty;
-import ruiseki.okcore.config.ConfigurableType;
 import ruiseki.okcore.config.extendedconfig.DummyConfig;
-import ruiseki.okcore.tracking.Versions;
 
 /**
  * A config with general options for this mod.
@@ -13,14 +11,6 @@ import ruiseki.okcore.tracking.Versions;
  *
  */
 public class GeneralConfig extends DummyConfig {
-
-    @ConfigurableProperty(
-        category = "core",
-        comment = "If an anonymous mod startup analytics request may be sent to our analytics service.")
-    public static boolean analytics = true;
-
-    @ConfigurableProperty(category = "core", comment = "If the version checker should be enabled.")
-    public static boolean versionChecker = true;
 
     @ConfigurableProperty(
         category = "core",
@@ -224,11 +214,6 @@ public class GeneralConfig extends DummyConfig {
     public static int playerSimulatorBaseConsumptionDisabled = 1;
 
     /**
-     * The type of this config.
-     */
-    public static ConfigurableType TYPE = ConfigurableType.DUMMY;
-
-    /**
      * Create a new instance.
      */
     public GeneralConfig() {
@@ -236,11 +221,7 @@ public class GeneralConfig extends DummyConfig {
     }
 
     @Override
-    public void onRegistered() {
-        if (versionChecker) {
-            Versions.registerMod(getMod(), IntegratedTunnels._instance, Reference.VERSION_URL);
-        }
-    }
+    public void onRegistered() {}
 
     @Override
     public boolean isEnabled() {

@@ -46,6 +46,7 @@ import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeCategoryAny;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeDouble;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeInteger;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeList;
+import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeLong;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeNbt;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeOperator;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
@@ -95,6 +96,9 @@ import ruiseki.okcore.item.capability.CapabilityItemHandler;
  * @author rubensworks
  */
 public class TunnelAspectWriteBuilders {
+
+    public static final AspectBuilder<ValueTypeLong.ValueLong, ValueTypeLong, Triple<PartTarget, IAspectProperties, ValueTypeLong.ValueLong>> BUILDER_LONG = AspectWriteBuilders
+        .getValue(AspectBuilder.forWriteType(ValueTypes.LONG));
 
     @Nullable
     public static Entity getEntity(PartPos target, int entityIndex) {
@@ -280,6 +284,12 @@ public class TunnelAspectWriteBuilders {
             .appendKind("energy")
             .handle(AspectWriteBuilders.PROP_GET_INTEGER)
             .withProperties(PROPERTIES_CHANNEL);
+
+        public static final Predicate<ValueTypeLong.ValueLong> VALIDATOR_LONG_MAXRATE = input -> input.getRawValue()
+            <= ruiseki.integrateddynamics.GeneralConfig.energyRateLimit;
+
+        public static final Predicate<ValueTypeLong.ValueLong> VALIDATOR_LONG_POSITIVE = input -> input.getRawValue()
+            >= 0;
 
         public static final Predicate<ValueTypeInteger.ValueInteger> VALIDATOR_INTEGER_MAXRATE = input -> input
             .getRawValue() <= ruiseki.integrateddynamics.GeneralConfig.energyRateLimit;

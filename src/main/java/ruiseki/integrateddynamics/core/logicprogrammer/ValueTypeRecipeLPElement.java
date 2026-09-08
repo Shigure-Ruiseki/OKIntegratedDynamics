@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import net.minecraft.client.Minecraft;
@@ -55,6 +56,7 @@ import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
 import ruiseki.okcore.fluid.handler.IFluidHandlerItem;
 import ruiseki.okcore.helper.CapabilityHelpers;
 import ruiseki.okcore.helper.FluidHelpers;
+import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.helper.TagHelpers;
@@ -262,7 +264,7 @@ public class ValueTypeRecipeLPElement extends ValueTypeLPElementBase {
         }
     }
 
-    protected ItemStack getFluidBucket(FluidStack fluidStack) {
+    public static ItemStack getFluidBucket(FluidStack fluidStack) {
         ItemStack itemStack = new ItemStack(Items.bucket);
         IFluidHandlerItem fluidHandler = CapabilityHelpers
             .getCapability(itemStack, CapabilityFluidHandler.FLUID_HANDLER_ITEM)
@@ -351,16 +353,30 @@ public class ValueTypeRecipeLPElement extends ValueTypeLPElementBase {
 
     @Override
     public boolean slotClick(int slotId, Slot slot, int mouseButton, int clickType, EntityPlayer player) {
-        if (slotId >= SLOT_OFFSET && slotId < 9 + SLOT_OFFSET) {
+        return slotClickCommon(slotId, slot, mouseButton, clickType, player, getInputStacks(), 9, (i) -> {
+            if (MinecraftHelpers.isClientSide()) {
+                lastGui.setPropertySubGui(i);
+            }
+        }, (i) -> {
+            if (MinecraftHelpers.isClientSide()) {
+                this.refreshPropertiesGui(i);
+            }
+        }) || super.slotClick(slotId, slot, mouseButton, clickType, player);
+    }
+
+    public static boolean slotClickCommon(int slotId, Slot slot, int mouseButton, int clickType, EntityPlayer player,
+        List<ItemMatchProperties> inputStacks, int propertySlotCount, Consumer<Integer> setPropertySubGui,
+        Consumer<Integer> refreshPropertiesGui) {
+        if (slotId >= SLOT_OFFSET && slotId < propertySlotCount + SLOT_OFFSET) {
             if (ClickType.fromNumber(clickType) == ClickType.QUICK_MOVE && mouseButton == 0) {
                 if (player.worldObj.isRemote) {
                     int id = slotId - SLOT_OFFSET;
-                    lastGui.setPropertySubGui(id);
+                    setPropertySubGui.accept(id);
                 }
                 return true;
             } else {
                 // Similar logic as ContainerExtended.adjustPhantomSlot
-                ItemMatchProperties props = getInputStacks().get(slotId - SLOT_OFFSET);
+                ItemMatchProperties props = inputStacks.get(slotId - SLOT_OFFSET);
                 int quantityCurrent = props.getTagQuantity();
                 int quantityNew;
                 if (ClickType.fromNumber(clickType) == ClickType.QUICK_MOVE) {
@@ -374,18 +390,21 @@ public class ValueTypeRecipeLPElement extends ValueTypeLPElementBase {
                 }
 
                 props.setTagQuantity(quantityNew);
+                if (!ItemHelpers.isEmpty(props.getItemStack())) {
+                    props.getItemStack().stackSize = quantityNew;
+                }
 
                 if (quantityNew <= 0) {
                     props.setItemTag(null);
                     props.setTagQuantity(1);
                     if (MinecraftHelpers.isClientSide()) {
-                        refreshPropertiesGui(slotId - SLOT_OFFSET);
+                        refreshPropertiesGui.accept(slotId - SLOT_OFFSET);
                     }
                 }
             }
         }
 
-        return super.slotClick(slotId, slot, mouseButton, clickType, player);
+        return false;
     }
 
     @Override
@@ -433,6 +452,34 @@ public class ValueTypeRecipeLPElement extends ValueTypeLPElementBase {
         };
         slot.setPhantom(true);
         return slot;
+    }
+
+    public static Optional<ItemStack> getRotatingItemFromTag(ItemMatchProperties props) {
+        if (props == null) return Optional.empty();
+
+        String tagName = props.getItemTag();
+        if (tagName == null || tagName.trim()
+            .isEmpty()) return Optional.empty();
+
+        String[] parts = tagName.split(":");
+        if (parts.length < 2) return Optional.empty();
+
+        TagKey<Item> tagKey = TagKey.create(Registries.ITEM, new ResourceLocation(parts[0], parts[1]));
+        List<ItemStack> tagStacks = TagHelpers.toItemStacks(tagKey);
+
+        if (tagStacks.isEmpty()) return Optional.empty();
+
+        if (Minecraft.getMinecraft().theWorld == null) return Optional.empty();
+
+        long worldTime = Minecraft.getMinecraft().theWorld.getTotalWorldTime();
+        int tick = (int) (worldTime / TICK_DELAY);
+        ItemStack baseStack = tagStacks.get(Math.abs(tick % tagStacks.size()));
+
+        ItemStack result = baseStack.copy();
+        int quantity = props.getTagQuantity() > 0 ? props.getTagQuantity() : 1;
+        result.stackSize = quantity;
+
+        return Optional.of(result);
     }
 
     @Override
@@ -495,7 +542,8 @@ public class ValueTypeRecipeLPElement extends ValueTypeLPElementBase {
         return inputs;
     }
 
-    protected Map<IngredientComponent<?, ?>, List<Boolean>> getInputsReusable(List<ItemMatchProperties> itemStacks) {
+    public static Map<IngredientComponent<?, ?>, List<Boolean>> getInputsReusable(
+        List<ItemMatchProperties> itemStacks) {
         Map<IngredientComponent<?, ?>, List<Boolean>> inputs = Maps.newIdentityHashMap();
 
         List<Boolean> items = itemStacks.stream()

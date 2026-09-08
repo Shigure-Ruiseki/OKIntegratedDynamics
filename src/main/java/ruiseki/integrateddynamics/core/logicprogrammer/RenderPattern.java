@@ -92,6 +92,10 @@ public class RenderPattern<E extends IGuiInputElement, G extends Gui, C extends 
         }
     }
 
+    public C getContainer() {
+        return container;
+    }
+
     @Override
     public int getX() {
         return this.x;

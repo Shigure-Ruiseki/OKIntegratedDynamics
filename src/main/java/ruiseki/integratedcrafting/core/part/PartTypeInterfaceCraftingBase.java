@@ -171,16 +171,15 @@ public abstract class PartTypeInterfaceCraftingBase<P extends PartTypeInterfaceC
      * The part that was claimed here is passed along to the network insertion,
      * so that the crafting interfaces observing it can not claim that same part a second time.
      *
-     * @param wrapper The crafting result to flush.
+     * @param wrapper            The crafting result to flush.
      * @param craftingJobHandler The crafting job handler of this crafting interface.
-     * @param network The network.
-     * @param channel The channel.
+     * @param network            The network.
+     * @param channel            The channel.
      * @return The part of the result that could not be flushed, or null if it was flushed completely.
      */
     @Nullable
-    protected static <T, M> IngredientInstanceWrapper<T, M> flushIngredientToNetwork(IngredientInstanceWrapper<T, M> wrapper,
-                                                                                     CraftingJobHandler craftingJobHandler,
-                                                                                     INetwork network, int channel) {
+    protected static <T, M> IngredientInstanceWrapper<T, M> flushIngredientToNetwork(
+        IngredientInstanceWrapper<T, M> wrapper, CraftingJobHandler craftingJobHandler, INetwork network, int channel) {
         // First try to give the ingredient to pending crafting jobs of this crafting interface.
         IIngredientChannelInsertPreConsumer.Result<T> claimed = craftingJobHandler
             .beforeFlushIngredientToNetwork(wrapper, channel);
@@ -188,12 +187,15 @@ public abstract class PartTypeInterfaceCraftingBase<P extends PartTypeInterfaceC
         IngredientComponent<T, M> component = wrapper.getComponent();
         IPositionedAddonsNetworkIngredients<T, M> storageNetwork = component
             .getCapability(PositionedAddonsNetworkIngredientsHandlerConfig.CAPABILITY)
-            .map(n -> (IPositionedAddonsNetworkIngredients<T, M>) n.getStorage(network).orElse(null))
+            .map(
+                n -> (IPositionedAddonsNetworkIngredients<T, M>) n.getStorage(network)
+                    .orElse(null))
             .orElse(null);
         if (storageNetwork != null) {
             INetworkIngredientsChannel<T, M> storage = storageNetwork.getChannel(channel);
             T remaining = storage.insert(claimed.remaining(), claimed.unclaimed(), false);
-            if (component.getMatcher().isEmpty(remaining)) {
+            if (component.getMatcher()
+                .isEmpty(remaining)) {
                 return null;
             } else {
                 return new IngredientInstanceWrapper<>(component, remaining);
@@ -201,7 +203,6 @@ public abstract class PartTypeInterfaceCraftingBase<P extends PartTypeInterfaceC
         }
         return new IngredientInstanceWrapper<>(component, claimed.remaining());
     }
-
 
     @Override
     public void update(INetwork network, IPartNetwork partNetwork, PartTarget target, S state) {
@@ -533,15 +534,18 @@ public abstract class PartTypeInterfaceCraftingBase<P extends PartTypeInterfaceC
             return side;
         }
 
-
         public void flushInventoryOutputBuffer(INetwork network) {
             // Try to insert each ingredient in the buffer into the network.
-            ListIterator<IngredientInstanceWrapper<?, ?>> outputBufferIt = this.getInventoryOutputBuffer().listIterator();
+            ListIterator<IngredientInstanceWrapper<?, ?>> outputBufferIt = this.getInventoryOutputBuffer()
+                .listIterator();
             while (outputBufferIt.hasNext()) {
                 IngredientInstanceWrapper<?, ?> remainingInstance = outputBufferIt.next();
 
-                remainingInstance = flushIngredientToNetwork(remainingInstance, getCraftingJobHandler(),
-                    network, this.getChannelCrafting());
+                remainingInstance = flushIngredientToNetwork(
+                    remainingInstance,
+                    getCraftingJobHandler(),
+                    network,
+                    this.getChannelCrafting());
                 if (remainingInstance == null) {
                     outputBufferIt.remove();
                 } else {
