@@ -220,7 +220,7 @@ public abstract class ValueTypeLPElementBase
 
     }
 
-    protected static class ValueTypeVariableFacadeFactory
+    public static class ValueTypeVariableFacadeFactory
         implements IVariableFacadeHandlerRegistry.IVariableFacadeFactory<IValueTypeVariableFacade> {
 
         private final IValueType valueType;
