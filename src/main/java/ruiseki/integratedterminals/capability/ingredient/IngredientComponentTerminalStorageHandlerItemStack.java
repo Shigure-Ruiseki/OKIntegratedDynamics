@@ -5,8 +5,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 
-import javax.annotation.Nullable;
-
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.entity.RenderItem;
@@ -18,6 +16,7 @@ import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.oredict.OreDictionary;
 
+import org.jetbrains.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
 
 import com.google.common.base.Predicate;

@@ -5,12 +5,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.Nullable;
-
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagIntArray;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraftforge.common.util.Constants;
+
+import org.jetbrains.annotations.Nullable;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -81,7 +81,7 @@ public class CraftingJobDependencyGraph {
 
     /**
      * Resolve the given crafting job ids into their crafting jobs, skipping the ids that are unknown.
-     * 
+     *
      * @param craftingJobIds Crafting job ids, may be null if no ids are stored.
      * @return A new collection with the resolved crafting jobs.
      */

@@ -284,10 +284,12 @@ public class PartNetworkElement<P extends IPartType<P, S>, S extends IPartState<
         if (o instanceof IPartNetworkElement) {
             IPartNetworkElement p = (IPartNetworkElement) o;
             int compClass = this.getPart()
-                .getName()
+                .getUniqueName()
+                .toString()
                 .compareTo(
                     p.getPart()
-                        .getName());
+                        .getUniqueName()
+                        .toString());
             if (compClass == 0) {
                 // If this or the other part is not loaded, we IGNORE the priority,
                 // because that depends on tile entity data, which requires loading the part/chunk.

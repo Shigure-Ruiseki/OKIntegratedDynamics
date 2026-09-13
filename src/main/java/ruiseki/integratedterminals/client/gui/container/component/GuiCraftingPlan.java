@@ -9,8 +9,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nullable;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.client.gui.FontRenderer;
@@ -22,6 +20,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 
 import org.apache.commons.lang3.time.DurationFormatUtils;
+import org.jetbrains.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
 
 import com.google.common.collect.Lists;

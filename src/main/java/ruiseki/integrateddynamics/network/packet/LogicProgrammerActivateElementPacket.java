@@ -2,6 +2,7 @@ package ruiseki.integrateddynamics.network.packet;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 
 import cpw.mods.fml.relauncher.Side;
@@ -19,15 +20,15 @@ import ruiseki.okcore.network.PacketCodec;
 public class LogicProgrammerActivateElementPacket extends PacketCodec {
 
     @CodecField
-    private String typeId;
+    private ResourceLocation typeId;
     @CodecField
-    private String elementId;
+    private ResourceLocation elementId;
 
     public LogicProgrammerActivateElementPacket() {
 
     }
 
-    public LogicProgrammerActivateElementPacket(String typeId, String elementId) {
+    public LogicProgrammerActivateElementPacket(ResourceLocation typeId, ResourceLocation elementId) {
         this.typeId = typeId;
         this.elementId = elementId;
     }

@@ -1,9 +1,11 @@
 package ruiseki.integrateddynamics.core.evaluate.variable;
 
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ResourceLocation;
 
 import com.google.common.collect.Iterables;
 
+import ruiseki.integrateddynamics.Reference;
 import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeListProxyFactoryTypeRegistry;
 
@@ -38,8 +40,8 @@ public class ValueTypeListProxyNbtKeys extends ValueTypeListProxyBase<ValueTypeS
         ValueTypeListProxyNBTFactorySimple<ValueTypeString, ValueTypeString.ValueString, ValueTypeListProxyNbtKeys> {
 
         @Override
-        public String getName() {
-            return "nbt.keys";
+        public ResourceLocation getName() {
+            return new ResourceLocation(Reference.MOD_ID, "nbt.keys");
         }
 
         @Override

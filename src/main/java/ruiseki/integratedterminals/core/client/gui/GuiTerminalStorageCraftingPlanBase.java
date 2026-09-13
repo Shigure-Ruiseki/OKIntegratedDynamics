@@ -1,12 +1,11 @@
 package ruiseki.integratedterminals.core.client.gui;
 
-import javax.annotation.Nullable;
-
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.ResourceLocation;
 
+import org.jetbrains.annotations.Nullable;
 import org.lwjgl.input.Keyboard;
 
 import ruiseki.integratedterminals.IntegratedTerminals;

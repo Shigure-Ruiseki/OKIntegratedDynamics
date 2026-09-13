@@ -2,6 +2,7 @@ package ruiseki.integrateddynamics.network.packet;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 
 import org.apache.logging.log4j.Level;
@@ -38,7 +39,8 @@ public class LogicProgrammerSetElementInventory extends PacketCodec {
     }
 
     public LogicProgrammerSetElementInventory(IValueType listValueType, int baseX, int baseY) {
-        this.listValueType = listValueType.getUnlocalizedName();
+        this.listValueType = listValueType.getUniqueName()
+            .toString();
         this.baseX = baseX;
         this.baseY = baseY;
     }
@@ -60,7 +62,7 @@ public class LogicProgrammerSetElementInventory extends PacketCodec {
             ContainerLogicProgrammerBase container = (ContainerLogicProgrammerBase) player.openContainer;
             ILogicProgrammerElement element = container.getActiveElement();
             if (element instanceof ValueTypeListLPElement || element instanceof ValueTypeIngredientsLPElement) {
-                IValueType valueType = ValueTypes.REGISTRY.getValueType(this.listValueType);
+                IValueType valueType = ValueTypes.REGISTRY.getValueType(new ResourceLocation(this.listValueType));
                 if (valueType != null) {
                     ((ContainerLogicProgrammerBase) player.openContainer)
                         .setElementInventory(valueType.createLogicProgrammerElement(), baseX, baseY);

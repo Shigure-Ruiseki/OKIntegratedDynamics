@@ -1,6 +1,7 @@
 package ruiseki.integratedtunnels.part.aspect;
 
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.ResourceLocation;
 
 import com.google.common.collect.Iterators;
 
@@ -21,6 +22,7 @@ import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeLong;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeNbt;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeOperator;
 import ruiseki.integrateddynamics.part.aspect.read.AspectReadBuilders;
+import ruiseki.integratedtunnels.Reference;
 import ruiseki.integratedtunnels.part.aspect.operator.PositionedOperatorIngredientIndexFluid;
 import ruiseki.integratedtunnels.part.aspect.operator.PositionedOperatorIngredientIndexItem;
 import ruiseki.okcore.helper.FluidHelpers;
@@ -79,7 +81,7 @@ public class TunnelAspects {
                 Operators.REGISTRY.registerSerializer(
                     new PositionedOperator.Serializer(
                         PositionedOperatorIngredientIndexItem.class,
-                        "positioned_ingredient_index_item"));
+                        new ResourceLocation(Reference.MOD_ID, "positioned_ingredient_index_item")));
             }
         }
 

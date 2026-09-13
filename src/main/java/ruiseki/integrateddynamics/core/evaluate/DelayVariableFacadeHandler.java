@@ -1,7 +1,9 @@
 package ruiseki.integrateddynamics.core.evaluate;
 
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ResourceLocation;
 
+import ruiseki.integrateddynamics.Reference;
 import ruiseki.integrateddynamics.api.item.IDelayVariableFacade;
 import ruiseki.integrateddynamics.api.item.IVariableFacadeHandler;
 import ruiseki.integrateddynamics.core.item.DelayVariableFacade;
@@ -27,8 +29,8 @@ public class DelayVariableFacadeHandler implements IVariableFacadeHandler<IDelay
     }
 
     @Override
-    public String getTypeId() {
-        return "delay";
+    public ResourceLocation getUniqueName() {
+        return new ResourceLocation(Reference.MOD_ID, "delay");
     }
 
     @Override

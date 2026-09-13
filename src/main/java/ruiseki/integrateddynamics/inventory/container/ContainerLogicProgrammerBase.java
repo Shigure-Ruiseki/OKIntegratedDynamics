@@ -7,6 +7,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.StringUtils;
 
 import org.apache.commons.lang3.tuple.Pair;
@@ -147,7 +148,7 @@ public abstract class ContainerLogicProgrammerBase extends ScrollingInventoryCon
         return 1;
     }
 
-    public void setActiveElementById(String typeId, String elementId) {
+    public void setActiveElementById(ResourceLocation typeId, ResourceLocation elementId) {
         ILogicProgrammerElementType type = LogicProgrammerElementTypes.REGISTRY.getType(typeId);
         if (type != null) {
             ILogicProgrammerElement element = type.getByName(elementId);

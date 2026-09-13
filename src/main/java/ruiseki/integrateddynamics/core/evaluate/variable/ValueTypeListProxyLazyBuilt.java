@@ -3,10 +3,12 @@ package ruiseki.integrateddynamics.core.evaluate.variable;
 import java.util.concurrent.TimeUnit;
 
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ResourceLocation;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
+import ruiseki.integrateddynamics.Reference;
 import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.evaluate.operator.IOperator;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
@@ -67,8 +69,8 @@ public class ValueTypeListProxyLazyBuilt<T extends IValueType<V>, V extends IVal
         ValueTypeListProxyNBTFactorySimple<IValueType<IValue>, IValue, ValueTypeListProxyLazyBuilt<IValueType<IValue>, IValue>> {
 
         @Override
-        public String getName() {
-            return "lazybuilt";
+        public ResourceLocation getName() {
+            return new ResourceLocation(Reference.MOD_ID, "lazybuilt");
         }
 
         @Override
@@ -77,7 +79,8 @@ public class ValueTypeListProxyLazyBuilt<T extends IValueType<V>, V extends IVal
             tag.setString(
                 "valueType",
                 value.value.getType()
-                    .getUnlocalizedName());
+                    .getUniqueName()
+                    .toString());
             tag.setString("value", ValueHelpers.serializeRaw(value.value));
             tag.setString("operator", Operators.REGISTRY.serialize(value.operator));
         }
@@ -85,7 +88,7 @@ public class ValueTypeListProxyLazyBuilt<T extends IValueType<V>, V extends IVal
         @Override
         protected ValueTypeListProxyLazyBuilt<IValueType<IValue>, IValue> deserializeNbt(NBTTagCompound tag)
             throws IValueTypeListProxyFactoryTypeRegistry.SerializationException, EvaluationException {
-            IValueType valueType = ValueTypes.REGISTRY.getValueType(tag.getString("valueType"));
+            IValueType valueType = ValueTypes.REGISTRY.getValueType(new ResourceLocation(tag.getString("valueType")));
             IValue value = ValueHelpers.deserializeRaw(valueType, tag.getString("value"));
             IOperator operator = Operators.REGISTRY.deserialize(tag.getString("operator"));
             return new ValueTypeListProxyLazyBuilt<>(value, operator);

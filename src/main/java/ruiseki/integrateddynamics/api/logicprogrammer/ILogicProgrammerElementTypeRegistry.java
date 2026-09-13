@@ -2,6 +2,8 @@ package ruiseki.integrateddynamics.api.logicprogrammer;
 
 import java.util.List;
 
+import net.minecraft.util.ResourceLocation;
+
 import ruiseki.okcore.init.IRegistry;
 
 /**
@@ -31,6 +33,6 @@ public interface ILogicProgrammerElementTypeRegistry extends IRegistry {
      * @param name The name.
      * @return The type.
      */
-    public ILogicProgrammerElementType getType(String name);
+    public ILogicProgrammerElementType getType(ResourceLocation name);
 
 }

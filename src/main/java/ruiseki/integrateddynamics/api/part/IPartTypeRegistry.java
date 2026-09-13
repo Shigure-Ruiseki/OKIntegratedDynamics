@@ -2,6 +2,8 @@ package ruiseki.integrateddynamics.api.part;
 
 import java.util.Collection;
 
+import net.minecraft.util.ResourceLocation;
+
 import ruiseki.okcore.init.IInitListener;
 import ruiseki.okcore.init.IRegistry;
 
@@ -33,6 +35,6 @@ public interface IPartTypeRegistry extends IRegistry, IInitListener {
      * @param partName The unique part type name.
      * @return The associated part type or null.
      */
-    public IPartType getPartType(String partName);
+    public IPartType getPartType(ResourceLocation partName);
 
 }

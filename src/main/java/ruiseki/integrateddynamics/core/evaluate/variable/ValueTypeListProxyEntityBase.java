@@ -2,6 +2,7 @@ package ruiseki.integrateddynamics.core.evaluate.variable;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 
@@ -18,7 +19,7 @@ public abstract class ValueTypeListProxyEntityBase<T extends IValueType<V>, V ex
     private int world;
     private int entity;
 
-    public ValueTypeListProxyEntityBase(String name, T valueType, World world, Entity entity) {
+    public ValueTypeListProxyEntityBase(ResourceLocation name, T valueType, World world, Entity entity) {
         super(name, valueType);
         this.world = world == null ? -1 : world.provider.dimensionId;
         this.entity = entity == null ? -1 : entity.getEntityId();

@@ -4,6 +4,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import net.minecraft.util.ResourceLocation;
+
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
@@ -32,7 +34,10 @@ public class LogicProgrammerElementTypeRegistry implements ILogicProgrammerEleme
     @Override
     public <E extends ILogicProgrammerElementType> E addType(E type) {
         types.add(type);
-        namedTypes.put(type.getName(), type);
+        namedTypes.put(
+            type.getUniqueName()
+                .toString(),
+            type);
         return type;
     }
 
@@ -42,7 +47,7 @@ public class LogicProgrammerElementTypeRegistry implements ILogicProgrammerEleme
     }
 
     @Override
-    public ILogicProgrammerElementType getType(String name) {
-        return namedTypes.get(name);
+    public ILogicProgrammerElementType getType(ResourceLocation name) {
+        return namedTypes.get(name.toString());
     }
 }

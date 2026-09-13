@@ -331,10 +331,12 @@ public class GuiLogicProgrammerBase extends ScrollingGuiContainer {
             if (newActive != null) {
                 ILogicProgrammerElementType type = newActive.getType();
                 IntegratedDynamics._instance.getPacketHandler()
-                    .sendToServer(new LogicProgrammerActivateElementPacket(type.getName(), type.getName(newActive)));
+                    .sendToServer(
+                        new LogicProgrammerActivateElementPacket(type.getUniqueName(), type.getName(newActive)));
             } else if (deselect) {
                 IntegratedDynamics._instance.getPacketHandler()
-                    .sendToServer(new LogicProgrammerActivateElementPacket("", ""));
+                    .sendToServer(
+                        new LogicProgrammerActivateElementPacket(new ResourceLocation(""), new ResourceLocation("")));
             }
         }
         return activate;

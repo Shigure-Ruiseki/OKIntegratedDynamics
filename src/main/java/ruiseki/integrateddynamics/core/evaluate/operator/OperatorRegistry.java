@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ResourceLocation;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -17,6 +18,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 
 import ruiseki.integrateddynamics.IntegratedDynamics;
+import ruiseki.integrateddynamics.Reference;
 import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.evaluate.operator.IOperator;
 import ruiseki.integrateddynamics.api.evaluate.operator.IOperatorRegistry;
@@ -29,7 +31,7 @@ import ruiseki.okcore.helper.MinecraftHelpers;
 
 /**
  * Registry for {@link IOperator}
- * 
+ *
  * @author rubensworks
  */
 public class OperatorRegistry implements IOperatorRegistry {
@@ -64,7 +66,10 @@ public class OperatorRegistry implements IOperatorRegistry {
     @Override
     public <O extends IOperator> O register(O operator) {
         operators.add(operator);
-        namedOperators.put(operator.getUniqueName(), operator);
+        namedOperators.put(
+            operator.getUniqueName()
+                .toString(),
+            operator);
         inputTypedOperators.put(ImmutableList.copyOf(operator.getInputTypes()), operator);
         outputTypedOperators.put(operator.getOutputType(), operator);
         categoryOperators.put(operator.getUnlocalizedCategoryName(), operator);
@@ -77,8 +82,8 @@ public class OperatorRegistry implements IOperatorRegistry {
     }
 
     @Override
-    public IOperator getOperator(String uniqueName) {
-        return namedOperators.get(uniqueName);
+    public IOperator getOperator(ResourceLocation uniqueName) {
+        return namedOperators.get(uniqueName.toString());
     }
 
     @Override
@@ -99,14 +104,19 @@ public class OperatorRegistry implements IOperatorRegistry {
     @Override
     public void registerSerializer(IOperatorSerializer serializer) {
         serializers.add(serializer);
-        namedSerializers.put(serializer.getUniqueName(), serializer);
+        namedSerializers.put(
+            serializer.getUniqueName()
+                .toString(),
+            serializer);
     }
 
     @Override
     public String serialize(IOperator value) {
         for (IOperatorSerializer serializer : serializers) {
             if (serializer.canHandle(value)) {
-                return serializer.getUniqueName() + ":" + serializer.serialize(value);
+                return serializer.getUniqueName()
+                    .toString() + ":"
+                    + serializer.serialize(value);
             }
         }
         return DEFAULT_SERIALIZER.serialize(value);
@@ -129,8 +139,8 @@ public class OperatorRegistry implements IOperatorRegistry {
     }
 
     @Override
-    public String getTypeId() {
-        return "operator";
+    public ResourceLocation getUniqueName() {
+        return new ResourceLocation(Reference.MOD_ID, "operator");
     }
 
     @Override

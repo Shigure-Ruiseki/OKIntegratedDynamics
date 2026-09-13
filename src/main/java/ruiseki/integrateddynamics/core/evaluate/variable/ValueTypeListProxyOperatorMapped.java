@@ -1,7 +1,9 @@
 package ruiseki.integrateddynamics.core.evaluate.variable;
 
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ResourceLocation;
 
+import ruiseki.integrateddynamics.Reference;
 import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.evaluate.operator.IOperator;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
@@ -41,8 +43,8 @@ public class ValueTypeListProxyOperatorMapped extends ValueTypeListProxyBase<IVa
         extends ValueTypeListProxyNBTFactorySimple<IValueType<IValue>, IValue, ValueTypeListProxyOperatorMapped> {
 
         @Override
-        public String getName() {
-            return "mapped";
+        public ResourceLocation getName() {
+            return new ResourceLocation(Reference.MOD_ID, "mapped");
         }
 
         @Override

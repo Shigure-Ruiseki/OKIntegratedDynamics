@@ -1,7 +1,9 @@
 package ruiseki.integrateddynamics.core.evaluate.variable;
 
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ResourceLocation;
 
+import ruiseki.integrateddynamics.Reference;
 import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
@@ -10,7 +12,7 @@ import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeListProxyFacto
 
 /**
  * A sliced list.
- * 
+ *
  * @param <T> The value type type.
  * @param <V> The value type.
  */
@@ -44,8 +46,8 @@ public class ValueTypeListProxySlice<T extends IValueType<V>, V extends IValue> 
         ValueTypeListProxyNBTFactorySimple<IValueType<IValue>, IValue, ValueTypeListProxySlice<IValueType<IValue>, IValue>> {
 
         @Override
-        public String getName() {
-            return "slice";
+        public ResourceLocation getName() {
+            return new ResourceLocation(Reference.MOD_ID, "slice");
         }
 
         @Override

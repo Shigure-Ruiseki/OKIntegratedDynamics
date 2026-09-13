@@ -3,13 +3,13 @@ package ruiseki.integratedterminals.client.gui.container;
 import java.util.List;
 import java.util.Locale;
 
-import javax.annotation.Nullable;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
+
+import org.jetbrains.annotations.Nullable;
 
 import ruiseki.commoncapabilities.api.ingredient.IPrototypedIngredient;
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;

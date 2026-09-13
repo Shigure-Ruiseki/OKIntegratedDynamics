@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ResourceLocation;
 
 import com.google.common.collect.Maps;
 
@@ -45,7 +46,10 @@ public class PartStateWriterBase<P extends IPartTypeWriter> extends PartStateAct
 
     @Override
     public void writeToNBT(NBTTagCompound tag) {
-        if (this.activeAspect != null) tag.setString("activeAspectName", this.activeAspect.getUnlocalizedName());
+        if (this.activeAspect != null) tag.setString(
+            "activeAspectName",
+            this.activeAspect.getUniqueName()
+                .toString());
         NBTClassType.getType(Map.class, this.errorMessages)
             .writePersistedField("errorMessages", this.errorMessages, tag);
         super.writeToNBT(tag);
@@ -53,7 +57,7 @@ public class PartStateWriterBase<P extends IPartTypeWriter> extends PartStateAct
 
     @Override
     public void readFromNBT(NBTTagCompound tag) {
-        IAspect aspect = Aspects.REGISTRY.getAspect(tag.getString("activeAspectName"));
+        IAspect aspect = Aspects.REGISTRY.getAspect(new ResourceLocation(tag.getString("activeAspectName")));
         if (aspect instanceof IAspectWrite) {
             this.activeAspect = (IAspectWrite) aspect;
         }
@@ -134,7 +138,9 @@ public class PartStateWriterBase<P extends IPartTypeWriter> extends PartStateAct
 
     @Override
     public List<LangHelpers.UnlocalizedString> getErrors(IAspectWrite aspect) {
-        List<LangHelpers.UnlocalizedString> errors = errorMessages.get(aspect.getUnlocalizedName());
+        List<LangHelpers.UnlocalizedString> errors = errorMessages.get(
+            aspect.getUniqueName()
+                .toString());
         if (errors == null) {
             return Collections.emptyList();
         }
@@ -144,9 +150,15 @@ public class PartStateWriterBase<P extends IPartTypeWriter> extends PartStateAct
     @Override
     public void addError(IAspectWrite aspect, LangHelpers.UnlocalizedString error) {
         if (error == null) {
-            errorMessages.remove(aspect.getUnlocalizedName());
+            errorMessages.remove(
+                aspect.getUniqueName()
+                    .toString());
         } else {
-            CollectionHelpers.addToMapList(errorMessages, aspect.getUnlocalizedName(), error);
+            CollectionHelpers.addToMapList(
+                errorMessages,
+                aspect.getUniqueName()
+                    .toString(),
+                error);
         }
         onDirty();
         sendUpdate(); // We want this error messages to be sent to the client(s).

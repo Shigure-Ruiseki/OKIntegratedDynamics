@@ -2,9 +2,9 @@ package ruiseki.integrateddynamics.core.evaluate.variable;
 
 import java.util.List;
 
-import javax.annotation.Nullable;
-
 import net.minecraft.util.ResourceLocation;
+
+import org.jetbrains.annotations.Nullable;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -50,6 +50,11 @@ public abstract class ValueTypeBase<V extends IValue> implements IValueType<V> {
     @Override
     public boolean isObject() {
         return false;
+    }
+
+    @Override
+    public ResourceLocation getUniqueName() {
+        return new ResourceLocation(getModId(), getTypeName());
     }
 
     protected String getUnlocalizedPrefix() {

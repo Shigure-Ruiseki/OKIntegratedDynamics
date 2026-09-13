@@ -1,11 +1,11 @@
 package ruiseki.integratedterminals.network.packet;
 
-import javax.annotation.Nullable;
-
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
+
+import org.jetbrains.annotations.Nullable;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;

@@ -3,17 +3,17 @@ package ruiseki.integrateddynamics.api.part;
 import java.util.List;
 import java.util.Random;
 
-import javax.annotation.Nullable;
-
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
+import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3i;
 
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
@@ -42,7 +42,7 @@ public interface IPartType<P extends IPartType<P, S>, S extends IPartState<P>>
     /**
      * @return The unique name for this part type.
      */
-    public String getName();
+    public ResourceLocation getUniqueName();
 
     /**
      * @return The unlocalized base name of this part.

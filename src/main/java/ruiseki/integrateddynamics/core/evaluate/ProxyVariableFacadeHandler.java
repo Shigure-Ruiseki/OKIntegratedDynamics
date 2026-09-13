@@ -1,7 +1,9 @@
 package ruiseki.integrateddynamics.core.evaluate;
 
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ResourceLocation;
 
+import ruiseki.integrateddynamics.Reference;
 import ruiseki.integrateddynamics.api.item.IProxyVariableFacade;
 import ruiseki.integrateddynamics.api.item.IVariableFacadeHandler;
 import ruiseki.integrateddynamics.core.item.ProxyVariableFacade;
@@ -27,8 +29,8 @@ public class ProxyVariableFacadeHandler implements IVariableFacadeHandler<IProxy
     }
 
     @Override
-    public String getTypeId() {
-        return "proxy";
+    public ResourceLocation getUniqueName() {
+        return new ResourceLocation(Reference.MOD_ID, "proxy");
     }
 
     @Override

@@ -3,8 +3,6 @@ package ruiseki.integrateddynamics.core.part.write;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.Nullable;
-
 import net.minecraft.block.Block;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
@@ -13,6 +11,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.ForgeDirection;
+
+import org.jetbrains.annotations.Nullable;
 
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 

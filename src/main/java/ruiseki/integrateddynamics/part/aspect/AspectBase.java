@@ -6,6 +6,7 @@ import java.util.List;
 
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.inventory.Container;
+import net.minecraft.util.ResourceLocation;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -60,6 +61,11 @@ public abstract class AspectBase<V extends IValue, T extends IValueType<V>> impl
 
     protected IGuiContainerProvider constructSettingsGuiProvider(int guiId) {
         return new GuiProviderSettings(guiId, getModGui());
+    }
+
+    @Override
+    public ResourceLocation getUniqueName() {
+        return new ResourceLocation(getModId(), getUnlocalizedName());
     }
 
     @Override

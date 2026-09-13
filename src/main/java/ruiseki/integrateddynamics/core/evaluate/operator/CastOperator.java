@@ -2,6 +2,9 @@ package ruiseki.integrateddynamics.core.evaluate.operator;
 
 import java.util.List;
 
+import net.minecraft.util.ResourceLocation;
+
+import ruiseki.integrateddynamics.Reference;
 import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueCastRegistry;
@@ -11,7 +14,7 @@ import ruiseki.okcore.helper.LangHelpers;
 
 /**
  * Base class for cast operators.
- * 
+ *
  * @author rubensworks
  */
 public class CastOperator<T1 extends IValueType<V1>, T2 extends IValueType<V2>, V1 extends IValue, V2 extends IValue>
@@ -50,8 +53,18 @@ public class CastOperator<T1 extends IValueType<V1>, T2 extends IValueType<V2>, 
     }
 
     @Override
-    public String getUniqueName() {
-        return "operator.operators." + getModId() + ".cast" + from.getUnlocalizedName() + "$" + to.getUnlocalizedName();
+    public ResourceLocation getUniqueName() {
+        return new ResourceLocation(
+            Reference.MOD_ID,
+            "operator." + getModId()
+                + ".cast"
+                + from.getUniqueName()
+                    .toString()
+                    .replaceAll(":", "_")
+                + "__"
+                + to.getUniqueName()
+                    .toString()
+                    .replaceAll(":", "_"));
     }
 
     @Override

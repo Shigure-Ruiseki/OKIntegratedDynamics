@@ -3,6 +3,8 @@ package ruiseki.integrateddynamics.core.evaluate.operator;
 import java.util.Arrays;
 import java.util.List;
 
+import net.minecraft.util.ResourceLocation;
+
 import org.jetbrains.annotations.Nullable;
 
 import ruiseki.integrateddynamics.GeneralConfig;
@@ -67,8 +69,8 @@ public abstract class OperatorBase implements IOperator {
     }
 
     @Override
-    public String getUniqueName() {
-        return getUnlocalizedName();
+    public ResourceLocation getUniqueName() {
+        return new ResourceLocation(getModId(), getUnlocalizedName());
     }
 
     @Override

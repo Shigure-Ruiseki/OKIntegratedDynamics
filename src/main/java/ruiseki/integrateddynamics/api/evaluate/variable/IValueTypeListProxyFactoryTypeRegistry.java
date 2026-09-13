@@ -1,5 +1,7 @@
 package ruiseki.integrateddynamics.api.evaluate.variable;
 
+import net.minecraft.util.ResourceLocation;
+
 import ruiseki.okcore.init.IRegistry;
 
 /**
@@ -32,7 +34,7 @@ public interface IValueTypeListProxyFactoryTypeRegistry extends IRegistry {
      * @return The corresponding instance.
      */
     public <T extends IValueType<V>, V extends IValue, P extends IValueTypeListProxy<T, V>> IProxyFactory<T, V, P> getFactory(
-        String name);
+        ResourceLocation name);
 
     /**
      * Serialize the given list proxy.
@@ -72,7 +74,7 @@ public interface IValueTypeListProxyFactoryTypeRegistry extends IRegistry {
         /**
          * @return The unique indentifier of this proxy.
          */
-        public String getName();
+        public ResourceLocation getName();
 
         /**
          * Serialize the given value.

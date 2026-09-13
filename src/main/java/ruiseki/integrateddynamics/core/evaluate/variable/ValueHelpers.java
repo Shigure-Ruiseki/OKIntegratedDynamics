@@ -1,6 +1,7 @@
 package ruiseki.integrateddynamics.core.evaluate.variable;
 
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ResourceLocation;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -218,7 +219,7 @@ public class ValueHelpers {
      * @return The value.
      */
     public static IValue deserialize(NBTTagCompound tag) {
-        IValueType valueType = ValueTypes.REGISTRY.getValueType(tag.getString("valueType"));
+        IValueType valueType = ValueTypes.REGISTRY.getValueType(new ResourceLocation(tag.getString("valueType")));
         if (valueType == null) {
             return null;
         }

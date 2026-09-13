@@ -27,10 +27,10 @@ public class LogicProgrammerElementTypes {
             return false;
         }
         return e1.getType()
-            .getName()
+            .getUniqueName()
             .equals(
                 e2.getType()
-                    .getName())
+                    .getUniqueName())
             && e1.getType()
                 .getName(e1)
                 .equals(

@@ -83,12 +83,12 @@ public interface IAspectRegistry extends IRegistry, IVariableFacadeHandler<IAspe
     public Set<IAspectWrite> getWriteAspects();
 
     /**
-     * Get an aspect by unlocalized name.
+     * Get an aspect by name.
      *
-     * @param unlocalizedName The unlocalized name of the aspect.
+     * @param name The name of the aspect.
      * @return The matching aspect.
      */
-    public IAspect getAspect(String unlocalizedName);
+    public IAspect getAspect(ResourceLocation name);
 
     /**
      * Register an icon path for the given aspect.

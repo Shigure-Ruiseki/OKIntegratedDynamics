@@ -1,9 +1,12 @@
 package ruiseki.integratedtunnels.part.aspect.listproxy;
 
+import net.minecraft.util.ResourceLocation;
+
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueObjectTypeFluidStack;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueObjectTypeItemStack;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeListProxyFactories;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeListProxyNBTFactory;
+import ruiseki.integratedtunnels.Reference;
 
 /**
  * @author rubensworks
@@ -17,11 +20,11 @@ public class TunnelValueTypeListProxyFactories {
         if (POSITIONED_ITEM_NETWORK == null) {
             POSITIONED_ITEM_NETWORK = ValueTypeListProxyFactories.REGISTRY.register(
                 new ValueTypeListProxyNBTFactory<>(
-                    "positioned_item_network",
+                    new ResourceLocation(Reference.MOD_ID, "positioned_item_network"),
                     ValueTypeListProxyPositionedItemNetwork.class));
             POSITIONED_FLUID_NETWORK = ValueTypeListProxyFactories.REGISTRY.register(
                 new ValueTypeListProxyNBTFactory<>(
-                    "positioned_fluid_network",
+                    new ResourceLocation(Reference.MOD_ID, "positioned_fluid_network"),
                     ValueTypeListProxyPositionedFluidNetwork.class));
         }
     }

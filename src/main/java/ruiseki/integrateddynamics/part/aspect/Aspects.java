@@ -13,6 +13,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.StringUtils;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
@@ -32,6 +33,7 @@ import cofh.api.energy.IEnergyStorage;
 import cpw.mods.fml.common.FMLCommonHandler;
 import ruiseki.integrateddynamics.GeneralConfig;
 import ruiseki.integrateddynamics.IntegratedDynamics;
+import ruiseki.integrateddynamics.Reference;
 import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.evaluate.IValueInterface;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
@@ -650,7 +652,7 @@ public class Aspects {
                 Operators.REGISTRY.registerSerializer(
                     new PositionedOperator.Serializer(
                         PositionedOperatorRecipeHandlerOutput.class,
-                        "positionedRecipeHandlerOutput"));
+                        new ResourceLocation(Reference.MOD_ID, "positioned_recipe_handler_output")));
             }
             public static final IAspectRead<ValueTypeOperator.ValueOperator, ValueTypeOperator> OPERATOR_GETRECIPEINPUTS = AspectReadBuilders.Machine.BUILDER_RECIPE_HANDLER_OPERATOR
                 .handle(
@@ -668,7 +670,7 @@ public class Aspects {
                 Operators.REGISTRY.registerSerializer(
                     new PositionedOperator.Serializer(
                         PositionedOperatorRecipeHandlerInputs.class,
-                        "positionedRecipeHandlerInputs"));
+                        new ResourceLocation(Reference.MOD_ID, "positioned_recipe_handler_inputs")));
             }
             public static final IAspectRead<ValueTypeOperator.ValueOperator, ValueTypeOperator> OPERATOR_GETRECIPESBYINPUT = AspectReadBuilders.Machine.BUILDER_RECIPE_HANDLER_OPERATOR
                 .handle(
@@ -686,7 +688,7 @@ public class Aspects {
                 Operators.REGISTRY.registerSerializer(
                     new PositionedOperator.Serializer(
                         PositionedOperatorRecipeHandlerRecipesByInput.class,
-                        "positionedRecipeHandlerRecipesByInput"));
+                        new ResourceLocation(Reference.MOD_ID, "positioned_recipe_handler_recipes_by_input")));
             }
             public static final IAspectRead<ValueTypeOperator.ValueOperator, ValueTypeOperator> OPERATOR_GETRECIPESBYOUTPUT = AspectReadBuilders.Machine.BUILDER_RECIPE_HANDLER_OPERATOR
                 .handle(
@@ -704,7 +706,7 @@ public class Aspects {
                 Operators.REGISTRY.registerSerializer(
                     new PositionedOperator.Serializer(
                         PositionedOperatorRecipeHandlerRecipesByOutput.class,
-                        "positionedRecipeHandlerRecipesByOutput"));
+                        new ResourceLocation(Reference.MOD_ID, "positioned_recipe_handler_recipes_by_output")));
             }
             public static final IAspectRead<ValueTypeOperator.ValueOperator, ValueTypeOperator> OPERATOR_GETRECIPEBYINPUT = AspectReadBuilders.Machine.BUILDER_RECIPE_HANDLER_OPERATOR
                 .handle(
@@ -722,7 +724,7 @@ public class Aspects {
                 Operators.REGISTRY.registerSerializer(
                     new PositionedOperator.Serializer(
                         PositionedOperatorRecipeHandlerRecipeByInput.class,
-                        "positionedRecipeHandlerRecipeByInput"));
+                        new ResourceLocation(Reference.MOD_ID, "positioned_recipe_handler_recipe_by_input")));
             }
             public static final IAspectRead<ValueTypeOperator.ValueOperator, ValueTypeOperator> OPERATOR_GETRECIPEBYOUTPUT = AspectReadBuilders.Machine.BUILDER_RECIPE_HANDLER_OPERATOR
                 .handle(
@@ -740,7 +742,7 @@ public class Aspects {
                 Operators.REGISTRY.registerSerializer(
                     new PositionedOperator.Serializer(
                         PositionedOperatorRecipeHandlerRecipeByOutput.class,
-                        "positionedRecipeHandlerRecipeByOutput"));
+                        new ResourceLocation(Reference.MOD_ID, "positioned_recipe_handler_recipe_by_output")));
             }
 
             public static final IAspectValuePropagator<Pair<PartTarget, IAspectProperties>, IEnergyStorage> PROP_GET = input -> EnergyHelpers
@@ -892,7 +894,7 @@ public class Aspects {
                 Operators.REGISTRY.registerSerializer(
                     new PositionedOperator.Serializer(
                         PositionedOperatorNetworkVariableById.class,
-                        "positioned_network_variable_by_id"));
+                        new ResourceLocation(Reference.MOD_ID, "positioned_network_variable_by_id")));
             }
         }
 

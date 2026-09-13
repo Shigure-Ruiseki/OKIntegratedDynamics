@@ -1,6 +1,7 @@
 package ruiseki.integrateddynamics.core.evaluate.variable;
 
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
@@ -18,7 +19,7 @@ public abstract class ValueTypeListProxyPositioned<T extends IValueType<V>, V ex
     private DimPos pos;
     private ForgeDirection side;
 
-    public ValueTypeListProxyPositioned(String name, T valueType, DimPos pos, ForgeDirection side) {
+    public ValueTypeListProxyPositioned(ResourceLocation name, T valueType, DimPos pos, ForgeDirection side) {
         super(name, valueType);
         this.pos = pos;
         this.side = side;

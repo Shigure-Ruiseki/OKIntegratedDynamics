@@ -3,6 +3,8 @@ package ruiseki.integrateddynamics.core.evaluate.variable;
 import java.util.Arrays;
 import java.util.Iterator;
 
+import net.minecraft.util.ResourceLocation;
+
 import com.google.common.collect.Iterables;
 
 import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
@@ -19,10 +21,10 @@ import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeListProxy;
 public abstract class ValueTypeListProxyBase<T extends IValueType<V>, V extends IValue>
     implements IValueTypeListProxy<T, V> {
 
-    private final String name;
+    private final ResourceLocation name;
     private final T valueType;
 
-    public ValueTypeListProxyBase(String name, T valueType) {
+    public ValueTypeListProxyBase(ResourceLocation name, T valueType) {
         this.name = name;
         this.valueType = valueType;
     }
@@ -33,7 +35,7 @@ public abstract class ValueTypeListProxyBase<T extends IValueType<V>, V extends 
     }
 
     @Override
-    public String getName() {
+    public ResourceLocation getName() {
         return name;
     }
 

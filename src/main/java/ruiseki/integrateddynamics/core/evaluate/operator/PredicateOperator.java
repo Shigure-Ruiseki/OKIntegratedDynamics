@@ -8,9 +8,11 @@ import net.minecraft.nbt.NBTException;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.nbt.NBTTagString;
+import net.minecraft.util.ResourceLocation;
 
 import com.google.common.collect.Lists;
 
+import ruiseki.integrateddynamics.Reference;
 import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.evaluate.operator.IOperator;
 import ruiseki.integrateddynamics.api.evaluate.operator.IOperatorSerializer;
@@ -68,8 +70,8 @@ public class PredicateOperator<T extends IValueType<V>, V extends IValue> extend
         }
 
         @Override
-        public String getUniqueName() {
-            return "predicate";
+        public ResourceLocation getUniqueName() {
+            return new ResourceLocation(Reference.MOD_ID, "predicate");
         }
 
         @Override
@@ -88,7 +90,8 @@ public class PredicateOperator<T extends IValueType<V>, V extends IValue> extend
         public PredicateOperator<IValueType<IValue>, IValue> deserialize(String value) throws EvaluationException {
             try {
                 NBTTagCompound tag = (NBTTagCompound) JsonToNBT.func_150315_a(value);
-                IValueType<IValue> valueType = ValueTypes.REGISTRY.getValueType(tag.getString("valueType"));
+                IValueType<IValue> valueType = ValueTypes.REGISTRY
+                    .getValueType(new ResourceLocation(tag.getString("valueType")));
                 NBTTagList list = tag.getTagList("values", MinecraftHelpers.NBTTag_Types.NBTTagString.ordinal());
                 List<IValue> values = Lists.newArrayList();
                 for (Object subTag : list.tagList) {

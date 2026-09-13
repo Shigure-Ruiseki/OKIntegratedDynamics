@@ -1,9 +1,12 @@
 package ruiseki.integrateddynamics.api.item;
 
+import java.util.Collection;
+
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ResourceLocation;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -40,6 +43,20 @@ public interface IVariableFacadeHandlerRegistry extends IRegistry {
     public IVariableFacade handle(NBTTagCompound tagCompound);
 
     /**
+     * Find a handler by name.
+     * 
+     * @param type The handler name.
+     * @return The handler.
+     */
+    @Nullable
+    public IVariableFacadeHandler getHandler(ResourceLocation type);
+
+    /**
+     * @return All registered handler names.
+     */
+    public Collection<String> getHandlerNames();
+
+    /**
      * Set the type of the given tag and uses the corresponding handler to write the variable facade.
      *
      * @param tagCompound    The tag that is used to write variable facade information to.
@@ -52,7 +69,7 @@ public interface IVariableFacadeHandlerRegistry extends IRegistry {
 
     /**
      * Write the given variable facade to the given itemstack.
-     * 
+     *
      * @param itemStack             The itemstack to write to.
      * @param variableFacade        The variable facade.
      * @param variableFacadeHandler The variable facade handler.

@@ -10,8 +10,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import javax.annotation.Nullable;
-
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
@@ -21,6 +19,7 @@ import net.minecraft.server.management.PlayerProfileCache;
 import net.minecraft.util.ResourceLocation;
 
 import org.apache.logging.log4j.Level;
+import org.jetbrains.annotations.Nullable;
 
 import com.google.common.collect.Lists;
 import com.mojang.authlib.GameProfile;

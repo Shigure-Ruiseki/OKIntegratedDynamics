@@ -3,14 +3,14 @@ package ruiseki.integratedcrafting.api.recipe;
 import java.util.Collection;
 import java.util.Iterator;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
 import ruiseki.integratedcrafting.api.crafting.CraftingJob;
 
 /**
  * Indexes crafting jobs by expected output.
- * 
+ *
  * @author rubensworks
  */
 public interface ICraftingJobIndex {
@@ -22,7 +22,7 @@ public interface ICraftingJobIndex {
 
     /**
      * Find crafting jobs with the given output.
-     * 
+     *
      * @param outputType     The recipe component type.
      * @param output         An output ingredient instance.
      * @param matchCondition A condition under which the matching should be done.
@@ -35,7 +35,7 @@ public interface ICraftingJobIndex {
 
     /**
      * Get the crafting job with the given id.
-     * 
+     *
      * @param craftingJobId A crafting job id.
      * @return A crafting job or null.
      */

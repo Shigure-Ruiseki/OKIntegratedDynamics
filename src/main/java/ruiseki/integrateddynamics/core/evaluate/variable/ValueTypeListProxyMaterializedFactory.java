@@ -1,7 +1,10 @@
 package ruiseki.integrateddynamics.core.evaluate.variable;
 
+import net.minecraft.util.ResourceLocation;
+
 import com.google.common.collect.ImmutableList;
 
+import ruiseki.integrateddynamics.Reference;
 import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
@@ -20,8 +23,8 @@ public class ValueTypeListProxyMaterializedFactory implements
     private static final String ELEMENT_DELIMITER_ESCAPED = "\\\\;";
 
     @Override
-    public String getName() {
-        return "materialized";
+    public ResourceLocation getName() {
+        return new ResourceLocation(Reference.MOD_ID, "materialized");
     }
 
     @Override
@@ -37,13 +40,16 @@ public class ValueTypeListProxyMaterializedFactory implements
                 heterogeneous = true;
             }
         } catch (EvaluationException e) {}
-        sb.append(valueType.getUnlocalizedName());
+        sb.append(
+            valueType.getUniqueName()
+                .toString());
         for (IValue value : values) {
             if (heterogeneous) {
                 sb.append(ELEMENT_DELIMITER);
                 sb.append(
                     value.getType()
-                        .getUnlocalizedName());
+                        .getUniqueName()
+                        .toString());
             }
             sb.append(ELEMENT_DELIMITER);
             sb.append(
@@ -63,7 +69,7 @@ public class ValueTypeListProxyMaterializedFactory implements
         }
 
         String valueTypeName = split[0];
-        IValueType<IValue> valueType = ValueTypes.REGISTRY.getValueType(valueTypeName);
+        IValueType<IValue> valueType = ValueTypes.REGISTRY.getValueType(new ResourceLocation(valueTypeName));
         if (valueType == null) {
             throw new IValueTypeListProxyFactoryTypeRegistry.SerializationException(
                 String.format(
@@ -76,7 +82,7 @@ public class ValueTypeListProxyMaterializedFactory implements
         ImmutableList.Builder<IValue> builder = ImmutableList.builder();
         for (int i = 1; i < split.length; ++i) {
             if (heterogeneous) {
-                elementValueType = ValueTypes.REGISTRY.getValueType(split[i]);
+                elementValueType = ValueTypes.REGISTRY.getValueType(new ResourceLocation(split[i]));
                 if (elementValueType == null) {
                     throw new IValueTypeListProxyFactoryTypeRegistry.SerializationException(
                         String.format(

@@ -3,14 +3,14 @@ package ruiseki.integratedterminals.api.ingredient;
 import java.util.Collection;
 import java.util.List;
 
-import javax.annotation.Nullable;
-
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumChatFormatting;
+
+import org.jetbrains.annotations.Nullable;
 
 import com.google.common.base.Predicate;
 

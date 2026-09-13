@@ -2,6 +2,8 @@ package ruiseki.integrateddynamics.core.evaluate.operator;
 
 import java.util.List;
 
+import net.minecraft.util.ResourceLocation;
+
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 import ruiseki.integrateddynamics.api.logicprogrammer.IConfigRenderPattern;
@@ -10,7 +12,7 @@ import ruiseki.okcore.helper.LangHelpers;
 
 /**
  * Base class for parse operators.
- * 
+ *
  * @author rubensworks/LostOfThought
  */
 public class ParseOperator<T2 extends IValueType<V2>, V2 extends IValue> extends OperatorBase {
@@ -29,8 +31,8 @@ public class ParseOperator<T2 extends IValueType<V2>, V2 extends IValue> extends
     }
 
     @Override
-    public String getUniqueName() {
-        return "operator.operators." + getModId() + ".parse." + to.getUnlocalizedName();
+    public ResourceLocation getUniqueName() {
+        return new ResourceLocation(getModId(), "operator." + getModId() + ".parse." + to.getUnlocalizedName());
     }
 
     @Override

@@ -2,11 +2,11 @@ package ruiseki.integratedcrafting.inventory.container;
 
 import java.util.Map;
 
-import javax.annotation.Nullable;
-
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.util.ForgeDirection;
+
+import org.jetbrains.annotations.Nullable;
 
 import com.google.common.collect.Maps;
 
