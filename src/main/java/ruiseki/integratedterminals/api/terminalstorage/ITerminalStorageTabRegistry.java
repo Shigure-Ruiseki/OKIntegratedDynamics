@@ -2,22 +2,22 @@ package ruiseki.integratedterminals.api.terminalstorage;
 
 import java.util.Collection;
 
-import javax.annotation.Nullable;
-
 import net.minecraft.util.ResourceLocation;
+
+import org.jetbrains.annotations.Nullable;
 
 import ruiseki.okcore.init.IRegistry;
 
 /**
  * A registry for {@link ITerminalStorageTab}.
- * 
+ *
  * @author rubensworks
  */
 public interface ITerminalStorageTabRegistry extends IRegistry {
 
     /**
      * Register a new tab.
-     * 
+     *
      * @param tab The tab to register.
      * @param <T> The tab type.
      * @return The registered tab.
@@ -26,7 +26,7 @@ public interface ITerminalStorageTabRegistry extends IRegistry {
 
     /**
      * Get a tab by unique name.
-     * 
+     *
      * @param name The tab name.
      * @return The registered tab or null.
      */

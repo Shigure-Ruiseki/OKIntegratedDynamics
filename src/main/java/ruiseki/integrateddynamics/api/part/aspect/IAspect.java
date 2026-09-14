@@ -4,6 +4,8 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 
+import net.minecraft.util.ResourceLocation;
+
 import org.jetbrains.annotations.Nullable;
 
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
@@ -25,6 +27,11 @@ import ruiseki.okcore.inventory.IGuiContainerProvider;
  * @author rubensworks
  */
 public interface IAspect<V extends IValue, T extends IValueType<V>> {
+
+    /**
+     * @return The unique name for this aspecy, only used for internal storage.
+     */
+    public ResourceLocation getUniqueName();
 
     /**
      * @return The unique unlocalized name for this aspect.
@@ -132,8 +139,11 @@ public interface IAspect<V extends IValue, T extends IValueType<V>> {
 
         @Override
         public int compare(IAspect o1, IAspect o2) {
-            return o1.getUnlocalizedName()
-                .compareTo(o2.getUnlocalizedName());
+            return o1.getUniqueName()
+                .toString()
+                .compareTo(
+                    o2.getUniqueName()
+                        .toString());
         }
     }
 

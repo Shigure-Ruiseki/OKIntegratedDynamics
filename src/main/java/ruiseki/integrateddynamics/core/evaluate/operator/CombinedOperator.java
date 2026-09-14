@@ -8,11 +8,13 @@ import net.minecraft.nbt.NBTException;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.nbt.NBTTagString;
+import net.minecraft.util.ResourceLocation;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.Nullable;
 
+import ruiseki.integrateddynamics.Reference;
 import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.evaluate.operator.IOperator;
 import ruiseki.integrateddynamics.api.evaluate.operator.IOperatorSerializer;
@@ -100,7 +102,7 @@ public class CombinedOperator extends OperatorBase {
 
         /**
          * Create a new operator of this same function type for the given operators.
-         * 
+         *
          * @param operators The operators to combine.
          * @return The new combined operator.
          * @throws EvaluationException If the operators can not be combined.
@@ -483,8 +485,8 @@ public class CombinedOperator extends OperatorBase {
         }
 
         @Override
-        public String getUniqueName() {
-            return "combined." + functionName;
+        public ResourceLocation getUniqueName() {
+            return new ResourceLocation(Reference.MOD_ID, "combined." + functionName);
         }
 
         @Override

@@ -6,6 +6,7 @@ import java.util.Map;
 
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraft.util.ResourceLocation;
 
 import org.apache.logging.log4j.Level;
 
@@ -87,7 +88,8 @@ public class AspectProperties implements IAspectProperties {
                 "key",
                 entry.getKey()
                     .getType()
-                    .getUnlocalizedName());
+                    .getUniqueName()
+                    .toString());
             nbtEntry.setString(
                 "label",
                 entry.getKey()
@@ -106,7 +108,7 @@ public class AspectProperties implements IAspectProperties {
         for (int i = 0; i < map.tagCount(); i++) {
             NBTTagCompound nbtEntry = map.getCompoundTagAt(i);
             String valueTypeName = nbtEntry.getString("key");
-            IValueType type = ValueTypes.REGISTRY.getValueType(valueTypeName);
+            IValueType type = ValueTypes.REGISTRY.getValueType(new ResourceLocation(valueTypeName));
             if (type == null) {
                 IntegratedDynamics.clog(
                     Level.ERROR,

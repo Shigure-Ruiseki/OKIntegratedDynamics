@@ -1,10 +1,12 @@
 package ruiseki.integrateddynamics.api.evaluate.operator;
 
+import net.minecraft.util.ResourceLocation;
+
 import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 
 /**
  * A serialization action for operators.
- * 
+ *
  * @param <O> The operator type
  * @author rubensworks
  */
@@ -19,11 +21,11 @@ public interface IOperatorSerializer<O extends IOperator> {
     /**
      * @return The unique name of this serializer.
      */
-    public String getUniqueName();
+    public ResourceLocation getUniqueName();
 
     /**
      * Serialize the given operator.
-     * 
+     *
      * @param operator The operator to serialize.
      * @return The serialized operator value.
      */
@@ -31,7 +33,7 @@ public interface IOperatorSerializer<O extends IOperator> {
 
     /**
      * Deserialize the given operator value.
-     * 
+     *
      * @param value The operator value to deserialize.
      * @return The deserialized operator, null if deserialization failed.
      * @throws EvaluationException If something goes wrong while deserializing

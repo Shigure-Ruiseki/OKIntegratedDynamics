@@ -6,6 +6,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
@@ -126,7 +127,10 @@ public class PartHelpers {
      * @param partType The part type to write.
      */
     public static void writePartTypeToNBT(NBTTagCompound partTag, ForgeDirection side, IPartType partType) {
-        partTag.setString("__partType", partType.getName());
+        partTag.setString(
+            "__partType",
+            partType.getUniqueName()
+                .toString());
         partTag.setString("__side", side.name());
     }
 
@@ -152,7 +156,8 @@ public class PartHelpers {
             e.printStackTrace();
             IntegratedDynamics.clog(
                 Level.ERROR,
-                String.format("The part %s at position %s was errored " + "and is removed.", part.getName(), pos));
+                String
+                    .format("The part %s at position %s was errored " + "and is removed.", part.getUniqueName(), pos));
             return false;
         }
     }
@@ -190,7 +195,10 @@ public class PartHelpers {
     public static Pair<ForgeDirection, IPartType> readPartTypeFromNBT(@Nullable INetwork network, BlockPos pos,
         NBTTagCompound partTag) {
         String partTypeName = partTag.getString("__partType");
-        IPartType partType = validatePartType(network, partTypeName, PartTypes.REGISTRY.getPartType(partTypeName));
+        IPartType partType = validatePartType(
+            network,
+            partTypeName,
+            PartTypes.REGISTRY.getPartType(new ResourceLocation(partTypeName)));
         if (partType != null) {
             ForgeDirection side = ForgeDirection.valueOf(partTag.getString("__side"));
             if (side != null) {
@@ -200,7 +208,7 @@ public class PartHelpers {
                     Level.WARN,
                     String.format(
                         "The part %s at position %s was at an invalid " + "side and removed.",
-                        partType.getName(),
+                        partType.getUniqueName(),
                         pos));
             }
         } else {

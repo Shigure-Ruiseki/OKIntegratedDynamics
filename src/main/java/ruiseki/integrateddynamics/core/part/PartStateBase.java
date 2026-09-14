@@ -6,6 +6,7 @@ import java.util.Map;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.common.util.ForgeDirection;
@@ -156,7 +157,8 @@ public abstract class PartStateBase<P extends IPartType> implements IPartState<P
             entryTag.setString(
                 "key",
                 entry.getKey()
-                    .getUnlocalizedName());
+                    .getUniqueName()
+                    .toString());
             if (entry.getValue() != null) {
                 entryTag.setTag(
                     "value",
@@ -175,7 +177,7 @@ public abstract class PartStateBase<P extends IPartType> implements IPartState<P
         if (list.tagCount() > 0) {
             for (int i = 0; i < list.tagCount(); i++) {
                 NBTTagCompound entryTag = list.getCompoundTagAt(i);
-                IAspect key = Aspects.REGISTRY.getAspect(entryTag.getString("key"));
+                IAspect key = Aspects.REGISTRY.getAspect(new ResourceLocation(entryTag.getString("key")));
                 IAspectProperties value = null;
                 if (entryTag.hasKey("value")) {
                     value = new AspectProperties();

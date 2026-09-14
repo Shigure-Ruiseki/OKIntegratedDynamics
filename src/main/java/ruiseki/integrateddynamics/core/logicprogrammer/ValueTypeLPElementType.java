@@ -2,8 +2,11 @@ package ruiseki.integrateddynamics.core.logicprogrammer;
 
 import java.util.List;
 
+import net.minecraft.util.ResourceLocation;
+
 import com.google.common.collect.ImmutableList;
 
+import ruiseki.integrateddynamics.Reference;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 import ruiseki.integrateddynamics.api.logicprogrammer.ILogicProgrammerElementType;
 import ruiseki.integrateddynamics.api.logicprogrammer.IValueTypeLogicProgrammerElement;
@@ -11,26 +14,26 @@ import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
 
 /**
  * Value type element type.
- * 
+ *
  * @author rubensworks
  */
 public class ValueTypeLPElementType implements ILogicProgrammerElementType<IValueTypeLogicProgrammerElement> {
 
     @Override
-    public IValueTypeLogicProgrammerElement getByName(String name) {
+    public IValueTypeLogicProgrammerElement getByName(ResourceLocation name) {
         return ValueTypes.REGISTRY.getValueType(name)
             .createLogicProgrammerElement();
     }
 
     @Override
-    public String getName(IValueTypeLogicProgrammerElement element) {
+    public ResourceLocation getName(IValueTypeLogicProgrammerElement element) {
         return element.getValueType()
-            .getUnlocalizedName();
+            .getUniqueName();
     }
 
     @Override
-    public String getName() {
-        return "valuetype";
+    public ResourceLocation getUniqueName() {
+        return new ResourceLocation(Reference.MOD_ID, "valuetype");
     }
 
     @Override

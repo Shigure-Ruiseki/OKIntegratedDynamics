@@ -3,9 +3,6 @@ package ruiseki.integratedtunnels.core;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.passive.EntityTameable;
@@ -18,6 +15,9 @@ import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import com.google.common.collect.Iterators;
 
@@ -99,7 +99,7 @@ public class ItemStoragePlayerWrapper implements IIngredientComponentStorage<Ite
     }
 
     @Override
-    public Iterator<ItemStack> iterator(@Nonnull ItemStack prototype, Integer matchCondition) {
+    public Iterator<ItemStack> iterator(@NotNull ItemStack prototype, Integer matchCondition) {
         return iterator();
     }
 
@@ -109,7 +109,7 @@ public class ItemStoragePlayerWrapper implements IIngredientComponentStorage<Ite
     }
 
     @Override
-    public ItemStack insert(@Nonnull ItemStack stack, boolean simulate) {
+    public ItemStack insert(@NotNull ItemStack stack, boolean simulate) {
         if (simulate) {
             return ItemHelpers.EMPTY;
         }
@@ -287,7 +287,7 @@ public class ItemStoragePlayerWrapper implements IIngredientComponentStorage<Ite
     }
 
     @Override
-    public ItemStack extract(@Nonnull ItemStack prototype, Integer matchCondition, boolean simulate) {
+    public ItemStack extract(@NotNull ItemStack prototype, Integer matchCondition, boolean simulate) {
         return ItemHelpers.EMPTY;
     }
 

@@ -1,7 +1,9 @@
 package ruiseki.integrateddynamics.core.evaluate.variable;
 
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ResourceLocation;
 
+import ruiseki.integrateddynamics.Reference;
 import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
@@ -41,8 +43,8 @@ public class ValueTypeListProxyTail<T extends IValueType<V>, V extends IValue> e
         ValueTypeListProxyNBTFactorySimple<IValueType<IValue>, IValue, ValueTypeListProxyTail<IValueType<IValue>, IValue>> {
 
         @Override
-        public String getName() {
-            return "tail";
+        public ResourceLocation getName() {
+            return new ResourceLocation(Reference.MOD_ID, "tail");
         }
 
         @Override

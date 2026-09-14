@@ -2,6 +2,8 @@ package ruiseki.integrateddynamics.api.evaluate.operator;
 
 import java.util.List;
 
+import net.minecraft.util.ResourceLocation;
+
 import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
@@ -24,7 +26,7 @@ public interface IOperator {
     /**
      * @return The unique name for this operator, only used for internal storage.
      */
-    public String getUniqueName();
+    public ResourceLocation getUniqueName();
 
     /**
      * @return The unique unlocalized name for this operator.

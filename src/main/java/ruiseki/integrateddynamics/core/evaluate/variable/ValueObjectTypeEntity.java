@@ -1,6 +1,7 @@
 package ruiseki.integrateddynamics.core.evaluate.variable;
 
 import java.util.Optional;
+import java.util.UUID;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
@@ -9,6 +10,7 @@ import net.minecraft.entity.item.EntityItem;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.WorldServer;
 
+import cpw.mods.fml.common.FMLCommonHandler;
 import lombok.ToString;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeNamed;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeNullable;
@@ -17,7 +19,7 @@ import ruiseki.integrateddynamics.core.logicprogrammer.ValueTypeLPElementBase;
 import ruiseki.okcore.helper.MinecraftHelpers;
 
 /**
- * Value type with values that are itemstacks.
+ * Value type with values that are entities.
  *
  * @author rubensworks
  */
@@ -69,17 +71,10 @@ public class ValueObjectTypeEntity extends ValueObjectTypeBase<ValueObjectTypeEn
         Entity entity = null;
         if (split.length == 2) {
             try {
-                int world = Integer.parseInt(split[0]);
-                int id = Integer.parseInt(split[1]);
-                if (MinecraftHelpers.isClientSide()) {
-                    entity = Minecraft.getMinecraft().theWorld.getEntityByID(id);
-                } else {
-                    WorldServer[] servers = MinecraftServer.getServer().worldServers;
-                    if (servers.length > world) {
-                        entity = servers[world].getEntityByID(id);
-                    }
-                }
-            } catch (NumberFormatException e) {}
+                int worldId = Integer.parseInt(split[0]);
+                int entityId = Integer.parseInt(split[1]);
+                entity = getEntityByID(worldId, entityId);
+            } catch (NumberFormatException ignored) {}
         }
         return ValueEntity.of(entity);
     }
@@ -110,6 +105,54 @@ public class ValueObjectTypeEntity extends ValueObjectTypeBase<ValueObjectTypeEn
         return "";
     }
 
+    public static Entity getEntityByUUID(UUID uuid) {
+        if (uuid == null) return null;
+
+        if (MinecraftHelpers.isClientSide()) {
+            if (Minecraft.getMinecraft().theWorld != null) {
+                for (Object obj : Minecraft.getMinecraft().theWorld.loadedEntityList) {
+                    if (obj instanceof Entity && uuid.equals(((Entity) obj).getUniqueID())) {
+                        return (Entity) obj;
+                    }
+                }
+            }
+        } else {
+            MinecraftServer server = FMLCommonHandler.instance()
+                .getMinecraftServerInstance();
+            if (server != null && server.worldServers != null) {
+                for (WorldServer world : server.worldServers) {
+                    if (world != null) {
+                        for (Object obj : world.loadedEntityList) {
+                            if (obj instanceof Entity && uuid.equals(((Entity) obj).getUniqueID())) {
+                                return (Entity) obj;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    public static Entity getEntityByID(int dimensionId, int entityId) {
+        if (MinecraftHelpers.isClientSide()) {
+            if (Minecraft.getMinecraft().theWorld != null
+                && Minecraft.getMinecraft().theWorld.provider.dimensionId == dimensionId) {
+                return Minecraft.getMinecraft().theWorld.getEntityByID(entityId);
+            }
+        } else {
+            MinecraftServer server = MinecraftServer.getServer();
+            if (server != null && server.worldServers != null) {
+                for (WorldServer world : server.worldServers) {
+                    if (world != null && world.provider.dimensionId == dimensionId) {
+                        return world.getEntityByID(entityId);
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
     @ToString
     public static class ValueEntity extends ValueOptionalBase<Entity> {
 
@@ -126,5 +169,4 @@ public class ValueObjectTypeEntity extends ValueObjectTypeBase<ValueObjectTypeEn
             return a.getEntityId() == b.getEntityId();
         }
     }
-
 }

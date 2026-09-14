@@ -4,7 +4,9 @@ import java.util.Optional;
 
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ResourceLocation;
 
+import ruiseki.integrateddynamics.Reference;
 import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
@@ -19,7 +21,7 @@ public abstract class ValueTypeListProxyNbtValueListGeneric<N extends NBTBase, T
     private final String key;
     private final NBTTagCompound tag;
 
-    public ValueTypeListProxyNbtValueListGeneric(String name, T valueType, String key, NBTTagCompound tag) {
+    public ValueTypeListProxyNbtValueListGeneric(ResourceLocation name, T valueType, String key, NBTTagCompound tag) {
         super(name, valueType);
         this.key = key;
         this.tag = tag;
@@ -67,8 +69,8 @@ public abstract class ValueTypeListProxyNbtValueListGeneric<N extends NBTBase, T
         extends ValueTypeListProxyNBTFactorySimple<T, V, L> {
 
         @Override
-        public String getName() {
-            return "nbt.listValue";
+        public ResourceLocation getName() {
+            return new ResourceLocation(Reference.MOD_ID, "nbt.list_value");
         }
 
         @Override

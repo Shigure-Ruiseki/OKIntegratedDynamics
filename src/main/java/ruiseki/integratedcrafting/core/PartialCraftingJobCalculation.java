@@ -3,7 +3,7 @@ package ruiseki.integratedcrafting.core;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
 import ruiseki.integratedcrafting.api.crafting.CraftingJob;

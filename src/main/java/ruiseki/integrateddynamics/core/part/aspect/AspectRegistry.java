@@ -18,6 +18,7 @@ import com.google.common.collect.Sets;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.integrateddynamics.IntegratedDynamics;
+import ruiseki.integrateddynamics.Reference;
 import ruiseki.integrateddynamics.api.item.IAspectVariableFacade;
 import ruiseki.integrateddynamics.api.item.IVariableFacadeHandlerRegistry;
 import ruiseki.integrateddynamics.api.part.IPartType;
@@ -141,8 +142,8 @@ public final class AspectRegistry implements IAspectRegistry {
     }
 
     @Override
-    public IAspect getAspect(String unlocalizedName) {
-        return unlocalizedAspects.get(unlocalizedName);
+    public IAspect getAspect(ResourceLocation name) {
+        return unlocalizedAspects.get(name.toString());
     }
 
     @SideOnly(Side.CLIENT)
@@ -164,8 +165,8 @@ public final class AspectRegistry implements IAspectRegistry {
     }
 
     @Override
-    public String getTypeId() {
-        return "aspect";
+    public ResourceLocation getUniqueName() {
+        return new ResourceLocation(Reference.MOD_ID, "aspect");
     }
 
     @Override
@@ -175,7 +176,7 @@ public final class AspectRegistry implements IAspectRegistry {
             return INVALID_FACADE;
         }
         int partId = tag.getInteger("partId");
-        IAspect aspect = getAspect(tag.getString("aspectName"));
+        IAspect aspect = getAspect(new ResourceLocation(tag.getString("aspectName")));
         if (aspect == null) {
             return INVALID_FACADE;
         }
@@ -188,6 +189,7 @@ public final class AspectRegistry implements IAspectRegistry {
         tag.setString(
             "aspectName",
             variableFacade.getAspect()
-                .getUnlocalizedName());
+                .getUniqueName()
+                .toString());
     }
 }

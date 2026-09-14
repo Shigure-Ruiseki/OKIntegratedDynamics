@@ -1,13 +1,12 @@
 package ruiseki.integratedterminals.client.gui.container;
 
-import javax.annotation.Nullable;
-
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.ResourceLocation;
 
+import org.jetbrains.annotations.Nullable;
 import org.lwjgl.input.Keyboard;
 
 import ruiseki.integrateddynamics.api.part.IPartContainer;

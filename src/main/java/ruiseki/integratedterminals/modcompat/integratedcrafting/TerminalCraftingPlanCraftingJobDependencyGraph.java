@@ -2,7 +2,7 @@ package ruiseki.integratedterminals.modcompat.integratedcrafting;
 
 import java.util.List;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 import ruiseki.commoncapabilities.api.ingredient.IPrototypedIngredient;
 import ruiseki.integratedcrafting.api.crafting.CraftingJobDependencyGraph;

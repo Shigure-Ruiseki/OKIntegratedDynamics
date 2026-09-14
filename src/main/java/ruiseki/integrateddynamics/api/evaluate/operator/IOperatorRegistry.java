@@ -2,6 +2,8 @@ package ruiseki.integrateddynamics.api.evaluate.operator;
 
 import java.util.Collection;
 
+import net.minecraft.util.ResourceLocation;
+
 import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 import ruiseki.integrateddynamics.api.item.IOperatorVariableFacade;
@@ -35,7 +37,7 @@ public interface IOperatorRegistry extends IRegistry, IVariableFacadeHandler<IOp
      * @param operatorName The unique operator name.
      * @return The corresponding operator or null.
      */
-    public IOperator getOperator(String operatorName);
+    public IOperator getOperator(ResourceLocation operatorName);
 
     /**
      * Get the operators with the given input value types in that specific order.
@@ -55,7 +57,7 @@ public interface IOperatorRegistry extends IRegistry, IVariableFacadeHandler<IOp
 
     /**
      * Get the operators in the given category.
-     * 
+     *
      * @param categoryName The name of the operator category.
      * @return The corresponding operators.
      */

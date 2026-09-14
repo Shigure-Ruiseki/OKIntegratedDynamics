@@ -2,6 +2,7 @@ package ruiseki.integrateddynamics.core.evaluate.variable;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.common.util.ForgeDirection;
@@ -23,7 +24,7 @@ public abstract class ValueTypeListProxyEntityCapability<C, T extends IValueType
     private final Capability<C> capability;
     private ForgeDirection side;
 
-    public ValueTypeListProxyEntityCapability(String name, T valueType, World world, Entity entity,
+    public ValueTypeListProxyEntityCapability(ResourceLocation name, T valueType, World world, Entity entity,
         Capability<C> capability, @Nullable ForgeDirection side) {
         super(name, valueType, world, entity);
         this.capability = capability;

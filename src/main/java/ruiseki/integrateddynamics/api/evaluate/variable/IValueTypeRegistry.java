@@ -44,7 +44,7 @@ public interface IValueTypeRegistry extends IRegistry, IVariableFacadeHandler<IV
      * @param name The unique name.
      * @return The value type or null if not found.
      */
-    public IValueType getValueType(String name);
+    public IValueType getValueType(ResourceLocation name);
 
     /**
      * Register an icon path for the given value type.

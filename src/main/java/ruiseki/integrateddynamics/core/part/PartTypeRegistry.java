@@ -3,6 +3,8 @@ package ruiseki.integrateddynamics.core.part;
 import java.util.Collection;
 import java.util.Map;
 
+import net.minecraft.util.ResourceLocation;
+
 import com.google.common.collect.Maps;
 
 import ruiseki.integrateddynamics.api.part.IPartState;
@@ -11,7 +13,7 @@ import ruiseki.integrateddynamics.api.part.IPartTypeRegistry;
 
 /**
  * Registry for {@link IPartType}.
- * 
+ *
  * @author rubensworks
  */
 public final class PartTypeRegistry implements IPartTypeRegistry {
@@ -33,16 +35,19 @@ public final class PartTypeRegistry implements IPartTypeRegistry {
 
     @Override
     public <P extends IPartType<P, S>, S extends IPartState<P>> P register(P partType) {
-        if (partTypes.containsKey(partType.getName())) {
+        if (partTypes.containsKey(partType.getUniqueName())) {
             throw new DuplicatePartTypeException(
                 String.format(
                     "Tried to register a part type %s with name %s while "
                         + "the registry already container %s for that name.",
                     partType,
-                    partType.getName(),
-                    partTypes.get(partType.getName())));
+                    partType.getUniqueName(),
+                    partTypes.get(partType.getUniqueName())));
         }
-        partTypes.put(partType.getName(), partType);
+        partTypes.put(
+            partType.getUniqueName()
+                .toString(),
+            partType);
         return partType;
     }
 
@@ -52,8 +57,8 @@ public final class PartTypeRegistry implements IPartTypeRegistry {
     }
 
     @Override
-    public IPartType getPartType(String partName) {
-        return partTypes.get(partName);
+    public IPartType getPartType(ResourceLocation partName) {
+        return partTypes.get(partName.toString());
     }
 
     @Override

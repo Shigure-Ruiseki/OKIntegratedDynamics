@@ -2,6 +2,9 @@ package ruiseki.integrateddynamics.core.evaluate.variable;
 
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraft.util.ResourceLocation;
+
+import ruiseki.integrateddynamics.Reference;
 
 /**
  * A list of NBT tags.
@@ -32,8 +35,8 @@ public class ValueTypeListProxyNbtValueListTag
         ValueTypeListProxyNbtValueListGeneric.Factory<ValueTypeListProxyNbtValueListTag, NBTTagList, ValueTypeNbt, ValueTypeNbt.ValueNbt> {
 
         @Override
-        public String getName() {
-            return "nbt.listValueTag";
+        public ResourceLocation getName() {
+            return new ResourceLocation(Reference.MOD_ID, "nbt.list_value_tag");
         }
 
         @Override

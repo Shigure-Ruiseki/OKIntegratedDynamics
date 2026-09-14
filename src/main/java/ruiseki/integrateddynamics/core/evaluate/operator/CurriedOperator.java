@@ -8,7 +8,9 @@ import net.minecraft.nbt.JsonToNBT;
 import net.minecraft.nbt.NBTException;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraft.util.ResourceLocation;
 
+import ruiseki.integrateddynamics.Reference;
 import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.evaluate.operator.IOperator;
 import ruiseki.integrateddynamics.api.evaluate.operator.IOperatorSerializer;
@@ -58,8 +60,8 @@ public class CurriedOperator implements IOperator {
     }
 
     @Override
-    public String getUniqueName() {
-        return "curriedOperator";
+    public ResourceLocation getUniqueName() {
+        return new ResourceLocation("curried_operator");
     }
 
     @Override
@@ -185,8 +187,8 @@ public class CurriedOperator implements IOperator {
         }
 
         @Override
-        public String getUniqueName() {
-            return "curry";
+        public ResourceLocation getUniqueName() {
+            return new ResourceLocation(Reference.MOD_ID, "curry");
         }
 
         @Override
@@ -203,7 +205,10 @@ public class CurriedOperator implements IOperator {
                 }
                 NBTTagCompound valueTag = new NBTTagCompound();
                 IValueType valueType = value.getType();
-                valueTag.setString("valueType", valueType.getUnlocalizedName());
+                valueTag.setString(
+                    "valueType",
+                    valueType.getUniqueName()
+                        .toString());
                 valueTag.setString("value", ValueHelpers.serializeRaw(value));
                 list.appendTag(valueTag);
             }
@@ -227,7 +232,8 @@ public class CurriedOperator implements IOperator {
             IVariable[] variables = new IVariable[list.tagCount()];
             for (int i = 0; i < list.tagCount(); i++) {
                 NBTTagCompound valuetag = list.getCompoundTagAt(i);
-                IValueType valueType = ValueTypes.REGISTRY.getValueType(valuetag.getString("valueType"));
+                IValueType valueType = ValueTypes.REGISTRY
+                    .getValueType(new ResourceLocation(valuetag.getString("valueType")));
                 IValue value = ValueHelpers.deserializeRaw(valueType, valuetag.getString("value"));
                 variables[i] = new Variable(valueType, value);
             }

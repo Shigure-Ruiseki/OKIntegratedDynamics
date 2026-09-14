@@ -18,5 +18,5 @@
 *   IntegratedMekanism: TODO
 *   IntegratedScripting: TODO
 *   IntegratedNBT: TODO
-*   IntegratedREST TODO
+*   IntegratedREST (1.20 lts) Expose Integrated Dynamics networks as a REST API
 *   IntegratedCompat: JFMUY (TODO Need more mods like NEI, WAILA, THAUMCRAFT,...)

@@ -3,18 +3,18 @@ package ruiseki.integrateddynamics.core.part.panel;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.Nullable;
-
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import org.apache.logging.log4j.Level;
+import org.jetbrains.annotations.Nullable;
 
 import com.google.common.collect.Lists;
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
@@ -303,7 +303,8 @@ public abstract class PartTypePanelVariableDriven<P extends PartTypePanelVariabl
                 tag.setString(
                     "displayValueType",
                     value.getType()
-                        .getUnlocalizedName());
+                        .getUniqueName()
+                        .toString());
                 tag.setString("displayValue", ValueHelpers.serializeRaw(value));
             }
             tag.setInteger("facingRotation", facingRotation.ordinal());
@@ -314,7 +315,8 @@ public abstract class PartTypePanelVariableDriven<P extends PartTypePanelVariabl
             super.readFromNBT(tag);
             if (tag.hasKey("displayValueType", MinecraftHelpers.NBTTag_Types.NBTTagString.ordinal())
                 && tag.hasKey("displayValue", MinecraftHelpers.NBTTag_Types.NBTTagString.ordinal())) {
-                IValueType valueType = ValueTypes.REGISTRY.getValueType(tag.getString("displayValueType"));
+                IValueType valueType = ValueTypes.REGISTRY
+                    .getValueType(new ResourceLocation(tag.getString("displayValueType")));
                 if (valueType != null) {
                     String serializedValue = tag.getString("displayValue");
                     LangHelpers.UnlocalizedString deserializationError = valueType.canDeserialize(serializedValue);

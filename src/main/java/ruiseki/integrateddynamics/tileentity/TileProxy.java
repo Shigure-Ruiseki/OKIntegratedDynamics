@@ -47,7 +47,7 @@ public class TileProxy extends TileActiveVariableBase<ProxyNetworkElement> {
     private int proxyId = -1;
 
     @Setter
-    private EntityPlayer lastPlayer = null;
+    protected EntityPlayer lastPlayer = null;
     private boolean writeVariable;
 
     public TileProxy() {

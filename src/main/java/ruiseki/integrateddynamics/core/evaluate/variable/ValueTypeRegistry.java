@@ -13,6 +13,7 @@ import com.google.common.collect.Maps;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.integrateddynamics.IntegratedDynamics;
+import ruiseki.integrateddynamics.Reference;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeCategory;
@@ -58,7 +59,10 @@ public final class ValueTypeRegistry implements IValueTypeRegistry {
 
     @Override
     public <V extends IValue, T extends IValueType<V>> T register(T valueType) {
-        valueTypes.put(valueType.getUnlocalizedName(), valueType);
+        valueTypes.put(
+            valueType.getUniqueName()
+                .toString(),
+            valueType);
         return valueType;
     }
 
@@ -68,8 +72,8 @@ public final class ValueTypeRegistry implements IValueTypeRegistry {
     }
 
     @Override
-    public IValueType getValueType(String name) {
-        return valueTypes.get(name);
+    public IValueType getValueType(ResourceLocation name) {
+        return valueTypes.get(name.toString());
     }
 
     @SideOnly(Side.CLIENT)
@@ -97,8 +101,8 @@ public final class ValueTypeRegistry implements IValueTypeRegistry {
     }
 
     @Override
-    public String getTypeId() {
-        return "valuetype";
+    public ResourceLocation getUniqueName() {
+        return new ResourceLocation(Reference.MOD_ID, "valuetype");
     }
 
     @Override
@@ -107,7 +111,7 @@ public final class ValueTypeRegistry implements IValueTypeRegistry {
             || !tag.hasKey("value", MinecraftHelpers.NBTTag_Types.NBTTagString.ordinal())) {
             return INVALID_FACADE;
         }
-        IValueType type = getValueType(tag.getString("typeName"));
+        IValueType type = getValueType(new ResourceLocation(tag.getString("typeName")));
         if (type == null) {
             return INVALID_FACADE;
         }
@@ -120,7 +124,8 @@ public final class ValueTypeRegistry implements IValueTypeRegistry {
         tag.setString(
             "typeName",
             variableFacade.getValueType()
-                .getUnlocalizedName());
+                .getUniqueName()
+                .toString());
         tag.setString("value", ValueHelpers.serializeRaw(variableFacade.getValue()));
     }
 }

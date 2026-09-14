@@ -2,11 +2,10 @@ package ruiseki.integrateddynamics.core.evaluate.variable;
 
 import java.util.List;
 
-import javax.annotation.Nullable;
-
 import net.minecraft.util.EnumChatFormatting;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.Nullable;
 
 import com.google.common.collect.Lists;
 
@@ -174,7 +173,8 @@ public class ValueTypeOperator extends ValueTypeBase<ValueTypeOperator.ValueOper
     @Override
     public String getUniqueName(ValueOperator a) {
         return a.getRawValue()
-            .getUniqueName();
+            .getUniqueName()
+            .toString();
     }
 
     @ToString

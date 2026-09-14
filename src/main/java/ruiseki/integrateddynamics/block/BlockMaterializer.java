@@ -30,17 +30,6 @@ public class BlockMaterializer extends BlockContainerGuiCabled {
     @BlockProperty
     public static final DirectionProperty FACING = DirectionProperty.facing();
 
-    private static BlockMaterializer _instance = null;
-
-    /**
-     * Get the unique instance.
-     *
-     * @return The instance.
-     */
-    public static BlockMaterializer getInstance() {
-        return _instance;
-    }
-
     /**
      * Make a new block instance.
      *

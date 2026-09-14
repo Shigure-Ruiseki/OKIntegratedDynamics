@@ -2,6 +2,9 @@ package ruiseki.integrateddynamics.core.evaluate.variable;
 
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagIntArray;
+import net.minecraft.util.ResourceLocation;
+
+import ruiseki.integrateddynamics.Reference;
 
 /**
  * An NBT int array wrapper
@@ -32,8 +35,8 @@ public class ValueTypeListProxyNbtValueListInt
         ValueTypeListProxyNbtValueListGeneric.Factory<ValueTypeListProxyNbtValueListInt, NBTTagIntArray, ValueTypeInteger, ValueTypeInteger.ValueInteger> {
 
         @Override
-        public String getName() {
-            return "nbt.listValueInt";
+        public ResourceLocation getName() {
+            return new ResourceLocation(Reference.MOD_ID, "nbt.list_value_int");
         }
 
         @Override

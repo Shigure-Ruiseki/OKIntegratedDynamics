@@ -10,6 +10,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraftforge.client.MinecraftForgeClient;
 import net.minecraftforge.common.util.ForgeDirection;
@@ -69,7 +70,6 @@ public abstract class PartTypeBase<P extends IPartType<P, S>, S extends IPartSta
     private final Block block;
     @Getter
     protected int guiID;
-    @Getter
     private final String name;
     @Getter
     private final PartRenderPosition partRenderPosition;
@@ -93,6 +93,11 @@ public abstract class PartTypeBase<P extends IPartType<P, S>, S extends IPartSta
         } else {
             this.guiID = -1;
         }
+    }
+
+    @Override
+    public ResourceLocation getUniqueName() {
+        return new ResourceLocation(getMod().getModId(), getUnlocalizedName());
     }
 
     protected ModBase getMod() {
@@ -123,7 +128,7 @@ public abstract class PartTypeBase<P extends IPartType<P, S>, S extends IPartSta
      * @return The corresponding block.
      */
     protected Block registerBlock() {
-        BlockConfig blockConfig = new BlockConfig(getMod(), true, "part_" + getName(), null, null) {
+        BlockConfig blockConfig = new BlockConfig(getMod(), true, "part_" + this.name, null, null) {
 
             @Override
             public boolean isDisableable() {
@@ -157,7 +162,7 @@ public abstract class PartTypeBase<P extends IPartType<P, S>, S extends IPartSta
      * @return The corresponding item.
      */
     protected Item registerItem() {
-        itemConfig = new ItemConfig(getMod(), true, "part_" + getName(), null, null) {
+        itemConfig = new ItemConfig(getMod(), true, "part_" + this.name, null, null) {
 
             @Override
             public boolean isDisableable() {
@@ -177,12 +182,12 @@ public abstract class PartTypeBase<P extends IPartType<P, S>, S extends IPartSta
 
     @Override
     public String getBlockModelPath() {
-        return getMod().getModId() + ":" + "part_" + getName();
+        return getMod().getModId() + ":" + "part_" + this.name;
     }
 
     @Override
     public String getUnlocalizedNameBase() {
-        return "parttype.parttypes." + getMod().getModId() + "." + getName();
+        return "parttype.parttypes." + getMod().getModId() + "." + this.name;
     }
 
     @Override

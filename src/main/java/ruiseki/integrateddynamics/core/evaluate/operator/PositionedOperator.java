@@ -6,6 +6,7 @@ import java.lang.reflect.InvocationTargetException;
 import net.minecraft.nbt.JsonToNBT;
 import net.minecraft.nbt.NBTException;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
@@ -70,9 +71,9 @@ public abstract class PositionedOperator extends OperatorBase implements INBTPro
     public static class Serializer implements IOperatorSerializer<PositionedOperator> {
 
         private final Class<? extends PositionedOperator> clazz;
-        private final String uniqueName;
+        private final ResourceLocation uniqueName;
 
-        public Serializer(Class<? extends PositionedOperator> clazz, String uniqueName) {
+        public Serializer(Class<? extends PositionedOperator> clazz, ResourceLocation uniqueName) {
             this.clazz = clazz;
             this.uniqueName = uniqueName;
         }
@@ -83,7 +84,7 @@ public abstract class PositionedOperator extends OperatorBase implements INBTPro
         }
 
         @Override
-        public String getUniqueName() {
+        public ResourceLocation getUniqueName() {
             return this.uniqueName;
         }
 

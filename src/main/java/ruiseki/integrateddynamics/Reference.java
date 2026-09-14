@@ -6,9 +6,7 @@ public class Reference {
     public static final String MOD_NAME = Tags.MOD_NAME;
     public static final String MOD_VERSION = Tags.VERSION;
     public static final String MOD_DEPENDENCIES = "required-after:okcore;" + "required-after:commoncapabilities;"
-        + "required-after:gtnhlib@[0.11.45,);"
-        + "after:jfmuy;"
-        + "after:Waila;";
+        + "required-after:gtnhlib;";
     public static final String VERSION_URL = "";
 
     public static final String PROXY_COMMON = Tags.MOD_GROUP + ".proxy.CommonProxy";

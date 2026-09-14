@@ -6,6 +6,7 @@ import java.lang.reflect.InvocationTargetException;
 import net.minecraft.nbt.JsonToNBT;
 import net.minecraft.nbt.NBTException;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ResourceLocation;
 
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
@@ -21,11 +22,11 @@ import ruiseki.okcore.persist.nbt.INBTProvider;
 public class ValueTypeListProxyNBTFactory<T extends IValueType<V>, V extends IValue, P extends IValueTypeListProxy<T, V> & INBTProvider>
     implements IValueTypeListProxyFactoryTypeRegistry.IProxyFactory<T, V, P> {
 
-    private final String name;
+    private final ResourceLocation name;
     private final Class<P> proxyClass;
     private final Constructor<P> proxyClassConstructor;
 
-    public ValueTypeListProxyNBTFactory(String name, Class<P> proxyClass) {
+    public ValueTypeListProxyNBTFactory(ResourceLocation name, Class<P> proxyClass) {
         this.name = name;
         this.proxyClass = proxyClass;
 
@@ -41,7 +42,7 @@ public class ValueTypeListProxyNBTFactory<T extends IValueType<V>, V extends IVa
     }
 
     @Override
-    public String getName() {
+    public ResourceLocation getName() {
         return this.name;
     }
 
