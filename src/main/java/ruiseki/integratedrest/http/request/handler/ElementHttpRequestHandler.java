@@ -19,6 +19,8 @@ import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.INetworkElement;
 import ruiseki.integrateddynamics.api.network.IPositionedNetworkElement;
 import ruiseki.integratedrest.json.JsonUtil;
+import ruiseki.integratedrest.tileentity.TileHttp;
+import ruiseki.okcore.helper.TileHelpers;
 
 /**
  * Request handler for /element/http requests.
@@ -33,8 +35,7 @@ public class ElementHttpRequestHandler extends ElementTypeRequestHandler {
         HttpRequest request, JsonObject responseObject) {
         if (networkElement instanceof IPositionedNetworkElement) {
             IPositionedNetworkElement positionedNetworkElement = (IPositionedNetworkElement) networkElement;
-            BlockEntityHttp tile = BlockEntityHelpers.get(positionedNetworkElement.getPosition(), BlockEntityHttp.class)
-                .orElse(null);
+            TileHttp tile = TileHelpers.getSafeTile(positionedNetworkElement.getPosition(), TileHttp.class);
             if (tile != null) {
                 if (tile.getProxyId() == id) {
                     if (request.getMethod()

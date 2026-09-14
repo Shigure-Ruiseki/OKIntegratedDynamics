@@ -11,8 +11,23 @@ import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartedEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
+import cpw.mods.fml.common.event.FMLServerStoppedEvent;
 import cpw.mods.fml.common.event.FMLServerStoppingEvent;
+import ruiseki.integrateddynamics.api.item.IVariableFacadeHandlerRegistry;
+import ruiseki.integratedrest.api.http.request.IRequestHandlerRegistry;
+import ruiseki.integratedrest.api.json.IValueTypeJsonHandlerRegistry;
+import ruiseki.integratedrest.block.BlockHttpConfig;
+import ruiseki.integratedrest.client.model.HttpVariableModelProviders;
+import ruiseki.integratedrest.evaluate.HttpVariableFacadeHandler;
+import ruiseki.integratedrest.http.HttpServer;
+import ruiseki.integratedrest.http.request.RequestHandlerRegistry;
+import ruiseki.integratedrest.http.request.RequestHandlers;
+import ruiseki.integratedrest.json.ValueTypeJsonHandlerRegistry;
+import ruiseki.integratedrest.json.ValueTypeJsonHandlers;
 import ruiseki.okcore.config.ConfigHandler;
+import ruiseki.okcore.config.extendedconfig.BlockItemConfigReference;
+import ruiseki.okcore.helper.MinecraftHelpers;
+import ruiseki.okcore.init.ItemCreativeTab;
 import ruiseki.okcore.init.ModBaseVersionable;
 import ruiseki.okcore.proxy.ICommonProxy;
 
@@ -25,7 +40,6 @@ import ruiseki.okcore.proxy.ICommonProxy;
 @Mod(
     modid = Reference.MOD_ID,
     name = Reference.MOD_NAME,
-    useMetadata = true,
     version = Reference.MOD_VERSION,
     dependencies = Reference.MOD_DEPENDENCIES,
     guiFactory = "ruiseki.integratedrest.GuiConfigOverview$ExtendedConfigGuiFactory")
@@ -47,80 +61,78 @@ public class IntegratedRest extends ModBaseVersionable {
     @Mod.Instance(value = Reference.MOD_ID)
     public static IntegratedRest _instance;
 
+    protected final HttpServer server;
+
     public IntegratedRest() {
         super(Reference.MOD_ID, Reference.MOD_NAME, Reference.MOD_VERSION);
+        server = new HttpServer();
     }
 
-    /**
-     * The pre-initialization, will register required configs.
-     *
-     * @param event The Forge event required for this.
-     */
     @Mod.EventHandler
     @Override
     public void preInit(FMLPreInitializationEvent event) {
+
+        getRegistryManager().addRegistry(IRequestHandlerRegistry.class, RequestHandlerRegistry.getInstance());
+        getRegistryManager()
+            .addRegistry(IValueTypeJsonHandlerRegistry.class, ValueTypeJsonHandlerRegistry.getInstance());
+        getRegistryManager().getRegistry(IVariableFacadeHandlerRegistry.class)
+            .registerHandler(HttpVariableFacadeHandler.getInstance());
+
+        RequestHandlers.load();
+        ValueTypeJsonHandlers.load();
+
+        if (MinecraftHelpers.isClientSide()) {
+            HttpVariableModelProviders.load();
+        }
         super.preInit(event);
 
     }
 
-    /**
-     * Register the config dependent things like world generation and proxy handlers.
-     *
-     * @param event The Forge event required for this.
-     */
     @Mod.EventHandler
     @Override
     public void init(FMLInitializationEvent event) {
         super.init(event);
     }
 
-    /**
-     * Register the event hooks.
-     *
-     * @param event The Forge event required for this.
-     */
     @Mod.EventHandler
     @Override
     public void postInit(FMLPostInitializationEvent event) {
         super.postInit(event);
     }
 
-    /**
-     * Register the things that are related to server starting, like commands.
-     *
-     * @param event The Forge event required for this.
-     */
     @Mod.EventHandler
     @Override
     public void onServerStarting(FMLServerStartingEvent event) {
         super.onServerStarting(event);
     }
 
-    /**
-     * Register the things that are related to server starting.
-     *
-     * @param event The Forge event required for this.
-     */
     @Mod.EventHandler
     @Override
     public void onServerStarted(FMLServerStartedEvent event) {
         super.onServerStarted(event);
+        if (GeneralConfig.startApi) {
+            server.initialize();
+        }
     }
 
-    /**
-     * Register the things that are related to server stopping, like persistent storage.
-     *
-     * @param event The Forge event required for this.
-     */
     @Mod.EventHandler
     @Override
     public void onServerStopping(FMLServerStoppingEvent event) {
         super.onServerStopping(event);
     }
 
+    @Mod.EventHandler
+    @Override
+    public void onServerStopped(FMLServerStoppedEvent event) {
+        super.onServerStopped(event);
+        if (GeneralConfig.startApi) {
+            server.deinitialize();
+        }
+    }
+
     @Override
     public CreativeTabs constructDefaultCreativeTab() {
-        return null;
+        return new ItemCreativeTab(this, new BlockItemConfigReference(BlockHttpConfig.class));
     }
 
     @Override
@@ -131,7 +143,7 @@ public class IntegratedRest extends ModBaseVersionable {
     @Override
     public void onMainConfigsRegister(ConfigHandler configHandler) {
         super.onMainConfigsRegister(configHandler);
-
+        configHandler.add(new BlockHttpConfig());
     }
 
     @Override

@@ -127,7 +127,7 @@ public class TunnelAspects {
                 Operators.REGISTRY.registerSerializer(
                     new PositionedOperator.Serializer(
                         PositionedOperatorIngredientIndexFluid.class,
-                        "positioned_ingredient_index_fluid"));
+                        new ResourceLocation(Reference.MOD_ID, "positioned_ingredient_index_fluid")));
             }
         }
 

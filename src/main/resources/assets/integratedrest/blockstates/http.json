@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=south": { "model": "integratedrest:block/http" },
+    "facing=west" : { "model": "integratedrest:block/http", "y": 90 },
+    "facing=north": { "model": "integratedrest:block/http", "y": 180 },
+    "facing=east" : { "model": "integratedrest:block/http", "y": 270 }
+  }
+}

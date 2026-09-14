@@ -62,6 +62,7 @@ public class TileDelay extends TileProxy {
     private EntityPlayer lastPlayer = null;
 
     public TileDelay() {
+        super();
         this.variable = new VariableAdapter<ValueTypeList.ValueList>() {
 
             @Override
@@ -74,7 +75,6 @@ public class TileDelay extends TileProxy {
                 return list;
             }
         };
-        registerCapabilityResolvers();
     }
 
     @Override
