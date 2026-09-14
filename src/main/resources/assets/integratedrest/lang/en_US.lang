@@ -3,8 +3,8 @@
 itemGroup.integratedrest=Integrated REST
 
 #Blocks
-block.integratedrest.http.name=HTTP Proxy
-block.integratedrest.http.info=Read values that have been provided by external HTTP POST calls.
+tile.blocks.integratedrest.http.name=HTTP Proxy
+tile.blocks.integratedrest.http.info=Read values that have been provided by external HTTP POST calls.
 
 #HTTP
 http.integratedrest.tooltip.delay_id=§e§oHTTP Proxy ID: §r§o%s

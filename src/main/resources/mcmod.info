@@ -74,6 +74,24 @@
       "useDependencyInformation": false
     },
     {
+      "modid": "integratedrest",
+      "name": "Integrated Rest",
+      "description": "Expose Integrated Dynamics networks as a REST API",
+      "version": "${modVersion}",
+      "mcversion": "${minecraftVersion}",
+      "url": "https://github.com/Shigure-Ruiseki/OKIntegratedDynamics",
+      "updateUrl": "",
+      "authorList": ["rubensworks (aka kroeserr)", "Shigure Ruiseki"],
+      "credits": "rubensworks (aka kroeserr), Shigure Ruiseki",
+      "logoFile": "assets/integratedrest/textures/logo.png",
+      "screenshots": [],
+      "parent": "",
+      "requiredMods": [],
+      "dependencies": [],
+      "dependants": [],
+      "useDependencyInformation": false
+    },
+    {
       "modid": "integratedcompat",
       "name": "Integrated Compat",
       "description": "Integrated Compat for Integrated Series",

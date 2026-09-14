@@ -27,8 +27,8 @@ public class ContainerHttp extends ContainerActiveVariableBase<TileHttp> {
      */
     public ContainerHttp(InventoryPlayer inventory, TileHttp tile) {
         super(inventory, tile);
-        addSlotToContainer(new SlotVariable(inventory, TileHttp.SLOT_WRITE_IN, 56, 63));
-        addSlotToContainer(new SlotRemoveOnly(inventory, TileHttp.SLOT_WRITE_OUT, 104, 63));
+        addSlotToContainer(new SlotVariable(tile, TileHttp.SLOT_WRITE_IN, 56, 63));
+        addSlotToContainer(new SlotRemoveOnly(tile, TileHttp.SLOT_WRITE_OUT, 104, 63));
         addPlayerInventory(inventory, offsetX + 9, offsetY + 92);
 
         valueTypeId = getNextValueId();

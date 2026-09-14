@@ -32,7 +32,5 @@ public class Reference {
     // Dependencies
     public static final String MOD_DEPENDENCIES = "required-after:okcore;" + "required-after:commoncapabilities;"
         + "required-after:gtnhlib;"
-        + "required-after:integrateddynamics;"
-        + "after:jfmuy;"
-        + "after:Waila;";
+        + "required-after:integrateddynamics;";
 }

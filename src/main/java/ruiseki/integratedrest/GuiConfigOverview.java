@@ -2,7 +2,6 @@ package ruiseki.integratedrest;
 
 import net.minecraft.client.gui.GuiScreen;
 
-import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.okcore.client.gui.config.ExtendedConfigGuiFactoryBase;
 import ruiseki.okcore.client.gui.config.GuiConfigOverviewBase;
 import ruiseki.okcore.init.ModBase;

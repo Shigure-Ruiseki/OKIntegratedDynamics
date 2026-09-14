@@ -39,4 +39,9 @@ public class GeneralConfig extends DummyConfig {
             Versions.registerMod(getMod(), IntegratedRest._instance, Reference.VERSION_URL);
         }
     }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
 }

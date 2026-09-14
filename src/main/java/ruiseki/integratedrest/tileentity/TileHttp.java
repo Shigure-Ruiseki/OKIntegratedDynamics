@@ -38,8 +38,6 @@ import ruiseki.okcore.helper.LangHelpers;
 public class TileHttp extends TileProxy {
 
     public static final int INVENTORY_SIZE = 2;
-    public static final int SLOT_WRITE_IN = 0;
-    public static final int SLOT_WRITE_OUT = 1;
 
     private final HttpVariableAdapter variable;
 
@@ -47,11 +45,11 @@ public class TileHttp extends TileProxy {
         super(TileHttp.INVENTORY_SIZE);
 
         addSlotsToSide(ForgeDirection.UP, Sets.newHashSet(SLOT_WRITE_IN));
-        addSlotsToSide(ForgeDirection.DOWN, Sets.newHashSet(SLOT_WRITE_IN));
+        addSlotsToSide(ForgeDirection.NORTH, Sets.newHashSet(SLOT_WRITE_IN));
         addSlotsToSide(ForgeDirection.SOUTH, Sets.newHashSet(SLOT_WRITE_IN));
         addSlotsToSide(ForgeDirection.WEST, Sets.newHashSet(SLOT_WRITE_IN));
         addSlotsToSide(ForgeDirection.EAST, Sets.newHashSet(SLOT_WRITE_IN));
-        addSlotsToSide(ForgeDirection.UP, Sets.newHashSet(SLOT_WRITE_IN));
+
         addSlotsToSide(ForgeDirection.DOWN, Sets.newHashSet(SLOT_WRITE_OUT));
 
         this.variable = new HttpVariableAdapter(this, ValueTypes.CATEGORY_ANY, ValueTypeBoolean.ValueBoolean.of(false));
@@ -117,24 +115,44 @@ public class TileHttp extends TileProxy {
     @Override
     public void writeToNBT(NBTTagCompound tag) {
         super.writeToNBT(tag);
-        this.variable
-            .setValueTypeRaw(ValueTypes.REGISTRY.getValueType(new ResourceLocation(tag.getString("valueType"))));
-        if (tag.hasKey("value", Constants.NBT.TAG_COMPOUND)) {
-            NBTTagCompound valueTag = tag.getCompoundTag("value");
-            setValue(ValueHelpers.deserialize(valueTag));
+        IValueType valueType = getValueType();
+        if (valueType != null && valueType.getUniqueName() != null) {
+            tag.setString(
+                "valueType",
+                valueType.getUniqueName()
+                    .toString());
+        }
+        if (this.variable.getValueRaw() != null) {
+            NBTTagCompound valueTag = ValueHelpers.serialize(this.variable.getValueRaw());
+            tag.setTag("value", valueTag);
         }
     }
 
     @Override
     public void readFromNBT(NBTTagCompound tag) {
         super.readFromNBT(tag);
+        if (tag.hasKey("valueType", Constants.NBT.TAG_STRING)) {
+            String valueTypeName = tag.getString("valueType");
+            IValueType valueType = ValueTypes.REGISTRY.getValueType(new ResourceLocation(valueTypeName));
+            if (valueType != null) {
+                this.variable.setValueTypeRaw(valueType);
+            }
+        }
+        if (tag.hasKey("value", Constants.NBT.TAG_COMPOUND)) {
+            NBTTagCompound valueTag = tag.getCompoundTag("value");
+            setValue(ValueHelpers.deserialize(valueTag));
+        }
     }
 
     public IValueType<IValue> getValueType() {
-        return this.variable.getValueTypeRaw();
+        IValueType type = this.variable.getValueTypeRaw();
+        return type != null ? type : ValueTypes.CATEGORY_ANY;
     }
 
     public void setValueType(IValueType valueType) {
+        if (valueType == null) {
+            valueType = ValueTypes.CATEGORY_ANY;
+        }
         this.variable.setValueTypeRaw(valueType);
         if (!valueType.isCategory()) {
             setValue(valueType.getDefault());

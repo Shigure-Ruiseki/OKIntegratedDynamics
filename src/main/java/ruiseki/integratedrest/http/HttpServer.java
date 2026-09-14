@@ -39,24 +39,26 @@ public class HttpServer {
             this.channel = b.bind(GeneralConfig.apiPort)
                 .sync()
                 .channel();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+            IntegratedRest
+                .clog(Level.INFO, "Started Integrated REST server on http://localhost:" + GeneralConfig.apiPort + "/");
+        } catch (Exception e) {
+            IntegratedRest.clog(
+                Level.ERROR,
+                "Failed to start Integrated REST server on port " + GeneralConfig.apiPort + ": " + e.getMessage());
+            deinitialize();
         }
-
-        IntegratedRest
-            .clog(Level.INFO, "Started Integrated REST server on http://localhost:" + GeneralConfig.apiPort + "/");
     }
 
     public void deinitialize() {
         IntegratedRest.clog(Level.INFO, "Stopping Integrated REST server...");
-        if (this.bossGroup != null && workerGroup != null) {
+        if (this.bossGroup != null && this.workerGroup != null) {
             try {
-                bossGroup.shutdownGracefully()
+                this.bossGroup.shutdownGracefully()
                     .sync();
-                workerGroup.shutdownGracefully()
+                this.workerGroup.shutdownGracefully()
                     .sync();
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                IntegratedRest.clog(Level.WARN, "Interrupted while shutting down HTTP server: " + e.getMessage());
             }
         }
 

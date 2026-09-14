@@ -36,7 +36,5 @@ public class Reference {
         + "required-after:gtnhlib;"
         + "required-after:integrateddynamics;"
         + "required-after:integratedtunnels;"
-        + "required-after:integratedcrafting;"
-        + "after:jfmuy;"
-        + "after:Waila;";
+        + "required-after:integratedcrafting;";
 }

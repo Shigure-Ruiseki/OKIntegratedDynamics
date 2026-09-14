@@ -82,6 +82,12 @@ public class GuiHttp extends GuiActiveVariableBase<ContainerHttp, TileHttp> {
     }
 
     @Override
+    public void mouseClicked(int mouseX, int mouseY, int mouseButton) {
+        super.mouseClicked(mouseX, mouseY, mouseButton);
+        valueTypeSelector.mouseClicked(mouseX, mouseY, mouseButton);
+    }
+
+    @Override
     public void onUpdate(int valueId, NBTTagCompound value) {
         if (valueId == getContainer().getValueTypeId()) {
             getContainer().getValueType()

@@ -13,6 +13,7 @@ import cpw.mods.fml.common.event.FMLServerStartedEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import cpw.mods.fml.common.event.FMLServerStoppedEvent;
 import cpw.mods.fml.common.event.FMLServerStoppingEvent;
+import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.item.IVariableFacadeHandlerRegistry;
 import ruiseki.integratedrest.api.http.request.IRequestHandlerRegistry;
 import ruiseki.integratedrest.api.json.IValueTypeJsonHandlerRegistry;
@@ -75,17 +76,11 @@ public class IntegratedRest extends ModBaseVersionable {
         getRegistryManager().addRegistry(IRequestHandlerRegistry.class, RequestHandlerRegistry.getInstance());
         getRegistryManager()
             .addRegistry(IValueTypeJsonHandlerRegistry.class, ValueTypeJsonHandlerRegistry.getInstance());
-        getRegistryManager().getRegistry(IVariableFacadeHandlerRegistry.class)
-            .registerHandler(HttpVariableFacadeHandler.getInstance());
-
-        RequestHandlers.load();
-        ValueTypeJsonHandlers.load();
 
         if (MinecraftHelpers.isClientSide()) {
             HttpVariableModelProviders.load();
         }
         super.preInit(event);
-
     }
 
     @Mod.EventHandler
@@ -98,6 +93,16 @@ public class IntegratedRest extends ModBaseVersionable {
     @Override
     public void postInit(FMLPostInitializationEvent event) {
         super.postInit(event);
+
+        IVariableFacadeHandlerRegistry registry = IntegratedDynamics._instance.getRegistryManager()
+            .getRegistry(IVariableFacadeHandlerRegistry.class);
+
+        if (registry != null) {
+            registry.registerHandler(HttpVariableFacadeHandler.getInstance());
+        }
+
+        RequestHandlers.load();
+        ValueTypeJsonHandlers.load();
     }
 
     @Mod.EventHandler
@@ -119,15 +124,15 @@ public class IntegratedRest extends ModBaseVersionable {
     @Override
     public void onServerStopping(FMLServerStoppingEvent event) {
         super.onServerStopping(event);
+        if (GeneralConfig.startApi) {
+            server.deinitialize();
+        }
     }
 
     @Mod.EventHandler
     @Override
     public void onServerStopped(FMLServerStoppedEvent event) {
         super.onServerStopped(event);
-        if (GeneralConfig.startApi) {
-            server.deinitialize();
-        }
     }
 
     @Override
