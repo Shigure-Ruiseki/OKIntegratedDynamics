@@ -3,7 +3,9 @@ package ruiseki.integrateddynamics.client.gui;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ResourceLocation;
 
+import ruiseki.integrateddynamics.Reference;
 import ruiseki.integrateddynamics.block.BlockDelayConfig;
 import ruiseki.integrateddynamics.core.client.gui.GuiActiveVariableBase;
 import ruiseki.integrateddynamics.inventory.container.ContainerDelay;
@@ -37,6 +39,11 @@ public class GuiDelay extends GuiActiveVariableBase<ContainerDelay, TileDelay> {
     }
 
     @Override
+    protected ResourceLocation constructGuiTexture() {
+        return new ResourceLocation(Reference.MOD_ID, "textures/gui/delay.png");
+    }
+
+    @Override
     protected int getBaseYSize() {
         return 227;
     }
@@ -56,7 +63,6 @@ public class GuiDelay extends GuiActiveVariableBase<ContainerDelay, TileDelay> {
         super.initGui();
 
         numberFieldUpdateInterval = new GuiNumberField(
-            0,
             Minecraft.getMinecraft().fontRenderer,
             guiLeft + 98,
             guiTop + 102,
@@ -72,7 +78,6 @@ public class GuiDelay extends GuiActiveVariableBase<ContainerDelay, TileDelay> {
         numberFieldUpdateInterval.setCanLoseFocus(true);
 
         numberFieldCapacity = new GuiNumberField(
-            0,
             Minecraft.getMinecraft().fontRenderer,
             guiLeft + 98,
             guiTop + 126,
@@ -90,15 +95,27 @@ public class GuiDelay extends GuiActiveVariableBase<ContainerDelay, TileDelay> {
     }
 
     @Override
-    protected void keyTyped(char typedChar, int keyCode) {
-        if (!this.checkHotbarKeys(keyCode)) {
-            if (!this.numberFieldUpdateInterval.textboxKeyTyped(typedChar, keyCode)
-                && !this.numberFieldCapacity.textboxKeyTyped(typedChar, keyCode)) {
-                super.keyTyped(typedChar, keyCode);
-            } else {
-                onValueChanged();
-            }
+    public boolean charTyped(char typedChar, int keyCode) {
+        if (!this.numberFieldUpdateInterval.charTyped(typedChar, keyCode)
+            && !this.numberFieldCapacity.charTyped(typedChar, keyCode)) {
+            return super.charTyped(typedChar, keyCode);
+        } else {
+            onValueChanged();
         }
+
+        return true;
+    }
+
+    @Override
+    public boolean keyPressed(int typedChar, int keyCode, int modifiers) {
+        if (!this.numberFieldUpdateInterval.keyPressed(typedChar, keyCode, modifiers)
+            && !this.numberFieldCapacity.keyPressed(typedChar, keyCode, modifiers)) {
+            return super.keyPressed(typedChar, keyCode, modifiers);
+        } else {
+            onValueChanged();
+        }
+
+        return true;
     }
 
     protected void onValueChanged() {
@@ -115,18 +132,24 @@ public class GuiDelay extends GuiActiveVariableBase<ContainerDelay, TileDelay> {
     }
 
     @Override
-    protected void mouseClicked(int mouseX, int mouseY, int mouseButton) {
-        this.numberFieldUpdateInterval.mouseClicked(mouseX, mouseY, mouseButton);
-        this.numberFieldCapacity.mouseClicked(mouseX, mouseY, mouseButton);
-        onValueChanged();
-        super.mouseClicked(mouseX, mouseY, mouseButton);
+    public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
+        boolean clicked = false;
+        if (this.numberFieldUpdateInterval.mouseClicked(mouseX, mouseY, mouseButton)) {
+            onValueChanged();
+            clicked = true;
+        }
+        if (this.numberFieldCapacity.mouseClicked(mouseX, mouseY, mouseButton)) {
+            onValueChanged();
+            clicked = true;
+        }
+        return clicked || super.mouseClicked(mouseX, mouseY, mouseButton);
     }
 
     @Override
     protected void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY) {
         super.drawGuiContainerBackgroundLayer(partialTicks, mouseX, mouseY);
-        numberFieldUpdateInterval.drawTextBox(Minecraft.getMinecraft(), mouseX - guiLeft, mouseY - guiTop);
-        numberFieldCapacity.drawTextBox(Minecraft.getMinecraft(), mouseX - guiLeft, mouseY - guiTop);
+        numberFieldUpdateInterval.drawScreen(mouseX - guiLeft, mouseY - guiTop, partialTicks);
+        numberFieldCapacity.drawScreen(mouseX - guiLeft, mouseY - guiTop, partialTicks);
         fontRendererObj.drawString(
             LangHelpers.localize("gui.integrateddynamics.partsettings.update_interval"),
             guiLeft + 8,

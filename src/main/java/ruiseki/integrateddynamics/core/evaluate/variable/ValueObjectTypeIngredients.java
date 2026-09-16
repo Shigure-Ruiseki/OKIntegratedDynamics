@@ -1,10 +1,9 @@
 package ruiseki.integrateddynamics.core.evaluate.variable;
 
-import net.minecraft.nbt.JsonToNBT;
-import net.minecraft.nbt.NBTException;
+import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraftforge.common.util.Constants;
 
-import joptsimple.internal.Strings;
 import lombok.ToString;
 import ruiseki.commoncapabilities.api.ingredient.IMixedIngredients;
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
@@ -60,23 +59,23 @@ public class ValueObjectTypeIngredients extends ValueObjectTypeBase<ValueObjectT
     }
 
     @Override
-    public String serialize(ValueIngredients value) {
+    public NBTBase serialize(ValueIngredients value) {
         if (!value.getRawValue()
-            .isPresent()) return "";
-
+            .isPresent()) return new NBTTagCompound();
         return IMixedIngredients.serialize(
             value.getRawValue()
-                .get())
-            .toString();
+                .get());
     }
 
     @Override
-    public ValueIngredients deserialize(String value) {
-        if (Strings.isNullOrEmpty(value)) return ValueIngredients.of(null);
+    public ValueIngredients deserialize(NBTBase value) {
+        if (value.getId() == Constants.NBT.TAG_END
+            || (value.getId() == Constants.NBT.TAG_COMPOUND && ((NBTTagCompound) value).hasNoTags())) {
+            return ValueIngredients.of(null);
+        }
         try {
-            NBTTagCompound tag = (NBTTagCompound) JsonToNBT.func_150315_a(value);
-            return ValueIngredients.of(IMixedIngredients.deserialize(tag));
-        } catch (NBTException | IllegalArgumentException e) {
+            return ValueIngredients.of(IMixedIngredients.deserialize((NBTTagCompound) value));
+        } catch (IllegalArgumentException e) {
             return ValueIngredients.of(null);
         }
     }

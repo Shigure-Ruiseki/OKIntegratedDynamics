@@ -31,6 +31,7 @@ import ruiseki.integratedtunnels.part.TunnelPartTypes;
 import ruiseki.integratedtunnels.part.aspect.TunnelAspects;
 import ruiseki.integratedtunnels.part.aspect.listproxy.TunnelValueTypeListProxyFactories;
 import ruiseki.okcore.config.ConfigHandler;
+import ruiseki.okcore.init.ItemCreativeTab;
 import ruiseki.okcore.init.ModBaseVersionable;
 import ruiseki.okcore.proxy.ICommonProxy;
 
@@ -165,7 +166,12 @@ public class IntegratedTunnels extends ModBaseVersionable {
 
     @Override
     public CreativeTabs constructDefaultCreativeTab() {
-        return null;
+        return new ItemCreativeTab(this, () -> {
+            if (TunnelPartTypes.INTERFACE_ITEM != null) {
+                return TunnelPartTypes.INTERFACE_ITEM.getItem();
+            }
+            return null;
+        });
     }
 
     @Override

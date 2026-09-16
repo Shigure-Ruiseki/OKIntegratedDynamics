@@ -53,7 +53,7 @@ import ruiseki.okcore.persist.IDirtyMarkListener;
  */
 public abstract class ContainerTerminalStorageBase<L> extends ExtendedInventoryContainer implements IDirtyMarkListener {
 
-    public static final int BUTTON_SET_DEFAULTS = 5;
+    public static final String BUTTON_SET_DEFAULTS = "button_set_defaults";
 
     private final World world;
     private final Map<String, ITerminalStorageTabClient<?>> tabsClient;

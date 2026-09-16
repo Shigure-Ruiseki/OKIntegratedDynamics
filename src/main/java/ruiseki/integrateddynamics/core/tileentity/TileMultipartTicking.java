@@ -54,7 +54,6 @@ import ruiseki.okcore.datastructure.DimPos;
 import ruiseki.okcore.datastructure.EnumFacingMap;
 import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.helper.BlockHelpers;
-import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.persist.nbt.NBTPersist;
 import ruiseki.okcore.tileentity.TileEntityOK;
 
@@ -91,14 +90,11 @@ public class TileMultipartTicking extends TileEntityOK
     @NBTPersist
     private EnumFacingMap<Integer> lightLevels = EnumFacingMap.newMap();
     private EnumFacingMap<Integer> previousLightLevels;
+
     @Getter
     @Setter
     @NBTPersist
-    private String facadeBlockName = null;
-    @Getter
-    @Setter
-    @NBTPersist
-    private int facadeMeta = 0;
+    private NBTTagCompound facadeBlockTag = null;
 
     @Getter
     private final PartContainerTileMultipartTicking partContainer;
@@ -155,12 +151,10 @@ public class TileMultipartTicking extends TileEntityOK
     @Override
     public void readFromNBT(NBTTagCompound tag) {
         EnumFacingMap<Boolean> lastConnected = EnumFacingMap.newMap(connected);
-        String lastFacadeBlockName = facadeBlockName;
-        int lastFacadeMeta = facadeMeta;
+        NBTTagCompound lastFacadeBlockTag = facadeBlockTag;
         boolean lastRealCable = cableFakeable.isRealCable();
         PartHelpers.readPartsFromNBT(getNetwork(), getPos(), tag, this.partData, getWorldObj());
-        if (tag.hasKey("parts", MinecraftHelpers.NBTTag_Types.NBTTagList.ordinal())
-            && !tag.hasKey("partContainer", MinecraftHelpers.NBTTag_Types.NBTTagCompound.ordinal())) {
+        if (tag.hasKey("parts") && !tag.hasKey("partContainer")) {
             // Backwards compatibility with old part saving.
             // TODO: remove in next major MC update.
             PartHelpers.readPartsFromNBT(getNetwork(), getPos(), tag, partContainer.getPartData(), getWorldObj());
@@ -176,8 +170,7 @@ public class TileMultipartTicking extends TileEntityOK
             && CableHelpers.isLightTransparent(getWorldObj(), getPos(), null);
         if (getWorldObj() != null && (lastConnected == null || connected == null
             || !lastConnected.equals(connected)
-            || !Objects.equals(lastFacadeBlockName, facadeBlockName)
-            || lastFacadeMeta != facadeMeta
+            || !Objects.equals(lastFacadeBlockTag, facadeBlockTag)
             || lastRealCable != cableFakeable.isRealCable()
             || wasLightTransparent != isLightTransparent)) {
             this.worldObj.markBlockForUpdate(this.xCoord, this.yCoord, this.zCoord);
@@ -230,8 +223,7 @@ public class TileMultipartTicking extends TileEntityOK
                     this.cableFakeable.isRealCable(),
                     EnumFacingMap.newMap(this.connected),
                     EnumFacingMap.newMap(this.partContainer.getPartData()),
-                    facadeBlockName,
-                    facadeMeta));
+                    facadeBlockTag));
         }
         return cachedState = builder.build();
     }

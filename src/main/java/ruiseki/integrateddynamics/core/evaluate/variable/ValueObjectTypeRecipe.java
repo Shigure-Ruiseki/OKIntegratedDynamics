@@ -1,12 +1,11 @@
 package ruiseki.integrateddynamics.core.evaluate.variable;
 
-import net.minecraft.nbt.JsonToNBT;
-import net.minecraft.nbt.NBTException;
+import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraftforge.common.util.Constants;
 
 import com.google.common.collect.Iterables;
 
-import joptsimple.internal.Strings;
 import lombok.ToString;
 import ruiseki.commoncapabilities.api.capability.recipehandler.IPrototypedIngredientAlternatives;
 import ruiseki.commoncapabilities.api.capability.recipehandler.IRecipeDefinition;
@@ -82,22 +81,23 @@ public class ValueObjectTypeRecipe extends ValueObjectTypeBase<ValueObjectTypeRe
     }
 
     @Override
-    public String serialize(ValueRecipe value) {
+    public NBTTagCompound serialize(ValueRecipe value) {
         if (!value.getRawValue()
-            .isPresent()) return "";
+            .isPresent()) return new NBTTagCompound();
         return IRecipeDefinition.serialize(
             value.getRawValue()
-                .get())
-            .toString();
+                .get());
     }
 
     @Override
-    public ValueRecipe deserialize(String value) {
-        if (Strings.isNullOrEmpty(value)) return ValueRecipe.of(null);
+    public ValueRecipe deserialize(NBTBase value) {
+        if (value == null || value.getId() == Constants.NBT.TAG_END
+            || (value.getId() == Constants.NBT.TAG_COMPOUND && ((NBTTagCompound) value).hasNoTags())) {
+            return ValueRecipe.of(null);
+        }
         try {
-            NBTTagCompound tag = (NBTTagCompound) JsonToNBT.func_150315_a(value);
-            return ValueRecipe.of(IRecipeDefinition.deserialize(tag));
-        } catch (NBTException e) {
+            return ValueRecipe.of(IRecipeDefinition.deserialize((NBTTagCompound) value));
+        } catch (IllegalArgumentException e) {
             return ValueRecipe.of(null);
         }
     }

@@ -1,6 +1,5 @@
 package ruiseki.integratedterminals.client.gui.container;
 
-import net.minecraft.client.gui.GuiButton;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumChatFormatting;
@@ -16,6 +15,8 @@ import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integratedterminals.IntegratedTerminals;
 import ruiseki.integratedterminals.Reference;
 import ruiseki.integratedterminals.client.gui.container.component.GuiCraftingPlan;
+import ruiseki.integratedterminals.client.gui.container.component.GuiCraftingPlanFlat;
+import ruiseki.integratedterminals.client.gui.container.component.GuiCraftingPlanToggler;
 import ruiseki.integratedterminals.core.client.gui.CraftingJobGuiData;
 import ruiseki.integratedterminals.inventory.container.ContainerTerminalCraftingJobsPlan;
 import ruiseki.integratedterminals.network.packet.CancelCraftingJobPacket;
@@ -23,17 +24,13 @@ import ruiseki.integratedterminals.network.packet.OpenCraftingJobsGuiPacket;
 import ruiseki.okcore.client.gui.component.button.GuiButtonText;
 import ruiseki.okcore.client.gui.container.GuiContainerExtended;
 import ruiseki.okcore.helper.LangHelpers;
-import ruiseki.okcore.init.ModBase;
 
 /**
  * A gui for visualizing a live crafting plan.
  *
  * @author rubensworks
  */
-public class GuiTerminalCraftingJobsPlan extends GuiContainerExtended {
-
-    private static final int BUTTON_CRAFTING_PLAN = 5;
-    private static final int BUTTON_CRAFTING_PLAN_FLAT = 6;
+public class GuiTerminalCraftingJobsPlan extends GuiContainerExtended<ContainerTerminalCraftingJobsPlan> {
 
     private final EntityPlayer player;
     private GuiCraftingPlanToggler guiCraftingPlanToggler;
@@ -70,14 +67,19 @@ public class GuiTerminalCraftingJobsPlan extends GuiContainerExtended {
                 if (previousGuiCraftingPlan != null) {
                     this.guiCraftingPlan.inheritVisualizationState(previousGuiCraftingPlan);
                 }
+                addRenderableWidget(this.guiCraftingPlan);
                 this.guiCraftingPlanFlat = null;
 
                 if (this.getContainer()
                     .getCraftingPlanFlat() != null) {
                     String buttonText = EnumChatFormatting.ITALIC
                         + LangHelpers.localize("gui.integratedterminals.craftingplan.view.flat");
-                    this.buttonList.add(
-                        new GuiButton(BUTTON_CRAFTING_PLAN, this.guiLeft + 8, this.guiTop + 198, 80, 20, buttonText));
+                    addRenderableWidget(
+                        new GuiButtonText(this.guiLeft + 8, this.guiTop + 198, 80, 20, buttonText, (b) -> {
+                            this.guiCraftingPlanToggler
+                                .setCraftingPlanDisplayMode(GuiCraftingPlanToggler.CraftingPlanDisplayMode.FLAT);
+                            this.initGui();
+                        }, true));
                 }
             },
             () -> {
@@ -94,20 +96,19 @@ public class GuiTerminalCraftingJobsPlan extends GuiContainerExtended {
                 if (previousGuiCraftingPlan != null) {
                     this.guiCraftingPlanFlat.inheritVisualizationState(previousGuiCraftingPlan);
                 }
+                addRenderableWidget(this.guiCraftingPlanFlat);
                 this.guiCraftingPlan = null;
 
                 if (this.getContainer()
                     .getCraftingPlan() != null) {
                     String buttonText = EnumChatFormatting.ITALIC
                         + LangHelpers.localize("gui.integratedterminals.craftingplan.view.tree");
-                    this.buttonList.add(
-                        new GuiButton(
-                            BUTTON_CRAFTING_PLAN_FLAT,
-                            this.guiLeft + 8,
-                            this.guiTop + 198,
-                            80,
-                            20,
-                            buttonText));
+                    addRenderableWidget(
+                        new GuiButtonText(this.guiLeft + 8, this.guiTop + 198, 80, 20, buttonText, (b) -> {
+                            this.guiCraftingPlanToggler
+                                .setCraftingPlanDisplayMode(GuiCraftingPlanToggler.CraftingPlanDisplayMode.TREE);
+                            this.initGui();
+                        }, true));
                 }
             },
             () -> {
@@ -117,18 +118,21 @@ public class GuiTerminalCraftingJobsPlan extends GuiContainerExtended {
     }
 
     @Override
-    protected ResourceLocation constructResourceLocation() {
-        return new ResourceLocation(Reference.MOD_ID, this.getGuiTexture());
+    public ContainerTerminalCraftingJobsPlan getContainer() {
+        return super.getContainer();
     }
 
     @Override
-    public String getGuiTexture() {
+    protected ResourceLocation constructGuiTexture() {
+        return new ResourceLocation(Reference.MOD_ID, "textures/gui/crafting_plan.png");
+    }
+
+    @Override
+    public ResourceLocation getGuiTexture() {
         return this.guiCraftingPlanToggler.getCraftingPlanDisplayMode()
             == GuiCraftingPlanToggler.CraftingPlanDisplayMode.FLAT
-                ? IntegratedTerminals._instance.getReferenceValue(ModBase.REFKEY_TEXTURE_PATH_GUI)
-                    + "crafting_plan_flat.png"
-                : IntegratedTerminals._instance.getReferenceValue(ModBase.REFKEY_TEXTURE_PATH_GUI)
-                    + "crafting_plan.png";
+                ? new ResourceLocation(Reference.MOD_ID, "textures/gui/crafting_plan_flat.png")
+                : super.getGuiTexture();
     }
 
     @Override
@@ -145,37 +149,34 @@ public class GuiTerminalCraftingJobsPlan extends GuiContainerExtended {
     public void initGui() {
         super.initGui();
 
-        this.buttonList.clear();
+        // Reset states
+        this.renderables.clear();
+        this.getChildren()
+            .clear();
 
         this.guiCraftingPlanToggler.initGui();
 
         if (this.guiCraftingPlan != null || this.guiCraftingPlanFlat != null) {
-            this.buttonList.add(
+            addRenderableWidget(
                 new GuiButtonText(
-                    0,
                     guiLeft + 221 + 10 - 50,
                     guiTop + 198,
                     100,
                     20,
                     LangHelpers.localize("gui.integratedterminals.terminal_crafting_job.craftingplan.cancel"),
+                    (b) -> cancelCraftingJob(),
                     true));
         }
     }
 
     @Override
-    protected void keyTyped(char typedChar, int keyCode) {
-        if (!this.checkHotbarKeys(keyCode)) {
-            if (keyCode == Keyboard.KEY_ESCAPE) {
-                returnToOverview();
-            } else {
-                super.keyTyped(typedChar, keyCode);
-            }
+    public boolean keyPressed(int typedChar, int keyCode, int modifiers) {
+        if (typedChar == Keyboard.KEY_ESCAPE) {
+            returnToOverview();
+            return true;
+        } else {
+            return super.keyPressed(typedChar, keyCode, modifiers);
         }
-    }
-
-    @Override
-    protected ContainerTerminalCraftingJobsPlan getContainer() {
-        return (ContainerTerminalCraftingJobsPlan) super.getContainer();
     }
 
     private void returnToOverview() {
@@ -185,20 +186,6 @@ public class GuiTerminalCraftingJobsPlan extends GuiContainerExtended {
             center.getPos()
                 .getBlockPos(),
             center.getSide());
-    }
-
-    @Override
-    public boolean requiresAction(int buttonId) {
-        return true;
-    }
-
-    @Override
-    public void onButtonClick(int buttonId) {
-        super.onButtonClick(buttonId);
-        GuiButton button = buttonList.get(buttonId);
-        if (button instanceof GuiButtonText) {
-            cancelCraftingJob();
-        }
     }
 
     private void cancelCraftingJob() {
@@ -248,23 +235,23 @@ public class GuiTerminalCraftingJobsPlan extends GuiContainerExtended {
     }
 
     @Override
-    public void handleMouseInput() {
-        super.handleMouseInput();
+    public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
         if (this.guiCraftingPlan != null) {
-            guiCraftingPlan.handleMouseInput();
+            return guiCraftingPlan.mouseScrolled(mouseX, mouseY, delta);
         } else if (this.guiCraftingPlanFlat != null) {
-            guiCraftingPlanFlat.handleMouseInput();
+            return guiCraftingPlanFlat.mouseScrolled(mouseX, mouseY, delta);
         }
+        return super.mouseScrolled(mouseX, mouseY, delta);
     }
 
     @Override
-    protected void mouseClicked(int mouseX, int mouseY, int mouseButton) {
-        super.mouseClicked(mouseX, mouseY, mouseButton);
+    public boolean mouseDragged(double mouseX, double mouseY, int mouseButton, double mouseXPrev, double mouseYPrev) {
         if (this.guiCraftingPlan != null) {
-            guiCraftingPlan.mouseClicked(mouseX, mouseY, mouseButton);
+            return guiCraftingPlan.mouseDragged(mouseX, mouseY, mouseButton, mouseXPrev, mouseYPrev);
         } else if (this.guiCraftingPlanFlat != null) {
-            guiCraftingPlanFlat.mouseClicked(mouseX, mouseY, mouseButton);
+            return guiCraftingPlanFlat.mouseDragged(mouseX, mouseY, mouseButton, mouseXPrev, mouseYPrev);
         }
+        return super.mouseDragged(mouseX, mouseY, mouseButton, mouseXPrev, mouseYPrev);
     }
 
     @Override
@@ -285,19 +272,5 @@ public class GuiTerminalCraftingJobsPlan extends GuiContainerExtended {
             craftingPlanFlatInitialized = true;
         }
         super.onUpdate(valueId, value);
-    }
-
-    @Override
-    protected void actionPerformed(GuiButton button) {
-        super.actionPerformed(button);
-        if (button.id == BUTTON_CRAFTING_PLAN) {
-            guiCraftingPlanToggler.setCraftingPlanDisplayMode(GuiCraftingPlanToggler.CraftingPlanDisplayMode.FLAT);
-            initGui();
-        }
-
-        if (button.id == BUTTON_CRAFTING_PLAN_FLAT) {
-            guiCraftingPlanToggler.setCraftingPlanDisplayMode(GuiCraftingPlanToggler.CraftingPlanDisplayMode.TREE);
-            initGui();
-        }
     }
 }

@@ -1,9 +1,11 @@
 package ruiseki.integratedtunnels.core;
 
+import java.util.Optional;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockLiquid;
 import net.minecraft.block.material.Material;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTBase;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.util.ForgeDirection;
@@ -132,7 +134,7 @@ public class TunnelFluidHelpers {
         return new IngredientPredicateFluidStackOperator(amount, exactAmount, predicate, partTarget);
     }
 
-    public static IngredientPredicate<FluidStack, Integer> matchNbt(final NBTTagCompound tag, final boolean subset,
+    public static IngredientPredicate<FluidStack, Integer> matchNbt(final Optional<NBTBase> tag, final boolean subset,
         final boolean superset, final boolean requireNbt, final boolean recursive, final boolean blacklist,
         final int amount, final boolean exactAmount) {
         return new IngredientPredicateFluidStackNbt(

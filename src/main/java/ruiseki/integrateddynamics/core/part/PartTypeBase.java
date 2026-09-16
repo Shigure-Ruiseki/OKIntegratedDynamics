@@ -292,11 +292,11 @@ public abstract class PartTypeBase<P extends IPartType<P, S>, S extends IPartSta
     public void loadTooltip(ItemStack itemStack, List<String> lines) {
         if (itemStack.getTagCompound() != null) {
             NBTTagCompound tag = ItemNBTHelpers.getNBT(itemStack);
-            if (tag.hasKey("id", MinecraftHelpers.NBTTag_Types.NBTTagInt.ordinal())) {
+            if (tag.hasKey("id")) {
                 int id = tag.getInteger("id");
                 lines.add(LangHelpers.localize(L10NValues.GENERAL_ITEM_ID, id));
             }
-            if (tag.hasKey("maxOffset", MinecraftHelpers.NBTTag_Types.NBTTagInt.ordinal())) {
+            if (tag.hasKey("maxOffset")) {
                 int maxOffset = tag.getInteger("maxOffset");
                 lines.add(LangHelpers.localize(L10NValues.PART_TOOLTIP_MAXOFFSET, maxOffset));
             }

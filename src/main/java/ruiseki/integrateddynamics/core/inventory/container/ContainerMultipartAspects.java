@@ -35,7 +35,6 @@ import ruiseki.integrateddynamics.api.part.aspect.IAspect;
 import ruiseki.integrateddynamics.api.part.aspect.property.IAspectProperties;
 import ruiseki.integrateddynamics.api.part.aspect.property.IAspectPropertyTypeInstance;
 import ruiseki.integrateddynamics.core.client.gui.ExtendedGuiHandler;
-import ruiseki.integrateddynamics.core.client.gui.container.GuiMultipartAspects;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueHelpers;
 import ruiseki.integrateddynamics.core.helper.PartHelpers;
 import ruiseki.integrateddynamics.core.item.AspectVariableFacade;
@@ -46,9 +45,7 @@ import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.ValueNotifierHelpers;
 import ruiseki.okcore.inventory.IGuiContainerProvider;
 import ruiseki.okcore.inventory.SimpleInventory;
-import ruiseki.okcore.inventory.container.InventoryContainer;
 import ruiseki.okcore.inventory.container.ScrollingInventoryContainer;
-import ruiseki.okcore.inventory.container.button.IButtonActionServer;
 import ruiseki.okcore.persist.IDirtyMarkListener;
 
 /**
@@ -61,9 +58,9 @@ import ruiseki.okcore.persist.IDirtyMarkListener;
 public abstract class ContainerMultipartAspects<P extends IPartType<P, S> & IGuiContainerProvider, S extends IPartState<P>, A extends IAspect>
     extends ScrollingInventoryContainer<A> implements IDirtyMarkListener {
 
-    public static final int BUTTON_SETTINGS = 1;
-    public static final int BUTTON_OFFSETS = 2;
-    public static final int BUTTON_ASPECT_PROPERTIES_START = 3;
+    public static String BUTTON_SETTINGS = "button_settings";
+    public static String BUTTON_OFFSETS = "button_offsets";
+
     private static final int PAGE_SIZE = 3;
 
     private final PartTarget target;
@@ -71,7 +68,7 @@ public abstract class ContainerMultipartAspects<P extends IPartType<P, S> & IGui
     private final P partType;
     private final World world;
     private final BlockPos pos;
-    private final Map<IAspect, Integer> aspectPropertyButtons = Maps.newHashMap();
+    private final Map<IAspect, String> aspectPropertyButtons = Maps.newHashMap();
     private final Map<IAspect, Integer> aspectPropertyValueIds = Maps.newIdentityHashMap();
 
     protected final IInventory inputSlots;
@@ -117,77 +114,82 @@ public abstract class ContainerMultipartAspects<P extends IPartType<P, S> & IGui
 
         this.inputSlots = constructInputSlotsInventory();
         this.player = player;
-        putButtonAction(GuiMultipartAspects.BUTTON_SETTINGS, new IButtonActionServer<InventoryContainer>() {
 
-            @Override
-            public void onAction(int buttonId, InventoryContainer container) {
-                if (!world.isRemote) {
-                    IGuiContainerProvider gui = ((PartTypeConfigurable) getPartType()).getSettingsGuiProvider();
-                    IntegratedDynamics._instance.getGuiHandler()
-                        .setTemporaryData(
-                            ExtendedGuiHandler.PART,
-                            getTarget().getCenter()
-                                .getSide());
-                    BlockPos cPos = getTarget().getCenter()
-                        .getPos()
-                        .getBlockPos();
-                    ContainerMultipartAspects.this.player
-                        .openGui(gui.getModGui(), gui.getGuiID(), world, cPos.getX(), cPos.getY(), cPos.getZ());
-                }
+        putButtonAction(ContainerMultipartAspects.BUTTON_SETTINGS, (s, containerExtended) -> {
+            if (!world.isRemote) {
+                IGuiContainerProvider gui = ((PartTypeConfigurable) getPartType()).getSettingsGuiProvider();
+                IntegratedDynamics._instance.getGuiHandler()
+                    .setTemporaryData(
+                        ExtendedGuiHandler.PART,
+                        getTarget().getCenter()
+                            .getSide());
+                BlockPos cPos = getTarget().getCenter()
+                    .getPos()
+                    .getBlockPos();
+                ContainerMultipartAspects.this.player
+                    .openGui(gui.getModGui(), gui.getGuiID(), world, cPos.getX(), cPos.getY(), cPos.getZ());
+            }
+        });
+        putButtonAction(ContainerMultipartAspects.BUTTON_OFFSETS, (s, containerExtended) -> {
+            if (!world.isRemote) {
+                IGuiContainerProvider gui = ((PartTypeConfigurable<?, ?>) getPartType()).getOffsetsGuiProvider();
+                IntegratedDynamics._instance.getGuiHandler()
+                    .setTemporaryData(
+                        ExtendedGuiHandler.PART,
+                        getTarget().getCenter()
+                            .getSide()); // Pass the side as extra data to the gui
+                BlockPos cPos = getTarget().getCenter()
+                    .getPos()
+                    .getBlockPos();
+                ContainerMultipartAspects.this.player
+                    .openGui(gui.getModGui(), gui.getGuiID(), world, cPos.getX(), cPos.getY(), cPos.getZ());
             }
         });
 
-        putButtonAction(GuiMultipartAspects.BUTTON_OFFSETS, new IButtonActionServer<InventoryContainer>() {
-
-            @Override
-            public void onAction(int buttonId, InventoryContainer container) {
-                if (!world.isRemote) {
-                    IGuiContainerProvider gui = ((PartTypeConfigurable<?, ?>) getPartType()).getOffsetsGuiProvider();
-                    IntegratedDynamics._instance.getGuiHandler()
-                        .setTemporaryData(
-                            ExtendedGuiHandler.PART,
-                            getTarget().getCenter()
-                                .getSide()); // Pass the side as extra data to the gui
-                    BlockPos cPos = getTarget().getCenter()
-                        .getPos()
-                        .getBlockPos();
-                    ContainerMultipartAspects.this.player
-                        .openGui(gui.getModGui(), gui.getGuiID(), world, cPos.getX(), cPos.getY(), cPos.getZ());
-                }
-            }
-        });
-
-        int nextButtonId = BUTTON_ASPECT_PROPERTIES_START;
         for (final IAspect aspect : getUnfilteredItems()) {
             if (aspect.hasProperties()) {
-                aspectPropertyButtons.put(aspect, nextButtonId);
+                String buttonId = "button_aspect_" + aspect.getUniqueName();
+                aspectPropertyButtons.put(aspect, buttonId);
                 aspectPropertyValueIds.put(aspect, getNextValueId());
-                putButtonAction(nextButtonId, new IButtonActionServer<InventoryContainer>() {
+                putButtonAction(buttonId, (s, containerExtended) -> {
+                    IGuiContainerProvider gui = aspect.getPropertiesGuiProvider();
+                    ForgeDirection side = getTarget().getCenter()
+                        .getSide();
 
-                    @Override
-                    public void onAction(int buttonId, InventoryContainer container) {
-                        IGuiContainerProvider gui = aspect.getPropertiesGuiProvider();
-                        ForgeDirection side = getTarget().getCenter()
-                            .getSide();
+                    IntegratedDynamics._instance.getGuiHandler()
+                        .setTemporaryData(ExtendedGuiHandler.ASPECT, Pair.of(side, aspect));
 
-                        IntegratedDynamics._instance.getGuiHandler()
-                            .setTemporaryData(ExtendedGuiHandler.ASPECT, Pair.of(side, aspect));
-
-                        if (!world.isRemote) {
-                            BlockPos cPos = getTarget().getCenter()
-                                .getPos()
-                                .getBlockPos();
-                            ContainerMultipartAspects.this.player
-                                .openGui(gui.getModGui(), gui.getGuiID(), world, cPos.getX(), cPos.getY(), cPos.getZ());
-                        }
+                    if (!world.isRemote) {
+                        BlockPos cPos = getTarget().getCenter()
+                            .getPos()
+                            .getBlockPos();
+                        ContainerMultipartAspects.this.player
+                            .openGui(gui.getModGui(), gui.getGuiID(), world, cPos.getX(), cPos.getY(), cPos.getZ());
                     }
                 });
-                nextButtonId++;
             }
         }
     }
 
-    public Map<IAspect, Integer> getAspectPropertyButtons() {
+    public P getPartType() {
+        return partType;
+    }
+
+    public PartTarget getTarget() {
+        return target;
+    }
+
+    public IPartContainer getPartContainer() {
+        return partContainer;
+    }
+
+    public S getPartState() {
+        return (S) partContainer.getPartState(
+            getTarget().getCenter()
+                .getSide());
+    }
+
+    public Map<IAspect, String> getAspectPropertyButtons() {
         return Collections.unmodifiableMap(this.aspectPropertyButtons);
     }
 
@@ -256,13 +258,6 @@ public abstract class ContainerMultipartAspects<P extends IPartType<P, S> & IGui
         return ValueNotifierHelpers.getValueStringList(this, valueId);
     }
 
-    @SuppressWarnings("unchecked")
-    public S getPartState() {
-        return (S) partContainer.getPartState(
-            getTarget().getCenter()
-                .getSide());
-    }
-
     public abstract int getAspectBoxHeight();
 
     protected IInventory constructInputSlotsInventory() {
@@ -295,10 +290,11 @@ public abstract class ContainerMultipartAspects<P extends IPartType<P, S> & IGui
     }
 
     @Override
-    protected void onScroll() {
+    public void onScroll(int firstRow) {
         for (int i = 0; i < getUnfilteredItemCount(); i++) {
             disableSlot(i);
         }
+        super.onScroll(firstRow);
     }
 
     @Override

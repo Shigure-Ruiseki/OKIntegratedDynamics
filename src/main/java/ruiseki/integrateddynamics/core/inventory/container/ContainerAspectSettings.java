@@ -1,6 +1,7 @@
 package ruiseki.integrateddynamics.core.inventory.container;
 
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 
@@ -20,7 +21,6 @@ import ruiseki.integrateddynamics.api.part.aspect.IAspect;
 import ruiseki.integrateddynamics.api.part.aspect.property.IAspectProperties;
 import ruiseki.integrateddynamics.api.part.aspect.property.IAspectPropertyTypeInstance;
 import ruiseki.integrateddynamics.core.client.gui.ExtendedGuiHandler;
-import ruiseki.integrateddynamics.core.client.gui.container.GuiAspectSettings;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueHelpers;
 import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
 import ruiseki.integrateddynamics.core.network.event.VariableContentsUpdatedEvent;
@@ -28,8 +28,6 @@ import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.helper.ValueNotifierHelpers;
 import ruiseki.okcore.inventory.IGuiContainerProvider;
 import ruiseki.okcore.inventory.container.ExtendedInventoryContainer;
-import ruiseki.okcore.inventory.container.InventoryContainer;
-import ruiseki.okcore.inventory.container.button.IButtonActionServer;
 
 /**
  * Container for aspect settings.
@@ -40,7 +38,7 @@ import ruiseki.okcore.inventory.container.button.IButtonActionServer;
 @Data
 public class ContainerAspectSettings extends ExtendedInventoryContainer {
 
-    public static final int BUTTON_SETTINGS = 1;
+    public static final String BUTTON_EXIT = "button_exit";
     private static final int PAGE_SIZE = 3;
 
     private final PartTarget target;
@@ -86,27 +84,23 @@ public class ContainerAspectSettings extends ExtendedInventoryContainer {
             propertyIds.put(getNextValueId(), property);
         }
 
-        putButtonAction(GuiAspectSettings.BUTTON_EXIT, new IButtonActionServer<InventoryContainer>() {
-
-            @Override
-            public void onAction(int buttonId, InventoryContainer container) {
-                if (!world.isRemote) {
-                    IntegratedDynamics._instance.getGuiHandler()
-                        .setTemporaryData(
-                            ExtendedGuiHandler.PART,
-                            getTarget().getCenter()
-                                .getSide());
-                    BlockPos pos = getTarget().getCenter()
-                        .getPos()
-                        .getBlockPos();
-                    player.openGui(
-                        IntegratedDynamics._instance.getModId(),
-                        ((IGuiContainerProvider) getPartType()).getGuiID(),
-                        world,
-                        pos.getX(),
-                        pos.getY(),
-                        pos.getZ());
-                }
+        putButtonAction(ContainerAspectSettings.BUTTON_EXIT, (s, containerExtended) -> {
+            if (!world.isRemote) {
+                IntegratedDynamics._instance.getGuiHandler()
+                    .setTemporaryData(
+                        ExtendedGuiHandler.PART,
+                        getTarget().getCenter()
+                            .getSide());
+                BlockPos pos = getTarget().getCenter()
+                    .getPos()
+                    .getBlockPos();
+                player.openGui(
+                    IntegratedDynamics._instance.getModId(),
+                    ((IGuiContainerProvider) getPartType()).getGuiID(),
+                    world,
+                    pos.getX(),
+                    pos.getY(),
+                    pos.getZ());
             }
         });
     }
@@ -147,7 +141,7 @@ public class ContainerAspectSettings extends ExtendedInventoryContainer {
 
     public <T extends IValueType<V>, V extends IValue> V getPropertyValue(IAspectPropertyTypeInstance<T, V> property) {
         if (propertyIds.containsValue(property)) {
-            String value = ValueNotifierHelpers.getValueString(
+            NBTBase value = ValueNotifierHelpers.getValueNbt(
                 this,
                 propertyIds.inverse()
                     .get(property));
@@ -168,7 +162,7 @@ public class ContainerAspectSettings extends ExtendedInventoryContainer {
                     .getProperties(getPartType(), getTarget(), getPartState());
                 aspectProperties = aspectProperties.clone();
                 IValue trueValue = ValueHelpers
-                    .deserializeRaw(property.getType(), value.getString(ValueNotifierHelpers.KEY));
+                    .deserializeRaw(property.getType(), value.getTag(ValueNotifierHelpers.KEY));
                 aspectProperties.setValue(property, trueValue);
                 getAspect().setProperties(getPartType(), getTarget(), getPartState(), aspectProperties);
 

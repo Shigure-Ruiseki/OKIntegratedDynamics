@@ -27,13 +27,8 @@ public class GuiVariablestore extends GuiContainerConfigurable<ContainerVariable
     }
 
     @Override
-    protected ResourceLocation constructResourceLocation() {
-        return new ResourceLocation(getGuiTexture());
-    }
-
-    @Override
-    public String getGuiTexture() {
-        return "textures/gui/container/generic_54.png";
+    protected ResourceLocation constructGuiTexture() {
+        return new ResourceLocation("textures/gui/container/generic_54.png");
     }
 
     @Override

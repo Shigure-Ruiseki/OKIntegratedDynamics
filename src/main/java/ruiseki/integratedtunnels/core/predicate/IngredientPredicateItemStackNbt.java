@@ -1,6 +1,9 @@
 package ruiseki.integratedtunnels.core.predicate;
 
+import java.util.Optional;
+
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 
 import org.jetbrains.annotations.Nullable;
@@ -16,17 +19,18 @@ public class IngredientPredicateItemStackNbt extends IngredientPredicate<ItemSta
     private final boolean blacklist;
     private final boolean requireNbt;
     private final boolean subset;
-    private final NBTTagCompound tag;
+    private final Optional<NBTTagCompound> tag;
     private final boolean recursive;
     private final boolean superset;
 
     public IngredientPredicateItemStackNbt(boolean blacklist, int amount, boolean exactAmount, boolean requireNbt,
-        boolean subset, NBTTagCompound tag, boolean recursive, boolean superset) {
+        boolean subset, Optional<NBTBase> tag, boolean recursive, boolean superset) {
         super(IngredientComponent.ITEMSTACK, blacklist, false, amount, exactAmount);
         this.blacklist = blacklist;
         this.requireNbt = requireNbt;
         this.subset = subset;
-        this.tag = tag;
+        this.tag = tag.filter(t -> t instanceof NBTTagCompound)
+            .map(t -> (NBTTagCompound) t);
         this.recursive = recursive;
         this.superset = superset;
     }
@@ -38,8 +42,10 @@ public class IngredientPredicateItemStackNbt extends IngredientPredicate<ItemSta
             return isBlacklist();
         }
         NBTTagCompound itemTag = input.hasTagCompound() ? input.getTagCompound() : new NBTTagCompound();
-        boolean ret = (!subset || NbtHelpers.nbtMatchesSubset(tag, itemTag, recursive))
-            && (!superset || NbtHelpers.nbtMatchesSubset(itemTag, tag, recursive));
+        boolean ret = (!subset || tag.map(t -> NbtHelpers.nbtMatchesSubset(t, itemTag, recursive))
+            .orElse(false)
+            && (!superset || tag.map(t -> NbtHelpers.nbtMatchesSubset(itemTag, t, recursive))
+                .orElse(false)));
         if (blacklist) {
             ret = !ret;
         }

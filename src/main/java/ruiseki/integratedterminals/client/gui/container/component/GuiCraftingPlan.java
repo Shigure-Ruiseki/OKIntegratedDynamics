@@ -34,8 +34,12 @@ import ruiseki.integratedterminals.api.terminalstorage.crafting.ITerminalCraftin
 import ruiseki.integratedterminals.api.terminalstorage.crafting.TerminalCraftingJobStatus;
 import ruiseki.integratedterminals.capability.ingredient.IngredientComponentTerminalStorageHandlerConfig;
 import ruiseki.integratedterminals.core.client.gui.GuiTerminalStorage;
+import ruiseki.okcore.client.gui.IGuiEventListener;
+import ruiseki.okcore.client.gui.IRenderable;
 import ruiseki.okcore.client.gui.RenderItemExtendedSlotCount;
 import ruiseki.okcore.client.gui.component.GuiScrollBar;
+import ruiseki.okcore.client.gui.component.IWidgetEventListener;
+import ruiseki.okcore.client.gui.component.IWidgetRenderable;
 import ruiseki.okcore.client.gui.image.Image;
 import ruiseki.okcore.client.gui.image.Images;
 import ruiseki.okcore.client.renderer.GlStateManager;
@@ -48,15 +52,16 @@ import ruiseki.okcore.helper.RenderHelpers;
  * A gui component for visualizing {@link ruiseki.integratedterminals.core.client.gui.CraftingOptionGuiData}.
  *
  * The using gui must call the following methods from its respective method:
- * * {@link #handleMouseInput()}
- * * {@link #drawScreen(int, int, float)} (int, int, float)}
+ * * {@link #drawScreen(int, int, float)}
  * * {@link #drawGuiContainerBackgroundLayer(float, int, int)}
  * * {@link #drawGuiContainerForegroundLayer(int, int)}
- * * {@link #mouseClicked(int, int, int)}
+ * * {@link #mouseScrolled(double, double, double)}}
+ * * {@link #mouseDragged(double, double, int, double, double)}}
  *
  * @author rubensworks
  */
-public class GuiCraftingPlan extends Gui {
+public class GuiCraftingPlan extends Gui
+    implements IWidgetRenderable, IRenderable, IWidgetEventListener, IGuiEventListener {
 
     public static final int ELEMENT_WIDTH = 221;
     private static final int ELEMENT_HEIGHT = 16;
@@ -67,8 +72,8 @@ public class GuiCraftingPlan extends Gui {
     private final GuiContainer parentGui;
     private final int guiLeft;
     private final int guiTop;
-    private final int x;
-    private final int y;
+    private int x;
+    private int y;
     private final List<GuiCraftingPlan.Element> elements;
     private final List<GuiCraftingPlan.Element> visibleElements;
     private final boolean valid;
@@ -141,8 +146,14 @@ public class GuiCraftingPlan extends Gui {
         this.firstRow = Math.max(0, firstRow);
     }
 
+    @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
-        scrollBar.drawScreen(mouseX, mouseY, partialTicks);
+
+    }
+
+    @Override
+    public void drawWidget(int mouseX, int mouseY, float partialTicks) {
+
     }
 
     protected List<Element> getVisibleElements() {
@@ -373,25 +384,33 @@ public class GuiCraftingPlan extends Gui {
         }
 
         drawGuiContainerLayer(guiLeft, guiTop, GuiTerminalStorage.DrawLayer.BACKGROUND, partialTicks, mouseX, mouseY);
-        scrollBar.drawGuiContainerBackgroundLayer(partialTicks, mouseX, mouseY);
+        scrollBar.drawWidget(mouseX, mouseY, partialTicks);
     }
 
     public void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
         drawGuiContainerLayer(0, 0, GuiTerminalStorage.DrawLayer.FOREGROUND, 0, mouseX, mouseY);
     }
 
-    public void handleMouseInput() {
-        scrollBar.handleMouseInput();
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double scroll) {
+        return scrollBar.mouseScrolled(mouseX, mouseY, scroll);
     }
 
-    public void mouseClicked(int mouseX, int mouseY, int mouseButton) {
+    @Override
+    public boolean mouseDragged(double mouseX, double mouseY, int mouseButton, double offsetX, double offsetY) {
+        return scrollBar.mouseDragged(mouseX, mouseY, mouseButton, offsetX, offsetY);
+    }
+
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
         int offsetY = 0;
         for (GuiCraftingPlan.Element element : getVisibleElements()) {
-            int x = this.guiLeft + this.x + getAbsoluteElementIndent(element);
-            int y = this.guiTop + this.y + offsetY;
+            int x = this.guiLeft + this.getX() + getAbsoluteElementIndent(element);
+            int y = this.guiTop + this.getY() + offsetY;
             offsetY += ELEMENT_HEIGHT_TOTAL;
-            if (RenderHelpers
-                .isPointInRegion(new Rectangle(x, y, ELEMENT_WIDTH, ELEMENT_HEIGHT), new Point(mouseX, mouseY))) {
+            if (RenderHelpers.isPointInRegion(
+                new Rectangle(x, y, ELEMENT_WIDTH, ELEMENT_HEIGHT),
+                new Point((int) mouseX, (int) mouseY))) {
                 Minecraft.getMinecraft()
                     .getSoundHandler()
                     .playSound(PositionedSoundRecord.func_147674_a(new ResourceLocation("gui.button.press"), 1.0F));
@@ -400,9 +419,10 @@ public class GuiCraftingPlan extends Gui {
                     child.setEnabled(!child.isEnabled());
                 }
                 refreshList();
-                break;
+                return true;
             }
         }
+        return false;
     }
 
     public static List<GuiCraftingPlan.Element> getElements(ITerminalCraftingPlan<?> craftingPlan) {
@@ -572,4 +592,33 @@ public class GuiCraftingPlan extends Gui {
         }
     }
 
+    @Override
+    public int getX() {
+        return x;
+    }
+
+    @Override
+    public int getY() {
+        return y;
+    }
+
+    @Override
+    public void setX(int x) {
+        this.x = x;
+    }
+
+    @Override
+    public void setY(int y) {
+        this.y = y;
+    }
+
+    @Override
+    public void setFocused(boolean focused) {
+
+    }
+
+    @Override
+    public boolean isFocused() {
+        return false;
+    }
 }

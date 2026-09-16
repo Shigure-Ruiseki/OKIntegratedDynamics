@@ -53,7 +53,7 @@ public class ValueTypeListProxySlice<T extends IValueType<V>, V extends IValue> 
         @Override
         protected void serializeNbt(ValueTypeListProxySlice<IValueType<IValue>, IValue> value, NBTTagCompound tag)
             throws IValueTypeListProxyFactoryTypeRegistry.SerializationException {
-            tag.setString("sublist", ValueTypeListProxyFactories.REGISTRY.serialize(value.list));
+            tag.setTag("sublist", ValueTypeListProxyFactories.REGISTRY.serialize(value.list));
             tag.setInteger("from", value.from);
             tag.setInteger("to", value.to);
         }
@@ -62,7 +62,7 @@ public class ValueTypeListProxySlice<T extends IValueType<V>, V extends IValue> 
         protected ValueTypeListProxySlice<IValueType<IValue>, IValue> deserializeNbt(NBTTagCompound tag)
             throws IValueTypeListProxyFactoryTypeRegistry.SerializationException {
             IValueTypeListProxy<IValueType<IValue>, IValue> list = ValueTypeListProxyFactories.REGISTRY
-                .deserialize(tag.getString("sublist"));
+                .deserialize(tag.getTag("sublist"));
             return new ValueTypeListProxySlice<>(list, tag.getInteger("from"), tag.getInteger("to"));
         }
     }

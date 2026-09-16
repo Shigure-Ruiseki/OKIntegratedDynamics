@@ -2,6 +2,7 @@ package ruiseki.integrateddynamics.network.packet;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.nbt.NBTBase;
 import net.minecraft.world.World;
 
 import cpw.mods.fml.relauncher.Side;
@@ -24,7 +25,7 @@ import ruiseki.okcore.network.PacketCodec;
 public class LogicProgrammerValueTypeListValueChangedPacket extends PacketCodec {
 
     @CodecField
-    private String value;
+    private NBTBase value;
 
     public LogicProgrammerValueTypeListValueChangedPacket() {
 

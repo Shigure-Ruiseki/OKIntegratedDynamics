@@ -2,12 +2,18 @@ package ruiseki.integrateddynamics.core.evaluate.variable;
 
 import java.util.Locale;
 
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagLong;
 import net.minecraft.util.EnumChatFormatting;
+import net.minecraftforge.common.util.Constants;
 
 import lombok.ToString;
 import ruiseki.integrateddynamics.GeneralConfig;
+import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeNumber;
+import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.okcore.helper.Helpers;
+import ruiseki.okcore.helper.LangHelpers;
 
 /**
  * Value type with values that are doubles.
@@ -36,13 +42,33 @@ public class ValueTypeLong extends ValueTypeBase<ValueTypeLong.ValueLong>
     }
 
     @Override
-    public String serialize(ValueLong value) {
+    public NBTBase serialize(ValueLong value) {
+        return new NBTTagLong(value.getRawValue());
+    }
+
+    @Override
+    public ValueLong deserialize(NBTBase value) {
+        if (value.getId() == Constants.NBT.TAG_LONG) {
+            return ValueLong.of(((NBTTagLong) value).func_150291_c());
+        } else {
+            throw new IllegalArgumentException(String.format("Value \"%s\" could not be parsed to a long.", value));
+        }
+    }
+
+    @Override
+    public String toString(ValueLong value) {
         return Long.toString(value.getRawValue());
     }
 
     @Override
-    public ValueLong deserialize(String value) {
-        return ValueLong.of(Long.parseLong(value));
+    public ValueLong parseString(String value) throws EvaluationException {
+        try {
+            return ValueLong.of(Long.parseLong(value));
+        } catch (NumberFormatException e) {
+            throw new EvaluationException(
+                LangHelpers
+                    .localize(L10NValues.OPERATOR_ERROR_PARSE, value, LangHelpers.localize(getUnlocalizedName())));
+        }
     }
 
     @Override

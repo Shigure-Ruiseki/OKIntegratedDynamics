@@ -8,9 +8,11 @@ import org.jetbrains.annotations.Nullable;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.integrateddynamics.api.client.gui.subgui.ISubGuiBox;
+import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 import ruiseki.integrateddynamics.client.gui.GuiLogicProgrammerBase;
+import ruiseki.integrateddynamics.core.evaluate.variable.ValueHelpers;
 import ruiseki.integrateddynamics.core.evaluate.variable.gui.GuiElementValueTypeString;
 import ruiseki.integrateddynamics.inventory.container.ContainerLogicProgrammerBase;
 import ruiseki.okcore.helper.LangHelpers;
@@ -65,7 +67,12 @@ public class ValueTypeStringLPElement extends ValueTypeLPElementBase {
 
     @Override
     public LangHelpers.UnlocalizedString validate() {
-        return getValueType().canDeserialize(getInnerGuiElement().getInputString());
+        try {
+            ValueHelpers.parseString(getInnerGuiElement().getValueType(), getInnerGuiElement().getInputString());
+        } catch (EvaluationException e) {
+            return new LangHelpers.UnlocalizedString(e.getMessage());
+        }
+        return null;
     }
 
     @Override
@@ -76,7 +83,7 @@ public class ValueTypeStringLPElement extends ValueTypeLPElementBase {
     @Override
     @SideOnly(Side.CLIENT)
     public boolean isFocused(ISubGuiBox subGui) {
-        return ((ValueTypeStringLPElementRenderPattern) subGui).getSearchField()
+        return ((ValueTypeStringLPElementRenderPattern) subGui).getTextField()
             .isFocused();
 
     }
@@ -84,7 +91,7 @@ public class ValueTypeStringLPElement extends ValueTypeLPElementBase {
     @Override
     @SideOnly(Side.CLIENT)
     public void setFocused(ISubGuiBox subGui, boolean focused) {
-        ((ValueTypeStringLPElementRenderPattern) subGui).getSearchField()
+        ((ValueTypeStringLPElementRenderPattern) subGui).getTextField()
             .setFocused(focused);
     }
 

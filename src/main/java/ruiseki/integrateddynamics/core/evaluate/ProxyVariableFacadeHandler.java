@@ -7,7 +7,6 @@ import ruiseki.integrateddynamics.Reference;
 import ruiseki.integrateddynamics.api.item.IProxyVariableFacade;
 import ruiseki.integrateddynamics.api.item.IVariableFacadeHandler;
 import ruiseki.integrateddynamics.core.item.ProxyVariableFacade;
-import ruiseki.okcore.helper.MinecraftHelpers;
 
 /**
  * Handler for proxy variable facades.
@@ -35,7 +34,7 @@ public class ProxyVariableFacadeHandler implements IVariableFacadeHandler<IProxy
 
     @Override
     public IProxyVariableFacade getVariableFacade(int id, NBTTagCompound tag) {
-        if (!tag.hasKey("partId", MinecraftHelpers.NBTTag_Types.NBTTagInt.ordinal())) {
+        if (!tag.hasKey("partId")) {
             return INVALID_FACADE;
         }
         return new ProxyVariableFacade(id, tag.getInteger("partId"));

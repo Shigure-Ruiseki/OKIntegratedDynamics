@@ -4,16 +4,19 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.util.ResourceLocation;
+
+import org.lwjgl.input.Keyboard;
 
 import com.google.common.collect.Lists;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import ruiseki.integrateddynamics.IntegratedDynamics;
+import ruiseki.integrateddynamics.Reference;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartTarget;
@@ -29,7 +32,6 @@ import ruiseki.okcore.helper.GuiHelpers;
 import ruiseki.okcore.helper.Helpers;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.ValueNotifierHelpers;
-import ruiseki.okcore.init.ModBase;
 
 /**
  * Gui for part offsets.
@@ -38,9 +40,7 @@ import ruiseki.okcore.init.ModBase;
  */
 @EqualsAndHashCode(callSuper = false)
 @Data
-public class GuiPartOffset<T extends ContainerPartOffset> extends GuiContainerExtended {
-
-    public static final int BUTTON_SAVE = 1;
+public class GuiPartOffset<T extends ContainerPartOffset> extends GuiContainerExtended<T> {
 
     private final PartTarget target;
     private final IPartContainer partContainer;
@@ -53,28 +53,27 @@ public class GuiPartOffset<T extends ContainerPartOffset> extends GuiContainerEx
     /**
      * Make a new instance.
      *
-     * @param target        The target.
      * @param player        The player.
+     * @param target        The target.
      * @param partContainer The part container.
      * @param partType      The part type.
      */
+    @SuppressWarnings("unchecked")
     public GuiPartOffset(EntityPlayer player, PartTarget target, IPartContainer partContainer, IPartType partType) {
-        this(new ContainerPartOffset(player, target, partContainer, partType), player, target, partContainer, partType);
+        this(
+            (T) new ContainerPartOffset(player, target, partContainer, partType),
+            player,
+            target,
+            partContainer,
+            partType);
     }
 
-    public GuiPartOffset(ContainerPartOffset containerPartOffset, EntityPlayer player, PartTarget target,
-        IPartContainer partContainer, IPartType partType) {
+    public GuiPartOffset(T containerPartOffset, EntityPlayer player, PartTarget target, IPartContainer partContainer,
+        IPartType partType) {
         super(containerPartOffset);
         this.target = target;
         this.partContainer = partContainer;
         this.partType = partType;
-
-        putButtonAction(BUTTON_SAVE, (buttonId, gui, container) -> onSave());
-    }
-
-    @Override
-    protected ContainerPartOffset getContainer() {
-        return (ContainerPartOffset) super.getContainer();
     }
 
     protected void onSave() {
@@ -91,8 +90,8 @@ public class GuiPartOffset<T extends ContainerPartOffset> extends GuiContainerEx
     }
 
     @Override
-    public String getGuiTexture() {
-        return IntegratedDynamics._instance.getReferenceValue(ModBase.REFKEY_TEXTURE_PATH_GUI) + "part_offsets.png";
+    protected ResourceLocation constructGuiTexture() {
+        return new ResourceLocation(Reference.MOD_ID, "textures/gui/part_offsets.png");
     }
 
     @Override
@@ -100,7 +99,6 @@ public class GuiPartOffset<T extends ContainerPartOffset> extends GuiContainerEx
         super.initGui();
 
         numberFieldX = new GuiNumberField(
-            0,
             fontRendererObj,
             guiLeft + 107 - 54 - 7 - 18,
             guiTop + 33,
@@ -114,7 +112,6 @@ public class GuiPartOffset<T extends ContainerPartOffset> extends GuiContainerEx
         numberFieldX.setCanLoseFocus(true);
 
         numberFieldY = new GuiNumberField(
-            1,
             fontRendererObj,
             guiLeft + 107 - 54 + 36 - 7,
             guiTop + 33,
@@ -128,7 +125,6 @@ public class GuiPartOffset<T extends ContainerPartOffset> extends GuiContainerEx
         numberFieldY.setCanLoseFocus(true);
 
         numberFieldZ = new GuiNumberField(
-            2,
             fontRendererObj,
             guiLeft + 107 - 54 + 72 - 7 + 18,
             guiTop + 33,
@@ -142,14 +138,14 @@ public class GuiPartOffset<T extends ContainerPartOffset> extends GuiContainerEx
         numberFieldZ.setCanLoseFocus(true);
 
         String save = LangHelpers.localize("gui.integrateddynamics.button.save");
-        this.buttonList.add(
+        addRenderableWidget(
             new GuiButtonText(
-                BUTTON_SAVE,
                 this.guiLeft + 178,
                 this.guiTop + 6,
                 this.fontRendererObj.getStringWidth(save) + 6,
                 16,
                 save,
+                createServerPressable(ContainerPartOffset.BUTTON_SAVE, b -> onSave()),
                 true));
 
         this.refreshValues();
@@ -164,22 +160,39 @@ public class GuiPartOffset<T extends ContainerPartOffset> extends GuiContainerEx
     }
 
     @Override
-    protected void keyTyped(char typedChar, int keyCode) {
-        if (!this.numberFieldX.textboxKeyTyped(typedChar, keyCode)
-            && !this.numberFieldY.textboxKeyTyped(typedChar, keyCode)
-            && !this.numberFieldZ.textboxKeyTyped(typedChar, keyCode)) {
+    public boolean charTyped(char typedChar, int keyCode) {
+        if (!this.numberFieldX.charTyped(typedChar, keyCode) && !this.numberFieldY.charTyped(typedChar, keyCode)
+            && !this.numberFieldZ.charTyped(typedChar, keyCode)) {
             onSave();
-            super.keyTyped(typedChar, keyCode);
+            return super.charTyped(typedChar, keyCode);
+        }
+        return true;
+    }
+
+    @Override
+    public boolean keyPressed(int typedChar, int keyCode, int modifiers) {
+        if (typedChar != Keyboard.KEY_ESCAPE) {
+            if (this.numberFieldX.keyPressed(typedChar, keyCode, modifiers)
+                || this.numberFieldY.keyPressed(typedChar, keyCode, modifiers)
+                || this.numberFieldZ.keyPressed(typedChar, keyCode, modifiers)) {
+                onSave();
+                return true;
+            }
+            return true;
+        } else {
+            return super.keyPressed(typedChar, keyCode, modifiers);
         }
     }
 
     @Override
-    protected void mouseClicked(int mouseX, int mouseY, int mouseButton) {
-        this.numberFieldX.mouseClicked(mouseX, mouseY, mouseButton);
-        this.numberFieldY.mouseClicked(mouseX, mouseY, mouseButton);
-        this.numberFieldZ.mouseClicked(mouseX, mouseY, mouseButton);
-        onSave();
-        super.mouseClicked(mouseX, mouseY, mouseButton);
+    public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
+        if (this.numberFieldX.mouseClicked(mouseX, mouseY, mouseButton)
+            || this.numberFieldY.mouseClicked(mouseX, mouseY, mouseButton)
+            || this.numberFieldZ.mouseClicked(mouseX, mouseY, mouseButton)) {
+            onSave();
+            return true;
+        }
+        return super.mouseClicked(mouseX, mouseY, mouseButton);
     }
 
     @Override
@@ -190,9 +203,9 @@ public class GuiPartOffset<T extends ContainerPartOffset> extends GuiContainerEx
             guiLeft + 8,
             guiTop + 19,
             Helpers.RGBToInt(0, 0, 0));
-        numberFieldX.drawTextBox(Minecraft.getMinecraft(), mouseX, mouseY);
-        numberFieldY.drawTextBox(Minecraft.getMinecraft(), mouseX, mouseY);
-        numberFieldZ.drawTextBox(Minecraft.getMinecraft(), mouseX, mouseY);
+        numberFieldX.drawScreen(mouseX, mouseY, partialTicks);
+        numberFieldY.drawScreen(mouseX, mouseY, partialTicks);
+        numberFieldZ.drawScreen(mouseX, mouseY, partialTicks);
 
         GlStateManager.color(1, 1, 1, 1);
         for (int i = 0; i < 3; i++) {

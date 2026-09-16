@@ -15,7 +15,6 @@ import ruiseki.integrateddynamics.api.part.aspect.IAspectRead;
 import ruiseki.integrateddynamics.api.part.read.IPartStateReader;
 import ruiseki.integrateddynamics.api.part.read.IPartTypeReader;
 import ruiseki.integrateddynamics.core.client.gui.container.GuiMultipartAspects;
-import ruiseki.integrateddynamics.core.inventory.container.ContainerMultipartAspects;
 import ruiseki.integrateddynamics.core.inventory.container.ContainerPartReader;
 import ruiseki.integrateddynamics.item.ItemVariableConfig;
 import ruiseki.okcore.helper.RenderHelpers;
@@ -27,7 +26,7 @@ import ruiseki.okcore.inventory.IGuiContainerProvider;
  * @author rubensworks
  */
 public class GuiPartReader<P extends IPartTypeReader<P, S> & IGuiContainerProvider, S extends IPartStateReader<P>>
-    extends GuiMultipartAspects<P, S, IAspectRead> {
+    extends GuiMultipartAspects<P, S, IAspectRead, ContainerPartReader<P, S>> {
 
     /**
      * Make a new instance.
@@ -47,18 +46,17 @@ public class GuiPartReader<P extends IPartTypeReader<P, S> & IGuiContainerProvid
     }
 
     @Override
-    protected void drawAdditionalElementInfoForeground(ContainerMultipartAspects<P, S, IAspectRead> container,
-        int index, IAspectRead aspect, int mouseX, int mouseY) {
+    protected void drawAdditionalElementInfoForeground(ContainerPartReader<P, S> container, int index,
+        IAspectRead aspect, int mouseX, int mouseY) {
 
     }
 
     @Override
-    protected void drawAdditionalElementInfo(ContainerMultipartAspects<P, S, IAspectRead> container, int index,
-        IAspectRead aspect) {
+    protected void drawAdditionalElementInfo(ContainerPartReader<P, S> container, int index, IAspectRead aspect) {
         FontRenderer fontRenderer = fontRendererObj;
 
         // Get current aspect value
-        ContainerPartReader<P, S> reader = (ContainerPartReader<P, S>) container;
+        ContainerPartReader<P, S> reader = container;
 
         Pair<String, Integer> readValues = reader.getReadValue(aspect);
         if (readValues != null) {

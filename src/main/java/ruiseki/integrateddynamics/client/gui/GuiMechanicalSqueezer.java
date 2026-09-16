@@ -2,9 +2,11 @@ package ruiseki.integrateddynamics.client.gui;
 
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.util.ResourceLocation;
 
 import com.google.common.collect.Lists;
 
+import ruiseki.integrateddynamics.Reference;
 import ruiseki.integrateddynamics.core.client.gui.GuiMechanicalMachine;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.integrateddynamics.inventory.container.ContainerMechanicalSqueezer;
@@ -39,14 +41,20 @@ public class GuiMechanicalSqueezer extends GuiMechanicalMachine<ContainerMechani
     }
 
     @Override
+    protected ResourceLocation constructGuiTexture() {
+        return new ResourceLocation(Reference.MOD_ID, "textures/gui/mechanical_squeezer.png");
+    }
+
+    @Override
     public void initGui() {
         super.initGui();
 
-        this.buttonList.add(
+        addRenderableWidget(
             buttonToggleFluidEject = new GuiButtonImage(
-                ContainerMechanicalSqueezer.BUTTON_TOGGLE_FLUID_EJECT,
                 getGuiLeftTotal() + 149,
                 getGuiTopTotal() + 71,
+                LangHelpers.localize("gui.integrateddynamics.mechanical_squeezer.fluidautoeject"),
+                createServerPressable(ContainerMechanicalSqueezer.BUTTON_TOGGLE_FLUID_EJECT, (button) -> {}),
                 imageArrowDownDisabled));
     }
 

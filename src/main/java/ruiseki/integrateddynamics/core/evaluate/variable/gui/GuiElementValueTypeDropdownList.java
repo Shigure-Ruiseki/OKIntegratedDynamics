@@ -14,12 +14,12 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import lombok.Data;
 import ruiseki.integrateddynamics.api.client.gui.subgui.IGuiInputElementValueType;
+import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 import ruiseki.integrateddynamics.api.logicprogrammer.IConfigRenderPattern;
 import ruiseki.integrateddynamics.core.client.gui.IDropdownEntry;
 import ruiseki.integrateddynamics.core.client.gui.IDropdownEntryListener;
-import ruiseki.integrateddynamics.core.evaluate.variable.ValueHelpers;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.integrateddynamics.core.logicprogrammer.RenderPattern;
 import ruiseki.okcore.helper.LangHelpers;
@@ -93,9 +93,13 @@ public class GuiElementValueTypeDropdownList<T, G extends Gui, C extends Contain
 
     @Override
     public LangHelpers.UnlocalizedString validate() {
-        IValue value = ValueHelpers.deserializeRaw(getValueType(), inputString);
-        if (!this.validator.apply(value)) {
-            return new LangHelpers.UnlocalizedString(L10NValues.VALUE_ERROR);
+        try {
+            IValue value = getValueType().parseString(inputString);
+            if (!this.validator.apply(value)) {
+                return new LangHelpers.UnlocalizedString(L10NValues.VALUE_ERROR);
+            }
+        } catch (EvaluationException e) {
+            return new LangHelpers.UnlocalizedString(e.getMessage());
         }
         return null;
     }

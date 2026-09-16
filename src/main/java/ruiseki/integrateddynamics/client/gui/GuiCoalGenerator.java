@@ -1,26 +1,33 @@
 package ruiseki.integrateddynamics.client.gui;
 
 import net.minecraft.entity.player.InventoryPlayer;
+import net.minecraft.util.ResourceLocation;
 
+import ruiseki.integrateddynamics.Reference;
 import ruiseki.integrateddynamics.inventory.container.ContainerCoalGenerator;
 import ruiseki.integrateddynamics.tileentity.TileCoalGenerator;
 import ruiseki.okcore.client.gui.container.GuiContainerConfigurable;
 
 /**
  * Gui for the coal generator.
- * 
+ *
  * @author rubensworks
  */
 public class GuiCoalGenerator extends GuiContainerConfigurable<ContainerCoalGenerator> {
 
     /**
      * Make a new instance.
-     * 
+     *
      * @param inventory The player inventory.
      * @param tile      The part.
      */
     public GuiCoalGenerator(InventoryPlayer inventory, TileCoalGenerator tile) {
         super(new ContainerCoalGenerator(inventory, tile));
+    }
+
+    @Override
+    protected ResourceLocation constructGuiTexture() {
+        return new ResourceLocation(Reference.MOD_ID, "textures/gui/coal_generator.png");
     }
 
     protected void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY) {

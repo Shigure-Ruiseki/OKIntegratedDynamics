@@ -42,7 +42,6 @@ import ruiseki.okcore.helper.BlockStateHelpers;
 import ruiseki.okcore.helper.CapabilityHelpers;
 import ruiseki.okcore.helper.ItemNBTHelpers;
 import ruiseki.okcore.helper.LangHelpers;
-import ruiseki.okcore.helper.MinecraftHelpers;
 
 /**
  * An omnidirectional wireless connector part that can connect to
@@ -90,7 +89,7 @@ public class PartTypeConnectorOmniDirectional
     public State getState(ItemStack itemStack) {
         State state = super.getState(itemStack);
         NBTTagCompound tag = itemStack.getTagCompound();
-        if (tag != null && tag.hasKey(NBT_KEY_ID, MinecraftHelpers.NBTTag_Types.NBTTagInt.ordinal())) {
+        if (tag != null && tag.hasKey(NBT_KEY_ID)) {
             state.setGroupId(tag.getInteger(NBT_KEY_ID));
         } else {
             state.setGroupId(PartTypeConnectorOmniDirectional.generateGroupId());

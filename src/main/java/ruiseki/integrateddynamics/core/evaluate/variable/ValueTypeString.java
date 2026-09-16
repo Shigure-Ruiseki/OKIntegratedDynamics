@@ -1,8 +1,11 @@
 package ruiseki.integrateddynamics.core.evaluate.variable;
 
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagString;
 import net.minecraft.util.EnumChatFormatting;
 
 import lombok.ToString;
+import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeNamed;
 import ruiseki.okcore.helper.Helpers;
 
@@ -33,12 +36,22 @@ public class ValueTypeString extends ValueTypeBase<ValueTypeString.ValueString>
     }
 
     @Override
-    public String serialize(ValueString value) {
+    public NBTBase serialize(ValueString value) {
+        return new NBTTagString(value.getRawValue());
+    }
+
+    @Override
+    public ValueString deserialize(NBTBase value) {
+        return ValueString.of(((NBTTagString) value).func_150285_a_());
+    }
+
+    @Override
+    public String toString(ValueString value) {
         return value.getRawValue();
     }
 
     @Override
-    public ValueString deserialize(String value) {
+    public ValueString parseString(String value) throws EvaluationException {
         return ValueString.of(value);
     }
 

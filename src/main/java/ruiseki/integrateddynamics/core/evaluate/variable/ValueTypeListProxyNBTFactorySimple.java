@@ -1,7 +1,6 @@
 package ruiseki.integrateddynamics.core.evaluate.variable;
 
-import net.minecraft.nbt.JsonToNBT;
-import net.minecraft.nbt.NBTException;
+import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 
 import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
@@ -19,18 +18,17 @@ public abstract class ValueTypeListProxyNBTFactorySimple<T extends IValueType<V>
     implements IValueTypeListProxyFactoryTypeRegistry.IProxyFactory<T, V, P> {
 
     @Override
-    public String serialize(P value) throws IValueTypeListProxyFactoryTypeRegistry.SerializationException {
+    public NBTBase serialize(P value) throws IValueTypeListProxyFactoryTypeRegistry.SerializationException {
         NBTTagCompound tag = new NBTTagCompound();
         serializeNbt(value, tag);
-        return tag.toString();
+        return tag;
     }
 
     @Override
-    public P deserialize(String value) throws IValueTypeListProxyFactoryTypeRegistry.SerializationException {
+    public P deserialize(NBTBase value) throws IValueTypeListProxyFactoryTypeRegistry.SerializationException {
         try {
-            NBTTagCompound tag = (NBTTagCompound) JsonToNBT.func_150315_a(value);
-            return deserializeNbt(tag);
-        } catch (NBTException | EvaluationException e) {
+            return deserializeNbt((NBTTagCompound) value);
+        } catch (ClassCastException | EvaluationException e) {
             e.printStackTrace();
             throw new IValueTypeListProxyFactoryTypeRegistry.SerializationException(e.getMessage());
         }

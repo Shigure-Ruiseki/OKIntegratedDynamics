@@ -10,6 +10,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import org.lwjgl.input.Keyboard;
@@ -21,6 +22,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import ruiseki.integrateddynamics.GeneralConfig;
 import ruiseki.integrateddynamics.IntegratedDynamics;
+import ruiseki.integrateddynamics.Reference;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartTarget;
@@ -35,8 +37,6 @@ import ruiseki.okcore.helper.GuiHelpers;
 import ruiseki.okcore.helper.Helpers;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.ValueNotifierHelpers;
-import ruiseki.okcore.init.ModBase;
-import ruiseki.okcore.inventory.container.ExtendedInventoryContainer;
 
 /**
  * Gui for part settings.
@@ -45,9 +45,7 @@ import ruiseki.okcore.inventory.container.ExtendedInventoryContainer;
  */
 @EqualsAndHashCode(callSuper = false)
 @Data
-public class GuiPartSettings extends GuiContainerExtended {
-
-    public static final int BUTTON_SAVE = 0;
+public class GuiPartSettings<C extends ContainerPartSettings> extends GuiContainerExtended<C> {
 
     private final PartTarget target;
     private final IPartContainer partContainer;
@@ -69,26 +67,19 @@ public class GuiPartSettings extends GuiContainerExtended {
      */
     public GuiPartSettings(EntityPlayer player, PartTarget target, IPartContainer partContainer, IPartType partType) {
         this(
-            new ContainerPartSettings(player, target, partContainer, partType),
+            (C) new ContainerPartSettings(player, target, partContainer, partType),
             player,
             target,
             partContainer,
             partType);
     }
 
-    public GuiPartSettings(ContainerPartSettings containerPartSettings, EntityPlayer player, PartTarget target,
+    public GuiPartSettings(C containerPartSettings, EntityPlayer player, PartTarget target,
         IPartContainer partContainer, IPartType partType) {
         super(containerPartSettings);
         this.target = target;
         this.partContainer = partContainer;
         this.partType = partType;
-
-        putButtonAction(BUTTON_SAVE, (buttonId, gui, container) -> onSave());
-    }
-
-    @Override
-    protected ExtendedInventoryContainer getContainer() {
-        return super.getContainer();
     }
 
     protected void onSave() {
@@ -103,38 +94,26 @@ public class GuiPartSettings extends GuiContainerExtended {
                     : dropdownFieldSide.getSelectedDropdownPossibility()
                         .getValue();
                 int side = selectedSide != null && selectedSide != getDefaultSide() ? selectedSide.ordinal() : -1;
-                ValueNotifierHelpers
-                    .setValue(getContainer(), ((ContainerPartSettings) getContainer()).getLastSideValueId(), side);
+                ValueNotifierHelpers.setValue(getContainer(), getContainer().getLastSideValueId(), side);
             }
             if (isFieldUpdateIntervalEnabled()) {
                 int updateInterval = numberFieldUpdateInterval.getInt();
-                ValueNotifierHelpers.setValue(
-                    getContainer(),
-                    ((ContainerPartSettings) getContainer()).getLastUpdateValueId(),
-                    updateInterval);
+                ValueNotifierHelpers.setValue(getContainer(), getContainer().getLastUpdateValueId(), updateInterval);
             }
             if (isFieldPriorityEnabled()) {
                 int priority = numberFieldPriority.getInt();
-                ValueNotifierHelpers.setValue(
-                    getContainer(),
-                    ((ContainerPartSettings) getContainer()).getLastPriorityValueId(),
-                    priority);
+                ValueNotifierHelpers.setValue(getContainer(), getContainer().getLastPriorityValueId(), priority);
             }
             if (isFieldChannelEnabled()) {
                 int channel = numberFieldChannel.getInt();
-                ValueNotifierHelpers.setValue(
-                    getContainer(),
-                    ((ContainerPartSettings) getContainer()).getLastChannelValueId(),
-                    channel);
+                ValueNotifierHelpers.setValue(getContainer(), getContainer().getLastChannelValueId(), channel);
             }
         } catch (NumberFormatException e) {}
     }
 
     @Override
-    public String getGuiTexture() {
-        return getContainer().getGuiProvider()
-            .getModGui()
-            .getReferenceValue(ModBase.REFKEY_TEXTURE_PATH_GUI) + "part_settings.png";
+    protected ResourceLocation constructGuiTexture() {
+        return new ResourceLocation(Reference.MOD_ID, "textures/gui/part_settings.png");
     }
 
     protected ForgeDirection getCurrentSide() {
@@ -163,7 +142,6 @@ public class GuiPartSettings extends GuiContainerExtended {
                 .map(SideDropdownEntry::new)
                 .collect(Collectors.toList());
             dropdownFieldSide = new GuiTextFieldDropdown(
-                0,
                 Minecraft.getMinecraft().fontRenderer,
                 guiLeft + 106,
                 guiTop + getFieldSideY(),
@@ -180,7 +158,6 @@ public class GuiPartSettings extends GuiContainerExtended {
 
         if (isFieldUpdateIntervalEnabled()) {
             numberFieldUpdateInterval = new GuiNumberField(
-                0,
                 Minecraft.getMinecraft().fontRenderer,
                 guiLeft + 106,
                 guiTop + getFieldUpdateIntervalY(),
@@ -201,7 +178,6 @@ public class GuiPartSettings extends GuiContainerExtended {
 
         if (isFieldPriorityEnabled()) {
             numberFieldPriority = new GuiNumberField(
-                0,
                 Minecraft.getMinecraft().fontRenderer,
                 guiLeft + 106,
                 guiTop + getFieldPriorityY(),
@@ -218,7 +194,6 @@ public class GuiPartSettings extends GuiContainerExtended {
 
         if (isFieldChannelEnabled()) {
             numberFieldChannel = new GuiNumberField(
-                0,
                 Minecraft.getMinecraft().fontRenderer,
                 guiLeft + 106,
                 guiTop + getFieldChannelY(),
@@ -235,17 +210,25 @@ public class GuiPartSettings extends GuiContainerExtended {
         }
 
         String save = LangHelpers.localize("gui.integrateddynamics.button.save");
-        buttonList.add(
+        addRenderableWidget(
             new GuiButtonText(
-                BUTTON_SAVE,
                 this.guiLeft + 178,
                 this.guiTop + 8,
                 fontRendererObj.getStringWidth(save) + 6,
                 16,
                 save,
+                createServerPressable(ContainerPartSettings.BUTTON_SAVE, b -> onSave()),
                 true));
 
         this.refreshValues();
+    }
+
+    @Override
+    public void onGuiClosed() {
+        // Auto-save the offsets when the gui is closed,
+        // so that players don't have to explicitly confirm their changes.
+        onSave();
+        super.onGuiClosed();
     }
 
     protected int getFieldSideY() {
@@ -281,44 +264,68 @@ public class GuiPartSettings extends GuiContainerExtended {
     }
 
     @Override
-    public void onGuiClosed() {
-        // Auto-save the offsets when the gui is closed,
-        // so that players don't have to explicitly confirm their changes.
-        onSave();
-        super.onGuiClosed();
+    public boolean charTyped(char typedChar, int keyCode) {
+        if (!(isFieldUpdateIntervalEnabled() && this.numberFieldUpdateInterval.charTyped(typedChar, keyCode))
+            && !(isFieldPriorityEnabled() && this.numberFieldPriority.charTyped(typedChar, keyCode))
+            && !(isFieldChannelEnabled() && this.numberFieldChannel.charTyped(typedChar, keyCode))
+            && !(isFieldSideEnabled() && this.dropdownFieldSide.charTyped(typedChar, keyCode))) {
+            return super.charTyped(typedChar, keyCode);
+        }
+        return true;
     }
 
     @Override
-    protected void keyTyped(char typedChar, int keyCode) {
-        if (!this.checkHotbarKeys(keyCode)) {
-            if (!(isFieldUpdateIntervalEnabled() && this.numberFieldUpdateInterval != null
-                && this.numberFieldUpdateInterval.textboxKeyTyped(typedChar, keyCode))
-                && !(isFieldPriorityEnabled() && this.numberFieldPriority != null
-                    && this.numberFieldPriority.textboxKeyTyped(typedChar, keyCode))
-                && !(isFieldChannelEnabled() && this.numberFieldChannel != null
-                    && this.numberFieldChannel.textboxKeyTyped(typedChar, keyCode))
-                && !(isFieldSideEnabled() && this.dropdownFieldSide != null
-                    && this.dropdownFieldSide.textboxKeyTyped(typedChar, keyCode))) {
-                super.keyTyped(typedChar, keyCode);
+    public boolean keyPressed(int typedChar, int keyCode, int modifiers) {
+        if (typedChar != Keyboard.KEY_ESCAPE) {
+            if (isFieldSideEnabled()) {
+                if (this.dropdownFieldSide.keyPressed(typedChar, keyCode, modifiers)) {
+                    return true;
+                }
+            }
+            if (isFieldUpdateIntervalEnabled()) {
+                if (this.numberFieldUpdateInterval.keyPressed(typedChar, keyCode, modifiers)) {
+                    return true;
+                }
+            }
+            if (isFieldPriorityEnabled()) {
+                if (this.numberFieldPriority.keyPressed(typedChar, keyCode, modifiers)) {
+                    return true;
+                }
+            }
+            if (isFieldChannelEnabled()) {
+                if (this.numberFieldChannel.keyPressed(typedChar, keyCode, modifiers)) {
+                    return true;
+                }
+            }
+            return true;
+        } else {
+            return super.keyPressed(typedChar, keyCode, modifiers);
+        }
+    }
+
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
+        if (isFieldSideEnabled()) {
+            if (this.dropdownFieldSide.mouseClicked(mouseX, mouseY, mouseButton)) {
+                return true;
             }
         }
-    }
-
-    @Override
-    protected void mouseClicked(int mouseX, int mouseY, int mouseButton) {
-        if (isFieldUpdateIntervalEnabled() && this.numberFieldUpdateInterval != null) {
-            this.numberFieldUpdateInterval.mouseClicked(mouseX, mouseY, mouseButton);
+        if (isFieldUpdateIntervalEnabled()) {
+            if (this.numberFieldUpdateInterval.mouseClicked(mouseX, mouseY, mouseButton)) {
+                return true;
+            }
         }
-        if (isFieldPriorityEnabled() && this.numberFieldPriority != null) {
-            this.numberFieldPriority.mouseClicked(mouseX, mouseY, mouseButton);
+        if (isFieldPriorityEnabled()) {
+            if (this.numberFieldPriority.mouseClicked(mouseX, mouseY, mouseButton)) {
+                return true;
+            }
         }
-        if (isFieldChannelEnabled() && this.numberFieldChannel != null) {
-            this.numberFieldChannel.mouseClicked(mouseX, mouseY, mouseButton);
+        if (isFieldChannelEnabled()) {
+            if (this.numberFieldChannel.mouseClicked(mouseX, mouseY, mouseButton)) {
+                return true;
+            }
         }
-        if (isFieldSideEnabled() && this.dropdownFieldSide != null) {
-            this.dropdownFieldSide.mouseClicked(mouseX, mouseY, mouseButton);
-        }
-        super.mouseClicked(mouseX, mouseY, mouseButton);
+        return super.mouseClicked(mouseX, mouseY, mouseButton);
     }
 
     @Override
@@ -330,7 +337,7 @@ public class GuiPartSettings extends GuiContainerExtended {
                 guiLeft + 8,
                 guiTop + getFieldUpdateIntervalY() + 3,
                 Helpers.RGBToInt(0, 0, 0));
-            numberFieldUpdateInterval.drawTextBox(Minecraft.getMinecraft(), mouseX, mouseY);
+            numberFieldUpdateInterval.drawScreen(mouseX, mouseY, partialTicks);
         }
         if (isFieldPriorityEnabled()) {
             fontRendererObj.drawString(
@@ -338,7 +345,7 @@ public class GuiPartSettings extends GuiContainerExtended {
                 guiLeft + 8,
                 guiTop + getFieldPriorityY() + 3,
                 Helpers.RGBToInt(0, 0, 0));
-            numberFieldPriority.drawTextBox(Minecraft.getMinecraft(), mouseX, mouseY);
+            numberFieldPriority.drawScreen(mouseX, mouseY, partialTicks);;
         }
         if (isFieldChannelEnabled()) {
             fontRendererObj.drawString(
@@ -346,7 +353,7 @@ public class GuiPartSettings extends GuiContainerExtended {
                 guiLeft + 8,
                 guiTop + getFieldChannelY() + 3,
                 isChannelEnabled() ? Helpers.RGBToInt(0, 0, 0) : Helpers.RGBToInt(100, 100, 100));
-            numberFieldChannel.drawTextBox(Minecraft.getMinecraft(), mouseX, mouseY);
+            numberFieldChannel.drawScreen(mouseX, mouseY, partialTicks);
         }
         if (isFieldSideEnabled()) {
             fontRendererObj.drawString(
@@ -354,13 +361,13 @@ public class GuiPartSettings extends GuiContainerExtended {
                 guiLeft + 8,
                 guiTop + getFieldSideY() + 3,
                 Helpers.RGBToInt(0, 0, 0));
-            dropdownFieldSide.drawTextBox(Minecraft.getMinecraft(), mouseX, mouseY);
+            dropdownFieldSide.drawScreen(mouseX, mouseY, partialTicks);
         }
     }
 
     @Override
     protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
-        super.drawGuiContainerForegroundLayer(mouseX, mouseY);
+        // super.drawGuiContainerForegroundLayer(mouseX, mouseY);
         if (!isChannelEnabled()) {
             GuiHelpers.renderTooltip(
                 this,
@@ -395,22 +402,21 @@ public class GuiPartSettings extends GuiContainerExtended {
 
     @Override
     public void onUpdate(int valueId, NBTTagCompound value) {
-        if (isFieldSideEnabled() && valueId == ((ContainerPartSettings) getContainer()).getLastSideValueId()) {
-            int side = ((ContainerPartSettings) getContainer()).getLastSideValue();
-            setSideInDropdownField(side == -1 ? getDefaultSide() : ForgeDirection.VALID_DIRECTIONS[side]);
+        if (isFieldSideEnabled() && valueId == getContainer().getLastSideValueId()) {
+            int side = getContainer().getLastSideValue();
+            setSideInDropdownField(side == -1 ? getDefaultSide() : ForgeDirection.values()[side]);
         }
-        if (isFieldUpdateIntervalEnabled()
-            && valueId == ((ContainerPartSettings) getContainer()).getLastUpdateValueId()) {
-            numberFieldUpdateInterval
-                .setText(Integer.toString(((ContainerPartSettings) getContainer()).getLastUpdateValue()));
+        if (isFieldUpdateIntervalEnabled() && valueId == getContainer().getLastUpdateValueId()) {
+            numberFieldUpdateInterval.setText(Integer.toString(getContainer().getLastUpdateValue()));
         }
-        if (isFieldPriorityEnabled() && valueId == ((ContainerPartSettings) getContainer()).getLastPriorityValueId()) {
-            numberFieldPriority
-                .setText(Integer.toString(((ContainerPartSettings) getContainer()).getLastPriorityValue()));
+        if (isFieldUpdateIntervalEnabled() && valueId == getContainer().getLastMinUpdateValueId()) {
+            numberFieldUpdateInterval.setMinValue(getContainer().getLastMinUpdateValue());
         }
-        if (isFieldChannelEnabled() && valueId == ((ContainerPartSettings) getContainer()).getLastChannelValueId()) {
-            numberFieldChannel
-                .setText(Integer.toString(((ContainerPartSettings) getContainer()).getLastChannelValue()));
+        if (isFieldPriorityEnabled() && valueId == getContainer().getLastPriorityValueId()) {
+            numberFieldPriority.setText(Integer.toString(getContainer().getLastPriorityValueId()));
+        }
+        if (isFieldChannelEnabled() && valueId == getContainer().getLastChannelValueId()) {
+            numberFieldChannel.setText(Integer.toString(getContainer().getLastChannelValue()));
         }
     }
 

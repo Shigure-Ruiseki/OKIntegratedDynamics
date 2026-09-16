@@ -14,14 +14,15 @@ import ruiseki.okcore.item.DamageIndicatedItemComponent;
 
 /**
  * Base class for mechanical machine guis.
- * 
+ *
  * @author rubensworks
  */
-public class GuiMechanicalMachine<C extends ContainerMechanicalMachine<?>> extends GuiContainerConfigurable<C> {
+public abstract class GuiMechanicalMachine<C extends ContainerMechanicalMachine<?>>
+    extends GuiContainerConfigurable<C> {
 
     /**
      * Make a new instance.
-     * 
+     *
      * @param container The container to make the GUI for.
      */
     public GuiMechanicalMachine(C container) {

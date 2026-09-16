@@ -1,12 +1,10 @@
 package ruiseki.integrateddynamics.core.evaluate.variable;
 
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.JsonToNBT;
-import net.minecraft.nbt.NBTException;
+import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 
 import cpw.mods.fml.common.registry.GameData;
-import joptsimple.internal.Strings;
 import lombok.ToString;
 import ruiseki.commoncapabilities.api.capability.itemhandler.ItemMatch;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeNamed;
@@ -65,24 +63,19 @@ public class ValueObjectTypeItemStack extends ValueObjectTypeBase<ValueObjectTyp
     }
 
     @Override
-    public String serialize(ValueItemStack value) {
-        ItemStack itemStack = value.getRawValue();
-        if (ItemHelpers.isEmpty(itemStack)) {
-            return "";
-        }
+    public NBTBase serialize(ValueItemStack value) {
         NBTTagCompound tag = new NBTTagCompound();
-        itemStack.writeToNBT(tag);
-        tag.setInteger("Count", itemStack.stackSize);
-        return tag.toString();
+        ItemStack itemStack = value.getRawValue();
+        if (!ItemHelpers.isEmpty(itemStack)) {
+            itemStack.writeToNBT(tag);
+            tag.setInteger("Count", itemStack.stackSize);
+        }
+        return tag;
     }
 
     @Override
-    public ValueItemStack deserialize(String value) {
-        if (Strings.isNullOrEmpty(value)) {
-            return ValueItemStack.of(ItemHelpers.EMPTY);
-        }
-        try {
-            NBTTagCompound tag = (NBTTagCompound) JsonToNBT.func_150315_a(value);
+    public ValueItemStack deserialize(NBTBase value) {
+        if (value instanceof NBTTagCompound tag) {
             // Forge returns air for tags with negative count,
             // so we set it to 1 for deserialization and fix it afterwards.
             int realCount = tag.getInteger("Count");
@@ -94,7 +87,7 @@ public class ValueObjectTypeItemStack extends ValueObjectTypeBase<ValueObjectTyp
                 itemStack.stackSize = realCount;
             }
             return ValueItemStack.of(itemStack);
-        } catch (NBTException e) {
+        } else {
             return ValueItemStack.of(ItemHelpers.EMPTY);
         }
     }

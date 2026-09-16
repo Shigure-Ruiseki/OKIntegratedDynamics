@@ -19,6 +19,7 @@ import lombok.Data;
 import ruiseki.integrateddynamics.api.client.gui.subgui.IGuiInputElement;
 import ruiseki.integrateddynamics.api.client.gui.subgui.IGuiInputElementValueType;
 import ruiseki.integrateddynamics.api.client.gui.subgui.ISubGuiBox;
+import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 import ruiseki.integrateddynamics.api.logicprogrammer.IConfigRenderPattern;
@@ -55,14 +56,14 @@ public class GuiElementValueTypeString<G extends Gui, C extends Container>
 
     @Override
     public void setValue(IValue value) {
-        setInputString(ValueHelpers.serializeRaw(value));
+        setInputString(ValueHelpers.toString(value));
     }
 
     @Override
     public void setValueInGui(GuiElementValueTypeStringRenderPattern subGui, boolean sendToServer) {
         if (subGui != null) {
-            subGui.getSearchField()
-                .setText(inputString);
+            subGui.getTextField()
+                .setText(String.valueOf(inputString));
             if (sendToServer) {
                 subGui.sendValueToServer();
             }
@@ -80,7 +81,12 @@ public class GuiElementValueTypeString<G extends Gui, C extends Container>
 
     @Override
     public IValue getValue() {
-        return ValueHelpers.deserializeRaw(getValueType(), getInputString());
+        try {
+            return ValueHelpers.parseString(getValueType(), getInputString());
+        } catch (EvaluationException e) {
+            // Should not occur, as validation must've happened before.
+            return getValueType().getDefault();
+        }
     }
 
     @Override
@@ -110,11 +116,15 @@ public class GuiElementValueTypeString<G extends Gui, C extends Container>
 
     @Override
     public LangHelpers.UnlocalizedString validate() {
-        LangHelpers.UnlocalizedString error = getValueType().canDeserialize(inputString);
-        if (error == null && !this.validator.apply(ValueHelpers.deserializeRaw(getValueType(), inputString))) {
-            error = new LangHelpers.UnlocalizedString(L10NValues.VALUE_ERROR);
+        try {
+            IValue value = getValueType().parseString(inputString);
+            if (!this.validator.apply(value)) {
+                return new LangHelpers.UnlocalizedString(L10NValues.VALUE_ERROR);
+            }
+        } catch (EvaluationException e) {
+            return new LangHelpers.UnlocalizedString(e.getMessage());
         }
-        return error;
+        return null;
     }
 
     @Override

@@ -17,6 +17,7 @@ import com.google.common.collect.Sets;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import net.minecraftforge.common.util.Constants;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.Reference;
 import ruiseki.integrateddynamics.api.item.IAspectVariableFacade;
@@ -171,8 +172,8 @@ public final class AspectRegistry implements IAspectRegistry {
 
     @Override
     public IAspectVariableFacade getVariableFacade(int id, NBTTagCompound tag) {
-        if (!tag.hasKey("partId", MinecraftHelpers.NBTTag_Types.NBTTagInt.ordinal())
-            || !tag.hasKey("aspectName", MinecraftHelpers.NBTTag_Types.NBTTagString.ordinal())) {
+        if (!tag.hasKey("partId")
+            || !tag.hasKey("aspectName")) {
             return INVALID_FACADE;
         }
         int partId = tag.getInteger("partId");

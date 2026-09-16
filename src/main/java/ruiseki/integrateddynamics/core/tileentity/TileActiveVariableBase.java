@@ -70,7 +70,7 @@ public abstract class TileActiveVariableBase<E> extends TileCableConnectableInve
         return new InventoryVariableEvaluator<>(this, getSlotRead(), ValueTypes.CATEGORY_ANY);
     }
 
-    public InventoryVariableEvaluator getEvaluator() {
+    public InventoryVariableEvaluator<?> getEvaluator() {
         return evaluator;
     }
 

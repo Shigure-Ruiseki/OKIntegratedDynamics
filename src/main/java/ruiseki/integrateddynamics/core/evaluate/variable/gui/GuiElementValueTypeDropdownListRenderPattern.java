@@ -1,6 +1,5 @@
 package ruiseki.integrateddynamics.core.evaluate.variable.gui;
 
-import java.io.IOException;
 import java.util.Set;
 
 import net.minecraft.client.Minecraft;
@@ -49,7 +48,6 @@ public class GuiElementValueTypeDropdownListRenderPattern<T, S extends ISubGuiBo
         int searchX = getX() + 14;
         int searchY = getY() + 6;
         this.searchField = new GuiTextFieldDropdown<>(
-            0,
             fontRenderer,
             guiLeft + searchX,
             guiTop + searchY,
@@ -89,18 +87,28 @@ public class GuiElementValueTypeDropdownListRenderPattern<T, S extends ISubGuiBo
             mouseY);
 
         // Textbox
-        searchField.drawTextBox(Minecraft.getMinecraft(), mouseX, mouseY);
+        searchField.drawScreen(mouseX, mouseY, partialTicks);
     }
 
     @Override
-    public boolean keyTyped(boolean checkHotbarKeys, char typedChar, int keyCode) throws IOException {
-        if (!checkHotbarKeys) {
-            if (searchField.textboxKeyTyped(typedChar, keyCode)) {
+    public boolean charTyped(char typedChar, int keyCode) {
+        if (searchField.isFocused()) {
+            if (searchField.charTyped(typedChar, keyCode)) {
                 onTyped();
                 return true;
             }
         }
-        return super.keyTyped(checkHotbarKeys, typedChar, keyCode);
+        return super.charTyped(typedChar, keyCode);
+    }
+
+    @Override
+    public boolean keyPressed(int typedChar, int keyCode, int modifiers) {
+        if (searchField.isFocused()) {
+            searchField.keyPressed(typedChar, keyCode, modifiers);
+            onTyped();
+            return true;
+        }
+        return super.keyPressed(typedChar, keyCode, modifiers);
     }
 
     public void onTyped() {
@@ -113,9 +121,8 @@ public class GuiElementValueTypeDropdownListRenderPattern<T, S extends ISubGuiBo
     }
 
     @Override
-    public void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
-        searchField.mouseClicked(mouseX, mouseY, mouseButton);
-        super.mouseClicked(mouseX, mouseY, mouseButton);
+    public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
+        return searchField.mouseClicked(mouseX, mouseY, mouseButton) || super.mouseClicked(mouseX, mouseY, mouseButton);
     }
 
     @Override

@@ -12,7 +12,6 @@ import ruiseki.integrateddynamics.api.part.aspect.IAspectWrite;
 import ruiseki.integrateddynamics.api.part.write.IPartStateWriter;
 import ruiseki.integrateddynamics.api.part.write.IPartTypeWriter;
 import ruiseki.integrateddynamics.core.client.gui.container.GuiMultipartAspects;
-import ruiseki.integrateddynamics.core.inventory.container.ContainerMultipartAspects;
 import ruiseki.integrateddynamics.inventory.container.ContainerPartWriter;
 import ruiseki.integrateddynamics.item.ItemVariableConfig;
 import ruiseki.okcore.helper.RenderHelpers;
@@ -24,7 +23,7 @@ import ruiseki.okcore.inventory.IGuiContainerProvider;
  * @author rubensworks
  */
 public class GuiPartWriter<P extends IPartTypeWriter<P, S> & IGuiContainerProvider, S extends IPartStateWriter<P>>
-    extends GuiMultipartAspects<P, S, IAspectWrite> {
+    extends GuiMultipartAspects<P, S, IAspectWrite, ContainerPartWriter<P, S>> {
 
     private static final int ERROR_X = 152;
     private static final int ERROR_Y = 20;
@@ -40,7 +39,7 @@ public class GuiPartWriter<P extends IPartTypeWriter<P, S> & IGuiContainerProvid
      * @param partType      The targeted part type.
      */
     public GuiPartWriter(EntityPlayer player, PartTarget partTarget, IPartContainer partContainer, P partType) {
-        super(new ContainerPartWriter<P, S>(player, partTarget, partContainer, partType));
+        super(new ContainerPartWriter<>(player, partTarget, partContainer, partType));
     }
 
     @Override
@@ -49,23 +48,24 @@ public class GuiPartWriter<P extends IPartTypeWriter<P, S> & IGuiContainerProvid
     }
 
     @Override
-    protected void drawAdditionalElementInfoForeground(ContainerMultipartAspects<P, S, IAspectWrite> container,
-        int index, IAspectWrite aspect, int mouseX, int mouseY) {
+    protected void drawAdditionalElementInfoForeground(ContainerPartWriter<P, S> container, int index,
+        IAspectWrite aspect, int mouseX, int mouseY) {
         // Render error tooltip
-        if (getPartState().isEnabled()) displayErrors.drawForeground(
-            getPartState().getErrors(aspect),
-            ERROR_X,
-            ERROR_Y + container.getAspectBoxHeight() * index,
-            mouseX,
-            mouseY,
-            this,
-            this.guiLeft,
-            this.guiTop);
+        if (getContainer().isPartStateEnabled()) {
+            displayErrors.drawForeground(
+                getContainer().getAspectErrors(aspect),
+                ERROR_X,
+                ERROR_Y + container.getAspectBoxHeight() * index,
+                mouseX,
+                mouseY,
+                this,
+                this.guiLeft,
+                this.guiTop);
+        }
     }
 
     @Override
-    protected void drawAdditionalElementInfo(ContainerMultipartAspects<P, S, IAspectWrite> container, int index,
-        IAspectWrite aspect) {
+    protected void drawAdditionalElementInfo(ContainerPartWriter<P, S> container, int index, IAspectWrite aspect) {
         int aspectBoxHeight = container.getAspectBoxHeight();
 
         // Render dummy target item
@@ -77,22 +77,24 @@ public class GuiPartWriter<P extends IPartTypeWriter<P, S> & IGuiContainerProvid
         RenderHelper.disableStandardItemLighting();
 
         // Render error symbol
-        if (getPartState().isEnabled()) displayErrors.drawBackground(
-            getPartState().getErrors(aspect),
-            ERROR_X,
-            ERROR_Y + aspectBoxHeight * index,
-            OK_X,
-            OK_Y + aspectBoxHeight * index,
-            this,
-            this.guiLeft,
-            this.guiTop,
-            getPartState().getActiveAspect() == aspect);
+        if (getContainer().isPartStateEnabled()) {
+            displayErrors.drawBackground(
+                getContainer().getAspectErrors(aspect),
+                ERROR_X,
+                ERROR_Y + aspectBoxHeight * index,
+                OK_X,
+                OK_Y + aspectBoxHeight * index,
+                this,
+                this.guiLeft,
+                this.guiTop,
+                getContainer().getPartStateActiveAspect() == aspect);
+        }
     }
 
     @Override
     protected void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY) {
         super.drawGuiContainerBackgroundLayer(partialTicks, mouseX, mouseY);
-        ContainerPartWriter<?, ?> container = (ContainerPartWriter<?, ?>) getContainer();
+        ContainerPartWriter<?, ?> container = getContainer();
         RenderHelpers.drawScaledCenteredString(
             fontRendererObj,
             container.getWriteValue(),

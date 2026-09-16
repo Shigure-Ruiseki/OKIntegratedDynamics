@@ -1,8 +1,8 @@
 package ruiseki.integrateddynamics.core.evaluate.variable;
 
+import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
-import net.minecraft.nbt.NBTTagString;
 import net.minecraft.util.ResourceLocation;
 
 import ruiseki.integrateddynamics.Reference;
@@ -11,7 +11,6 @@ import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeListProxy;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeListProxyFactoryTypeRegistry;
-import ruiseki.okcore.helper.MinecraftHelpers;
 
 /**
  * A concatenated list.
@@ -62,7 +61,7 @@ public class ValueTypeListProxyConcat<T extends IValueType<V>, V extends IValue>
             throws IValueTypeListProxyFactoryTypeRegistry.SerializationException {
             NBTTagList list = new NBTTagList();
             for (IValueTypeListProxy<IValueType<IValue>, IValue> listProxy : value.lists) {
-                list.appendTag(new NBTTagString(ValueTypeListProxyFactories.REGISTRY.serialize(listProxy)));
+                list.appendTag(ValueTypeListProxyFactories.REGISTRY.serialize(listProxy));
             }
             tag.setTag("sublists", list);
         }
@@ -70,10 +69,10 @@ public class ValueTypeListProxyConcat<T extends IValueType<V>, V extends IValue>
         @Override
         protected ValueTypeListProxyConcat<IValueType<IValue>, IValue> deserializeNbt(NBTTagCompound tag)
             throws IValueTypeListProxyFactoryTypeRegistry.SerializationException {
-            NBTTagList list = tag.getTagList("sublists", MinecraftHelpers.NBTTag_Types.NBTTagString.ordinal());
+            NBTTagList list = (NBTTagList) tag.getTag("sublists");
             IValueTypeListProxy<IValueType<IValue>, IValue>[] listProxies = new IValueTypeListProxy[list.tagCount()];
             for (int i = 0; i < list.tagCount(); i++) {
-                listProxies[i] = ValueTypeListProxyFactories.REGISTRY.deserialize(list.getStringTagAt(i));
+                listProxies[i] = ValueTypeListProxyFactories.REGISTRY.deserialize((NBTBase) list.tagList.get(i));
             }
             return new ValueTypeListProxyConcat<>(listProxies);
         }

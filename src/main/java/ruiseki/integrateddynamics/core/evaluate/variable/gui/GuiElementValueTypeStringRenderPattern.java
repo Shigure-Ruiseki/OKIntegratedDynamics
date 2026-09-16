@@ -1,7 +1,5 @@
 package ruiseki.integrateddynamics.core.evaluate.variable.gui;
 
-import java.io.IOException;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
@@ -28,7 +26,7 @@ public class GuiElementValueTypeStringRenderPattern<S extends ISubGuiBox, G exte
     @Getter
     protected final GuiElementValueTypeString<G, C> element;
     @Getter
-    private GuiTextFieldExtended searchField = null;
+    private GuiTextFieldExtended textField = null;
 
     public GuiElementValueTypeStringRenderPattern(GuiElementValueTypeString<G, C> element, int baseX, int baseY,
         int maxWidth, int maxHeight, G gui, C container) {
@@ -43,27 +41,26 @@ public class GuiElementValueTypeStringRenderPattern<S extends ISubGuiBox, G exte
             .getWidth() - 28;
         int searchX = getX() + 14;
         int searchY = getY() + 6;
-        this.searchField = new GuiTextFieldExtended(
-            0,
+        this.textField = new GuiTextFieldExtended(
             fontRenderer,
             guiLeft + searchX,
             guiTop + searchY,
             searchWidth,
             fontRenderer.FONT_HEIGHT + 3,
             true);
-        this.searchField.setMaxStringLength(512);
-        this.searchField.setEnableBackgroundDrawing(false);
-        this.searchField.setVisible(true);
-        this.searchField.setTextColor(16777215);
-        this.searchField.setCanLoseFocus(true);
+        this.textField.setMaxStringLength(512);
+        this.textField.setEnableBackgroundDrawing(false);
+        this.textField.setVisible(true);
+        this.textField.setTextColor(16777215);
+        this.textField.setCanLoseFocus(true);
         String value = element.getInputString();
         if (value == null) {
             value = element.getDefaultInputString();
         }
-        this.searchField.setText(value);
-        element.setInputString(searchField.getText());
-        this.searchField.width = searchWidth;
-        this.searchField.xPosition = guiLeft + (searchX + searchWidth) - this.searchField.width;
+        this.textField.setText(value);
+        element.setInputString(textField.getText());
+        this.textField.width = searchWidth;
+        this.textField.xPosition = guiLeft + (searchX + searchWidth) - this.textField.width;
     }
 
     @Override
@@ -79,22 +76,32 @@ public class GuiElementValueTypeStringRenderPattern<S extends ISubGuiBox, G exte
             mouseY);
 
         // Textbox
-        searchField.drawTextBox(Minecraft.getMinecraft(), mouseX, mouseY);
+        textField.drawScreen(mouseX, mouseY, partialTicks);
     }
 
     @Override
-    public boolean keyTyped(boolean checkHotbarKeys, char typedChar, int keyCode) throws IOException {
-        if (!checkHotbarKeys) {
-            if (searchField.textboxKeyTyped(typedChar, keyCode)) {
+    public boolean charTyped(char typedChar, int keyCode) {
+        if (textField.isFocused()) {
+            if (textField.charTyped(typedChar, keyCode)) {
                 onTyped();
                 return true;
             }
         }
-        return super.keyTyped(checkHotbarKeys, typedChar, keyCode);
+        return super.charTyped(typedChar, keyCode);
+    }
+
+    @Override
+    public boolean keyPressed(int typedChar, int keyCode, int modifiers) {
+        if (textField.isFocused()) {
+            textField.keyPressed(typedChar, keyCode, modifiers);
+            onTyped();
+            return true;
+        }
+        return super.keyPressed(typedChar, keyCode, modifiers);
     }
 
     private void onTyped() {
-        element.setInputString(searchField.getText());
+        element.setInputString(textField.getText());
         if (container instanceof IDirtyMarkListener) {
             ((IDirtyMarkListener) container).onDirty();
         }
@@ -109,8 +116,7 @@ public class GuiElementValueTypeStringRenderPattern<S extends ISubGuiBox, G exte
     }
 
     @Override
-    public void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
-        searchField.mouseClicked(mouseX, mouseY, mouseButton);
-        super.mouseClicked(mouseX, mouseY, mouseButton);
+    public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
+        return textField.mouseClicked(mouseX, mouseY, mouseButton) || super.mouseClicked(mouseX, mouseY, mouseButton);
     }
 }

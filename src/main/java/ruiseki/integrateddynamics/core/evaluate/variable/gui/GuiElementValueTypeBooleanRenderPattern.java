@@ -39,7 +39,6 @@ public class GuiElementValueTypeBooleanRenderPattern<S extends ISubGuiBox, G ext
         super.initGui(guiLeft, guiTop);
 
         this.checkbox = new GuiButtonCheckbox(
-            0,
             guiLeft + getX(),
             guiTop + getY(),
             getElement().getRenderPattern()
@@ -50,6 +49,7 @@ public class GuiElementValueTypeBooleanRenderPattern<S extends ISubGuiBox, G ext
                 this.getElement()
                     .getValueType()
                     .getUnlocalizedName()),
+            (entry) -> this.onChecked(this.checkbox.isChecked()),
             false) {
 
             @Override

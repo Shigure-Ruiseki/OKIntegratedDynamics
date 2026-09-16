@@ -3,6 +3,7 @@ package ruiseki.integrateddynamics.core.evaluate.variable;
 import java.util.List;
 
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.nbt.NBTBase;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -44,13 +45,13 @@ public class ValueTypeVariableFacade<V extends IValue> extends VariableFacadeBas
         this.value = value;
     }
 
-    public ValueTypeVariableFacade(boolean generateId, IValueType<V> valueType, String value) {
+    public ValueTypeVariableFacade(boolean generateId, IValueType<V> valueType, NBTBase value) {
         super(generateId);
         this.valueType = valueType;
         this.value = ValueHelpers.deserializeRaw(valueType, value);
     }
 
-    public ValueTypeVariableFacade(int id, IValueType<V> valueType, String value) {
+    public ValueTypeVariableFacade(int id, IValueType<V> valueType, NBTBase value) {
         super(id);
         this.valueType = valueType;
         this.value = ValueHelpers.deserializeRaw(valueType, value);

@@ -18,7 +18,6 @@ import ruiseki.integrateddynamics.api.part.IPartState;
 import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.core.client.gui.ExtendedGuiHandler;
-import ruiseki.integrateddynamics.core.client.gui.container.GuiPartOffset;
 import ruiseki.integrateddynamics.core.helper.PartHelpers;
 import ruiseki.integrateddynamics.core.inventory.container.slot.SlotVariable;
 import ruiseki.okcore.datastructure.BlockPos;
@@ -26,8 +25,6 @@ import ruiseki.okcore.helper.ValueNotifierHelpers;
 import ruiseki.okcore.inventory.IGuiContainerProvider;
 import ruiseki.okcore.inventory.SimpleInventory;
 import ruiseki.okcore.inventory.container.ExtendedInventoryContainer;
-import ruiseki.okcore.inventory.container.InventoryContainer;
-import ruiseki.okcore.inventory.container.button.IButtonActionServer;
 
 /**
  * Container for part offsets.
@@ -35,6 +32,8 @@ import ruiseki.okcore.inventory.container.button.IButtonActionServer;
  * @author rubensworks
  */
 public class ContainerPartOffset extends ExtendedInventoryContainer {
+
+    public static final String BUTTON_SAVE = "button_save";
 
     private final PartTarget target;
     private final IPartContainer partContainer;
@@ -72,32 +71,28 @@ public class ContainerPartOffset extends ExtendedInventoryContainer {
         }
         this.maxOffsetId = getNextValueId();
 
-        putButtonAction(GuiPartOffset.BUTTON_SAVE, new IButtonActionServer<InventoryContainer>() {
-
-            @Override
-            public void onAction(int buttonId, InventoryContainer container) {
-                if (!(getPartType() instanceof IGuiContainerProvider)
-                    || ((IGuiContainerProvider) getPartType()).getContainer() != ContainerPartOffset.this.getClass()) {
-                    if (!world.isRemote) {
-                        IntegratedDynamics._instance.getGuiHandler()
-                            .setTemporaryData(
-                                ExtendedGuiHandler.PART,
-                                getTarget().getCenter()
-                                    .getSide());
-                        BlockPos pos = getTarget().getCenter()
-                            .getPos()
-                            .getBlockPos();
-                        player.openGui(
-                            IntegratedDynamics._instance.getModId(),
-                            ((IGuiContainerProvider) getPartType()).getGuiID(),
-                            world,
-                            pos.getX(),
-                            pos.getY(),
-                            pos.getZ());
-                    }
-                } else {
-                    player.closeScreen();
+        putButtonAction(ContainerPartOffset.BUTTON_SAVE, (s, containerExtended) -> {
+            if (!(getPartType() instanceof IGuiContainerProvider)
+                || ((IGuiContainerProvider) getPartType()).getContainer() != ContainerPartOffset.this.getClass()) {
+                if (!world.isRemote) {
+                    IntegratedDynamics._instance.getGuiHandler()
+                        .setTemporaryData(
+                            ExtendedGuiHandler.PART,
+                            getTarget().getCenter()
+                                .getSide());
+                    BlockPos pos = getTarget().getCenter()
+                        .getPos()
+                        .getBlockPos();
+                    player.openGui(
+                        IntegratedDynamics._instance.getModId(),
+                        ((IGuiContainerProvider) getPartType()).getGuiID(),
+                        world,
+                        pos.getX(),
+                        pos.getY(),
+                        pos.getZ());
                 }
+            } else {
+                player.closeScreen();
             }
         });
 

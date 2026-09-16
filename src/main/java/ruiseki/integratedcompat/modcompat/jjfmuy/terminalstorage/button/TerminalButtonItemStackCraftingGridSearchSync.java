@@ -17,27 +17,39 @@ import ruiseki.integratedterminals.core.terminalstorage.TerminalStorageTabIngred
 import ruiseki.integratedterminals.core.terminalstorage.TerminalStorageTabIngredientComponentCommon;
 import ruiseki.integratedterminals.inventory.container.TerminalStorageState;
 import ruiseki.okcore.client.gui.component.button.GuiButtonImage;
+import ruiseki.okcore.client.gui.image.Image;
 import ruiseki.okcore.helper.LangHelpers;
 
-public class TerminalButtonItemStackCraftingGridJFMUYSearchSync implements
+public class TerminalButtonItemStackCraftingGridSearchSync implements
     ITerminalButton<TerminalStorageTabIngredientComponentClient<?, ?>, TerminalStorageTabIngredientComponentCommon<?, ?>, GuiButtonImage> {
 
+    private final String mod;
     private final TerminalStorageState state;
     private final String buttonName;
+    private final ITerminalStorageTabClient<?> clientTab;
+    private final Image image;
 
     private boolean active;
 
-    public TerminalButtonItemStackCraftingGridJFMUYSearchSync(TerminalStorageState state,
-        ITerminalStorageTabClient<?> clientTab) {
+    public TerminalButtonItemStackCraftingGridSearchSync(String mod, TerminalStorageState state,
+        ITerminalStorageTabClient<?> clientTab, Image image) {
+        this.mod = mod;
         this.state = state;
-        this.buttonName = "itemstack_grid_jeisearchsync";
+        this.buttonName = "itemstack_grid_" + mod + "searchsync";
+        this.clientTab = clientTab;
+        this.image = image;
 
+        reloadFromState();
+    }
+
+    @Override
+    public void reloadFromState() {
         if (state.hasButton(
-            clientTab.getName()
+            clientTab.getTabSettingsName()
                 .toString(),
             this.buttonName)) {
             NBTTagCompound data = (NBTTagCompound) state.getButton(
-                clientTab.getName()
+                clientTab.getTabSettingsName()
                     .toString(),
                 this.buttonName);
             this.active = data.getBoolean("active");
@@ -47,19 +59,15 @@ public class TerminalButtonItemStackCraftingGridJFMUYSearchSync implements
     }
 
     @Override
-    public void reloadFromState() {
-
-    }
-
-    @Override
     @SideOnly(Side.CLIENT)
     public GuiButtonImage createButton(int x, int y) {
         return new GuiButtonImage(
-            0,
             x,
             y,
+            LangHelpers.localize("gui.integratedcompat.terminal_storage.craftinggrid." + mod + "sync"),
+            (b) -> {},
             active ? Images.BUTTON_BACKGROUND_ACTIVE : Images.BUTTON_BACKGROUND_INACTIVE,
-            Images.BUTTON_MIDDLE_JEI_SYNC);
+            this.image);
     }
 
     @Override
@@ -79,19 +87,30 @@ public class TerminalButtonItemStackCraftingGridJFMUYSearchSync implements
 
     @Override
     public String getTranslationKey() {
-        return "gui.integratedcompat.terminal_storage.craftinggrid.jeisync";
+        return "gui.integratedcompat.terminal_storage.craftinggrid." + mod + "sync";
     }
 
     @Override
     @SideOnly(Side.CLIENT)
     public void getTooltip(EntityPlayer player, boolean tooltipFlag, List<String> lines) {
-        lines.add(LangHelpers.localize("gui.integratedcompat.terminal_storage.craftinggrid.jeisync.info"));
         lines.add(
-            EnumChatFormatting.ITALIC
-                + LangHelpers.localize(active ? "general.okcore.info.enabled" : "general.okcore.info.disabled"));
+            EnumChatFormatting.GRAY + LangHelpers
+                .localize("gui.integratedterminalscompat.terminal_storage.craftinggrid." + mod + "sync.info"));
+        lines.add(
+            EnumChatFormatting.ITALIC + LangHelpers
+                .localize(active ? "general.cyclopscore.info.enabled" : "general.cyclopscore.info.disabled"));
     }
 
     public boolean isActive() {
         return active;
+    }
+
+    public static boolean isSearchSynced(ITerminalStorageTabClient<?> clientTab) {
+        for (ITerminalButton<?, ?, ?> button : clientTab.getButtons()) {
+            if (button instanceof TerminalButtonItemStackCraftingGridSearchSync) {
+                return ((TerminalButtonItemStackCraftingGridSearchSync) button).isActive();
+            }
+        }
+        return false;
     }
 }

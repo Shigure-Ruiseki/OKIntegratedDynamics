@@ -7,12 +7,14 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.network.play.client.C17PacketCustomPayload;
+import net.minecraft.util.ResourceLocation;
 
 import org.apache.commons.lang3.StringUtils;
 import org.lwjgl.input.Keyboard;
 
 import io.netty.buffer.Unpooled;
 import ruiseki.integrateddynamics.IntegratedDynamics;
+import ruiseki.integrateddynamics.Reference;
 import ruiseki.integrateddynamics.api.item.IVariableFacade;
 import ruiseki.integrateddynamics.api.item.IVariableFacadeHandlerRegistry;
 import ruiseki.integrateddynamics.core.persist.world.LabelsWorldStorage;
@@ -21,6 +23,7 @@ import ruiseki.integrateddynamics.network.packet.ItemStackRenamePacket;
 import ruiseki.okcore.client.gui.component.button.GuiButtonText;
 import ruiseki.okcore.client.gui.component.input.GuiTextFieldExtended;
 import ruiseki.okcore.client.gui.container.GuiContainerConfigurable;
+import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.helper.LangHelpers;
 
 /**
@@ -47,21 +50,41 @@ public class GuiLabeller extends GuiContainerConfigurable<ContainerLabeller> {
     }
 
     @Override
+    protected ResourceLocation constructGuiTexture() {
+        return new ResourceLocation(Reference.MOD_ID, "textures/gui/labeller.png");
+    }
+
+    @Override
     public void initGui() {
         super.initGui();
-        buttonList.add(
+        addRenderableWidget(
             new GuiButtonText(
-                BUTTON_WRITE,
                 this.guiLeft + 133,
                 this.guiTop + 8,
-                LangHelpers.localize("item.items.integrateddynamics.labeller.button.write")));
+                LangHelpers.localize("item.items.integrateddynamics.labeller.button.write"),
+                button -> {
+                    ItemStack itemStack = getContainer().getItemStack();
+                    IVariableFacadeHandlerRegistry registry = IntegratedDynamics._instance.getRegistryManager()
+                        .getRegistry(IVariableFacadeHandlerRegistry.class);
+                    IVariableFacade variableFacade = registry.handle(itemStack);
+                    if (variableFacade.isValid()) {
+                        int variableId = variableFacade.getId();
+                        String label = StringUtils.isBlank(searchField.getText()) ? "" : searchField.getText();
+                        LabelsWorldStorage.getInstance(IntegratedDynamics._instance)
+                            .put(variableId, label);
+                    } else if (!ItemHelpers.isEmpty(itemStack)) {
+                        String name = searchField.getText();
+                        IntegratedDynamics._instance.getPacketHandler()
+                            .sendToServer(new ItemStackRenamePacket(name));
+                        getContainer().setItemStackName(name);
+                    }
+                }));
 
         Keyboard.enableRepeatEvents(true);
         int searchWidth = 87;
         int searchX = 36;
         int searchY = 11;
         this.searchField = new GuiTextFieldExtended(
-            0,
             this.fontRendererObj,
             this.guiLeft + searchX,
             this.guiTop + searchY,
@@ -85,18 +108,26 @@ public class GuiLabeller extends GuiContainerConfigurable<ContainerLabeller> {
     }
 
     @Override
-    protected void keyTyped(char typedChar, int keyCode) {
-        if (!this.checkHotbarKeys(keyCode)) {
-            if (!this.searchField.textboxKeyTyped(typedChar, keyCode)) {
-                super.keyTyped(typedChar, keyCode);
-            }
+    public boolean charTyped(char typedChar, int keyCode) {
+        if (!this.searchField.charTyped(typedChar, keyCode)) {
+            return super.charTyped(typedChar, keyCode);
         }
+        return true;
     }
 
     @Override
-    protected void mouseClicked(int mouseX, int mouseY, int mouseButton) {
-        this.searchField.mouseClicked(mouseX, mouseY, mouseButton);
-        super.mouseClicked(mouseX, mouseY, mouseButton);
+    public boolean keyPressed(int typedChar, int keyCode, int modifiers) {
+        if (typedChar != Keyboard.KEY_ESCAPE) {
+            this.searchField.keyPressed(typedChar, keyCode, modifiers);
+            return true;
+        }
+        return super.keyPressed(typedChar, keyCode, modifiers);
+    }
+
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
+        return this.searchField.mouseClicked(mouseX, mouseY, mouseButton)
+            || super.mouseClicked(mouseX, mouseY, mouseButton);
     }
 
     @Override

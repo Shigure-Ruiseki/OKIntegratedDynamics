@@ -7,6 +7,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.item.EntityItem;
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagString;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.WorldServer;
 
@@ -54,29 +56,32 @@ public class ValueObjectTypeEntity extends ValueObjectTypeBase<ValueObjectTypeEn
     }
 
     @Override
-    public String serialize(ValueEntity value) {
+    public NBTBase serialize(ValueEntity value) {
         Optional<Entity> entity = value.getRawValue();
         if (entity.isPresent()) {
             int world = entity.get().worldObj.provider.dimensionId;
             int id = entity.get()
                 .getEntityId();
-            return world + DELIMITER + id;
+            return new NBTTagString(world + DELIMITER + id);
         }
-        return "";
+        return new NBTTagString("EMPTY");
     }
 
     @Override
-    public ValueEntity deserialize(String value) {
-        String[] split = value.split(DELIMITER);
-        Entity entity = null;
-        if (split.length == 2) {
-            try {
-                int worldId = Integer.parseInt(split[0]);
-                int entityId = Integer.parseInt(split[1]);
-                entity = getEntityByID(worldId, entityId);
-            } catch (NumberFormatException ignored) {}
+    public ValueEntity deserialize(NBTBase value) {
+        if (value instanceof NBTTagString) {
+            String strValue = ((NBTTagString) value).func_150285_a_();
+            String[] split = strValue.split(DELIMITER);
+            if (split.length == 2) {
+                try {
+                    int worldId = Integer.parseInt(split[0]);
+                    int entityId = Integer.parseInt(split[1]);
+                    Entity entity = getEntityByID(worldId, entityId);
+                    return ValueEntity.of(entity);
+                } catch (NumberFormatException ignored) {}
+            }
         }
-        return ValueEntity.of(entity);
+        return ValueEntity.of(null);
     }
 
     @Override
@@ -141,7 +146,8 @@ public class ValueObjectTypeEntity extends ValueObjectTypeBase<ValueObjectTypeEn
                 return Minecraft.getMinecraft().theWorld.getEntityByID(entityId);
             }
         } else {
-            MinecraftServer server = MinecraftServer.getServer();
+            MinecraftServer server = FMLCommonHandler.instance()
+                .getMinecraftServerInstance();
             if (server != null && server.worldServers != null) {
                 for (WorldServer world : server.worldServers) {
                     if (world != null && world.provider.dimensionId == dimensionId) {
@@ -166,6 +172,8 @@ public class ValueObjectTypeEntity extends ValueObjectTypeBase<ValueObjectTypeEn
 
         @Override
         protected boolean isEqual(Entity a, Entity b) {
+            if (a == b) return true;
+            if (a == null || b == null) return false;
             return a.getEntityId() == b.getEntityId();
         }
     }

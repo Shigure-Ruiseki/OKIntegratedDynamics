@@ -1,6 +1,5 @@
 package ruiseki.integrateddynamics.core.logicprogrammer;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -42,11 +41,6 @@ import ruiseki.okcore.tag.TagManager;
 public abstract class ValueTypeRecipeAdapterLPElementPropertiesSubGui<E extends IGuiInputElement>
     extends RenderPattern<E, GuiLogicProgrammerBase, ContainerLogicProgrammerBase> {
 
-    public static final int BUTTON_NBT = 0;
-    public static final int BUTTON_REUSABLE = 1;
-    public static final int BUTTON_TAGS = 2;
-    public static final int BUTTON_SAVE = 3;
-
     protected final int slotId;
     protected GuiButtonCheckbox inputNbt;
     protected GuiButtonCheckbox inputTags;
@@ -65,78 +59,51 @@ public abstract class ValueTypeRecipeAdapterLPElementPropertiesSubGui<E extends 
         super.initGui(guiLeft, guiTop);
 
         this.inputNbt = new GuiButtonCheckbox(
-            BUTTON_NBT,
             guiLeft + getX() + 2,
             guiTop + getY() + 2,
             20,
             10,
             LangHelpers.localize(L10NValues.GUI_RECIPE_STRICTNBT),
-            false) {
-
-            @Override
-            public boolean mousePressed(Minecraft mc, int mouseX, int mouseY) {
-                boolean result = super.mousePressed(mc, mouseX, mouseY);
+            (entry) -> {
                 // Only allow one checkbox to be true at the same time
-                if (result) {
-                    if (inputNbt.isChecked()) {
-                        inputTags.setChecked(false);
-                    }
-                    saveGuiToState();
-                    loadStateToGui();
+                if (this.inputNbt.isChecked()) {
+                    this.inputTags.setChecked(false);
                 }
-                return result;
-            }
-        };
+                saveGuiToState();
+                loadStateToGui();
+            },
+            false);
         this.buttonList.add(this.inputNbt);
         this.inputReusable = new GuiButtonCheckbox(
-            BUTTON_REUSABLE,
             guiLeft + getX() + 2,
             guiTop + getY() + 12,
             20,
             10,
             LangHelpers.localize(L10NValues.GUI_RECIPE_REUSABLE),
-            false) {
-
-            @Override
-            public boolean mousePressed(Minecraft mc, int mouseX, int mouseY) {
-                boolean result = super.mousePressed(mc, mouseX, mouseY);
-                if (result) {
-                    saveGuiToState();
-                    loadStateToGui();
-                }
-                return result;
-            }
-        };
-        this.buttonList.add(this.inputReusable);
+            (entry) -> {
+                saveGuiToState();
+                loadStateToGui();
+            },
+            false);
         this.inputTags = new GuiButtonCheckbox(
-            BUTTON_TAGS,
             guiLeft + getX() + 2,
             guiTop + getY() + 22,
             20,
             10,
             LangHelpers.localize(L10NValues.GUI_RECIPE_TAGVARIANTS),
-            false) {
-
-            @Override
-            public boolean mousePressed(Minecraft mc, int mouseX, int mouseY) {
-                boolean result = super.mousePressed(mc, mouseX, mouseY);
-                if (result) {
-                    // Only allow one checkbox to be true at the same time
-                    if (inputTags.isChecked()) {
-                        inputNbt.setChecked(false);
-                    }
-                    saveGuiToState();
-                    loadStateToGui();
-                    if (inputTags.isChecked()) {
-                        inputTagsDropdown.setFocused(true);
-                    }
+            (entry) -> {
+                // Only allow one checkbox to be true at the same time
+                if (this.inputTags.isChecked()) {
+                    this.inputNbt.setChecked(false);
                 }
-                return result;
-            }
-        };
-        this.buttonList.add(this.inputTags);
+                saveGuiToState();
+                loadStateToGui();
+                if (this.inputTags.isChecked()) {
+                    this.inputTagsDropdown.setFocused(true);
+                }
+            },
+            false);
         this.inputTagsDropdown = new GuiTextFieldDropdown<>(
-            BUTTON_SAVE,
             Minecraft.getMinecraft().fontRenderer,
             guiLeft + getX() + 2,
             guiTop + getY() + 33,
@@ -150,20 +117,19 @@ public abstract class ValueTypeRecipeAdapterLPElementPropertiesSubGui<E extends 
         this.inputTagsDropdown.setEnableBackgroundDrawing(false);
         this.inputTagsDropdown.setTextColor(16777215);
         this.inputTagsDropdown.setCanLoseFocus(true);
-        this.inputSave = new GuiButtonImage(4, guiLeft + getX() + 116, guiTop + getY() + 72, Images.OK) {
-
-            @Override
-            public boolean mousePressed(Minecraft mc, int mouseX, int mouseY) {
-                boolean result = super.mousePressed(mc, mouseX, mouseY);
-                if (!inputTags.isChecked() || inputTagsDropdown.getSelectedDropdownPossibility() != null) {
+        this.inputSave = new GuiButtonImage(
+            guiLeft + getX() + 116,
+            guiTop + getY() + 72,
+            LangHelpers.localize("gui.integrateddynamics.button.save"),
+            (button) -> {
+                // If tag checkbox is checked, only allow exiting if a valid tag has been set
+                if (!this.inputTags.isChecked() || this.inputTagsDropdown.getSelectedDropdownPossibility() != null) {
                     returnToMainGui();
                 } else {
-                    inputTagsDropdown.setFocused(true);
+                    this.inputTagsDropdown.setFocused(true);
                 }
-                return result;
-            }
-        };
-        this.buttonList.add(this.inputSave);
+            },
+            Images.OK);
 
         // Load button states
         loadStateToGui();
@@ -261,22 +227,26 @@ public abstract class ValueTypeRecipeAdapterLPElementPropertiesSubGui<E extends 
 
         drawSlot(getX() + guiLeft + 116, getY() + guiTop + 2);
 
+        this.inputNbt.drawScreen(mouseX, mouseY, partialTicks);
         fontRenderer.drawString(
             LangHelpers.localize(L10NValues.GUI_RECIPE_STRICTNBT),
             guiLeft + getX() + 24,
             guiTop + getY() + 3,
             0);
+        this.inputReusable.drawScreen(mouseX, mouseY, partialTicks);
         fontRenderer.drawString(
             LangHelpers.localize(L10NValues.GUI_RECIPE_REUSABLE),
             guiLeft + getX() + 24,
             guiTop + getY() + 13,
             0);
+        this.inputTags.drawScreen(mouseX, mouseY, partialTicks);
         fontRenderer.drawString(
             LangHelpers.localize(L10NValues.GUI_RECIPE_TAGVARIANTS),
             guiLeft + getX() + 24,
             guiTop + getY() + 23,
             0);
-        this.inputTagsDropdown.drawTextBox(Minecraft.getMinecraft(), mouseX, mouseY);
+        this.inputSave.drawScreen(mouseX, mouseY, partialTicks);
+        this.inputTagsDropdown.drawScreen(mouseX, mouseY, partialTicks);
     }
 
     @Override
@@ -330,18 +300,32 @@ public abstract class ValueTypeRecipeAdapterLPElementPropertiesSubGui<E extends 
     }
 
     @Override
-    public boolean keyTyped(boolean checkHotbarKeys, char typedChar, int keyCode) throws IOException {
+    public boolean charTyped(char typedChar, int keyCode) {
         if (inputTagsDropdown.isFocused()) {
-            inputTagsDropdown.textboxKeyTyped(typedChar, keyCode);
-            return true;
+            if (inputTagsDropdown.charTyped(typedChar, keyCode)) {
+                return true;
+            }
         }
-        return super.keyTyped(checkHotbarKeys, typedChar, keyCode);
+        return super.charTyped(typedChar, keyCode);
     }
 
     @Override
-    public void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
-        inputTagsDropdown.mouseClicked(mouseX, mouseY, mouseButton);
-        super.mouseClicked(mouseX, mouseY, mouseButton);
+    public boolean keyPressed(int typedChar, int keyCode, int modifiers) {
+        if (inputTagsDropdown.isFocused()) {
+            inputTagsDropdown.keyPressed(typedChar, keyCode, modifiers);
+            return true;
+        }
+        return super.keyPressed(typedChar, keyCode, modifiers);
+    }
+
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
+        return inputNbt.mouseClicked(mouseX, mouseY, mouseButton)
+            || inputReusable.mouseClicked(mouseX, mouseY, mouseButton)
+            || inputTags.mouseClicked(mouseX, mouseY, mouseButton)
+            || inputTagsDropdown.mouseClicked(mouseX, mouseY, mouseButton)
+            || inputSave.mouseClicked(mouseX, mouseY, mouseButton)
+            || super.mouseClicked(mouseX, mouseY, mouseButton);
     }
 
     public static class DropdownEntry implements IDropdownEntry<ResourceLocation> {

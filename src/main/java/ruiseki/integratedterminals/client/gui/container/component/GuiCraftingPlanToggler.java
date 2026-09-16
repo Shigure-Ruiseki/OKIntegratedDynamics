@@ -1,4 +1,4 @@
-package ruiseki.integratedterminals.client.gui.container;
+package ruiseki.integratedterminals.client.gui.container.component;
 
 import java.util.function.Supplier;
 

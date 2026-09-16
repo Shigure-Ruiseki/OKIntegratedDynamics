@@ -1,10 +1,17 @@
 package ruiseki.integrateddynamics.inventory.container;
 
+import java.util.List;
+import java.util.Map;
+
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.Slot;
+import net.minecraft.util.ResourceLocation;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.jetbrains.annotations.Nullable;
+
+import com.google.common.collect.Maps;
 
 import ruiseki.integrateddynamics.api.PartStateException;
 import ruiseki.integrateddynamics.api.evaluate.variable.IVariable;
@@ -12,6 +19,7 @@ import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.PartTarget;
+import ruiseki.integrateddynamics.api.part.aspect.IAspect;
 import ruiseki.integrateddynamics.api.part.aspect.IAspectWrite;
 import ruiseki.integrateddynamics.api.part.write.IPartStateWriter;
 import ruiseki.integrateddynamics.api.part.write.IPartTypeWriter;
@@ -19,8 +27,10 @@ import ruiseki.integrateddynamics.core.evaluate.variable.ValueHelpers;
 import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
 import ruiseki.integrateddynamics.core.inventory.container.ContainerMultipartAspects;
 import ruiseki.integrateddynamics.core.inventory.container.slot.SlotVariable;
+import ruiseki.integrateddynamics.core.part.aspect.AspectRegistry;
 import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.helper.Helpers;
+import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.helper.ValueNotifierHelpers;
 import ruiseki.okcore.inventory.IGuiContainerProvider;
@@ -39,7 +49,8 @@ public class ContainerPartWriter<P extends IPartTypeWriter<P, S> & IGuiContainer
     private static final int SLOT_X = 131;
     private static final int SLOT_Y = 18;
 
-    private final int valueId, colorId;
+    private final int valueId, colorId, enabledId, activeAspectId;
+    private final Map<IAspectWrite, Integer> aspectErrorIds;
 
     /**
      * Make a new instance.
@@ -60,6 +71,12 @@ public class ContainerPartWriter<P extends IPartTypeWriter<P, S> & IGuiContainer
 
         this.valueId = getNextValueId();
         this.colorId = getNextValueId();
+        this.enabledId = getNextValueId();
+        this.activeAspectId = getNextValueId();
+        this.aspectErrorIds = Maps.newIdentityHashMap();
+        for (IAspectWrite aspect : partType.getWriteAspects()) {
+            this.aspectErrorIds.put(aspect, getNextValueId());
+        }
     }
 
     @Override
@@ -81,9 +98,13 @@ public class ContainerPartWriter<P extends IPartTypeWriter<P, S> & IGuiContainer
 
     @Override
     protected IInventory constructInputSlotsInventory() {
-        SimpleInventory inventory = getPartState().getInventory();
-        inventory.addDirtyMarkListener(this);
-        return inventory;
+        if (!player.worldObj.isRemote) {
+            SimpleInventory inventory = getPartState().getInventory();
+            inventory.addDirtyMarkListener(this);
+            return inventory;
+        } else {
+            return super.constructInputSlotsInventory();
+        }
     }
 
     @Override
@@ -124,6 +145,23 @@ public class ContainerPartWriter<P extends IPartTypeWriter<P, S> & IGuiContainer
                     readValue = Pair.of("", 0);
                 }
                 setWriteValue(readValue.getLeft(), readValue.getRight());
+
+                // Update error values
+                for (IAspectWrite aspectWrite : getPartType().getWriteAspects()) {
+                    ValueNotifierHelpers.setValueUnlocalizedStringList(
+                        this,
+                        aspectErrorIds.get(aspectWrite),
+                        getPartState().getErrors(aspectWrite));
+                }
+
+                // Update state
+                ValueNotifierHelpers.setValue(this, enabledId, partState.isEnabled());
+                ValueNotifierHelpers.setValue(
+                    this,
+                    activeAspectId,
+                    partState.getActiveAspect() != null ? partState.getActiveAspect()
+                        .getUniqueName()
+                        .toString() : "");
             }
         } catch (PartStateException e) {
             player.closeScreen();
@@ -145,6 +183,24 @@ public class ContainerPartWriter<P extends IPartTypeWriter<P, S> & IGuiContainer
 
     public int getWriteValueColor() {
         return ValueNotifierHelpers.getValueInt(this, colorId);
+    }
+
+    public List<LangHelpers.UnlocalizedString> getAspectErrors(IAspectWrite aspectWrite) {
+        return ValueNotifierHelpers.getValueUnlocalizedStringList(this, aspectErrorIds.get(aspectWrite));
+    }
+
+    public boolean isPartStateEnabled() {
+        return ValueNotifierHelpers.getValueBoolean(this, enabledId);
+    }
+
+    @Nullable
+    public IAspect getPartStateActiveAspect() {
+        String aspectName = ValueNotifierHelpers.getValueString(this, activeAspectId);
+        if (aspectName == null) {
+            return null;
+        }
+        return AspectRegistry.getInstance()
+            .getAspect(new ResourceLocation(aspectName));
     }
 
 }

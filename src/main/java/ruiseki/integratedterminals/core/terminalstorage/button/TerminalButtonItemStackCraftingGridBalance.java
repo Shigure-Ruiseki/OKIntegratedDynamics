@@ -50,7 +50,13 @@ public class TerminalButtonItemStackCraftingGridBalance<T> implements
     @Override
     @SideOnly(Side.CLIENT)
     public GuiButtonImage createButton(int x, int y) {
-        return new GuiButtonImage(0, x, y, Images.BUTTON_SMALL_BACKGROUND_INACTIVE, Images.BUTTON_SMALL_OVERLAY_SQUARE);
+        return new GuiButtonImage(
+            x,
+            y,
+            LangHelpers.localize("gui.integratedterminals.terminal_storage.craftinggrid.balance"),
+            (b) -> {},
+            Images.BUTTON_SMALL_BACKGROUND_INACTIVE,
+            Images.BUTTON_SMALL_OVERLAY_SQUARE);
     }
 
     @Override

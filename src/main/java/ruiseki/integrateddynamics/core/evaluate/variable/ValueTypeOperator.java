@@ -2,6 +2,7 @@ package ruiseki.integrateddynamics.core.evaluate.variable;
 
 import java.util.List;
 
+import net.minecraft.nbt.NBTBase;
 import net.minecraft.util.EnumChatFormatting;
 
 import org.apache.commons.lang3.StringUtils;
@@ -52,12 +53,12 @@ public class ValueTypeOperator extends ValueTypeBase<ValueTypeOperator.ValueOper
     }
 
     @Override
-    public String serialize(ValueOperator value) {
+    public NBTBase serialize(ValueOperator value) {
         return Operators.REGISTRY.serialize(value.getRawValue());
     }
 
     @Override
-    public ValueOperator deserialize(String value) {
+    public ValueOperator deserialize(NBTBase value) {
         IOperator operator;
         try {
             operator = Operators.REGISTRY.deserialize(value);

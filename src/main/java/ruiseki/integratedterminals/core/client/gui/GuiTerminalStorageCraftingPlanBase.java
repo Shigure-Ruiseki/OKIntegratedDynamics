@@ -1,6 +1,5 @@
 package ruiseki.integratedterminals.core.client.gui;
 
-import net.minecraft.client.gui.GuiButton;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.ResourceLocation;
@@ -12,15 +11,14 @@ import ruiseki.integratedterminals.IntegratedTerminals;
 import ruiseki.integratedterminals.Reference;
 import ruiseki.integratedterminals.api.terminalstorage.crafting.ITerminalCraftingPlan;
 import ruiseki.integratedterminals.api.terminalstorage.crafting.ITerminalCraftingPlanFlat;
-import ruiseki.integratedterminals.client.gui.container.GuiCraftingPlanFlat;
-import ruiseki.integratedterminals.client.gui.container.GuiCraftingPlanToggler;
 import ruiseki.integratedterminals.client.gui.container.component.GuiCraftingPlan;
+import ruiseki.integratedterminals.client.gui.container.component.GuiCraftingPlanFlat;
+import ruiseki.integratedterminals.client.gui.container.component.GuiCraftingPlanToggler;
 import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorageCraftingPlanBase;
 import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientOpenCraftingJobAmountGuiPacket;
 import ruiseki.okcore.client.gui.component.button.GuiButtonText;
 import ruiseki.okcore.client.gui.container.GuiContainerExtended;
 import ruiseki.okcore.helper.LangHelpers;
-import ruiseki.okcore.init.ModBase;
 
 /**
  * A gui for previewing a crafting plan.
@@ -28,10 +26,7 @@ import ruiseki.okcore.init.ModBase;
  * @author rubensworks
  */
 public class GuiTerminalStorageCraftingPlanBase<L, C extends ContainerTerminalStorageCraftingPlanBase<L>>
-    extends GuiContainerExtended {
-
-    private static final int BUTTON_CRAFTING_PLAN = 5;
-    private static final int BUTTON_CRAFTING_PLAN_FLAT = 6;
+    extends GuiContainerExtended<C> {
 
     private GuiCraftingPlanToggler guiCraftingPlanToggler;
 
@@ -52,19 +47,17 @@ public class GuiTerminalStorageCraftingPlanBase<L, C extends ContainerTerminalSt
             () -> this.craftingPlanFlat,
             () -> {
                 this.guiCraftingPlan = new GuiCraftingPlan(this, this.craftingPlan, guiLeft, guiTop, 9, 18, 10);
+                addRenderableWidget(this.guiCraftingPlan);
 
                 if (this.craftingPlanFlat != null) {
                     String buttonText = EnumChatFormatting.ITALIC
                         + LangHelpers.localize("gui.integratedterminals.craftingplan.view.flat");
-                    this.buttonList.add(
-                        new GuiButtonText(
-                            BUTTON_CRAFTING_PLAN,
-                            this.guiLeft + 8,
-                            this.guiTop + 198,
-                            80,
-                            20,
-                            buttonText,
-                            true));
+                    addRenderableWidget(
+                        new GuiButtonText(this.guiLeft + 8, this.guiTop + 198, 80, 20, buttonText, (b) -> {
+                            this.guiCraftingPlanToggler
+                                .setCraftingPlanDisplayMode(GuiCraftingPlanToggler.CraftingPlanDisplayMode.FLAT);
+                            this.initGui();
+                        }, true));
                 }
             },
             () -> {
@@ -76,19 +69,17 @@ public class GuiTerminalStorageCraftingPlanBase<L, C extends ContainerTerminalSt
                     9,
                     18,
                     10);
+                addRenderableWidget(this.guiCraftingPlanFlat);
 
                 if (this.craftingPlan != null) {
                     String buttonText = EnumChatFormatting.ITALIC
                         + LangHelpers.localize("gui.integratedterminals.craftingplan.view.tree");
-                    this.buttonList.add(
-                        new GuiButtonText(
-                            BUTTON_CRAFTING_PLAN_FLAT,
-                            this.guiLeft + 8,
-                            this.guiTop + 198,
-                            80,
-                            20,
-                            buttonText,
-                            true));
+                    addRenderableWidget(
+                        new GuiButtonText(this.guiLeft + 8, this.guiTop + 198, 80, 20, buttonText, (b) -> {
+                            this.guiCraftingPlanToggler
+                                .setCraftingPlanDisplayMode(GuiCraftingPlanToggler.CraftingPlanDisplayMode.TREE);
+                            this.initGui();
+                        }, true));
                 }
             },
             () -> {
@@ -98,18 +89,21 @@ public class GuiTerminalStorageCraftingPlanBase<L, C extends ContainerTerminalSt
     }
 
     @Override
-    protected ContainerTerminalStorageCraftingPlanBase getContainer() {
-        return (ContainerTerminalStorageCraftingPlanBase) super.getContainer();
+    public C getContainer() {
+        return super.getContainer();
     }
 
     @Override
-    protected ResourceLocation constructResourceLocation() {
-        return new ResourceLocation(Reference.MOD_ID, this.getGuiTexture());
+    protected ResourceLocation constructGuiTexture() {
+        return new ResourceLocation(Reference.MOD_ID, "textures/gui/crafting_plan.png");
     }
 
     @Override
-    public String getGuiTexture() {
-        return IntegratedTerminals._instance.getReferenceValue(ModBase.REFKEY_TEXTURE_PATH_GUI) + "crafting_plan.png";
+    public ResourceLocation getGuiTexture() {
+        return this.guiCraftingPlanToggler.getCraftingPlanDisplayMode()
+            == GuiCraftingPlanToggler.CraftingPlanDisplayMode.FLAT
+                ? new ResourceLocation(Reference.MOD_ID, "textures/gui/crafting_plan_flat.png")
+                : super.getGuiTexture();
     }
 
     @Override
@@ -127,55 +121,49 @@ public class GuiTerminalStorageCraftingPlanBase<L, C extends ContainerTerminalSt
         super.initGui();
 
         // Reset states
-        this.buttonList.clear();
+        this.renderables.clear();
+        this.getChildren()
+            .clear();
         this.guiCraftingPlan = null;
         this.guiCraftingPlanFlat = null;
 
         this.guiCraftingPlanToggler.initGui();
 
-        this.buttonList.add(
+        addRenderableWidget(
             new GuiButtonText(
-                ContainerTerminalStorageCraftingPlanBase.BUTTON_BACK,
                 guiLeft + 221 + 10 - 50 - 55,
                 guiTop + 198,
                 50,
                 20,
                 LangHelpers.localize("gui.integratedterminals.terminal_storage.step.back"),
+                (b) -> returnToCraftingOptionAmount(),
                 true));
 
-        this.buttonList.add(
+        addRenderableWidget(
             buttonConfirm = new GuiButtonText(
-                ContainerTerminalStorageCraftingPlanBase.BUTTON_START,
                 guiLeft + 221 + 10 - 50,
                 guiTop + 198,
                 50,
                 20,
                 EnumChatFormatting.YELLOW + LangHelpers.localize("gui.integratedterminals.terminal_storage.step.craft"),
+                createServerPressable(ContainerTerminalStorageCraftingPlanBase.BUTTON_START, (b) -> {}),
                 true));
         buttonConfirm.enabled = (this.guiCraftingPlan != null && this.guiCraftingPlan.isValid())
             || (this.guiCraftingPlanFlat != null && this.guiCraftingPlanFlat.isValid());
     }
 
     @Override
-    protected void keyTyped(char typedChar, int keyCode) {
-        if (!this.checkHotbarKeys(keyCode)) {
-            if (keyCode == Keyboard.KEY_ESCAPE) {
-                returnToTerminalStorage();
-            } else if (this.guiCraftingPlan != null && this.guiCraftingPlan.isValid()
-                && (keyCode == Keyboard.KEY_NUMPADENTER || keyCode == Keyboard.KEY_RETURN)) {
-                    actionPerformed(this.buttonConfirm);
-                } else {
-                    super.keyTyped(typedChar, keyCode);
-                }
-        }
-    }
-
-    @Override
-    public void onButtonClick(int buttonId) {
-        super.onButtonClick(buttonId);
-        if (buttonId == ContainerTerminalStorageCraftingPlanBase.BUTTON_BACK) {
+    public boolean keyPressed(int typedChar, int keyCode, int modifiers) {
+        if (typedChar == Keyboard.KEY_ESCAPE) {
             returnToCraftingOptionAmount();
+            return true;
         }
+        if (this.guiCraftingPlan != null && this.guiCraftingPlan.isValid()
+            && (keyCode == Keyboard.KEY_RETURN || keyCode == Keyboard.KEY_NUMPADENTER)) {
+            buttonConfirm.onPress();
+            return true;
+        }
+        return super.keyPressed(typedChar, keyCode, modifiers);
     }
 
     /**
@@ -199,11 +187,6 @@ public class GuiTerminalStorageCraftingPlanBase<L, C extends ContainerTerminalSt
     }
 
     @Override
-    public boolean requiresAction(int buttonId) {
-        return true;
-    }
-
-    @Override
     protected void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY) {
         super.drawGuiContainerBackgroundLayer(partialTicks, mouseX, mouseY);
         if (this.guiCraftingPlan != null) {
@@ -222,7 +205,7 @@ public class GuiTerminalStorageCraftingPlanBase<L, C extends ContainerTerminalSt
 
     @Override
     protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
-        super.drawGuiContainerForegroundLayer(mouseX, mouseY);
+        // super.drawGuiContainerForegroundLayer(mouseX, mouseY);
         if (this.guiCraftingPlan != null) {
             guiCraftingPlan.drawGuiContainerForegroundLayer(mouseX, mouseY);
         } else if (this.guiCraftingPlanFlat != null) {
@@ -241,33 +224,23 @@ public class GuiTerminalStorageCraftingPlanBase<L, C extends ContainerTerminalSt
     }
 
     @Override
-    public void handleMouseInput() {
-        super.handleMouseInput();
+    public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
         if (this.guiCraftingPlan != null) {
-            guiCraftingPlan.handleMouseInput();
+            return guiCraftingPlan.mouseScrolled(mouseX, mouseY, delta);
         } else if (this.guiCraftingPlanFlat != null) {
-            guiCraftingPlanFlat.handleMouseInput();
+            return guiCraftingPlanFlat.mouseScrolled(mouseX, mouseY, delta);
         }
+        return super.mouseScrolled(mouseX, mouseY, delta);
     }
 
     @Override
-    protected void mouseClicked(int mouseX, int mouseY, int mouseButton) {
-        super.mouseClicked(mouseX, mouseY, mouseButton);
+    public boolean mouseDragged(double mouseX, double mouseY, int mouseButton, double mouseXPrev, double mouseYPrev) {
         if (this.guiCraftingPlan != null) {
-            guiCraftingPlan.mouseClicked(mouseX, mouseY, mouseButton);
+            return guiCraftingPlan.mouseDragged(mouseX, mouseY, mouseButton, mouseXPrev, mouseYPrev);
         } else if (this.guiCraftingPlanFlat != null) {
-            guiCraftingPlanFlat.mouseClicked(mouseX, mouseY, mouseButton);
+            return guiCraftingPlanFlat.mouseDragged(mouseX, mouseY, mouseButton, mouseXPrev, mouseYPrev);
         }
-    }
-
-    @Override
-    protected void mouseClickMove(int mouseX, int mouseY, int mouseButton, long time) {
-        super.mouseClickMove(mouseX, mouseY, mouseButton, time);
-        if (this.guiCraftingPlan != null) {
-            guiCraftingPlan.mouseClicked(mouseX, mouseY, mouseButton);
-        } else if (this.guiCraftingPlanFlat != null) {
-            guiCraftingPlanFlat.mouseClicked(mouseX, mouseY, mouseButton);
-        }
+        return super.mouseDragged(mouseX, mouseY, mouseButton, mouseXPrev, mouseYPrev);
     }
 
     @Override
@@ -291,19 +264,5 @@ public class GuiTerminalStorageCraftingPlanBase<L, C extends ContainerTerminalSt
         }
 
         super.onUpdate(valueId, value);
-    }
-
-    @Override
-    protected void actionPerformed(GuiButton button) {
-        super.actionPerformed(button);
-        if (button.id == BUTTON_CRAFTING_PLAN) {
-            guiCraftingPlanToggler.setCraftingPlanDisplayMode(GuiCraftingPlanToggler.CraftingPlanDisplayMode.FLAT);
-            initGui();
-        }
-
-        if (button.id == BUTTON_CRAFTING_PLAN_FLAT) {
-            guiCraftingPlanToggler.setCraftingPlanDisplayMode(GuiCraftingPlanToggler.CraftingPlanDisplayMode.TREE);
-            initGui();
-        }
     }
 }

@@ -57,6 +57,8 @@ public class L10NValues {
     public static final String VALUETYPE_ERROR_INVALIDINPUT = "valuetype." + NS + ".error.invalid_input";
     public static final String VALUETYPE_ERROR_INVALIDINPUTITEM = "valuetype." + NS + ".error.invalid_input_item";
     public static final String VALUETYPE_ERROR_INVALIDLISTELEMENT = "valuetype." + NS + ".error.invalid_list_element";
+    // 0: value, 1: error
+    public static final String VALUETYPE_ERROR_DESERIALIZE = "valuetype." + NS + ".error.deserialize";
     // 0: list value type, 1: given type
     public static final String VALUETYPE_ERROR_INVALIDLISTVALUETYPE = "valuetype." + NS
         + ".error.invalid_list_value_type";

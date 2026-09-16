@@ -2,13 +2,13 @@ package ruiseki.integrateddynamics.core.evaluate.variable;
 
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
-
-import org.apache.commons.lang3.tuple.Pair;
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraftforge.common.util.Constants;
 
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 
 import cpw.mods.fml.common.registry.GameData;
-import joptsimple.internal.Strings;
 import lombok.ToString;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeNamed;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeNullable;
@@ -71,25 +71,21 @@ public class ValueObjectTypeBlock extends ValueObjectTypeBase<ValueObjectTypeBlo
     }
 
     @Override
-    public String serialize(ValueBlock value) {
+    public NBTBase serialize(ValueBlock value) {
         if (!value.getRawValue()
-            .isPresent()) return "";
-        Pair<String, Integer> serializedBlockState = BlockHelpers.serializeBlockState(
+            .isPresent()) return new NBTTagCompound();
+        return BlockHelpers.serializeBlockState(
             value.getRawValue()
                 .get());
-        return String.format("%s$%s", serializedBlockState.getLeft(), serializedBlockState.getRight());
     }
 
     @Override
-    public ValueBlock deserialize(String value) {
-        if (Strings.isNullOrEmpty(value)) return ValueBlock.of(null);
-        String[] parts = value.split("\\$");
-        try {
-            return ValueBlock.of(BlockHelpers.deserializeBlockState(Pair.of(parts[0], Integer.parseInt(parts[1]))));
-        } catch (RuntimeException e) {
-            e.printStackTrace();
-            throw new RuntimeException(String.format("Something went wrong while deserializing '%s'.", value));
+    public ValueBlock deserialize(NBTBase value) {
+        if (value.getId() == Constants.NBT.TAG_END
+            || (value.getId() == Constants.NBT.TAG_COMPOUND && ((NBTTagCompound) value).hasNoTags())) {
+            return ValueBlock.of(null);
         }
+        return ValueBlock.of(BlockHelpers.deserializeBlockState((NBTTagCompound) value));
     }
 
     @Override

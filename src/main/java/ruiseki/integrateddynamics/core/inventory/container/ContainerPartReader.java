@@ -106,11 +106,11 @@ public class ContainerPartReader<P extends IPartTypeReader<P, S> & IGuiContainer
     }
 
     @Override
-    protected void onScroll() {
-        super.onScroll();
+    public void onScroll(int firstRow) {
         for (int i = 0; i < getUnfilteredItemCount(); i++) {
             disableSlotOutput(i);
         }
+        super.onScroll(firstRow);
     }
 
     @Override

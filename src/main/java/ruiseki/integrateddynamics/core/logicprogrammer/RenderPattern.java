@@ -51,6 +51,11 @@ public class RenderPattern<E extends IGuiInputElement, G extends Gui, C extends 
         super.initGui(guiLeft, guiTop);
     }
 
+    @Override
+    public void tick() {
+
+    }
+
     protected boolean drawRenderPattern() {
         return true;
     }

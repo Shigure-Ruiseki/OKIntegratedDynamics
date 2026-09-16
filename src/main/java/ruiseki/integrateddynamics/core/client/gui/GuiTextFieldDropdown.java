@@ -43,15 +43,14 @@ public class GuiTextFieldDropdown<T> extends GuiTextFieldExtended {
     private int enabledColor = 14737632;
     private int disabledColor = 7368816;
 
-    public GuiTextFieldDropdown(int componentId, FontRenderer fontrenderer, int x, int y, int width, int height,
-        boolean background, Set<IDropdownEntry<T>> possibilities) {
-        super(componentId, fontrenderer, x, y, width, height, background);
+    public GuiTextFieldDropdown(FontRenderer fontrenderer, int x, int y, int width, int height, boolean background,
+        Set<IDropdownEntry<T>> possibilities) {
+        super(fontrenderer, x, y, width, height, background);
         setPossibilities(Objects.requireNonNull(possibilities));
     }
 
-    public GuiTextFieldDropdown(int componentId, FontRenderer fontrenderer, int x, int y, int width, int height,
-        boolean background) {
-        this(componentId, fontrenderer, x, y, width, height, background, Collections.emptySet());
+    public GuiTextFieldDropdown(FontRenderer fontrenderer, int x, int y, int width, int height, boolean background) {
+        this(fontrenderer, x, y, width, height, background, Collections.emptySet());
     }
 
     public void setPossibilities(Set<IDropdownEntry<T>> possibilities) {
@@ -106,11 +105,20 @@ public class GuiTextFieldDropdown<T> extends GuiTextFieldExtended {
     }
 
     @Override
-    public boolean textboxKeyTyped(char typedChar, int keyCode) {
+    public boolean charTyped(char typedChar, int keyCode) {
+        if (super.charTyped(typedChar, keyCode)) {
+            refreshDropdownList();
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean keyPressed(int typedChar, int keyCode, int modifiers) {
         IDropdownEntry<T> oldPossibility = selectedDropdownPossibility;
         selectedDropdownPossibility = null;
         if (!possibilities.isEmpty()) {
-            switch (keyCode) {
+            switch (typedChar) {
                 case Keyboard.KEY_UP:
                     if (visiblePossibilitiesIndex >= 0) {
                         visiblePossibilitiesIndex--;
@@ -135,33 +143,8 @@ public class GuiTextFieldDropdown<T> extends GuiTextFieldExtended {
                     }
             }
         }
-        if (super.textboxKeyTyped(typedChar, keyCode)) {
-            // Remove all colors and formatting when changing text
-            if (getText().contains("§")) {
-                setText(getText().replaceAll("§.", ""));
-            }
-            if (!possibilities.isEmpty()) {
-                visiblePossibilities = Lists.newArrayList();
-                for (IDropdownEntry<T> possibility : possibilities) {
-                    if (possibility.getMatchString()
-                        .toLowerCase()
-                        .contains(getText().toLowerCase())) {
-                        visiblePossibilities.add(possibility);
-                    }
-                }
-                visiblePossibilitiesIndex = -1;
-                if (!visiblePossibilities.isEmpty()) {
-                    selectedDropdownPossibility = visiblePossibilities.stream()
-                        .filter(
-                            e -> e.getMatchString()
-                                .equals(getText()))
-                        .findFirst()
-                        .orElse(null);
-                }
-                if (dropdownEntryListener != null) {
-                    dropdownEntryListener.onSetDropdownPossiblity(selectedDropdownPossibility);
-                }
-            }
+        if (super.keyPressed(typedChar, keyCode, modifiers)) {
+            refreshDropdownList();
             return true;
         }
         selectedDropdownPossibility = oldPossibility;
@@ -184,13 +167,14 @@ public class GuiTextFieldDropdown<T> extends GuiTextFieldExtended {
     }
 
     @Override
-    public void drawTextBox(Minecraft minecraft, int mouseX, int mouseY) {
+    public void drawWidget(int mouseX, int mouseY, float partialTicks) {
+
         // Display text red that is in an "invalid" state (no valid dropdrown entry selected)
         this.setTextColor(this.selectedDropdownPossibility == null ? Helpers.RGBToInt(220, 10, 10) : 14737632);
 
-        super.drawTextBox(minecraft, mouseX, mouseY);
-        if (this.getVisible() && isFocused()) {
-            FontRenderer fontRenderer = minecraft.fontRenderer;
+        super.drawWidget(mouseX, mouseY, partialTicks);
+        if (this.isEnable() && isFocused()) {
+            FontRenderer fontRenderer = Minecraft.getMinecraft().fontRenderer;
             int yOffset = fontRenderer.FONT_HEIGHT + 3;
 
             int x = this.xPosition;
@@ -259,15 +243,15 @@ public class GuiTextFieldDropdown<T> extends GuiTextFieldExtended {
     }
 
     @Override
-    public void mouseClicked(int mouseX, int mouseY, int mouseButton) {
-        if (this.getVisible() && isFocused()) {
+    public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
+        if (this.isEnable() && isFocused()) {
             int i = getHoveredVisiblePossibility(mouseX, mouseY);
             if (i >= 0) {
                 selectVisiblePossibility(i);
-                return;
+                return true;
             }
         }
-        super.mouseClicked(mouseX, mouseY, mouseButton);
+        return super.mouseClicked(mouseX, mouseY, mouseButton);
     }
 
     public int getHoveredVisiblePossibility(double mouseX, double mouseY) {

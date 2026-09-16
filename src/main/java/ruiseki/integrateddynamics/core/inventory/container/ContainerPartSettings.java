@@ -16,7 +16,6 @@ import ruiseki.integrateddynamics.api.part.IPartState;
 import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.core.client.gui.ExtendedGuiHandler;
-import ruiseki.integrateddynamics.core.client.gui.container.GuiPartSettings;
 import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
 import ruiseki.integrateddynamics.core.helper.PartHelpers;
 import ruiseki.integrateddynamics.core.network.PartNetworkElement;
@@ -25,8 +24,6 @@ import ruiseki.okcore.datastructure.DimPos;
 import ruiseki.okcore.helper.ValueNotifierHelpers;
 import ruiseki.okcore.inventory.IGuiContainerProvider;
 import ruiseki.okcore.inventory.container.ExtendedInventoryContainer;
-import ruiseki.okcore.inventory.container.InventoryContainer;
-import ruiseki.okcore.inventory.container.button.IButtonActionServer;
 
 /**
  * Container for part settings.
@@ -37,7 +34,8 @@ import ruiseki.okcore.inventory.container.button.IButtonActionServer;
 @Data
 public class ContainerPartSettings extends ExtendedInventoryContainer {
 
-    public static final int BUTTON_SETTINGS = 1;
+    public static final String BUTTON_SAVE = "button_save";
+    public static final String BUTTON_SETTINGS = "button_settings";
     private static final int PAGE_SIZE = 3;
 
     private final PartTarget target;
@@ -50,6 +48,7 @@ public class ContainerPartSettings extends ExtendedInventoryContainer {
     private final int lastPriorityValueId;
     private final int lastChannelValueId;
     private final int lastSideValueId;
+    private final int lastMinUpdateValueId;
 
     /**
      * Make a new instance.
@@ -75,34 +74,30 @@ public class ContainerPartSettings extends ExtendedInventoryContainer {
         lastPriorityValueId = getNextValueId();
         lastChannelValueId = getNextValueId();
         lastSideValueId = getNextValueId();
+        lastMinUpdateValueId = getNextValueId();
 
-        putButtonAction(GuiPartSettings.BUTTON_SAVE, new IButtonActionServer<InventoryContainer>() {
-
-            @Override
-            public void onAction(int buttonId, InventoryContainer container) {
-                if (!(getPartType() instanceof IGuiContainerProvider)
-                    || ((IGuiContainerProvider) getPartType()).getContainer()
-                        != ContainerPartSettings.this.getClass()) {
-                    if (!world.isRemote) {
-                        IntegratedDynamics._instance.getGuiHandler()
-                            .setTemporaryData(
-                                ExtendedGuiHandler.PART,
-                                getTarget().getCenter()
-                                    .getSide());
-                        BlockPos pos = getTarget().getCenter()
-                            .getPos()
-                            .getBlockPos();
-                        player.openGui(
-                            IntegratedDynamics._instance.getModId(),
-                            ((IGuiContainerProvider) getPartType()).getGuiID(),
-                            world,
-                            pos.getX(),
-                            pos.getY(),
-                            pos.getZ());
-                    }
-                } else {
-                    player.closeScreen();
+        putButtonAction(ContainerPartSettings.BUTTON_SAVE, (s, containerExtended) -> {
+            if (!(getPartType() instanceof IGuiContainerProvider)
+                || ((IGuiContainerProvider) getPartType()).getContainer() != ContainerPartSettings.this.getClass()) {
+                if (!world.isRemote) {
+                    IntegratedDynamics._instance.getGuiHandler()
+                        .setTemporaryData(
+                            ExtendedGuiHandler.PART,
+                            getTarget().getCenter()
+                                .getSide());
+                    BlockPos pos = getTarget().getCenter()
+                        .getPos()
+                        .getBlockPos();
+                    player.openGui(
+                        IntegratedDynamics._instance.getModId(),
+                        ((IGuiContainerProvider) getPartType()).getGuiID(),
+                        world,
+                        pos.getX(),
+                        pos.getY(),
+                        pos.getZ());
                 }
+            } else {
+                player.closeScreen();
             }
         });
     }
@@ -118,6 +113,8 @@ public class ContainerPartSettings extends ExtendedInventoryContainer {
         ValueNotifierHelpers.setValue(this, lastChannelValueId, getPartType().getChannel(getPartState()));
         ForgeDirection targetSide = getPartType().getTargetSideOverride(getPartState());
         ValueNotifierHelpers.setValue(this, lastSideValueId, targetSide == null ? -1 : targetSide.ordinal());
+        ValueNotifierHelpers
+            .setValue(this, lastMinUpdateValueId, getPartType().getMinimumUpdateInterval(getPartState()));
     }
 
     public int getLastUpdateValue() {
@@ -134,6 +131,10 @@ public class ContainerPartSettings extends ExtendedInventoryContainer {
 
     public int getLastSideValue() {
         return ValueNotifierHelpers.getValueInt(this, lastSideValueId);
+    }
+
+    public int getLastMinUpdateValue() {
+        return ValueNotifierHelpers.getValueInt(this, lastMinUpdateValueId);
     }
 
     public IPartState getPartState() {

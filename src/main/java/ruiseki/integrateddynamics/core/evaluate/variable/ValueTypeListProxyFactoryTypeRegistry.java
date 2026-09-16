@@ -2,6 +2,8 @@ package ruiseki.integrateddynamics.core.evaluate.variable;
 
 import java.util.Map;
 
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 
 import com.google.common.collect.Maps;
@@ -59,27 +61,47 @@ public class ValueTypeListProxyFactoryTypeRegistry implements IValueTypeListProx
     }
 
     @Override
-    public <T extends IValueType<V>, V extends IValue, P extends IValueTypeListProxy<T, V>> String serialize(P proxy)
+    public <T extends IValueType<V>, V extends IValue, P extends IValueTypeListProxy<T, V>> NBTBase serialize(P proxy)
         throws SerializationException {
         IProxyFactory<T, V, P> factory = getFactory(proxy.getName());
         if (factory == null) {
             throw new SerializationException(
                 String.format("No serialization factory exists for the list proxy type name '%s'.", proxy.getName()));
         }
-        String serialized = factory.serialize(proxy);
-        return proxy.getName() + TYPE_DELIMITER + serialized.replaceAll(TYPE_DELIMITER, TYPE_DELIMITER_ESCAPED);
+        NBTBase serialized = factory.serialize(proxy);
+        NBTTagCompound tag = new NBTTagCompound();
+        tag.setString(
+            "proxyName",
+            proxy.getName()
+                .toString());
+        tag.setTag("serialized", serialized);
+        return tag;
     }
 
     @Override
-    public <T extends IValueType<V>, V extends IValue, P extends IValueTypeListProxy<T, V>> P deserialize(String value)
+    public <T extends IValueType<V>, V extends IValue, P extends IValueTypeListProxy<T, V>> P deserialize(NBTBase value)
         throws SerializationException {
-        String[] split = value.split(TYPE_DELIMITER_SPLITREGEX);
-        if (split.length != 2) {
+        if (!(value instanceof NBTTagCompound)) {
             throw new SerializationException(
-                String.format("Could not deserialize the serialized list proxy value '%s'.", value));
+                String.format(
+                    "Could not deserialize the serialized list proxy value '%s' as it is not a CompoundTag.",
+                    value));
         }
-        String name = split[0];
-        String actualValue = split[1].replaceAll(TYPE_DELIMITER_ESCAPED, TYPE_DELIMITER);
+        NBTTagCompound tag = (NBTTagCompound) value;
+        if (!tag.hasKey("proxyName")) {
+            throw new SerializationException(
+                String.format(
+                    "Could not deserialize the serialized list proxy value '%s' as it is missing a proxyName.",
+                    value));
+        }
+        if (!tag.hasKey("serialized")) {
+            throw new SerializationException(
+                String.format(
+                    "Could not deserialize the serialized list proxy value '%s' as it is missing a serialized value.",
+                    value));
+        }
+        String name = tag.getString("proxyName");
+        NBTBase actualValue = tag.getTag("serialized");
         IProxyFactory<T, V, P> factory = getFactory(new ResourceLocation(name));
         if (factory == null) {
             throw new SerializationException(

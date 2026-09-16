@@ -1,5 +1,6 @@
 package ruiseki.integrateddynamics.api.evaluate.variable;
 
+import net.minecraft.nbt.NBTBase;
 import net.minecraft.util.ResourceLocation;
 
 import ruiseki.okcore.init.IRegistry;
@@ -46,7 +47,7 @@ public interface IValueTypeListProxyFactoryTypeRegistry extends IRegistry {
      * @return The serialized string.
      * @throws SerializationException If something goes wrong while serializing.
      */
-    public <T extends IValueType<V>, V extends IValue, P extends IValueTypeListProxy<T, V>> String serialize(P proxy)
+    public <T extends IValueType<V>, V extends IValue, P extends IValueTypeListProxy<T, V>> NBTBase serialize(P proxy)
         throws SerializationException;
 
     /**
@@ -59,7 +60,7 @@ public interface IValueTypeListProxyFactoryTypeRegistry extends IRegistry {
      * @return The deserialized list proxy.
      * @throws SerializationException If something goes wrong while serializing.
      */
-    public <T extends IValueType<V>, V extends IValue, P extends IValueTypeListProxy<T, V>> P deserialize(String value)
+    public <T extends IValueType<V>, V extends IValue, P extends IValueTypeListProxy<T, V>> P deserialize(NBTBase value)
         throws SerializationException;
 
     /**
@@ -83,7 +84,7 @@ public interface IValueTypeListProxyFactoryTypeRegistry extends IRegistry {
          * @return The serialized value.
          * @throws SerializationException If something goes wrong while serializing.
          */
-        public String serialize(P value) throws SerializationException;
+        public NBTBase serialize(P value) throws SerializationException;
 
         /**
          * Deserialize the given value.
@@ -92,7 +93,7 @@ public interface IValueTypeListProxyFactoryTypeRegistry extends IRegistry {
          * @return The deserialized value.
          * @throws SerializationException If something goes wrong while deserializing.
          */
-        public P deserialize(String value) throws SerializationException;
+        public P deserialize(NBTBase value) throws SerializationException;
 
     }
 

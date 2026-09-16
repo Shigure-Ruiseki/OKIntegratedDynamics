@@ -50,16 +50,16 @@ public class ValueTypeListProxyOperatorMapped extends ValueTypeListProxyBase<IVa
         @Override
         protected void serializeNbt(ValueTypeListProxyOperatorMapped value, NBTTagCompound tag)
             throws IValueTypeListProxyFactoryTypeRegistry.SerializationException {
-            tag.setString("operator", Operators.REGISTRY.serialize(value.operator));
-            tag.setString("sublist", ValueTypeListProxyFactories.REGISTRY.serialize(value.listProxy));
+            tag.setTag("operator", Operators.REGISTRY.serialize(value.operator));
+            tag.setTag("sublist", ValueTypeListProxyFactories.REGISTRY.serialize(value.listProxy));
         }
 
         @Override
         protected ValueTypeListProxyOperatorMapped deserializeNbt(NBTTagCompound tag)
             throws IValueTypeListProxyFactoryTypeRegistry.SerializationException, EvaluationException {
-            IOperator operator = Operators.REGISTRY.deserialize(tag.getString("operator"));
+            IOperator operator = Operators.REGISTRY.deserialize(tag.getCompoundTag("operator"));
             IValueTypeListProxy<IValueType<IValue>, IValue> list = ValueTypeListProxyFactories.REGISTRY
-                .deserialize(tag.getString("sublist"));
+                .deserialize(tag.getTag("sublist"));
             return new ValueTypeListProxyOperatorMapped(operator, list);
         }
     }

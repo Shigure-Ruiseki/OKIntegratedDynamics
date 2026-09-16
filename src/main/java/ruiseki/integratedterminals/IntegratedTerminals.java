@@ -31,6 +31,7 @@ import ruiseki.integratedterminals.modcompat.integratedcrafting.IntegratedCrafti
 import ruiseki.integratedterminals.part.TerminalPartTypes;
 import ruiseki.okcore.client.gui.GuiHandler;
 import ruiseki.okcore.config.ConfigHandler;
+import ruiseki.okcore.init.ItemCreativeTab;
 import ruiseki.okcore.init.ModBaseVersionable;
 import ruiseki.okcore.modcompat.ModCompatLoader;
 import ruiseki.okcore.proxy.ICommonProxy;
@@ -163,7 +164,12 @@ public class IntegratedTerminals extends ModBaseVersionable {
 
     @Override
     public CreativeTabs constructDefaultCreativeTab() {
-        return null;
+        return new ItemCreativeTab(this, () -> {
+            if (TerminalPartTypes.TERMINAL_STORAGE != null) {
+                return TerminalPartTypes.TERMINAL_STORAGE.getItem();
+            }
+            return null;
+        });
     }
 
     @Override

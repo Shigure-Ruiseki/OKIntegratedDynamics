@@ -23,8 +23,7 @@ import ruiseki.okcore.inventory.container.ExtendedInventoryContainer;
  */
 public abstract class ContainerTerminalStorageCraftingPlanBase<L> extends ExtendedInventoryContainer {
 
-    public static final int BUTTON_START = 1;
-    public static final int BUTTON_BACK = 2;
+    public static final String BUTTON_START = "start";
     private static final ExecutorService WORKER_POOL = Executors
         .newFixedThreadPool(GeneralConfig.craftingPlannerThreads);
 

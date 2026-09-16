@@ -35,7 +35,6 @@ import ruiseki.okcore.capabilities.CapabilityDispatcher;
 import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.datastructure.NonNullList;
 import ruiseki.okcore.helper.ItemHelpers;
-import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.persist.IDirtyMarkListener;
 import ruiseki.okcore.persist.nbt.NBTClassType;
 
@@ -173,7 +172,7 @@ public abstract class PartStateBase<P extends IPartType> implements IPartState<P
 
     public void readAspectProperties(String name, NBTTagCompound tag) {
         NBTTagCompound mapTag = tag.getCompoundTag(name);
-        NBTTagList list = mapTag.getTagList("map", MinecraftHelpers.NBTTag_Types.NBTTagCompound.ordinal());
+        NBTTagList list = mapTag.getTagList("map", Constants.NBT.TAG_COMPOUND);
         if (list.tagCount() > 0) {
             for (int i = 0; i < list.tagCount(); i++) {
                 NBTTagCompound entryTag = list.getCompoundTagAt(i);

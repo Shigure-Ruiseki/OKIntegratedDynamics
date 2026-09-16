@@ -4,7 +4,6 @@ import java.util.List;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
-import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.ResourceLocation;
 
 import org.lwjgl.input.Keyboard;
@@ -29,7 +28,6 @@ import ruiseki.okcore.client.renderer.GlStateManager;
 import ruiseki.okcore.helper.GuiHelpers;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.RenderHelpers;
-import ruiseki.okcore.init.ModBase;
 
 /**
  * A gui for setting the amount for a given crafting option.
@@ -37,10 +35,7 @@ import ruiseki.okcore.init.ModBase;
  * @author rubensworks
  */
 public class GuiTerminalStorageCraftingOptionAmountBase<L, C extends ContainerTerminalStorageCraftingOptionAmountBase<L>>
-    extends GuiContainerExtended {
-
-    public static final int BUTTON_NEXT = 6;
-    public static final int BUTTON_BACK = 7;
+    extends GuiContainerExtended<C> {
 
     public static int OUTPUT_SLOT_X = 135;
     public static int OUTPUT_SLOT_Y = 15;
@@ -56,8 +51,7 @@ public class GuiTerminalStorageCraftingOptionAmountBase<L, C extends ContainerTe
         super(container);
 
         this.outputs = Lists.newArrayList();
-        ITerminalCraftingOption<?> option = ((ContainerTerminalStorageCraftingOptionAmountBase) getContainer())
-            .getCraftingOptionGuiData()
+        ITerminalCraftingOption<?> option = getContainer().getCraftingOptionGuiData()
             .getCraftingOption()
             .getCraftingOption();
         for (IngredientComponent<?, ?> outputComponent : option.getOutputComponents()) {
@@ -68,19 +62,13 @@ public class GuiTerminalStorageCraftingOptionAmountBase<L, C extends ContainerTe
     }
 
     @Override
-    protected ContainerTerminalStorageCraftingOptionAmountBase getContainer() {
-        return (ContainerTerminalStorageCraftingOptionAmountBase) super.getContainer();
+    public C getContainer() {
+        return super.getContainer();
     }
 
     @Override
-    protected ResourceLocation constructResourceLocation() {
-        return new ResourceLocation(Reference.MOD_ID, this.getGuiTexture());
-    }
-
-    @Override
-    public String getGuiTexture() {
-        return IntegratedTerminals._instance.getReferenceValue(ModBase.REFKEY_TEXTURE_PATH_GUI)
-            + "crafting_option_amount.png";
+    protected ResourceLocation constructGuiTexture() {
+        return new ResourceLocation(Reference.MOD_ID, "textures/gui/crafting_option_amount.png");
     }
 
     @Override
@@ -98,7 +86,6 @@ public class GuiTerminalStorageCraftingOptionAmountBase<L, C extends ContainerTe
         super.initGui();
 
         numberField = new GuiNumberField(
-            0,
             Minecraft.getMinecraft().fontRenderer,
             guiLeft + 25,
             guiTop + 36,
@@ -118,47 +105,58 @@ public class GuiTerminalStorageCraftingOptionAmountBase<L, C extends ContainerTe
                 numberField.validateNumber(
                     getContainer().getCraftingOptionGuiData()
                         .getAmount())));
+        addRenderableWidget(numberField);
 
         scrollBar = new GuiScrollBar(guiLeft + 153, guiTop + 15, 54, this::setFirstRow, 3);
         scrollBar.setTotalRows(outputs.size() - 1);
+        addWidget(scrollBar);
 
-        this.buttonList.addAll(
-            Lists.newArrayList(
-                new GuiButtonChangeQuantity(0, guiLeft + 5, guiTop + 10, +10),
-                new GuiButtonChangeQuantity(1, guiLeft + 5, guiTop + 55, -10),
+        addRenderableWidget(new GuiButtonChangeQuantity(guiLeft + 5, guiTop + 10, +10, this::buttonChangeQuantity));
+        addRenderableWidget(new GuiButtonChangeQuantity(guiLeft + 5, guiTop + 55, -10, this::buttonChangeQuantity));
 
-                new GuiButtonChangeQuantity(2, guiLeft + 48, guiTop + 10, +100),
-                new GuiButtonChangeQuantity(3, guiLeft + 48, guiTop + 55, -100),
+        addRenderableWidget(new GuiButtonChangeQuantity(guiLeft + 48, guiTop + 10, +100, this::buttonChangeQuantity));
+        addRenderableWidget(new GuiButtonChangeQuantity(guiLeft + 48, guiTop + 55, -100, this::buttonChangeQuantity));
 
-                new GuiButtonChangeQuantity(4, guiLeft + 91, guiTop + 10, +1000),
-                new GuiButtonChangeQuantity(5, guiLeft + 91, guiTop + 55, -1000),
+        addRenderableWidget(new GuiButtonChangeQuantity(guiLeft + 91, guiTop + 10, +1000, this::buttonChangeQuantity));
+        addRenderableWidget(new GuiButtonChangeQuantity(guiLeft + 91, guiTop + 55, -1000, this::buttonChangeQuantity));
 
-                nextButton = new GuiButtonText(
-                    BUTTON_NEXT,
-                    guiLeft + 81,
-                    guiTop + 33,
-                    50,
-                    20,
-                    EnumChatFormatting.YELLOW
-                        + LangHelpers.localize("gui.integratedterminals.terminal_storage.step.next"),
-                    true)));
+        addRenderableWidget(
+            nextButton = new GuiButtonText(
+                guiLeft + 81,
+                guiTop + 33,
+                50,
+                20,
+                LangHelpers.localize("gui.integratedterminals.terminal_storage.step.next"),
+                (bb) -> calculateCraftingJob(),
+                true));
 
-        GuiButtonText backButton = new GuiButtonText(BUTTON_BACK, guiLeft + 5, guiTop + 33, 15, 20, "<", true);
-        this.buttonList.add(backButton);
+        GuiButtonText backButton = new GuiButtonText(
+            guiLeft + 5,
+            guiTop + 33,
+            15,
+            20,
+            "<",
+            (bb) -> returnToTerminalStorage(),
+            true);
+        addRenderableWidget(backButton);
     }
 
     @Override
-    protected void keyTyped(char typedChar, int keyCode) {
-        if (!this.checkHotbarKeys(keyCode)) {
-            if (keyCode == Keyboard.KEY_ESCAPE) {
-                returnToTerminalStorage();
-            } else if (keyCode == Keyboard.KEY_NUMPADENTER || keyCode == Keyboard.KEY_RETURN) {
-                calculateCraftingJob();
-            } else if (!this.numberField.textboxKeyTyped(typedChar, keyCode)
-                && !this.numberField.textboxKeyTyped(typedChar, keyCode)) {
-                    super.keyTyped(typedChar, keyCode);
-                }
+    public boolean charTyped(char typedChar, int keyCode) {
+        return this.numberField.charTyped(typedChar, keyCode) || super.charTyped(typedChar, keyCode);
+    }
+
+    @Override
+    public boolean keyPressed(int typedChar, int keyCode, int modifiers) {
+        if (typedChar == Keyboard.KEY_ESCAPE) {
+            returnToTerminalStorage();
+            return true;
+        } else if (typedChar == Keyboard.KEY_RETURN || typedChar == Keyboard.KEY_NUMPADENTER) {
+            calculateCraftingJob();
+            return true;
         }
+        return this.numberField.keyPressed(typedChar, keyCode, modifiers)
+            || super.keyPressed(typedChar, keyCode, modifiers);
     }
 
     private void returnToTerminalStorage() {
@@ -166,31 +164,6 @@ public class GuiTerminalStorageCraftingOptionAmountBase<L, C extends ContainerTe
             .getCraftingOptionGuiData();
         data.getLocation()
             .openContainerFromClient(data);
-    }
-
-    @Override
-    protected void mouseClicked(int mouseX, int mouseY, int mouseButton) {
-        this.numberField.mouseClicked(mouseX, mouseY, mouseButton);
-        super.mouseClicked(mouseX, mouseY, mouseButton);
-    }
-
-    @Override
-    public boolean requiresAction(int buttonId) {
-        return true;
-    }
-
-    @Override
-    public void onButtonClick(int buttonId) {
-        super.onButtonClick(buttonId);
-
-        if (buttonId == BUTTON_BACK) {
-            returnToTerminalStorage();
-        } else if (buttonId == BUTTON_NEXT) {
-            calculateCraftingJob();
-        } else if (buttonId >= 0 && buttonId <= 5) {
-            GuiButton button = (GuiButton) this.buttonList.get(buttonId);
-            buttonChangeQuantity(button);
-        }
     }
 
     public void buttonChangeQuantity(GuiButton button) {
@@ -262,8 +235,8 @@ public class GuiTerminalStorageCraftingOptionAmountBase<L, C extends ContainerTe
     @Override
     protected void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY) {
         super.drawGuiContainerBackgroundLayer(partialTicks, mouseX, mouseY);
-        numberField.drawTextBox(Minecraft.getMinecraft(), mouseX - guiLeft, mouseY - guiTop);
-        scrollBar.drawGuiContainerBackgroundLayer(partialTicks, mouseX, mouseY);
+        numberField.drawScreen(mouseX - guiLeft, mouseY - guiTop, partialTicks);
+        scrollBar.drawWidget(mouseX, mouseY, partialTicks);
 
         RenderHelpers.bindTexture(this.texture);
         drawOutputSlots(
@@ -277,44 +250,26 @@ public class GuiTerminalStorageCraftingOptionAmountBase<L, C extends ContainerTe
 
     @Override
     protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
-        super.drawGuiContainerForegroundLayer(mouseX, mouseY);
+        // super.drawGuiContainerForegroundLayer(mouseX, mouseY);
 
         drawOutputSlots(0, 0, 0, mouseX, mouseY, GuiTerminalStorage.DrawLayer.FOREGROUND);
-    }
-
-    @Override
-    public void drawScreen(int mouseX, int mouseY, float partialTicks) {
-        super.drawScreen(mouseX, mouseY, partialTicks);
-        scrollBar.drawScreen(mouseX, mouseY, partialTicks);
-    }
-
-    @Override
-    public void handleMouseInput() {
-        super.handleMouseInput();
-        scrollBar.handleMouseInput();
     }
 
     public void setFirstRow(int firstRow) {
         this.firstRow = firstRow;
     }
 
-    @FunctionalInterface
-    public interface IPressCallback {
-
-        void onPress(GuiButtonChangeQuantity button);
-    }
-
     public static class GuiButtonChangeQuantity extends GuiButtonExtended {
 
         private final int diff;
 
-        public GuiButtonChangeQuantity(int id, int x, int y, int diff) {
-            super(id, x, y, 40, 20, (diff < 0 ? "- " : "+ ") + Integer.toString(Math.abs(diff)), true);
+        public GuiButtonChangeQuantity(int x, int y, int diff, OnPress onPress) {
+            super(x, y, 40, 20, (diff < 0 ? "- " : "+ ") + Integer.toString(Math.abs(diff)), onPress, true);
             this.diff = diff;
         }
 
         @Override
-        protected void drawButtonInner(Minecraft minecraft, int i, int j, boolean mouseOver) {
+        protected void drawButtonInner(int i, int i1, boolean b) {
             GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
             int color = 14737632;
             if (!this.enabled) {
@@ -323,7 +278,7 @@ public class GuiTerminalStorageCraftingOptionAmountBase<L, C extends ContainerTe
                 color = 16777120;
             }
             this.drawCenteredString(
-                minecraft.fontRenderer,
+                Minecraft.getMinecraft().fontRenderer,
                 this.displayString,
                 this.xPosition + this.width / 2,
                 this.yPosition + (this.height - 8) / 2,

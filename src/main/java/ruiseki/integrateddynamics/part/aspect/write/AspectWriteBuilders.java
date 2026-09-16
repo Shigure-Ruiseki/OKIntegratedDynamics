@@ -1,9 +1,10 @@
 package ruiseki.integrateddynamics.part.aspect.write;
 
 import java.util.List;
+import java.util.Optional;
 
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTBase;
 import net.minecraft.world.World;
 import net.minecraftforge.event.world.NoteBlockEvent;
 import net.minecraftforge.fluids.FluidStack;
@@ -138,7 +139,7 @@ public class AspectWriteBuilders {
             input.getRight()
                 .getRawValue());
 
-    public static final IAspectValuePropagator<Triple<PartTarget, IAspectProperties, ValueTypeNbt.ValueNbt>, Triple<PartTarget, IAspectProperties, NBTTagCompound>> PROP_GET_NBT = input -> Triple
+    public static final IAspectValuePropagator<Triple<PartTarget, IAspectProperties, ValueTypeNbt.ValueNbt>, Triple<PartTarget, IAspectProperties, Optional<NBTBase>>> PROP_GET_NBT = input -> Triple
         .of(
             input.getLeft(),
             input.getMiddle(),

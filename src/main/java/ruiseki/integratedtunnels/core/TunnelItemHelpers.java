@@ -2,12 +2,13 @@ package ruiseki.integratedtunnels.core;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTBase;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.util.ForgeDirection;
@@ -162,7 +163,7 @@ public class TunnelItemHelpers {
         return new IngredientPredicateBlockOperator(amount, exactAmount, predicate, partTarget);
     }
 
-    public static IngredientPredicate<ItemStack, Integer> matchNbt(final NBTTagCompound tag, final boolean subset,
+    public static IngredientPredicate<ItemStack, Integer> matchNbt(final Optional<NBTBase> tag, final boolean subset,
         final boolean superset, final boolean requireNbt, final boolean recursive, final boolean blacklist,
         final int amount, final boolean exactAmount) {
         return new IngredientPredicateItemStackNbt(

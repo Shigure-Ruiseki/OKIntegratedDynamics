@@ -1,6 +1,5 @@
 package ruiseki.integrateddynamics.api.client.gui.subgui;
 
-import java.io.IOException;
 import java.util.Comparator;
 
 import net.minecraft.client.gui.FontRenderer;
@@ -15,6 +14,8 @@ public interface ISubGui {
 
     public void initGui(int guiLeft, int guiTop);
 
+    public void tick();
+
     public void drawGuiContainerBackgroundLayer(int guiLeft, int guiTop, TextureManager textureManager,
         FontRenderer fontRenderer, float partialTicks, int mouseX, int mouseY);
 
@@ -22,17 +23,25 @@ public interface ISubGui {
         FontRenderer fontRenderer, int mouseX, int mouseY);
 
     /**
-     * Key type event
-     *
-     * @param checkHotbarKeys If the hotbar keys should be checked
-     * @param typedChar       The character typed
-     * @param keyCode         The keycode of the character typed
+     * Char type event
+     * 
+     * @param typedChar The character typed
+     * @param keyCode   The keycode of the character typed
      * @return True if all next actions should be skipped
-     * @throws IOException An exception with IO.
      */
-    public boolean keyTyped(boolean checkHotbarKeys, char typedChar, int keyCode) throws IOException;
+    public boolean charTyped(char typedChar, int keyCode);
 
-    public void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException;
+    /**
+     * Key press event
+     * 
+     * @param typedChar The character typed
+     * @param keyCode   The keycode of the character typed
+     * @param modifiers Key modifiers
+     * @return True if all next actions should be skipped
+     */
+    public boolean keyPressed(int typedChar, int keyCode, int modifiers);
+
+    public boolean mouseClicked(double mouseX, double mouseY, int mouseButton);
 
     public static class SubGuiComparator implements Comparator<ISubGui> {
 

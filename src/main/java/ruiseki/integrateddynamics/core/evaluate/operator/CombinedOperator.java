@@ -3,11 +3,9 @@ package ruiseki.integrateddynamics.core.evaluate.operator;
 import java.util.Arrays;
 import java.util.Objects;
 
-import net.minecraft.nbt.JsonToNBT;
-import net.minecraft.nbt.NBTException;
+import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
-import net.minecraft.nbt.NBTTagString;
 import net.minecraft.util.ResourceLocation;
 
 import org.apache.commons.lang3.ArrayUtils;
@@ -28,7 +26,6 @@ import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
 import ruiseki.integrateddynamics.core.evaluate.variable.Variable;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.okcore.helper.LangHelpers;
-import ruiseki.okcore.helper.MinecraftHelpers;
 
 /**
  * An operator that somehow combines one or more operators.
@@ -490,31 +487,32 @@ public class CombinedOperator extends OperatorBase {
         }
 
         @Override
-        public String serialize(CombinedOperator operator) {
+        public NBTBase serialize(CombinedOperator operator) {
             OperatorsFunction function = (OperatorsFunction) operator.getFunction();
             IOperator[] operators = function.getOperators();
             NBTTagCompound tag = new NBTTagCompound();
             NBTTagList list = new NBTTagList();
             for (IOperator functionOperator : operators) {
-                list.appendTag(new NBTTagString(Operators.REGISTRY.serialize(functionOperator)));
+                list.appendTag(Operators.REGISTRY.serialize(functionOperator));
             }
             tag.setTag("operators", list);
-            return tag.toString();
+            return tag;
         }
 
         @Override
-        public CombinedOperator deserialize(String valueOperator) throws EvaluationException {
+        public CombinedOperator deserialize(NBTBase valueOperator) throws EvaluationException {
             NBTTagList list;
             try {
-                NBTTagCompound tag = (NBTTagCompound) JsonToNBT.func_150315_a(valueOperator);
-                list = tag.getTagList("operators", MinecraftHelpers.NBTTag_Types.NBTTagString.ordinal());
-            } catch (NBTException e) {
+                NBTTagCompound tag = (NBTTagCompound) valueOperator;
+                list = (NBTTagList) tag.getTag("operators");
+            } catch (ClassCastException e) {
                 e.printStackTrace();
-                throw new EvaluationException(e.getMessage());
+                throw new EvaluationException(
+                    LangHelpers.localize(L10NValues.VALUETYPE_ERROR_DESERIALIZE, valueOperator, e.getMessage()));
             }
             IOperator[] operators = new IOperator[list.tagCount()];
             for (int i = 0; i < list.tagCount(); i++) {
-                operators[i] = Objects.requireNonNull(Operators.REGISTRY.deserialize(list.getStringTagAt(i)));
+                operators[i] = Objects.requireNonNull(Operators.REGISTRY.deserialize(list.getCompoundTagAt(i)));
             }
             return newFunction(operators);
         }

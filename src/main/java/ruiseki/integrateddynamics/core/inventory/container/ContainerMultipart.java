@@ -16,14 +16,11 @@ import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.api.part.aspect.IAspect;
 import ruiseki.integrateddynamics.core.client.gui.ExtendedGuiHandler;
-import ruiseki.integrateddynamics.core.client.gui.container.GuiMultipart;
 import ruiseki.integrateddynamics.core.helper.PartHelpers;
 import ruiseki.integrateddynamics.core.part.PartTypeConfigurable;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.inventory.IGuiContainerProvider;
 import ruiseki.okcore.inventory.container.ExtendedInventoryContainer;
-import ruiseki.okcore.inventory.container.InventoryContainer;
-import ruiseki.okcore.inventory.container.button.IButtonActionServer;
 import ruiseki.okcore.persist.IDirtyMarkListener;
 
 /**
@@ -36,8 +33,9 @@ import ruiseki.okcore.persist.IDirtyMarkListener;
 public abstract class ContainerMultipart<P extends IPartType<P, S> & IGuiContainerProvider, S extends IPartState<P>>
     extends ExtendedInventoryContainer implements IDirtyMarkListener {
 
-    public static final int BUTTON_SETTINGS = 1;
-    public static final int BUTTON_OFFSETS = 2;
+    public static final String BUTTON_SETTINGS = "button_settings";
+    public static final String BUTTON_OFFSETS = "button_offsets";
+
     private static final int PAGE_SIZE = 3;
 
     private final PartTarget target;
@@ -76,43 +74,34 @@ public abstract class ContainerMultipart<P extends IPartType<P, S> & IGuiContain
 
         this.player = player;
 
-        putButtonAction(GuiMultipart.BUTTON_SETTINGS, new IButtonActionServer<InventoryContainer>() {
-
-            @Override
-            public void onAction(int buttonId, InventoryContainer container) {
-                if (!world.isRemote) {
-                    IGuiContainerProvider gui = ((PartTypeConfigurable<?, ?>) getPartType()).getSettingsGuiProvider();
-                    IntegratedDynamics._instance.getGuiHandler()
-                        .setTemporaryData(
-                            ExtendedGuiHandler.PART,
-                            getTarget().getCenter()
-                                .getSide()); // Pass the side as extra data to the gui
-                    BlockPos cPos = getTarget().getCenter()
-                        .getPos()
-                        .getBlockPos();
-                    ContainerMultipart.this.player
-                        .openGui(gui.getModGui(), gui.getGuiID(), world, cPos.getX(), cPos.getY(), cPos.getZ());
-                }
+        putButtonAction(ContainerMultipart.BUTTON_SETTINGS, (s, containerExtended) -> {
+            if (!world.isRemote) {
+                IGuiContainerProvider gui = ((PartTypeConfigurable<?, ?>) getPartType()).getSettingsGuiProvider();
+                IntegratedDynamics._instance.getGuiHandler()
+                    .setTemporaryData(
+                        ExtendedGuiHandler.PART,
+                        getTarget().getCenter()
+                            .getSide()); // Pass the side as extra data to the gui
+                BlockPos cPos = getTarget().getCenter()
+                    .getPos()
+                    .getBlockPos();
+                ContainerMultipart.this.player
+                    .openGui(gui.getModGui(), gui.getGuiID(), world, cPos.getX(), cPos.getY(), cPos.getZ());
             }
         });
-
-        putButtonAction(GuiMultipart.BUTTON_OFFSETS, new IButtonActionServer<InventoryContainer>() {
-
-            @Override
-            public void onAction(int buttonId, InventoryContainer container) {
-                if (!world.isRemote) {
-                    IGuiContainerProvider gui = ((PartTypeConfigurable<?, ?>) getPartType()).getOffsetsGuiProvider();
-                    IntegratedDynamics._instance.getGuiHandler()
-                        .setTemporaryData(
-                            ExtendedGuiHandler.PART,
-                            getTarget().getCenter()
-                                .getSide()); // Pass the side as extra data to the gui
-                    BlockPos cPos = getTarget().getCenter()
-                        .getPos()
-                        .getBlockPos();
-                    ContainerMultipart.this.player
-                        .openGui(gui.getModGui(), gui.getGuiID(), world, cPos.getX(), cPos.getY(), cPos.getZ());
-                }
+        putButtonAction(ContainerMultipart.BUTTON_OFFSETS, (s, containerExtended) -> {
+            if (!world.isRemote) {
+                IGuiContainerProvider gui = ((PartTypeConfigurable<?, ?>) getPartType()).getOffsetsGuiProvider();
+                IntegratedDynamics._instance.getGuiHandler()
+                    .setTemporaryData(
+                        ExtendedGuiHandler.PART,
+                        getTarget().getCenter()
+                            .getSide()); // Pass the side as extra data to the gui
+                BlockPos cPos = getTarget().getCenter()
+                    .getPos()
+                    .getBlockPos();
+                ContainerMultipart.this.player
+                    .openGui(gui.getModGui(), gui.getGuiID(), world, cPos.getX(), cPos.getY(), cPos.getZ());
             }
         });
 

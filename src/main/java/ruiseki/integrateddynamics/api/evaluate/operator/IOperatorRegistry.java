@@ -2,6 +2,7 @@ package ruiseki.integrateddynamics.api.evaluate.operator;
 
 import java.util.Collection;
 
+import net.minecraft.nbt.NBTBase;
 import net.minecraft.util.ResourceLocation;
 
 import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
@@ -76,14 +77,14 @@ public interface IOperatorRegistry extends IRegistry, IVariableFacadeHandler<IOp
      * @param value The operator to serialize.
      * @return The serialized operator value.
      */
-    public String serialize(IOperator value);
+    public NBTBase serialize(IOperator value);
 
     /**
      * Deserialize the given operator value.
      *
-     * @param value The operator value to deserialize.
+     * @param tag The operator value to deserialize.
      * @return The deserialized operator.
      * @throws EvaluationException If an error occurs while deserializing.
      */
-    public IOperator deserialize(String value) throws EvaluationException;
+    public IOperator deserialize(NBTBase tag) throws EvaluationException;
 }

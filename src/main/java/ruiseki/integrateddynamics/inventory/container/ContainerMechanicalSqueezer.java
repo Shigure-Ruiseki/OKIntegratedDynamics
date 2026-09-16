@@ -14,19 +14,19 @@ import ruiseki.okcore.inventory.slot.SlotRemoveOnly;
 
 /**
  * Container for the mechanical squeezer.
- * 
+ *
  * @author rubensworks
  */
 public class ContainerMechanicalSqueezer extends ContainerMechanicalMachine<TileMechanicalSqueezer> {
 
-    public static final int BUTTON_TOGGLE_FLUID_EJECT = 0;
+    public static final String BUTTON_TOGGLE_FLUID_EJECT = "button_eject";
 
     private final Supplier<FluidStack> variableFluidStack;
     private final Supplier<Integer> variableFluidCapacity;
 
     /**
      * Make a new instance.
-     * 
+     *
      * @param inventory The player inventory.
      * @param tile      The part.
      */

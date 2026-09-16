@@ -1,5 +1,7 @@
 package ruiseki.integrateddynamics.core.evaluate.operator;
 
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagString;
 import net.minecraft.util.ResourceLocation;
 
 import ruiseki.integrateddynamics.api.evaluate.operator.IOperator;
@@ -23,13 +25,14 @@ public class OperatorSerializerDefault implements IOperatorSerializer<IOperator>
     }
 
     @Override
-    public String serialize(IOperator operator) {
-        return operator.getUniqueName()
-            .toString();
+    public NBTBase serialize(IOperator operator) {
+        return new NBTTagString(
+            operator.getUniqueName()
+                .toString());
     }
 
     @Override
-    public IOperator deserialize(String value) {
-        return Operators.REGISTRY.getOperator(new ResourceLocation(value));
+    public IOperator deserialize(NBTBase value) {
+        return Operators.REGISTRY.getOperator(new ResourceLocation(((NBTTagString) value).func_150285_a_()));
     }
 }

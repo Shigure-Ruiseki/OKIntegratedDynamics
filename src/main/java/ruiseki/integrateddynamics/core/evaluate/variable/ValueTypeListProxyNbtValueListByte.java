@@ -1,7 +1,9 @@
 package ruiseki.integrateddynamics.core.evaluate.variable;
 
+import java.util.Optional;
+
+import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagByteArray;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 
 import ruiseki.integrateddynamics.Reference;
@@ -12,7 +14,7 @@ import ruiseki.integrateddynamics.Reference;
 public class ValueTypeListProxyNbtValueListByte
     extends ValueTypeListProxyNbtValueListGeneric<NBTTagByteArray, ValueTypeInteger, ValueTypeInteger.ValueInteger> {
 
-    public ValueTypeListProxyNbtValueListByte(String key, NBTTagCompound tag) {
+    public ValueTypeListProxyNbtValueListByte(String key, Optional<NBTBase> tag) {
         super(ValueTypeListProxyFactories.NBT_VALUE_LIST_BYTE.getName(), ValueTypes.INTEGER, key, tag);
     }
 
@@ -40,7 +42,7 @@ public class ValueTypeListProxyNbtValueListByte
         }
 
         @Override
-        protected ValueTypeListProxyNbtValueListByte create(String key, NBTTagCompound tag) {
+        protected ValueTypeListProxyNbtValueListByte create(String key, Optional<NBTBase> tag) {
             return new ValueTypeListProxyNbtValueListByte(key, tag);
         }
     }

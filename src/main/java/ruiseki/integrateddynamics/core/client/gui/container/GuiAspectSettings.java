@@ -1,6 +1,5 @@
 package ruiseki.integrateddynamics.core.client.gui.container;
 
-import java.io.IOException;
 import java.util.List;
 
 import net.minecraft.entity.player.EntityPlayer;
@@ -9,11 +8,14 @@ import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.StatCollector;
 
+import org.lwjgl.input.Keyboard;
+
 import com.google.common.collect.Lists;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import ruiseki.integrateddynamics.IntegratedDynamics;
+import ruiseki.integrateddynamics.Reference;
 import ruiseki.integrateddynamics.api.client.gui.subgui.IGuiInputElement;
 import ruiseki.integrateddynamics.api.client.gui.subgui.IGuiInputElementValueType;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
@@ -33,9 +35,6 @@ import ruiseki.okcore.client.gui.container.GuiContainerExtended;
 import ruiseki.okcore.helper.Helpers;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.RenderHelpers;
-import ruiseki.okcore.init.ModBase;
-import ruiseki.okcore.inventory.container.ExtendedInventoryContainer;
-import ruiseki.okcore.inventory.container.button.IButtonActionClient;
 
 /**
  * Gui for aspect settings.
@@ -44,7 +43,7 @@ import ruiseki.okcore.inventory.container.button.IButtonActionClient;
  */
 @EqualsAndHashCode(callSuper = false)
 @Data
-public class GuiAspectSettings extends GuiContainerExtended {
+public class GuiAspectSettings extends GuiContainerExtended<ContainerAspectSettings> {
 
     private static final int ERROR_WIDTH = 13;
     private static final int ERROR_HEIGHT = 13;
@@ -88,50 +87,21 @@ public class GuiAspectSettings extends GuiContainerExtended {
         this.partType = partType;
         this.aspect = aspect;
 
-        aspect.getProperties(getPartType(), getTarget(), ((ContainerAspectSettings) container).getPartState());
+        // noinspection deprecation
         this.propertyTypes = Lists.newArrayList(
-            aspect.getDefaultProperties()
+            container.getAspect()
+                .getDefaultProperties()
                 .getTypes());
+    }
 
-        putButtonAction(BUTTON_LEFT, new IButtonActionClient<GuiContainerExtended, ExtendedInventoryContainer>() {
-
-            @Override
-            public void onAction(int buttonId, GuiContainerExtended gui, ExtendedInventoryContainer container) {
-                saveSetting();
-                if (getActivePropertyIndex() > 0) {
-                    setActiveProperty(getActivePropertyIndex() - 1);
-                    refreshButtonEnabled();
-                }
-            }
-        });
-        putButtonAction(BUTTON_RIGHT, new IButtonActionClient<GuiContainerExtended, ExtendedInventoryContainer>() {
-
-            @Override
-            public void onAction(int buttonId, GuiContainerExtended gui, ExtendedInventoryContainer container) {
-                saveSetting();
-                if (getActivePropertyIndex() < propertyTypes.size()) {
-                    setActiveProperty(getActivePropertyIndex() + 1);
-                    refreshButtonEnabled();
-                }
-            }
-        });
-        putButtonAction(BUTTON_EXIT, new IButtonActionClient<GuiContainerExtended, ExtendedInventoryContainer>() {
-
-            @Override
-            public void onAction(int buttonId, GuiContainerExtended gui, ExtendedInventoryContainer container) {
-                saveSetting();
-                IntegratedDynamics._instance.getGuiHandler()
-                    .setTemporaryData(
-                        ExtendedGuiHandler.PART,
-                        getTarget().getCenter()
-                            .getSide());
-            }
-        });
+    @Override
+    protected ResourceLocation constructGuiTexture() {
+        return new ResourceLocation(Reference.MOD_ID, "textures/gui/aspect_settings.png");
     }
 
     protected void saveSetting() {
         if (guiElement != null && lastError == null) {
-            ((ContainerAspectSettings) container).setValue(getActiveProperty(), guiElement.getValue());
+            container.setValue(getActiveProperty(), guiElement.getValue());
         }
     }
 
@@ -146,19 +116,39 @@ public class GuiAspectSettings extends GuiContainerExtended {
     }
 
     @Override
-    public String getGuiTexture() {
-        return getContainer().getGuiProvider()
-            .getModGui()
-            .getReferenceValue(ModBase.REFKEY_TEXTURE_PATH_GUI) + "aspect_settings.png";
-    }
-
-    @Override
     public void initGui() {
         super.initGui();
         subGuiHolder.initGui(this.guiLeft, this.guiTop);
-        buttonList.add(buttonExit = new GuiButtonText(BUTTON_EXIT, guiLeft + 7, guiTop + 5, 12, 10, "<<", true));
-        buttonList.add(buttonLeft = new GuiButtonText(BUTTON_LEFT, guiLeft + 21, guiTop + 5, 10, 10, "<", true));
-        buttonList.add(buttonRight = new GuiButtonText(BUTTON_RIGHT, guiLeft + 159, guiTop + 5, 10, 10, ">", true));
+        addRenderableWidget(
+            buttonExit = new GuiButtonText(
+                guiLeft + 7,
+                guiTop + 5,
+                12,
+                10,
+                "<<",
+                createServerPressable(ContainerAspectSettings.BUTTON_EXIT, (button) -> {
+                    saveSetting();
+                    IntegratedDynamics._instance.getGuiHandler()
+                        .setTemporaryData(
+                            ExtendedGuiHandler.PART,
+                            getTarget().getCenter()
+                                .getSide());
+                }),
+                true));
+        addRenderableWidget(buttonLeft = new GuiButtonText(guiLeft + 21, guiTop + 5, 10, 10, "<", (button) -> {
+            saveSetting();
+            if (getActivePropertyIndex() > 0) {
+                setActiveProperty(getActivePropertyIndex() - 1);
+                refreshButtonEnabled();
+            }
+        }, true));
+        addRenderableWidget(buttonRight = new GuiButtonText(guiLeft + 159, guiTop + 5, 10, 10, ">", (button) -> {
+            saveSetting();
+            if (getActivePropertyIndex() < propertyTypes.size()) {
+                setActiveProperty(getActivePropertyIndex() + 1);
+                refreshButtonEnabled();
+            }
+        }, true));
         refreshButtonEnabled();
 
         setActiveProperty(activePropertyIndex);
@@ -179,7 +169,7 @@ public class GuiAspectSettings extends GuiContainerExtended {
 
     @Override
     protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
-        super.drawGuiContainerForegroundLayer(mouseX, mouseY);
+        // super.drawGuiContainerForegroundLayer(mouseX, mouseY);
         subGuiHolder.drawGuiContainerForegroundLayer(
             this.guiLeft,
             this.guiTop,
@@ -207,29 +197,43 @@ public class GuiAspectSettings extends GuiContainerExtended {
     }
 
     @Override
-    protected void keyTyped(char typedChar, int keyCode) {
-        try {
-            if (!subGuiHolder.keyTyped(this.checkHotbarKeys(keyCode), typedChar, keyCode)) {
-                if (keyCode == 1 || this.mc.gameSettings.keyBindInventory.getKeyCode() == keyCode) {
-                    saveSetting();
-                    this.mc.thePlayer.closeScreen();
-                } else {
-                    super.keyTyped(typedChar, keyCode);
-                }
+    public boolean charTyped(char typedChar, int keyCode) {
+        if (!subGuiHolder.charTyped(typedChar, keyCode)) {
+            if (keyCode == 1 || this.mc.gameSettings.keyBindInventory.getKeyCode() == keyCode) {
+                saveSetting();
+                this.mc.thePlayer.closeScreen();
             } else {
-                if (guiElement != null) {
-                    onValueChanged();
-                }
+                return super.charTyped(typedChar, keyCode);
             }
-        } catch (IOException ignore) {}
+        } else {
+            if (guiElement != null) {
+                onValueChanged();
+            }
+        }
+        return false;
     }
 
     @Override
-    protected void mouseClicked(int mouseX, int mouseY, int mouseButton) {
-        try {
-            subGuiHolder.mouseClicked(mouseX, mouseY, mouseButton);
-        } catch (IOException ignore) {}
-        super.mouseClicked(mouseX, mouseY, mouseButton);
+    public boolean keyPressed(int typedChar, int keyCode, int modifiers) {
+        if (typedChar != Keyboard.KEY_ESCAPE) {
+            if (this.subGuiHolder.keyPressed(typedChar, keyCode, modifiers)) {
+                if (guiElement != null) {
+                    onValueChanged();
+                }
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            saveSetting();
+            return super.keyPressed(typedChar, keyCode, modifiers);
+        }
+    }
+
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
+        return subGuiHolder.mouseClicked(mouseX, mouseY, mouseButton)
+            || super.mouseClicked(mouseX, mouseY, mouseButton);
     }
 
     protected void onValueChanged() {
@@ -277,7 +281,7 @@ public class GuiAspectSettings extends GuiContainerExtended {
 
     protected void syncInputValue() {
         IAspectPropertyTypeInstance property = getActiveProperty();
-        IValue value = ((ContainerAspectSettings) container).getPropertyValue(property);
+        IValue value = getContainer().getPropertyValue(property);
         if (value != null) {
             guiElement.setValue(value);
             guiElement.setValueInGui(propertyConfigPattern, false);
@@ -288,7 +292,7 @@ public class GuiAspectSettings extends GuiContainerExtended {
     @Override
     public void onUpdate(int valueId, NBTTagCompound value) {
         super.onUpdate(valueId, value);
-        IAspectPropertyTypeInstance property = ((ContainerAspectSettings) container).getPropertyIds()
+        IAspectPropertyTypeInstance property = getContainer().getPropertyIds()
             .get(valueId);
         if (property != null && getActiveProperty() == property) {
             syncInputValue();

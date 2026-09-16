@@ -4,12 +4,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-import net.minecraft.nbt.JsonToNBT;
-import net.minecraft.nbt.NBTException;
+import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.ResourceLocation;
 
+import net.minecraftforge.common.util.Constants;
 import ruiseki.integrateddynamics.Reference;
 import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.evaluate.operator.IOperator;
@@ -23,7 +23,6 @@ import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
 import ruiseki.integrateddynamics.core.evaluate.variable.Variable;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.okcore.helper.LangHelpers;
-import ruiseki.okcore.helper.MinecraftHelpers;
 
 /**
  * An operator that is partially being applied.
@@ -192,7 +191,7 @@ public class CurriedOperator implements IOperator {
         }
 
         @Override
-        public String serialize(CurriedOperator operator) {
+        public NBTBase serialize(CurriedOperator operator) {
             NBTTagList list = new NBTTagList();
             for (int i = 0; i < operator.appliedVariables.length; i++) {
                 IVariable appliedVariable = operator.appliedVariables[i];
@@ -209,36 +208,37 @@ public class CurriedOperator implements IOperator {
                     "valueType",
                     valueType.getUniqueName()
                         .toString());
-                valueTag.setString("value", ValueHelpers.serializeRaw(value));
+                valueTag.setTag("value", ValueHelpers.serializeRaw(value));
                 list.appendTag(valueTag);
             }
 
             NBTTagCompound tag = new NBTTagCompound();
             tag.setTag("values", list);
-            tag.setString("baseOperator", Operators.REGISTRY.serialize(operator.baseOperator));
-            return tag.toString();
+            tag.setTag("baseOperator", Operators.REGISTRY.serialize(operator.baseOperator));
+            return tag;
         }
 
         @Override
-        public CurriedOperator deserialize(String valueOperator) throws EvaluationException {
+        public CurriedOperator deserialize(NBTBase valueOperator) throws EvaluationException {
             NBTTagCompound tag;
             try {
-                tag = (NBTTagCompound) JsonToNBT.func_150315_a(valueOperator);
-            } catch (NBTException e) {
+                tag = (NBTTagCompound) valueOperator;
+            } catch (ClassCastException e) {
                 e.printStackTrace();
-                throw new EvaluationException(e.getMessage());
+                throw new EvaluationException(
+                    LangHelpers.localize(L10NValues.VALUETYPE_ERROR_DESERIALIZE, valueOperator, e.getMessage()));
             }
-            NBTTagList list = tag.getTagList("values", MinecraftHelpers.NBTTag_Types.NBTTagCompound.ordinal());
+            NBTTagList list = tag.getTagList("values", Constants.NBT.TAG_COMPOUND);
             IVariable[] variables = new IVariable[list.tagCount()];
             for (int i = 0; i < list.tagCount(); i++) {
                 NBTTagCompound valuetag = list.getCompoundTagAt(i);
                 IValueType valueType = ValueTypes.REGISTRY
                     .getValueType(new ResourceLocation(valuetag.getString("valueType")));
-                IValue value = ValueHelpers.deserializeRaw(valueType, valuetag.getString("value"));
+                IValue value = ValueHelpers.deserializeRaw(valueType, valuetag.getTag("value"));
                 variables[i] = new Variable(valueType, value);
             }
             IOperator baseOperator = Objects
-                .requireNonNull(Operators.REGISTRY.deserialize(tag.getString("baseOperator")));
+                .requireNonNull(Operators.REGISTRY.deserialize(tag.getCompoundTag("baseOperator")));
             return new CurriedOperator(baseOperator, variables);
         }
     }

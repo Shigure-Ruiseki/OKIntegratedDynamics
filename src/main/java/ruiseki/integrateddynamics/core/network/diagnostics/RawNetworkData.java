@@ -8,7 +8,7 @@ import net.minecraft.nbt.NBTTagList;
 import com.google.common.collect.Lists;
 
 import lombok.Data;
-import ruiseki.okcore.helper.MinecraftHelpers;
+import net.minecraftforge.common.util.Constants;
 
 /**
  * @author rubensworks
@@ -50,14 +50,14 @@ public class RawNetworkData implements IRawData {
 
     public static RawNetworkData fromNbt(NBTTagCompound tag) {
         List<RawPartData> parts = Lists.newArrayList();
-        NBTTagList listParts = tag.getTagList("parts", MinecraftHelpers.NBTTag_Types.NBTTagCompound.ordinal());
+        NBTTagList listParts = tag.getTagList("parts", Constants.NBT.TAG_COMPOUND);
         for (int i = 0; i < listParts.tagCount(); i++) {
             NBTTagCompound partTag = listParts.getCompoundTagAt(i);
             parts.add(RawPartData.fromNbt(partTag));
         }
 
         List<RawObserverData> observers = Lists.newArrayList();
-        NBTTagList listObservers = tag.getTagList("observers", MinecraftHelpers.NBTTag_Types.NBTTagCompound.ordinal());
+        NBTTagList listObservers = tag.getTagList("observers", Constants.NBT.TAG_COMPOUND);
         for (int i = 0; i < listObservers.tagCount(); i++) {
             NBTTagCompound observerTag = listObservers.getCompoundTagAt(i);
             observers.add(RawObserverData.fromNbt(observerTag));

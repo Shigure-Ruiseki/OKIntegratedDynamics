@@ -3,8 +3,7 @@ package ruiseki.integrateddynamics.core.evaluate.operator;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
-import net.minecraft.nbt.JsonToNBT;
-import net.minecraft.nbt.NBTException;
+import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.util.ForgeDirection;
@@ -89,21 +88,20 @@ public abstract class PositionedOperator extends OperatorBase implements INBTPro
         }
 
         @Override
-        public String serialize(PositionedOperator operator) {
+        public NBTBase serialize(PositionedOperator operator) {
             NBTTagCompound tag = new NBTTagCompound();
             operator.writeGeneratedFieldsToNBT(tag);
-            return tag.toString();
+            return tag;
         }
 
         @Override
-        public PositionedOperator deserialize(String value) throws EvaluationException {
+        public PositionedOperator deserialize(NBTBase tag) throws EvaluationException {
             try {
                 Constructor<? extends PositionedOperator> constructor = this.clazz.getConstructor();
                 PositionedOperator proxy = constructor.newInstance();
-                NBTTagCompound tag = (NBTTagCompound) JsonToNBT.func_150315_a(value);
-                proxy.readGeneratedFieldsFromNBT(tag);
+                proxy.readGeneratedFieldsFromNBT((NBTTagCompound) tag);
                 return proxy;
-            } catch (NoSuchMethodException | InvocationTargetException | InstantiationException | NBTException
+            } catch (NoSuchMethodException | InvocationTargetException | InstantiationException
                 | IllegalAccessException e) {
                 e.printStackTrace();
                 throw new EvaluationException(e.getMessage());

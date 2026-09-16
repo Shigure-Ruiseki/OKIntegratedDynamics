@@ -8,6 +8,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.ResourceLocation;
 
+import net.minecraftforge.common.util.Constants;
 import org.apache.logging.log4j.Level;
 
 import com.google.common.collect.Maps;
@@ -94,7 +95,7 @@ public class AspectProperties implements IAspectProperties {
                 "label",
                 entry.getKey()
                     .getUnlocalizedName());
-            nbtEntry.setString("value", ValueHelpers.serializeRaw(entry.getValue()));
+            nbtEntry.setTag("value", ValueHelpers.serializeRaw(entry.getValue()));
             map.appendTag(nbtEntry);
         }
         tag.setTag("map", map);
@@ -104,7 +105,7 @@ public class AspectProperties implements IAspectProperties {
     @Override
     public void deserializeNBT(NBTTagCompound tag) {
         values.clear();
-        NBTTagList map = tag.getTagList("map", MinecraftHelpers.NBTTag_Types.NBTTagCompound.ordinal());
+        NBTTagList map = tag.getTagList("map", Constants.NBT.TAG_COMPOUND);
         for (int i = 0; i < map.tagCount(); i++) {
             NBTTagCompound nbtEntry = map.getCompoundTagAt(i);
             String valueTypeName = nbtEntry.getString("key");
@@ -114,7 +115,7 @@ public class AspectProperties implements IAspectProperties {
                     Level.ERROR,
                     String.format("Could not find value type with name %s, skipping loading.", valueTypeName));
             } else {
-                IValue value = ValueHelpers.deserializeRaw(type, nbtEntry.getString("value"));
+                IValue value = ValueHelpers.deserializeRaw(type, nbtEntry.getTag("value"));
                 String label = nbtEntry.getString("label");
                 if (value == null) {
                     IntegratedDynamics.clog(

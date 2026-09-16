@@ -1,4 +1,4 @@
-package ruiseki.integratedterminals.client.gui.container;
+package ruiseki.integratedterminals.client.gui.container.component;
 
 import java.util.List;
 
@@ -22,8 +22,12 @@ import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
 import ruiseki.integratedterminals.api.terminalstorage.crafting.ITerminalCraftingPlanFlat;
 import ruiseki.integratedterminals.capability.ingredient.IngredientComponentTerminalStorageHandlerConfig;
 import ruiseki.integratedterminals.core.client.gui.GuiTerminalStorage;
+import ruiseki.okcore.client.gui.IGuiEventListener;
+import ruiseki.okcore.client.gui.IRenderable;
 import ruiseki.okcore.client.gui.RenderItemExtendedSlotCount;
 import ruiseki.okcore.client.gui.component.GuiScrollBar;
+import ruiseki.okcore.client.gui.component.IWidgetEventListener;
+import ruiseki.okcore.client.gui.component.IWidgetRenderable;
 import ruiseki.okcore.client.renderer.GlStateManager;
 import ruiseki.okcore.helper.Helpers;
 import ruiseki.okcore.helper.LangHelpers;
@@ -35,15 +39,16 @@ import ruiseki.okcore.helper.RenderHelpers;
  * list.
  *
  * The using gui must call the following methods from its respective method:
- * * {@link #handleMouseInput()}
- * * {@link #drawScreen(int, int, float)} (int, int, float)}
+ * * {@link #drawScreen(int, int, float)}
  * * {@link #drawGuiContainerBackgroundLayer(float, int, int)}
  * * {@link #drawGuiContainerForegroundLayer(int, int)}
- * * {@link #mouseClicked(int, int, int)}
+ * * {@link #mouseScrolled(double, double, double)}}
+ * * {@link #mouseDragged(double, double, int, double, double)}}
  *
  * @author rubensworks
  */
-public class GuiCraftingPlanFlat extends Gui {
+public class GuiCraftingPlanFlat extends Gui
+    implements IWidgetRenderable, IRenderable, IWidgetEventListener, IGuiEventListener {
 
     private static final int COLUMNS = 2;
     private static final int COLUMN_PADDING = 2;
@@ -56,8 +61,8 @@ public class GuiCraftingPlanFlat extends Gui {
     private final GuiContainer parentGui;
     private final int guiLeft;
     private final int guiTop;
-    private final int x;
-    private final int y;
+    private int x;
+    private int y;
     private final List<GuiCraftingPlanFlat.Element> elements;
     private final List<GuiCraftingPlanFlat.Element> visibleElements;
     private final boolean valid;
@@ -115,8 +120,14 @@ public class GuiCraftingPlanFlat extends Gui {
             .subList(firstRow, Math.min(this.visibleElements.size(), firstRow + scrollBar.getVisibleRows()));
     }
 
+    @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
-        scrollBar.drawScreen(mouseX, mouseY, partialTicks);
+
+    }
+
+    @Override
+    public void drawWidget(int mouseX, int mouseY, float partialTicks) {
+
     }
 
     public void drawGuiContainerLayer(int guiLeft, int guiTop, GuiTerminalStorage.DrawLayer layer, float partialTick,
@@ -335,19 +346,26 @@ public class GuiCraftingPlanFlat extends Gui {
         }
 
         drawGuiContainerLayer(guiLeft, guiTop, GuiTerminalStorage.DrawLayer.BACKGROUND, partialTicks, mouseX, mouseY);
-        scrollBar.drawGuiContainerBackgroundLayer(partialTicks, mouseX, mouseY);
+        scrollBar.drawWidget(mouseX, mouseY, partialTicks);
     }
 
     public void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
         drawGuiContainerLayer(0, 0, GuiTerminalStorage.DrawLayer.FOREGROUND, 0, mouseX, mouseY);
     }
 
-    public void handleMouseInput() {
-        scrollBar.handleMouseInput();
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double scroll) {
+        return scrollBar.mouseScrolled(mouseX, mouseY, scroll);
     }
 
-    public void mouseClicked(int mouseX, int mouseY, int mouseButton) {
+    @Override
+    public boolean mouseDragged(double mouseX, double mouseY, int mouseButton, double offsetX, double offsetY) {
+        return scrollBar.mouseDragged(mouseX, mouseY, mouseButton, offsetX, offsetY);
+    }
 
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
+        return false;
     }
 
     public static List<Element> getElements(ITerminalCraftingPlanFlat<?> craftingPlan) {
@@ -421,5 +439,35 @@ public class GuiCraftingPlanFlat extends Gui {
             }
             return Helpers.RGBAToInt(43, 231, 47, 150);
         }
+    }
+
+    @Override
+    public int getX() {
+        return x;
+    }
+
+    @Override
+    public int getY() {
+        return y;
+    }
+
+    @Override
+    public void setX(int x) {
+        this.x = x;
+    }
+
+    @Override
+    public void setY(int y) {
+        this.y = y;
+    }
+
+    @Override
+    public void setFocused(boolean focused) {
+
+    }
+
+    @Override
+    public boolean isFocused() {
+        return false;
     }
 }

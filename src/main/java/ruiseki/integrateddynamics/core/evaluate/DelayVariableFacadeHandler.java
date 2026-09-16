@@ -3,11 +3,11 @@ package ruiseki.integrateddynamics.core.evaluate;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 
+import net.minecraftforge.common.util.Constants;
 import ruiseki.integrateddynamics.Reference;
 import ruiseki.integrateddynamics.api.item.IDelayVariableFacade;
 import ruiseki.integrateddynamics.api.item.IVariableFacadeHandler;
 import ruiseki.integrateddynamics.core.item.DelayVariableFacade;
-import ruiseki.okcore.helper.MinecraftHelpers;
 
 /**
  * Handler for delay variable facades.
@@ -35,7 +35,7 @@ public class DelayVariableFacadeHandler implements IVariableFacadeHandler<IDelay
 
     @Override
     public IDelayVariableFacade getVariableFacade(int id, NBTTagCompound tag) {
-        if (!tag.hasKey("partId", MinecraftHelpers.NBTTag_Types.NBTTagInt.ordinal())) {
+        if (!tag.hasKey("partId", Constants.NBT.TAG_INT)) {
             return INVALID_FACADE;
         }
         return new DelayVariableFacade(id, tag.getInteger("partId"));

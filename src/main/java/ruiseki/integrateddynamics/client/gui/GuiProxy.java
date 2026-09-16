@@ -1,14 +1,16 @@
 package ruiseki.integrateddynamics.client.gui;
 
 import net.minecraft.entity.player.InventoryPlayer;
+import net.minecraft.util.ResourceLocation;
 
+import ruiseki.integrateddynamics.Reference;
 import ruiseki.integrateddynamics.core.client.gui.GuiActiveVariableBase;
 import ruiseki.integrateddynamics.inventory.container.ContainerProxy;
 import ruiseki.integrateddynamics.tileentity.TileProxy;
 
 /**
  * Gui for the proxy.
- * 
+ *
  * @author rubensworks
  */
 public class GuiProxy extends GuiActiveVariableBase<ContainerProxy, TileProxy> {
@@ -18,12 +20,17 @@ public class GuiProxy extends GuiActiveVariableBase<ContainerProxy, TileProxy> {
 
     /**
      * Make a new instance.
-     * 
+     *
      * @param inventory The player inventory.
      * @param tile      The part.
      */
     public GuiProxy(InventoryPlayer inventory, TileProxy tile) {
         super(new ContainerProxy(inventory, tile));
+    }
+
+    @Override
+    protected ResourceLocation constructGuiTexture() {
+        return new ResourceLocation(Reference.MOD_ID, "textures/gui/proxy.png");
     }
 
     @Override
