@@ -107,7 +107,7 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
 
     @Override
     public void initGui() {
-        this.buttonList.clear();
+        clearWidgets();
         super.initGui();
         this.initialized = false;
 

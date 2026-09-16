@@ -74,11 +74,11 @@ public abstract class GuiMultipartAspects<P extends IPartType<P, S> & IGuiContai
 
     @Override
     public void initGui() {
-        buttonList.clear();
+        clearWidgets();
         super.initGui();
         if (getPartType() instanceof PartTypeConfigurable<?, ?>configurable) {
             if (configurable.hasSettings()) {
-                buttonList.add(
+                addRenderableWidget(
                     new GuiButtonImage(
                         this.guiLeft - 20,
                         this.guiTop + 0,
@@ -93,7 +93,7 @@ public abstract class GuiMultipartAspects<P extends IPartType<P, S> & IGuiContai
                         0));
             }
             if (configurable.supportsOffsets()) {
-                buttonList.add(
+                addRenderableWidget(
                     new GuiButtonImage(
                         this.guiLeft - 20,
                         this.guiTop + 20,

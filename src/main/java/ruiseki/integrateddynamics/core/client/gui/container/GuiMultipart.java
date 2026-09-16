@@ -56,11 +56,11 @@ public abstract class GuiMultipart<P extends IPartType<P, S> & IGuiContainerProv
 
     @Override
     public void initGui() {
-        buttonList.clear();
+        clearWidgets();
         super.initGui();
         if (getPartType() instanceof PartTypeConfigurable<?, ?>configurable) {
             if (configurable.hasSettings()) {
-                buttonList.add(
+                addRenderableWidget(
                     new GuiButtonImage(
                         this.guiLeft - 20,
                         this.guiTop + 0,
@@ -81,7 +81,7 @@ public abstract class GuiMultipart<P extends IPartType<P, S> & IGuiContainerProv
                         0));
             }
             if (configurable.supportsOffsets()) {
-                buttonList.add(
+                addRenderableWidget(
                     new GuiButtonImage(
                         this.guiLeft - 20,
                         this.guiTop + 20,
@@ -106,7 +106,7 @@ public abstract class GuiMultipart<P extends IPartType<P, S> & IGuiContainerProv
 
     @SuppressWarnings("unchecked")
     public S getPartState() {
-        return ((ContainerMultipart<P, S>) container).getPartState();
+        return container.getPartState();
     }
 
     protected abstract String getNameId();
