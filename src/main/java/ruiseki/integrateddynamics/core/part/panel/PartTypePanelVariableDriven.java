@@ -7,6 +7,7 @@ import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.ResourceLocation;
@@ -50,7 +51,6 @@ import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.helper.BlockHelpers;
 import ruiseki.okcore.helper.BlockStateHelpers;
 import ruiseki.okcore.helper.LangHelpers;
-import ruiseki.okcore.helper.MinecraftHelpers;
 
 /**
  * A panel part that is driven by a contained variable.
@@ -305,7 +305,7 @@ public abstract class PartTypePanelVariableDriven<P extends PartTypePanelVariabl
                     value.getType()
                         .getUniqueName()
                         .toString());
-                tag.setString("displayValue", ValueHelpers.serializeRaw(value));
+                tag.setTag("displayValue", ValueHelpers.serializeRaw(value));
             }
             tag.setInteger("facingRotation", facingRotation.ordinal());
         }
@@ -313,12 +313,11 @@ public abstract class PartTypePanelVariableDriven<P extends PartTypePanelVariabl
         @Override
         public void readFromNBT(NBTTagCompound tag) {
             super.readFromNBT(tag);
-            if (tag.hasKey("displayValueType", MinecraftHelpers.NBTTag_Types.NBTTagString.ordinal())
-                && tag.hasKey("displayValue", MinecraftHelpers.NBTTag_Types.NBTTagString.ordinal())) {
+            if (tag.hasKey("displayValueType") && tag.hasKey("displayValue")) {
                 IValueType valueType = ValueTypes.REGISTRY
                     .getValueType(new ResourceLocation(tag.getString("displayValueType")));
                 if (valueType != null) {
-                    String serializedValue = tag.getString("displayValue");
+                    NBTBase serializedValue = tag.getTag("displayValue");
                     LangHelpers.UnlocalizedString deserializationError = valueType.canDeserialize(serializedValue);
                     if (deserializationError == null) {
                         setDisplayValue(ValueHelpers.deserializeRaw(valueType, serializedValue));

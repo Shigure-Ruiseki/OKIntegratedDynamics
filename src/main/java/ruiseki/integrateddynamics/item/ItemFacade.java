@@ -6,8 +6,6 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.world.World;
 
-import org.apache.commons.lang3.tuple.Pair;
-
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 
 import lombok.Data;
@@ -41,9 +39,7 @@ public class ItemFacade extends ItemBase {
     public BlockState getFacadeBlock(ItemStack itemStack) {
         if (itemStack.hasTagCompound()) {
             NBTTagCompound tag = itemStack.getTagCompound();
-            String blockName = tag.getString("blockName");
-            int meta = tag.getInteger("meta");
-            return BlockHelpers.deserializeBlockState(Pair.of(blockName, meta));
+            return BlockHelpers.deserializeBlockState(tag.getCompoundTag("facade"));
         }
         return null;
     }
@@ -58,9 +54,8 @@ public class ItemFacade extends ItemBase {
 
     public void writeFacadeBlock(ItemStack itemStack, BlockState blockState) {
         NBTTagCompound tag = ItemNBTHelpers.getNBT(itemStack);
-        Pair<String, Integer> serializedBlockState = BlockHelpers.serializeBlockState(blockState);
-        tag.setString("blockName", serializedBlockState.getLeft());
-        tag.setInteger("meta", serializedBlockState.getRight());
+        NBTTagCompound serializedBlockState = BlockHelpers.serializeBlockState(blockState);
+        tag.setTag("facade", serializedBlockState);
     }
 
     @Override

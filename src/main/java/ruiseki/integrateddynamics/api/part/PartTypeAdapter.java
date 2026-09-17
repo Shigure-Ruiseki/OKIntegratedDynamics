@@ -24,7 +24,6 @@ import ruiseki.integrateddynamics.api.network.IPartNetworkElement;
 import ruiseki.integrateddynamics.api.network.event.INetworkEvent;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.NonNullList;
-import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.init.IInitListener;
 
 /**
@@ -199,7 +198,7 @@ public abstract class PartTypeAdapter<P extends IPartType<P, S>, S extends IPart
         S partState = null;
         if (itemStack != null && itemStack.getTagCompound() != null
             && itemStack.getTagCompound()
-                .hasKey("id", MinecraftHelpers.NBTTag_Types.NBTTagInt.ordinal())) {
+                .hasKey("id")) {
             partState = fromNBT(itemStack.getTagCompound());
         }
         if (partState == null) {

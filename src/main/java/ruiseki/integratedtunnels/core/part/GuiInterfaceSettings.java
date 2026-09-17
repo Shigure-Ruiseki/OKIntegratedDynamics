@@ -5,22 +5,25 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 
+import org.lwjgl.input.Keyboard;
+
 import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.core.client.gui.container.GuiPartSettings;
-import ruiseki.integratedtunnels.IntegratedTunnels;
+import ruiseki.integrateddynamics.core.inventory.container.ContainerMultipartAspects;
 import ruiseki.integratedtunnels.Reference;
+import ruiseki.okcore.client.gui.component.button.GuiButtonImage;
 import ruiseki.okcore.client.gui.component.input.GuiNumberField;
+import ruiseki.okcore.client.gui.image.IImage;
 import ruiseki.okcore.helper.Helpers;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.ValueNotifierHelpers;
-import ruiseki.okcore.init.ModBase;
 
 /**
  * @author rubensworks
  */
-public class GuiInterfaceSettings extends GuiPartSettings {
+public class GuiInterfaceSettings extends GuiPartSettings<ContainerInterfaceSettings> {
 
     private GuiNumberField numberFieldChannelInterface = null;
 
@@ -35,18 +38,8 @@ public class GuiInterfaceSettings extends GuiPartSettings {
     }
 
     @Override
-    protected ContainerInterfaceSettings getContainer() {
-        return (ContainerInterfaceSettings) super.getContainer();
-    }
-
-    protected ResourceLocation constructResourceLocation() {
-        return new ResourceLocation(Reference.MOD_ID, getGuiTexture());
-    }
-
-    @Override
-    public String getGuiTexture() {
-        return IntegratedTunnels._instance.getReferenceValue(ModBase.REFKEY_TEXTURE_PATH_GUI)
-            + "part_interface_settings.png";
+    protected ResourceLocation constructGuiTexture() {
+        return new ResourceLocation(Reference.MOD_ID, "textures/gui/part_interface_settings.png");
     }
 
     @Override
@@ -64,19 +57,33 @@ public class GuiInterfaceSettings extends GuiPartSettings {
         super.initGui();
 
         numberFieldChannelInterface = new GuiNumberField(
-            0,
             Minecraft.getMinecraft().fontRenderer,
             guiLeft + 106,
             guiTop + 109,
             70,
             14,
             true,
+            LangHelpers.localize("gui.integratedtunnels.partsettings.channel.interface"),
             true);
         numberFieldChannelInterface.setPositiveOnly(false);
         numberFieldChannelInterface.setMaxStringLength(15);
         numberFieldChannelInterface.setVisible(true);
         numberFieldChannelInterface.setTextColor(16777215);
         numberFieldChannelInterface.setCanLoseFocus(true);
+
+        addRenderableWidget(
+            new GuiButtonImage(
+                this.guiLeft - 20,
+                this.guiTop + 0,
+                18,
+                18,
+                LangHelpers.localize("gui.integrateddynamics.part_offsets"),
+                createServerPressable(ContainerMultipartAspects.BUTTON_OFFSETS, (button) -> onSave()),
+                new IImage[] { ruiseki.integrateddynamics.client.gui.image.Images.BUTTON_BACKGROUND_INACTIVE,
+                    ruiseki.integrateddynamics.client.gui.image.Images.BUTTON_MIDDLE_OFFSET },
+                false,
+                0,
+                0));
 
         this.refreshValues();
     }
@@ -90,32 +97,46 @@ public class GuiInterfaceSettings extends GuiPartSettings {
     }
 
     @Override
-    protected void keyTyped(char typedChar, int keyCode) {
-        if (!this.checkHotbarKeys(keyCode)) {
-            if (this.numberFieldChannelInterface != null
-                && !this.numberFieldChannelInterface.textboxKeyTyped(typedChar, keyCode)) {
-                super.keyTyped(typedChar, keyCode);
-            }
+    public boolean charTyped(char typedChar, int keyCode) {
+        if (!this.numberFieldChannelInterface.charTyped(typedChar, keyCode)) {
+            return super.charTyped(typedChar, keyCode);
         }
+        return true;
     }
 
     @Override
-    protected void mouseClicked(int mouseX, int mouseY, int mouseButton) {
-        if (this.numberFieldChannelInterface != null) {
-            this.numberFieldChannelInterface.mouseClicked(mouseX, mouseY, mouseButton);
+    public boolean keyPressed(int typedChar, int keyCode, int modifiers) {
+        if (typedChar != Keyboard.KEY_ESCAPE) {
+            if (this.numberFieldChannelInterface.keyPressed(typedChar, keyCode, modifiers)) {
+                return true;
+            }
         }
-        super.mouseClicked(mouseX, mouseY, mouseButton);
+        return super.keyPressed(typedChar, keyCode, modifiers);
+    }
+
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
+        if (this.numberFieldChannelInterface.mouseClicked(mouseX, mouseY, mouseButton)) {
+            return true;
+        }
+        return super.mouseClicked(mouseX, mouseY, mouseButton);
     }
 
     @Override
     protected void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY) {
         super.drawGuiContainerBackgroundLayer(partialTicks, mouseX, mouseY);
-        numberFieldChannelInterface.drawTextBox(Minecraft.getMinecraft(), mouseX, mouseY);
+        numberFieldChannelInterface.drawScreen(mouseX, mouseY, partialTicks);
         fontRendererObj.drawString(
             LangHelpers.localize("gui.integratedtunnels.partsettings.channel.interface"),
             guiLeft + 8,
             guiTop + 112,
             Helpers.RGBToInt(0, 0, 0));
+        numberFieldChannelInterface.drawScreen(mouseX, mouseY, partialTicks);
+    }
+
+    @Override
+    protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
+        // super.drawGuiContainerForegroundLayer(mouseX, mouseY);
     }
 
     @Override

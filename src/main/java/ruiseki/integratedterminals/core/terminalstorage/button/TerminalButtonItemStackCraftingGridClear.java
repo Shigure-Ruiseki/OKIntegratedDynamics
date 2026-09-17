@@ -51,7 +51,13 @@ public class TerminalButtonItemStackCraftingGridClear<T> implements
     @Override
     @SideOnly(Side.CLIENT)
     public GuiButtonImage createButton(int x, int y) {
-        return new GuiButtonImage(0, x, y, Images.BUTTON_SMALL_BACKGROUND_INACTIVE, Images.BUTTON_SMALL_OVERLAY_CROSS);
+        return new GuiButtonImage(
+            x,
+            y,
+            LangHelpers.localize("gui.integratedterminals.terminal_storage.craftinggrid.clear"),
+            (b) -> {},
+            Images.BUTTON_SMALL_BACKGROUND_INACTIVE,
+            Images.BUTTON_SMALL_OVERLAY_CROSS);
     }
 
     @Override

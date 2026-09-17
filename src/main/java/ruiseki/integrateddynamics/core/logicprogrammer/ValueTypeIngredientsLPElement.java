@@ -1,6 +1,5 @@
 package ruiseki.integrateddynamics.core.logicprogrammer;
 
-import java.io.IOException;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +36,7 @@ import ruiseki.integrateddynamics.inventory.container.ContainerLogicProgrammerBa
 import ruiseki.integrateddynamics.network.packet.LogicProgrammerSetElementInventory;
 import ruiseki.integrateddynamics.network.packet.LogicProgrammerValueTypeIngredientsValueChangedPacket;
 import ruiseki.okcore.client.gui.component.button.GuiButtonArrow;
+import ruiseki.okcore.client.gui.component.button.GuiButtonExtended;
 import ruiseki.okcore.client.gui.component.button.GuiButtonText;
 import ruiseki.okcore.client.gui.component.input.GuiArrowedListField;
 import ruiseki.okcore.client.gui.component.input.IInputListener;
@@ -356,7 +356,8 @@ public class ValueTypeIngredientsLPElement extends ValueTypeLPElementBase {
         public void setActiveElement(int index) {
             if (elementSubGui != null) {
                 subGuiHolder.removeSubGui(elementSubGui);
-                (gui.getContainer()).setElementInventory(null, 0, 0);
+                gui.getContainer()
+                    .setElementInventory(null, 0, 0);
             }
             if (index >= 0) {
                 subGuiHolder.addSubGui(
@@ -408,7 +409,7 @@ public class ValueTypeIngredientsLPElement extends ValueTypeLPElementBase {
         implements IInputListener {
 
         private GuiArrowedListField<IngredientComponent<?, ?>> valueTypeSelector = null;
-        private GuiButton arrowAdd;
+        private GuiButtonExtended arrowAdd;
 
         public SelectionSubGui(ValueTypeIngredientsLPElement element, int baseX, int baseY, int maxWidth, int maxHeight,
             GuiLogicProgrammerBase gui, ContainerLogicProgrammerBase container) {
@@ -441,13 +442,13 @@ public class ValueTypeIngredientsLPElement extends ValueTypeLPElementBase {
         public void initGui(int guiLeft, int guiTop) {
             super.initGui(guiLeft, guiTop);
             valueTypeSelector = new GuiArrowedListField<>(
-                0,
                 Minecraft.getMinecraft().fontRenderer,
                 getX() + guiLeft + getWidth() / 2 - 50,
                 getY() + guiTop + 2,
                 100,
                 15,
                 true,
+                LangHelpers.localize("valuetype.integrateddynamics.value_type"),
                 true,
                 getValueTypes()) {
 
@@ -462,14 +463,14 @@ public class ValueTypeIngredientsLPElement extends ValueTypeLPElementBase {
             // onChanged();
             int x = guiLeft + getX();
             int y = guiTop + getY();
-            buttonList
-                .add(arrowAdd = new GuiButtonText(1, x + getWidth() - 13, y + getHeight() - 13, 12, 12, "+", true));
+            buttonList.add(
+                arrowAdd = new GuiButtonText(x + getWidth() - 13, y + getHeight() - 13, 12, 12, "+", (b) -> {}, true));
         }
 
         @Override
-        public void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
-            super.mouseClicked(mouseX, mouseY, mouseButton);
-            valueTypeSelector.mouseClicked(mouseX, mouseY, mouseButton);
+        public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
+            return super.mouseClicked(mouseX, mouseY, mouseButton)
+                || valueTypeSelector.mouseClicked(mouseX, mouseY, mouseButton);
         }
 
         @Override
@@ -491,7 +492,7 @@ public class ValueTypeIngredientsLPElement extends ValueTypeLPElementBase {
                 partialTicks,
                 mouseX,
                 mouseY);
-            valueTypeSelector.drawTextBox(Minecraft.getMinecraft(), mouseX, mouseY);
+            valueTypeSelector.drawScreen(mouseX, mouseY, partialTicks);
         }
 
         @Override
@@ -509,7 +510,7 @@ public class ValueTypeIngredientsLPElement extends ValueTypeLPElementBase {
 
         private GuiButtonArrow arrowLeft;
         private GuiButtonArrow arrowRight;
-        private GuiButton arrowRemove;
+        private GuiButtonExtended arrowRemove;
 
         private RenderPattern subGui;
         private IValueTypeLogicProgrammerElement subElement;
@@ -554,39 +555,32 @@ public class ValueTypeIngredientsLPElement extends ValueTypeLPElementBase {
             super.initGui(guiLeft, guiTop);
             int x = guiLeft + getX();
             int y = guiTop + getY();
-            buttonList.add(arrowLeft = new GuiButtonArrow(1, x, y, GuiButtonArrow.Direction.WEST));
+            buttonList.add(
+                arrowLeft = new GuiButtonArrow(
+                    x,
+                    y,
+                    b -> element.setActiveElement(element.activeElement - 1),
+                    GuiButtonArrow.Direction.WEST));
             buttonList.add(
                 arrowRight = new GuiButtonArrow(
-                    1,
                     x + getWidth() - arrowLeft.width - 1,
                     y,
+                    b -> element.setActiveElement(element.activeElement + 1),
                     GuiButtonArrow.Direction.EAST));
             buttonList.add(
                 arrowRemove = new GuiButtonText(
-                    2,
                     x + (getWidth() / 2) - (arrowLeft.width / 2),
                     y + getHeight() - 13,
                     12,
                     12,
                     "-",
+                    b -> element.removeElement(element.activeElement),
                     true));
             arrowLeft.enabled = element.activeElement > 0;
             arrowRight.enabled = element.activeElement < element.getLength() - 1;
             arrowRemove.enabled = element.getLength() > 0;
             subElement.setValueInGui(subGui);
             subElement.setValueInContainer(subGui.container);
-        }
-
-        @Override
-        protected void actionPerformed(GuiButton guibutton) {
-            super.actionPerformed(guibutton);
-            if (guibutton == arrowLeft) {
-                element.setActiveElement(element.activeElement - 1);
-            } else if (guibutton == arrowRight) {
-                element.setActiveElement(element.activeElement + 1);
-            } else if (guibutton == arrowRemove) {
-                element.removeElement(element.activeElement);
-            }
         }
 
         @Override

@@ -13,13 +13,13 @@ import ruiseki.okcore.helper.StringHelpers;
 
 /**
  * A component for displaying errors.
- * 
+ *
  * @author rubensworks
  */
 public class DisplayErrorsComponent {
 
     public void drawForeground(List<LangHelpers.UnlocalizedString> errors, int errorX, int errorY, int mouseX,
-        int mouseY, GuiContainerExtended gui, int guiLeft, int guiTop) {
+        int mouseY, GuiContainerExtended<?> gui, int guiLeft, int guiTop) {
         if (!errors.isEmpty()) {
             if (gui.func_146978_c(
                 errorX,
@@ -42,7 +42,7 @@ public class DisplayErrorsComponent {
     }
 
     public void drawBackground(List<LangHelpers.UnlocalizedString> errors, int errorX, int errorY, int okX, int okY,
-        GuiContainerExtended gui, int guiLeft, int guiTop, boolean okCondition) {
+        GuiContainerExtended<?> gui, int guiLeft, int guiTop, boolean okCondition) {
         // Render error symbol
         if (!errors.isEmpty()) {
             Images.ERROR.draw(gui, guiLeft + errorX, guiTop + errorY);

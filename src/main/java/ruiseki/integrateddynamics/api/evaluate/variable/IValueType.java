@@ -3,6 +3,7 @@ package ruiseki.integrateddynamics.api.evaluate.variable;
 import java.util.Comparator;
 import java.util.List;
 
+import net.minecraft.nbt.NBTBase;
 import net.minecraft.util.ResourceLocation;
 
 import org.jetbrains.annotations.Nullable;
@@ -91,7 +92,7 @@ public interface IValueType<V extends IValue> {
      * @param value The value to serialize.
      * @return The serialized value.
      */
-    public String serialize(V value);
+    public NBTBase serialize(V value);
 
     /**
      * Check if the given value can be deserialized.
@@ -99,7 +100,7 @@ public interface IValueType<V extends IValue> {
      * @param value The value to deserialize.
      * @return An error or null.
      */
-    public LangHelpers.UnlocalizedString canDeserialize(String value);
+    public LangHelpers.UnlocalizedString canDeserialize(NBTBase value);
 
     /**
      * Deserialize the given value.
@@ -107,7 +108,7 @@ public interface IValueType<V extends IValue> {
      * @param value The value to deserialize.
      * @return The deserialized value.
      */
-    public V deserialize(String value);
+    public V deserialize(NBTBase value);
 
     /**
      * Materialize the given value so that it can exist without any external references.
@@ -117,6 +118,28 @@ public interface IValueType<V extends IValue> {
      * @throws EvaluationException if materialization fails because of a variable evaluation.
      */
     public V materialize(V value) throws EvaluationException;
+
+    /**
+     * Get the string representation of the given value.
+     * This is useful for cases when the value needs to be edited in a GUI.
+     *
+     * This corresponds to {@link #parseString(String)}.
+     *
+     * @param value A value.
+     * @return A string representation of the given value.
+     */
+    public String toString(V value);
+
+    /**
+     * Parse the given string representation of a value.
+     *
+     * This corresponds to {@link #toString(IValue)}.
+     *
+     * @param value A string representation of a value.
+     * @return A value.
+     * @throws EvaluationException If parsing failed.
+     */
+    public V parseString(String value) throws EvaluationException;
 
     /**
      * @return A new logic programmer element for this value type.

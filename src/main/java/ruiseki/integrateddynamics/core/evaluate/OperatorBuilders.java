@@ -85,7 +85,9 @@ public class OperatorBuilders {
     public static final IOperatorValuePropagator<Boolean, IValue> PROPAGATOR_BOOLEAN_VALUE = ValueTypeBoolean.ValueBoolean::of;
     public static final IOperatorValuePropagator<Double, IValue> PROPAGATOR_DOUBLE_VALUE = ValueTypeDouble.ValueDouble::of;
     public static final IOperatorValuePropagator<String, IValue> PROPAGATOR_STRING_VALUE = ValueTypeString.ValueString::of;
-    public static final IOperatorValuePropagator<NBTTagCompound, IValue> PROPAGATOR_NBT_VALUE = ValueTypeNbt.ValueNbt::of;
+    public static final IOperatorValuePropagator<Optional<NBTBase>, IValue> PROPAGATOR_NBT_VALUE = ValueTypeNbt.ValueNbt::of;
+    public static final IOperatorValuePropagator<Optional<NBTTagCompound>, IValue> PROPAGATOR_NBT_COMPOUND_VALUE = opt -> ValueTypeNbt.ValueNbt
+        .of(opt.map(t -> (NBTBase) t));
     public static final IOperatorValuePropagator<ResourceLocation, ValueTypeString.ValueString> PROPAGATOR_RESOURCELOCATION_MODNAME = resourceLocation -> {
         String modName;
         try {
@@ -586,6 +588,9 @@ public class OperatorBuilders {
     // --------------- NBT builders ---------------
     public static final OperatorBuilder<OperatorBase.SafeVariablesGetter> NBT = OperatorBuilder.forType(ValueTypes.NBT)
         .appendKind("nbt");
+    public static final OperatorBuilder<OperatorBase.SafeVariablesGetter> NBT_1_PREFIX_LONG = NBT
+        .inputTypes(ValueTypes.NBT)
+        .renderPattern(IConfigRenderPattern.PREFIX_1_LONG);
     public static final OperatorBuilder<OperatorBase.SafeVariablesGetter> NBT_1_SUFFIX_LONG = NBT
         .inputTypes(ValueTypes.NBT)
         .renderPattern(IConfigRenderPattern.SUFFIX_1_LONG);
@@ -599,50 +604,76 @@ public class OperatorBuilders {
         .inputTypes(ValueTypes.NBT, ValueTypes.STRING, ValueTypes.STRING)
         .output(ValueTypes.NBT)
         .renderPattern(IConfigRenderPattern.INFIX_2_LONG);
-    public static final IterativeFunction.PrePostBuilder<NBTTagCompound, IValue> FUNCTION_NBT = IterativeFunction.PrePostBuilder
+
+    public static final IterativeFunction.PrePostBuilder<Optional<NBTBase>, IValue> FUNCTION_NBT = IterativeFunction.PrePostBuilder
         .begin()
         .appendPre(input -> {
             ValueTypeNbt.ValueNbt value = input.getValue(0, ValueTypes.NBT);
             return value.getRawValue();
         });
-    public static final IterativeFunction.PrePostBuilder<Optional<NBTBase>, IValue> FUNCTION_NBT_ENTRY = IterativeFunction.PrePostBuilder
+    public static final IterativeFunction.PrePostBuilder<Optional<NBTBase>, IValue> FUNCTION_NBT_COMPOUND_ENTRY = IterativeFunction.PrePostBuilder
         .begin()
         .appendPre(input -> {
             ValueTypeNbt.ValueNbt valueNbt = input.getValue(0, ValueTypes.NBT);
             ValueTypeString.ValueString valueString = input.getValue(1, ValueTypes.STRING);
-            return Optional.ofNullable(
-                valueNbt.getRawValue()
-                    .getTag(valueString.getRawValue()));
+            return valueNbt.getRawValue()
+                .filter(tag -> tag instanceof NBTTagCompound)
+                .map(tag -> ((NBTTagCompound) tag).getTag(valueString.getRawValue()));
         });
-    public static final IterativeFunction.PrePostBuilder<Triple<NBTTagCompound, String, OperatorBase.SafeVariablesGetter>, IValue> FUNCTION_NBT_COPY_FOR_VALUE = IterativeFunction.PrePostBuilder
+    public static final IterativeFunction.PrePostBuilder<Triple<Optional<NBTTagCompound>, String, OperatorBase.SafeVariablesGetter>, IValue> FUNCTION_NBT_COPY_FOR_VALUE = IterativeFunction.PrePostBuilder
         .begin()
         .appendPre(input -> {
             ValueTypeNbt.ValueNbt valueNbt = input.getValue(0, ValueTypes.NBT);
             ValueTypeString.ValueString valueString = input.getValue(1, ValueTypes.STRING);
             return Triple.of(
-                (NBTTagCompound) valueNbt.getRawValue()
-                    .copy(),
+                valueNbt.getRawValue()
+                    .filter(t -> t instanceof NBTTagCompound)
+                    .map(t -> (NBTTagCompound) t)
+                    .map(compound -> (NBTTagCompound) compound.copy()),
                 valueString.getRawValue(),
                 new OperatorBase.SafeVariablesGetter.Shifted(2, input.getVariables()));
         });
-    public static final IterativeFunction.PrePostBuilder<NBTTagCompound, Integer> FUNCTION_NBT_TO_INT = FUNCTION_NBT
+
+    public static final IOperatorValuePropagator<Optional<NBTBase>, Optional<NBTTagCompound>> PROPAGATOR_NBT_COMPOUND = opt -> opt
+        .filter(t -> t instanceof NBTTagCompound)
+        .map(t -> (NBTTagCompound) t);
+
+    public static final IterativeFunction.PrePostBuilder<Optional<NBTTagCompound>, IValue> FUNCTION_NBT_COMPOUND = FUNCTION_NBT
+        .appendPre(PROPAGATOR_NBT_COMPOUND);
+
+    public static final IterativeFunction.PrePostBuilder<Optional<NBTTagCompound>, Integer> FUNCTION_NBT_COMPOUND_TO_INT = FUNCTION_NBT_COMPOUND
         .appendPost(PROPAGATOR_INTEGER_VALUE);
-    public static final IterativeFunction.PrePostBuilder<NBTTagCompound, Boolean> FUNCTION_NBT_TO_BOOLEAN = FUNCTION_NBT
+    public static final IterativeFunction.PrePostBuilder<Optional<NBTTagCompound>, Boolean> FUNCTION_NBT_COMPOUND_TO_BOOLEAN = FUNCTION_NBT_COMPOUND
         .appendPost(PROPAGATOR_BOOLEAN_VALUE);
-    public static final IterativeFunction.PrePostBuilder<Optional<NBTBase>, Integer> FUNCTION_NBT_ENTRY_TO_INT = FUNCTION_NBT_ENTRY
+
+    public static final IterativeFunction.PrePostBuilder<Optional<NBTBase>, Integer> FUNCTION_NBT_COMPOUND_ENTRY_TO_INT = FUNCTION_NBT_COMPOUND_ENTRY
         .appendPost(PROPAGATOR_INTEGER_VALUE);
-    public static final IterativeFunction.PrePostBuilder<Optional<NBTBase>, Long> FUNCTION_NBT_ENTRY_TO_LONG = FUNCTION_NBT_ENTRY
+    public static final IterativeFunction.PrePostBuilder<Optional<NBTBase>, Long> FUNCTION_NBT_COMPOUND_ENTRY_TO_LONG = FUNCTION_NBT_COMPOUND_ENTRY
         .appendPost(PROPAGATOR_LONG_VALUE);
-    public static final IterativeFunction.PrePostBuilder<Optional<NBTBase>, Double> FUNCTION_NBT_ENTRY_TO_DOUBLE = FUNCTION_NBT_ENTRY
+    public static final IterativeFunction.PrePostBuilder<Optional<NBTBase>, Double> FUNCTION_NBT_COMPOUND_ENTRY_TO_DOUBLE = FUNCTION_NBT_COMPOUND_ENTRY
         .appendPost(PROPAGATOR_DOUBLE_VALUE);
-    public static final IterativeFunction.PrePostBuilder<Optional<NBTBase>, Boolean> FUNCTION_NBT_ENTRY_TO_BOOLEAN = FUNCTION_NBT_ENTRY
+    public static final IterativeFunction.PrePostBuilder<Optional<NBTBase>, Boolean> FUNCTION_NBT_COMPOUND_ENTRY_TO_BOOLEAN = FUNCTION_NBT_COMPOUND_ENTRY
         .appendPost(PROPAGATOR_BOOLEAN_VALUE);
-    public static final IterativeFunction.PrePostBuilder<Optional<NBTBase>, String> FUNCTION_NBT_ENTRY_TO_STRING = FUNCTION_NBT_ENTRY
+    public static final IterativeFunction.PrePostBuilder<Optional<NBTBase>, String> FUNCTION_NBT_COMPOUND_ENTRY_TO_STRING = FUNCTION_NBT_COMPOUND_ENTRY
         .appendPost(PROPAGATOR_STRING_VALUE);
-    public static final IterativeFunction.PrePostBuilder<Optional<NBTBase>, NBTTagCompound> FUNCTION_NBT_ENTRY_TO_NBT = FUNCTION_NBT_ENTRY
+    public static final IterativeFunction.PrePostBuilder<Optional<NBTBase>, Optional<NBTBase>> FUNCTION_NBT_COMPOUND_ENTRY_TO_NBT = FUNCTION_NBT_COMPOUND_ENTRY
         .appendPost(PROPAGATOR_NBT_VALUE);
-    public static final IterativeFunction.PrePostBuilder<Triple<NBTTagCompound, String, OperatorBase.SafeVariablesGetter>, NBTTagCompound> FUNCTION_NBT_COPY_FOR_VALUE_TO_NBT = FUNCTION_NBT_COPY_FOR_VALUE
+
+    public static final IterativeFunction.PrePostBuilder<Optional<NBTBase>, Integer> FUNCTION_NBT_TO_INT = FUNCTION_NBT
+        .appendPost(PROPAGATOR_INTEGER_VALUE);
+    public static final IterativeFunction.PrePostBuilder<Optional<NBTBase>, Long> FUNCTION_NBT_TO_LONG = FUNCTION_NBT
+        .appendPost(PROPAGATOR_LONG_VALUE);
+    public static final IterativeFunction.PrePostBuilder<Optional<NBTBase>, Double> FUNCTION_NBT_TO_DOUBLE = FUNCTION_NBT
+        .appendPost(PROPAGATOR_DOUBLE_VALUE);
+    public static final IterativeFunction.PrePostBuilder<Optional<NBTBase>, Boolean> FUNCTION_NBT_TO_BOOLEAN = FUNCTION_NBT
+        .appendPost(PROPAGATOR_BOOLEAN_VALUE);
+    public static final IterativeFunction.PrePostBuilder<Optional<NBTBase>, String> FUNCTION_NBT_TO_STRING = FUNCTION_NBT
+        .appendPost(PROPAGATOR_STRING_VALUE);
+    public static final IterativeFunction.PrePostBuilder<Optional<NBTBase>, Optional<NBTBase>> FUNCTION_NBT_TO_NBT = FUNCTION_NBT
         .appendPost(PROPAGATOR_NBT_VALUE);
+
+    public static final IterativeFunction.PrePostBuilder<Triple<Optional<NBTTagCompound>, String, OperatorBase.SafeVariablesGetter>, Optional<NBTTagCompound>> FUNCTION_NBT_COPY_FOR_VALUE_TO_NBT = FUNCTION_NBT_COPY_FOR_VALUE
+        .appendPost(PROPAGATOR_NBT_COMPOUND_VALUE);
 
     // --------------- Ingredients builders ---------------
     public static final OperatorBuilder<OperatorBase.SafeVariablesGetter> INGREDIENTS = OperatorBuilder

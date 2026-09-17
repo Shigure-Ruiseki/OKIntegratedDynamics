@@ -4,7 +4,10 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumChatFormatting;
+import net.minecraftforge.common.util.Constants;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -49,17 +52,17 @@ public class ValueTypeList extends ValueObjectTypeBase<ValueTypeList.ValueList> 
     }
 
     @Override
-    public String serialize(ValueList value) {
+    public NBTBase serialize(ValueList value) {
         try {
             return ValueTypeListProxyFactories.REGISTRY.serialize(value.getRawValue());
         } catch (IValueTypeListProxyFactoryTypeRegistry.SerializationException e) {
             e.printStackTrace();
         }
-        return "";
+        return new NBTTagCompound();
     }
 
     @Override
-    public LangHelpers.UnlocalizedString canDeserialize(String value) {
+    public LangHelpers.UnlocalizedString canDeserialize(NBTBase value) {
         try {
             IValueTypeListProxy<IValueType<IValue>, IValue> proxy = ValueTypeListProxyFactories.REGISTRY
                 .deserialize(value);
@@ -70,13 +73,16 @@ public class ValueTypeList extends ValueObjectTypeBase<ValueTypeList.ValueList> 
     }
 
     @Override
-    public ValueList deserialize(String value) {
-        try {
-            IValueTypeListProxy<IValueType<IValue>, IValue> proxy = ValueTypeListProxyFactories.REGISTRY
-                .deserialize(value);
-            return ValueList.ofFactory(proxy);
-        } catch (IValueTypeListProxyFactoryTypeRegistry.SerializationException e) {
-            e.printStackTrace();
+    public ValueList deserialize(NBTBase value) {
+        if (!(value.getId() == Constants.NBT.TAG_END
+            || (value.getId() == Constants.NBT.TAG_COMPOUND && ((NBTTagCompound) value).hasNoTags()))) {
+            try {
+                IValueTypeListProxy<IValueType<IValue>, IValue> proxy = ValueTypeListProxyFactories.REGISTRY
+                    .deserialize(value);
+                return ValueList.ofFactory(proxy);
+            } catch (IValueTypeListProxyFactoryTypeRegistry.SerializationException e) {
+                e.printStackTrace();
+            }
         }
         return getDefault();
     }

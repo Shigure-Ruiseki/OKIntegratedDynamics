@@ -1,6 +1,5 @@
 package ruiseki.integrateddynamics.core.client.gui.subgui;
 
-import java.io.IOException;
 import java.util.Set;
 
 import net.minecraft.client.gui.FontRenderer;
@@ -47,6 +46,13 @@ public class SubGuiHolder implements ISubGui {
     }
 
     @Override
+    public void tick() {
+        for (ISubGui subGui : getSubGuis()) {
+            subGui.tick();
+        }
+    }
+
+    @Override
     public void drawGuiContainerBackgroundLayer(int guiLeft, int guiTop, TextureManager textureManager,
         FontRenderer fontRenderer, float partialTicks, int mouseX, int mouseY) {
         for (ISubGui subGui : getSubGuis()) {
@@ -70,9 +76,9 @@ public class SubGuiHolder implements ISubGui {
     }
 
     @Override
-    public boolean keyTyped(boolean checkHotbarKeys, char typedChar, int keyCode) throws IOException {
+    public boolean charTyped(char typedChar, int keyCode) {
         for (ISubGui subGui : getSubGuis()) {
-            if (subGui.keyTyped(checkHotbarKeys, typedChar, keyCode)) {
+            if (subGui.charTyped(typedChar, keyCode)) {
                 return true;
             }
         }
@@ -80,9 +86,22 @@ public class SubGuiHolder implements ISubGui {
     }
 
     @Override
-    public void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
+    public boolean keyPressed(int typedChar, int keyCode, int modifiers) {
         for (ISubGui subGui : getSubGuis()) {
-            subGui.mouseClicked(mouseX, mouseY, mouseButton);
+            if (subGui.keyPressed(typedChar, keyCode, modifiers)) {
+                return true;
+            }
         }
+        return false;
+    }
+
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
+        for (ISubGui subGui : getSubGuis()) {
+            if (subGui.mouseClicked(mouseX, mouseY, mouseButton)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

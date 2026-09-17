@@ -24,7 +24,6 @@ import ruiseki.integrateddynamics.capability.path.PathElementConfig;
 import ruiseki.integrateddynamics.capability.path.SidedPathElement;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.helper.CapabilityHelpers;
-import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.persist.nbt.INBTSerializable;
 
 /**
@@ -82,7 +81,7 @@ public class Cluster implements Collection<ISidedPathElement>, INBTSerializable 
 
     @Override
     public void deserializeNBT(NBTTagCompound tag) {
-        NBTTagList list = tag.getTagList("list", MinecraftHelpers.NBTTag_Types.NBTTagCompound.ordinal());
+        NBTTagList list = tag.getTagList("list", Constants.NBT.TAG_COMPOUND);
 
         for (int i = 0; i < list.tagCount(); i++) {
             NBTTagCompound elementTag = list.getCompoundTagAt(i);

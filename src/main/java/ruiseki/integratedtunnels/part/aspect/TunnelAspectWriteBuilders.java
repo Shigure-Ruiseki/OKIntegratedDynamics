@@ -1,12 +1,13 @@
 package ruiseki.integratedtunnels.part.aspect;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTBase;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.fluids.FluidStack;
@@ -473,7 +474,7 @@ public class TunnelAspectWriteBuilders {
             .appendDeactivator(DEACTIVATOR)
             .appendKind("item")
             .withProperties(PROPERTIES_CHANNEL);
-        public static final AspectBuilder<ValueTypeNbt.ValueNbt, ValueTypeNbt, Triple<PartTarget, IAspectProperties, NBTTagCompound>> BUILDER_NBT = AspectWriteBuilders.BUILDER_NBT
+        public static final AspectBuilder<ValueTypeNbt.ValueNbt, ValueTypeNbt, Triple<PartTarget, IAspectProperties, Optional<NBTBase>>> BUILDER_NBT = AspectWriteBuilders.BUILDER_NBT
             .byMod(IntegratedTunnels._instance)
             .appendActivator(ACTIVATOR)
             .appendDeactivator(DEACTIVATOR)
@@ -902,8 +903,8 @@ public class TunnelAspectWriteBuilders {
                         .localize());
             }
         };
-        public static final IAspectValuePropagator<Triple<PartTarget, IAspectProperties, NBTTagCompound>, Triple<PartTarget, IAspectProperties, ChanneledTargetInformation<ItemStack, Integer>>> PROP_NBT_ITEMPREDICATE = input -> {
-            NBTTagCompound tag = input.getRight();
+        public static final IAspectValuePropagator<Triple<PartTarget, IAspectProperties, Optional<NBTBase>>, Triple<PartTarget, IAspectProperties, ChanneledTargetInformation<ItemStack, Integer>>> PROP_NBT_ITEMPREDICATE = input -> {
+            Optional<NBTBase> tag = input.getRight();
             IAspectProperties properties = input.getMiddle();
             int amount = properties.getValue(PROP_RATE)
                 .getRawValue();
@@ -1133,7 +1134,7 @@ public class TunnelAspectWriteBuilders {
             .appendDeactivator(DEACTIVATOR)
             .appendKind("fluid")
             .withProperties(PROPERTIES_CHANNEL);
-        public static final AspectBuilder<ValueTypeNbt.ValueNbt, ValueTypeNbt, Triple<PartTarget, IAspectProperties, NBTTagCompound>> BUILDER_NBT = AspectWriteBuilders.BUILDER_NBT
+        public static final AspectBuilder<ValueTypeNbt.ValueNbt, ValueTypeNbt, Triple<PartTarget, IAspectProperties, Optional<NBTBase>>> BUILDER_NBT = AspectWriteBuilders.BUILDER_NBT
             .byMod(IntegratedTunnels._instance)
             .appendActivator(ACTIVATOR)
             .appendDeactivator(DEACTIVATOR)
@@ -1473,9 +1474,9 @@ public class TunnelAspectWriteBuilders {
                         .localize());
             }
         };
-        public static final IAspectValuePropagator<Triple<PartTarget, IAspectProperties, NBTTagCompound>, Triple<PartTarget, IAspectProperties, ChanneledTargetInformation<FluidStack, Integer>>> PROP_NBT_FLUIDPREDICATE = input -> {
+        public static final IAspectValuePropagator<Triple<PartTarget, IAspectProperties, Optional<NBTBase>>, Triple<PartTarget, IAspectProperties, ChanneledTargetInformation<FluidStack, Integer>>> PROP_NBT_FLUIDPREDICATE = input -> {
             IAspectProperties properties = input.getMiddle();
-            NBTTagCompound tag = input.getRight();
+            Optional<NBTBase> tag = input.getRight();
             int rate = properties.getValue(PROP_RATE)
                 .getRawValue();
             boolean exactAmount = properties.getValue(PROP_EXACTAMOUNT)
@@ -1613,7 +1614,7 @@ public class TunnelAspectWriteBuilders {
             .byMod(IntegratedTunnels._instance)
             .appendKind("world")
             .withProperties(PROPERTIES_CHANNEL);
-        public static final AspectBuilder<ValueTypeNbt.ValueNbt, ValueTypeNbt, Triple<PartTarget, IAspectProperties, NBTTagCompound>> BUILDER_NBT = AspectWriteBuilders.BUILDER_NBT
+        public static final AspectBuilder<ValueTypeNbt.ValueNbt, ValueTypeNbt, Triple<PartTarget, IAspectProperties, Optional<NBTBase>>> BUILDER_NBT = AspectWriteBuilders.BUILDER_NBT
             .byMod(IntegratedTunnels._instance)
             .appendKind("world")
             .handle(AspectWriteBuilders.PROP_GET_NBT)
@@ -2405,9 +2406,9 @@ public class TunnelAspectWriteBuilders {
                             .localize());
                 }
             };
-            public static final IAspectValuePropagator<Triple<PartTarget, IAspectProperties, NBTTagCompound>, IFluidTarget> PROP_NBT_FLUIDTARGET = input -> {
+            public static final IAspectValuePropagator<Triple<PartTarget, IAspectProperties, Optional<NBTBase>>, IFluidTarget> PROP_NBT_FLUIDTARGET = input -> {
                 IAspectProperties properties = input.getMiddle();
-                NBTTagCompound tag = input.getRight();
+                Optional<NBTBase> tag = input.getRight();
                 boolean subset = properties.getValue(TunnelAspectWriteBuilders.Fluid.PROP_NBT_SUBSET)
                     .getRawValue();
                 boolean superset = properties.getValue(TunnelAspectWriteBuilders.Fluid.PROP_NBT_SUPERSET)
@@ -2822,7 +2823,7 @@ public class TunnelAspectWriteBuilders {
             .byMod(IntegratedTunnels._instance)
             .appendKind("player")
             .withProperties(PROPERTIES_CHANNEL);
-        public static final AspectBuilder<ValueTypeNbt.ValueNbt, ValueTypeNbt, Triple<PartTarget, IAspectProperties, NBTTagCompound>> BUILDER_NBT = AspectWriteBuilders.BUILDER_NBT
+        public static final AspectBuilder<ValueTypeNbt.ValueNbt, ValueTypeNbt, Triple<PartTarget, IAspectProperties, Optional<NBTBase>>> BUILDER_NBT = AspectWriteBuilders.BUILDER_NBT
             .byMod(IntegratedTunnels._instance)
             .appendKind("player")
             .handle(AspectWriteBuilders.PROP_GET_NBT)

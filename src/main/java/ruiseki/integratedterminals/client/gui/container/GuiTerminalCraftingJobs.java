@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Locale;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiButton;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
@@ -34,14 +33,13 @@ import ruiseki.okcore.client.gui.container.GuiContainerExtended;
 import ruiseki.okcore.helper.GuiHelpers;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.RenderHelpers;
-import ruiseki.okcore.init.ModBase;
 
 /**
  * The crafting jobs overview gui.
  *
  * @author rubensworks
  */
-public class GuiTerminalCraftingJobs extends GuiContainerExtended {
+public class GuiTerminalCraftingJobs extends GuiContainerExtended<ContainerTerminalCraftingJobs> {
 
     public static int OUTPUT_SLOT_X = 8;
     public static int OUTPUT_SLOT_Y = 17;
@@ -60,33 +58,39 @@ public class GuiTerminalCraftingJobs extends GuiContainerExtended {
     }
 
     @Override
+    public ContainerTerminalCraftingJobs getContainer() {
+        return super.getContainer();
+    }
+
+    @Override
     public void initGui() {
         super.initGui();
 
-        scrollBar = new GuiScrollBar(guiLeft + 236, guiTop + 18, 178, this::setFirstRow, 10);
+        scrollBar = new GuiScrollBar(
+            guiLeft + 236,
+            guiTop + 18,
+            178,
+            LangHelpers.localize("gui.okcore.scrollbar"),
+            this::setFirstRow,
+            10);
         scrollBar.setTotalRows(
             getContainer().getCraftingJobs()
                 .size() - 1);
 
-        this.buttonList.add(
+        addRenderableWidget(
             new GuiButtonText(
-                0,
                 guiLeft + 70,
                 guiTop + 198,
                 120,
                 20,
                 LangHelpers.localize("gui.integratedterminals.terminal_crafting_job.craftingplan.cancel_all"),
+                (b) -> cancelCraftingJobs(),
                 true));
     }
 
     @Override
-    protected ResourceLocation constructResourceLocation() {
-        return new ResourceLocation(Reference.MOD_ID, this.getGuiTexture());
-    }
-
-    @Override
-    public String getGuiTexture() {
-        return IntegratedTerminals._instance.getReferenceValue(ModBase.REFKEY_TEXTURE_PATH_GUI) + "crafting_plan.png";
+    protected ResourceLocation constructGuiTexture() {
+        return new ResourceLocation(Reference.MOD_ID, "textures/gui/crafting_plan.png");
     }
 
     @Override
@@ -102,7 +106,7 @@ public class GuiTerminalCraftingJobs extends GuiContainerExtended {
     @Override
     protected void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY) {
         super.drawGuiContainerBackgroundLayer(partialTicks, mouseX, mouseY);
-        scrollBar.drawGuiContainerBackgroundLayer(partialTicks, mouseX, mouseY);
+        scrollBar.drawWidget(mouseX, mouseY, partialTicks);
         RenderHelpers.bindTexture(this.texture);
         drawCraftingPlans(
             guiLeft,
@@ -123,7 +127,7 @@ public class GuiTerminalCraftingJobs extends GuiContainerExtended {
 
     @Override
     protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
-        super.drawGuiContainerForegroundLayer(mouseX, mouseY);
+        // super.drawGuiContainerForegroundLayer(mouseX, mouseY);
         drawCraftingPlans(0, 0, 0, mouseX, mouseY, GuiTerminalStorage.DrawLayer.FOREGROUND);
     }
 
@@ -241,31 +245,6 @@ public class GuiTerminalCraftingJobs extends GuiContainerExtended {
         }
     }
 
-    @Override
-    public void drawScreen(int mouseX, int mouseY, float partialTicks) {
-        super.drawScreen(mouseX, mouseY, partialTicks);
-        scrollBar.drawScreen(mouseX, mouseY, partialTicks);
-    }
-
-    @Override
-    public ContainerTerminalCraftingJobs getContainer() {
-        return (ContainerTerminalCraftingJobs) super.getContainer();
-    }
-
-    @Override
-    public boolean requiresAction(int buttonId) {
-        return true;
-    }
-
-    @Override
-    public void onButtonClick(int buttonId) {
-        super.onButtonClick(buttonId);
-        GuiButton button = buttonList.get(buttonId);
-        if (button instanceof GuiButtonText) {
-            cancelCraftingJobs();
-        }
-    }
-
     private void cancelCraftingJobs() {
         // Send packets to cancel crafting jobs
         for (HandlerWrappedTerminalCraftingPlan craftingJob : getContainer().getCraftingJobs()) {
@@ -287,14 +266,8 @@ public class GuiTerminalCraftingJobs extends GuiContainerExtended {
         this.player.closeScreen();
     }
 
-    @Override
-    public void handleMouseInput() {
-        super.handleMouseInput();
-        scrollBar.handleMouseInput();
-    }
-
     @Nullable
-    protected HandlerWrappedTerminalCraftingPlan getHoveredPlan(int mouseX, int mouseY) {
+    protected HandlerWrappedTerminalCraftingPlan getHoveredPlan(double mouseX, double mouseY) {
         mouseX -= guiLeft;
         mouseY -= guiTop;
         if (mouseX > OUTPUT_SLOT_X && mouseX < OUTPUT_SLOT_X + LINE_WIDTH
@@ -310,7 +283,7 @@ public class GuiTerminalCraftingJobs extends GuiContainerExtended {
     }
 
     @Override
-    protected void mouseClicked(int mouseX, int mouseY, int mouseButton) {
+    public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
         HandlerWrappedTerminalCraftingPlan plan = getHoveredPlan(mouseX, mouseY);
         if (plan != null) {
             PartPos pos = getContainer().getTarget()
@@ -321,8 +294,19 @@ public class GuiTerminalCraftingJobs extends GuiContainerExtended {
                 pos.getSide(),
                 getContainer().getChannel(),
                 plan);
+            return true;
         }
-        super.mouseClicked(mouseX, mouseY, mouseButton);
+
+        return super.mouseClicked(mouseX, mouseY, mouseButton);
+    }
+
+    @Override
+    public boolean mouseDragged(double mouseX, double mouseY, int mouseButton, double mouseXPrev, double mouseYPrev) {
+        return this.getFocused() != null && this.isDragging()
+            && mouseButton == 0
+            && this.getFocused()
+                .mouseDragged(mouseX, mouseY, mouseButton, mouseXPrev, mouseYPrev) ? true
+                    : super.mouseDragged(mouseX, mouseY, mouseButton, mouseXPrev, mouseYPrev);
     }
 
     public void setFirstRow(int firstRow) {

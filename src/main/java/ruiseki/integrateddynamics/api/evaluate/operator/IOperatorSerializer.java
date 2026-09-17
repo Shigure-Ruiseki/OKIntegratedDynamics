@@ -1,5 +1,6 @@
 package ruiseki.integrateddynamics.api.evaluate.operator;
 
+import net.minecraft.nbt.NBTBase;
 import net.minecraft.util.ResourceLocation;
 
 import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
@@ -29,7 +30,7 @@ public interface IOperatorSerializer<O extends IOperator> {
      * @param operator The operator to serialize.
      * @return The serialized operator value.
      */
-    public String serialize(O operator);
+    public NBTBase serialize(O operator);
 
     /**
      * Deserialize the given operator value.
@@ -38,6 +39,6 @@ public interface IOperatorSerializer<O extends IOperator> {
      * @return The deserialized operator, null if deserialization failed.
      * @throws EvaluationException If something goes wrong while deserializing
      */
-    public O deserialize(String value) throws EvaluationException;
+    public O deserialize(NBTBase value) throws EvaluationException;
 
 }

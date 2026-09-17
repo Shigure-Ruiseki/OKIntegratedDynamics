@@ -7,6 +7,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.world.World;
+import net.minecraftforge.common.util.Constants;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Queues;
@@ -35,7 +36,6 @@ import ruiseki.okcore.capabilities.resolver.BasicCapabilityResolver;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
 import ruiseki.okcore.helper.LangHelpers;
-import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.persist.nbt.NBTPersist;
 
 /**
@@ -156,7 +156,7 @@ public class TileDelay extends TileProxy {
         if (this.capacity <= 0) this.capacity = 1;
         values = Queues.newArrayBlockingQueue(this.capacity);
 
-        NBTTagList valueList = tag.getTagList("values", MinecraftHelpers.NBTTag_Types.NBTTagCompound.ordinal());
+        NBTTagList valueList = tag.getTagList("values", Constants.NBT.TAG_COMPOUND);
         for (int i = 0; i < valueList.tagCount(); i++) {
             IValue value = ValueHelpers.deserialize(valueList.getCompoundTagAt(i));
             if (value != null) {

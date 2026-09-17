@@ -180,7 +180,7 @@ public abstract class ValueTypeLPElementBase
     @SideOnly(Side.CLIENT)
     public boolean isFocused(ISubGuiBox subGui) {
         if (subGui instanceof ValueTypeStringLPElementRenderPattern) {
-            return ((ValueTypeStringLPElementRenderPattern) subGui).getSearchField()
+            return ((ValueTypeStringLPElementRenderPattern) subGui).getTextField()
                 .isFocused();
         }
         return false;
@@ -190,7 +190,7 @@ public abstract class ValueTypeLPElementBase
     @SideOnly(Side.CLIENT)
     public void setFocused(ISubGuiBox subGui, boolean focused) {
         if (subGui instanceof ValueTypeStringLPElementRenderPattern) {
-            ((ValueTypeStringLPElementRenderPattern) subGui).getSearchField()
+            ((ValueTypeStringLPElementRenderPattern) subGui).getTextField()
                 .setFocused(focused);
         }
     }

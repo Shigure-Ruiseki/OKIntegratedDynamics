@@ -6,7 +6,6 @@ import java.util.Optional;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ResourceLocation;
 
-import ruiseki.integratedcrafting.IntegratedCrafting;
 import ruiseki.integratedcrafting.Reference;
 import ruiseki.integratedcrafting.inventory.container.ContainerPartInterfaceCrafting;
 import ruiseki.integratedcrafting.part.PartTypeInterfaceCrafting;
@@ -19,14 +18,14 @@ import ruiseki.okcore.client.gui.image.Images;
 import ruiseki.okcore.client.renderer.GlStateManager;
 import ruiseki.okcore.helper.GuiHelpers;
 import ruiseki.okcore.helper.LangHelpers;
-import ruiseki.okcore.init.ModBase;
 
 /**
  * Gui for the crafting interface.
  *
  * @author rubensworks
  */
-public class GuiPartInterfaceCrafting extends GuiMultipart<PartTypeInterfaceCrafting, PartTypeInterfaceCrafting.State> {
+public class GuiPartInterfaceCrafting
+    extends GuiMultipart<PartTypeInterfaceCrafting, PartTypeInterfaceCrafting.State, ContainerPartInterfaceCrafting> {
 
     /**
      * Make a new instance.
@@ -47,13 +46,8 @@ public class GuiPartInterfaceCrafting extends GuiMultipart<PartTypeInterfaceCraf
     }
 
     @Override
-    protected ResourceLocation constructResourceLocation() {
-        return new ResourceLocation(Reference.MOD_ID, getGuiTexture());
-    }
-
-    @Override
-    public String getGuiTexture() {
-        return IntegratedCrafting._instance.getReferenceValue(ModBase.REFKEY_TEXTURE_PATH_GUI) + getNameId() + ".png";
+    protected ResourceLocation constructGuiTexture() {
+        return new ResourceLocation(Reference.MOD_ID, "textures/gui/part_interface_crafting.png");
     }
 
     @Override

@@ -15,8 +15,5 @@
 *   Integrated Tunnels (1.20 lts): Transfer items, fluids and energy
 *   Integrated Crafting (1.20 lts): Enable autocrafting in your network
 *   Integrated Terminals (1.20 lts): Overview and control your network
-*   IntegratedMekanism: TODO
-*   IntegratedScripting: TODO
-*   IntegratedNBT: TODO
-*   IntegratedREST (1.20 lts) Expose Integrated Dynamics networks as a REST API
-*   IntegratedCompat: JFMUY (TODO Need more mods like NEI, WAILA, THAUMCRAFT,...)
+*   Integrated REST (1.20 lts) Expose Integrated Dynamics networks as a REST API
+*   Integrated Compat: JFMUY (TODO Need more mods like NEI, WAILA, THAUMCRAFT,...)

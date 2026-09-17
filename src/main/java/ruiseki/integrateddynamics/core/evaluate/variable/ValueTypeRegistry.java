@@ -107,15 +107,14 @@ public final class ValueTypeRegistry implements IValueTypeRegistry {
 
     @Override
     public IValueTypeVariableFacade getVariableFacade(int id, NBTTagCompound tag) {
-        if (!tag.hasKey("typeName", MinecraftHelpers.NBTTag_Types.NBTTagString.ordinal())
-            || !tag.hasKey("value", MinecraftHelpers.NBTTag_Types.NBTTagString.ordinal())) {
+        if (!tag.hasKey("typeName") || !tag.hasKey("value")) {
             return INVALID_FACADE;
         }
         IValueType type = getValueType(new ResourceLocation(tag.getString("typeName")));
         if (type == null) {
             return INVALID_FACADE;
         }
-        IValue value = ValueHelpers.deserializeRaw(type, tag.getString("value"));
+        IValue value = ValueHelpers.deserializeRaw(type, tag.getTag("value"));
         return new ValueTypeVariableFacade(id, type, value);
     }
 
@@ -126,6 +125,6 @@ public final class ValueTypeRegistry implements IValueTypeRegistry {
             variableFacade.getValueType()
                 .getUniqueName()
                 .toString());
-        tag.setString("value", ValueHelpers.serializeRaw(variableFacade.getValue()));
+        tag.setTag("value", ValueHelpers.serializeRaw(variableFacade.getValue()));
     }
 }

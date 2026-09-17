@@ -51,7 +51,7 @@ import ruiseki.okcore.helper.ItemHelpers;
 
 /**
  * Registration code for value type JSON handlers.
- * 
+ *
  * @author rubensworks
  */
 public class ValueTypeJsonHandlers {
@@ -183,8 +183,12 @@ public class ValueTypeJsonHandlers {
 
         REGISTRY.registerHandler(ValueTypes.NBT, value -> {
             JsonObject jsonObject = new JsonObject();
-            NBTTagCompound tag = value.getRawValue();
-            jsonObject.add("nbt", new JsonParser().parse(tag.toString()));
+            jsonObject.add(
+                "nbt",
+                new JsonParser().parse(
+                    value.getRawValue()
+                        .orElse(new NBTTagCompound())
+                        .toString()));
             return jsonObject;
         });
         REGISTRY.registerReverseHandler(new CheckedValueTypeJsonHandlerBase<ValueTypeNbt.ValueNbt>() {

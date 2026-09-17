@@ -1,13 +1,25 @@
 package ruiseki.integrateddynamics.core.helper;
 
+import java.util.List;
 import java.util.Set;
 
 import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagByteArray;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagIntArray;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraftforge.common.util.Constants;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+
+import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
+import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
+import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeInteger;
+import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeList;
+import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeNbt;
+import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
+import ruiseki.okcore.helper.LangHelpers;
 
 /**
  * @author rubensworks
@@ -71,7 +83,7 @@ public class NbtHelpers {
      * Create a new NBT tag that contains all entries from the given tags.
      * If multiple tags contain the same entry, the entry from the latest tag will be given preference.
      * If nested tags are present, these will be combined recursively.
-     * 
+     *
      * @param tags NBT tags.
      * @return A new tag containing the combined entries from the given tags.
      */
@@ -85,7 +97,6 @@ public class NbtHelpers {
         return tag;
     }
 
-    @SuppressWarnings("unchecked")
     private static void mergeInto(NBTTagCompound target, NBTTagCompound source) {
         for (String key : source.func_150296_c()) {
             NBTBase sourceBase = source.getTag(key);
@@ -155,5 +166,96 @@ public class NbtHelpers {
             }
         }
         return tag;
+    }
+
+    /**
+     * Create an NBT List from the given NBT value list.
+     *
+     * @param value        An NBT value list.
+     * @param operatorName An operator name for error reporting.
+     * @return An NBT list.
+     */
+    public static NBTTagList getListNbtTag(ValueTypeList.ValueList<?, ?> value, String operatorName) {
+        NBTTagList list = new NBTTagList();
+        for (IValue valueNbt : value.getRawValue()) {
+            if (!(value.getRawValue()
+                .getValueType() == ValueTypes.NBT
+                || (value.getRawValue()
+                    .getValueType() == ValueTypes.CATEGORY_ANY && valueNbt.getType() == ValueTypes.NBT))) {
+                String error = LangHelpers.localize(
+                    L10NValues.OPERATOR_ERROR_WRONGTYPE,
+                    operatorName,
+                    LangHelpers.localize(
+                        value.getRawValue()
+                            .getValueType()
+                            .getUnlocalizedName()),
+                    1,
+                    LangHelpers.localize(ValueTypes.NBT.getUnlocalizedName()));
+                Helpers.sneakyThrow(new EvaluationException(error));
+            }
+            ((ValueTypeNbt.ValueNbt) valueNbt).getRawValue()
+                .ifPresent(list::appendTag);
+        }
+        return list;
+    }
+
+    /**
+     * Create an NBT byte array from the given integer value list.
+     *
+     * @param value        An integer value list.
+     * @param operatorName An operator name for error reporting.
+     * @return An NBT byte array.
+     */
+    public static NBTTagByteArray getListNbtByte(ValueTypeList.ValueList<?, ?> value, String operatorName) {
+        List<Byte> list = Lists.newArrayList();
+        for (IValue valueNbt : value.getRawValue()) {
+            if (valueNbt.getType() != ValueTypes.INTEGER) {
+                String error = LangHelpers.localize(
+                    L10NValues.OPERATOR_ERROR_WRONGTYPE,
+                    operatorName,
+                    LangHelpers.localize(
+                        valueNbt.getType()
+                            .getUnlocalizedName()),
+                    1,
+                    LangHelpers.localize(ValueTypes.INTEGER.getUnlocalizedName()));
+                Helpers.sneakyThrow(new EvaluationException(error));
+            }
+            list.add((byte) ((ValueTypeInteger.ValueInteger) valueNbt).getRawValue());
+        }
+        byte[] byteArray = new byte[list.size()];
+        for (int i = 0; i < list.size(); i++) {
+            byteArray[i] = list.get(i);
+        }
+        return new NBTTagByteArray(byteArray);
+    }
+
+    /**
+     * Create an NBT int array from the given integer value list.
+     *
+     * @param value        An integer value list.
+     * @param operatorName An operator name for error reporting.
+     * @return An NBT int array.
+     */
+    public static NBTTagIntArray getListNbtInt(ValueTypeList.ValueList<?, ?> value, String operatorName) {
+        List<Integer> list = Lists.newArrayList();
+        for (IValue valueNbt : value.getRawValue()) {
+            if (valueNbt.getType() != ValueTypes.INTEGER) {
+                String error = LangHelpers.localize(
+                    L10NValues.OPERATOR_ERROR_WRONGTYPE,
+                    operatorName,
+                    LangHelpers.localize(
+                        valueNbt.getType()
+                            .getUnlocalizedName()),
+                    1,
+                    LangHelpers.localize(ValueTypes.INTEGER.getUnlocalizedName()));
+                Helpers.sneakyThrow(new EvaluationException(error));
+            }
+            list.add(((ValueTypeInteger.ValueInteger) valueNbt).getRawValue());
+        }
+        int[] intArray = new int[list.size()];
+        for (int i = 0; i < list.size(); i++) {
+            intArray[i] = list.get(i);
+        }
+        return new NBTTagIntArray(intArray);
     }
 }

@@ -1,7 +1,5 @@
 package ruiseki.integrateddynamics.core.logicprogrammer;
 
-import java.io.IOException;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.texture.TextureManager;
@@ -47,17 +45,17 @@ public class ValueTypeRecipeLPElementRecipeSubGui
         super(element, baseX, baseY, maxWidth, maxHeight, gui, container);
     }
 
-    protected static GuiTextFieldExtended makeTextBox(int componentId, int x, int y, String text) {
+    protected static GuiTextFieldExtended makeTextBox(int x, int y, String text) {
         FontRenderer fontRenderer = Minecraft.getMinecraft().fontRenderer;
         int searchWidth = 35;
 
         GuiTextFieldExtended box = new GuiTextFieldExtended(
-            componentId,
             fontRenderer,
             x,
             y,
             searchWidth,
             fontRenderer.FONT_HEIGHT + 3,
+            LangHelpers.localize("gui.okcore.search"),
             true);
         box.setMaxStringLength(10);
         box.setEnableBackgroundDrawing(false);
@@ -74,17 +72,15 @@ public class ValueTypeRecipeLPElementRecipeSubGui
         super.initGui(guiLeft, guiTop);
 
         this.inputFluidAmountBox = makeTextBox(
-            0,
             guiLeft + getX() + 21,
             guiTop + getY() + 59,
             element.getInputFluidAmount());
-        this.inputEnergyBox = makeTextBox(1, guiLeft + getX() + 21, guiTop + getY() + 77, element.getInputEnergy());
+        this.inputEnergyBox = makeTextBox(guiLeft + getX() + 21, guiTop + getY() + 77, element.getInputEnergy());
         this.outputFluidAmountBox = makeTextBox(
-            2,
             guiLeft + getX() + 101,
             guiTop + getY() + 59,
             element.getOutputFluidAmount());
-        this.outputEnergyBox = makeTextBox(3, guiLeft + getX() + 101, guiTop + getY() + 77, element.getOutputEnergy());
+        this.outputEnergyBox = makeTextBox(guiLeft + getX() + 101, guiTop + getY() + 77, element.getOutputEnergy());
     }
 
     @Override
@@ -130,75 +126,118 @@ public class ValueTypeRecipeLPElementRecipeSubGui
         // Draw crafting arrow
         this.drawTexturedModalRect(guiLeft + getX() + 66, guiTop + getY() + 21, 0, 38, 22, 15);
 
-        inputFluidAmountBox.drawTextBox(Minecraft.getMinecraft(), mouseX, mouseY);
+        inputFluidAmountBox.drawScreen(mouseX, mouseY, partialTicks);
         fontRenderer.drawString(
             LangHelpers.localize(L10NValues.GENERAL_ENERGY_UNIT) + ":",
             guiLeft + getX() + 2,
             guiTop + getY() + 78,
             0);
-        inputEnergyBox.drawTextBox(Minecraft.getMinecraft(), mouseX, mouseY);
-        outputFluidAmountBox.drawTextBox(Minecraft.getMinecraft(), mouseX, mouseY);
+        inputEnergyBox.drawScreen(mouseX, mouseY, partialTicks);
+        outputFluidAmountBox.drawScreen(mouseX, mouseY, partialTicks);
         fontRenderer.drawString(
             LangHelpers.localize(L10NValues.GENERAL_ENERGY_UNIT) + ":",
             guiLeft + getX() + 84,
             guiTop + getY() + 78,
             0);
-        outputEnergyBox.drawTextBox(Minecraft.getMinecraft(), mouseX, mouseY);
+        outputEnergyBox.drawScreen(mouseX, mouseY, partialTicks);
     }
 
     @Override
-    public boolean keyTyped(boolean checkHotbarKeys, char typedChar, int keyCode) throws IOException {
-        if (!checkHotbarKeys) {
-            if (inputFluidAmountBox.textboxKeyTyped(typedChar, keyCode)) {
-                element.setInputFluidAmount(inputFluidAmountBox.getText());
-                container.onDirty();
-                IntegratedDynamics._instance.getPacketHandler()
-                    .sendToServer(
-                        new LogicProgrammerValueTypeRecipeValueChangedPacket(
-                            element.getInputFluidAmount(),
-                            LogicProgrammerValueTypeRecipeValueChangedPacket.Type.INPUT_FLUID));
-                return true;
-            }
-            if (inputEnergyBox.textboxKeyTyped(typedChar, keyCode)) {
-                element.setInputEnergy(inputEnergyBox.getText());
-                container.onDirty();
-                IntegratedDynamics._instance.getPacketHandler()
-                    .sendToServer(
-                        new LogicProgrammerValueTypeRecipeValueChangedPacket(
-                            element.getInputEnergy(),
-                            LogicProgrammerValueTypeRecipeValueChangedPacket.Type.INPUT_ENERGY));
-                return true;
-            }
-            if (outputFluidAmountBox.textboxKeyTyped(typedChar, keyCode)) {
-                element.setOutputFluidAmount(outputFluidAmountBox.getText());
-                container.onDirty();
-                IntegratedDynamics._instance.getPacketHandler()
-                    .sendToServer(
-                        new LogicProgrammerValueTypeRecipeValueChangedPacket(
-                            element.getOutputFluidAmount(),
-                            LogicProgrammerValueTypeRecipeValueChangedPacket.Type.OUTPUT_FLUID));
-                return true;
-            }
-            if (outputEnergyBox.textboxKeyTyped(typedChar, keyCode)) {
-                element.setOutputEnergy(outputEnergyBox.getText());
-                container.onDirty();
-                IntegratedDynamics._instance.getPacketHandler()
-                    .sendToServer(
-                        new LogicProgrammerValueTypeRecipeValueChangedPacket(
-                            element.getOutputEnergy(),
-                            LogicProgrammerValueTypeRecipeValueChangedPacket.Type.OUTPUT_ENERGY));
-                return true;
-            }
+    public boolean charTyped(char typedChar, int keyCode) {
+        if (inputFluidAmountBox.charTyped(typedChar, keyCode)) {
+            element.setInputFluidAmount(inputFluidAmountBox.getText());
+            container.onDirty();
+            IntegratedDynamics._instance.getPacketHandler()
+                .sendToServer(
+                    new LogicProgrammerValueTypeRecipeValueChangedPacket(
+                        element.getInputFluidAmount(),
+                        LogicProgrammerValueTypeRecipeValueChangedPacket.Type.INPUT_FLUID));
+            return true;
         }
-        return super.keyTyped(checkHotbarKeys, typedChar, keyCode);
+        if (inputEnergyBox.charTyped(typedChar, keyCode)) {
+            element.setInputEnergy(inputEnergyBox.getText());
+            container.onDirty();
+            IntegratedDynamics._instance.getPacketHandler()
+                .sendToServer(
+                    new LogicProgrammerValueTypeRecipeValueChangedPacket(
+                        element.getInputEnergy(),
+                        LogicProgrammerValueTypeRecipeValueChangedPacket.Type.INPUT_ENERGY));
+            return true;
+        }
+        if (outputFluidAmountBox.charTyped(typedChar, keyCode)) {
+            element.setOutputFluidAmount(outputFluidAmountBox.getText());
+            container.onDirty();
+            IntegratedDynamics._instance.getPacketHandler()
+                .sendToServer(
+                    new LogicProgrammerValueTypeRecipeValueChangedPacket(
+                        element.getOutputFluidAmount(),
+                        LogicProgrammerValueTypeRecipeValueChangedPacket.Type.OUTPUT_FLUID));
+            return true;
+        }
+        if (outputEnergyBox.charTyped(typedChar, keyCode)) {
+            element.setOutputEnergy(outputEnergyBox.getText());
+            container.onDirty();
+            IntegratedDynamics._instance.getPacketHandler()
+                .sendToServer(
+                    new LogicProgrammerValueTypeRecipeValueChangedPacket(
+                        element.getOutputEnergy(),
+                        LogicProgrammerValueTypeRecipeValueChangedPacket.Type.OUTPUT_ENERGY));
+            return true;
+        }
+        return super.charTyped(typedChar, keyCode);
     }
 
     @Override
-    public void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
-        inputFluidAmountBox.mouseClicked(mouseX, mouseY, mouseButton);
-        inputEnergyBox.mouseClicked(mouseX, mouseY, mouseButton);
-        outputFluidAmountBox.mouseClicked(mouseX, mouseY, mouseButton);
-        outputEnergyBox.mouseClicked(mouseX, mouseY, mouseButton);
-        super.mouseClicked(mouseX, mouseY, mouseButton);
+    public boolean keyPressed(int typedChar, int keyCode, int modifiers) {
+        if (inputFluidAmountBox.keyPressed(typedChar, keyCode, modifiers)) {
+            element.setInputFluidAmount(inputFluidAmountBox.getText());
+            container.onDirty();
+            IntegratedDynamics._instance.getPacketHandler()
+                .sendToServer(
+                    new LogicProgrammerValueTypeRecipeValueChangedPacket(
+                        element.getInputFluidAmount(),
+                        LogicProgrammerValueTypeRecipeValueChangedPacket.Type.INPUT_FLUID));
+            return true;
+        }
+        if (inputEnergyBox.keyPressed(typedChar, keyCode, modifiers)) {
+            element.setInputEnergy(inputEnergyBox.getText());
+            container.onDirty();
+            IntegratedDynamics._instance.getPacketHandler()
+                .sendToServer(
+                    new LogicProgrammerValueTypeRecipeValueChangedPacket(
+                        element.getInputEnergy(),
+                        LogicProgrammerValueTypeRecipeValueChangedPacket.Type.INPUT_ENERGY));
+            return true;
+        }
+        if (outputFluidAmountBox.keyPressed(typedChar, keyCode, modifiers)) {
+            element.setOutputFluidAmount(outputFluidAmountBox.getText());
+            container.onDirty();
+            IntegratedDynamics._instance.getPacketHandler()
+                .sendToServer(
+                    new LogicProgrammerValueTypeRecipeValueChangedPacket(
+                        element.getOutputFluidAmount(),
+                        LogicProgrammerValueTypeRecipeValueChangedPacket.Type.OUTPUT_FLUID));
+            return true;
+        }
+        if (outputEnergyBox.keyPressed(typedChar, keyCode, modifiers)) {
+            element.setOutputEnergy(outputEnergyBox.getText());
+            container.onDirty();
+            IntegratedDynamics._instance.getPacketHandler()
+                .sendToServer(
+                    new LogicProgrammerValueTypeRecipeValueChangedPacket(
+                        element.getOutputEnergy(),
+                        LogicProgrammerValueTypeRecipeValueChangedPacket.Type.OUTPUT_ENERGY));
+            return true;
+        }
+        return super.keyPressed(typedChar, keyCode, modifiers);
+    }
+
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
+        return inputFluidAmountBox.mouseClicked(mouseX, mouseY, mouseButton)
+            || inputEnergyBox.mouseClicked(mouseX, mouseY, mouseButton)
+            || outputFluidAmountBox.mouseClicked(mouseX, mouseY, mouseButton)
+            || outputEnergyBox.mouseClicked(mouseX, mouseY, mouseButton)
+            || super.mouseClicked(mouseX, mouseY, mouseButton);
     }
 }

@@ -2,7 +2,6 @@ package ruiseki.integrateddynamics.client.gui;
 
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.io.IOException;
 import java.util.List;
 
 import net.minecraft.client.Minecraft;
@@ -20,10 +19,10 @@ import org.lwjgl.input.Keyboard;
 import com.google.common.collect.Lists;
 
 import ruiseki.integrateddynamics.IntegratedDynamics;
+import ruiseki.integrateddynamics.Reference;
 import ruiseki.integrateddynamics.api.client.gui.subgui.IGuiInputElement;
 import ruiseki.integrateddynamics.api.logicprogrammer.ILogicProgrammerElement;
 import ruiseki.integrateddynamics.api.logicprogrammer.ILogicProgrammerElementType;
-import ruiseki.integrateddynamics.block.BlockLogicProgrammerConfig;
 import ruiseki.integrateddynamics.core.client.gui.subgui.SubGuiHolder;
 import ruiseki.integrateddynamics.core.evaluate.variable.gui.GuiElementValueTypeString;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
@@ -36,21 +35,21 @@ import ruiseki.integrateddynamics.network.packet.LogicProgrammerLabelPacket;
 import ruiseki.integrateddynamics.proxy.ClientProxy;
 import ruiseki.okcore.client.gui.component.button.GuiButtonText;
 import ruiseki.okcore.client.gui.component.input.GuiTextFieldExtended;
-import ruiseki.okcore.client.gui.container.ScrollingGuiContainer;
+import ruiseki.okcore.client.gui.container.GuiContainerScrolling;
 import ruiseki.okcore.client.gui.image.Images;
 import ruiseki.okcore.client.renderer.GlStateManager;
 import ruiseki.okcore.helper.Helpers;
 import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.helper.LangHelpers;
+import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.helper.RenderHelpers;
-import ruiseki.okcore.init.ModBase;
 
 /**
  * Base gui for the logic programmer.
  *
  * @author rubensworks
  */
-public class GuiLogicProgrammerBase extends ScrollingGuiContainer {
+public class GuiLogicProgrammerBase<T extends ContainerLogicProgrammerBase> extends GuiContainerScrolling<T> {
 
     public static final int BOX_HEIGHT = 18;
     private static final Rectangle ITEM_POSITION = new Rectangle(19, 18, 56, BOX_HEIGHT - 1);
@@ -63,7 +62,7 @@ public class GuiLogicProgrammerBase extends ScrollingGuiContainer {
     protected int relativeStep = -1;
     protected boolean swallowNextCharacter = false;
 
-    public GuiLogicProgrammerBase(InventoryPlayer inventoryPlayer, ContainerLogicProgrammerBase container) {
+    public GuiLogicProgrammerBase(InventoryPlayer inventoryPlayer, T container) {
         super(container);
         container.setGui(this);
 
@@ -71,8 +70,8 @@ public class GuiLogicProgrammerBase extends ScrollingGuiContainer {
     }
 
     @Override
-    public ContainerLogicProgrammerBase getContainer() {
-        return (ContainerLogicProgrammerBase) super.getContainer();
+    public T getContainer() {
+        return super.getContainer();
     }
 
     @Override
@@ -117,11 +116,8 @@ public class GuiLogicProgrammerBase extends ScrollingGuiContainer {
     }
 
     @Override
-    public String getGuiTexture() {
-        return getContainer().getGuiProvider()
-            .getModGui()
-            .getReferenceValue(ModBase.REFKEY_TEXTURE_PATH_GUI) + BlockLogicProgrammerConfig._instance.getNamedId()
-            + ".png";
+    protected ResourceLocation constructGuiTexture() {
+        return new ResourceLocation(Reference.MOD_ID, "textures/gui/logic_programmer.png");
     }
 
     protected float colorSmoothener(float color, boolean hover) {
@@ -149,7 +145,7 @@ public class GuiLogicProgrammerBase extends ScrollingGuiContainer {
             Helpers.RGBToInt(80, 80, 80));
 
         // Draw operators
-        ContainerLogicProgrammerBase container = (ContainerLogicProgrammerBase) getScrollingInventoryContainer();
+        ContainerLogicProgrammerBase container = getContainer();
         int boxHeight = BOX_HEIGHT;
         for (int i = 0; i < container.getPageSize(); i++) {
             if (container.isElementVisible(i)) {
@@ -223,7 +219,7 @@ public class GuiLogicProgrammerBase extends ScrollingGuiContainer {
     @SuppressWarnings("unchecked")
     @Override
     protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
-        super.drawGuiContainerForegroundLayer(mouseX, mouseY);
+        // super.drawGuiContainerForegroundLayer(mouseX, mouseY);
 
         subGuiHolder.drawGuiContainerForegroundLayer(
             this.guiLeft,
@@ -269,7 +265,7 @@ public class GuiLogicProgrammerBase extends ScrollingGuiContainer {
         }
 
         // Draw operator tooltips
-        ContainerLogicProgrammerBase container = (ContainerLogicProgrammerBase) getScrollingInventoryContainer();
+        ContainerLogicProgrammerBase container = getContainer();
         for (int i = 0; i < container.getPageSize(); i++) {
             if (container.isElementVisible(i)) {
                 ILogicProgrammerElement element = container.getVisibleElement(i);
@@ -356,7 +352,7 @@ public class GuiLogicProgrammerBase extends ScrollingGuiContainer {
     }
 
     protected boolean selectPageElement(int elementId) {
-        ContainerLogicProgrammerBase container = (ContainerLogicProgrammerBase) getScrollingInventoryContainer();
+        ContainerLogicProgrammerBase container = getContainer();
 
         // Deactivate current element
         if (elementId < 0) {
@@ -379,91 +375,117 @@ public class GuiLogicProgrammerBase extends ScrollingGuiContainer {
         return false;
     }
 
-    @Override
-    protected void keyTyped(char typedChar, int keyCode) {
-        try {
-            if (keyCode != Keyboard.KEY_LSHIFT && keyCode != Keyboard.KEY_RSHIFT) {
-                ContainerLogicProgrammerBase container = (ContainerLogicProgrammerBase) getScrollingInventoryContainer();
-                int pageSize = container.getPageSize();
-                int stepModifier = isShiftKeyDown() ? pageSize - 1 : 1;
-                boolean isElementFocused = container.getActiveElement() != null && container.getActiveElement()
-                    .isFocused(operatorConfigPattern);
+    protected boolean handleKeyCode(int keyCode, int scanCode) {
+        if (keyCode != Keyboard.KEY_LSHIFT && keyCode != Keyboard.KEY_RSHIFT) {
+            ContainerLogicProgrammerBase container = getContainer();
+            int pageSize = container.getPageSize();
+            int stepModifier = MinecraftHelpers.isShifted() ? pageSize - 1 : 1;
+            boolean isElementFocused = container.getActiveElement() != null && container.getActiveElement()
+                .isFocused(operatorConfigPattern);
 
-                if (ClientProxy.FOCUS_LP_SEARCH.isActiveAndMatches(keyCode)) {
-                    // Focus search field
-                    setSearchFieldFocussed(true);
-                    swallowNextCharacter = true;
-                } else
-                    if (isElementFocused && ClientProxy.FOCUS_LP_RENAME.isActiveAndMatches(keyCode) && hasLabeller()) {
-                        // Open labeller gui
-                        operatorInfoPattern.onButtonEditClick();
-                        swallowNextCharacter = true;
-                    } else if (Keyboard.KEY_LEFT == keyCode && (!isElementFocused && isSearchFieldFocussed())) {
-                        // Unfocus search field
-                        setSearchFieldFocussed(isSearchFieldFocussed());
-                    } else if (!isElementFocused && Keyboard.KEY_DOWN == keyCode) {
-                        // Scroll down
-                        if (!selectPageElement(relativeStep += stepModifier)) {
-                            relativeStep -= stepModifier;
-                            if (relativeStep > 0) {
-                                scrollRelative(-stepModifier);
-                                selectPageElement(relativeStep);
-                            }
-                        }
-                    } else if (!isElementFocused && Keyboard.KEY_UP == keyCode) {
-                        // Scroll up
-                        if (!(relativeStep >= 0 && selectPageElement(relativeStep -= stepModifier))) {
-                            scrollRelative(stepModifier);
-                            selectPageElement(relativeStep = 0);
-                        }
-                    } else if (!isElementFocused && (Keyboard.KEY_RIGHT == keyCode || Keyboard.KEY_TAB == keyCode
-                        || Keyboard.KEY_RETURN == keyCode
-                        || Keyboard.KEY_NUMPADENTER == keyCode)) {
-                            if (container.getActiveElement() != null) {
-                                container.getActiveElement()
-                                    .setFocused(operatorConfigPattern, true);
-                            }
-                        } else if (!subGuiHolder.keyTyped(this.checkHotbarKeys(keyCode), typedChar, keyCode)
-                            && (keyCode == Keyboard.KEY_ESCAPE || !isElementFocused)) {
-                                // All others
-                                super.keyTyped(typedChar, keyCode);
-                            }
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+            if (ClientProxy.FOCUS_LP_SEARCH.isActiveAndMatches(keyCode)) {
+                // Focus search field
+                setSearchFieldFocussed(true);
+                swallowNextCharacter = true;
+                return true;
+            } else if (isElementFocused && ClientProxy.FOCUS_LP_RENAME.isActiveAndMatches(keyCode) && hasLabeller()) {
+                // Open labeller gui
+                operatorInfoPattern.onButtonEditClick();
+                swallowNextCharacter = true;
+                return true;
+            } else if (Keyboard.KEY_LEFT == keyCode && (!isElementFocused && isSearchFieldFocussed())) {
+                // Unfocus search field
+                setSearchFieldFocussed(isSearchFieldFocussed());
+                return true;
+            } else if (!isElementFocused && Keyboard.KEY_DOWN == keyCode) {
+                // Scroll down
+                if (!selectPageElement(relativeStep += stepModifier)) {
+                    relativeStep -= stepModifier;
+                    if (relativeStep > 0) {
+                        getScrollbar().scrollRelative(-stepModifier);
+                        selectPageElement(relativeStep);
+                    }
+                }
+                return true;
+            } else if (!isElementFocused && Keyboard.KEY_UP == keyCode) {
+                // Scroll up
+                if (!(relativeStep >= 0 && selectPageElement(relativeStep -= stepModifier))) {
+                    getScrollbar().scrollRelative(stepModifier);
+                    selectPageElement(relativeStep = 0);
+                }
+                return true;
+            } else if (!isElementFocused && (Keyboard.KEY_RIGHT == keyCode || Keyboard.KEY_TAB == keyCode
+                || Keyboard.KEY_RETURN == keyCode
+                || Keyboard.KEY_NUMPADENTER == keyCode)) {
+                    if (container.getActiveElement() != null) {
+                        container.getActiveElement()
+                            .setFocused(operatorConfigPattern, true);
+                        setSearchFieldFocussed(false);
+                    }
+                    return true;
+                }
         }
+        return false;
     }
 
     @Override
-    protected void mouseClicked(int mouseX, int mouseY, int mouseButton) {
-        try {
-            subGuiHolder.mouseClicked(mouseX, mouseY, mouseButton);
-            ContainerLogicProgrammerBase container = (ContainerLogicProgrammerBase) getScrollingInventoryContainer();
-            for (int i = 0; i < container.getPageSize(); i++) {
-                if (container.isElementVisible(i)) {
-                    ILogicProgrammerElement element = container.getVisibleElement(i);
-                    if (isPointInRegion(getElementPosition(container, i, false), new Point(mouseX, mouseY))) {
-                        boolean activated = handleElementActivation(element, true);
-                        relativeStep = activated ? i : -1;
-                        if (activated) {
-                            container.getActiveElement()
-                                .setFocused(operatorConfigPattern, true);
-                        }
+    public boolean charTyped(char keyCode, int scanCode) {
+        if (swallowNextCharacter) {
+            swallowNextCharacter = false;
+            return true;
+        }
+
+        return subGuiHolder.charTyped(keyCode, scanCode) || handleKeyCode(keyCode, scanCode)
+            || super.charTyped(keyCode, scanCode);
+    }
+
+    @Override
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if (keyCode != Keyboard.KEY_ESCAPE) {
+            if (this.subGuiHolder.keyPressed(keyCode, scanCode, modifiers) || handleKeyCode(keyCode, scanCode)) {
+                return true;
+            }
+        }
+        return super.keyPressed(keyCode, scanCode, modifiers);
+    }
+
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
+        if (subGuiHolder.mouseClicked(mouseX, mouseY, mouseButton)) {
+            if (isSearchFieldFocussed()) {
+                setSearchFieldFocussed(false);
+            }
+            return true;
+        }
+
+        ContainerLogicProgrammerBase container = getContainer();
+        for (int i = 0; i < container.getPageSize(); i++) {
+            if (container.isElementVisible(i)) {
+                ILogicProgrammerElement element = container.getVisibleElement(i);
+                if (isPointInRegion(getElementPosition(container, i, false), new Point((int) mouseX, (int) mouseY))) {
+                    boolean activated = handleElementActivation(element, true);
+                    relativeStep = activated ? i : -1;
+                    if (activated) {
+                        container.getActiveElement()
+                            .setFocused(operatorConfigPattern, true);
+                        setSearchFieldFocussed(false);
+                        return true;
                     }
                 }
             }
-            super.mouseClicked(mouseX, mouseY, mouseButton);
-
-            // If the search box has been selected, de-active the current element.
-            if (isSearchFieldFocussed() && container.getActiveElement() != null
-                && container.getActiveElement()
-                    .isFocused(operatorConfigPattern)) {
-                container.getActiveElement()
-                    .setFocused(operatorConfigPattern, false);
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         }
+        boolean superRet = super.mouseClicked(mouseX, mouseY, mouseButton);
+
+        // If the search box has been selected, de-active the current element.
+        if (isSearchFieldFocussed() && container.getActiveElement() != null
+            && container.getActiveElement()
+                .isFocused(operatorConfigPattern)) {
+            container.getActiveElement()
+                .setFocused(operatorConfigPattern, false);
+            return true;
+        }
+
+        return superRet;
     }
 
     protected void label(String label) {
@@ -495,17 +517,18 @@ public class GuiLogicProgrammerBase extends ScrollingGuiContainer {
                 20);
 
             if (hasLabeller()) {
-                buttonList.add(button = new GuiButtonText(BUTTON_EDIT, 0, 0, 6, 10, "E", true));
+                addRenderableWidget(
+                    button = new GuiButtonText(0, 0, 6, 10, "E", (button) -> onButtonEditClick(), true));
             }
 
             int searchWidth = 113;
             this.searchField = new GuiTextFieldExtended(
-                0,
                 GuiLogicProgrammerBase.this.fontRendererObj,
                 0,
                 0,
                 searchWidth,
                 11,
+                LangHelpers.localize("gui.cyclopscore.search"),
                 true);
             this.searchField.setMaxStringLength(64);
             this.searchField.setEnableBackgroundDrawing(true);
@@ -546,24 +569,31 @@ public class GuiLogicProgrammerBase extends ScrollingGuiContainer {
         }
 
         @Override
-        public boolean keyTyped(boolean checkHotbarKeys, char typedChar, int keyCode) throws IOException {
-            if (!checkHotbarKeys) {
-                if (!this.searchField.getVisible() || !this.searchField.textboxKeyTyped(typedChar, keyCode)) {
-                    return super.keyTyped(checkHotbarKeys, typedChar, keyCode);
-                } else {
-                    label(this.searchField.getText());
-                    return true;
-                }
+        public boolean charTyped(char typedChar, int keyCode) {
+            if (!this.searchField.isFocused() || !this.searchField.charTyped(typedChar, keyCode)) {
+                return super.charTyped(typedChar, keyCode);
+            } else {
+                label(this.searchField.getText());
+                return true;
             }
-            return super.keyTyped(checkHotbarKeys, typedChar, keyCode);
         }
 
         @Override
-        public void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
-            if (this.searchField.getVisible()) {
-                this.searchField.mouseClicked(mouseX, mouseY, mouseButton);
+        public boolean keyPressed(int typedChar, int keyCode, int modifiers) {
+            if (this.searchField.isFocused() && typedChar != Keyboard.KEY_ESCAPE) {
+                this.searchField.keyPressed(typedChar, keyCode, modifiers);
+                label(this.searchField.getText());
+                return true;
             }
-            super.mouseClicked(mouseX, mouseY, mouseButton);
+            return super.keyPressed(typedChar, keyCode, modifiers);
+        }
+
+        @Override
+        public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
+            if (this.searchField.isEnable() && this.searchField.mouseClicked(mouseX, mouseY, mouseButton)) {
+                return true;
+            }
+            return super.mouseClicked(mouseX, mouseY, mouseButton);
         }
 
         @Override
@@ -590,8 +620,8 @@ public class GuiLogicProgrammerBase extends ScrollingGuiContainer {
         }
 
         public void onButtonEditClick() {
-            this.searchField.setVisible(!this.searchField.getVisible());
-            if (this.searchField.getVisible()) {
+            this.searchField.setVisible(!this.searchField.isEnable());
+            if (this.searchField.isEnable()) {
                 this.searchField.setFocused(true);
                 label(this.searchField.getText());
             } else {

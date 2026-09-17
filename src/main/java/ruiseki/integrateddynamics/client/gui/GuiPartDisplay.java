@@ -27,8 +27,8 @@ import ruiseki.okcore.helper.RenderHelpers;
  *
  * @author rubensworks
  */
-public class GuiPartDisplay<P extends PartTypePanelVariableDriven<P, S>, S extends PartTypePanelVariableDriven.State<P, S>>
-    extends GuiMultipart<P, S> {
+public class GuiPartDisplay<P extends PartTypePanelVariableDriven<P, S>, S extends PartTypePanelVariableDriven.State<P, S>, C extends ContainerPartPanelVariableDriven<P, S>>
+    extends GuiMultipart<P, S, C> {
 
     private static final int ERROR_X = 104;
     private static final int ERROR_Y = 16;
@@ -47,21 +47,21 @@ public class GuiPartDisplay<P extends PartTypePanelVariableDriven<P, S>, S exten
      */
     public GuiPartDisplay(EntityPlayer player, PartTarget partTarget, IPartContainer partContainer,
         IPartType partType) {
-        super(new ContainerPartPanelVariableDriven<>(player, partTarget, partContainer, partType));
+        super((C) new ContainerPartPanelVariableDriven<>(player, partTarget, partContainer, partType));
     }
 
     @Override
     public void initGui() {
         super.initGui();
 
-        this.buttonList.add(
+        addRenderableWidget(
             new GuiButtonText(
-                BUTTON_COPY,
                 getGuiLeftTotal() + 128,
                 getGuiTopTotal() + 32,
                 30,
                 12,
                 LangHelpers.localize("gui.integrateddynamics.button.copy"),
+                (button) -> valueToClipboard(),
                 true));
     }
 
@@ -128,11 +128,12 @@ public class GuiPartDisplay<P extends PartTypePanelVariableDriven<P, S>, S exten
     }
 
     @Override
-    protected void keyTyped(char typedChar, int keyCode) {
-        super.keyTyped(typedChar, keyCode);
+    public boolean charTyped(char typedChar, int keyCode) {
         if (Keyboard.KEY_C == keyCode && KeyModifier.CONTROL.isActive(KeyConflictContext.GUI)) {
             valueToClipboard();
+            return true;
         }
+        return super.charTyped(typedChar, keyCode);
     }
 
     @Override

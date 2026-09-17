@@ -25,6 +25,7 @@ import ruiseki.integratedcrafting.part.aspect.CraftingAspects;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.network.INetworkCraftingHandlerRegistry;
 import ruiseki.okcore.config.ConfigHandler;
+import ruiseki.okcore.init.ItemCreativeTab;
 import ruiseki.okcore.init.ModBaseVersionable;
 import ruiseki.okcore.persist.world.GlobalCounters;
 import ruiseki.okcore.proxy.ICommonProxy;
@@ -148,7 +149,12 @@ public class IntegratedCrafting extends ModBaseVersionable {
 
     @Override
     public CreativeTabs constructDefaultCreativeTab() {
-        return null;
+        return new ItemCreativeTab(this, () -> {
+            if (CraftingPartTypes.INTERFACE_CRAFTING != null) {
+                return CraftingPartTypes.INTERFACE_CRAFTING.getItem();
+            }
+            return null;
+        });
     }
 
     @Override

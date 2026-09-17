@@ -89,7 +89,10 @@ public final class AspectRegistry implements IAspectRegistry {
             partAspects.put(partType, aspects);
         }
         aspects.add(aspect);
-        unlocalizedAspects.put(aspect.getUnlocalizedName(), aspect);
+        unlocalizedAspects.put(
+            aspect.getUniqueName()
+                .toString(),
+            aspect);
     }
 
     @Override
@@ -171,8 +174,7 @@ public final class AspectRegistry implements IAspectRegistry {
 
     @Override
     public IAspectVariableFacade getVariableFacade(int id, NBTTagCompound tag) {
-        if (!tag.hasKey("partId", MinecraftHelpers.NBTTag_Types.NBTTagInt.ordinal())
-            || !tag.hasKey("aspectName", MinecraftHelpers.NBTTag_Types.NBTTagString.ordinal())) {
+        if (!tag.hasKey("partId") || !tag.hasKey("aspectName")) {
             return INVALID_FACADE;
         }
         int partId = tag.getInteger("partId");

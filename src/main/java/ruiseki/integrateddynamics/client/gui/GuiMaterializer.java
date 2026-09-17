@@ -1,14 +1,16 @@
 package ruiseki.integrateddynamics.client.gui;
 
 import net.minecraft.entity.player.InventoryPlayer;
+import net.minecraft.util.ResourceLocation;
 
+import ruiseki.integrateddynamics.Reference;
 import ruiseki.integrateddynamics.core.client.gui.GuiActiveVariableBase;
 import ruiseki.integrateddynamics.inventory.container.ContainerMaterializer;
 import ruiseki.integrateddynamics.tileentity.TileMaterializer;
 
 /**
  * Gui for the proxy.
- * 
+ *
  * @author rubensworks
  */
 public class GuiMaterializer extends GuiActiveVariableBase<ContainerMaterializer, TileMaterializer> {
@@ -18,12 +20,17 @@ public class GuiMaterializer extends GuiActiveVariableBase<ContainerMaterializer
 
     /**
      * Make a new instance.
-     * 
+     *
      * @param inventory The player inventory.
      * @param tile      The part.
      */
     public GuiMaterializer(InventoryPlayer inventory, TileMaterializer tile) {
         super(new ContainerMaterializer(inventory, tile));
+    }
+
+    @Override
+    protected ResourceLocation constructGuiTexture() {
+        return new ResourceLocation(Reference.MOD_ID, "textures/gui/materializer.png");
     }
 
     @Override

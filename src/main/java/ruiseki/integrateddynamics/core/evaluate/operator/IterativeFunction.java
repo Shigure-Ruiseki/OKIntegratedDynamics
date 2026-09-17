@@ -12,7 +12,7 @@ import ruiseki.integrateddynamics.core.helper.Helpers;
 
 /**
  * A smart function that is made up of a list of value propagators.
- * 
+ *
  * @author rubensworks
  */
 public class IterativeFunction implements OperatorBase.IFunction {
@@ -38,7 +38,7 @@ public class IterativeFunction implements OperatorBase.IFunction {
      * the core propagator, and one for the value propagators after the core propagators.
      * This is so that the pre- and post- list can be shared and only the core propagators
      * is variable.
-     * 
+     *
      * @param <O> The current output of the pre-propagator list.
      * @param <P> The current output of the post-propagator list.
      */
@@ -64,7 +64,7 @@ public class IterativeFunction implements OperatorBase.IFunction {
 
         /**
          * Add a new pre-propagator
-         * 
+         *
          * @param valuePropagator The pre-propagator
          * @param <O2>            The new output of the pre-propagator list.
          * @return The builder instance.
@@ -77,7 +77,7 @@ public class IterativeFunction implements OperatorBase.IFunction {
 
         /**
          * Add a new post-propagator
-         * 
+         *
          * @param valuePropagator The post-propagator
          * @param <P2>            The new output of the post-propagator list.
          * @return The builder instance.
@@ -90,7 +90,7 @@ public class IterativeFunction implements OperatorBase.IFunction {
 
         /**
          * Finalize the function with the given core propagator.
-         * 
+         *
          * @param valuePropagator The core propagator that will be connected to the pre- and post-list.
          * @return The built function.
          */
@@ -102,7 +102,6 @@ public class IterativeFunction implements OperatorBase.IFunction {
             valuePropagators.addAll(postValuePropagators);
             return new IterativeFunction(valuePropagators);
         }
-
     }
 
 }

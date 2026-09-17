@@ -5,11 +5,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
-
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
+import net.minecraftforge.common.util.Constants;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
@@ -26,7 +25,9 @@ import ruiseki.integrateddynamics.api.evaluate.operator.IOperatorSerializer;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 import ruiseki.integrateddynamics.api.item.IOperatorVariableFacade;
 import ruiseki.integrateddynamics.api.item.IVariableFacadeHandlerRegistry;
+import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.integrateddynamics.core.item.OperatorVariableFacade;
+import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
 
 /**
@@ -111,29 +112,31 @@ public class OperatorRegistry implements IOperatorRegistry {
     }
 
     @Override
-    public String serialize(IOperator value) {
+    public NBTBase serialize(IOperator value) {
+        NBTTagCompound tag = new NBTTagCompound();
         for (IOperatorSerializer serializer : serializers) {
             if (serializer.canHandle(value)) {
-                return serializer.getUniqueName()
-                    .toString() + ":"
-                    + serializer.serialize(value);
+                tag.setString(
+                    "serializer",
+                    serializer.getUniqueName()
+                        .toString());
+                tag.setTag("value", serializer.serialize(value));
+                return tag;
             }
         }
         return DEFAULT_SERIALIZER.serialize(value);
     }
 
     @Override
-    public IOperator deserialize(String value) throws EvaluationException {
-        String[] split = value.split(":");
-        if (split.length > 1) {
-            String serializerName = split[0];
-            String subValue = StringUtils.join(ArrayUtils.subarray(split, 1, split.length), ":");
+    public IOperator deserialize(NBTBase value) throws EvaluationException {
+        if (value.getId() == Constants.NBT.TAG_COMPOUND) {
+            NBTTagCompound tag = (NBTTagCompound) value;
+            String serializerName = tag.getString("serializer");
             IOperatorSerializer serializer = namedSerializers.get(serializerName);
             if (serializer == null) {
-                throw new EvaluationException(
-                    String.format("No serializer was found to deserialize the operator value '%s'", value));
+                throw new EvaluationException(LangHelpers.localize(L10NValues.OPERATOR_ERROR_NO_DESERIALIZER, value));
             }
-            return serializer.deserialize(subValue);
+            return serializer.deserialize(tag.getTag("value"));
         }
         return DEFAULT_SERIALIZER.deserialize(value);
     }
@@ -145,13 +148,12 @@ public class OperatorRegistry implements IOperatorRegistry {
 
     @Override
     public IOperatorVariableFacade getVariableFacade(int id, NBTTagCompound tag) {
-        if (!tag.hasKey("operatorName", MinecraftHelpers.NBTTag_Types.NBTTagString.ordinal())
-            || !tag.hasKey("variableIds", MinecraftHelpers.NBTTag_Types.NBTTagIntArray.ordinal())) {
+        if (!tag.hasKey("operatorName") || !tag.hasKey("variableIds")) {
             return INVALID_FACADE;
         }
         IOperator operator;
         try {
-            operator = deserialize(tag.getString("operatorName"));
+            operator = deserialize(tag.getCompoundTag("operatorName"));
         } catch (EvaluationException e) {
             return INVALID_FACADE;
         }
@@ -164,7 +166,7 @@ public class OperatorRegistry implements IOperatorRegistry {
 
     @Override
     public void setVariableFacade(NBTTagCompound tag, IOperatorVariableFacade variableFacade) {
-        tag.setString("operatorName", serialize(variableFacade.getOperator()));
+        tag.setTag("operatorName", serialize(variableFacade.getOperator()));
         tag.setIntArray("variableIds", variableFacade.getVariableIds());
     }
 }

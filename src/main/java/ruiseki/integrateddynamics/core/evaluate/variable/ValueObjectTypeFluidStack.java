@@ -2,8 +2,7 @@ package ruiseki.integrateddynamics.core.evaluate.variable;
 
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.JsonToNBT;
-import net.minecraft.nbt.NBTException;
+import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.IFluidBlock;
@@ -48,22 +47,21 @@ public class ValueObjectTypeFluidStack extends ValueObjectTypeBase<ValueObjectTy
     }
 
     @Override
-    public String serialize(ValueFluidStack value) {
+    public NBTBase serialize(ValueFluidStack value) {
         NBTTagCompound tag = new NBTTagCompound();
         FluidStack fluidStack = value.getRawValue();
         if (!FluidHelpers.isEmpty(fluidStack)) {
             fluidStack.writeToNBT(tag);
         }
-        return tag.toString();
+        return tag;
     }
 
     @Override
-    public ValueFluidStack deserialize(String value) {
-        try {
-            NBTTagCompound tag = (NBTTagCompound) JsonToNBT.func_150315_a(value);
-            FluidStack fluidStack = FluidStack.loadFluidStackFromNBT(tag);
+    public ValueFluidStack deserialize(NBTBase value) {
+        if (value instanceof NBTTagCompound) {
+            FluidStack fluidStack = FluidStack.loadFluidStackFromNBT((NBTTagCompound) value);
             return ValueFluidStack.of(fluidStack);
-        } catch (NBTException e) {
+        } else {
             return null;
         }
     }

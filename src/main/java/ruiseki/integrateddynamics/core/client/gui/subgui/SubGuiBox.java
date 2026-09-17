@@ -1,6 +1,5 @@
 package ruiseki.integrateddynamics.core.client.gui.subgui;
 
-import java.io.IOException;
 import java.util.List;
 
 import net.minecraft.client.Minecraft;
@@ -19,6 +18,7 @@ import lombok.EqualsAndHashCode;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.Reference;
 import ruiseki.integrateddynamics.api.client.gui.subgui.ISubGuiBox;
+import ruiseki.okcore.client.gui.component.button.GuiButtonExtended;
 import ruiseki.okcore.client.renderer.GlStateManager;
 import ruiseki.okcore.init.ModBase;
 
@@ -36,7 +36,7 @@ public abstract class SubGuiBox extends Gui implements ISubGuiBox {
 
     private final Box type;
 
-    protected List<GuiButton> buttonList = Lists.newArrayList();
+    protected List<GuiButtonExtended> buttonList = Lists.newArrayList();
     protected final SubGuiHolder subGuiHolder = new SubGuiHolder();
 
     public SubGuiBox(Box type) {
@@ -52,7 +52,7 @@ public abstract class SubGuiBox extends Gui implements ISubGuiBox {
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
         for (int i = 0; i < this.buttonList.size(); ++i) {
             this.buttonList.get(i)
-                .drawButton(Minecraft.getMinecraft(), mouseX, mouseY);
+                .drawScreen(mouseX, mouseY, partialTicks);
         }
     }
 
@@ -143,22 +143,29 @@ public abstract class SubGuiBox extends Gui implements ISubGuiBox {
     }
 
     @Override
-    public boolean keyTyped(boolean checkHotbarKeys, char typedChar, int keyCode) throws IOException {
-        return subGuiHolder.keyTyped(checkHotbarKeys, typedChar, keyCode);
+    public boolean charTyped(char typedChar, int keyCode) {
+        return subGuiHolder.charTyped(typedChar, keyCode);
     }
 
     @Override
-    public void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
+    public boolean keyPressed(int typedChar, int keyCode, int modifiers) {
+        return subGuiHolder.keyPressed(typedChar, keyCode, modifiers);
+    }
+
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
         subGuiHolder.mouseClicked(mouseX, mouseY, mouseButton);
         for (int i = 0; i < this.buttonList.size(); ++i) {
-            GuiButton guibutton = this.buttonList.get(i);
-            if (guibutton.mousePressed(Minecraft.getMinecraft(), mouseX, mouseY)) {
+            GuiButtonExtended guibutton = this.buttonList.get(i);
+            if (guibutton.mouseClicked(mouseX, mouseY, mouseButton)) {
                 guibutton.func_146113_a(
                     Minecraft.getMinecraft()
                         .getSoundHandler());
                 this.actionPerformed(guibutton);
+                return true;
             }
         }
+        return false;
     }
 
     protected void actionPerformed(GuiButton guibutton) {
@@ -191,7 +198,7 @@ public abstract class SubGuiBox extends Gui implements ISubGuiBox {
     @Data
     public static class Base extends SubGuiBox {
 
-        private final int x, y, width, height;
+        private int x, y, width, height;
 
         public Base(Box type, int x, int y, int width, int height) {
             super(type);
@@ -207,15 +214,24 @@ public abstract class SubGuiBox extends Gui implements ISubGuiBox {
         }
 
         @Override
-        public boolean keyTyped(boolean checkHotbarKeys, char typedChar, int keyCode) throws IOException {
+        public void tick() {
+
+        }
+
+        @Override
+        public boolean charTyped(char typedChar, int keyCode) {
             return false;
         }
 
         @Override
-        public void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
-            super.mouseClicked(mouseX, mouseY, mouseButton);
+        public boolean keyPressed(int typedChar, int keyCode, int modifiers) {
+            return false;
         }
 
+        @Override
+        public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
+            return super.mouseClicked(mouseX, mouseY, mouseButton);
+        }
     }
 
 }

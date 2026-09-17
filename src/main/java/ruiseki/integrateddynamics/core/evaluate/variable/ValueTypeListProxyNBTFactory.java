@@ -3,8 +3,7 @@ package ruiseki.integrateddynamics.core.evaluate.variable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
-import net.minecraft.nbt.JsonToNBT;
-import net.minecraft.nbt.NBTException;
+import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 
@@ -51,21 +50,19 @@ public class ValueTypeListProxyNBTFactory<T extends IValueType<V>, V extends IVa
     }
 
     @Override
-    public String serialize(P values) throws IValueTypeListProxyFactoryTypeRegistry.SerializationException {
+    public NBTBase serialize(P values) throws IValueTypeListProxyFactoryTypeRegistry.SerializationException {
         NBTTagCompound tag = new NBTTagCompound();
         values.writeGeneratedFieldsToNBT(tag);
-        return tag.toString();
+        return tag;
     }
 
     @Override
-    public P deserialize(String value) throws IValueTypeListProxyFactoryTypeRegistry.SerializationException {
+    public P deserialize(NBTBase value) throws IValueTypeListProxyFactoryTypeRegistry.SerializationException {
         try {
             P proxy = this.proxyClassConstructor.newInstance();
-
-            NBTTagCompound tag = (NBTTagCompound) JsonToNBT.func_150315_a(value);
-            proxy.readGeneratedFieldsFromNBT(tag);
+            proxy.readGeneratedFieldsFromNBT((NBTTagCompound) value);
             return proxy;
-        } catch (InvocationTargetException | InstantiationException | NBTException | IllegalAccessException e) {
+        } catch (InvocationTargetException | InstantiationException | ClassCastException | IllegalAccessException e) {
             e.printStackTrace();
             throw new IValueTypeListProxyFactoryTypeRegistry.SerializationException(e.getMessage());
         }

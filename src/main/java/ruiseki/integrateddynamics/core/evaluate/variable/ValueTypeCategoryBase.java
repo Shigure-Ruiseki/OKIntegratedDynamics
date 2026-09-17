@@ -3,6 +3,8 @@ package ruiseki.integrateddynamics.core.evaluate.variable;
 import java.util.Collections;
 import java.util.Set;
 
+import net.minecraft.nbt.NBTBase;
+
 import ruiseki.integrateddynamics.Reference;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
@@ -72,12 +74,12 @@ public abstract class ValueTypeCategoryBase<V extends IValue> extends ValueTypeB
     }
 
     @Override
-    public String serialize(V value) {
+    public NBTBase serialize(V value) {
         throw new UnsupportedOperationException("This operation is not allowed");
     }
 
     @Override
-    public V deserialize(String value) {
+    public V deserialize(NBTBase value) {
         throw new UnsupportedOperationException("This operation is not allowed");
     }
 

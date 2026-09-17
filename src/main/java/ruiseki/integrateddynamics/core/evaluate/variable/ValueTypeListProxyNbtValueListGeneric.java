@@ -19,28 +19,31 @@ public abstract class ValueTypeListProxyNbtValueListGeneric<N extends NBTBase, T
     extends ValueTypeListProxyBase<T, V> {
 
     private final String key;
-    private final NBTTagCompound tag;
+    private final Optional<NBTTagCompound> tag;
 
-    public ValueTypeListProxyNbtValueListGeneric(ResourceLocation name, T valueType, String key, NBTTagCompound tag) {
+    public ValueTypeListProxyNbtValueListGeneric(ResourceLocation name, T valueType, String key,
+        Optional<NBTBase> tag) {
         super(name, valueType);
         this.key = key;
-        this.tag = tag;
+        this.tag = tag.filter(t -> t instanceof NBTTagCompound)
+            .map(t -> (NBTTagCompound) t);
     }
 
     public String getKey() {
         return key;
     }
 
-    public NBTTagCompound getTag() {
+    public Optional<NBTTagCompound> getTag() {
         return tag;
     }
 
     @Override
     public int getLength() throws EvaluationException {
         try {
-            return getLength(
-                Optional.ofNullable((N) tag.getTag(key))
-                    .orElse(getDefault()));
+            return getTag().map(t -> Optional.ofNullable((N) t.getTag(key)))
+                .orElse(Optional.empty())
+                .map(this::getLength)
+                .orElse(0);
         } catch (ClassCastException e) {
             return 0;
         }
@@ -50,10 +53,10 @@ public abstract class ValueTypeListProxyNbtValueListGeneric<N extends NBTBase, T
     public V get(int index) throws EvaluationException {
         try {
             if (index < getLength()) {
-                return get(
-                    Optional.ofNullable((N) tag.getTag(key))
-                        .orElse(getDefault()),
-                    index);
+                return getTag().map(t -> Optional.ofNullable((N) t.getTag(key)))
+                    .orElse(Optional.empty())
+                    .map(t -> get(t, index))
+                    .orElse(null);
             }
         } catch (ClassCastException e) {}
         return null;
@@ -77,15 +80,21 @@ public abstract class ValueTypeListProxyNbtValueListGeneric<N extends NBTBase, T
         protected void serializeNbt(L value, NBTTagCompound tag)
             throws IValueTypeListProxyFactoryTypeRegistry.SerializationException {
             tag.setString("key", value.getKey());
-            tag.setTag("tag", value.getTag());
+            if (value.getTag()
+                .isPresent()) {
+                tag.setTag(
+                    "tag",
+                    value.getTag()
+                        .get());
+            }
         }
 
         @Override
         protected L deserializeNbt(NBTTagCompound tag)
             throws IValueTypeListProxyFactoryTypeRegistry.SerializationException {
-            return create(tag.getString("key"), tag.getCompoundTag("tag"));
+            return create(tag.getString("key"), Optional.ofNullable(tag.getTag("tag")));
         }
 
-        protected abstract L create(String key, NBTTagCompound tag);
+        protected abstract L create(String key, Optional<NBTBase> tag);
     }
 }

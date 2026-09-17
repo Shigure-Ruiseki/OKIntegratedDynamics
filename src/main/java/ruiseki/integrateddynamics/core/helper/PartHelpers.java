@@ -9,6 +9,7 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import org.apache.commons.lang3.tuple.Pair;
@@ -35,7 +36,6 @@ import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
 import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.helper.CapabilityHelpers;
-import ruiseki.okcore.helper.MinecraftHelpers;
 
 /**
  * Helpers related to parts.
@@ -253,7 +253,7 @@ public class PartHelpers {
         Map<ForgeDirection, PartStateHolder<?, ?>> partData, @Nullable World world) {
         Map<ForgeDirection, PartStateHolder<?, ?>> oldPartData = ImmutableMap.copyOf(partData);
         partData.clear();
-        NBTTagList partList = tag.getTagList("parts", MinecraftHelpers.NBTTag_Types.NBTTagCompound.ordinal());
+        NBTTagList partList = tag.getTagList("parts", Constants.NBT.TAG_COMPOUND);
         for (int i = 0; i < partList.tagCount(); i++) {
             NBTTagCompound partTag = partList.getCompoundTagAt(i);
             Pair<ForgeDirection, ? extends PartStateHolder<?, ?>> part = readPartFromNBT(network, pos, partTag);

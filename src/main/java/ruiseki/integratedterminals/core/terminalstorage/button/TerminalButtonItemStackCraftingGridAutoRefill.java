@@ -83,9 +83,10 @@ public class TerminalButtonItemStackCraftingGridAutoRefill<T> implements
     @SideOnly(Side.CLIENT)
     public GuiButtonImage createButton(int x, int y) {
         return new GuiButtonImage(
-            0,
             x,
             y,
+            LangHelpers.localize("gui.integratedterminals.terminal_storage.craftinggrid.autorefill"),
+            (b) -> {},
             active == AutoRefillType.DISABLED ? Images.BUTTON_BACKGROUND_INACTIVE : Images.BUTTON_BACKGROUND_ACTIVE,
             active.getImage());
     }

@@ -48,7 +48,8 @@ public interface ITerminalStorageTabClient<S extends ITerminalStorageSlot> {
     public ResourceLocation getName();
 
     /**
-     * @return The tab name that will be used to store {@link TerminalStorageState} settings inside a tab.
+     * @return The tab name that will be used to store
+     *         {@link ruiseki.integratedterminals.inventory.container.TerminalStorageState} settings inside a tab.
      *         This can be used to modify in what tab certain settings are stored.
      */
     public default ResourceLocation getTabSettingsName() {
@@ -142,6 +143,22 @@ public interface ITerminalStorageTabClient<S extends ITerminalStorageSlot> {
      */
     public boolean handleClick(Container container, int channel, int hoveringStorageSlot, int mouseButton,
         boolean hasClickedOutside, boolean hasClickedInStorage, int hoveredContainerSlot, boolean isQuickMove);
+
+    /**
+     * Called when a mouse scroll happens in a gui.
+     * 
+     * @param container            The active container.
+     * @param channel              The active channel.
+     * @param hoveringStorageSlot  The storage slot id that is being hovered. -1 if none.
+     * @param delta                The scroll delta.
+     * @param hasClickedOutside    If the player has clicked outside the gui.
+     * @param hasClickedInStorage  If the player has clicked inside the storage space.
+     *                             This can be true even if the storage slot is -1.
+     * @param hoveredContainerSlot The container slot id that is being hovered. -1 if none.
+     * @return If further click processing should stop.
+     */
+    public boolean handleScroll(Container container, int channel, int hoveringStorageSlot, double delta,
+        boolean hasClickedOutside, boolean hasClickedInStorage, int hoveredContainerSlot);
 
     /**
      * @return The active storage slot id.

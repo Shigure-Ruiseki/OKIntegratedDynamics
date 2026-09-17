@@ -12,16 +12,11 @@ import ruiseki.okcore.tracking.Versions;
  */
 public class GeneralConfig extends DummyConfig {
 
-    @ConfigurableProperty(
-        category = "core",
-        comment = "If an anonymous mod startup analytics request may be sent to our analytics service.")
-    public static boolean analytics = true;
-
     @ConfigurableProperty(category = "core", comment = "If the version checker should be enabled.")
     public static boolean versionChecker = true;
 
     @ConfigurableProperty(category = "general", comment = "If the API should be enabled.", requiresMcRestart = true)
-    public static boolean startApi = true;
+    public static boolean startApi = false;
     @ConfigurableProperty(category = "general", comment = "The port the API should be exposed on.")
     public static int apiPort = 3000;
     @ConfigurableProperty(

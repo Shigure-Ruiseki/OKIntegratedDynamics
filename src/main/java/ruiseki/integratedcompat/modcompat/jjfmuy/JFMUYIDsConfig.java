@@ -1,8 +1,10 @@
 package ruiseki.integratedcompat.modcompat.jjfmuy;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.MinecraftForge;
 
+import cpw.mods.fml.common.eventhandler.EventPriority;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import ruiseki.integratedcompat.modcompat.jjfmuy.dryingbasin.DryingBasinRecipeCategory;
 import ruiseki.integratedcompat.modcompat.jjfmuy.logicprogrammer.LogicProgrammerTransferHandler;
@@ -11,7 +13,7 @@ import ruiseki.integratedcompat.modcompat.jjfmuy.mechanicalsqueezer.MechanicalSq
 import ruiseki.integratedcompat.modcompat.jjfmuy.squeezer.SqueezerRecipeCategory;
 import ruiseki.integratedcompat.modcompat.jjfmuy.terminalstorage.TerminalStorageAdvancedGuiHandler;
 import ruiseki.integratedcompat.modcompat.jjfmuy.terminalstorage.TerminalStorageRecipeTransferHandler;
-import ruiseki.integratedcompat.modcompat.jjfmuy.terminalstorage.button.TerminalButtonItemStackCraftingGridJFMUYSearchSync;
+import ruiseki.integratedcompat.modcompat.jjfmuy.terminalstorage.button.TerminalButtonItemStackCraftingGridSearchSync;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.block.BlockDryingBasinConfig;
 import ruiseki.integrateddynamics.block.BlockLogicProgrammerConfig;
@@ -22,10 +24,9 @@ import ruiseki.integrateddynamics.client.gui.GuiLogicProgrammerBase;
 import ruiseki.integrateddynamics.inventory.container.ContainerLogicProgrammer;
 import ruiseki.integrateddynamics.inventory.container.ContainerLogicProgrammerPortable;
 import ruiseki.integrateddynamics.item.ItemPortableLogicProgrammerConfig;
-import ruiseki.integratedterminals.api.terminalstorage.ITerminalButton;
-import ruiseki.integratedterminals.api.terminalstorage.ITerminalStorageTabClient;
 import ruiseki.integratedterminals.api.terminalstorage.event.TerminalStorageTabClientLoadButtonsEvent;
 import ruiseki.integratedterminals.api.terminalstorage.event.TerminalStorageTabClientSearchFieldUpdateEvent;
+import ruiseki.integratedterminals.client.gui.image.Images;
 import ruiseki.integratedterminals.core.client.gui.GuiTerminalStorage;
 import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorageItem;
 import ruiseki.integratedterminals.inventory.container.ContainerTerminalStoragePart;
@@ -38,6 +39,7 @@ import ruiseki.jfmuy.api.recipe.IRecipeCategoryRegistration;
 import ruiseki.jfmuy.api.recipe.VanillaRecipeCategoryUid;
 import ruiseki.okcore.client.gui.component.input.GuiTextFieldExtended;
 import ruiseki.okcore.event.input.KeyboardInputEvent;
+import ruiseki.okcore.event.input.MouseInputEvent;
 
 @JFMUYPlugin
 public class JFMUYIDsConfig implements IModPlugin {
@@ -128,53 +130,62 @@ public class JFMUYIDsConfig implements IModPlugin {
 
     @SubscribeEvent
     public void onTerminalStorageButtons(TerminalStorageTabClientLoadButtonsEvent event) {
-        event.getButtons()
-            .add(
-                new TerminalButtonItemStackCraftingGridJFMUYSearchSync(
-                    event.getContainer()
-                        .getGuiState(),
-                    event.getClientTab()));
-    }
-
-    protected boolean isSearchSynced(ITerminalStorageTabClient<?> clientTab) {
-        for (ITerminalButton<?, ?, ?> button : clientTab.getButtons()) {
-            if (button instanceof TerminalButtonItemStackCraftingGridJFMUYSearchSync) {
-                return ((TerminalButtonItemStackCraftingGridJFMUYSearchSync) button).isActive();
-            }
+        if (jfmuyRuntime != null && !event.getButtons()
+            .stream()
+            .anyMatch((button) -> button instanceof TerminalButtonItemStackCraftingGridSearchSync)) {
+            event.getButtons()
+                .add(
+                    new TerminalButtonItemStackCraftingGridSearchSync(
+                        "jei",
+                        event.getContainer()
+                            .getGuiState(),
+                        event.getClientTab(),
+                        Images.BUTTON_MIDDLE_JEI_SYNC));
         }
-        return false;
     }
 
     @SubscribeEvent
     public void onSearchFieldUpdated(TerminalStorageTabClientSearchFieldUpdateEvent event) {
         // Copy the terminal search box contents into the JEI search box.
-        if (isSearchSynced(event.getClientTab())) {
+        if (jfmuyRuntime != null
+            && TerminalButtonItemStackCraftingGridSearchSync.isSearchSynced(event.getClientTab())) {
             jfmuyRuntime.getIngredientFilter()
                 .setFilterText(event.getSearchString() + "");
         }
     }
 
+    protected void syncJeiSearchBox(GuiTerminalStorage<?, ?> screen) {
+        // Copy the JEI search box contents into the terminal search box.
+        if (jfmuyRuntime != null && jfmuyRuntime.getIngredientListOverlay()
+            .hasKeyboardFocus()) {
+            screen.getSelectedClientTab()
+                .ifPresent(tab -> {
+                    if (TerminalButtonItemStackCraftingGridSearchSync.isSearchSynced(tab)) {
+                        GuiTextFieldExtended fieldSearch = screen.getFieldSearch();
+                        fieldSearch.setText(
+                            jfmuyRuntime.getIngredientFilter()
+                                .getFilterText());
+                        tab.setInstanceFilter(
+                            screen.getContainer()
+                                .getSelectedChannel(),
+                            fieldSearch.getText() + "");
+                    }
+                });
+        }
+    }
+
     @SubscribeEvent
     public void onKeyTyped(KeyboardInputEvent.Post event) {
-        // Copy the JEI search box contents into the terminal search box.
-        if (event.gui instanceof GuiTerminalStorage) {
-            GuiTerminalStorage gui = ((GuiTerminalStorage) event.gui);
-            if (jfmuyRuntime.getIngredientListOverlay()
-                .hasKeyboardFocus()) {
-                gui.getSelectedClientTab()
-                    .ifPresent(tab -> {
-                        if (isSearchSynced((ITerminalStorageTabClient<?>) tab)) {
-                            GuiTextFieldExtended fieldSearch = gui.getFieldSearch();
-                            fieldSearch.setText(
-                                jfmuyRuntime.getIngredientFilter()
-                                    .getFilterText());
-                            ((ITerminalStorageTabClient<?>) tab).setInstanceFilter(
-                                gui.getContainer()
-                                    .getSelectedChannel(),
-                                fieldSearch.getText() + "");
-                        }
-                    });
-            }
+        if (event.gui instanceof GuiTerminalStorage<?, ?>screen) {
+            syncJeiSearchBox(screen);
+        }
+    }
+
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    public void onMouseClicked(MouseInputEvent.Pre event) {
+        if (event.gui instanceof GuiTerminalStorage<?, ?>screen) {
+            Minecraft.getMinecraft()
+                .func_152344_a(() -> syncJeiSearchBox(screen));
         }
     }
 }

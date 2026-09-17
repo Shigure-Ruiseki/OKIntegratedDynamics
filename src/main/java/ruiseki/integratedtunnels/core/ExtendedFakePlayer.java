@@ -56,7 +56,7 @@ public class ExtendedFakePlayer extends FakePlayer {
             for (int i = 0; i < this.ticksSinceLastTick; i++) {
                 if (this.isUsingItem()) {
                     ItemStack itemstack = this.getHeldItem();
-                    ItemStack itemInUse = this.getItemInUse();
+                    ItemStack itemInUse = this.getCurrentEquippedItem();
 
                     // Modern "canContinueUsing" check equivalence in 1.7.10
                     if (!ItemHelpers.isEmpty(itemInUse) && !ItemHelpers.isEmpty(itemstack)

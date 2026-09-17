@@ -5,6 +5,7 @@ import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ResourceLocation;
 
 import com.google.common.collect.Lists;
 
@@ -12,6 +13,7 @@ import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 import ruiseki.integrateddynamics.core.client.gui.GuiActiveVariableBase;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
 import ruiseki.integrateddynamics.core.logicprogrammer.LogicProgrammerElementTypes;
+import ruiseki.integratedrest.Reference;
 import ruiseki.integratedrest.inventory.container.ContainerHttp;
 import ruiseki.integratedrest.tileentity.TileHttp;
 import ruiseki.okcore.client.gui.component.input.GuiArrowedListField;
@@ -49,19 +51,24 @@ public class GuiHttp extends GuiActiveVariableBase<ContainerHttp, TileHttp> {
     }
 
     @Override
+    protected ResourceLocation constructGuiTexture() {
+        return new ResourceLocation(Reference.MOD_ID, "textures/gui/http.png");
+    }
+
+    @Override
     public void initGui() {
         super.initGui();
 
         List<IValueType> valueTypes = Lists.newArrayList(LogicProgrammerElementTypes.VALUETYPE.getValueTypes());
         valueTypes.add(ValueTypes.CATEGORY_ANY);
         valueTypeSelector = new GuiArrowedListField<>(
-            0,
             Minecraft.getMinecraft().fontRenderer,
             guiLeft + 38,
             guiTop + 18,
             105,
             14,
             true,
+            "",
             true,
             valueTypes);
         valueTypeSelector.setListener(
@@ -73,18 +80,13 @@ public class GuiHttp extends GuiActiveVariableBase<ContainerHttp, TileHttp> {
                     .toString()));
         getContainer().getValueType()
             .ifPresent(vt -> valueTypeSelector.setActiveElement(vt));
+        addWidget(valueTypeSelector);
     }
 
     @Override
     protected void drawGuiContainerBackgroundLayer(float f, int mouseX, int mouseY) {
         super.drawGuiContainerBackgroundLayer(f, mouseX, mouseY);
-        valueTypeSelector.drawTextBox(Minecraft.getMinecraft(), mouseX, mouseY);
-    }
-
-    @Override
-    public void mouseClicked(int mouseX, int mouseY, int mouseButton) {
-        super.mouseClicked(mouseX, mouseY, mouseButton);
-        valueTypeSelector.mouseClicked(mouseX, mouseY, mouseButton);
+        valueTypeSelector.drawScreen(mouseX, mouseY, f);
     }
 
     @Override

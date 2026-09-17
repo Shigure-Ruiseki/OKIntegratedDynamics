@@ -1,6 +1,8 @@
 package ruiseki.integrateddynamics.core.evaluate.variable.gui;
 
+import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
+import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.inventory.Container;
 
 import cpw.mods.fml.relauncher.Side;
@@ -39,7 +41,6 @@ public class GuiElementValueTypeBooleanRenderPattern<S extends ISubGuiBox, G ext
         super.initGui(guiLeft, guiTop);
 
         this.checkbox = new GuiButtonCheckbox(
-            0,
             guiLeft + getX(),
             guiTop + getY(),
             getElement().getRenderPattern()
@@ -50,6 +51,7 @@ public class GuiElementValueTypeBooleanRenderPattern<S extends ISubGuiBox, G ext
                 this.getElement()
                     .getValueType()
                     .getUnlocalizedName()),
+            (entry) -> this.onChecked(this.checkbox.isChecked()),
             false) {
 
             @Override
@@ -60,7 +62,26 @@ public class GuiElementValueTypeBooleanRenderPattern<S extends ISubGuiBox, G ext
         };
         boolean value = element.getInputBoolean();
         this.checkbox.setChecked(value);
-        this.buttonList.add(checkbox);
+    }
+
+    @Override
+    public void drawGuiContainerBackgroundLayer(int guiLeft, int guiTop, TextureManager textureManager,
+        FontRenderer fontRenderer, float partialTicks, int mouseX, int mouseY) {
+        super.drawGuiContainerBackgroundLayer(
+            guiLeft,
+            guiTop,
+            textureManager,
+            fontRenderer,
+            partialTicks,
+            mouseX,
+            mouseY);
+        this.checkbox.drawScreen(mouseX, mouseY, partialTicks);
+    }
+
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
+        return this.checkbox.mouseClicked(mouseX, mouseY, mouseButton)
+            || super.mouseClicked(mouseX, mouseY, mouseButton);
     }
 
     @Override

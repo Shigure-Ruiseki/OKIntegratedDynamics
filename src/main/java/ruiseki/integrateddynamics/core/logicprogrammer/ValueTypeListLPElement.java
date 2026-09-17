@@ -1,6 +1,5 @@
 package ruiseki.integrateddynamics.core.logicprogrammer;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -32,6 +31,7 @@ import ruiseki.integrateddynamics.inventory.container.ContainerLogicProgrammerBa
 import ruiseki.integrateddynamics.network.packet.LogicProgrammerSetElementInventory;
 import ruiseki.integrateddynamics.network.packet.LogicProgrammerValueTypeListValueChangedPacket;
 import ruiseki.okcore.client.gui.component.button.GuiButtonArrow;
+import ruiseki.okcore.client.gui.component.button.GuiButtonExtended;
 import ruiseki.okcore.client.gui.component.button.GuiButtonText;
 import ruiseki.okcore.client.gui.component.input.GuiArrowedListField;
 import ruiseki.okcore.client.gui.component.input.IInputListener;
@@ -355,7 +355,7 @@ public class ValueTypeListLPElement extends ValueTypeLPElementBase {
         implements IInputListener {
 
         private GuiArrowedListField<IValueType> valueTypeSelector = null;
-        private GuiButton arrowAdd;
+        private GuiButtonExtended arrowAdd;
 
         public SelectionSubGui(ValueTypeListLPElement element, int baseX, int baseY, int maxWidth, int maxHeight,
             GuiLogicProgrammerBase gui, ContainerLogicProgrammerBase container) {
@@ -378,13 +378,13 @@ public class ValueTypeListLPElement extends ValueTypeLPElementBase {
         public void initGui(int guiLeft, int guiTop) {
             super.initGui(guiLeft, guiTop);
             valueTypeSelector = new GuiArrowedListField<>(
-                0,
                 Minecraft.getMinecraft().fontRenderer,
                 getX() + guiLeft + getWidth() / 2 - 50,
                 getY() + guiTop + 9,
                 100,
                 15,
                 true,
+                LangHelpers.localize("valuetype.integrateddynamics.value_type"),
                 true,
                 getValueTypes());
             valueTypeSelector.setListener(this);
@@ -393,14 +393,13 @@ public class ValueTypeListLPElement extends ValueTypeLPElementBase {
             }
             int x = guiLeft + getX();
             int y = guiTop + getY();
-            arrowAdd = new GuiButtonText(1, x + getWidth() - 13, y + 10, 12, 12, "+", true);
-            buttonList.add(arrowAdd);
+            buttonList.add(arrowAdd = new GuiButtonText(x + getWidth() - 13, y + 10, 12, 12, "+", button -> {}, true));
         }
 
         @Override
-        public void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
-            super.mouseClicked(mouseX, mouseY, mouseButton);
-            valueTypeSelector.mouseClicked(mouseX, mouseY, mouseButton);
+        public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
+            return valueTypeSelector.mouseClicked(mouseX, mouseY, mouseButton)
+                || super.mouseClicked(mouseX, mouseY, mouseButton);
         }
 
         @Override
@@ -428,7 +427,7 @@ public class ValueTypeListLPElement extends ValueTypeLPElementBase {
                 mouseX,
                 mouseY);
 
-            valueTypeSelector.drawTextBox(Minecraft.getMinecraft(), mouseX, mouseY);
+            valueTypeSelector.drawScreen(mouseX, mouseY, partialTicks);
 
             if (element.activeElement >= 0) {
                 int x = guiLeft + getX() + 10;
@@ -468,7 +467,7 @@ public class ValueTypeListLPElement extends ValueTypeLPElementBase {
 
         private GuiButtonArrow arrowLeft;
         private GuiButtonArrow arrowRight;
-        private GuiButton arrowRemove;
+        private GuiButtonExtended arrowRemove;
 
         private RenderPattern subGui;
         private IValueTypeLogicProgrammerElement subElement;
@@ -502,21 +501,26 @@ public class ValueTypeListLPElement extends ValueTypeLPElementBase {
             super.initGui(guiLeft, guiTop);
             int x = guiLeft + getX();
             int y = guiTop + getY();
-            buttonList.add(arrowLeft = new GuiButtonArrow(1, x, y, GuiButtonArrow.Direction.WEST));
+            buttonList.add(
+                arrowLeft = new GuiButtonArrow(
+                    x,
+                    y,
+                    b -> element.setActiveElement(element.activeElement - 1),
+                    GuiButtonArrow.Direction.WEST));
             buttonList.add(
                 arrowRight = new GuiButtonArrow(
-                    1,
                     x + getWidth() - arrowLeft.width - 1,
                     y,
+                    b -> element.setActiveElement(element.activeElement + 1),
                     GuiButtonArrow.Direction.EAST));
             buttonList.add(
                 arrowRemove = new GuiButtonText(
-                    2,
                     x + getWidth() - arrowLeft.width - 1,
                     y + getHeight() - 13,
                     10,
                     12,
                     "-",
+                    b -> element.removeElement(element.activeElement),
                     true));
             arrowLeft.enabled = element.activeElement > 0;
             arrowRight.enabled = element.activeElement < element.length - 1;
@@ -527,18 +531,6 @@ public class ValueTypeListLPElement extends ValueTypeLPElementBase {
             subElement.setValueInContainer(subGui.container);
             container.getTemporaryInputSlots()
                 .addDirtyMarkListener(container);
-        }
-
-        @Override
-        protected void actionPerformed(GuiButton guibutton) {
-            super.actionPerformed(guibutton);
-            if (guibutton == arrowLeft) {
-                element.setActiveElement(element.activeElement - 1);
-            } else if (guibutton == arrowRight) {
-                element.setActiveElement(element.activeElement + 1);
-            } else if (guibutton == arrowRemove) {
-                element.removeElement(element.activeElement);
-            }
         }
     }
 

@@ -32,7 +32,6 @@ import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.integrateddynamics.core.logicprogrammer.event.LogicProgrammerVariableFacadeCreatedEvent;
 import ruiseki.okcore.helper.ItemNBTHelpers;
 import ruiseki.okcore.helper.LangHelpers;
-import ruiseki.okcore.helper.MinecraftHelpers;
 
 /**
  * The variable facade handler registry.
@@ -78,8 +77,7 @@ public class VariableFacadeHandlerRegistry implements IVariableFacadeHandlerRegi
         if (tagCompound == null) {
             return DUMMY_FACADE;
         }
-        if (!tagCompound.hasKey("_type", MinecraftHelpers.NBTTag_Types.NBTTagString.ordinal())
-            || !tagCompound.hasKey("_id", MinecraftHelpers.NBTTag_Types.NBTTagInt.ordinal())) {
+        if (!tagCompound.hasKey("_type") || !tagCompound.hasKey("_id")) {
             return DUMMY_FACADE;
         }
         String type = tagCompound.getString("_type");

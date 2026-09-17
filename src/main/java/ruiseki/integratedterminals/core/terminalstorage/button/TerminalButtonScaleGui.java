@@ -59,9 +59,10 @@ public class TerminalButtonScaleGui<T> implements
     @Override
     public GuiButtonImage createButton(int x, int y) {
         return new GuiButtonImage(
-            0,
             x,
             y,
+            LangHelpers.localize("gui.integratedterminals.terminal_storage.scale"),
+            (b) -> {},
             scale == GuiScale.SCALE_XY ? Images.BUTTON_BACKGROUND_INACTIVE : Images.BUTTON_BACKGROUND_ACTIVE,
             scale.getImage());
     }

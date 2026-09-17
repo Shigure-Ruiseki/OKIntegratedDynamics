@@ -1,6 +1,5 @@
 package ruiseki.integrateddynamics.capability.facadeable;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.Nullable;
 
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
@@ -24,8 +23,7 @@ public class FacadeableTileMultipartTicking implements IFacadeable {
 
     @Override
     public boolean hasFacade() {
-        return tile.getFacadeBlockName() != null && !tile.getFacadeBlockName()
-            .isEmpty();
+        return tile.getFacadeBlockTag() != null;
     }
 
     @Override
@@ -33,18 +31,15 @@ public class FacadeableTileMultipartTicking implements IFacadeable {
         if (!hasFacade()) {
             return null;
         }
-        return BlockHelpers.deserializeBlockState(Pair.of(tile.getFacadeBlockName(), tile.getFacadeMeta()));
+        return BlockHelpers.deserializeBlockState(tile.getFacadeBlockTag());
     }
 
     @Override
     public void setFacade(@Nullable BlockState blockState) {
         if (blockState == null) {
-            tile.setFacadeMeta(0);
-            tile.setFacadeBlockName(null);
+            tile.setFacadeBlockTag(null);
         } else {
-            Pair<String, Integer> serializedBlockState = BlockHelpers.serializeBlockState(blockState);
-            tile.setFacadeMeta(serializedBlockState.getRight());
-            tile.setFacadeBlockName(serializedBlockState.getLeft());
+            tile.setFacadeBlockTag(BlockHelpers.serializeBlockState(blockState));
         }
         tile.sendUpdate();
     }

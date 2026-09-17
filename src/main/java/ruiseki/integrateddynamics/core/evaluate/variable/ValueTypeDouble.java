@@ -2,12 +2,18 @@ package ruiseki.integrateddynamics.core.evaluate.variable;
 
 import java.util.Locale;
 
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagDouble;
 import net.minecraft.util.EnumChatFormatting;
+import net.minecraftforge.common.util.Constants;
 
 import lombok.ToString;
 import ruiseki.integrateddynamics.GeneralConfig;
+import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeNumber;
+import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.okcore.helper.Helpers;
+import ruiseki.okcore.helper.LangHelpers;
 
 /**
  * Value type with values that are doubles.
@@ -36,13 +42,33 @@ public class ValueTypeDouble extends ValueTypeBase<ValueTypeDouble.ValueDouble>
     }
 
     @Override
-    public String serialize(ValueDouble value) {
+    public NBTBase serialize(ValueDouble value) {
+        return new NBTTagDouble(value.getRawValue());
+    }
+
+    @Override
+    public ValueDouble deserialize(NBTBase value) {
+        if (value.getId() == Constants.NBT.TAG_DOUBLE) {
+            return ValueDouble.of(((NBTTagDouble) value).func_150286_g());
+        } else {
+            throw new IllegalArgumentException(String.format("Value \"%s\" could not be parsed to a double.", value));
+        }
+    }
+
+    @Override
+    public String toString(ValueDouble value) {
         return Double.toString(value.getRawValue());
     }
 
     @Override
-    public ValueDouble deserialize(String value) {
-        return ValueDouble.of(Double.parseDouble(value));
+    public ValueDouble parseString(String value) throws EvaluationException {
+        try {
+            return ValueDouble.of(Double.parseDouble(value));
+        } catch (NumberFormatException e) {
+            throw new EvaluationException(
+                LangHelpers
+                    .localize(L10NValues.OPERATOR_ERROR_PARSE, value, LangHelpers.localize(getUnlocalizedName())));
+        }
     }
 
     @Override

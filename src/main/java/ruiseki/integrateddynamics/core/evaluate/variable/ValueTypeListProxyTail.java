@@ -50,14 +50,14 @@ public class ValueTypeListProxyTail<T extends IValueType<V>, V extends IValue> e
         @Override
         protected void serializeNbt(ValueTypeListProxyTail<IValueType<IValue>, IValue> value, NBTTagCompound tag)
             throws IValueTypeListProxyFactoryTypeRegistry.SerializationException {
-            tag.setString("sublist", ValueTypeListProxyFactories.REGISTRY.serialize(value.list));
+            tag.setTag("sublist", ValueTypeListProxyFactories.REGISTRY.serialize(value.list));
         }
 
         @Override
         protected ValueTypeListProxyTail<IValueType<IValue>, IValue> deserializeNbt(NBTTagCompound tag)
             throws IValueTypeListProxyFactoryTypeRegistry.SerializationException, EvaluationException {
             IValueTypeListProxy<IValueType<IValue>, IValue> list = ValueTypeListProxyFactories.REGISTRY
-                .deserialize(tag.getString("sublist"));
+                .deserialize(tag.getTag("sublist"));
             return new ValueTypeListProxyTail<>(list);
         }
     }

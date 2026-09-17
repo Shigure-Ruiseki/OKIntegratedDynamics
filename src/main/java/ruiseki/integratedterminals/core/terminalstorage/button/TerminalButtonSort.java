@@ -72,7 +72,14 @@ public class TerminalButtonSort<T> implements
     @Override
     @SideOnly(Side.CLIENT)
     public GuiButtonSort createButton(int x, int y) {
-        return new GuiButtonSort(0, x, y, instanceSorter.getIcon(), active, descending);
+        return new GuiButtonSort(
+            x,
+            y,
+            LangHelpers.localize("gui.integratedterminals.terminal_storage.sort"),
+            (b) -> {},
+            instanceSorter.getIcon(),
+            active,
+            descending);
     }
 
     @Override

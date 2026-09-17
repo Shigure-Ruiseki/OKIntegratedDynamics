@@ -18,6 +18,7 @@ import net.minecraft.util.ResourceLocation;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.Nullable;
+import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
 
 import com.google.common.collect.Iterables;
@@ -42,7 +43,6 @@ import ruiseki.okcore.client.gui.component.button.GuiButtonImage;
 import ruiseki.okcore.client.gui.component.input.GuiArrowedListField;
 import ruiseki.okcore.client.gui.component.input.GuiTextFieldExtended;
 import ruiseki.okcore.client.gui.container.GuiContainerExtended;
-import ruiseki.okcore.client.gui.image.IImage;
 import ruiseki.okcore.client.gui.image.Images;
 import ruiseki.okcore.client.renderer.GlStateManager;
 import ruiseki.okcore.helper.GuiHelpers;
@@ -50,13 +50,12 @@ import ruiseki.okcore.helper.Helpers;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.helper.RenderHelpers;
-import ruiseki.okcore.init.ModBase;
 import ruiseki.okcore.inventory.container.InventoryContainer;
 
 /**
  * @author rubensworks
  */
-public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> extends GuiContainerExtended {
+public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> extends GuiContainerExtended<C> {
 
     private static int TAB_OFFSET_X = 24;
     private static int TAB_WIDTH = 24;
@@ -102,19 +101,24 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
     }
 
     @Override
+    public C getContainer() {
+        return super.getContainer();
+    }
+
+    @Override
     public void initGui() {
-        this.buttonList.clear();
+        clearWidgets();
         super.initGui();
         this.initialized = false;
 
         fieldChannel = new GuiArrowedListField<>(
-            0,
             Minecraft.getMinecraft().fontRenderer,
             guiLeft + CHANNEL_X,
             guiTop + CHANNEL_Y,
             CHANNEL_WIDTH,
             CHANNEL_HEIGHT,
             true,
+            LangHelpers.localize("gui.integratedterminals.channel"),
             true,
             getContainer().getChannelStrings());
         fieldChannel.setMaxStringLength(15);
@@ -126,12 +130,13 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
         if (activeChannel != IPositionedAddonsNetwork.WILDCARD_CHANNEL) {
             fieldChannel.setText(Integer.toString(activeChannel));
         }
-        firstRow = 0;
 
+        firstRow = 0;
         scrollBar = new GuiScrollBar(
             guiLeft + getGridXSize() + 33,
             guiTop + SCROLL_Y + 1,
             getScrollHeight() - 2,
+            "",
             firstRow -> this.firstRow = firstRow,
             0) {
 
@@ -152,14 +157,15 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
                 return getSlotVisibleRows();
             }
         };
+        addWidget(this.scrollBar);
 
         fieldSearch = new GuiTextFieldExtended(
-            1,
             Minecraft.getMinecraft().fontRenderer,
             guiLeft + SEARCH_X,
             guiTop + SEARCH_Y,
             getSearchWidth() - 10,
-            SEARCH_HEIGHT);
+            SEARCH_HEIGHT,
+            LangHelpers.localize("gui.okcore.search"));
         fieldSearch.setMaxStringLength(50);
         fieldSearch.setVisible(true);
         fieldSearch.setTextColor(16777215);
@@ -167,21 +173,22 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
         fieldSearch.setEnabled(true);
         fieldSearch.setEnableBackgroundDrawing(false);
 
-        buttonSetDefaults = new GuiButtonImage(
-            ContainerTerminalStorageBase.BUTTON_SET_DEFAULTS,
-            this.guiLeft + ITerminalStorageTabClient.DEFAULT_SLOT_OFFSET_X
-                + (getGridXSize() / 2)
-                + getPlayerInventoryOffsetX()
-                + (9 * GuiHelpers.SLOT_SIZE / 2)
-                + 27,
-            this.guiTop + getGridYSize() + getPlayerInventoryOffsetY() + 120,
-            15,
-            15,
-            new IImage[] { Images.ANVIL },
-            -2,
-            -3,
-            false);
-        this.buttonList.add(buttonSetDefaults);
+        buttonSetDefaults = addRenderableWidget(
+            new GuiButtonImage(
+                this.guiLeft + ITerminalStorageTabClient.DEFAULT_SLOT_OFFSET_X
+                    + (getGridXSize() / 2)
+                    + getPlayerInventoryOffsetX()
+                    + (9 * GuiHelpers.SLOT_SIZE / 2)
+                    + 27,
+                this.guiTop + getGridYSize() + getPlayerInventoryOffsetY() + 120,
+                15,
+                15,
+                LangHelpers.localize("gui.integratedterminals.terminal_storage.setdefaults"),
+                createServerPressable(ContainerTerminalStorageBase.BUTTON_SET_DEFAULTS, b -> {}),
+                false,
+                Images.ANVIL,
+                -2,
+                -3));
 
         repositionInventorySlots();
     }
@@ -298,14 +305,8 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
     }
 
     @Override
-    protected ResourceLocation constructResourceLocation() {
-        return new ResourceLocation(Reference.MOD_ID, this.getGuiTexture());
-    }
-
-    @Override
-    public String getGuiTexture() {
-        return IntegratedTerminals._instance.getReferenceValue(ModBase.REFKEY_TEXTURE_PATH_GUI)
-            + "part_terminal_storage.png";
+    protected ResourceLocation constructGuiTexture() {
+        return new ResourceLocation(Reference.MOD_ID, "textures/gui/part_terminal_storage.png");
     }
 
     public int getGridXSize() {
@@ -345,25 +346,25 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
     }
 
     @Override
-    protected void drawGuiContainerBackgroundLayer(float f, int mouseX, int mouseY) {
+    protected void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY) {
         // super.drawGuiContainerBackgroundLayer(f, mouseX, mouseY);
         RenderHelpers.bindTexture(texture);
-        this.renderBgTab(f, mouseX, mouseY);
-        this.renderBgPlayerInventory(f, mouseX, mouseY);
+        this.renderBgTab(partialTicks, mouseX, mouseY);
+        this.renderBgPlayerInventory(partialTicks, mouseX, mouseY);
 
-        fieldChannel.drawTextBox(Minecraft.getMinecraft(), mouseX, mouseY);
-        fieldSearch.drawTextBox(Minecraft.getMinecraft(), mouseX, mouseY);
+        fieldChannel.drawScreen(mouseX, mouseY, partialTicks);
+        fieldSearch.drawScreen(mouseX, mouseY, partialTicks);
         drawTabsBackground();
         drawTabContents(
             getContainer().getSelectedTab(),
             getContainer().getSelectedChannel(),
             DrawLayer.BACKGROUND,
-            f,
+            partialTicks,
             getGuiLeftTotal() + getSlotsOffsetX(),
             getGuiTopTotal() + getSlotsOffsetY(),
             mouseX,
             mouseY);
-        scrollBar.drawGuiContainerBackgroundLayer(f, mouseX, mouseY);
+        scrollBar.drawWidget(mouseX, mouseY, partialTicks);
 
         GlStateManager.color(1, 1, 1, 1);
         GlStateManager.disableLighting();
@@ -551,9 +552,6 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
         }
     }
 
-    /**
-     * Phương thức thay thế blitRescalable tương thích với Gui 1.7.10 (texture 256x256 mặc định)
-     */
     public static void blitRescalable(int x, int y, float u, float v, int uWidth, int vHeight, int width, int height) {
         drawScaledCustomSizeModalRect(x, y, u, v, uWidth, vHeight, width, height, 256.0F, 256.0F);
     }
@@ -608,7 +606,7 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
 
     @Override
     protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
-        super.drawGuiContainerForegroundLayer(mouseX, mouseY);
+        // super.drawGuiContainerForegroundLayer(mouseX, mouseY);
         drawTabsForeground(mouseX, mouseY);
         drawTabContents(
             getContainer().getSelectedTab(),
@@ -726,7 +724,6 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
 
     @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
-        scrollBar.drawScreen(mouseX, mouseY, partialTicks);
 
         ResourceLocation oldTexture = this.texture;
         getSelectedClientTab().ifPresent(tab -> {
@@ -741,7 +738,7 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
         // Draw slots
         GlStateManager.disableLighting();
         GlStateManager.disableDepth();
-        this.zLevel = 0F;
+        // this.zLevel = 0F;
         for (int i1 = 0; i1 < this.inventorySlots.inventorySlots.size(); ++i1) {
             Slot slot = this.inventorySlots.inventorySlots.get(i1);
 
@@ -749,7 +746,7 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
                 this.drawSlotOverlay(slot);
             }
         }
-        this.zLevel = 0F;
+        // this.zLevel = 0F;
 
         this.texture = oldTexture;
     }
@@ -784,18 +781,6 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
                 }
             }
         });
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public C getContainer() {
-        return (C) super.getContainer();
-    }
-
-    @Override
-    public void handleMouseInput() {
-        super.handleMouseInput();
-        scrollBar.handleMouseInput();
     }
 
     protected Optional<ITerminalStorageTabClient<?>> getTabByIndex(int tabIndex) {
@@ -834,7 +819,7 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
     }
 
     @Override
-    protected void mouseClicked(int mouseX, int mouseY, int mouseButton) {
+    public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
         Optional<ITerminalStorageTabClient<?>> tabOptional = getSelectedClientTab();
         this.clicked = true;
 
@@ -843,23 +828,17 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
             && mouseX > guiLeft + TAB_OFFSET_X
             && mouseX <= guiLeft + TAB_OFFSET_X + (TAB_WIDTH * getContainer().getTabsClientCount() - 1)) {
             // Save tab index
-            setTabByIndex((mouseX - TAB_OFFSET_X - guiLeft) / TAB_WIDTH);
+            setTabByIndex((int) ((mouseX - TAB_OFFSET_X - guiLeft) / TAB_WIDTH));
             playButtonClickSound();
-            return;
+
+            return true;
         }
 
         // Update channel when changing channel field
-        this.fieldChannel.mouseClicked(mouseX, mouseY, mouseButton);
-        if (func_146978_c(
-            this.fieldChannel.xPosition - guiLeft,
-            this.fieldChannel.yPosition - guiTop,
-            this.fieldChannel.width,
-            this.fieldChannel.height,
-            mouseX,
-            mouseY)) {
+        if (this.fieldChannel.mouseClicked(mouseX, mouseY, mouseButton)) {
             int channel;
             try {
-                channel = Integer.parseInt(this.fieldChannel.getText());
+                channel = Integer.parseInt(this.fieldChannel.getActiveElement());
             } catch (NumberFormatException e) {
                 channel = -1;
             }
@@ -871,7 +850,8 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
             tabOptional.ifPresent(tab -> fieldSearch.setText(tab.getInstanceFilter(finalChannel)));
 
             playButtonClickSound();
-            return;
+
+            return true;
         }
 
         if (tabOptional.isPresent()) {
@@ -895,15 +875,15 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
                     } else if (isPickBlock) {
                         this.terminalDragMode = 2;
                     }
-                    return;
+                    return true;
                 }
             }
             if (MinecraftHelpers.isShifted() && playerSlot != null && tab.isQuickMovePrevented(playerSlot)) {
-                return;
+                return true;
             }
         } else if (getSlotUnderMouse() != null) {
             // Don't allow shift clicking items into container when no tab has been selected
-            return;
+            return false;
         }
 
         // Click in search field
@@ -952,11 +932,11 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
                         playerInventoryOffsetY),
                     guiButton.width,
                     guiButton.height,
-                    mouseX,
-                    mouseY)) {
+                    (int) mouseX,
+                    (int) mouseY)) {
                     button.onClick(tab, tabCommon, guiButton, getContainer().getSelectedChannel(), mouseButton);
-                    playButtonClickSound();
                     this.clicked = false; // To avoid grid slots being selected on mouse release
+                    playButtonClickSound();
                     return;
                 }
                 if (button.isInLeftColumn()) {
@@ -965,12 +945,13 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
             }
         });
 
-        super.mouseClicked(mouseX, mouseY, mouseButton);
+        return super.mouseClicked(mouseX, mouseY, mouseButton);
     }
 
     @Nullable
+    @Override
     public Slot getSlotUnderMouse() {
-        Slot slot = GuiHelpers.getSlotUnderMouse(this);
+        Slot slot = super.getSlotUnderMouse();
         // Safety for hacky disabled slots
         if (slot != null && slot.xDisplayPosition < 0) {
             return null;
@@ -979,8 +960,8 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
     }
 
     @Override
-    protected void mouseClickMove(int mouseX, int mouseY, int clickedMouseButton, long timeSinceLastClick) {
-        getSelectedClientTab().ifPresent(tab -> {
+    public boolean mouseDragged(double mouseX, double mouseY, int mouseButton, double mouseXPrev, double mouseYPrev) {
+        if (getSelectedClientTab().map(tab -> {
             if (this.terminalDragSplitting & tab.getActiveSlotId() >= 0) {
                 Slot slot = this.getSlotUnderMouse();
                 if (slot != null
@@ -989,12 +970,19 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
                     && tab.isSlotValidForDraggingInto(getContainer().getSelectedChannel(), slot)) {
                     this.terminalDragSplittingSlots.add(slot);
                     this.updateTerminalDragSplitting(tab);
-                    return;
+                    return true;
                 }
             }
-        });
-
-        super.mouseClickMove(mouseX, mouseY, clickedMouseButton, timeSinceLastClick);
+            return false;
+        })
+            .orElse(false)) {
+            return true;
+        }
+        return this.getFocused() != null && this.isDragging()
+            && mouseButton == 0
+            && this.getFocused()
+                .mouseDragged(mouseX, mouseY, mouseButton, mouseXPrev, mouseYPrev) ? true
+                    : super.mouseDragged(mouseX, mouseY, mouseButton, mouseXPrev, mouseYPrev);
     }
 
     private void updateTerminalDragSplitting(ITerminalStorageTabClient<?> tab) {
@@ -1017,14 +1005,14 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
     }
 
     @Override
-    protected void mouseMovedOrUp(int mouseX, int mouseY, int mouseButton) {
+    public boolean mouseReleased(double mouseX, double mouseY, int mouseButton) {
         // Validate dragging process
         if (this.terminalDragSplitting
             && (this.terminalDragSplittingSlots.size() <= 1 || this.terminalDragSplittingButton != mouseButton)) {
             this.terminalDragSplitting = false;
             this.terminalDragSplittingSlots.clear();
             if (this.terminalDragSplittingButton != mouseButton) {
-                return;
+                return true;
             }
         }
 
@@ -1073,7 +1061,8 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
                 Slot playerSlot = getSlotUnderMouse();
 
                 // Handle clicks on storage slots
-                boolean hasClickedOutside = this.hasClickedOutside(mouseX, mouseY, this.guiLeft, this.guiTop);
+                boolean hasClickedOutside = this
+                    .hasClickedOutside(mouseX, mouseY, this.guiLeft, this.guiTop, mouseButton);
                 boolean hasClickedInStorage = this.hasClickedInStorage(mouseX, mouseY);
                 if (tabOptional.get()
                     .handleClick(
@@ -1085,15 +1074,44 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
                         hasClickedInStorage,
                         playerSlot != null ? playerSlot.slotNumber : -1,
                         false)) {
-                    return;
+                    return true;
                 }
             }
         }
 
-        super.mouseMovedOrUp(mouseX, mouseY, mouseButton);
+        return super.mouseReleased(mouseX, mouseY, mouseButton);
     }
 
-    protected boolean handleKeyCodeFirst(int keyCode) {
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
+        // Handle scrolls
+        Optional<ITerminalStorageTabClient<?>> tabOptional = getSelectedClientTab();
+        if (tabOptional.isPresent()) {
+            int slot = getStorageSlotIndexAtPosition(mouseX, mouseY);
+            Slot playerSlot = getSlotUnderMouse();
+
+            // Handle clicks on storage slots
+            boolean hasClickedOutside = this.hasClickedOutside(mouseX, mouseY, this.guiLeft, this.guiTop, 0);
+            boolean hasClickedInStorage = this.hasClickedInStorage(mouseX, mouseY);
+            if (tabOptional.get()
+                .handleScroll(
+                    getContainer(),
+                    getContainer().getSelectedChannel(),
+                    slot,
+                    delta,
+                    hasClickedOutside,
+                    hasClickedInStorage,
+                    playerSlot != null ? playerSlot.slotNumber : -1)) {
+                return true;
+            }
+        }
+
+        return this.getChildAt(mouseX, mouseY)
+            .filter((listener) -> { return listener.mouseScrolled(mouseX, mouseY, delta); })
+            .isPresent();
+    }
+
+    protected boolean handleKeyCodeFirst(int keyCode, int scanCode) {
         if (ruiseki.integrateddynamics.proxy.ClientProxy.FOCUS_LP_SEARCH.isActiveAndMatches(keyCode)) {
             fieldSearch.setFocused(true);
             swallowNextCharacter = true;
@@ -1118,7 +1136,7 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
         return false;
     }
 
-    protected boolean handleKeyCodeLast(int keyCode) {
+    protected boolean handleKeyCodeLast(int keyCode, int scanCode) {
         if (ClientProxy.TERMINAL_CRAFTINGGRID_CLEARPLAYER.isActiveAndMatches(keyCode)) {
             clearCraftingGrid(false);
             playButtonClickSound();
@@ -1136,19 +1154,42 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
     }
 
     @Override
-    protected void keyTyped(char typedChar, int keyCode) {
-        if (handleKeyCodeFirst(keyCode)) {
-            return;
+    public boolean charTyped(char keyCode, int scanCode) {
+        if (swallowNextCharacter) {
+            swallowNextCharacter = false;
+            return true;
+        }
+        if (handleKeyCodeFirst(keyCode, scanCode)) {
+            return true;
         }
         if (fieldSearch.isFocused()) {
-            if (fieldSearch.textboxKeyTyped(typedChar, keyCode)) {
+            if (fieldSearch.charTyped(keyCode, scanCode)) {
                 getSelectedClientTab().ifPresent(
                     tab -> tab.setInstanceFilter(getContainer().getSelectedChannel(), fieldSearch.getText()));
-                return;
+            }
+            return true;
+        }
+        return handleKeyCodeLast(keyCode, scanCode) || super.charTyped(keyCode, scanCode);
+    }
+
+    @Override
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if (keyCode != Keyboard.KEY_ESCAPE) {
+            if (handleKeyCodeFirst(keyCode, scanCode)) {
+                return true;
+            }
+            if (fieldSearch.isFocused()) {
+                if (this.fieldSearch.keyPressed(keyCode, scanCode, modifiers)) {
+                    getSelectedClientTab().ifPresent(
+                        tab -> tab.setInstanceFilter(getContainer().getSelectedChannel(), fieldSearch.getText()));
+                }
+                return true;
+            }
+            if (handleKeyCodeLast(keyCode, scanCode)) {
+                return true;
             }
         }
-        if (handleKeyCodeLast(keyCode)) return;
-        super.keyTyped(typedChar, keyCode);
+        return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
     protected void clearCraftingGrid(boolean toStorage) {
@@ -1172,14 +1213,14 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
         }
     }
 
-    private boolean hasClickedInStorage(int mouseX, int mouseY) {
+    private boolean hasClickedInStorage(double mouseX, double mouseY) {
         return mouseX >= getGuiLeftTotal() + getSlotsOffsetX()
             && mouseX < getGuiLeftTotal() + getSlotsOffsetX() + getSlotRowLength() * GuiHelpers.SLOT_SIZE - 1
             && mouseY >= getGuiTopTotal() + getSlotsOffsetY()
             && mouseY < getGuiTopTotal() + getSlotsOffsetY() + getSlotVisibleRows() * GuiHelpers.SLOT_SIZE;
     }
 
-    public int getStorageSlotIndexAtPosition(int mouseX, int mouseY) {
+    public int getStorageSlotIndexAtPosition(double mouseX, double mouseY) {
         if (hasClickedInStorage(mouseX, mouseY)) {
             if ((mouseX - getGuiLeftTotal() - getSlotsOffsetX()) % GuiHelpers.SLOT_SIZE < GuiHelpers.SLOT_SIZE_INNER
                 && (mouseY - getGuiTopTotal() - getSlotsOffsetY()) % GuiHelpers.SLOT_SIZE

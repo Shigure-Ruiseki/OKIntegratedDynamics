@@ -2,13 +2,14 @@ package ruiseki.integrateddynamics.core.client.gui.container;
 
 import java.awt.Rectangle;
 
-import net.minecraft.client.gui.FontRenderer;
-
 import com.google.common.collect.Lists;
+import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.util.ResourceLocation;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import ruiseki.integrateddynamics.IntegratedDynamics;
+import ruiseki.integrateddynamics.Reference;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartState;
 import ruiseki.integrateddynamics.api.part.IPartType;
@@ -21,10 +22,7 @@ import ruiseki.okcore.client.gui.container.GuiContainerExtended;
 import ruiseki.okcore.client.gui.image.IImage;
 import ruiseki.okcore.helper.Helpers;
 import ruiseki.okcore.helper.LangHelpers;
-import ruiseki.okcore.init.ModBase;
 import ruiseki.okcore.inventory.IGuiContainerProvider;
-import ruiseki.okcore.inventory.container.ExtendedInventoryContainer;
-import ruiseki.okcore.inventory.container.button.IButtonActionClient;
 
 /**
  * Gui for parts.
@@ -33,11 +31,9 @@ import ruiseki.okcore.inventory.container.button.IButtonActionClient;
  */
 @EqualsAndHashCode(callSuper = false)
 @Data
-public abstract class GuiMultipart<P extends IPartType<P, S> & IGuiContainerProvider, S extends IPartState<P>>
-    extends GuiContainerExtended {
+public abstract class GuiMultipart<P extends IPartType<P, S> & IGuiContainerProvider, S extends IPartState<P>, C extends ContainerMultipart<P, S>>
+    extends GuiContainerExtended<C> {
 
-    public static final int BUTTON_SETTINGS = 1;
-    public static final int BUTTON_OFFSETS = 2;
     private static final Rectangle ITEM_POSITION = new Rectangle(8, 17, 18, 18);
 
     protected final DisplayErrorsComponent displayErrors = new DisplayErrorsComponent();
@@ -50,84 +46,73 @@ public abstract class GuiMultipart<P extends IPartType<P, S> & IGuiContainerProv
      *
      * @param container The container to make the GUI for.
      */
-    public GuiMultipart(ContainerMultipart<P, S> container) {
+    public GuiMultipart(C container) {
         super(container);
         this.target = container.getTarget();
         this.partContainer = container.getPartContainer();
         this.partType = container.getPartType();
-
-        putButtonAction(BUTTON_SETTINGS, new IButtonActionClient<GuiContainerExtended, ExtendedInventoryContainer>() {
-
-            @Override
-            public void onAction(int buttonId, GuiContainerExtended gui, ExtendedInventoryContainer container) {
-                IntegratedDynamics._instance.getGuiHandler()
-                    .setTemporaryData(
-                        ExtendedGuiHandler.PART,
-                        getTarget().getCenter()
-                            .getSide()); // Pass the side as extra data to the gui
-            }
-        });
-        putButtonAction(BUTTON_OFFSETS, new IButtonActionClient<GuiContainerExtended, ExtendedInventoryContainer>() {
-
-            @Override
-            public void onAction(int buttonId, GuiContainerExtended gui, ExtendedInventoryContainer container) {
-                IntegratedDynamics._instance.getGuiHandler()
-                    .setTemporaryData(
-                        ExtendedGuiHandler.PART,
-                        getTarget().getCenter()
-                            .getSide()); // Pass the side as extra data to the gui
-            }
-        });
     }
 
     @Override
     public void initGui() {
-        buttonList.clear();
+        clearWidgets();
         super.initGui();
         if (getPartType() instanceof PartTypeConfigurable<?, ?>configurable) {
             if (configurable.hasSettings()) {
-                buttonList.add(
+                addRenderableWidget(
                     new GuiButtonImage(
-                        ContainerMultipart.BUTTON_SETTINGS,
                         this.guiLeft - 20,
                         this.guiTop + 0,
                         18,
                         18,
+                        LangHelpers.localize("gui.integrateddynamics.part_settings"),
+                        createServerPressable(ContainerMultipart.BUTTON_SETTINGS, (button) -> {
+                            IntegratedDynamics._instance.getGuiHandler()
+                                .setTemporaryData(
+                                    ExtendedGuiHandler.PART,
+                                    getTarget().getCenter()
+                                        .getSide()); // Pass the side as extra data to the gui
+                        }),
                         new IImage[] { ruiseki.integrateddynamics.client.gui.image.Images.BUTTON_BACKGROUND_INACTIVE,
                             ruiseki.integrateddynamics.client.gui.image.Images.BUTTON_MIDDLE_SETTINGS },
+                        false,
                         0,
-                        0,
-                        false));
+                        0));
             }
             if (configurable.supportsOffsets()) {
-                buttonList.add(
+                addRenderableWidget(
                     new GuiButtonImage(
-                        ContainerMultipart.BUTTON_OFFSETS,
                         this.guiLeft - 20,
                         this.guiTop + 20,
                         18,
                         18,
+                        LangHelpers.localize("gui.integrateddynamics.part_offsets"),
+                        createServerPressable(ContainerMultipart.BUTTON_OFFSETS, (button) -> {
+                            IntegratedDynamics._instance.getGuiHandler()
+                                .setTemporaryData(
+                                    ExtendedGuiHandler.PART,
+                                    getTarget().getCenter()
+                                        .getSide()); // Pass the side as extra data to the gui
+                        }),
                         new IImage[] { ruiseki.integrateddynamics.client.gui.image.Images.BUTTON_BACKGROUND_INACTIVE,
                             ruiseki.integrateddynamics.client.gui.image.Images.BUTTON_MIDDLE_OFFSET },
+                        false,
                         0,
-                        0,
-                        false));
+                        0));
             }
         }
     }
 
     @SuppressWarnings("unchecked")
     public S getPartState() {
-        return ((ContainerMultipart<P, S>) container).getPartState();
+        return container.getPartState();
     }
 
     protected abstract String getNameId();
 
     @Override
-    public String getGuiTexture() {
-        return getContainer().getGuiProvider()
-            .getModGui()
-            .getReferenceValue(ModBase.REFKEY_TEXTURE_PATH_GUI) + getNameId() + ".png";
+    protected ResourceLocation constructGuiTexture() {
+        return new ResourceLocation(Reference.MOD_ID, "textures/gui/" + getNameId() + ".png");
     }
 
     protected float colorSmoothener(float color) {
@@ -150,19 +135,21 @@ public abstract class GuiMultipart<P extends IPartType<P, S> & IGuiContainerProv
 
     @Override
     protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
-        super.drawGuiContainerForegroundLayer(mouseX, mouseY);
+        // super.drawGuiContainerForegroundLayer(mouseX, mouseY);
 
-        if (func_146978_c(-20, 0, 18, 18, mouseX, mouseY)) {
-            drawTooltip(
-                Lists.newArrayList(LangHelpers.localize("gui.integrateddynamics.part_settings")),
-                mouseX - guiLeft,
-                mouseY - guiTop);
-        }
-        if (func_146978_c(-20, 20, 18, 18, mouseX, mouseY)) {
-            drawTooltip(
-                Lists.newArrayList(LangHelpers.localize("gui.integrateddynamics.part_offsets")),
-                mouseX - guiLeft,
-                mouseY - guiTop);
+        if (getPartType() instanceof PartTypeConfigurable<?, ?> configurable) {
+            if (configurable.hasSettings() && isPointInRegion(-20, 0, 18, 18, mouseX, mouseY)) {
+                drawTooltip(
+                    Lists.newArrayList(LangHelpers.localize("gui.integrateddynamics.part_settings")),
+                    mouseX - guiLeft,
+                    mouseY - guiTop);
+            }
+            if (configurable.supportsOffsets() && isPointInRegion(-20, 20, 18, 18, mouseX, mouseY)) {
+                drawTooltip(
+                    Lists.newArrayList(LangHelpers.localize("gui.integrateddynamics.part_offsets")),
+                    mouseX - guiLeft,
+                    mouseY - guiTop);
+            }
         }
     }
 }

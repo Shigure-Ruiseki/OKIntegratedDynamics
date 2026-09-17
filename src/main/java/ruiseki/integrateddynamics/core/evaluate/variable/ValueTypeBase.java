@@ -2,6 +2,7 @@ package ruiseki.integrateddynamics.core.evaluate.variable;
 
 import java.util.List;
 
+import net.minecraft.nbt.NBTBase;
 import net.minecraft.util.ResourceLocation;
 
 import org.jetbrains.annotations.Nullable;
@@ -108,7 +109,7 @@ public abstract class ValueTypeBase<V extends IValue> implements IValueType<V> {
     }
 
     @Override
-    public LangHelpers.UnlocalizedString canDeserialize(String value) {
+    public LangHelpers.UnlocalizedString canDeserialize(NBTBase value) {
         try {
             deserialize(value);
             return null;
@@ -120,6 +121,16 @@ public abstract class ValueTypeBase<V extends IValue> implements IValueType<V> {
     @Override
     public V materialize(V value) throws EvaluationException {
         return value;
+    }
+
+    @Override
+    public V parseString(String value) throws EvaluationException {
+        throw new UnsupportedOperationException("parseString is not supported on value type " + this);
+    }
+
+    @Override
+    public String toString(V value) {
+        throw new UnsupportedOperationException("toString is not supported on value type " + this);
     }
 
     @Override

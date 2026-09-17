@@ -2,12 +2,18 @@ package ruiseki.integrateddynamics.core.evaluate.variable;
 
 import java.util.Locale;
 
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagInt;
 import net.minecraft.util.EnumChatFormatting;
+import net.minecraftforge.common.util.Constants;
 
 import lombok.ToString;
 import ruiseki.integrateddynamics.GeneralConfig;
+import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueTypeNumber;
+import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.okcore.helper.Helpers;
+import ruiseki.okcore.helper.LangHelpers;
 
 /**
  * Value type with values that are integers.
@@ -37,13 +43,33 @@ public class ValueTypeInteger extends ValueTypeBase<ValueTypeInteger.ValueIntege
     }
 
     @Override
-    public String serialize(ValueInteger value) {
+    public NBTBase serialize(ValueInteger value) {
+        return new NBTTagInt(value.getRawValue());
+    }
+
+    @Override
+    public ValueInteger deserialize(NBTBase value) {
+        if (value.getId() == Constants.NBT.TAG_INT) {
+            return ValueInteger.of(((NBTTagInt) value).func_150287_d());
+        } else {
+            throw new IllegalArgumentException(String.format("Value \"%s\" could not be parsed to an integer.", value));
+        }
+    }
+
+    @Override
+    public String toString(ValueInteger value) {
         return Integer.toString(value.getRawValue());
     }
 
     @Override
-    public ValueInteger deserialize(String value) {
-        return ValueInteger.of(Integer.parseInt(value));
+    public ValueInteger parseString(String value) throws EvaluationException {
+        try {
+            return ValueInteger.of(Integer.parseInt(value));
+        } catch (NumberFormatException e) {
+            throw new EvaluationException(
+                LangHelpers
+                    .localize(L10NValues.OPERATOR_ERROR_PARSE, value, LangHelpers.localize(getUnlocalizedName())));
+        }
     }
 
     @Override

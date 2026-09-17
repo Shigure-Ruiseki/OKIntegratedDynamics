@@ -2,6 +2,8 @@ package ruiseki.integrateddynamics.network.packet;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagByte;
 import net.minecraft.world.World;
 
 import cpw.mods.fml.relauncher.Side;
@@ -25,7 +27,7 @@ import ruiseki.okcore.network.PacketCodec;
 public class LogicProgrammerValueTypeOperatorValueChangedPacket extends PacketCodec {
 
     @CodecField
-    private String operatorValue;
+    private NBTBase operatorValue;
 
     public LogicProgrammerValueTypeOperatorValueChangedPacket() {
 
@@ -35,7 +37,7 @@ public class LogicProgrammerValueTypeOperatorValueChangedPacket extends PacketCo
         try {
             this.operatorValue = ValueHelpers.serializeRaw(value);
         } catch (Exception e) {
-            this.operatorValue = "";
+            this.operatorValue = new NBTTagByte((byte) 0);
         }
     }
 

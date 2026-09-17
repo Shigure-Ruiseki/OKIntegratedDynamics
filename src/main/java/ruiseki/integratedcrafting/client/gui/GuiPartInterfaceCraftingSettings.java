@@ -10,36 +10,33 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.util.ForgeDirection;
 
+import org.lwjgl.input.Keyboard;
+
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
-import ruiseki.integratedcrafting.IntegratedCrafting;
 import ruiseki.integratedcrafting.Reference;
 import ruiseki.integratedcrafting.inventory.container.ContainerPartInterfaceCraftingSettings;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartTarget;
-import ruiseki.integrateddynamics.client.gui.image.Images;
 import ruiseki.integrateddynamics.core.client.gui.GuiTextFieldDropdown;
-import ruiseki.integrateddynamics.core.client.gui.container.GuiMultipartAspects;
 import ruiseki.integrateddynamics.core.client.gui.container.GuiPartSettings;
 import ruiseki.okcore.client.gui.component.button.GuiButtonCheckbox;
-import ruiseki.okcore.client.gui.component.button.GuiButtonImage;
 import ruiseki.okcore.client.gui.component.input.GuiArrowedListField;
 import ruiseki.okcore.client.gui.component.input.GuiNumberField;
 import ruiseki.okcore.client.gui.component.input.IInputListener;
-import ruiseki.okcore.client.gui.image.IImage;
 import ruiseki.okcore.client.renderer.GlStateManager;
 import ruiseki.okcore.helper.Helpers;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.ValueNotifierHelpers;
-import ruiseki.okcore.init.ModBase;
 
 /**
  * @author rubensworks
  */
-public class GuiPartInterfaceCraftingSettings extends GuiPartSettings implements IInputListener {
+public class GuiPartInterfaceCraftingSettings extends GuiPartSettings<ContainerPartInterfaceCraftingSettings>
+    implements IInputListener {
 
     private GuiArrowedListField<IngredientComponent<?, ?>> ingredientComponentSideSelector = null;
     private GuiTextFieldDropdown<ForgeDirection> dropdownFieldSide = null;
@@ -57,23 +54,11 @@ public class GuiPartInterfaceCraftingSettings extends GuiPartSettings implements
             target,
             partContainer,
             partType);
-
-        putButtonAction(GuiMultipartAspects.BUTTON_OFFSETS, (buttonId, gui, container) -> onSave());
     }
 
     @Override
-    protected ContainerPartInterfaceCraftingSettings getContainer() {
-        return (ContainerPartInterfaceCraftingSettings) super.getContainer();
-    }
-
-    protected ResourceLocation constructResourceLocation() {
-        return new ResourceLocation(Reference.MOD_ID, getGuiTexture());
-    }
-
-    @Override
-    public String getGuiTexture() {
-        return IntegratedCrafting._instance.getReferenceValue(ModBase.REFKEY_TEXTURE_PATH_GUI)
-            + "part_interface_settings.png";
+    protected ResourceLocation constructGuiTexture() {
+        return new ResourceLocation(Reference.MOD_ID, "textures/gui/part_interface_settings.png");
     }
 
     @Override
@@ -118,29 +103,14 @@ public class GuiPartInterfaceCraftingSettings extends GuiPartSettings implements
     public void initGui() {
         super.initGui();
 
-        if (getContainer().getPartType()
-            .supportsOffsets()) {
-            buttonList.add(
-                new GuiButtonImage(
-                    GuiMultipartAspects.BUTTON_OFFSETS,
-                    this.guiLeft - 20,
-                    this.guiTop + 10,
-                    18,
-                    18,
-                    new IImage[] { Images.BUTTON_BACKGROUND_INACTIVE, Images.BUTTON_MIDDLE_OFFSET },
-                    0,
-                    0,
-                    false));
-        }
-
         ingredientComponentSideSelector = new GuiArrowedListField<IngredientComponent<?, ?>>(
-            0,
             Minecraft.getMinecraft().fontRenderer,
             guiLeft + 106,
             guiTop + 9,
             68,
             15,
             true,
+            LangHelpers.localize("gui.integratedcrafting.partsettings.ingredient"),
             true,
             Lists.newArrayList(IngredientComponent.REGISTRY.getValuesCollection())) {
 
@@ -156,31 +126,30 @@ public class GuiPartInterfaceCraftingSettings extends GuiPartSettings implements
             .map(SideDropdownEntry::new)
             .collect(Collectors.toList());
         dropdownFieldSide = new GuiTextFieldDropdown(
-            0,
             Minecraft.getMinecraft().fontRenderer,
             guiLeft + 106,
             guiTop + 34,
             68,
             14,
+            LangHelpers.localize("gui.integrateddynamics.partsettings.side"),
             true,
             Sets.newHashSet(dropdownEntries));
         setSideInDropdownField(
             selectedIngredientComponent,
-            ((ContainerPartInterfaceCraftingSettings) container)
-                .getTargetSideOverrideValue(selectedIngredientComponent));
+            container.getTargetSideOverrideValue(selectedIngredientComponent));
         dropdownFieldSide.setMaxStringLength(15);
         dropdownFieldSide.setVisible(true);
         dropdownFieldSide.setTextColor(16777215);
         dropdownFieldSide.setCanLoseFocus(true);
 
         numberFieldChannelInterfaceCrafting = new GuiNumberField(
-            0,
             Minecraft.getMinecraft().fontRenderer,
             guiLeft + 106,
             guiTop + 134,
             70,
             14,
             true,
+            LangHelpers.localize("gui.integrateddynamics.partsettings.update_interval"),
             true);
         numberFieldChannelInterfaceCrafting.setPositiveOnly(false);
         numberFieldChannelInterfaceCrafting.setMaxStringLength(15);
@@ -189,53 +158,66 @@ public class GuiPartInterfaceCraftingSettings extends GuiPartSettings implements
         numberFieldChannelInterfaceCrafting.setCanLoseFocus(true);
 
         checkboxFieldDisabledCraftingCheck = new GuiButtonCheckbox(
-            5,
             guiLeft + 110,
             guiTop + 149,
             110,
             10,
             LangHelpers.localize("gui.integratedcrafting.partsettings.craftingcheckdisabled"),
+            (entry) -> {},
             false);
-        buttonList.add(checkboxFieldDisabledCraftingCheck);
 
         checkboxFieldBlockingMode = new GuiButtonCheckbox(
-            6,
             guiLeft + 110,
             guiTop + 159,
             110,
             10,
             LangHelpers.localize("gui.integratedcrafting.partsettings.blockingmode"),
+            (entry) -> {},
             false);
-        buttonList.add(checkboxFieldBlockingMode);
 
         this.refreshValues();
     }
 
     @Override
-    protected void keyTyped(char typedChar, int keyCode) {
-        if (!this.checkHotbarKeys(keyCode)) {
-            boolean handled = (this.numberFieldChannelInterfaceCrafting != null
-                && this.numberFieldChannelInterfaceCrafting.textboxKeyTyped(typedChar, keyCode))
-                || (this.dropdownFieldSide != null && this.dropdownFieldSide.textboxKeyTyped(typedChar, keyCode));
-
-            if (!handled) {
-                super.keyTyped(typedChar, keyCode);
-            }
+    public boolean charTyped(char typedChar, int keyCode) {
+        if (!this.numberFieldChannelInterfaceCrafting.charTyped(typedChar, keyCode)
+            && !this.dropdownFieldSide.charTyped(typedChar, keyCode)) {
+            return super.charTyped(typedChar, keyCode);
         }
+        return true;
     }
 
     @Override
-    protected void mouseClicked(int mouseX, int mouseY, int mouseButton) {
-        if (this.ingredientComponentSideSelector != null) {
-            this.ingredientComponentSideSelector.mouseClicked(mouseX, mouseY, mouseButton);
+    public boolean keyPressed(int typedChar, int keyCode, int modifiers) {
+        if (typedChar != Keyboard.KEY_ESCAPE) {
+            if (this.numberFieldChannelInterfaceCrafting.keyPressed(typedChar, keyCode, modifiers)) {
+                return true;
+            }
+            if (this.dropdownFieldSide.keyPressed(typedChar, keyCode, modifiers)) {
+                return true;
+            }
         }
-        if (this.dropdownFieldSide != null) {
-            this.dropdownFieldSide.mouseClicked(mouseX, mouseY, mouseButton);
+        return super.keyPressed(typedChar, keyCode, modifiers);
+    }
+
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
+        if (this.ingredientComponentSideSelector.mouseClicked(mouseX, mouseY, mouseButton)) {
+            return true;
         }
-        if (this.numberFieldChannelInterfaceCrafting != null) {
-            this.numberFieldChannelInterfaceCrafting.mouseClicked(mouseX, mouseY, mouseButton);
+        if (this.dropdownFieldSide.mouseClicked(mouseX, mouseY, mouseButton)) {
+            return true;
         }
-        super.mouseClicked(mouseX, mouseY, mouseButton);
+        if (this.numberFieldChannelInterfaceCrafting.mouseClicked(mouseX, mouseY, mouseButton)) {
+            return true;
+        }
+        if (this.checkboxFieldDisabledCraftingCheck.mouseClicked(mouseX, mouseY, mouseButton)) {
+            return true;
+        }
+        if (this.checkboxFieldBlockingMode.mouseClicked(mouseX, mouseY, mouseButton)) {
+            return true;
+        }
+        return super.mouseClicked(mouseX, mouseY, mouseButton);
     }
 
     @Override
@@ -248,39 +230,35 @@ public class GuiPartInterfaceCraftingSettings extends GuiPartSettings implements
             guiTop + 12,
             Helpers.RGBToInt(0, 0, 0));
         GlStateManager.color(1, 1, 1, 1);
-        ingredientComponentSideSelector.drawTextBox(Minecraft.getMinecraft(), mouseX, mouseY);
-        dropdownFieldSide.drawTextBox(Minecraft.getMinecraft(), mouseX, mouseY);
+        ingredientComponentSideSelector.drawScreen(mouseX, mouseY, partialTicks);
+        dropdownFieldSide.drawScreen(mouseX, mouseY, partialTicks);
 
         fontRendererObj.drawString(
             LangHelpers.localize("gui.integratedcrafting.partsettings.channel.interface"),
             guiLeft + 8,
             guiTop + 137,
             0);
-        numberFieldChannelInterfaceCrafting.drawTextBox(Minecraft.getMinecraft(), mouseX, mouseY);
+        numberFieldChannelInterfaceCrafting.drawScreen(mouseX, mouseY, partialTicks);
 
         fontRendererObj.drawString(
             LangHelpers.localize("gui.integratedcrafting.partsettings.craftingcheckdisabled"),
             guiLeft + 8,
             guiTop + 152,
             0);
+        checkboxFieldDisabledCraftingCheck.drawScreen(mouseX, mouseY, partialTicks);
+
         fontRendererObj.drawString(
             LangHelpers.localize("gui.integratedcrafting.partsettings.blockingmode"),
             guiLeft + 8,
             guiTop + 162,
             0);
+        checkboxFieldBlockingMode.drawScreen(mouseX, mouseY, partialTicks);
     }
 
     @Override
     protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
         super.drawGuiContainerForegroundLayer(mouseX, mouseY);
 
-        if (getContainer().getPartType()
-            .supportsOffsets() && func_146978_c(-20, 0 + 10, 18, 18, mouseX, mouseY)) {
-            drawTooltip(
-                Lists.newArrayList(LangHelpers.localize("gui.integrateddynamics.part_offsets")),
-                mouseX - guiLeft,
-                mouseY - guiTop);
-        }
     }
 
     @Override

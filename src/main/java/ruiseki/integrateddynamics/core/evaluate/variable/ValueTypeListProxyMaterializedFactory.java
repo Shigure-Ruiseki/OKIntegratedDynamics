@@ -1,5 +1,8 @@
 package ruiseki.integrateddynamics.core.evaluate.variable;
 
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.ResourceLocation;
 
 import com.google.common.collect.ImmutableList;
@@ -28,9 +31,12 @@ public class ValueTypeListProxyMaterializedFactory implements
     }
 
     @Override
-    public String serialize(ValueTypeListProxyMaterialized<IValueType<IValue>, IValue> values)
+    public NBTBase serialize(ValueTypeListProxyMaterialized<IValueType<IValue>, IValue> values)
         throws IValueTypeListProxyFactoryTypeRegistry.SerializationException {
-        StringBuilder sb = new StringBuilder();
+        NBTTagCompound tag = new NBTTagCompound();
+        NBTTagList list = new NBTTagList();
+
+        // Store headers
         IValueType<IValue> valueType = values.getValueType();
         boolean heterogeneous = false;
         try {
@@ -40,35 +46,55 @@ public class ValueTypeListProxyMaterializedFactory implements
                 heterogeneous = true;
             }
         } catch (EvaluationException e) {}
-        sb.append(
+        tag.setString(
+            "valueType",
             valueType.getUniqueName()
                 .toString());
+        tag.setTag("values", list);
+
+        // Store values
         for (IValue value : values) {
+            NBTBase valueSerialized = ValueHelpers.serializeRaw(value);
             if (heterogeneous) {
-                sb.append(ELEMENT_DELIMITER);
-                sb.append(
+                NBTTagCompound valueTag = new NBTTagCompound();
+                valueTag.setString(
+                    "valueType",
                     value.getType()
                         .getUniqueName()
                         .toString());
+                valueTag.setTag("value", valueSerialized);
+                list.appendTag(valueTag);
+            } else {
+                list.appendTag(valueSerialized);
             }
-            sb.append(ELEMENT_DELIMITER);
-            sb.append(
-                ValueHelpers.serializeRaw(value)
-                    .replaceAll(ELEMENT_DELIMITER, ELEMENT_DELIMITER_ESCAPED));
         }
-        return sb.toString();
+
+        return tag;
     }
 
     @Override
-    public ValueTypeListProxyMaterialized<IValueType<IValue>, IValue> deserialize(String value)
+    public ValueTypeListProxyMaterialized<IValueType<IValue>, IValue> deserialize(NBTBase value)
         throws IValueTypeListProxyFactoryTypeRegistry.SerializationException {
-        String[] split = value.split(ELEMENT_DELIMITER_SPLITREGEX);
-        if (split.length < 1) {
+        if (!(value instanceof NBTTagCompound)) {
             throw new IValueTypeListProxyFactoryTypeRegistry.SerializationException(
-                String.format("Could not deserialize the serialized materialized list proxy value '%s'.", value));
+                String.format(
+                    "Could not deserialize the materialized list value '%s' as it is not a CompoundTag.",
+                    value));
+        }
+        NBTTagCompound tag = (NBTTagCompound) value;
+        if (!tag.hasKey("valueType")) {
+            throw new IValueTypeListProxyFactoryTypeRegistry.SerializationException(
+                String.format(
+                    "Could not deserialize the materialized list value '%s' as it is missing a valueType.",
+                    value));
+        }
+        if (!tag.hasKey("values")) {
+            throw new IValueTypeListProxyFactoryTypeRegistry.SerializationException(
+                String
+                    .format("Could not deserialize the materialized list value '%s' as it is missing values.", value));
         }
 
-        String valueTypeName = split[0];
+        String valueTypeName = tag.getString("valueType");
         IValueType<IValue> valueType = ValueTypes.REGISTRY.getValueType(new ResourceLocation(valueTypeName));
         if (valueType == null) {
             throw new IValueTypeListProxyFactoryTypeRegistry.SerializationException(
@@ -76,31 +102,28 @@ public class ValueTypeListProxyMaterializedFactory implements
                     "Could not deserialize the serialized materialized list proxy value because the value type by name '%s' was not found.",
                     valueTypeName));
         }
+
         boolean heterogeneous = valueType.isCategory();
         IValueType<IValue> elementValueType = valueType;
 
         ImmutableList.Builder<IValue> builder = ImmutableList.builder();
-        for (int i = 1; i < split.length; ++i) {
+        NBTTagList list = (NBTTagList) tag.getTag("values");
+        for (Object valueTag : list.tagList) {
+            NBTBase valueSerialized;
             if (heterogeneous) {
-                elementValueType = ValueTypes.REGISTRY.getValueType(new ResourceLocation(split[i]));
+                String subValueTypeName = ((NBTTagCompound) valueTag).getString("valueType");
+                elementValueType = ValueTypes.REGISTRY.getValueType(new ResourceLocation(subValueTypeName));
                 if (elementValueType == null) {
                     throw new IValueTypeListProxyFactoryTypeRegistry.SerializationException(
                         String.format(
                             "Could not deserialize the serialized materialized list proxy value because the value type by name '%s' was not found.",
-                            split[i]));
+                            subValueTypeName));
                 }
-                ++i;
-                if (i >= split.length) {
-                    throw new IValueTypeListProxyFactoryTypeRegistry.SerializationException(
-                        String.format(
-                            "Detected invalid heterogeneous serialized materialized list proxy value for the value '%s'.",
-                            value));
-                }
+                valueSerialized = ((NBTTagCompound) valueTag).getTag("value");
+            } else {
+                valueSerialized = (NBTBase) valueTag;
             }
-            String serializedValue = split[i];
-            IValue deserializedValue = ValueHelpers.deserializeRaw(
-                elementValueType,
-                serializedValue.replaceAll(ELEMENT_DELIMITER_ESCAPED, ELEMENT_DELIMITER));
+            IValue deserializedValue = ValueHelpers.deserializeRaw(elementValueType, valueSerialized);
             builder.add(deserializedValue);
         }
 

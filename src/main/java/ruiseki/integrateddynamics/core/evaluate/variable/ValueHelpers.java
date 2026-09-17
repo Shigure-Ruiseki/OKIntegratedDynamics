@@ -1,5 +1,6 @@
 package ruiseki.integrateddynamics.core.evaluate.variable;
 
+import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 
@@ -7,7 +8,6 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.Nullable;
 
-import ruiseki.integrateddynamics.GeneralConfig;
 import ruiseki.integrateddynamics.api.PartStateException;
 import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.evaluate.operator.IOperator;
@@ -187,13 +187,9 @@ public class ValueHelpers {
      * @param value The value.
      * @return The NBT tag.
      */
-    public static String serializeRaw(IValue value) {
-        String raw = value.getType()
+    public static NBTBase serializeRaw(IValue value) {
+        return value.getType()
             .serialize(value);
-        if (raw.length() >= GeneralConfig.maxValueByteSize) {
-            return "TOO LONG";
-        }
-        return raw;
     }
 
     /**
@@ -207,8 +203,9 @@ public class ValueHelpers {
         tag.setString(
             "valueType",
             value.getType()
-                .getUnlocalizedName());
-        tag.setString("value", serializeRaw(value));
+                .getUniqueName()
+                .toString());
+        tag.setTag("value", serializeRaw(value));
         return tag;
     }
 
@@ -223,22 +220,49 @@ public class ValueHelpers {
         if (valueType == null) {
             return null;
         }
-        return deserializeRaw(valueType, tag.getString("value"));
+        return deserializeRaw(valueType, tag.getCompoundTag("value"));
     }
 
     /**
      * Deserialize the given value string to a value.
      *
-     * @param valueType   The value type to deserialize for.
-     * @param valueString The value string.
-     * @param <T>         The type of value.
+     * @param valueType The value type to deserialize for.
+     * @param nbt       The value string.
+     * @param <T>       The type of value.
      * @return The value.
      */
-    public static <T extends IValue> T deserializeRaw(IValueType<T> valueType, String valueString) {
-        if ("TOO LONG".equals(valueString)) {
-            return valueType.getDefault();
-        }
-        return valueType.deserialize(valueString);
+    public static <T extends IValue> T deserializeRaw(IValueType<T> valueType, NBTBase nbt) {
+        return valueType.deserialize(nbt);
+    }
+
+    /**
+     * Get the string representation of the given value.
+     * This is useful for cases when the value needs to be edited in a GUI.
+     *
+     * This corresponds to {@link #parseString(IValueType, String)}.
+     *
+     * @param value A value.
+     * @param <T>   The value type.
+     * @return A string representation of the given value.
+     */
+    public static <T extends IValue> String toString(T value) {
+        return value.getType()
+            .toString(value);
+    }
+
+    /**
+     * Parse the given string representation of a value.
+     *
+     * This corresponds to {@link #toString(IValue)}.
+     *
+     * @param valueType The value type to parse by.
+     * @param value     A string representation of a value.
+     * @param <T>       The value type.
+     * @return A value.
+     * @throws EvaluationException If parsing failed.
+     */
+    public static <T extends IValue> T parseString(IValueType<T> valueType, String value) throws EvaluationException {
+        return valueType.parseString(value);
     }
 
     /**
