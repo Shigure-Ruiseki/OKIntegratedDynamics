@@ -137,7 +137,7 @@ public class GuiInterfaceSettings extends GuiPartSettings<ContainerInterfaceSett
 
     @Override
     protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
-        super.drawGuiContainerForegroundLayer(mouseX, mouseY);
+        // super.drawGuiContainerForegroundLayer(mouseX, mouseY);
 
         if (isPointInRegion(-20, 0, 18, 18, mouseX, mouseY)) {
             drawTooltip(

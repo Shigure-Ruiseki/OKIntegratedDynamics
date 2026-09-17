@@ -216,7 +216,8 @@ public class GuiTerminalCraftingJobsPlan extends GuiContainerExtended<ContainerT
 
     @Override
     protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
-        super.drawGuiContainerForegroundLayer(mouseX, mouseY);
+        // super.drawGuiContainerForegroundLayer(mouseX, mouseY);
+
         if (this.guiCraftingPlan != null) {
             guiCraftingPlan.drawGuiContainerForegroundLayer(mouseX, mouseY);
         } else if (this.guiCraftingPlanFlat != null) {

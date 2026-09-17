@@ -98,13 +98,9 @@ public class ContainerPartWriter<P extends IPartTypeWriter<P, S> & IGuiContainer
 
     @Override
     protected IInventory constructInputSlotsInventory() {
-        if (!player.worldObj.isRemote) {
-            SimpleInventory inventory = getPartState().getInventory();
-            inventory.addDirtyMarkListener(this);
-            return inventory;
-        } else {
-            return super.constructInputSlotsInventory();
-        }
+        SimpleInventory inventory = getPartState().getInventory();
+        inventory.addDirtyMarkListener(this);
+        return inventory;
     }
 
     @Override

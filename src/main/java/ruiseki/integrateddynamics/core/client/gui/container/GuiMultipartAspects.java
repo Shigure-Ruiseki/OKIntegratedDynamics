@@ -85,7 +85,13 @@ public abstract class GuiMultipartAspects<P extends IPartType<P, S> & IGuiContai
                         18,
                         18,
                         LangHelpers.localize("gui.integrateddynamics.partsettings"),
-                        createServerPressable(ContainerMultipartAspects.BUTTON_SETTINGS, (button) -> {}),
+                        createServerPressable(ContainerMultipartAspects.BUTTON_SETTINGS, (button) -> {
+                            IntegratedDynamics._instance.getGuiHandler()
+                                .setTemporaryData(
+                                    ExtendedGuiHandler.PART,
+                                    getTarget().getCenter()
+                                        .getSide()); // Pass the side as extra data to the gui
+                        }),
                         new IImage[] { ruiseki.integrateddynamics.client.gui.image.Images.BUTTON_BACKGROUND_INACTIVE,
                             ruiseki.integrateddynamics.client.gui.image.Images.BUTTON_MIDDLE_SETTINGS },
                         false,
@@ -227,7 +233,7 @@ public abstract class GuiMultipartAspects<P extends IPartType<P, S> & IGuiContai
 
     @Override
     protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
-        super.drawGuiContainerForegroundLayer(mouseX, mouseY);
+        // super.drawGuiContainerForegroundLayer(mouseX, mouseY);
 
         C container = getContainer();
         for (int i = 0; i < container.getPageSize(); i++) {

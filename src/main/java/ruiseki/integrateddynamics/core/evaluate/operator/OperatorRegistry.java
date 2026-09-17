@@ -148,8 +148,7 @@ public class OperatorRegistry implements IOperatorRegistry {
 
     @Override
     public IOperatorVariableFacade getVariableFacade(int id, NBTTagCompound tag) {
-        if (!tag.hasKey("operatorName")
-            || !tag.hasKey("variableIds")) {
+        if (!tag.hasKey("operatorName") || !tag.hasKey("variableIds")) {
             return INVALID_FACADE;
         }
         IOperator operator;

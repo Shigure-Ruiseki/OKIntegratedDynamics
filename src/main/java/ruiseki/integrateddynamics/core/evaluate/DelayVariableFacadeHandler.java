@@ -2,8 +2,8 @@ package ruiseki.integrateddynamics.core.evaluate;
 
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
-
 import net.minecraftforge.common.util.Constants;
+
 import ruiseki.integrateddynamics.Reference;
 import ruiseki.integrateddynamics.api.item.IDelayVariableFacade;
 import ruiseki.integrateddynamics.api.item.IVariableFacadeHandler;

@@ -182,7 +182,7 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
                 15,
                 LangHelpers.localize("gui.integratedterminals.terminal_storage.setdefaults"),
                 createServerPressable(ContainerTerminalStorageBase.BUTTON_SET_DEFAULTS, b -> {}),
-                true,
+                false,
                 Images.ANVIL,
                 -2,
                 -3));

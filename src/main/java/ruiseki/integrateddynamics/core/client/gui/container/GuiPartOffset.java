@@ -223,7 +223,8 @@ public class GuiPartOffset<T extends ContainerPartOffset> extends GuiContainerEx
 
     @Override
     protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
-        super.drawGuiContainerForegroundLayer(mouseX, mouseY);
+        // super.drawGuiContainerForegroundLayer(mouseX, mouseY);
+
         this.fontRendererObj.drawString(LangHelpers.localize("gui.integrateddynamics.part_offsets"), 8, 6, 4210752);
 
         if (func_146978_c(0, 0, 90, 18, mouseX, mouseY)) {

@@ -219,7 +219,7 @@ public class GuiLogicProgrammerBase<T extends ContainerLogicProgrammerBase> exte
     @SuppressWarnings("unchecked")
     @Override
     protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
-        super.drawGuiContainerForegroundLayer(mouseX, mouseY);
+        // super.drawGuiContainerForegroundLayer(mouseX, mouseY);
 
         subGuiHolder.drawGuiContainerForegroundLayer(
             this.guiLeft,

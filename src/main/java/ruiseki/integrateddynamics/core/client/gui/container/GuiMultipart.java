@@ -136,7 +136,7 @@ public abstract class GuiMultipart<P extends IPartType<P, S> & IGuiContainerProv
 
     @Override
     protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
-        super.drawGuiContainerForegroundLayer(mouseX, mouseY);
+        // super.drawGuiContainerForegroundLayer(mouseX, mouseY);
 
         if (func_146978_c(-20, 0, 18, 18, mouseX, mouseY)) {
             drawTooltip(

@@ -7,8 +7,8 @@ import java.util.Map;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.ResourceLocation;
-
 import net.minecraftforge.common.util.Constants;
+
 import org.apache.logging.log4j.Level;
 
 import com.google.common.collect.Maps;
@@ -20,7 +20,6 @@ import ruiseki.integrateddynamics.api.part.aspect.property.IAspectProperties;
 import ruiseki.integrateddynamics.api.part.aspect.property.IAspectPropertyTypeInstance;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueHelpers;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
-import ruiseki.okcore.helper.MinecraftHelpers;
 
 /**
  * A property that can be used inside aspects.

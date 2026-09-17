@@ -65,14 +65,23 @@ public class GuiElementValueTypeBooleanRenderPattern<S extends ISubGuiBox, G ext
     }
 
     @Override
-    public void drawGuiContainerBackgroundLayer(int guiLeft, int guiTop, TextureManager textureManager, FontRenderer fontRenderer, float partialTicks, int mouseX, int mouseY) {
-        super.drawGuiContainerBackgroundLayer(guiLeft, guiTop, textureManager, fontRenderer, partialTicks, mouseX, mouseY);
+    public void drawGuiContainerBackgroundLayer(int guiLeft, int guiTop, TextureManager textureManager,
+        FontRenderer fontRenderer, float partialTicks, int mouseX, int mouseY) {
+        super.drawGuiContainerBackgroundLayer(
+            guiLeft,
+            guiTop,
+            textureManager,
+            fontRenderer,
+            partialTicks,
+            mouseX,
+            mouseY);
         this.checkbox.drawScreen(mouseX, mouseY, partialTicks);
     }
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
-        return this.checkbox.mouseClicked(mouseX, mouseY, mouseButton) || super.mouseClicked(mouseX, mouseY, mouseButton);
+        return this.checkbox.mouseClicked(mouseX, mouseY, mouseButton)
+            || super.mouseClicked(mouseX, mouseY, mouseButton);
     }
 
     @Override

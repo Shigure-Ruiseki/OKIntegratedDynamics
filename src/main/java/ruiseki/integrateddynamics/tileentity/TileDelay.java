@@ -7,13 +7,13 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.world.World;
+import net.minecraftforge.common.util.Constants;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Queues;
 
 import lombok.Getter;
 import lombok.Setter;
-import net.minecraftforge.common.util.Constants;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.evaluate.expression.VariableAdapter;

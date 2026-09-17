@@ -4,11 +4,11 @@ import java.util.List;
 
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraftforge.common.util.Constants;
 
 import com.google.common.collect.Lists;
 
 import lombok.Data;
-import net.minecraftforge.common.util.Constants;
 
 /**
  * @author rubensworks
