@@ -92,6 +92,7 @@ public class GuiTerminalStorageCraftingOptionAmountBase<L, C extends ContainerTe
             53,
             14,
             true,
+            LangHelpers.localize("gui.integratedterminals.amount"),
             true);
         numberField.setPositiveOnly(true);
         numberField.setMaxStringLength(5);
@@ -107,7 +108,13 @@ public class GuiTerminalStorageCraftingOptionAmountBase<L, C extends ContainerTe
                         .getAmount())));
         addRenderableWidget(numberField);
 
-        scrollBar = new GuiScrollBar(guiLeft + 153, guiTop + 15, 54, this::setFirstRow, 3);
+        scrollBar = new GuiScrollBar(
+            guiLeft + 153,
+            guiTop + 15,
+            54,
+            LangHelpers.localize("gui.okcore.scrollbar"),
+            this::setFirstRow,
+            3);
         scrollBar.setTotalRows(outputs.size() - 1);
         addWidget(scrollBar);
 

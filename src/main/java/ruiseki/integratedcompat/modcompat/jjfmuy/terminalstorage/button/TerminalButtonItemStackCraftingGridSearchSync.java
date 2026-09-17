@@ -94,11 +94,11 @@ public class TerminalButtonItemStackCraftingGridSearchSync implements
     @SideOnly(Side.CLIENT)
     public void getTooltip(EntityPlayer player, boolean tooltipFlag, List<String> lines) {
         lines.add(
-            EnumChatFormatting.GRAY + LangHelpers
-                .localize("gui.integratedterminalscompat.terminal_storage.craftinggrid." + mod + "sync.info"));
+            EnumChatFormatting.GRAY
+                + LangHelpers.localize("gui.integratedcompat.terminal_storage.craftinggrid." + mod + "sync.info"));
         lines.add(
-            EnumChatFormatting.ITALIC + LangHelpers
-                .localize(active ? "general.cyclopscore.info.enabled" : "general.cyclopscore.info.disabled"));
+            EnumChatFormatting.ITALIC
+                + LangHelpers.localize(active ? "general.okcore.info.enabled" : "general.okcore.info.disabled"));
     }
 
     public boolean isActive() {

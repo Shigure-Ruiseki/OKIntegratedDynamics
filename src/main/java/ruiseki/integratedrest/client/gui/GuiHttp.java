@@ -68,6 +68,7 @@ public class GuiHttp extends GuiActiveVariableBase<ContainerHttp, TileHttp> {
             105,
             14,
             true,
+            "",
             true,
             valueTypes);
         valueTypeSelector.setListener(

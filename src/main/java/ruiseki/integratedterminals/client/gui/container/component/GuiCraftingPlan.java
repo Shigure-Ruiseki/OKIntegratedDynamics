@@ -35,7 +35,6 @@ import ruiseki.integratedterminals.api.terminalstorage.crafting.TerminalCrafting
 import ruiseki.integratedterminals.capability.ingredient.IngredientComponentTerminalStorageHandlerConfig;
 import ruiseki.integratedterminals.core.client.gui.GuiTerminalStorage;
 import ruiseki.okcore.client.gui.IGuiEventListener;
-import ruiseki.okcore.client.gui.IRenderable;
 import ruiseki.okcore.client.gui.RenderItemExtendedSlotCount;
 import ruiseki.okcore.client.gui.component.GuiScrollBar;
 import ruiseki.okcore.client.gui.component.IWidgetEventListener;
@@ -60,8 +59,7 @@ import ruiseki.okcore.helper.RenderHelpers;
  *
  * @author rubensworks
  */
-public class GuiCraftingPlan extends Gui
-    implements IWidgetRenderable, IRenderable, IWidgetEventListener, IGuiEventListener {
+public class GuiCraftingPlan extends Gui implements IWidgetRenderable, IWidgetEventListener, IGuiEventListener {
 
     public static final int ELEMENT_WIDTH = 221;
     private static final int ELEMENT_HEIGHT = 16;
@@ -97,7 +95,13 @@ public class GuiCraftingPlan extends Gui
         this.visibleElements = Lists.newArrayList(this.elements);
         this.valid = craftingPlan.getStatus()
             .isValid();
-        this.scrollBar = new GuiScrollBar(guiLeft + x + 227, guiTop + y + 0, 178, this::setFirstRow, visibleRows);
+        this.scrollBar = new GuiScrollBar(
+            guiLeft + x + 227,
+            guiTop + y + 0,
+            178,
+            LangHelpers.localize("gui.okcore.scrollbar"),
+            this::setFirstRow,
+            visibleRows);
         this.scrollBar.setTotalRows(visibleElements.size());
         this.label = LangHelpers.localize(craftingPlan.getUnlocalizedLabel());
         this.tickDuration = craftingPlan.getTickDuration();
@@ -610,6 +614,21 @@ public class GuiCraftingPlan extends Gui
     @Override
     public void setY(int y) {
         this.y = y;
+    }
+
+    @Override
+    public int getWidth() {
+        return 0;
+    }
+
+    @Override
+    public int getHeight() {
+        return 0;
+    }
+
+    @Override
+    public String getTooltip() {
+        return "";
     }
 
     @Override

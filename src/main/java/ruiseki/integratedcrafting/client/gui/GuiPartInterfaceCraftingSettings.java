@@ -110,6 +110,7 @@ public class GuiPartInterfaceCraftingSettings extends GuiPartSettings<ContainerP
             68,
             15,
             true,
+            LangHelpers.localize("gui.integratedcrafting.partsettings.ingredient"),
             true,
             Lists.newArrayList(IngredientComponent.REGISTRY.getValuesCollection())) {
 
@@ -130,12 +131,12 @@ public class GuiPartInterfaceCraftingSettings extends GuiPartSettings<ContainerP
             guiTop + 34,
             68,
             14,
+            LangHelpers.localize("gui.integrateddynamics.partsettings.side"),
             true,
             Sets.newHashSet(dropdownEntries));
         setSideInDropdownField(
             selectedIngredientComponent,
-            ((ContainerPartInterfaceCraftingSettings) container)
-                .getTargetSideOverrideValue(selectedIngredientComponent));
+            container.getTargetSideOverrideValue(selectedIngredientComponent));
         dropdownFieldSide.setMaxStringLength(15);
         dropdownFieldSide.setVisible(true);
         dropdownFieldSide.setTextColor(16777215);
@@ -148,6 +149,7 @@ public class GuiPartInterfaceCraftingSettings extends GuiPartSettings<ContainerP
             70,
             14,
             true,
+            LangHelpers.localize("gui.integrateddynamics.partsettings.update_interval"),
             true);
         numberFieldChannelInterfaceCrafting.setPositiveOnly(false);
         numberFieldChannelInterfaceCrafting.setMaxStringLength(15);
@@ -257,13 +259,6 @@ public class GuiPartInterfaceCraftingSettings extends GuiPartSettings<ContainerP
     protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
         super.drawGuiContainerForegroundLayer(mouseX, mouseY);
 
-        if (getContainer().getPartType()
-            .supportsOffsets() && func_146978_c(-20, 0 + 10, 18, 18, mouseX, mouseY)) {
-            drawTooltip(
-                Lists.newArrayList(LangHelpers.localize("gui.integrateddynamics.part_offsets")),
-                mouseX - guiLeft,
-                mouseY - guiTop);
-        }
     }
 
     @Override

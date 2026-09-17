@@ -147,6 +147,7 @@ public class GuiPartSettings<C extends ContainerPartSettings> extends GuiContain
                 guiTop + getFieldSideY(),
                 70,
                 14,
+                LangHelpers.localize("gui.integrateddynamics.partsettings.side"),
                 true,
                 Sets.newHashSet(dropdownEntries));
             setSideInDropdownField(getCurrentSide());
@@ -164,6 +165,7 @@ public class GuiPartSettings<C extends ContainerPartSettings> extends GuiContain
                 70,
                 14,
                 true,
+                LangHelpers.localize("gui.integrateddynamics.partsettings.update_interval"),
                 true);
             numberFieldUpdateInterval.setMaxStringLength(15);
             numberFieldUpdateInterval.setVisible(true);
@@ -184,6 +186,7 @@ public class GuiPartSettings<C extends ContainerPartSettings> extends GuiContain
                 70,
                 14,
                 true,
+                LangHelpers.localize("gui.integrateddynamics.partsettings.priority"),
                 true);
             numberFieldPriority.setPositiveOnly(false);
             numberFieldPriority.setMaxStringLength(15);
@@ -200,6 +203,7 @@ public class GuiPartSettings<C extends ContainerPartSettings> extends GuiContain
                 70,
                 14,
                 true,
+                LangHelpers.localize("gui.integrateddynamics.partsettings.channel"),
                 true);
             numberFieldChannel.setPositiveOnly(false);
             numberFieldChannel.setMaxStringLength(15);

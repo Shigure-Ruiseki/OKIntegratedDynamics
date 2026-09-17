@@ -105,6 +105,7 @@ public class GuiPartOffset<T extends ContainerPartOffset> extends GuiContainerEx
             46,
             14,
             true,
+            LangHelpers.localize("gui.integrateddynamics.partsettings.partoffset.x"),
             true);
         numberFieldX.setMaxStringLength(4);
         numberFieldX.setVisible(true);
@@ -118,6 +119,7 @@ public class GuiPartOffset<T extends ContainerPartOffset> extends GuiContainerEx
             46,
             14,
             true,
+            LangHelpers.localize("gui.integrateddynamics.partsettings.partoffset.y"),
             true);
         numberFieldY.setMaxStringLength(4);
         numberFieldY.setVisible(true);
@@ -131,6 +133,7 @@ public class GuiPartOffset<T extends ContainerPartOffset> extends GuiContainerEx
             46,
             14,
             true,
+            LangHelpers.localize("gui.integrateddynamics.partsettings.partoffset.z"),
             true);
         numberFieldZ.setMaxStringLength(4);
         numberFieldZ.setVisible(true);

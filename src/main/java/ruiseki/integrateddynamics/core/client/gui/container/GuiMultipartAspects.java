@@ -84,7 +84,7 @@ public abstract class GuiMultipartAspects<P extends IPartType<P, S> & IGuiContai
                         this.guiTop + 0,
                         18,
                         18,
-                        LangHelpers.localize("gui.integrateddynamics.partsettings"),
+                        LangHelpers.localize("gui.integrateddynamics.part_settings"),
                         createServerPressable(ContainerMultipartAspects.BUTTON_SETTINGS, (button) -> {
                             IntegratedDynamics._instance.getGuiHandler()
                                 .setTemporaryData(
@@ -279,6 +279,22 @@ public abstract class GuiMultipartAspects<P extends IPartType<P, S> & IGuiContai
                         drawTooltip(lines, mouseX - this.guiLeft, mouseY - this.guiTop);
                     }
                 }
+            }
+        }
+
+
+        if (getPartType() instanceof PartTypeConfigurable<?, ?> configurable) {
+            if (isPointInRegion(-20, 0, 18, 18, mouseX, mouseY)) {
+                drawTooltip(
+                    Lists.newArrayList(LangHelpers.localize("gui.integrateddynamics.part_settings")),
+                    mouseX - guiLeft,
+                    mouseY - guiTop);
+            }
+            if (isPointInRegion(-20, 20, 18, 18, mouseX, mouseY)) {
+                drawTooltip(
+                    Lists.newArrayList(LangHelpers.localize("gui.integrateddynamics.part_offsets")),
+                    mouseX - guiLeft,
+                    mouseY - guiTop);
             }
         }
     }

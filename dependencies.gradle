@@ -35,7 +35,7 @@
  */
 dependencies {
     implementation("com.github.GTNewHorizons:GTNHLib:0.11.48:dev")
-    implementation("com.github.Shigure-Ruiseki:OKCore:9bbd0a0bda:dev") { transitive = false }
+    implementation("com.github.Shigure-Ruiseki:OKCore:26.09.17.0:dev") { transitive = false }
 
     devOnlyNonPublishable('com.github.GTNewHorizons:NotEnoughItems:2.8.141-GTNH:dev')
     devOnlyNonPublishable("com.github.GTNewHorizons:ModularUI2:2.3.90-1.7.10:dev") { transitive = false }

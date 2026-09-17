@@ -14,6 +14,7 @@ import ruiseki.integrateddynamics.api.client.gui.subgui.ISubGuiBox;
 import ruiseki.integrateddynamics.core.logicprogrammer.RenderPattern;
 import ruiseki.integrateddynamics.network.packet.LogicProgrammerValueTypeStringValueChangedPacket;
 import ruiseki.okcore.client.gui.component.input.GuiTextFieldExtended;
+import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.persist.IDirtyMarkListener;
 
 /**
@@ -47,6 +48,10 @@ public class GuiElementValueTypeStringRenderPattern<S extends ISubGuiBox, G exte
             guiTop + searchY,
             searchWidth,
             fontRenderer.FONT_HEIGHT + 3,
+            LangHelpers.localize(
+                this.getElement()
+                    .getValueType()
+                    .getUnlocalizedName()),
             true);
         this.textField.setMaxStringLength(512);
         this.textField.setEnableBackgroundDrawing(false);

@@ -384,6 +384,7 @@ public class ValueTypeListLPElement extends ValueTypeLPElementBase {
                 100,
                 15,
                 true,
+                LangHelpers.localize("valuetype.integrateddynamics.value_type"),
                 true,
                 getValueTypes());
             valueTypeSelector.setListener(this);

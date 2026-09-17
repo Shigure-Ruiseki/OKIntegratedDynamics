@@ -118,6 +118,7 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
             CHANNEL_WIDTH,
             CHANNEL_HEIGHT,
             true,
+            LangHelpers.localize("gui.integratedterminals.channel"),
             true,
             getContainer().getChannelStrings());
         fieldChannel.setMaxStringLength(15);
@@ -135,6 +136,7 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
             guiLeft + getGridXSize() + 33,
             guiTop + SCROLL_Y + 1,
             getScrollHeight() - 2,
+            "",
             firstRow -> this.firstRow = firstRow,
             0) {
 
@@ -162,7 +164,8 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
             guiLeft + SEARCH_X,
             guiTop + SEARCH_Y,
             getSearchWidth() - 10,
-            SEARCH_HEIGHT);
+            SEARCH_HEIGHT,
+            LangHelpers.localize("gui.okcore.search"));
         fieldSearch.setMaxStringLength(50);
         fieldSearch.setVisible(true);
         fieldSearch.setTextColor(16777215);

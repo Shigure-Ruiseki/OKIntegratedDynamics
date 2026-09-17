@@ -43,14 +43,15 @@ public class GuiTextFieldDropdown<T> extends GuiTextFieldExtended {
     private int enabledColor = 14737632;
     private int disabledColor = 7368816;
 
-    public GuiTextFieldDropdown(FontRenderer fontrenderer, int x, int y, int width, int height, boolean background,
-        Set<IDropdownEntry<T>> possibilities) {
-        super(fontrenderer, x, y, width, height, background);
+    public GuiTextFieldDropdown(FontRenderer fontrenderer, int x, int y, int width, int height, String narrationMessage,
+        boolean background, Set<IDropdownEntry<T>> possibilities) {
+        super(fontrenderer, x, y, width, height, narrationMessage, background);
         setPossibilities(Objects.requireNonNull(possibilities));
     }
 
-    public GuiTextFieldDropdown(FontRenderer fontrenderer, int x, int y, int width, int height, boolean background) {
-        this(fontrenderer, x, y, width, height, background, Collections.emptySet());
+    public GuiTextFieldDropdown(FontRenderer fontrenderer, int x, int y, int width, int height, String narrationMessage,
+        boolean background) {
+        this(fontrenderer, x, y, width, height, narrationMessage, background, Collections.emptySet());
     }
 
     public void setPossibilities(Set<IDropdownEntry<T>> possibilities) {

@@ -109,6 +109,7 @@ public abstract class ValueTypeRecipeAdapterLPElementPropertiesSubGui<E extends 
             guiTop + getY() + 33,
             134,
             14,
+            LangHelpers.localize("gui.okcore.search"),
             true,
             Sets.newHashSet());
         this.inputTagsDropdown.setDropdownEntryListener((entry) -> saveGuiToState());

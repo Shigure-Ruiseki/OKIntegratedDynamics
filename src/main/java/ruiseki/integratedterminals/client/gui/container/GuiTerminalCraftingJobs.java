@@ -66,7 +66,13 @@ public class GuiTerminalCraftingJobs extends GuiContainerExtended<ContainerTermi
     public void initGui() {
         super.initGui();
 
-        scrollBar = new GuiScrollBar(guiLeft + 236, guiTop + 18, 178, this::setFirstRow, 10);
+        scrollBar = new GuiScrollBar(
+            guiLeft + 236,
+            guiTop + 18,
+            178,
+            LangHelpers.localize("gui.okcore.scrollbar"),
+            this::setFirstRow,
+            10);
         scrollBar.setTotalRows(
             getContainer().getCraftingJobs()
                 .size() - 1);

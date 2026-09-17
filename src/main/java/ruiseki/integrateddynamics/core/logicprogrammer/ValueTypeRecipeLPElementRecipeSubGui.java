@@ -55,6 +55,7 @@ public class ValueTypeRecipeLPElementRecipeSubGui
             y,
             searchWidth,
             fontRenderer.FONT_HEIGHT + 3,
+            LangHelpers.localize("gui.okcore.search"),
             true);
         box.setMaxStringLength(10);
         box.setEnableBackgroundDrawing(false);

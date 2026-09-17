@@ -528,6 +528,7 @@ public class GuiLogicProgrammerBase<T extends ContainerLogicProgrammerBase> exte
                 0,
                 searchWidth,
                 11,
+                LangHelpers.localize("gui.cyclopscore.search"),
                 true);
             this.searchField.setMaxStringLength(64);
             this.searchField.setEnableBackgroundDrawing(true);

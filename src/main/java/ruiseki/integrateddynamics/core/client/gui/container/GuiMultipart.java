@@ -2,10 +2,9 @@ package ruiseki.integrateddynamics.core.client.gui.container;
 
 import java.awt.Rectangle;
 
+import com.google.common.collect.Lists;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.util.ResourceLocation;
-
-import com.google.common.collect.Lists;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -66,8 +65,8 @@ public abstract class GuiMultipart<P extends IPartType<P, S> & IGuiContainerProv
                         this.guiTop + 0,
                         18,
                         18,
-                        LangHelpers.localize("gui.integrateddynamics.partsettings"),
-                        createServerPressable(ContainerMultipart.BUTTON_OFFSETS, (button) -> {
+                        LangHelpers.localize("gui.integrateddynamics.part_settings"),
+                        createServerPressable(ContainerMultipart.BUTTON_SETTINGS, (button) -> {
                             IntegratedDynamics._instance.getGuiHandler()
                                 .setTemporaryData(
                                     ExtendedGuiHandler.PART,
@@ -138,17 +137,19 @@ public abstract class GuiMultipart<P extends IPartType<P, S> & IGuiContainerProv
     protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
         // super.drawGuiContainerForegroundLayer(mouseX, mouseY);
 
-        if (func_146978_c(-20, 0, 18, 18, mouseX, mouseY)) {
-            drawTooltip(
-                Lists.newArrayList(LangHelpers.localize("gui.integrateddynamics.part_settings")),
-                mouseX - guiLeft,
-                mouseY - guiTop);
-        }
-        if (func_146978_c(-20, 20, 18, 18, mouseX, mouseY)) {
-            drawTooltip(
-                Lists.newArrayList(LangHelpers.localize("gui.integrateddynamics.part_offsets")),
-                mouseX - guiLeft,
-                mouseY - guiTop);
+        if (getPartType() instanceof PartTypeConfigurable<?, ?> configurable) {
+            if (configurable.hasSettings() && isPointInRegion(-20, 0, 18, 18, mouseX, mouseY)) {
+                drawTooltip(
+                    Lists.newArrayList(LangHelpers.localize("gui.integrateddynamics.part_settings")),
+                    mouseX - guiLeft,
+                    mouseY - guiTop);
+            }
+            if (configurable.supportsOffsets() && isPointInRegion(-20, 20, 18, 18, mouseX, mouseY)) {
+                drawTooltip(
+                    Lists.newArrayList(LangHelpers.localize("gui.integrateddynamics.part_offsets")),
+                    mouseX - guiLeft,
+                    mouseY - guiTop);
+            }
         }
     }
 }

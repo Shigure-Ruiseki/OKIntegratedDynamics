@@ -7,8 +7,6 @@ import net.minecraft.util.ResourceLocation;
 
 import org.lwjgl.input.Keyboard;
 
-import com.google.common.collect.Lists;
-
 import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartTarget;
@@ -65,6 +63,7 @@ public class GuiInterfaceSettings extends GuiPartSettings<ContainerInterfaceSett
             70,
             14,
             true,
+            LangHelpers.localize("gui.integratedtunnels.partsettings.channel.interface"),
             true);
         numberFieldChannelInterface.setPositiveOnly(false);
         numberFieldChannelInterface.setMaxStringLength(15);
@@ -138,13 +137,6 @@ public class GuiInterfaceSettings extends GuiPartSettings<ContainerInterfaceSett
     @Override
     protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
         // super.drawGuiContainerForegroundLayer(mouseX, mouseY);
-
-        if (isPointInRegion(-20, 0, 18, 18, mouseX, mouseY)) {
-            drawTooltip(
-                Lists.newArrayList(LangHelpers.localize("gui.integrateddynamics.part_offsets")),
-                mouseX - guiLeft,
-                mouseY - guiTop);
-        }
     }
 
     @Override

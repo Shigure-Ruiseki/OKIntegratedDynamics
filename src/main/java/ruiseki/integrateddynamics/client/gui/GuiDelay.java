@@ -69,6 +69,7 @@ public class GuiDelay extends GuiActiveVariableBase<ContainerDelay, TileDelay> {
             73,
             14,
             true,
+            LangHelpers.localize("gui.integrateddynamics.partsettings.update_interval"),
             true);
         numberFieldUpdateInterval.setPositiveOnly(true);
         numberFieldUpdateInterval.setMaxStringLength(64);
@@ -84,6 +85,7 @@ public class GuiDelay extends GuiActiveVariableBase<ContainerDelay, TileDelay> {
             73,
             14,
             true,
+            LangHelpers.localize("gui.integrateddynamics.delay.capacity"),
             true);
         numberFieldCapacity.setMinValue(1);
         numberFieldCapacity.setMaxValue(BlockDelayConfig.maxHistoryCapacity);

@@ -90,6 +90,7 @@ public class GuiLabeller extends GuiContainerConfigurable<ContainerLabeller> {
             this.guiTop + searchY,
             searchWidth,
             this.fontRendererObj.FONT_HEIGHT,
+            LangHelpers.localize("gui.okcore.search"),
             true);
         this.searchField.setMaxStringLength(64);
         this.searchField.setEnableBackgroundDrawing(false);

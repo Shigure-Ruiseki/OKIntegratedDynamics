@@ -18,7 +18,6 @@ import lombok.EqualsAndHashCode;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.Reference;
 import ruiseki.integrateddynamics.api.client.gui.subgui.ISubGuiBox;
-import ruiseki.okcore.client.gui.IRenderable;
 import ruiseki.okcore.client.gui.component.button.GuiButtonExtended;
 import ruiseki.okcore.client.renderer.GlStateManager;
 import ruiseki.okcore.init.ModBase;
@@ -29,7 +28,7 @@ import ruiseki.okcore.init.ModBase;
  * @author rubensworks
  */
 @SideOnly(Side.CLIENT)
-public abstract class SubGuiBox extends Gui implements ISubGuiBox, IRenderable {
+public abstract class SubGuiBox extends Gui implements ISubGuiBox {
 
     protected static final ResourceLocation TEXTURE = new ResourceLocation(
         Reference.MOD_ID,
@@ -50,11 +49,10 @@ public abstract class SubGuiBox extends Gui implements ISubGuiBox, IRenderable {
         subGuiHolder.initGui(guiLeft, guiTop);
     }
 
-    @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
         for (int i = 0; i < this.buttonList.size(); ++i) {
             this.buttonList.get(i)
-                .drawButton(Minecraft.getMinecraft(), mouseX, mouseY);
+                .drawScreen(mouseX, mouseY, partialTicks);
         }
     }
 
@@ -200,7 +198,7 @@ public abstract class SubGuiBox extends Gui implements ISubGuiBox, IRenderable {
     @Data
     public static class Base extends SubGuiBox {
 
-        private final int x, y, width, height;
+        private int x, y, width, height;
 
         public Base(Box type, int x, int y, int width, int height) {
             super(type);
@@ -234,7 +232,6 @@ public abstract class SubGuiBox extends Gui implements ISubGuiBox, IRenderable {
         public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
             return super.mouseClicked(mouseX, mouseY, mouseButton);
         }
-
     }
 
 }

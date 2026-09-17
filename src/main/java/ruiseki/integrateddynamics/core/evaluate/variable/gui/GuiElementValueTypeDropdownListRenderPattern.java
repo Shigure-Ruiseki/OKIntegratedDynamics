@@ -18,6 +18,7 @@ import ruiseki.integrateddynamics.core.client.gui.IDropdownEntry;
 import ruiseki.integrateddynamics.core.client.gui.IDropdownEntryListener;
 import ruiseki.integrateddynamics.core.logicprogrammer.RenderPattern;
 import ruiseki.integrateddynamics.network.packet.LogicProgrammerValueTypeStringValueChangedPacket;
+import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.persist.IDirtyMarkListener;
 
 /**
@@ -53,6 +54,7 @@ public class GuiElementValueTypeDropdownListRenderPattern<T, S extends ISubGuiBo
             guiTop + searchY,
             searchWidth,
             fontRenderer.FONT_HEIGHT + 3,
+            LangHelpers.localize("gui.okcore.search"),
             true,
             getDropdownPossibilities());
         this.searchField.setDropdownEntryListener(this);
