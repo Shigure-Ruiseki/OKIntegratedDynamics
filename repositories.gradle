@@ -1,5 +1,8 @@
 // Add any additional repositories for your dependencies here.
 
 repositories {
-    maven { url 'https://jitpack.io' }
+    maven { url = uri("https://maven.fentanylsolutions.org/github/") }
+    maven {
+        url 'https://jitpack.io'
+    }
 }

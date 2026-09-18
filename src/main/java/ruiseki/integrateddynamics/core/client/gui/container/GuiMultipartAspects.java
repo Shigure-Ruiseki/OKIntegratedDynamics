@@ -11,7 +11,6 @@ import net.minecraft.util.ResourceLocation;
 
 import org.apache.commons.lang3.tuple.Triple;
 
-import com.cleanroommc.modularui.utils.GlStateManager;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
@@ -32,6 +31,7 @@ import ruiseki.okcore.client.gui.component.button.GuiButtonImage;
 import ruiseki.okcore.client.gui.component.button.GuiButtonText;
 import ruiseki.okcore.client.gui.container.GuiContainerScrolling;
 import ruiseki.okcore.client.gui.image.IImage;
+import ruiseki.okcore.client.renderer.GlStateManager;
 import ruiseki.okcore.helper.Helpers;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.RenderHelpers;
@@ -282,8 +282,7 @@ public abstract class GuiMultipartAspects<P extends IPartType<P, S> & IGuiContai
             }
         }
 
-
-        if (getPartType() instanceof PartTypeConfigurable<?, ?> configurable) {
+        if (getPartType() instanceof PartTypeConfigurable<?, ?>configurable) {
             if (isPointInRegion(-20, 0, 18, 18, mouseX, mouseY)) {
                 drawTooltip(
                     Lists.newArrayList(LangHelpers.localize("gui.integrateddynamics.part_settings")),

@@ -21,7 +21,6 @@ import net.minecraft.world.World;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.oredict.OreDictionary;
 
-import com.cleanroommc.modularui.api.inventory.ClickType;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
@@ -367,8 +366,9 @@ public class ValueTypeRecipeLPElement extends ValueTypeLPElementBase {
     public static boolean slotClickCommon(int slotId, Slot slot, int mouseButton, int clickType, EntityPlayer player,
         List<ItemMatchProperties> inputStacks, int propertySlotCount, Consumer<Integer> setPropertySubGui,
         Consumer<Integer> refreshPropertiesGui) {
+        final int CLICK_TYPE_QUICK_MOVE = 1;
         if (slotId >= SLOT_OFFSET && slotId < propertySlotCount + SLOT_OFFSET) {
-            if (ClickType.fromNumber(clickType) == ClickType.QUICK_MOVE && mouseButton == 0) {
+            if (clickType == CLICK_TYPE_QUICK_MOVE && mouseButton == 0) {
                 if (player.worldObj.isRemote) {
                     int id = slotId - SLOT_OFFSET;
                     setPropertySubGui.accept(id);
@@ -379,7 +379,7 @@ public class ValueTypeRecipeLPElement extends ValueTypeLPElementBase {
                 ItemMatchProperties props = inputStacks.get(slotId - SLOT_OFFSET);
                 int quantityCurrent = props.getTagQuantity();
                 int quantityNew;
-                if (ClickType.fromNumber(clickType) == ClickType.QUICK_MOVE) {
+                if (clickType == CLICK_TYPE_QUICK_MOVE) {
                     quantityNew = mouseButton == 0 ? (quantityCurrent + 1) / 2 : quantityCurrent * 2;
                 } else {
                     quantityNew = mouseButton == 0 ? quantityCurrent - 1 : quantityCurrent + 1;

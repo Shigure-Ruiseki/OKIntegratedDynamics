@@ -14,12 +14,8 @@ pluginManagement {
         mavenCentral()
         mavenLocal()
     }
-    plugins {
-        id 'org.jetbrains.kotlin.jvm' version '2.4.0'
-    }
 }
 
 plugins {
-    id("com.gtnewhorizons.gtnhsettingsconvention") version("2.0.30")
-    id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0'
+    id("com.gtnewhorizons.gtnhsettingsconvention") version("2.0.31")
 }

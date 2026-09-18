@@ -2,9 +2,10 @@ package ruiseki.integrateddynamics.core.client.gui.container;
 
 import java.awt.Rectangle;
 
-import com.google.common.collect.Lists;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.util.ResourceLocation;
+
+import com.google.common.collect.Lists;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -137,7 +138,7 @@ public abstract class GuiMultipart<P extends IPartType<P, S> & IGuiContainerProv
     protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
         // super.drawGuiContainerForegroundLayer(mouseX, mouseY);
 
-        if (getPartType() instanceof PartTypeConfigurable<?, ?> configurable) {
+        if (getPartType() instanceof PartTypeConfigurable<?, ?>configurable) {
             if (configurable.hasSettings() && isPointInRegion(-20, 0, 18, 18, mouseX, mouseY)) {
                 drawTooltip(
                     Lists.newArrayList(LangHelpers.localize("gui.integrateddynamics.part_settings")),

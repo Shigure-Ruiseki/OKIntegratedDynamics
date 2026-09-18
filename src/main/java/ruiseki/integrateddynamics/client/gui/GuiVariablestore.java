@@ -3,11 +3,10 @@ package ruiseki.integrateddynamics.client.gui;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.util.ResourceLocation;
 
-import com.cleanroommc.modularui.utils.GlStateManager;
-
 import ruiseki.integrateddynamics.inventory.container.ContainerVariablestore;
 import ruiseki.integrateddynamics.tileentity.TileVariablestore;
 import ruiseki.okcore.client.gui.container.GuiContainerConfigurable;
+import ruiseki.okcore.client.renderer.GlStateManager;
 
 /**
  * Gui for the variablestore

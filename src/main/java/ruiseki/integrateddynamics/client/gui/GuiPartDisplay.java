@@ -6,7 +6,6 @@ import net.minecraft.entity.player.EntityPlayer;
 
 import org.lwjgl.input.Keyboard;
 
-import com.cleanroommc.modularui.utils.GlStateManager;
 import com.google.common.collect.Lists;
 
 import ruiseki.integrateddynamics.api.part.IPartContainer;
@@ -18,6 +17,7 @@ import ruiseki.integrateddynamics.inventory.container.ContainerPartPanelVariable
 import ruiseki.okcore.client.gui.component.button.GuiButtonText;
 import ruiseki.okcore.client.key.KeyConflictContext;
 import ruiseki.okcore.client.key.KeyModifier;
+import ruiseki.okcore.client.renderer.GlStateManager;
 import ruiseki.okcore.helper.GuiHelpers;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.RenderHelpers;
