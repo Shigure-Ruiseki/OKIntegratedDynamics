@@ -13,7 +13,10 @@ import org.apache.commons.lang3.ArrayUtils;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import ruiseki.okcore.config.extendedconfig.BiomeConfig;
+import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 import ruiseki.okcore.helper.Helpers;
+import ruiseki.okcore.world.biome.BiomeBase;
 
 /**
  * Meneglin biome.
@@ -21,12 +24,12 @@ import ruiseki.okcore.helper.Helpers;
  * @author rubensworks
  *
  */
-public class BiomeMeneglin extends BiomeGenBase {
+public class BiomeMeneglin extends BiomeBase {
 
     private static final int[] FLOWER_METAS = new int[] { 1, 8, 6 };
 
-    public BiomeMeneglin(int id) {
-        super(id);
+    public BiomeMeneglin(ExtendedConfig<BiomeConfig, BiomeGenBase> eConfig) {
+        super(eConfig);
 
         this.setHeight(new BiomeGenBase.Height(0.4F, 0.4F));
         this.setTemperatureRainfall(0.75F, 0.25F);

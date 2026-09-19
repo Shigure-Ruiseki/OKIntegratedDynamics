@@ -53,7 +53,6 @@ public class GuiPartReader<P extends IPartTypeReader<P, S> & IGuiContainerProvid
 
     @Override
     protected void drawAdditionalElementInfo(ContainerPartReader<P, S> container, int index, IAspectRead aspect) {
-        FontRenderer fontRenderer = fontRendererObj;
 
         // Get current aspect value
         ContainerPartReader<P, S> reader = container;
