@@ -73,6 +73,11 @@ public abstract class GuiMultipartAspects<P extends IPartType<P, S> & IGuiContai
     }
 
     @Override
+    protected Rectangle getScrollRegion() {
+        return new Rectangle(this.guiLeft + 9, this.guiTop + 18, 160, 105);
+    }
+
+    @Override
     public void initGui() {
         clearWidgets();
         super.initGui();
