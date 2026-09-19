@@ -2,7 +2,6 @@ package ruiseki.integrateddynamics.client.render.valuetype;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.entity.RenderItem;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
@@ -17,7 +16,6 @@ import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueObjectTypeItemStack;
-import ruiseki.okcore.client.renderer.GlStateManager;
 import ruiseki.okcore.helper.Helpers;
 import ruiseki.okcore.helper.ItemHelpers;
 
@@ -32,8 +30,8 @@ public class ItemValueTypeWorldRenderer implements IValueTypeWorldRenderer {
 
     @Override
     public void renderValue(IPartContainer partContainer, double x, double y, double z, float partialTick,
-                            int destroyStage, ForgeDirection direction, IPartType partType, IValue value,
-                            TileEntityRendererDispatcher rendererDispatcher, float alpha) {
+        int destroyStage, ForgeDirection direction, IPartType partType, IValue value,
+        TileEntityRendererDispatcher rendererDispatcher, float alpha) {
 
         ValueObjectTypeItemStack.ValueItemStack valueItemStack = (ValueObjectTypeItemStack.ValueItemStack) value;
         ItemStack itemStack = valueItemStack.getRawValue();
@@ -62,7 +60,7 @@ public class ItemValueTypeWorldRenderer implements IValueTypeWorldRenderer {
         GL11.glPushMatrix();
 
         GL11.glScalef(0.75F, -0.75F, -0.001F);
-        GL11.glRotatef(180,1F, 0F, 0F);
+        GL11.glRotatef(180, 1F, 0F, 0F);
         GL11.glTranslatef(0.0F, 0.0F, 0.0F);
 
         RenderHelper.enableGUIStandardItemLighting();
