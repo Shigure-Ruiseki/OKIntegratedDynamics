@@ -39,12 +39,7 @@ public class BiomeMeneglinConfig extends BiomeConfig {
      * Make a new instance.
      */
     public BiomeMeneglinConfig() {
-        super(
-            IntegratedDynamics._instance,
-            Reference.BIOME_MENEGLIN,
-            "biome_meneglin",
-            null,
-            BiomeMeneglin::new);
+        super(IntegratedDynamics._instance, Reference.BIOME_MENEGLIN, "biome_meneglin", null, BiomeMeneglin::new);
     }
 
     @Override

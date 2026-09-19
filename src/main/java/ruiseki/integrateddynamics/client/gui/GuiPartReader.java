@@ -2,7 +2,6 @@ package ruiseki.integrateddynamics.client.gui;
 
 import java.awt.Rectangle;
 
-import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
