@@ -44,7 +44,7 @@ public class BiomeMeneglinConfig extends BiomeConfig {
             Reference.BIOME_MENEGLIN,
             "biome_meneglin",
             null,
-            config -> new BiomeMeneglin(config.getId()));
+            BiomeMeneglin::new);
     }
 
     @Override
