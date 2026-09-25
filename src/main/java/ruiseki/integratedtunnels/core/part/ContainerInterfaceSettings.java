@@ -2,6 +2,7 @@ package ruiseki.integratedtunnels.core.part;
 
 import java.util.Optional;
 
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.IInventory;
 
@@ -9,6 +10,7 @@ import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.core.helper.PartHelpers;
+import ruiseki.integrateddynamics.core.inventory.container.ContainerMultipartAspects;
 import ruiseki.integrateddynamics.core.inventory.container.ContainerPartSettings;
 import ruiseki.okcore.helper.ValueNotifierHelpers;
 import ruiseki.okcore.inventory.SimpleInventory;
@@ -40,6 +42,12 @@ public class ContainerInterfaceSettings extends ContainerPartSettings {
             partContainer,
             partType);
         lastChannelInterfaceValueId = getNextValueId();
+
+        putButtonAction(ContainerMultipartAspects.BUTTON_OFFSETS, (s, containerExtended) -> {
+            if (!player.worldObj.isRemote) {
+                PartHelpers.openContainerPartOffsets((EntityPlayerMP) player, target.getCenter(), partType);
+            }
+        });
     }
 
     @Override

@@ -70,11 +70,6 @@ public class GuiLogicProgrammerBase<T extends ContainerLogicProgrammerBase> exte
     }
 
     @Override
-    protected Rectangle getScrollRegion() {
-        return new Rectangle(this.guiLeft + 19, this.guiLeft + 18, 57, 178);
-    }
-
-    @Override
     public T getContainer() {
         return super.getContainer();
     }
