@@ -102,7 +102,8 @@ public class ItemTerminalStoragePortable extends ItemGui {
         try {
             super.writeExtraGuiData(packetBuffer, world, player, itemIndex);
             packetBuffer.writeBoolean(false);
-            getTerminalStorageState(InventoryHelpers.getItemFromIndex(player, itemIndex), player, itemIndex).writeToPacketBuffer(packetBuffer);
+            getTerminalStorageState(InventoryHelpers.getItemFromIndex(player, itemIndex), player, itemIndex)
+                .writeToPacketBuffer(packetBuffer);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
