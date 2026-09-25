@@ -174,7 +174,7 @@ public class GuiTextFieldDropdown<T> extends GuiTextFieldExtended {
         this.setTextColor(this.selectedDropdownPossibility == null ? Helpers.RGBToInt(220, 10, 10) : 14737632);
 
         super.drawWidget(mouseX, mouseY, partialTicks);
-        if (this.isEnable() && isFocused()) {
+        if (this.isVisible() && isFocused()) {
             FontRenderer fontRenderer = Minecraft.getMinecraft().fontRenderer;
             int yOffset = fontRenderer.FONT_HEIGHT + 3;
 
@@ -245,7 +245,7 @@ public class GuiTextFieldDropdown<T> extends GuiTextFieldExtended {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
-        if (this.isEnable() && isFocused()) {
+        if (this.isVisible() && isFocused()) {
             int i = getHoveredVisiblePossibility(mouseX, mouseY);
             if (i >= 0) {
                 selectVisiblePossibility(i);

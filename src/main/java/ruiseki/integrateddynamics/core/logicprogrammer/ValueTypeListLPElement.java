@@ -483,8 +483,7 @@ public class ValueTypeListLPElement extends ValueTypeLPElementBase {
             }
             int x = RenderPatternCommon.calculateX(baseX, maxWidth, subElement.getRenderPattern());
             int y = RenderPatternCommon.calculateY(baseY, maxHeight, subElement.getRenderPattern());
-            gui.getContainer()
-                .setElementInventory(subElement, x, y);
+            ((ContainerLogicProgrammerBase) gui.getContainer()).setElementInventory(subElement, x, y);
             subElement.setValueInGui(subGui);
             subGuiHolder.addSubGui(subGui);
             if (subGui instanceof IRenderPatternValueTypeTooltip) {

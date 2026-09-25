@@ -8,9 +8,6 @@ import org.lwjgl.input.Keyboard;
 
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.Reference;
-import ruiseki.integrateddynamics.api.item.IVariableFacade;
-import ruiseki.integrateddynamics.api.item.IVariableFacadeHandlerRegistry;
-import ruiseki.integrateddynamics.core.persist.world.LabelsWorldStorage;
 import ruiseki.integrateddynamics.inventory.container.ContainerLabeller;
 import ruiseki.integrateddynamics.network.packet.ItemStackRenamePacket;
 import ruiseki.okcore.client.gui.component.button.GuiButtonText;
@@ -48,16 +45,8 @@ public class GuiLabeller extends GuiContainerExtended<ContainerLabeller> {
                 LangHelpers.localize("item.items.integrateddynamics.labeller.button.write"),
                 button -> {
                     ItemStack itemStack = getContainer().getItemStack();
-                    IVariableFacadeHandlerRegistry registry = IntegratedDynamics._instance.getRegistryManager()
-                        .getRegistry(IVariableFacadeHandlerRegistry.class);
-                    IVariableFacade variableFacade = registry.handle(itemStack);
-                    if (variableFacade.isValid()) {
-                        int variableId = variableFacade.getId();
-                        String label = StringUtils.isBlank(searchField.getText()) ? "" : searchField.getText();
-                        LabelsWorldStorage.getInstance(IntegratedDynamics._instance)
-                            .put(variableId, label);
-                    } else if (!ItemHelpers.isEmpty(itemStack)) {
-                        String name = searchField.getText();
+                    if (!ItemHelpers.isEmpty(itemStack)) {
+                        String name = StringUtils.isBlank(searchField.getText()) ? "" : searchField.getText();
                         IntegratedDynamics._instance.getPacketHandler()
                             .sendToServer(new ItemStackRenamePacket(name));
                         getContainer().setItemStackName(name);

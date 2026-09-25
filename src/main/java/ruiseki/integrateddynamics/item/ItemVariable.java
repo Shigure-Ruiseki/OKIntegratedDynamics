@@ -89,7 +89,7 @@ public class ItemVariable extends ItemBase implements ItemWithTextures, IItemTog
     public String getItemStackDisplayName(ItemStack itemStack) {
         IVariableFacade variableFacade = getVariableFacade(itemStack);
         String label;
-        if (variableFacade.isValid() && (label = variableFacade.getLabel()) != null) {
+        if (variableFacade.isValid() && (label = variableFacade.getLabel()) != null && !label.isEmpty()) {
             return EnumChatFormatting.ITALIC + label;
         }
         return super.getItemStackDisplayName(itemStack);

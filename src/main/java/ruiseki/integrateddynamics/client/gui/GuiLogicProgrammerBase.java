@@ -6,7 +6,6 @@ import java.util.List;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.item.ItemStack;
@@ -61,6 +60,7 @@ public class GuiLogicProgrammerBase<T extends ContainerLogicProgrammerBase> exte
     protected boolean firstInit = true;
     protected int relativeStep = -1;
     protected boolean swallowNextCharacter = false;
+    private GuiButtonText resetButton;
 
     public GuiLogicProgrammerBase(T container, InventoryPlayer inventoryPlayer) {
         super(container);
@@ -70,18 +70,35 @@ public class GuiLogicProgrammerBase<T extends ContainerLogicProgrammerBase> exte
     }
 
     @Override
-    public T getContainer() {
-        return super.getContainer();
-    }
-
-    @Override
     public void initGui() {
         super.initGui();
+
+        // Button to deselect the active LP element
+        addRenderableWidget(
+            this.resetButton = new GuiButtonText(
+                this.guiLeft + 87,
+                this.guiTop + 4,
+                LangHelpers.localize(L10NValues.GUI_LOGICPROGRAMMER_RESET),
+                button -> {
+                    if (container.getActiveElement() != null) {
+                        container.returnWriteItemToPlayer();
+                        handleElementActivation(container.getActiveElement(), true);
+                    }
+                }));
+        this.resetButton.height = 12;
+        resetButton.visible = false;
+
         subGuiHolder.initGui(this.guiLeft, this.guiTop);
         if (firstInit) {
             setSearchFieldFocussed(true);
             firstInit = false;
         }
+    }
+
+    @Override
+    public void updateScreen() {
+        super.updateScreen();
+        subGuiHolder.tick();
     }
 
     protected int getScrollX() {
@@ -135,10 +152,9 @@ public class GuiLogicProgrammerBase<T extends ContainerLogicProgrammerBase> exte
             partialTicks,
             mouseX,
             mouseY);
-        FontRenderer fontRenderer = fontRendererObj;
 
         // Draw container name
-        fontRenderer.drawString(
+        fontRendererObj.drawString(
             LangHelpers.localize(L10NValues.GUI_LOGICPROGRAMMER_FILTER),
             this.guiLeft + offsetX + 5,
             this.guiTop + offsetY + 208,
@@ -188,7 +204,7 @@ public class GuiLogicProgrammerBase<T extends ContainerLogicProgrammerBase> exte
                 // Operator info
                 String aspectName = element.getSymbol();
                 RenderHelpers.drawScaledCenteredString(
-                    fontRenderer,
+                    fontRendererObj,
                     aspectName,
                     this.guiLeft + offsetX + (hover ? 22 : 21),
                     this.guiTop + offsetY + 26 + boxHeight * i,
@@ -220,7 +236,6 @@ public class GuiLogicProgrammerBase<T extends ContainerLogicProgrammerBase> exte
     @Override
     protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
         // super.drawGuiContainerForegroundLayer(mouseX, mouseY);
-
         subGuiHolder.drawGuiContainerForegroundLayer(
             this.guiLeft,
             this.guiTop,
@@ -280,6 +295,7 @@ public class GuiLogicProgrammerBase<T extends ContainerLogicProgrammerBase> exte
 
     protected void onActivateElement(
         ILogicProgrammerElement<RenderPattern, GuiLogicProgrammerBase, ContainerLogicProgrammerBase> element) {
+        this.resetButton.setFocused(false);
         subGuiHolder.addSubGui(operatorInfoPattern = new SubGuiOperatorInfo(element));
         operatorInfoPattern.initGui(guiLeft, guiTop);
         subGuiHolder.addSubGui(
@@ -289,7 +305,7 @@ public class GuiLogicProgrammerBase<T extends ContainerLogicProgrammerBase> exte
                 ContainerLogicProgrammerBase.MAX_WIDTH,
                 ContainerLogicProgrammerBase.MAX_HEIGHT,
                 this,
-                (ContainerLogicProgrammerBase) getContainer()));
+                getContainer()));
         operatorConfigPattern.initGui(guiLeft, guiTop);
     }
 
@@ -317,6 +333,7 @@ public class GuiLogicProgrammerBase<T extends ContainerLogicProgrammerBase> exte
                 onActivateElement(element);
             }
         }
+        resetButton.visible = newActive != null;
         if (activate || deselect) {
             container.setActiveElement(
                 newActive,
@@ -500,8 +517,6 @@ public class GuiLogicProgrammerBase<T extends ContainerLogicProgrammerBase> exte
     public class SubGuiOperatorInfo extends
         GuiElementValueTypeString.SubGuiValueTypeInfo<RenderPattern, GuiLogicProgrammerBase, ContainerLogicProgrammerBase> {
 
-        public static final int BUTTON_EDIT = 1;
-
         private GuiTextFieldExtended searchField;
         private GuiButtonText button = null;
 
@@ -590,7 +605,7 @@ public class GuiLogicProgrammerBase<T extends ContainerLogicProgrammerBase> exte
 
         @Override
         public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
-            if (this.searchField.isEnable() && this.searchField.mouseClicked(mouseX, mouseY, mouseButton)) {
+            if (this.searchField.isVisible() && this.searchField.mouseClicked(mouseX, mouseY, mouseButton)) {
                 return true;
             }
             return super.mouseClicked(mouseX, mouseY, mouseButton);
@@ -608,20 +623,17 @@ public class GuiLogicProgrammerBase<T extends ContainerLogicProgrammerBase> exte
                 mouseX,
                 mouseY);
             Keyboard.enableRepeatEvents(true);
-            this.searchField.drawTextBox();
+            this.searchField.drawScreen(mouseX, mouseY, partialTicks);
         }
 
         @Override
-        protected void actionPerformed(GuiButton guibutton) {
-            super.actionPerformed(guibutton);
-            if (guibutton.id == BUTTON_EDIT) {
-                onButtonEditClick();
-            }
+        public boolean shouldRenderElementName() {
+            return !this.searchField.isVisible();
         }
 
         public void onButtonEditClick() {
-            this.searchField.setVisible(!this.searchField.isEnable());
-            if (this.searchField.isEnable()) {
+            this.searchField.setVisible(!this.searchField.isVisible());
+            if (this.searchField.isVisible()) {
                 this.searchField.setFocused(true);
                 label(this.searchField.getText());
             } else {

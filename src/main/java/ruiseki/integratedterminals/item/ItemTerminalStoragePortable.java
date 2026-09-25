@@ -1,5 +1,6 @@
 package ruiseki.integratedterminals.item;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -38,6 +39,7 @@ import ruiseki.okcore.inventory.IGuiConstructor;
 import ruiseki.okcore.inventory.container.ContainerExtended;
 import ruiseki.okcore.inventory.container.NamedContainerProviderItem;
 import ruiseki.okcore.item.ItemGui;
+import ruiseki.okcore.network.ExtendedBuffer;
 import ruiseki.okcore.persist.IDirtyMarkListener;
 
 /**
@@ -93,6 +95,17 @@ public class ItemTerminalStoragePortable extends ItemGui {
     @Override
     public Class<? extends ContainerExtended> getContainerClass(World world, EntityPlayer player, ItemStack itemStack) {
         return ContainerTerminalStorageItem.class;
+    }
+
+    @Override
+    public void writeExtraGuiData(ExtendedBuffer packetBuffer, World world, EntityPlayer player, int itemIndex) {
+        try {
+            super.writeExtraGuiData(packetBuffer, world, player, itemIndex);
+            packetBuffer.writeBoolean(false);
+            getTerminalStorageState(InventoryHelpers.getItemFromIndex(player, itemIndex), player, itemIndex).writeToPacketBuffer(packetBuffer);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
