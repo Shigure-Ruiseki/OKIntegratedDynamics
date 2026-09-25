@@ -3,7 +3,7 @@ package ruiseki.integrateddynamics.core.client.gui;
 import ruiseki.integrateddynamics.core.client.gui.container.DisplayErrorsComponent;
 import ruiseki.integrateddynamics.core.inventory.container.ContainerActiveVariableBase;
 import ruiseki.integrateddynamics.core.tileentity.TileActiveVariableBase;
-import ruiseki.okcore.client.gui.container.GuiContainerConfigurable;
+import ruiseki.okcore.client.gui.container.GuiContainerExtended;
 import ruiseki.okcore.client.renderer.GlStateManager;
 import ruiseki.okcore.helper.RenderHelpers;
 
@@ -13,7 +13,7 @@ import ruiseki.okcore.helper.RenderHelpers;
  * @author rubensworks
  */
 public abstract class GuiActiveVariableBase<C extends ContainerActiveVariableBase<T>, T extends TileActiveVariableBase<?>>
-    extends GuiContainerConfigurable<C> {
+    extends GuiContainerExtended<C> {
 
     protected final DisplayErrorsComponent displayErrors = new DisplayErrorsComponent();
 
@@ -45,8 +45,7 @@ public abstract class GuiActiveVariableBase<C extends ContainerActiveVariableBas
         String readValue = getContainer().getReadValue();
         int readValueColor = getContainer().getReadValueColor();
         boolean ok = false;
-        if (getContainer().getTile()
-            .hasVariable() && readValue != null) {
+        if (readValue != null) {
             ok = true;
             RenderHelpers.drawScaledCenteredString(
                 fontRendererObj,
@@ -59,9 +58,7 @@ public abstract class GuiActiveVariableBase<C extends ContainerActiveVariableBas
 
         GlStateManager.color(1f, 1f, 1f, 1f);
         displayErrors.drawBackground(
-            getContainer().getTile()
-                .getEvaluator()
-                .getErrors(),
+            getContainer().getReadErrors(),
             getErrorX(),
             getErrorY(),
             getErrorX(),
@@ -76,9 +73,7 @@ public abstract class GuiActiveVariableBase<C extends ContainerActiveVariableBas
     protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
         super.drawGuiContainerForegroundLayer(mouseX, mouseY);
         displayErrors.drawForeground(
-            getContainer().getTile()
-                .getEvaluator()
-                .getErrors(),
+            getContainer().getReadErrors(),
             getErrorX(),
             getErrorY(),
             mouseX,

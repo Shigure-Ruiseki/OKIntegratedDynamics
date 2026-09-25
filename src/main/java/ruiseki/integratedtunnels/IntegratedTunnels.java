@@ -23,6 +23,7 @@ import ruiseki.integratedtunnels.capability.ingredient.TunnelIngredientComponent
 import ruiseki.integratedtunnels.capability.network.FluidNetworkConfig;
 import ruiseki.integratedtunnels.capability.network.ItemNetworkConfig;
 import ruiseki.integratedtunnels.capability.network.TunnelNetworkCapabilityConstructors;
+import ruiseki.integratedtunnels.core.part.ContainerInterfaceSettingsConfig;
 import ruiseki.integratedtunnels.core.world.BlockBreakHandlerRegistry;
 import ruiseki.integratedtunnels.core.world.BlockBreakHandlers;
 import ruiseki.integratedtunnels.core.world.BlockBreakPlaceRegistry;
@@ -182,8 +183,11 @@ public class IntegratedTunnels extends ModBaseVersionable {
     @Override
     public void onMainConfigsRegister(ConfigHandler configHandler) {
         super.onMainConfigsRegister(configHandler);
+
         configHandler.add(new ItemNetworkConfig());
         configHandler.add(new FluidNetworkConfig());
+
+        configHandler.add(new ContainerInterfaceSettingsConfig());
     }
 
     @Override

@@ -8,7 +8,6 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import ruiseki.integrateddynamics.GeneralConfig;
-import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.part.IPartState;
 import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.core.block.IgnoredBlock;
@@ -51,18 +50,8 @@ public abstract class PartTypeTerminal<P extends PartTypeTerminal<P, S>, S exten
     }
 
     @Override
-    public ModBase getModGui() {
-        return IntegratedDynamics._instance;
-    }
-
-    @Override
     public Class<? super P> getPartTypeClass() {
         return IPartType.class;
-    }
-
-    @Override
-    protected boolean hasGui() {
-        return true;
     }
 
     @Override

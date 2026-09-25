@@ -1,6 +1,5 @@
 package ruiseki.integrateddynamics.client.gui;
 
-import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.ResourceLocation;
 
@@ -10,7 +9,6 @@ import ruiseki.integrateddynamics.Reference;
 import ruiseki.integrateddynamics.core.client.gui.GuiMechanicalMachine;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.integrateddynamics.inventory.container.ContainerMechanicalSqueezer;
-import ruiseki.integrateddynamics.tileentity.TileMechanicalSqueezer;
 import ruiseki.okcore.client.gui.component.button.GuiButtonImage;
 import ruiseki.okcore.client.gui.image.IImage;
 import ruiseki.okcore.client.gui.image.Image;
@@ -28,14 +26,8 @@ public class GuiMechanicalSqueezer extends GuiMechanicalMachine<ContainerMechani
     private final IImage imageArrowDownDisabled;
     private GuiButtonImage buttonToggleFluidEject;
 
-    /**
-     * Make a new instance.
-     *
-     * @param inventory The player inventory.
-     * @param tile      The part.
-     */
-    public GuiMechanicalSqueezer(InventoryPlayer inventory, TileMechanicalSqueezer tile) {
-        super(new ContainerMechanicalSqueezer(inventory, tile));
+    public GuiMechanicalSqueezer(ContainerMechanicalSqueezer container) {
+        super(container);
         imageArrowDownEnabled = new Image(texture, 176, 138, 20, 10);
         imageArrowDownDisabled = new Image(texture, 176, 148, 20, 10);
     }
@@ -62,9 +54,8 @@ public class GuiMechanicalSqueezer extends GuiMechanicalMachine<ContainerMechani
         super.drawGuiContainerBackgroundLayer(partialTicks, mouseX, mouseY);
 
         // Update the image in the fluid eject toggle button
-        buttonToggleFluidEject.setImage(
-            getContainer().getTile()
-                .isAutoEjectFluids() ? imageArrowDownEnabled : imageArrowDownDisabled);
+        buttonToggleFluidEject
+            .setImage(getContainer().isAutoEjectFluids() ? imageArrowDownEnabled : imageArrowDownDisabled);
 
         // Render progress
         GuiHelpers.renderProgressBar(
@@ -134,8 +125,7 @@ public class GuiMechanicalSqueezer extends GuiMechanicalMachine<ContainerMechani
                 LangHelpers.localize(
                     L10NValues.GUI_MECHANICAL_SQUEEZER_TOGGLEFLUIDAUTOEJECT,
                     EnumChatFormatting.AQUA + LangHelpers.localize(
-                        getContainer().getTile()
-                            .isAutoEjectFluids() ? L10NValues.GENERAL_TRUE : L10NValues.GENERAL_FALSE)),
+                        getContainer().isAutoEjectFluids() ? L10NValues.GENERAL_TRUE : L10NValues.GENERAL_FALSE)),
                 LangHelpers.localize(L10NValues.GUI_MECHANICAL_SQUEEZER_TOGGLEFLUIDAUTOEJECT + ".info")));
     }
 }

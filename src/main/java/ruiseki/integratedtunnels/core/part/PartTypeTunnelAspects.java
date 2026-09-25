@@ -1,6 +1,5 @@
 package ruiseki.integratedtunnels.core.part;
 
-import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.part.PartRenderPosition;
 import ruiseki.integrateddynamics.api.part.write.IPartStateWriter;
 import ruiseki.integrateddynamics.api.part.write.IPartTypeWriter;
@@ -10,7 +9,7 @@ import ruiseki.okcore.init.ModBase;
 
 /**
  * Base part for a tunnels with aspects.
- * 
+ *
  * @author rubensworks
  */
 public abstract class PartTypeTunnelAspects<P extends IPartTypeWriter<P, S>, S extends IPartStateWriter<P>>
@@ -27,11 +26,6 @@ public abstract class PartTypeTunnelAspects<P extends IPartTypeWriter<P, S>, S e
     @Override
     public ModBase getMod() {
         return IntegratedTunnels._instance;
-    }
-
-    @Override
-    public ModBase getModGui() {
-        return IntegratedDynamics._instance;
     }
 
 }

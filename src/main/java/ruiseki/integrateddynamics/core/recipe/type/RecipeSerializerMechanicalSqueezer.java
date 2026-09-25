@@ -112,7 +112,7 @@ public class RecipeSerializerMechanicalSqueezer implements IRecipeSerializer<Rec
         }
 
         // Other stuff
-        int duration = buffer.readVarIntFromBuffer();
+        int duration = buffer.readInt();
 
         return new RecipeMechanicalSqueezer(recipeId, inputIngredient, outputItemStacks, outputFluid, duration);
     }
@@ -141,6 +141,6 @@ public class RecipeSerializerMechanicalSqueezer implements IRecipeSerializer<Rec
         }
 
         // Other stuff
-        buffer.writeVarIntToBuffer(recipe.getDuration());
+        buffer.writeInt(recipe.getDuration());
     }
 }

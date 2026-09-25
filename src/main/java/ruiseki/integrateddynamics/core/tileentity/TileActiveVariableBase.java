@@ -47,8 +47,8 @@ public abstract class TileActiveVariableBase<E> extends TileCableConnectableInve
     @Getter
     private List<LangHelpers.UnlocalizedString> errors = Lists.newLinkedList();
 
-    public TileActiveVariableBase(int inventorySize, String inventoryName) {
-        super(inventorySize, inventoryName, 1);
+    public TileActiveVariableBase(int inventorySize) {
+        super(inventorySize, 1);
         inventory.addDirtyMarkListener(this);
         IValueInterface valueInterface = () -> {
             INetwork network = getNetwork();

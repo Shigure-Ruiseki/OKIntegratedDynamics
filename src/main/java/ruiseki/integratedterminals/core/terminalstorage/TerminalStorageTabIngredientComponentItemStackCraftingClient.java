@@ -8,8 +8,6 @@ import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 
-import org.lwjgl.input.Keyboard;
-
 import com.google.common.collect.Lists;
 
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
@@ -27,6 +25,7 @@ import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorageB
 import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientItemStackCraftingGridShiftClickOutput;
 import ruiseki.okcore.helper.GuiHelpers;
 import ruiseki.okcore.helper.LangHelpers;
+import ruiseki.okcore.helper.MinecraftHelpers;
 
 /**
  * A client-side storage terminal ingredient tab for crafting with {@link ItemStack} instances.
@@ -72,6 +71,7 @@ public class TerminalStorageTabIngredientComponentItemStackCraftingClient
     }
 
     protected boolean isCraftingGridCenter() {
+        ;
         return TerminalStorageScreenSizeEvent.getWidthHeight()
             .getLeft() < 374
             || getRowColumnProvider().getRowsAndColumns()
@@ -102,7 +102,7 @@ public class TerminalStorageTabIngredientComponentItemStackCraftingClient
         boolean hasClickedOutside, boolean hasClickedInStorage, int hoveredContainerSlot, boolean isQuickMove) {
         int craftingResultSlotIndex = TerminalStorageTabIngredientComponentItemStackCraftingCommon
             .getCraftingResultSlotIndex(container, getName());
-        boolean shift = (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT));
+        boolean shift = MinecraftHelpers.isShifted();
         if (hoveredContainerSlot == craftingResultSlotIndex && shift) {
             IntegratedTerminals._instance.getPacketHandler()
                 .sendToServer(

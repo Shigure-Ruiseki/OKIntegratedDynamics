@@ -37,8 +37,8 @@ public class TileCableConnectableInventory extends InventoryTileEntity implement
     private final ICable cable;
     private final INetworkCarrier networkCarrier;
 
-    public TileCableConnectableInventory(int inventorySize, String inventoryName, int stackSize) {
-        super(inventorySize, inventoryName, stackSize);
+    public TileCableConnectableInventory(int inventorySize, int stackSize) {
+        super(inventorySize, stackSize);
         cable = new CableTile<>(this) {
 
             @Override

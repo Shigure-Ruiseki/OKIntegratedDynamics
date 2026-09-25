@@ -7,31 +7,38 @@ import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.Slot;
 
 import ruiseki.integrateddynamics.tileentity.TileCoalGenerator;
-import ruiseki.okcore.inventory.container.TileInventoryContainerConfigurable;
+import ruiseki.okcore.inventory.SimpleInventory;
+import ruiseki.okcore.inventory.container.TileInventoryContainer;
 import ruiseki.okcore.inventory.slot.SlotFurnaceFuel;
 
 /**
  * Container for the coal generator.
- * 
+ *
  * @author rubensworks
  */
-public class ContainerCoalGenerator extends TileInventoryContainerConfigurable<TileCoalGenerator> {
+public class ContainerCoalGenerator extends TileInventoryContainer<TileCoalGenerator> {
 
     private final Supplier<Integer> variableProgress;
 
+    public ContainerCoalGenerator(InventoryPlayer playerInventory) {
+        this(playerInventory, new SimpleInventory(TileCoalGenerator.INVENTORY_SIZE), null);
+    }
+
     /**
      * Make a new instance.
-     * 
+     *
      * @param inventory The player inventory.
-     * @param tile      The part.
      */
-    public ContainerCoalGenerator(InventoryPlayer inventory, TileCoalGenerator tile) {
-        super(inventory, tile);
+    public ContainerCoalGenerator(InventoryPlayer playerInventory, IInventory inventory, TileCoalGenerator tile) {
+        super(ContainerCoalGeneratorConfig._instance.getInstance(), playerInventory, inventory, tile);
 
-        this.variableProgress = registerSyncedVariable(Integer.class, () -> getTile().getProgress());
+        this.variableProgress = registerSyncedVariable(
+            Integer.class,
+            () -> getTile().map(TileCoalGenerator::getProgress)
+                .orElse(0));
 
-        addInventory(tile, 0, offsetX + 80, offsetY + 11, 1, 1);
-        addPlayerInventory(inventory, offsetX + 8, offsetY + 46);
+        addInventory(inventory, 0, offsetX + 80, offsetY + 11, 1, 1);
+        addPlayerInventory(playerInventory, offsetX + 8, offsetY + 46);
     }
 
     @Override

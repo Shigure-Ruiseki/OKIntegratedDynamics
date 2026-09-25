@@ -40,7 +40,7 @@ public class CraftingAspectReadBuilders {
         };
 
         public static final AspectBuilder<ValueTypeList.ValueList, ValueTypeList, Pair<IAspectProperties, LazyOptional<ICraftingNetwork>>> BUILDER_LIST = AspectReadBuilders.BUILDER_LIST
-            .byMod(IntegratedCrafting._instance)
+            .byMod(IntegratedCrafting._instance.getModId())
             .withProperties(AspectReadBuilders.Network.PROPERTIES)
             .handle(PROP_GET_CRAFTING_NETWORK, "network");
 

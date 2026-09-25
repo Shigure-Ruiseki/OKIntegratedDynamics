@@ -1,13 +1,18 @@
 package ruiseki.integratedtunnels.core.part;
 
+import java.io.IOException;
+import java.util.Optional;
+
 import net.minecraft.block.Block;
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.inventory.Container;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.IBlockAccess;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.common.util.ForgeDirection;
 
+import org.apache.commons.lang3.tuple.Triple;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3i;
 
@@ -15,12 +20,20 @@ import ruiseki.integrateddynamics.GeneralConfig;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.network.IPositionedAddonsNetwork;
+import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.integrateddynamics.api.part.PartTarget;
+import ruiseki.integrateddynamics.core.helper.PartHelpers;
 import ruiseki.integrateddynamics.core.part.PartStateBase;
+import ruiseki.integrateddynamics.core.part.PartTypeBase;
 import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.LazyOptional;
+import ruiseki.okcore.inventory.IGuiConstructor;
+import ruiseki.okcore.inventory.SimpleInventory;
+import ruiseki.okcore.inventory.container.ContainerExtended;
+import ruiseki.okcore.network.ExtendedBuffer;
+import ruiseki.okcore.network.PacketCodec;
 
 /**
  * Interface for positioned network addons that do not have a filter.
@@ -35,18 +48,40 @@ public abstract class PartTypeInterfacePositionedAddon<N extends IPositionedAddo
     }
 
     @Override
-    public Class<? extends GuiScreen> getGui() {
-        return GuiInterfaceSettings.class;
-    }
-
-    @Override
-    public Class<? extends Container> getContainer() {
-        return ContainerInterfaceSettings.class;
-    }
-
-    @Override
     public boolean isUpdate(S state) {
         return getConsumptionRate(state) > 0 && GeneralConfig.energyConsumptionMultiplier > 0;
+    }
+
+    @Override
+    public Optional<IGuiConstructor> getContainerProvider(PartPos pos) {
+        return Optional.of(new IGuiConstructor() {
+
+            @Override
+            public @Nullable ContainerExtended createContainer(int windowId, InventoryPlayer playerInventory,
+                EntityPlayer player) {
+                Triple<IPartContainer, PartTypeBase, PartTarget> data = PartHelpers
+                    .getContainerPartConstructionData(pos);
+                return new ContainerInterfaceSettings(
+                    playerInventory,
+                    new SimpleInventory(0),
+                    data.getRight(),
+                    Optional.of(data.getLeft()),
+                    data.getMiddle());
+            }
+        });
+    }
+
+    @Override
+    public void writeExtraGuiData(ExtendedBuffer packetBuffer, PartPos pos, EntityPlayerMP player) {
+        try {
+            PacketCodec.getAction(PartPos.class)
+                .encode(pos, packetBuffer);
+            packetBuffer.writeString(
+                this.getUniqueName()
+                    .toString());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override

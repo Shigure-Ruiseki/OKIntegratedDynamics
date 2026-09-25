@@ -45,7 +45,6 @@ import ruiseki.integrateddynamics.command.CommandCrash;
 import ruiseki.integrateddynamics.command.CommandNetworkDiagnostics;
 import ruiseki.integrateddynamics.core.NoteBlockEventReceiver;
 import ruiseki.integrateddynamics.core.TickHandler;
-import ruiseki.integrateddynamics.core.client.gui.ExtendedGuiHandler;
 import ruiseki.integrateddynamics.core.client.model.VariableModelProviderRegistry;
 import ruiseki.integrateddynamics.core.client.model.VariableModelProviders;
 import ruiseki.integrateddynamics.core.evaluate.DelayVariableFacadeHandler;
@@ -73,7 +72,6 @@ import ruiseki.integrateddynamics.core.persist.world.LabelsWorldStorage;
 import ruiseki.integrateddynamics.core.persist.world.NetworkWorldStorage;
 import ruiseki.integrateddynamics.part.PartTypeConnectorOmniDirectional;
 import ruiseki.integrateddynamics.part.aspect.Aspects;
-import ruiseki.okcore.client.gui.GuiHandler;
 import ruiseki.okcore.config.ConfigHandler;
 import ruiseki.okcore.config.extendedconfig.BlockItemConfigReference;
 import ruiseki.okcore.helper.MinecraftHelpers;
@@ -115,11 +113,6 @@ public class IntegratedDynamics extends ModBaseVersionable {
         registerWorldStorage(NetworkWorldStorage.getInstance(this));
         registerWorldStorage(globalCounters = new GlobalCounters(this));
         registerWorldStorage(LabelsWorldStorage.getInstance(this));
-    }
-
-    @Override
-    protected GuiHandler constructGuiHandler() {
-        return new ExtendedGuiHandler(this);
     }
 
     @Override

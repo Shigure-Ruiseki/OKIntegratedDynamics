@@ -3,6 +3,7 @@ package ruiseki.integrateddynamics.inventory.container;
 import java.util.function.Supplier;
 
 import net.minecraft.entity.player.InventoryPlayer;
+import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.Slot;
 import net.minecraftforge.fluids.FluidStack;
 
@@ -10,6 +11,8 @@ import org.jetbrains.annotations.Nullable;
 
 import ruiseki.integrateddynamics.core.inventory.container.ContainerMechanicalMachine;
 import ruiseki.integrateddynamics.tileentity.TileMechanicalSqueezer;
+import ruiseki.okcore.helper.FluidHelpers;
+import ruiseki.okcore.inventory.SimpleInventory;
 import ruiseki.okcore.inventory.slot.SlotRemoveOnly;
 
 /**
@@ -23,37 +26,48 @@ public class ContainerMechanicalSqueezer extends ContainerMechanicalMachine<Tile
 
     private final Supplier<FluidStack> variableFluidStack;
     private final Supplier<Integer> variableFluidCapacity;
+    private final Supplier<Boolean> variableAutoEject;
 
-    /**
-     * Make a new instance.
-     *
-     * @param inventory The player inventory.
-     * @param tile      The part.
-     */
-    public ContainerMechanicalSqueezer(InventoryPlayer inventory, TileMechanicalSqueezer tile) {
-        super(inventory, tile);
+    public ContainerMechanicalSqueezer(InventoryPlayer playerInventory) {
+        this(playerInventory, new SimpleInventory(TileMechanicalSqueezer.INVENTORY_SIZE), null);
+    }
+
+    public ContainerMechanicalSqueezer(InventoryPlayer inventoryPlayer, IInventory inventory,
+        TileMechanicalSqueezer tile) {
+        super(ContainerMechanicalSqueezerConfig._instance.getInstance(), inventoryPlayer, inventory, tile);
 
         this.variableFluidStack = registerSyncedVariable(
             FluidStack.class,
-            () -> getTile().getTank()
-                .getFluid());
+            () -> getTile().map(
+                t -> t.getTank()
+                    .getFluid())
+                .orElse(FluidHelpers.EMPTY));
         this.variableFluidCapacity = registerSyncedVariable(
             Integer.class,
-            () -> getTile().getTank()
-                .getCapacity());
+            () -> getTile().map(
+                t -> t.getTank()
+                    .getCapacity())
+                .orElse(0));
+        this.variableAutoEject = registerSyncedVariable(
+            Boolean.class,
+            () -> getTile().map(TileMechanicalSqueezer::isAutoEjectFluids)
+                .orElse(false));
 
-        addSlotToContainer(new Slot(tile, 0, 44, 37));
+        addSlotToContainer(new Slot(inventory, 0, 44, 37));
 
-        addSlotToContainer(new SlotRemoveOnly(tile, 1, 98, 29));
-        addSlotToContainer(new SlotRemoveOnly(tile, 2, 116, 29));
-        addSlotToContainer(new SlotRemoveOnly(tile, 3, 98, 47));
-        addSlotToContainer(new SlotRemoveOnly(tile, 4, 116, 47));
+        addSlotToContainer(new SlotRemoveOnly(inventory, 1, 98, 29));
+        addSlotToContainer(new SlotRemoveOnly(inventory, 2, 116, 29));
+        addSlotToContainer(new SlotRemoveOnly(inventory, 3, 98, 47));
+        addSlotToContainer(new SlotRemoveOnly(inventory, 4, 116, 47));
 
-        addPlayerInventory(inventory, offsetX + 8, offsetY + 86);
+        addPlayerInventory(inventoryPlayer, offsetX + 8, offsetY + 86);
 
         putButtonAction(
             BUTTON_TOGGLE_FLUID_EJECT,
-            (buttonId, container) -> getTile().setAutoEjectFluids(!getTile().isAutoEjectFluids()));
+            (buttonId, container) -> getTile().ifPresent(
+                t -> t.setAutoEjectFluids(
+                    !getTile().get()
+                        .isAutoEjectFluids())));
     }
 
     @Nullable
@@ -65,4 +79,7 @@ public class ContainerMechanicalSqueezer extends ContainerMechanicalMachine<Tile
         return variableFluidCapacity.get();
     }
 
+    public boolean isAutoEjectFluids() {
+        return variableAutoEject.get();
+    }
 }

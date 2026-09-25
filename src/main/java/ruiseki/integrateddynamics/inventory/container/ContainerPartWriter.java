@@ -2,8 +2,9 @@ package ruiseki.integrateddynamics.inventory.container;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.Slot;
 import net.minecraft.util.ResourceLocation;
@@ -25,6 +26,7 @@ import ruiseki.integrateddynamics.api.part.write.IPartStateWriter;
 import ruiseki.integrateddynamics.api.part.write.IPartTypeWriter;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueHelpers;
 import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
+import ruiseki.integrateddynamics.core.helper.PartHelpers;
 import ruiseki.integrateddynamics.core.inventory.container.ContainerMultipartAspects;
 import ruiseki.integrateddynamics.core.inventory.container.slot.SlotVariable;
 import ruiseki.integrateddynamics.core.part.aspect.AspectRegistry;
@@ -33,15 +35,15 @@ import ruiseki.okcore.helper.Helpers;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.helper.ValueNotifierHelpers;
-import ruiseki.okcore.inventory.IGuiContainerProvider;
 import ruiseki.okcore.inventory.SimpleInventory;
+import ruiseki.okcore.network.ExtendedBuffer;
 
 /**
  * Container for writer parts.
  *
  * @author rubensworks
  */
-public class ContainerPartWriter<P extends IPartTypeWriter<P, S> & IGuiContainerProvider, S extends IPartStateWriter<P>>
+public class ContainerPartWriter<P extends IPartTypeWriter<P, S>, S extends IPartStateWriter<P>>
     extends ContainerMultipartAspects<P, S, IAspectWrite> {
 
     public static final int ASPECT_BOX_HEIGHT = 18;
@@ -52,16 +54,25 @@ public class ContainerPartWriter<P extends IPartTypeWriter<P, S> & IGuiContainer
     private final int valueId, colorId, enabledId, activeAspectId;
     private final Map<IAspectWrite, Integer> aspectErrorIds;
 
-    /**
-     * Make a new instance.
-     *
-     * @param partTarget    The target.
-     * @param player        The player.
-     * @param partContainer The part container.
-     * @param partType      The part type.
-     */
-    public ContainerPartWriter(EntityPlayer player, PartTarget partTarget, IPartContainer partContainer, P partType) {
-        super(player, partTarget, partContainer, partType, partType.getWriteAspects());
+    public ContainerPartWriter(InventoryPlayer playerInventory, ExtendedBuffer packetBuffer) {
+        this(
+            playerInventory,
+            new SimpleInventory(packetBuffer.readInt(), 1),
+            PartHelpers.readPartTarget(packetBuffer),
+            Optional.empty(),
+            PartHelpers.readPart(packetBuffer));
+    }
+
+    public ContainerPartWriter(InventoryPlayer playerInventory, IInventory inventory, PartTarget target,
+        Optional<IPartContainer> partContainer, P partType) {
+        super(
+            ContainerPartWriterConfig._instance.getInstance(),
+            playerInventory,
+            inventory,
+            target,
+            partContainer,
+            partType,
+            partType.getWriteAspects());
         for (int i = 0; i < getUnfilteredItemCount(); i++) {
             addSlotToContainer(new SlotVariable(inputSlots, i, SLOT_X, SLOT_Y + getAspectBoxHeight() * i));
             disableSlot(i);
@@ -106,7 +117,7 @@ public class ContainerPartWriter<P extends IPartTypeWriter<P, S> & IGuiContainer
     @Override
     public void onDirty() {
         if (!MinecraftHelpers.isClientSide()) {
-            getPartType().updateActivation(getTarget(), getPartState(), getPlayer());
+            getPartType().updateActivation(getTarget(), getPartState(), player);
         }
     }
 

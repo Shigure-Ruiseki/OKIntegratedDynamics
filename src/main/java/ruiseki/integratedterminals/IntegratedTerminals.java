@@ -19,17 +19,23 @@ import ruiseki.integratedterminals.block.BlockChorusGlassConfig;
 import ruiseki.integratedterminals.block.BlockMenrilGlassConfig;
 import ruiseki.integratedterminals.capability.ingredient.IngredientComponentTerminalStorageHandlerConfig;
 import ruiseki.integratedterminals.capability.ingredient.TerminalIngredientComponentCapabilities;
-import ruiseki.integratedterminals.core.client.gui.ExtendedGuiHandler;
 import ruiseki.integratedterminals.core.terminalstorage.TerminalStorageTabIngredientCraftingHandlerRegistry;
 import ruiseki.integratedterminals.core.terminalstorage.TerminalStorageTabRegistry;
 import ruiseki.integratedterminals.core.terminalstorage.TerminalStorageTabs;
 import ruiseki.integratedterminals.core.terminalstorage.crafting.TerminalStorageTabIngredientCraftingHandlers;
 import ruiseki.integratedterminals.core.terminalstorage.location.TerminalStorageLocationRegistry;
 import ruiseki.integratedterminals.core.terminalstorage.location.TerminalStorageLocations;
+import ruiseki.integratedterminals.inventory.container.ContainerTerminalCraftingJobsConfig;
+import ruiseki.integratedterminals.inventory.container.ContainerTerminalCraftingJobsPlanConfig;
+import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorageCraftingOptionAmountItemConfig;
+import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorageCraftingOptionAmountPartConfig;
+import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorageCraftingPlanItemConfig;
+import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorageCraftingPlanPartConfig;
+import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorageItemConfig;
+import ruiseki.integratedterminals.inventory.container.ContainerTerminalStoragePartConfig;
 import ruiseki.integratedterminals.item.ItemTerminalStoragePortableConfig;
 import ruiseki.integratedterminals.modcompat.integratedcrafting.IntegratedCraftingModCompat;
 import ruiseki.integratedterminals.part.TerminalPartTypes;
-import ruiseki.okcore.client.gui.GuiHandler;
 import ruiseki.okcore.config.ConfigHandler;
 import ruiseki.okcore.init.ItemCreativeTab;
 import ruiseki.okcore.init.ModBaseVersionable;
@@ -68,11 +74,6 @@ public class IntegratedTerminals extends ModBaseVersionable {
 
     public IntegratedTerminals() {
         super(Reference.MOD_ID, Reference.MOD_NAME, Reference.MOD_VERSION);
-    }
-
-    @Override
-    protected GuiHandler constructGuiHandler() {
-        return new ExtendedGuiHandler(this);
     }
 
     @Override
@@ -182,10 +183,20 @@ public class IntegratedTerminals extends ModBaseVersionable {
         super.onMainConfigsRegister(configHandler);
 
         configHandler.add(new IngredientComponentTerminalStorageHandlerConfig());
-        configHandler.add(new ItemTerminalStoragePortableConfig());
+
         configHandler.add(new BlockChorusGlassConfig());
         configHandler.add(new BlockMenrilGlassConfig());
+
         configHandler.add(new ItemTerminalStoragePortableConfig());
+
+        configHandler.add(new ContainerTerminalCraftingJobsConfig());
+        configHandler.add(new ContainerTerminalCraftingJobsPlanConfig());
+        configHandler.add(new ContainerTerminalStoragePartConfig());
+        configHandler.add(new ContainerTerminalStorageCraftingOptionAmountPartConfig());
+        configHandler.add(new ContainerTerminalStorageCraftingPlanPartConfig());
+        configHandler.add(new ContainerTerminalStorageItemConfig());
+        configHandler.add(new ContainerTerminalStorageCraftingOptionAmountItemConfig());
+        configHandler.add(new ContainerTerminalStorageCraftingPlanItemConfig());
     }
 
     @Override

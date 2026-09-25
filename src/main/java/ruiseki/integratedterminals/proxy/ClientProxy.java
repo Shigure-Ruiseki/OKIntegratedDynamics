@@ -12,7 +12,6 @@ import ruiseki.integratedterminals.IntegratedTerminals;
 import ruiseki.integratedterminals.Reference;
 import ruiseki.integratedterminals.item.ItemTerminalStoragePortable;
 import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientItemOpenGenericPacket;
-import ruiseki.integratedterminals.proxy.guiprovider.GuiProviders;
 import ruiseki.okcore.client.key.IKeyRegistry;
 import ruiseki.okcore.client.key.KeyBindingOK;
 import ruiseki.okcore.client.key.KeyConflictContext;
@@ -77,8 +76,6 @@ public class ClientProxy extends ClientProxyComponent {
     @Override
     public void registerRenderers() {
         super.registerRenderers();
-
-        GuiProviders.register();
     }
 
     @Override

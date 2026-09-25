@@ -1,15 +1,11 @@
 package ruiseki.integratedtunnels.core.part;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 
 import org.lwjgl.input.Keyboard;
 
-import ruiseki.integrateddynamics.api.part.IPartContainer;
-import ruiseki.integrateddynamics.api.part.IPartType;
-import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.core.client.gui.container.GuiPartSettings;
 import ruiseki.integrateddynamics.core.inventory.container.ContainerMultipartAspects;
 import ruiseki.integratedtunnels.Reference;
@@ -27,14 +23,8 @@ public class GuiInterfaceSettings extends GuiPartSettings<ContainerInterfaceSett
 
     private GuiNumberField numberFieldChannelInterface = null;
 
-    public GuiInterfaceSettings(EntityPlayer player, PartTarget target, IPartContainer partContainer,
-        IPartType partType) {
-        super(
-            new ContainerInterfaceSettings(player, target, partContainer, partType),
-            player,
-            target,
-            partContainer,
-            partType);
+    public GuiInterfaceSettings(ContainerInterfaceSettings container) {
+        super(container);
     }
 
     @Override

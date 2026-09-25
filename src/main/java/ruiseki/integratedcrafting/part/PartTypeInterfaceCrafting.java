@@ -5,13 +5,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.inventory.Container;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.ForgeDirection;
 
+import org.apache.commons.lang3.tuple.Triple;
 import org.apache.logging.log4j.Level;
 import org.jetbrains.annotations.Nullable;
 
@@ -34,8 +36,6 @@ import ruiseki.commoncapabilities.capability.recipehandler.RecipeHandlerConfig;
 import ruiseki.integratedcrafting.GeneralConfig;
 import ruiseki.integratedcrafting.IntegratedCrafting;
 import ruiseki.integratedcrafting.api.network.ICraftingNetwork;
-import ruiseki.integratedcrafting.client.gui.GuiPartInterfaceCrafting;
-import ruiseki.integratedcrafting.client.gui.GuiPartInterfaceCraftingSettings;
 import ruiseki.integratedcrafting.core.part.PartTypeInterfaceCraftingBase;
 import ruiseki.integratedcrafting.inventory.container.ContainerPartInterfaceCrafting;
 import ruiseki.integratedcrafting.inventory.container.ContainerPartInterfaceCraftingSettings;
@@ -44,19 +44,25 @@ import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IVariable;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
+import ruiseki.integrateddynamics.api.part.IPartContainer;
+import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.core.evaluate.InventoryVariableEvaluator;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueObjectTypeRecipe;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
 import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
+import ruiseki.integrateddynamics.core.helper.PartHelpers;
+import ruiseki.integrateddynamics.core.part.PartTypeBase;
 import ruiseki.integrateddynamics.core.part.event.PartVariableDrivenVariableContentsUpdatedEvent;
 import ruiseki.okcore.datastructure.DimPos;
 import ruiseki.okcore.helper.BlockStateHelpers;
 import ruiseki.okcore.helper.CapabilityHelpers;
 import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.helper.LangHelpers;
-import ruiseki.okcore.inventory.IGuiContainerProvider;
+import ruiseki.okcore.inventory.IGuiConstructor;
 import ruiseki.okcore.inventory.SimpleInventory;
+import ruiseki.okcore.inventory.container.ContainerExtended;
+import ruiseki.okcore.network.ExtendedBuffer;
 
 /**
  * Interface for auto crafting.
@@ -71,22 +77,6 @@ public class PartTypeInterfaceCrafting
     }
 
     @Override
-    protected IGuiContainerProvider constructSettingsGuiProvider(int guiId) {
-        return new GuiProviderBase(guiId, getModGui()) {
-
-            @Override
-            public Class<? extends Container> getContainer() {
-                return ContainerPartInterfaceCraftingSettings.class;
-            }
-
-            @Override
-            public Class<? extends GuiScreen> getGui() {
-                return GuiPartInterfaceCraftingSettings.class;
-            }
-        };
-    }
-
-    @Override
     public int getConsumptionRate(State state) {
         return state.getCraftingJobHandler()
             .getProcessingCraftingJobs()
@@ -94,13 +84,59 @@ public class PartTypeInterfaceCrafting
     }
 
     @Override
-    public Class<? extends GuiScreen> getGui() {
-        return GuiPartInterfaceCrafting.class;
+    public Optional<IGuiConstructor> getContainerProvider(PartPos pos) {
+        return Optional.of(new IGuiConstructor() {
+
+            @Override
+            public @Nullable ContainerExtended createContainer(int windowId, InventoryPlayer playerInventory,
+                EntityPlayer player) {
+                Triple<IPartContainer, PartTypeBase, PartTarget> data = PartHelpers
+                    .getContainerPartConstructionData(pos);
+                PartTypeInterfaceCrafting.State partState = (PartTypeInterfaceCrafting.State) data.getLeft()
+                    .getPartState(
+                        data.getRight()
+                            .getCenter()
+                            .getSide());
+                return new ContainerPartInterfaceCrafting(
+                    playerInventory,
+                    partState.getInventoryVariables(),
+                    Optional.of(data.getRight()),
+                    Optional.of(data.getLeft()),
+                    (PartTypeInterfaceCrafting) data.getMiddle());
+            }
+        });
     }
 
     @Override
-    public Class<? extends Container> getContainer() {
-        return ContainerPartInterfaceCrafting.class;
+    public void writeExtraGuiData(ExtendedBuffer packetBuffer, PartPos pos, EntityPlayerMP player) {
+        // Write inventory size
+        IPartContainer partContainer = PartHelpers.getPartContainerChecked(pos);
+        PartTypeInterfaceCrafting.State partState = (PartTypeInterfaceCrafting.State) partContainer
+            .getPartState(pos.getSide());
+        packetBuffer.writeInt(
+            partState.getInventoryVariables()
+                .getSizeInventory());
+
+        super.writeExtraGuiData(packetBuffer, pos, player);
+    }
+
+    @Override
+    public Optional<IGuiConstructor> getContainerProviderSettings(PartPos pos) {
+        return Optional.of(new IGuiConstructor() {
+
+            @Override
+            public @Nullable ContainerExtended createContainer(int windowId, InventoryPlayer playerInventory,
+                EntityPlayer player) {
+                Triple<IPartContainer, PartTypeBase, PartTarget> data = PartHelpers
+                    .getContainerPartConstructionData(pos);
+                return new ContainerPartInterfaceCraftingSettings(
+                    playerInventory,
+                    new SimpleInventory(0),
+                    data.getRight(),
+                    Optional.of(data.getLeft()),
+                    data.getMiddle());
+            }
+        });
     }
 
     @Override

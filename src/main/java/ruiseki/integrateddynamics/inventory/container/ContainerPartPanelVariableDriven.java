@@ -1,6 +1,10 @@
 package ruiseki.integrateddynamics.inventory.container;
 
+import java.util.List;
+import java.util.Optional;
+
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.Slot;
 import net.minecraftforge.common.MinecraftForge;
@@ -11,19 +15,21 @@ import ruiseki.integrateddynamics.api.evaluate.EvaluationException;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IVariable;
 import ruiseki.integrateddynamics.api.network.INetwork;
-import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
-import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
+import ruiseki.integrateddynamics.core.helper.PartHelpers;
 import ruiseki.integrateddynamics.core.inventory.container.ContainerMultipart;
 import ruiseki.integrateddynamics.core.inventory.container.slot.SlotVariable;
 import ruiseki.integrateddynamics.core.network.event.VariableContentsUpdatedEvent;
 import ruiseki.integrateddynamics.core.part.event.PartVariableDrivenVariableContentsUpdatedEvent;
 import ruiseki.integrateddynamics.core.part.panel.PartTypePanelVariableDriven;
+import ruiseki.okcore.datastructure.LazyOptional;
+import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.helper.ValueNotifierHelpers;
 import ruiseki.okcore.inventory.SimpleInventory;
+import ruiseki.okcore.network.ExtendedBuffer;
 
 /**
  * Container for display parts.
@@ -40,26 +46,36 @@ public class ContainerPartPanelVariableDriven<P extends PartTypePanelVariableDri
 
     private final int readValueId;
     private final int readColorId;
+    private final int readErrorsId;
 
-    /**
-     * Make a new instance.
-     *
-     * @param target        The target.
-     * @param player        The player.
-     * @param partContainer The part container.
-     * @param partType      The part type.
-     */
-    public ContainerPartPanelVariableDriven(EntityPlayer player, PartTarget target, IPartContainer partContainer,
-        IPartType partType) {
-        super(player, target, partContainer, (P) partType);
+    public ContainerPartPanelVariableDriven(InventoryPlayer playerInventory, ExtendedBuffer packetBuffer) {
+        this(
+            playerInventory,
+            new SimpleInventory(packetBuffer.readInt()),
+            Optional.empty(),
+            Optional.empty(),
+            PartHelpers.readPart(packetBuffer));
+    }
+
+    public ContainerPartPanelVariableDriven(InventoryPlayer playerInventory, IInventory inventory,
+        Optional<PartTarget> target, Optional<IPartContainer> partContainer, P partType) {
+        super(
+            ContainerPartDisplayConfig._instance.getInstance(),
+            playerInventory,
+            inventory,
+            target,
+            partContainer,
+            partType);
 
         readValueId = getNextValueId();
         readColorId = getNextValueId();
+        readErrorsId = getNextValueId();
 
-        SimpleInventory inventory = getPartState().getInventory();
-        inventory.addDirtyMarkListener(this);
+        if (inventory instanceof SimpleInventory) {
+            ((SimpleInventory) inventory).addDirtyMarkListener(this);
+        }
 
-        addInventory(getPartState().getInventory(), 0, 80, 14, 1, 1);
+        addInventory(inventory, 0, 80, 14, 1, 1);
         addPlayerInventory(player.inventory, 8, 46);
     }
 
@@ -81,7 +97,8 @@ public class ContainerPartPanelVariableDriven<P extends PartTypePanelVariableDri
             if (!NetworkHelpers.shouldWork()) {
                 readValue = "SAFE-MODE";
             } else {
-                IValue value = getPartState().getDisplayValue();
+                IValue value = getPartState().get()
+                    .getDisplayValue();
                 if (value != null) {
                     readValue = value.getType()
                         .toCompactString(value);
@@ -91,51 +108,56 @@ public class ContainerPartPanelVariableDriven<P extends PartTypePanelVariableDri
             }
             ValueNotifierHelpers.setValue(this, readValueId, readValue);
             ValueNotifierHelpers.setValue(this, readColorId, readValueColor);
+            ValueNotifierHelpers.setValueUnlocalizedStringList(
+                this,
+                readErrorsId,
+                getPartState().get()
+                    .getGlobalErrors());
         }
     }
 
     @Override
     public void onDirty() {
         if (!MinecraftHelpers.isClientSide()) {
-            getPartState().onVariableContentsUpdated(getPartType(), getTarget());
-            INetwork network = NetworkHelpers.getNetworkChecked(getTarget().getCenter());
-            if (!getPartState().getInventory()
-                .isEmpty()) {
-                try {
-                    IPartNetwork partNetwork = NetworkHelpers.getPartNetworkChecked(network);
-                    IVariable variable = getPartState().getVariable(network, partNetwork);
-                    MinecraftForge.EVENT_BUS.post(
-                        new PartVariableDrivenVariableContentsUpdatedEvent<>(
-                            network,
-                            partNetwork,
-                            getTarget(),
-                            getPartType(),
-                            getPartState(),
-                            getPlayer(),
-                            variable,
-                            variable != null ? variable.getValue() : null));
-                } catch (EvaluationException e) {
+            S partState = getPartState().get();
+            partState.onVariableContentsUpdated(getPartType(), getTarget().get());
+            LazyOptional<INetwork> optionalNetwork = NetworkHelpers.getNetwork(
+                getTarget().get()
+                    .getCenter());
+            if (getContainerInventory() != null) {
+                NetworkHelpers.getPartNetwork(optionalNetwork)
+                    .ifPresent(partNetwork -> {
+                        try {
+                            INetwork network = optionalNetwork.orElse(null);
+                            IVariable variable = partState.getVariable(network, partNetwork);
+                            MinecraftForge.EVENT_BUS.post(
+                                new PartVariableDrivenVariableContentsUpdatedEvent<>(
+                                    network,
+                                    partNetwork,
+                                    getTarget().get(),
+                                    getPartType(),
+                                    partState,
+                                    player,
+                                    variable,
+                                    variable != null ? variable.getValue() : null));
+                        } catch (EvaluationException e) {
 
-                }
+                        }
+                    });
+
             }
-            if (network != null) {
-                network.getEventBus()
-                    .post(new VariableContentsUpdatedEvent(network));
-            }
+            optionalNetwork.ifPresent(
+                network -> network.getEventBus()
+                    .post(new VariableContentsUpdatedEvent(network)));
         }
     }
 
     @Override
     public void onContainerClosed(EntityPlayer player) {
         super.onContainerClosed(player);
-        getPartState().getInventory()
-            .removeDirtyMarkListener(this);
-    }
-
-    @Override
-    protected int getSizeInventory() {
-        return getPartState().getInventory()
-            .getSizeInventory();
+        if (inventory instanceof SimpleInventory) {
+            ((SimpleInventory) inventory).removeDirtyMarkListener(this);
+        }
     }
 
     public String getReadValue() {
@@ -144,5 +166,9 @@ public class ContainerPartPanelVariableDriven<P extends PartTypePanelVariableDri
 
     public int getReadValueColor() {
         return ValueNotifierHelpers.getValueInt(this, readColorId);
+    }
+
+    public List<LangHelpers.UnlocalizedString> getReadErrors() {
+        return ValueNotifierHelpers.getValueUnlocalizedStringList(this, readErrorsId);
     }
 }

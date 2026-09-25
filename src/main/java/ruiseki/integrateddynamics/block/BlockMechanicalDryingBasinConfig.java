@@ -35,6 +35,11 @@ public class BlockMechanicalDryingBasinConfig extends BlockContainerConfig {
      * Make a new instance.
      */
     public BlockMechanicalDryingBasinConfig() {
-        super(IntegratedDynamics._instance, true, "mechanical_drying_basin", null, BlockMechanicalDryingBasin::new);
+        super(
+            IntegratedDynamics._instance,
+            true,
+            "mechanical_drying_basin",
+            null,
+            blockConfig -> new BlockMechanicalDryingBasin());
     }
 }

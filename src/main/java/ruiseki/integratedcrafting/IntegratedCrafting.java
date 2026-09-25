@@ -20,6 +20,8 @@ import ruiseki.integratedcrafting.capability.network.CraftingNetworkConfig;
 import ruiseki.integratedcrafting.capability.network.NetworkCraftingHandlerCraftingNetwork;
 import ruiseki.integratedcrafting.core.CraftingProcessOverrideRegistry;
 import ruiseki.integratedcrafting.core.CraftingProcessOverrides;
+import ruiseki.integratedcrafting.inventory.container.ContainerPartInterfaceCraftingConfig;
+import ruiseki.integratedcrafting.inventory.container.ContainerPartInterfaceCraftingSettingsConfig;
 import ruiseki.integratedcrafting.part.CraftingPartTypes;
 import ruiseki.integratedcrafting.part.aspect.CraftingAspects;
 import ruiseki.integrateddynamics.IntegratedDynamics;
@@ -167,6 +169,9 @@ public class IntegratedCrafting extends ModBaseVersionable {
         super.onMainConfigsRegister(configHandler);
         configHandler.add(new CraftingNetworkConfig());
         configHandler.add(new CraftingInterfaceConfig());
+
+        configHandler.add(new ContainerPartInterfaceCraftingConfig());
+        configHandler.add(new ContainerPartInterfaceCraftingSettingsConfig());
     }
 
     @Override

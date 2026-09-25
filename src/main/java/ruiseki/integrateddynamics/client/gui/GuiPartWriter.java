@@ -3,11 +3,8 @@ package ruiseki.integrateddynamics.client.gui;
 import java.awt.Rectangle;
 
 import net.minecraft.client.renderer.RenderHelper;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 
-import ruiseki.integrateddynamics.api.part.IPartContainer;
-import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.api.part.aspect.IAspectWrite;
 import ruiseki.integrateddynamics.api.part.write.IPartStateWriter;
 import ruiseki.integrateddynamics.api.part.write.IPartTypeWriter;
@@ -15,14 +12,13 @@ import ruiseki.integrateddynamics.core.client.gui.container.GuiMultipartAspects;
 import ruiseki.integrateddynamics.inventory.container.ContainerPartWriter;
 import ruiseki.integrateddynamics.item.ItemVariableConfig;
 import ruiseki.okcore.helper.RenderHelpers;
-import ruiseki.okcore.inventory.IGuiContainerProvider;
 
 /**
  * Gui for a writer part.
  *
  * @author rubensworks
  */
-public class GuiPartWriter<P extends IPartTypeWriter<P, S> & IGuiContainerProvider, S extends IPartStateWriter<P>>
+public class GuiPartWriter<P extends IPartTypeWriter<P, S>, S extends IPartStateWriter<P>>
     extends GuiMultipartAspects<P, S, IAspectWrite, ContainerPartWriter<P, S>> {
 
     private static final int ERROR_X = 152;
@@ -30,16 +26,8 @@ public class GuiPartWriter<P extends IPartTypeWriter<P, S> & IGuiContainerProvid
     private static final int OK_X = 152;
     private static final int OK_Y = 20;
 
-    /**
-     * Make a new instance.
-     *
-     * @param partTarget    The target.
-     * @param player        The player.
-     * @param partContainer The part container.
-     * @param partType      The targeted part type.
-     */
-    public GuiPartWriter(EntityPlayer player, PartTarget partTarget, IPartContainer partContainer, P partType) {
-        super(new ContainerPartWriter<>(player, partTarget, partContainer, partType));
+    public GuiPartWriter(ContainerPartWriter<P, S> container) {
+        super(container);
     }
 
     @Override

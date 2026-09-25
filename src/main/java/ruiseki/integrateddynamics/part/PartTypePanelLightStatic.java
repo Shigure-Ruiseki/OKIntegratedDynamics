@@ -1,8 +1,6 @@
 package ruiseki.integrateddynamics.part;
 
 import net.minecraft.block.Block;
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.inventory.Container;
 import net.minecraft.world.IBlockAccess;
 
 import ruiseki.integrateddynamics.GeneralConfig;
@@ -56,21 +54,6 @@ public class PartTypePanelLightStatic
     @Override
     public int getConsumptionRate(PartStateEmpty<PartTypePanelLightStatic> state) {
         return GeneralConfig.panelLightStaticBaseConsumption;
-    }
-
-    @Override
-    protected boolean hasGui() {
-        return false;
-    }
-
-    @Override
-    public Class<? extends Container> getContainer() {
-        return null;
-    }
-
-    @Override
-    public Class<? extends GuiScreen> getGui() {
-        return null;
     }
 
     @Override

@@ -22,7 +22,7 @@ public class BlockProxyConfig extends BlockContainerConfig {
      * Make a new instance.
      */
     public BlockProxyConfig() {
-        super(IntegratedDynamics._instance, true, "proxy", null, BlockProxy::new);
+        super(IntegratedDynamics._instance, true, "proxy", null, blockConfig -> new BlockProxy());
     }
 
     @Override

@@ -1,20 +1,13 @@
 package ruiseki.integrateddynamics.block;
 
-import net.minecraft.block.Block;
-import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.Container;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
-import ruiseki.integrateddynamics.client.gui.GuiMechanicalDryingBasin;
 import ruiseki.integrateddynamics.core.block.BlockContainerGuiCabled;
-import ruiseki.integrateddynamics.inventory.container.ContainerMechanicalDryingBasin;
 import ruiseki.integrateddynamics.tileentity.TileMechanicalDryingBasin;
 import ruiseki.okcore.block.property.BlockProperty;
 import ruiseki.okcore.block.property.BooleanProperty;
-import ruiseki.okcore.config.extendedconfig.BlockConfig;
-import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.helper.FluidHelpers;
 import ruiseki.okcore.helper.TileHelpers;
@@ -35,13 +28,8 @@ public class BlockMechanicalDryingBasin extends BlockContainerGuiCabled {
         if (tile != null) tile.setWorking(value);
     });
 
-    /**
-     * Make a new block instance.
-     *
-     * @param eConfig Config for this block.
-     */
-    public BlockMechanicalDryingBasin(ExtendedConfig<BlockConfig, Block> eConfig) {
-        super(eConfig, TileMechanicalDryingBasin.class);
+    public BlockMechanicalDryingBasin() {
+        super(TileMechanicalDryingBasin.class);
     }
 
     @Override
@@ -56,16 +44,6 @@ public class BlockMechanicalDryingBasin extends BlockContainerGuiCabled {
         return FluidHelpers.interactWithFluidHandler(player, world, blockPos, ForgeDirection.UP)
             || FluidHelpers.interactWithFluidHandler(player, world, blockPos, ForgeDirection.DOWN)
             || super.onBlockActivated(world, x, y, z, player, sideInt, subX, subY, subZ);
-    }
-
-    @Override
-    public Class<? extends Container> getContainer() {
-        return ContainerMechanicalDryingBasin.class;
-    }
-
-    @Override
-    public Class<? extends GuiScreen> getGui() {
-        return GuiMechanicalDryingBasin.class;
     }
 
     @Override

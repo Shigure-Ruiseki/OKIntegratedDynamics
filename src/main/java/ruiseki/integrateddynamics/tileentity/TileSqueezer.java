@@ -51,7 +51,7 @@ public class TileSqueezer extends TankInventoryTileEntity implements TileEntityO
         .createCheck(RecipeTypeSqueezerConfig._instance.getInstance());
 
     public TileSqueezer() {
-        super(1, "squeezerInventory", 1, FluidHelpers.BUCKET_VOLUME);
+        super(1, 1, FluidHelpers.BUCKET_VOLUME);
 
         addSlotsToSide(ForgeDirection.UP, Sets.newHashSet(0));
         addSlotsToSide(ForgeDirection.DOWN, Sets.newHashSet(0));

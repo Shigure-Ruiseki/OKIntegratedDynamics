@@ -1,12 +1,18 @@
 package ruiseki.integratedtunnels.core.part;
 
-import net.minecraft.entity.player.EntityPlayer;
+import java.util.Optional;
+
+import net.minecraft.entity.player.InventoryPlayer;
+import net.minecraft.inventory.IInventory;
 
 import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartTarget;
+import ruiseki.integrateddynamics.core.helper.PartHelpers;
 import ruiseki.integrateddynamics.core.inventory.container.ContainerPartSettings;
 import ruiseki.okcore.helper.ValueNotifierHelpers;
+import ruiseki.okcore.inventory.SimpleInventory;
+import ruiseki.okcore.network.ExtendedBuffer;
 
 /**
  * @author rubensworks
@@ -15,9 +21,24 @@ public class ContainerInterfaceSettings extends ContainerPartSettings {
 
     private final int lastChannelInterfaceValueId;
 
-    public ContainerInterfaceSettings(EntityPlayer player, PartTarget target, IPartContainer partContainer,
-        IPartType partType) {
-        super(player, target, partContainer, partType);
+    public ContainerInterfaceSettings(InventoryPlayer playerInventory, ExtendedBuffer packetBuffer) {
+        this(
+            playerInventory,
+            new SimpleInventory(0),
+            PartHelpers.readPartTarget(packetBuffer),
+            Optional.empty(),
+            PartHelpers.readPart(packetBuffer));
+    }
+
+    public ContainerInterfaceSettings(InventoryPlayer playerInventory, IInventory inventory, PartTarget target,
+        Optional<IPartContainer> partContainer, IPartType partType) {
+        super(
+            ContainerInterfaceSettingsConfig._instance.getInstance(),
+            playerInventory,
+            inventory,
+            target,
+            partContainer,
+            partType);
         lastChannelInterfaceValueId = getNextValueId();
     }
 

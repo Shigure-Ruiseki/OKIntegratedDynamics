@@ -5,11 +5,12 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
-import ruiseki.integrateddynamics.IntegratedDynamics;
-import ruiseki.integrateddynamics.core.client.gui.ExtendedGuiHandler;
+import ruiseki.integrateddynamics.api.part.PartPos;
+import ruiseki.integrateddynamics.core.helper.PartHelpers;
 import ruiseki.integratedterminals.IntegratedTerminals;
 import ruiseki.integratedterminals.part.TerminalPartTypes;
 import ruiseki.okcore.datastructure.BlockPos;
+import ruiseki.okcore.datastructure.DimPos;
 import ruiseki.okcore.network.CodecField;
 import ruiseki.okcore.network.PacketCodec;
 
@@ -47,20 +48,13 @@ public class OpenCraftingJobsGuiPacket extends PacketCodec {
 
     @Override
     public void actionServer(World world, EntityPlayerMP player) {
-        IntegratedDynamics._instance.getGuiHandler()
-            .setTemporaryData(ExtendedGuiHandler.PART, side);
-        player.openGui(
-            IntegratedDynamics._instance,
-            TerminalPartTypes.TERMINAL_CRAFTING_JOB.getGuiID(),
-            world,
-            pos.getX(),
-            pos.getY(),
-            pos.getZ());
+        PartHelpers.openContainerPart(
+            player,
+            PartPos.of(DimPos.of(world, pos), side),
+            TerminalPartTypes.TERMINAL_CRAFTING_JOB);
     }
 
     public static void send(BlockPos pos, ForgeDirection side) {
-        IntegratedDynamics._instance.getGuiHandler()
-            .setTemporaryData(ExtendedGuiHandler.PART, side);
         IntegratedTerminals._instance.getPacketHandler()
             .sendToServer(new OpenCraftingJobsGuiPacket(pos, side));
     }

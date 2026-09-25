@@ -19,6 +19,6 @@ public class BlockHttpConfig extends BlockContainerConfig {
      * Make a new instance.
      */
     public BlockHttpConfig() {
-        super(IntegratedRest._instance, true, "http", null, BlockHttp::new);
+        super(IntegratedRest._instance, true, "http", null, blockConfig -> new BlockHttp());
     }
 }

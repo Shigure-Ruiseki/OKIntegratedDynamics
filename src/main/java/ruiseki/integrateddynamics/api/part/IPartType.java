@@ -1,10 +1,12 @@
 package ruiseki.integrateddynamics.api.part;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -26,6 +28,8 @@ import ruiseki.integrateddynamics.api.network.IPartNetworkElement;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
 import ruiseki.okcore.init.IInitListener;
+import ruiseki.okcore.inventory.IGuiConstructor;
+import ruiseki.okcore.network.ExtendedBuffer;
 
 /**
  * A type of part that can be inserted into a {@link IPartContainer}.
@@ -464,4 +468,68 @@ public interface IPartType<P extends IPartType<P, S>, S extends IPartState<P>>
      */
     public boolean forceLightTransparency(S state);
 
+    /**
+     * {@link #writeExtraGuiData(ExtendedBuffer, PartPos, EntityPlayerMP)}.
+     * 
+     * @return The optional container provider for the part type gui.
+     * @param pos The part position. May be null when called client-side, for checking presence.
+     */
+    public default Optional<IGuiConstructor> getContainerProvider(PartPos pos) {
+        return Optional.empty();
+    };
+
+    /**
+     * This method can be overridden for cases when additional data needs to be sent to clients when opening containers.
+     * 
+     * @param packetBuffer A packet buffer that can be written to.
+     * @param pos          A part position.
+     * @param player       The player opening the gui.
+     */
+    public default void writeExtraGuiData(ExtendedBuffer packetBuffer, PartPos pos, EntityPlayerMP player) {
+
+    }
+
+    /**
+     * {@link #writeExtraGuiDataSettings(ExtendedBuffer, PartPos, EntityPlayerMP)}.
+     * 
+     * @return The optional container provider for the part settings gui.
+     * @param pos The part position. May be null when called client-side, for checking presence.
+     */
+    public default Optional<IGuiConstructor> getContainerProviderSettings(PartPos pos) {
+        return Optional.empty();
+    };
+
+    /**
+     * {@link #writeExtraGuiDataOffsets(ExtendedBuffer, PartPos, EntityPlayerMP)}.
+     * 
+     * @return The optional container provider for the part offsets gui.
+     * @param pos The part position. May be null when called client-side, for checking presence.
+     */
+    public default Optional<IGuiConstructor> getContainerProviderOffsets(PartPos pos) {
+        return Optional.empty();
+    };
+
+    /**
+     * This method can be overridden for cases when additional data needs to be sent to clients
+     * when opening settings containers.
+     * 
+     * @param packetBuffer A packet buffer that can be written to.
+     * @param pos          A part position.
+     * @param player       The player opening the settings gui.
+     */
+    public default void writeExtraGuiDataSettings(ExtendedBuffer packetBuffer, PartPos pos, EntityPlayerMP player) {
+
+    }
+
+    /**
+     * This method can be overridden for cases when additional data needs to be sent to clients
+     * when opening offsets containers.
+     * 
+     * @param packetBuffer A packet buffer that can be written to.
+     * @param pos          A part position.
+     * @param player       The player opening the offsets gui.
+     */
+    public default void writeExtraGuiDataOffsets(ExtendedBuffer packetBuffer, PartPos pos, EntityPlayerMP player) {
+
+    }
 }

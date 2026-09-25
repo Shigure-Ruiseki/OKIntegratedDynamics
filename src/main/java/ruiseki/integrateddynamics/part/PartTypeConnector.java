@@ -1,8 +1,6 @@
 package ruiseki.integrateddynamics.part;
 
 import net.minecraft.block.Block;
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.inventory.Container;
 
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
@@ -43,21 +41,6 @@ public abstract class PartTypeConnector<P extends PartTypeConnector<P, S>, S ext
     @Override
     protected Block createBlock() {
         return new IgnoredBlockStatus();
-    }
-
-    @Override
-    protected boolean hasGui() {
-        return false;
-    }
-
-    @Override
-    public Class<? extends Container> getContainer() {
-        return null;
-    }
-
-    @Override
-    public Class<? extends GuiScreen> getGui() {
-        return null;
     }
 
     @Override

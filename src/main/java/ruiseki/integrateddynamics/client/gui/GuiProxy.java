@@ -1,6 +1,5 @@
 package ruiseki.integrateddynamics.client.gui;
 
-import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.util.ResourceLocation;
 
 import ruiseki.integrateddynamics.Reference;
@@ -18,14 +17,8 @@ public class GuiProxy extends GuiActiveVariableBase<ContainerProxy, TileProxy> {
     private static final int ERROR_X = 110;
     private static final int ERROR_Y = 26;
 
-    /**
-     * Make a new instance.
-     *
-     * @param inventory The player inventory.
-     * @param tile      The part.
-     */
-    public GuiProxy(InventoryPlayer inventory, TileProxy tile) {
-        super(new ContainerProxy(inventory, tile));
+    public GuiProxy(ContainerProxy container) {
+        super(container);
     }
 
     @Override

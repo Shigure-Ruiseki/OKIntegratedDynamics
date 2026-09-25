@@ -1,18 +1,11 @@
 package ruiseki.integrateddynamics.client.gui;
 
-import java.io.IOException;
-
-import net.minecraft.client.gui.GuiButton;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.network.play.client.C17PacketCustomPayload;
 import net.minecraft.util.ResourceLocation;
 
 import org.apache.commons.lang3.StringUtils;
 import org.lwjgl.input.Keyboard;
 
-import io.netty.buffer.Unpooled;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.Reference;
 import ruiseki.integrateddynamics.api.item.IVariableFacade;
@@ -22,7 +15,7 @@ import ruiseki.integrateddynamics.inventory.container.ContainerLabeller;
 import ruiseki.integrateddynamics.network.packet.ItemStackRenamePacket;
 import ruiseki.okcore.client.gui.component.button.GuiButtonText;
 import ruiseki.okcore.client.gui.component.input.GuiTextFieldExtended;
-import ruiseki.okcore.client.gui.container.GuiContainerConfigurable;
+import ruiseki.okcore.client.gui.container.GuiContainerExtended;
 import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.helper.LangHelpers;
 
@@ -31,21 +24,12 @@ import ruiseki.okcore.helper.LangHelpers;
  *
  * @author rubensworks
  */
-public class GuiLabeller extends GuiContainerConfigurable<ContainerLabeller> {
-
-    public static final int BUTTON_WRITE = 1;
+public class GuiLabeller extends GuiContainerExtended<ContainerLabeller> {
 
     private GuiTextFieldExtended searchField;
 
-    /**
-     * Make a new instance.
-     *
-     * @param player    The player.
-     * @param itemIndex The index of the item in use inside the player inventory.
-     */
-    public GuiLabeller(EntityPlayer player, int itemIndex) {
-        super(new ContainerLabeller(player, itemIndex));
-        ContainerLabeller container = getContainer();
+    public GuiLabeller(ContainerLabeller container) {
+        super(container);
         container.setGui(this);
     }
 
@@ -140,33 +124,6 @@ public class GuiLabeller extends GuiContainerConfigurable<ContainerLabeller> {
     protected void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY) {
         super.drawGuiContainerBackgroundLayer(partialTicks, mouseX, mouseY);
         this.searchField.drawTextBox();
-    }
-
-    @Override
-    protected void actionPerformed(GuiButton guibutton) {
-        if (guibutton.id == BUTTON_WRITE) {
-            ItemStack itemStack = getContainer().getItemStack();
-            IVariableFacadeHandlerRegistry registry = IntegratedDynamics._instance.getRegistryManager()
-                .getRegistry(IVariableFacadeHandlerRegistry.class);
-            IVariableFacade variableFacade = registry.handle(itemStack);
-            if (variableFacade.isValid()) {
-                int variableId = variableFacade.getId();
-                String label = StringUtils.isBlank(searchField.getText()) ? "" : searchField.getText();
-                LabelsWorldStorage.getInstance(IntegratedDynamics._instance)
-                    .put(variableId, label);
-            } else if (itemStack != null) {
-                try {
-                    PacketBuffer buffer = new PacketBuffer(Unpooled.buffer());
-                    buffer.writeStringToBuffer(searchField.getText());
-
-                    this.mc.thePlayer.sendQueue.addToSendQueue(new C17PacketCustomPayload("MC|ItemName", buffer));
-                } catch (IOException ignore) {}
-                String name = searchField.getText();
-                IntegratedDynamics._instance.getPacketHandler()
-                    .sendToServer(new ItemStackRenamePacket(name));
-                getContainer().setItemStackName(name);
-            }
-        }
     }
 
     public void setText(String text) {

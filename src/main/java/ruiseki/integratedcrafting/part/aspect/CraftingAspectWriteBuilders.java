@@ -88,19 +88,19 @@ public class CraftingAspectWriteBuilders {
     }
 
     public static final AspectBuilder<ValueObjectTypeRecipe.ValueRecipe, ValueObjectTypeRecipe, Triple<PartTarget, IAspectProperties, IRecipeDefinition>> BUILDER_RECIPE = AspectWriteBuilders.BUILDER_RECIPE
-        .byMod(IntegratedCrafting._instance)
+        .byMod(IntegratedCrafting._instance.getModId())
         .appendKind("craft")
         .handle(AspectWriteBuilders.PROP_GET_RECIPE);
     public static final AspectBuilder<ValueObjectTypeItemStack.ValueItemStack, ValueObjectTypeItemStack, Triple<PartTarget, IAspectProperties, ItemStack>> BUILDER_ITEMSTACK = AspectWriteBuilders.BUILDER_ITEMSTACK
-        .byMod(IntegratedCrafting._instance)
+        .byMod(IntegratedCrafting._instance.getModId())
         .appendKind("craft")
         .handle(AspectWriteBuilders.PROP_GET_ITEMSTACK);
     public static final AspectBuilder<ValueObjectTypeFluidStack.ValueFluidStack, ValueObjectTypeFluidStack, Triple<PartTarget, IAspectProperties, FluidStack>> BUILDER_FLUIDSTACK = AspectWriteBuilders.BUILDER_FLUIDSTACK
-        .byMod(IntegratedCrafting._instance)
+        .byMod(IntegratedCrafting._instance.getModId())
         .appendKind("craft")
         .handle(AspectWriteBuilders.PROP_GET_FLUIDSTACK);
     public static final AspectBuilder<ValueTypeLong.ValueLong, ValueTypeLong, Triple<PartTarget, IAspectProperties, Long>> BUILDER_LONG = AspectWriteBuilders.BUILDER_LONG
-        .byMod(IntegratedCrafting._instance)
+        .byMod(IntegratedCrafting._instance.getModId())
         .appendKind("craft")
         .handle(AspectWriteBuilders.PROP_GET_LONG);
 

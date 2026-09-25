@@ -5,6 +5,7 @@ import java.util.Locale;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 
@@ -12,10 +13,7 @@ import org.jetbrains.annotations.Nullable;
 
 import ruiseki.commoncapabilities.api.ingredient.IPrototypedIngredient;
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
-import ruiseki.integrateddynamics.api.part.IPartContainer;
-import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartPos;
-import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integratedterminals.IntegratedTerminals;
 import ruiseki.integratedterminals.Reference;
 import ruiseki.integratedterminals.api.terminalstorage.crafting.ITerminalCraftingPlanFlat;
@@ -51,10 +49,9 @@ public class GuiTerminalCraftingJobs extends GuiContainerExtended<ContainerTermi
     private GuiScrollBar scrollBar;
     private int firstRow;
 
-    public GuiTerminalCraftingJobs(EntityPlayer player, PartTarget target, IPartContainer partContainer,
-        IPartType partType) {
-        super(new ContainerTerminalCraftingJobs(player, target, partContainer, partType));
-        this.player = player;
+    public GuiTerminalCraftingJobs(ContainerTerminalCraftingJobs container, InventoryPlayer inventory) {
+        super(container);
+        this.player = inventory.player;
     }
 
     @Override
@@ -249,6 +246,7 @@ public class GuiTerminalCraftingJobs extends GuiContainerExtended<ContainerTermi
         // Send packets to cancel crafting jobs
         for (HandlerWrappedTerminalCraftingPlan craftingJob : getContainer().getCraftingJobs()) {
             PartPos center = getContainer().getTarget()
+                .get()
                 .getCenter();
             CraftingJobGuiData data = new CraftingJobGuiData(
                 center.getPos()
@@ -287,6 +285,7 @@ public class GuiTerminalCraftingJobs extends GuiContainerExtended<ContainerTermi
         HandlerWrappedTerminalCraftingPlan plan = getHoveredPlan(mouseX, mouseY);
         if (plan != null) {
             PartPos pos = getContainer().getTarget()
+                .get()
                 .getCenter();
             OpenCraftingJobsPlanGuiPacket.send(
                 pos.getPos()

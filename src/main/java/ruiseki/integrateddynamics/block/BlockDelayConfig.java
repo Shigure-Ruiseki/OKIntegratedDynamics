@@ -32,7 +32,7 @@ public class BlockDelayConfig extends BlockContainerConfig {
      * Make a new instance.
      */
     public BlockDelayConfig() {
-        super(IntegratedDynamics._instance, true, "delay", null, BlockDelay::new);
+        super(IntegratedDynamics._instance, true, "delay", null, blockConfig -> new BlockDelay());
     }
 
     @Override

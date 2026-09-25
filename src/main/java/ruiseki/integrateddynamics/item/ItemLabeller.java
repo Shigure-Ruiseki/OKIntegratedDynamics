@@ -1,15 +1,15 @@
 package ruiseki.integrateddynamics.item;
 
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.inventory.Container;
-import net.minecraft.item.Item;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
+import net.minecraft.world.World;
 
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
-import ruiseki.integrateddynamics.client.gui.GuiLabeller;
+import org.jetbrains.annotations.Nullable;
+
 import ruiseki.integrateddynamics.inventory.container.ContainerLabeller;
-import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
-import ruiseki.okcore.config.extendedconfig.ItemConfig;
+import ruiseki.okcore.inventory.IGuiConstructor;
+import ruiseki.okcore.inventory.container.ContainerExtended;
+import ruiseki.okcore.inventory.container.NamedContainerProviderItem;
 import ruiseki.okcore.item.ItemGui;
 
 /**
@@ -22,19 +22,19 @@ public class ItemLabeller extends ItemGui {
     /**
      * Make a new item instance.
      */
-    public ItemLabeller(ExtendedConfig<ItemConfig, Item> eConfig) {
-        super(eConfig);
+    public ItemLabeller() {
+        super();
     }
 
     @Override
-    public Class<? extends Container> getContainer() {
+    public @Nullable IGuiConstructor getGuiProvider(World world, EntityPlayer player, int itemIndex) {
+        return new NamedContainerProviderItem(
+            itemIndex,
+            (id, inventoryPlayer, index) -> new ContainerLabeller(inventoryPlayer, index));
+    }
+
+    @Override
+    public Class<? extends ContainerExtended> getContainerClass(World world, EntityPlayer player, ItemStack itemStack) {
         return ContainerLabeller.class;
     }
-
-    @SideOnly(Side.CLIENT)
-    @Override
-    public Class<? extends GuiScreen> getGui() {
-        return GuiLabeller.class;
-    }
-
 }

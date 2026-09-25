@@ -1,6 +1,6 @@
 package ruiseki.integrateddynamics.client.gui;
 
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.InventoryPlayer;
 
 import ruiseki.integrateddynamics.inventory.container.ContainerLogicProgrammerPortable;
 
@@ -9,10 +9,10 @@ import ruiseki.integrateddynamics.inventory.container.ContainerLogicProgrammerPo
  *
  * @author rubensworks
  */
-public class GuiLogicProgrammerPortable extends GuiLogicProgrammerBase {
+public class GuiLogicProgrammerPortable extends GuiLogicProgrammerBase<ContainerLogicProgrammerPortable> {
 
-    public GuiLogicProgrammerPortable(EntityPlayer player, int itemIndex) {
-        super(player.inventory, new ContainerLogicProgrammerPortable(player, itemIndex));
+    public GuiLogicProgrammerPortable(ContainerLogicProgrammerPortable container, InventoryPlayer inventoryPlayer) {
+        super(container, inventoryPlayer);
     }
 
 }

@@ -1,9 +1,12 @@
 package ruiseki.integrateddynamics.tileentity;
 
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
+
+import org.jetbrains.annotations.Nullable;
 
 import com.google.common.collect.Sets;
 
@@ -21,12 +24,15 @@ import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.integrateddynamics.core.item.ProxyVariableFacade;
 import ruiseki.integrateddynamics.core.tileentity.TileActiveVariableBase;
+import ruiseki.integrateddynamics.inventory.container.ContainerProxy;
 import ruiseki.integrateddynamics.network.ProxyNetworkElement;
 import ruiseki.okcore.capabilities.resolver.BasicCapabilityResolver;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
+import ruiseki.okcore.inventory.IGuiConstructor;
+import ruiseki.okcore.inventory.container.ContainerExtended;
 import ruiseki.okcore.persist.nbt.NBTPersist;
 
 /**
@@ -34,8 +40,9 @@ import ruiseki.okcore.persist.nbt.NBTPersist;
  *
  * @author rubensworks
  */
-public class TileProxy extends TileActiveVariableBase<ProxyNetworkElement> {
+public class TileProxy extends TileActiveVariableBase<ProxyNetworkElement> implements IGuiConstructor {
 
+    public static final int INVENTORY_SIZE = 3;
     public static final int SLOT_READ = 0;
     public static final int SLOT_WRITE_IN = 1;
     public static final int SLOT_WRITE_OUT = 2;
@@ -51,7 +58,7 @@ public class TileProxy extends TileActiveVariableBase<ProxyNetworkElement> {
     private boolean writeVariable;
 
     public TileProxy() {
-        this(3);
+        this(INVENTORY_SIZE);
 
         addSlotsToSide(ForgeDirection.UP, Sets.newHashSet(SLOT_READ));
         addSlotsToSide(ForgeDirection.DOWN, Sets.newHashSet(SLOT_READ));
@@ -61,7 +68,7 @@ public class TileProxy extends TileActiveVariableBase<ProxyNetworkElement> {
     }
 
     public TileProxy(int inventorySize) {
-        super(inventorySize, "proxy");
+        super(inventorySize);
         registerCapabilityResolvers();
     }
 
@@ -177,5 +184,11 @@ public class TileProxy extends TileActiveVariableBase<ProxyNetworkElement> {
             },
             lastPlayer,
             getBlock());
+    }
+
+    @Override
+    public @Nullable ContainerExtended createContainer(int windowId, InventoryPlayer playerInventory,
+        EntityPlayer player) {
+        return new ContainerProxy(playerInventory, this.getInventory(), this);
     }
 }

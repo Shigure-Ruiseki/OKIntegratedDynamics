@@ -79,7 +79,7 @@ public class RecipeSerializerMechanicalDryingBasin implements IRecipeSerializer<
         }
 
         // Other stuff
-        int duration = buffer.readVarIntFromBuffer();
+        int duration = buffer.readInt();
 
         return new RecipeMechanicalDryingBasin(
             recipeId,
@@ -114,6 +114,6 @@ public class RecipeSerializerMechanicalDryingBasin implements IRecipeSerializer<
         }
 
         // Other stuff
-        buffer.writeVarIntToBuffer(recipe.getDuration());
+        buffer.writeInt(recipe.getDuration());
     }
 }

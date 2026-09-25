@@ -6,7 +6,8 @@ import net.minecraft.inventory.Slot;
 
 import ruiseki.integrateddynamics.item.ItemVariableConfig;
 import ruiseki.integrateddynamics.tileentity.TileVariablestore;
-import ruiseki.okcore.inventory.container.TileInventoryContainerConfigurable;
+import ruiseki.okcore.inventory.SimpleInventory;
+import ruiseki.okcore.inventory.container.InventoryContainer;
 import ruiseki.okcore.inventory.slot.SlotSingleItem;
 
 /**
@@ -14,18 +15,16 @@ import ruiseki.okcore.inventory.slot.SlotSingleItem;
  *
  * @author rubensworks
  */
-public class ContainerVariablestore extends TileInventoryContainerConfigurable<TileVariablestore> {
+public class ContainerVariablestore extends InventoryContainer {
 
-    /**
-     * Make a new instance.
-     *
-     * @param inventory The player inventory.
-     * @param tile      The part.
-     */
-    public ContainerVariablestore(InventoryPlayer inventory, TileVariablestore tile) {
-        super(inventory, tile);
-        addInventory(tile, 0, offsetX + 8, offsetY + 18, TileVariablestore.ROWS, TileVariablestore.COLS);
-        addPlayerInventory(inventory, offsetX + 8, offsetY + 14 + TileVariablestore.ROWS * 18 + 17);
+    public ContainerVariablestore(InventoryPlayer playerInventory) {
+        this(playerInventory, new SimpleInventory(TileVariablestore.INVENTORY_SIZE));
+    }
+
+    public ContainerVariablestore(InventoryPlayer inventoryPlayer, IInventory inventory) {
+        super(ContainerVariablestoreConfig._instance.getInstance(), inventoryPlayer, inventory);
+        addInventory(inventory, 0, offsetX + 8, offsetY + 18, TileVariablestore.ROWS, TileVariablestore.COLS);
+        addPlayerInventory(inventoryPlayer, offsetX + 8, offsetY + 14 + TileVariablestore.ROWS * 18 + 17);
     }
 
     @Override

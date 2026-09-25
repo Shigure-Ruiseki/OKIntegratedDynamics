@@ -1,10 +1,14 @@
 package ruiseki.integratedterminals.inventory.container;
 
-import net.minecraft.entity.player.EntityPlayer;
+import java.io.IOException;
+
+import net.minecraft.entity.player.InventoryPlayer;
+
+import org.jetbrains.annotations.Nullable;
 
 import ruiseki.integratedterminals.core.client.gui.CraftingOptionGuiData;
-import ruiseki.integratedterminals.item.ItemTerminalStoragePortableConfig;
-import ruiseki.okcore.inventory.IGuiContainerProvider;
+import ruiseki.okcore.client.gui.ContainerType;
+import ruiseki.okcore.network.ExtendedBuffer;
 
 /**
  * @author rubensworks
@@ -14,15 +18,26 @@ public class ContainerTerminalStorageCraftingOptionAmountItem
 
     // Based on ItemInventoryContainer
 
-    private final int itemIndex;
+    private final int location;
 
-    public ContainerTerminalStorageCraftingOptionAmountItem(EntityPlayer player, int itemIndex,
+    public ContainerTerminalStorageCraftingOptionAmountItem(InventoryPlayer playerInventory,
+        ExtendedBuffer packetBuffer) throws IOException {
+        this(playerInventory, packetBuffer.readInt(), CraftingOptionGuiData.readFromPacketBuffer(packetBuffer));
+    }
+
+    public ContainerTerminalStorageCraftingOptionAmountItem(InventoryPlayer playerInventory, int location,
         CraftingOptionGuiData craftingOptionGuiData) {
-        super(
-            player,
-            ((IGuiContainerProvider) ItemTerminalStoragePortableConfig._instance.getInstance()),
+        this(
+            ContainerTerminalStorageCraftingOptionAmountItemConfig._instance.getInstance(),
+            playerInventory,
+            location,
             craftingOptionGuiData);
-        this.itemIndex = itemIndex;
+    }
+
+    public ContainerTerminalStorageCraftingOptionAmountItem(@Nullable ContainerType<?> type,
+        InventoryPlayer playerInventory, int location, CraftingOptionGuiData craftingOptionGuiData) {
+        super(type, playerInventory, craftingOptionGuiData);
+        this.location = location;
     }
 
 }

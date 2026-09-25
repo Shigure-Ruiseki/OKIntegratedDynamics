@@ -1,4 +1,4 @@
-package ruiseki.integratedterminals.core.client.gui;
+package ruiseki.integratedterminals.client.gui.container;
 
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumChatFormatting;
@@ -14,6 +14,7 @@ import ruiseki.integratedterminals.api.terminalstorage.crafting.ITerminalCraftin
 import ruiseki.integratedterminals.client.gui.container.component.GuiCraftingPlan;
 import ruiseki.integratedterminals.client.gui.container.component.GuiCraftingPlanFlat;
 import ruiseki.integratedterminals.client.gui.container.component.GuiCraftingPlanToggler;
+import ruiseki.integratedterminals.core.client.gui.CraftingOptionGuiData;
 import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorageCraftingPlanBase;
 import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientOpenCraftingJobAmountGuiPacket;
 import ruiseki.okcore.client.gui.component.button.GuiButtonText;
@@ -25,7 +26,7 @@ import ruiseki.okcore.helper.LangHelpers;
  *
  * @author rubensworks
  */
-public class GuiTerminalStorageCraftingPlanBase<L, C extends ContainerTerminalStorageCraftingPlanBase<L>>
+public class GuiTerminalStorageCraftingPlan<L, C extends ContainerTerminalStorageCraftingPlanBase<L>>
     extends GuiContainerExtended<C> {
 
     private GuiCraftingPlanToggler guiCraftingPlanToggler;
@@ -39,7 +40,7 @@ public class GuiTerminalStorageCraftingPlanBase<L, C extends ContainerTerminalSt
     private ITerminalCraftingPlanFlat craftingPlanFlat;
     private GuiButtonText buttonConfirm;
 
-    public GuiTerminalStorageCraftingPlanBase(C container) {
+    public GuiTerminalStorageCraftingPlan(C container) {
         super(container);
 
         this.guiCraftingPlanToggler = new GuiCraftingPlanToggler(

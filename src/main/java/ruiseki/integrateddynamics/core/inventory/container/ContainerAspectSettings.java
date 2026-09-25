@@ -1,8 +1,15 @@
 package ruiseki.integrateddynamics.core.inventory.container;
 
+import java.util.Objects;
+import java.util.Optional;
+
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.entity.player.InventoryPlayer;
+import net.minecraft.inventory.IInventory;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 
 import com.google.common.collect.BiMap;
@@ -10,7 +17,6 @@ import com.google.common.collect.HashBiMap;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
@@ -20,14 +26,15 @@ import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.api.part.aspect.IAspect;
 import ruiseki.integrateddynamics.api.part.aspect.property.IAspectProperties;
 import ruiseki.integrateddynamics.api.part.aspect.property.IAspectPropertyTypeInstance;
-import ruiseki.integrateddynamics.core.client.gui.ExtendedGuiHandler;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueHelpers;
 import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
+import ruiseki.integrateddynamics.core.helper.PartHelpers;
 import ruiseki.integrateddynamics.core.network.event.VariableContentsUpdatedEvent;
-import ruiseki.okcore.datastructure.BlockPos;
+import ruiseki.integrateddynamics.core.part.aspect.AspectRegistry;
 import ruiseki.okcore.helper.ValueNotifierHelpers;
-import ruiseki.okcore.inventory.IGuiContainerProvider;
-import ruiseki.okcore.inventory.container.ExtendedInventoryContainer;
+import ruiseki.okcore.inventory.SimpleInventory;
+import ruiseki.okcore.inventory.container.InventoryContainer;
+import ruiseki.okcore.network.ExtendedBuffer;
 
 /**
  * Container for aspect settings.
@@ -36,71 +43,59 @@ import ruiseki.okcore.inventory.container.ExtendedInventoryContainer;
  */
 @EqualsAndHashCode(callSuper = false)
 @Data
-public class ContainerAspectSettings extends ExtendedInventoryContainer {
+public class ContainerAspectSettings extends InventoryContainer {
 
     public static final String BUTTON_EXIT = "button_exit";
     private static final int PAGE_SIZE = 3;
 
-    private final PartTarget target;
-    private final IPartContainer partContainer;
-    private final IPartType partType;
+    private final Optional<PartTarget> target;
+    private final Optional<IPartContainer> partContainer;
+    private final Optional<IPartType> partType;
     private final World world;
-    private final BlockPos pos;
-    private final IAspect aspect;
+    private final IAspect<?, ?> aspect;
 
     private final BiMap<Integer, IAspectPropertyTypeInstance> propertyIds = HashBiMap.create();
 
-    /**
-     * Make a new instance.
-     *
-     * @param target        The target.
-     * @param player        The player.
-     * @param partContainer The part container.
-     * @param partType      The part type.
-     * @param aspect        The aspect.
-     */
-    public ContainerAspectSettings(final EntityPlayer player, PartTarget target, IPartContainer partContainer,
-        IPartType partType, IAspect aspect) {
-        super(player.inventory, (IGuiContainerProvider) partType);
+    public ContainerAspectSettings(InventoryPlayer playerInventory, ExtendedBuffer packetBuffer) {
+        this(
+            playerInventory,
+            new SimpleInventory(0),
+            Optional.empty(),
+            Optional.empty(),
+            Optional.empty(),
+            readAspect(packetBuffer));
+    }
+
+    protected static IAspect<?, ?> readAspect(ExtendedBuffer packetBuffer) {
+        String name = packetBuffer.readString();
+        return Objects.requireNonNull(
+            AspectRegistry.getInstance()
+                .getAspect(new ResourceLocation(name)),
+            String.format("Could not find an aspect by name %s", name));
+    }
+
+    public ContainerAspectSettings(InventoryPlayer playerInventory, IInventory inventory, Optional<PartTarget> target,
+        Optional<IPartContainer> partContainer, Optional<IPartType> partType, IAspect<?, ?> aspect) {
+        super(ContainerAspectSettingsConfig._instance.getInstance(), playerInventory, inventory);
         this.target = target;
         this.partContainer = partContainer;
         this.partType = partType;
         this.world = player.getEntityWorld();
-        if (target != null && target.getCenter() != null) {
-            this.pos = target.getCenter()
-                .getPos()
-                .getBlockPos();
-        } else {
-            this.pos = new BlockPos(
-                (int) Math.floor(player.posX),
-                (int) Math.floor(player.posY),
-                (int) Math.floor(player.posZ));
-        }
         this.aspect = aspect;
 
         addPlayerInventory(player.inventory, 8, 131);
 
-        for (IAspectPropertyTypeInstance property : ((IAspect<?, ?>) aspect).getPropertyTypes()) {
+        for (IAspectPropertyTypeInstance property : aspect.getPropertyTypes()) {
             propertyIds.put(getNextValueId(), property);
         }
 
         putButtonAction(ContainerAspectSettings.BUTTON_EXIT, (s, containerExtended) -> {
             if (!world.isRemote) {
-                IntegratedDynamics._instance.getGuiHandler()
-                    .setTemporaryData(
-                        ExtendedGuiHandler.PART,
-                        getTarget().getCenter()
-                            .getSide());
-                BlockPos pos = getTarget().getCenter()
-                    .getPos()
-                    .getBlockPos();
-                player.openGui(
-                    IntegratedDynamics._instance.getModId(),
-                    ((IGuiContainerProvider) getPartType()).getGuiID(),
-                    world,
-                    pos.getX(),
-                    pos.getY(),
-                    pos.getZ());
+                PartHelpers.openContainerPart(
+                    (EntityPlayerMP) playerInventory.player,
+                    getTarget().get()
+                        .getCenter(),
+                    getPartType().get());
             }
         });
     }
@@ -108,8 +103,9 @@ public class ContainerAspectSettings extends ExtendedInventoryContainer {
     @Override
     protected void initializeValues() {
         super.initializeValues();
-        IAspectProperties properties = aspect.getProperties(getPartType(), getTarget(), getPartState());
-        for (IAspectPropertyTypeInstance property : ((IAspect<?, ?>) aspect).getPropertyTypes()) {
+        IAspectProperties properties = aspect
+            .getProperties(getPartType().get(), getTarget().get(), getPartState().get());
+        for (IAspectPropertyTypeInstance property : aspect.getPropertyTypes()) {
             setValue(property, properties.getValue(property));
         }
     }
@@ -122,11 +118,12 @@ public class ContainerAspectSettings extends ExtendedInventoryContainer {
             ValueHelpers.serializeRaw(value));
     }
 
-    @SuppressWarnings("unchecked")
-    public IPartState getPartState() {
-        return partContainer.getPartState(
-            getTarget().getCenter()
-                .getSide());
+    public Optional<IPartState> getPartState() {
+        return partContainer.map(
+            p -> p.getPartState(
+                getTarget().get()
+                    .getCenter()
+                    .getSide()));
     }
 
     @Override
@@ -158,13 +155,16 @@ public class ContainerAspectSettings extends ExtendedInventoryContainer {
         if (!world.isRemote) {
             IAspectPropertyTypeInstance property = propertyIds.get(valueId);
             if (property != null) {
-                IAspectProperties aspectProperties = getAspect()
-                    .getProperties(getPartType(), getTarget(), getPartState());
+                IPartType partType = getPartType().get();
+                PartTarget target = getTarget().get();
+                IPartState partState = getPartState().get();
+
+                IAspectProperties aspectProperties = aspect.getProperties(partType, target, partState);
                 aspectProperties = aspectProperties.clone();
                 IValue trueValue = ValueHelpers
                     .deserializeRaw(property.getType(), value.getTag(ValueNotifierHelpers.KEY));
                 aspectProperties.setValue(property, trueValue);
-                getAspect().setProperties(getPartType(), getTarget(), getPartState(), aspectProperties);
+                aspect.setProperties(partType, target, partState, aspectProperties);
 
                 // Changing the properties might cause some erroring variables to become valid again, so trigger an
                 // update.

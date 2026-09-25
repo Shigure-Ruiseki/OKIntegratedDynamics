@@ -1,14 +1,19 @@
 package ruiseki.integrateddynamics.tileentity;
 
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.fluids.FluidStack;
 
+import org.jetbrains.annotations.Nullable;
+
 import ruiseki.integrateddynamics.block.BlockMechanicalDryingBasinConfig;
 import ruiseki.integrateddynamics.core.recipe.type.RecipeMechanicalDryingBasin;
 import ruiseki.integrateddynamics.core.recipe.type.RecipeTypeMechanicalDryingBasinConfig;
 import ruiseki.integrateddynamics.core.tileentity.TileMechanicalMachine;
+import ruiseki.integrateddynamics.inventory.container.ContainerMechanicalDryingBasin;
 import ruiseki.okcore.capabilities.resolver.SidedCapabilityResolver;
 import ruiseki.okcore.datastructure.NonNullList;
 import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
@@ -16,7 +21,9 @@ import ruiseki.okcore.fluid.handler.IFluidHandler;
 import ruiseki.okcore.fluid.handler.SmartTank;
 import ruiseki.okcore.helper.FluidHelpers;
 import ruiseki.okcore.helper.InventoryHelpers;
+import ruiseki.okcore.inventory.IGuiConstructor;
 import ruiseki.okcore.inventory.IInventoryFluid;
+import ruiseki.okcore.inventory.container.ContainerExtended;
 import ruiseki.okcore.persist.nbt.NBTPersist;
 import ruiseki.okcore.recipe.RecipeManager;
 
@@ -26,9 +33,9 @@ import ruiseki.okcore.recipe.RecipeManager;
  * @author rubensworks
  */
 public class TileMechanicalDryingBasin extends TileMechanicalMachine<IInventoryFluid, RecipeMechanicalDryingBasin>
-    implements IInventoryFluid {
+    implements IInventoryFluid, IGuiConstructor {
 
-    private static final int SLOTS = 5;
+    public static final int INVENTORY_SIZE = 5;
     private static final int SLOT_INPUT = 0;
     private static final int[] SLOTS_OUTPUT = { 1, 2, 3, 4 };
 
@@ -39,7 +46,7 @@ public class TileMechanicalDryingBasin extends TileMechanicalMachine<IInventoryF
     private boolean work = false;
 
     public TileMechanicalDryingBasin() {
-        super(SLOTS);
+        super(INVENTORY_SIZE);
 
         this.tankIn = new SmartTank(FluidHelpers.BUCKET_VOLUME * 10);
         this.tankIn.setTileEntity(this);
@@ -164,5 +171,11 @@ public class TileMechanicalDryingBasin extends TileMechanicalMachine<IInventoryF
     @Override
     public int getMaxEnergyStored() {
         return BlockMechanicalDryingBasinConfig.capacity;
+    }
+
+    @Override
+    public @Nullable ContainerExtended createContainer(int windowId, InventoryPlayer playerInventory,
+        EntityPlayer player) {
+        return new ContainerMechanicalDryingBasin(playerInventory, this.getInventory(), this);
     }
 }

@@ -1,6 +1,5 @@
 package ruiseki.integrateddynamics.client.gui;
 
-import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.util.ResourceLocation;
 
 import ruiseki.integrateddynamics.Reference;
@@ -18,14 +17,8 @@ public class GuiMaterializer extends GuiActiveVariableBase<ContainerMaterializer
     private static final int ERROR_X = 110;
     private static final int ERROR_Y = 26;
 
-    /**
-     * Make a new instance.
-     *
-     * @param inventory The player inventory.
-     * @param tile      The part.
-     */
-    public GuiMaterializer(InventoryPlayer inventory, TileMaterializer tile) {
-        super(new ContainerMaterializer(inventory, tile));
+    public GuiMaterializer(ContainerMaterializer container) {
+        super(container);
     }
 
     @Override

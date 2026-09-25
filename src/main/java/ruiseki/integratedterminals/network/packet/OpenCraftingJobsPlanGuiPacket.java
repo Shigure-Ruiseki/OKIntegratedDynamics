@@ -1,22 +1,36 @@
 package ruiseki.integratedterminals.network.packet;
 
+import java.io.IOException;
+import java.util.Optional;
+
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
-import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
+import org.jetbrains.annotations.Nullable;
 
+import ruiseki.integrateddynamics.api.part.IPartContainer;
+import ruiseki.integrateddynamics.api.part.PartPos;
+import ruiseki.integrateddynamics.api.part.PartTarget;
+import ruiseki.integrateddynamics.core.helper.PartHelpers;
+import ruiseki.integrateddynamics.core.part.PartTypeBase;
 import ruiseki.integratedterminals.IntegratedTerminals;
 import ruiseki.integratedterminals.api.terminalstorage.crafting.ITerminalStorageTabIngredientCraftingHandler;
 import ruiseki.integratedterminals.core.client.gui.CraftingJobGuiData;
-import ruiseki.integratedterminals.core.client.gui.ExtendedGuiHandler;
 import ruiseki.integratedterminals.core.terminalstorage.crafting.HandlerWrappedTerminalCraftingPlan;
 import ruiseki.integratedterminals.core.terminalstorage.crafting.TerminalStorageTabIngredientCraftingHandlers;
-import ruiseki.integratedterminals.proxy.guiprovider.GuiProviders;
+import ruiseki.integratedterminals.inventory.container.ContainerTerminalCraftingJobsPlan;
+import ruiseki.integratedterminals.part.PartTypeTerminalCraftingJob;
+import ruiseki.integratedterminals.part.TerminalPartTypes;
 import ruiseki.okcore.datastructure.BlockPos;
+import ruiseki.okcore.helper.PlayerHelpers;
+import ruiseki.okcore.inventory.IGuiConstructor;
+import ruiseki.okcore.inventory.container.ContainerExtended;
 import ruiseki.okcore.network.CodecField;
 import ruiseki.okcore.network.PacketCodec;
 
@@ -69,22 +83,46 @@ public class OpenCraftingJobsPlanGuiPacket extends PacketCodec {
 
     @Override
     public void actionServer(World world, EntityPlayerMP player) {
+        // Create common data holder
         ITerminalStorageTabIngredientCraftingHandler handler = getHandler();
-        CraftingJobGuiData data = new CraftingJobGuiData(
+        CraftingJobGuiData craftingJobGuiData = new CraftingJobGuiData(
             pos,
             side,
             channel,
             handler,
             handler.deserializeCraftingJobId(craftingJobId.getTag("id")));
-        IntegratedTerminals._instance.getGuiHandler()
-            .setTemporaryData(ExtendedGuiHandler.CRAFTING_PLAN_PART, Pair.of(side, data));
-        player.openGui(
-            IntegratedTerminals._instance,
-            GuiProviders.ID_GUI_TERMINAL_CRAFTING_JOBS_PLAN_PART,
-            world,
-            pos.getX(),
-            pos.getY(),
-            pos.getZ());
+        PartPos partPos = PartPos.of(world, pos, side);
+
+        // Create temporary container provider
+        IGuiConstructor containerProvider = new IGuiConstructor() {
+
+            @Override
+            public @Nullable ContainerExtended createContainer(int windowId, InventoryPlayer playerInventory,
+                EntityPlayer player) {
+                Triple<IPartContainer, PartTypeBase, PartTarget> data = PartHelpers
+                    .getContainerPartConstructionData(partPos);
+                return new ContainerTerminalCraftingJobsPlan(
+                    playerInventory,
+                    data.getRight(),
+                    Optional.of(data.getLeft()),
+                    (PartTypeTerminalCraftingJob) data.getMiddle(),
+                    craftingJobGuiData);
+            }
+        };
+
+        // Trigger gui opening
+        PlayerHelpers.openGui(player, containerProvider, packetBuffer -> {
+            try {
+                PacketCodec.getAction(PartPos.class)
+                    .encode(partPos, packetBuffer);
+                packetBuffer.writeString(
+                    TerminalPartTypes.TERMINAL_CRAFTING_JOB.getUniqueName()
+                        .toString());
+                craftingJobGuiData.writeToPacketBuffer(packetBuffer);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     protected ITerminalStorageTabIngredientCraftingHandler getHandler() {
@@ -101,8 +139,6 @@ public class OpenCraftingJobsPlanGuiPacket extends PacketCodec {
             craftingPlan.getHandler(),
             craftingPlan.getCraftingPlanFlat()
                 .getId());
-        IntegratedTerminals._instance.getGuiHandler()
-            .setTemporaryData(ExtendedGuiHandler.CRAFTING_PLAN_PART, Pair.of(side, data));
         IntegratedTerminals._instance.getPacketHandler()
             .sendToServer(new OpenCraftingJobsPlanGuiPacket(data));
     }

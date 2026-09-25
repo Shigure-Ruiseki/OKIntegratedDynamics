@@ -23,6 +23,7 @@ import ruiseki.integratedrest.evaluate.HttpVariableFacadeHandler;
 import ruiseki.integratedrest.http.HttpServer;
 import ruiseki.integratedrest.http.request.RequestHandlerRegistry;
 import ruiseki.integratedrest.http.request.RequestHandlers;
+import ruiseki.integratedrest.inventory.container.ContainerHttpConfig;
 import ruiseki.integratedrest.json.ValueTypeJsonHandlerRegistry;
 import ruiseki.integratedrest.json.ValueTypeJsonHandlers;
 import ruiseki.okcore.config.ConfigHandler;
@@ -149,6 +150,7 @@ public class IntegratedRest extends ModBaseVersionable {
     public void onMainConfigsRegister(ConfigHandler configHandler) {
         super.onMainConfigsRegister(configHandler);
         configHandler.add(new BlockHttpConfig());
+        configHandler.add(new ContainerHttpConfig());
     }
 
     @Override

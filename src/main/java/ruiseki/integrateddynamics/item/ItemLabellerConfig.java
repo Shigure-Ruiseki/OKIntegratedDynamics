@@ -19,7 +19,7 @@ public class ItemLabellerConfig extends ItemConfig {
      * Make a new instance.
      */
     public ItemLabellerConfig() {
-        super(IntegratedDynamics._instance, true, "labeller", null, ItemLabeller::new);
+        super(IntegratedDynamics._instance, true, "labeller", null, itemConfig -> new ItemLabeller());
     }
 
 }

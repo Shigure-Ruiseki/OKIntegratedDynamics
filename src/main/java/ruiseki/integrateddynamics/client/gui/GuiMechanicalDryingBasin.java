@@ -1,12 +1,10 @@
 package ruiseki.integrateddynamics.client.gui;
 
-import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.util.ResourceLocation;
 
 import ruiseki.integrateddynamics.Reference;
 import ruiseki.integrateddynamics.core.client.gui.GuiMechanicalMachine;
 import ruiseki.integrateddynamics.inventory.container.ContainerMechanicalDryingBasin;
-import ruiseki.integrateddynamics.tileentity.TileMechanicalDryingBasin;
 import ruiseki.okcore.helper.GuiHelpers;
 
 /**
@@ -16,14 +14,8 @@ import ruiseki.okcore.helper.GuiHelpers;
  */
 public class GuiMechanicalDryingBasin extends GuiMechanicalMachine<ContainerMechanicalDryingBasin> {
 
-    /**
-     * Make a new instance.
-     *
-     * @param inventory The player inventory.
-     * @param tile      The part.
-     */
-    public GuiMechanicalDryingBasin(InventoryPlayer inventory, TileMechanicalDryingBasin tile) {
-        super(new ContainerMechanicalDryingBasin(inventory, tile));
+    public GuiMechanicalDryingBasin(ContainerMechanicalDryingBasin container) {
+        super(container);
     }
 
     @Override

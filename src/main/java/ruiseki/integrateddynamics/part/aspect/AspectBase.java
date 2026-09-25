@@ -3,31 +3,33 @@ package ruiseki.integrateddynamics.part.aspect;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.inventory.Container;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.util.ResourceLocation;
 
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
-import lombok.Data;
-import lombok.Getter;
+import org.apache.commons.lang3.tuple.Triple;
+import org.jetbrains.annotations.Nullable;
+
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
+import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartState;
 import ruiseki.integrateddynamics.api.part.IPartType;
+import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.api.part.aspect.IAspect;
 import ruiseki.integrateddynamics.api.part.aspect.property.IAspectProperties;
 import ruiseki.integrateddynamics.api.part.aspect.property.IAspectPropertyTypeInstance;
-import ruiseki.integrateddynamics.core.client.gui.ExtendedGuiHandler;
-import ruiseki.integrateddynamics.core.client.gui.container.GuiAspectSettings;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
+import ruiseki.integrateddynamics.core.helper.PartHelpers;
 import ruiseki.integrateddynamics.core.inventory.container.ContainerAspectSettings;
-import ruiseki.okcore.helper.Helpers;
+import ruiseki.integrateddynamics.core.part.PartTypeBase;
 import ruiseki.okcore.helper.LangHelpers;
-import ruiseki.okcore.init.ModBase;
-import ruiseki.okcore.inventory.IGuiContainerProvider;
+import ruiseki.okcore.inventory.IGuiConstructor;
+import ruiseki.okcore.inventory.SimpleInventory;
+import ruiseki.okcore.inventory.container.ContainerExtended;
 
 /**
  * Base class for aspects.
@@ -37,30 +39,13 @@ import ruiseki.okcore.inventory.IGuiContainerProvider;
 public abstract class AspectBase<V extends IValue, T extends IValueType<V>> implements IAspect<V, T> {
 
     private final IAspectProperties defaultProperties;
-    @Getter
-    private final IGuiContainerProvider propertiesGuiProvider;
 
-    private final ModBase mod;
-    private final ModBase modGui;
+    private final String modId;
     private String unlocalizedName = null;
 
-    public AspectBase(ModBase mod, ModBase modGui, IAspectProperties defaultProperties) {
-        this.mod = mod;
-        this.modGui = modGui;
+    public AspectBase(String modId, IAspectProperties defaultProperties) {
+        this.modId = modId;
         this.defaultProperties = defaultProperties == null ? createDefaultProperties() : defaultProperties;
-        if (hasProperties()) {
-            int guiIDSettings = Helpers.getNewId(getModGui(), Helpers.IDType.GUI);
-            getModGui().getGuiHandler()
-                .registerGUI(
-                    (propertiesGuiProvider = constructSettingsGuiProvider(guiIDSettings)),
-                    ExtendedGuiHandler.ASPECT);
-        } else {
-            propertiesGuiProvider = null;
-        }
-    }
-
-    protected IGuiContainerProvider constructSettingsGuiProvider(int guiId) {
-        return new GuiProviderSettings(guiId, getModGui());
     }
 
     @Override
@@ -126,9 +111,29 @@ public abstract class AspectBase<V extends IValue, T extends IValueType<V>> impl
         return hasProperties() ? getDefaultProperties().getTypes() : Collections.emptyList();
     }
 
+    @Override
+    public IGuiConstructor getPropertiesContainerProvider(PartPos pos) {
+        return new IGuiConstructor() {
+
+            @Override
+            public @Nullable ContainerExtended createContainer(int windowId, InventoryPlayer playerInventory,
+                EntityPlayer player) {
+                Triple<IPartContainer, PartTypeBase, PartTarget> data = PartHelpers
+                    .getContainerPartConstructionData(pos);
+                return new ContainerAspectSettings(
+                    playerInventory,
+                    new SimpleInventory(0),
+                    Optional.of(data.getRight()),
+                    Optional.of(data.getLeft()),
+                    Optional.of(data.getMiddle()),
+                    AspectBase.this);
+            }
+        };
+    }
+
     /**
      * Creates the default properties for this aspect, only called once.
-     *
+     * 
      * @return The default properties.
      */
     @Deprecated
@@ -136,34 +141,7 @@ public abstract class AspectBase<V extends IValue, T extends IValueType<V>> impl
         return null;
     }
 
-    protected ModBase getMod() {
-        return mod;
-    }
-
-    protected ModBase getModGui() {
-        return modGui;
-    }
-
     protected String getModId() {
-        return getMod().getModId();
+        return this.modId;
     }
-
-    @Data
-    public static class GuiProviderSettings implements IGuiContainerProvider {
-
-        private final int guiID;
-        private final ModBase modGui;
-
-        @Override
-        public Class<? extends Container> getContainer() {
-            return ContainerAspectSettings.class;
-        }
-
-        @SideOnly(Side.CLIENT)
-        @Override
-        public Class<? extends GuiScreen> getGui() {
-            return GuiAspectSettings.class;
-        }
-    }
-
 }

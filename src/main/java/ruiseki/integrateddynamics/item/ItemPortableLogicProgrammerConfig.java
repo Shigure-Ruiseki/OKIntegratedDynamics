@@ -19,7 +19,12 @@ public class ItemPortableLogicProgrammerConfig extends ItemConfig {
      * Make a new instance.
      */
     public ItemPortableLogicProgrammerConfig() {
-        super(IntegratedDynamics._instance, true, "portable_logic_programmer", null, ItemPortableLogicProgrammer::new);
+        super(
+            IntegratedDynamics._instance,
+            true,
+            "portable_logic_programmer",
+            null,
+            itemConfig -> new ItemPortableLogicProgrammer());
     }
 
 }

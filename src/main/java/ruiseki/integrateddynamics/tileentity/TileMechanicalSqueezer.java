@@ -1,16 +1,21 @@
 package ruiseki.integrateddynamics.tileentity;
 
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.fluids.FluidStack;
 
+import org.jetbrains.annotations.Nullable;
+
 import ruiseki.integrateddynamics.block.BlockMechanicalSqueezerConfig;
 import ruiseki.integrateddynamics.core.recipe.type.RecipeMechanicalSqueezer;
 import ruiseki.integrateddynamics.core.recipe.type.RecipeSqueezer;
 import ruiseki.integrateddynamics.core.recipe.type.RecipeTypeMechanicalSqueezerConfig;
 import ruiseki.integrateddynamics.core.tileentity.TileMechanicalMachine;
+import ruiseki.integrateddynamics.inventory.container.ContainerMechanicalSqueezer;
 import ruiseki.okcore.capabilities.resolver.BasicCapabilityResolver;
 import ruiseki.okcore.datastructure.NonNullList;
 import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
@@ -19,12 +24,15 @@ import ruiseki.okcore.fluid.handler.SmartTank;
 import ruiseki.okcore.helper.CapabilityHelpers;
 import ruiseki.okcore.helper.FluidHelpers;
 import ruiseki.okcore.helper.InventoryHelpers;
+import ruiseki.okcore.inventory.IGuiConstructor;
+import ruiseki.okcore.inventory.container.ContainerExtended;
 import ruiseki.okcore.persist.nbt.NBTPersist;
 import ruiseki.okcore.recipe.RecipeManager;
 
-public class TileMechanicalSqueezer extends TileMechanicalMachine<IInventory, RecipeMechanicalSqueezer> {
+public class TileMechanicalSqueezer extends TileMechanicalMachine<IInventory, RecipeMechanicalSqueezer>
+    implements IGuiConstructor {
 
-    private static final int SLOTS = 5;
+    public static final int INVENTORY_SIZE = 5;
     private static final int SLOT_INPUT = 0;
     private static final int[] SLOTS_OUTPUT = { 1, 2, 3, 4 };
     private static final int TANK_SIZE = FluidHelpers.BUCKET_VOLUME * 100;
@@ -38,7 +46,7 @@ public class TileMechanicalSqueezer extends TileMechanicalMachine<IInventory, Re
     private boolean work = false;
 
     public TileMechanicalSqueezer() {
-        super(SLOTS);
+        super(INVENTORY_SIZE);
         this.tank = new SmartTank(TANK_SIZE);
         this.tank.setTileEntity(this);
 
@@ -177,5 +185,11 @@ public class TileMechanicalSqueezer extends TileMechanicalMachine<IInventory, Re
         this.autoEjectFluids = autoEjectFluids;
         markDirty();
         onTankChanged();
+    }
+
+    @Override
+    public @Nullable ContainerExtended createContainer(int windowId, InventoryPlayer playerInventory,
+        EntityPlayer player) {
+        return new ContainerMechanicalSqueezer(playerInventory, this.getInventory(), this);
     }
 }

@@ -1,8 +1,10 @@
 package ruiseki.integrateddynamics.core.helper;
 
 import java.util.Map;
+import java.util.Objects;
 
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
@@ -13,6 +15,7 @@ import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.apache.logging.log4j.Level;
 import org.jetbrains.annotations.Nullable;
 
@@ -29,13 +32,19 @@ import ruiseki.integrateddynamics.api.part.IPartState;
 import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.integrateddynamics.api.part.PartTarget;
+import ruiseki.integrateddynamics.api.part.aspect.IAspect;
 import ruiseki.integrateddynamics.capability.partcontainer.PartContainerConfig;
 import ruiseki.integrateddynamics.core.network.event.UnknownPartEvent;
+import ruiseki.integrateddynamics.core.part.PartTypeBase;
+import ruiseki.integrateddynamics.core.part.PartTypeRegistry;
 import ruiseki.integrateddynamics.core.part.PartTypes;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
 import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.helper.CapabilityHelpers;
+import ruiseki.okcore.helper.PlayerHelpers;
+import ruiseki.okcore.network.ExtendedBuffer;
+import ruiseki.okcore.network.PacketCodec;
 
 /**
  * Helpers related to parts.
@@ -98,6 +107,19 @@ public class PartHelpers {
     public static IPartContainer getPartContainerChecked(DimPos dimPos, @Nullable ForgeDirection side) {
         return PartHelpers.getPartContainer(dimPos, side)
             .orElseThrow(() -> new PartStateException(dimPos, side));
+    }
+
+    /**
+     * Get the part container capability at the given position.
+     * If it is not present, then an illegal state exception will be thrown.
+     *
+     * This should only be called if you know for certain that there will be a part container present.
+     *
+     * @param pos The part position.
+     * @return The part container capability.
+     */
+    public static IPartContainer getPartContainerChecked(PartPos pos) {
+        return PartHelpers.getPartContainerChecked(pos.getPos(), pos.getSide());
     }
 
     /**
@@ -433,6 +455,136 @@ public class PartHelpers {
             return PartStateHolder.of(partContainer.getPart(side), partContainer.getPartState(side));
         }
         return null;
+    }
+
+    /**
+     * Open a part gui container from the server.
+     *
+     * @param player   The player opening the gui.
+     * @param pos      The part position.
+     * @param partType The part type.
+     * @return The action result.
+     */
+    public static boolean openContainerPart(EntityPlayerMP player, PartPos pos, IPartType<?, ?> partType) {
+        return partType.getContainerProvider(pos)
+            .map(containerProvider -> {
+                PlayerHelpers.openGui(
+                    player,
+                    containerProvider,
+                    packetBuffer -> partType.writeExtraGuiData(packetBuffer, pos, player));
+                return true;
+            })
+            .orElse(false);
+    }
+
+    /**
+     * Open a part settings gui container from the server.
+     *
+     * @param player   The player opening the gui.
+     * @param pos      The part position.
+     * @param partType The part type.
+     * @return If the part has a container provider for settings.
+     */
+    public static boolean openContainerPartSettings(EntityPlayerMP player, PartPos pos, IPartType<?, ?> partType) {
+        return partType.getContainerProviderSettings(pos)
+            .map(containerProvider -> {
+                PlayerHelpers.openGui(
+                    player,
+                    containerProvider,
+                    packetBuffer -> partType.writeExtraGuiDataSettings(packetBuffer, pos, player));
+                return true;
+            })
+            .orElse(false);
+    }
+
+    /**
+     * Open an aspect settings gui container from the server.
+     *
+     * @param player The player opening the gui.
+     * @param pos    The part position.
+     * @param aspect The aspect for which to show the settings.
+     */
+    public static void openContainerAspectSettings(EntityPlayerMP player, PartPos pos, IAspect<?, ?> aspect) {
+        PlayerHelpers.openGui(
+            player,
+            aspect.getPropertiesContainerProvider(pos),
+            packetBuffer -> packetBuffer.writeString(
+                aspect.getUniqueName()
+                    .toString()));
+    }
+
+    /**
+     * Open a part offset gui container from the server.
+     *
+     * @param player   The player opening the gui.
+     * @param pos      The part position.
+     * @param partType The part type.
+     * @return If the part has a container provider for offsets.
+     */
+    public static boolean openContainerPartOffsets(EntityPlayerMP player, PartPos pos, IPartType<?, ?> partType) {
+        return partType.getContainerProviderOffsets(pos)
+            .map(containerProvider -> {
+                PlayerHelpers.openGui(
+                    player,
+                    containerProvider,
+                    packetBuffer -> partType.writeExtraGuiDataOffsets(packetBuffer, pos, player));
+                return true;
+            })
+            .orElse(false);
+    }
+
+    /**
+     * Construct a data holder for constructing a part-related container.
+     *
+     * @param pos A part position.
+     * @return A data holder.
+     */
+    public static Triple<IPartContainer, PartTypeBase, PartTarget> getContainerPartConstructionData(PartPos pos) {
+        IPartContainer partContainer = PartHelpers.getPartContainer(pos.getPos(), pos.getSide())
+            .orElse(null);
+        if (partContainer == null) {
+            IntegratedDynamics.clog(
+                org.apache.logging.log4j.Level.WARN,
+                String.format("The tile at %s is not a valid part container.", pos));
+            return null;
+        }
+        IPartType partType = partContainer.getPart(pos.getSide());
+        if (partType == null || !(partType instanceof PartTypeBase)) {
+            IntegratedDynamics.clog(
+                org.apache.logging.log4j.Level.WARN,
+                String.format("The part container at %s side %s does not " + "have a valid part.", pos, pos.getSide()));
+            return null;
+        }
+        PartTarget target = partType.getTarget(pos, partContainer.getPartState(pos.getSide()));
+        return Triple.of(partContainer, (PartTypeBase) partType, target);
+    }
+
+    /**
+     * Read a part target from a packet buffer.
+     *
+     * @param packetBuffer A packet buffer.
+     * @return A part target.
+     */
+    public static PartTarget readPartTarget(ExtendedBuffer packetBuffer) {
+        return PartTarget.fromCenter(
+            (PartPos) PacketCodec.getAction(PartPos.class)
+                .decode(packetBuffer));
+    }
+
+    /**
+     * Read a part from a packet buffer.
+     *
+     * @param packetBuffer A packet buffer.
+     * @return A part.
+     * @param <P> The part type type.
+     * @param <S> The part state type.
+     */
+    public static <P extends IPartType<P, S>, S extends IPartState<P>> P readPart(ExtendedBuffer packetBuffer) {
+        String name = packetBuffer.readString();
+        return (P) Objects.requireNonNull(
+            PartTypeRegistry.getInstance()
+                .getPartType(new ResourceLocation(name)),
+            String.format("Could not find a part by name %s", name));
     }
 
     /**

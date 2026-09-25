@@ -4,7 +4,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.ResourceLocation;
@@ -15,12 +14,7 @@ import com.google.common.collect.Lists;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.Reference;
-import ruiseki.integrateddynamics.api.part.IPartContainer;
-import ruiseki.integrateddynamics.api.part.IPartType;
-import ruiseki.integrateddynamics.api.part.PartTarget;
-import ruiseki.integrateddynamics.core.client.gui.ExtendedGuiHandler;
 import ruiseki.integrateddynamics.core.inventory.container.ContainerPartOffset;
 import ruiseki.okcore.client.gui.component.button.GuiButtonText;
 import ruiseki.okcore.client.gui.component.input.GuiNumberField;
@@ -42,46 +36,15 @@ import ruiseki.okcore.helper.ValueNotifierHelpers;
 @Data
 public class GuiPartOffset<T extends ContainerPartOffset> extends GuiContainerExtended<T> {
 
-    private final PartTarget target;
-    private final IPartContainer partContainer;
-    private final IPartType partType;
-
     private GuiNumberField numberFieldX = null;
     private GuiNumberField numberFieldY = null;
     private GuiNumberField numberFieldZ = null;
 
-    /**
-     * Make a new instance.
-     *
-     * @param player        The player.
-     * @param target        The target.
-     * @param partContainer The part container.
-     * @param partType      The part type.
-     */
-    @SuppressWarnings("unchecked")
-    public GuiPartOffset(EntityPlayer player, PartTarget target, IPartContainer partContainer, IPartType partType) {
-        this(
-            (T) new ContainerPartOffset(player, target, partContainer, partType),
-            player,
-            target,
-            partContainer,
-            partType);
-    }
-
-    public GuiPartOffset(T containerPartOffset, EntityPlayer player, PartTarget target, IPartContainer partContainer,
-        IPartType partType) {
-        super(containerPartOffset);
-        this.target = target;
-        this.partContainer = partContainer;
-        this.partType = partType;
+    public GuiPartOffset(T container) {
+        super(container);
     }
 
     protected void onSave() {
-        IntegratedDynamics._instance.getGuiHandler()
-            .setTemporaryData(
-                ExtendedGuiHandler.PART,
-                getTarget().getCenter()
-                    .getSide());
         try {
             ValueNotifierHelpers.setValue(getContainer(), getContainer().getLastXValueId(), numberFieldX.getInt());
             ValueNotifierHelpers.setValue(getContainer(), getContainer().getLastYValueId(), numberFieldY.getInt());
