@@ -14,7 +14,7 @@ import com.google.common.collect.Maps;
 
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
 import ruiseki.integratedcrafting.core.part.PartTypeInterfaceCraftingBase;
-import ruiseki.integratedcrafting.part.PartTypeInterfaceCrafting;
+import ruiseki.integratedcrafting.core.part.PartTypeInterfaceCraftingVariableBase;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartTarget;
@@ -80,7 +80,7 @@ public class ContainerPartInterfaceCraftingSettings extends ContainerPartSetting
                 partState.getIngredientComponentTargetSideOverride(ingredientComponent)
                     .ordinal());
         }
-        if (partState instanceof PartTypeInterfaceCrafting.State stateNormal) {
+        if (partState instanceof PartTypeInterfaceCraftingVariableBase.State<?, ?>stateNormal) {
             ValueNotifierHelpers.setValue(this, lastDisableCraftingCheckValueId, stateNormal.isDisableCraftingCheck());
         }
         ValueNotifierHelpers.setValue(
@@ -146,7 +146,7 @@ public class ContainerPartInterfaceCraftingSettings extends ContainerPartSetting
                 ingredientComponent,
                 getTargetSideOverrideValue(ingredientComponent));
         }
-        if (partState instanceof PartTypeInterfaceCrafting.State stateNormal) {
+        if (partState instanceof PartTypeInterfaceCraftingVariableBase.State<?, ?>stateNormal) {
             stateNormal.setDisableCraftingCheck(getLastDisableCraftingCheckValue());
         }
         if (partState.getCraftingJobHandler()

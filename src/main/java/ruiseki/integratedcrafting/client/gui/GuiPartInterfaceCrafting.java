@@ -5,7 +5,7 @@ import java.util.Optional;
 
 import net.minecraft.util.ResourceLocation;
 
-import ruiseki.integratedcrafting.Reference;
+import ruiseki.integratedcrafting.core.part.PartTypeInterfaceCraftingVariableBase;
 import ruiseki.integratedcrafting.inventory.container.ContainerPartInterfaceCrafting;
 import ruiseki.integrateddynamics.core.inventory.container.ContainerMultipartAspects;
 import ruiseki.okcore.client.gui.component.button.GuiButtonImage;
@@ -24,6 +24,8 @@ import ruiseki.okcore.helper.LangHelpers;
  */
 public class GuiPartInterfaceCrafting extends GuiContainerExtended<ContainerPartInterfaceCrafting> {
 
+    private static final int BUTTON_SETTINGS_X = 155;
+
     public GuiPartInterfaceCrafting(ContainerPartInterfaceCrafting container) {
         super(container);
     }
@@ -33,7 +35,7 @@ public class GuiPartInterfaceCrafting extends GuiContainerExtended<ContainerPart
         super.initGui();
         addRenderableWidget(
             new GuiButtonImage(
-                this.guiLeft + 155,
+                this.guiLeft + BUTTON_SETTINGS_X,
                 this.guiTop + 4,
                 15,
                 15,
@@ -47,7 +49,7 @@ public class GuiPartInterfaceCrafting extends GuiContainerExtended<ContainerPart
 
     @Override
     protected ResourceLocation constructGuiTexture() {
-        return new ResourceLocation(Reference.MOD_ID, "textures/gui/part_interface_crafting.png");
+        return ((PartTypeInterfaceCraftingVariableBase<?, ?>) getContainer().getPartType()).getGuiTexture();
     }
 
     @Override
@@ -66,9 +68,12 @@ public class GuiPartInterfaceCrafting extends GuiContainerExtended<ContainerPart
 
         GlStateManager.color(1, 1, 1, 1);
         int y = guiTop + 42;
+        int slotsX = ContainerPartInterfaceCrafting.getVariableSlotsX(
+            getContainer().getContainerInventory()
+                .getSizeInventory());
         for (int i = 0; i < getContainer().getContainerInventory()
             .getSizeInventory(); i++) {
-            int x = guiLeft + 10 + i * GuiHelpers.SLOT_SIZE;
+            int x = guiLeft + slotsX + 2 + i * GuiHelpers.SLOT_SIZE;
             if (!ItemHelpers.isEmpty(
                 getContainer().getContainerInventory()
                     .getStackInSlot(i))) {
@@ -83,9 +88,12 @@ public class GuiPartInterfaceCrafting extends GuiContainerExtended<ContainerPart
         super.drawGuiContainerForegroundLayer(mouseX, mouseY);
 
         int y = 42;
+        int slotsX = ContainerPartInterfaceCrafting.getVariableSlotsX(
+            getContainer().getContainerInventory()
+                .getSizeInventory());
         for (int i = 0; i < getContainer().getContainerInventory()
             .getSizeInventory(); i++) {
-            int x = 10 + i * GuiHelpers.SLOT_SIZE;
+            int x = slotsX + 2 + i * GuiHelpers.SLOT_SIZE;
             int slot = i;
             GuiHelpers.renderTooltipOptional(this, x, y, 14, 13, mouseX, mouseY, () -> {
                 if (getContainer().getInventory()

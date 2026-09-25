@@ -63,6 +63,28 @@ public class GeneralConfig extends DummyConfig {
     public static int interfaceCraftingAttunedBaseConsumption = 10;
 
     @ConfigurableProperty(
+        category = "general",
+        comment = "The base energy usage for the enumerated crafting interface per crafting job being processed.",
+        minimalValue = 0,
+        configLocation = ConfigLocation.SERVER)
+    public static int interfaceCraftingEnumeratedBaseConsumption = 10;
+
+    @ConfigurableProperty(
+        category = "machine",
+        comment = "The maximum number of recipes that will be read from a list inside an enumerated crafting interface. Set to 0 for no limit.",
+        minimalValue = 0,
+        isCommandable = true,
+        configLocation = ConfigLocation.SERVER)
+    public static int maxCraftingInterfaceEnumeratedRecipes = 4096;
+
+    @ConfigurableProperty(
+        category = "machine",
+        comment = "The minimal update frequency in ticks to use for enumerated crafting interfaces. Reading a list of recipes is more expensive than reading a single recipe, so this defaults higher than the regular crafting interface.",
+        minimalValue = 1,
+        configLocation = ConfigLocation.SERVER)
+    public static int minCraftingInterfaceEnumeratedUpdateFreq = 20;
+
+    @ConfigurableProperty(
         category = "machine",
         comment = "Enabling this option will log all recipe validation failures in crafting interfaces into the server logs",
         isCommandable = true,
