@@ -73,6 +73,7 @@ public class ContainerPartWriter<P extends IPartTypeWriter<P, S>, S extends IPar
             partContainer,
             partType,
             partType.getWriteAspects());
+
         for (int i = 0; i < getUnfilteredItemCount(); i++) {
             addSlotToContainer(new SlotVariable(inputSlots, i, SLOT_X, SLOT_Y + getAspectBoxHeight() * i));
             disableSlot(i);
@@ -109,9 +110,13 @@ public class ContainerPartWriter<P extends IPartTypeWriter<P, S>, S extends IPar
 
     @Override
     protected IInventory constructInputSlotsInventory() {
-        SimpleInventory inventory = getPartState().getInventory();
-        inventory.addDirtyMarkListener(this);
-        return inventory;
+        if (!MinecraftHelpers.isClientSide()) {
+            SimpleInventory inventory = getPartState().getInventory();
+            inventory.addDirtyMarkListener(this);
+            return inventory;
+        } else {
+            return super.constructInputSlotsInventory();
+        }
     }
 
     @Override

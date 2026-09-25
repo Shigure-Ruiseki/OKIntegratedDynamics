@@ -7,6 +7,8 @@ import net.minecraft.util.ResourceLocation;
 
 import ruiseki.integratedcrafting.Reference;
 import ruiseki.integratedcrafting.inventory.container.ContainerPartInterfaceCrafting;
+import ruiseki.integrateddynamics.core.inventory.container.ContainerMultipartAspects;
+import ruiseki.okcore.client.gui.component.button.GuiButtonImage;
 import ruiseki.okcore.client.gui.container.GuiContainerExtended;
 import ruiseki.okcore.client.gui.image.IImage;
 import ruiseki.okcore.client.gui.image.Images;
@@ -29,6 +31,18 @@ public class GuiPartInterfaceCrafting extends GuiContainerExtended<ContainerPart
     @Override
     public void initGui() {
         super.initGui();
+        addRenderableWidget(
+            new GuiButtonImage(
+                this.guiLeft + 155,
+                this.guiTop + 4,
+                15,
+                15,
+                LangHelpers.localize("gui.integrateddynamics.part_settings"),
+                createServerPressable(ContainerMultipartAspects.BUTTON_SETTINGS, b -> {}),
+                true,
+                Images.CONFIG_BOARD,
+                -2,
+                -3));
     }
 
     @Override

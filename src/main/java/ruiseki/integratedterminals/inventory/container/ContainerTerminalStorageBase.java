@@ -10,9 +10,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.Slot;
-import net.minecraft.item.ItemArmor;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.IIcon;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
 
@@ -46,6 +44,7 @@ import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.helper.ValueNotifierHelpers;
 import ruiseki.okcore.inventory.SimpleInventory;
 import ruiseki.okcore.inventory.container.InventoryContainer;
+import ruiseki.okcore.inventory.slot.SlotArmor;
 import ruiseki.okcore.network.ExtendedBuffer;
 import ruiseki.okcore.network.PacketCodec;
 import ruiseki.okcore.persist.IDirtyMarkListener;
@@ -165,30 +164,8 @@ public abstract class ContainerTerminalStorageBase<L> extends InventoryContainer
 
     protected void addInventoryAndOffHand(EntityPlayer player) {
         for (int k = 0; k < 4; ++k) {
-            final int armorType = k;
-
-            this.addSlotToContainer(new Slot(player.inventory, 39 - k, -7 + (k % 2) * 18, 152 + (k / 2) * 18) {
-
-                @Override
-                public int getSlotStackLimit() {
-                    return 1;
-                }
-
-                @Override
-                public boolean isItemValid(ItemStack stack) {
-                    if (stack == null || stack.getItem() == null) {
-                        return false;
-                    }
-                    return stack.getItem()
-                        .isValidArmor(stack, armorType, player);
-                }
-
-                @Override
-                @SideOnly(Side.CLIENT)
-                public IIcon getBackgroundIconIndex() {
-                    return ItemArmor.func_94602_b(armorType);
-                }
-            });
+            this.addSlotToContainer(
+                new SlotArmor(player.inventory, 39 - k, -7 + (k % 2) * 18, 152 + (k / 2) * 18, player, k));
         }
         // TODO Add BackHand Compat
     }
