@@ -228,8 +228,9 @@ public final class Helpers {
     }
 
     public static void returnItemToPlayer(EntityPlayer player, ItemStack itemStack) {
+        if (ItemHelpers.isEmpty(itemStack)) return;
         if (!player.isDead && (!(player instanceof EntityPlayerMP)
-            || !((EntityPlayerMP) player).playerNetServerHandler.netManager.isChannelOpen())) {
+            || ((EntityPlayerMP) player).playerNetServerHandler.netManager.isChannelOpen())) {
             if (!player.inventory.addItemStackToInventory(itemStack)) {
                 player.dropPlayerItemWithRandomChoice(itemStack, false);
             }

@@ -16,6 +16,7 @@ import ruiseki.integrateddynamics.client.gui.GuiLabeller;
 import ruiseki.integrateddynamics.core.helper.Helpers;
 import ruiseki.integrateddynamics.core.persist.world.LabelsWorldStorage;
 import ruiseki.integrateddynamics.item.ItemLabeller;
+import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.inventory.SimpleInventory;
 import ruiseki.okcore.inventory.container.ItemInventoryContainer;
@@ -100,8 +101,8 @@ public class ContainerLabeller extends ItemInventoryContainer<ItemLabeller> {
 
     public void setItemStackName(String name) {
         ItemStack itemStack = getItemStack();
-        if (itemStack != null) {
-            if (StringUtils.isBlank(name)) {
+        if (!ItemHelpers.isEmpty(itemStack)) {
+            if (StringUtils.isEmpty(name)) {
                 if (itemStack.hasTagCompound() && itemStack.getTagCompound()
                     .hasKey("display", 10)) {
                     NBTTagCompound displayTag = itemStack.getTagCompound()

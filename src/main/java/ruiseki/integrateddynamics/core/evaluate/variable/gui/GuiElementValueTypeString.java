@@ -196,7 +196,9 @@ public class GuiElementValueTypeString<G extends Gui, C extends Container>
             int x = guiLeft + getX();
             int y = guiTop + getY();
 
-            fontRenderer.drawString(element.getLocalizedNameFull(), x + 2, y + 6, Helpers.RGBToInt(240, 240, 240));
+            if (shouldRenderElementName()) {
+                fontRenderer.drawString(element.getLocalizedNameFull(), x + 2, y + 6, Helpers.RGBToInt(240, 240, 240));
+            }
 
             if (showError()) {
                 LangHelpers.UnlocalizedString lastError = getLastError();
@@ -206,6 +208,10 @@ public class GuiElementValueTypeString<G extends Gui, C extends Container>
                     Images.OK.draw(this, x + getSignalX(), y + getSignalY() + 1);
                 }
             }
+        }
+
+        public boolean shouldRenderElementName() {
+            return true;
         }
 
         @Override

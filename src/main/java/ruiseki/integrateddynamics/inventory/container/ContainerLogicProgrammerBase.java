@@ -4,12 +4,13 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.StringUtils;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.google.common.collect.Lists;
@@ -258,12 +259,17 @@ public abstract class ContainerLogicProgrammerBase extends ScrollingInventoryCon
 
     protected void labelCurrent() {
         ItemStack itemStack = writeSlot.getStackInSlot(0);
-        if (itemStack != null) {
+        if (!ItemHelpers.isEmpty(itemStack)) {
             IVariableFacade variableFacade = ((ItemVariable) ItemVariableConfig._instance.getInstance())
                 .getVariableFacade(itemStack);
-            if (this.lastLabel != null && variableFacade.isValid()) {
-                LabelsWorldStorage.getInstance(IntegratedDynamics._instance)
-                    .put(variableFacade.getId(), this.lastLabel);
+            if (variableFacade != null && variableFacade.isValid()) {
+                if (StringUtils.isBlank(this.lastLabel)) {
+                    LabelsWorldStorage.getInstance(IntegratedDynamics._instance)
+                        .remove(variableFacade.getId());
+                } else {
+                    LabelsWorldStorage.getInstance(IntegratedDynamics._instance)
+                        .put(variableFacade.getId(), this.lastLabel);
+                }
             }
         }
     }
@@ -285,16 +291,17 @@ public abstract class ContainerLogicProgrammerBase extends ScrollingInventoryCon
         }
 
         ItemStack itemStack = writeSlot.getStackInSlot(0);
-        if (canWriteActiveElement() && itemStack != null) {
+        if (canWriteActiveElement() && !ItemHelpers.isEmpty(itemStack)) {
             // If the variable has a vanilla custom name, make sure we inherit it as variable label
             if (itemStack.hasDisplayName()) {
                 this.lastLabel = itemStack.getDisplayName();
             }
+
             ItemStack outputStack = writeElementInfo();
             writeSlot.removeDirtyMarkListener(this);
             writeSlot.removeDirtyMarkListener(loadConfigListener);
             writeSlot.setInventorySlotContents(0, outputStack);
-            if (!StringUtils.isNullOrEmpty(this.lastLabel)) {
+            if (!StringUtils.isBlank(this.lastLabel)) {
                 labelCurrent();
             }
             writeSlot.addDirtyMarkListener(this);
@@ -338,7 +345,7 @@ public abstract class ContainerLogicProgrammerBase extends ScrollingInventoryCon
     }
 
     public boolean hasWriteItemInSlot() {
-        return this.writeSlot.getStackInSlot(0) != null;
+        return !ItemHelpers.isEmpty(this.writeSlot.getStackInSlot(0));
     }
 
     public void returnWriteItemToPlayer() {
@@ -346,6 +353,9 @@ public abstract class ContainerLogicProgrammerBase extends ScrollingInventoryCon
             ItemStack itemStack = writeSlot.getStackInSlot(0);
             Helpers.returnItemToPlayer(player, itemStack);
             writeSlot.setInventorySlotContents(0, null);
+            if (player instanceof EntityPlayerMP) {
+                this.detectAndSendChanges();
+            }
         }
     }
 
@@ -362,7 +372,7 @@ public abstract class ContainerLogicProgrammerBase extends ScrollingInventoryCon
         if (slotId >= this.inventorySlots.size() || (this.activeElement != null && this.inventorySlots.size() > slotId
             && slotId >= 0
             && this.activeElement.slotClick(slotId, this.getSlot(slotId), mouseButton, clickType, player))) {
-            return null;
+            return ItemHelpers.EMPTY;
         }
         return super.slotClick(slotId, mouseButton, clickType, player);
     }

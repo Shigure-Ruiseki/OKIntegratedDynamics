@@ -356,8 +356,7 @@ public class ValueTypeIngredientsLPElement extends ValueTypeLPElementBase {
         public void setActiveElement(int index) {
             if (elementSubGui != null) {
                 subGuiHolder.removeSubGui(elementSubGui);
-                gui.getContainer()
-                    .setElementInventory(null, 0, 0);
+                ((ContainerLogicProgrammerBase) gui.getContainer()).setElementInventory(null, 0, 0);
             }
             if (index >= 0) {
                 subGuiHolder.addSubGui(
@@ -530,8 +529,7 @@ public class ValueTypeIngredientsLPElement extends ValueTypeLPElementBase {
             }
             int x = getX() + baseX - OFFSET_X;
             int y = getY() + baseY - OFFSET_Y;
-            gui.getContainer()
-                .setElementInventory(subElement, x, y);
+            ((ContainerLogicProgrammerBase) gui.getContainer()).setElementInventory(subElement, x, y);
             subElement.setValueInGui(subGui);
             subGuiHolder.addSubGui(subGui);
 
