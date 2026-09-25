@@ -5,7 +5,6 @@ import com.google.common.collect.Lists;
 import ruiseki.integratedcrafting.GeneralConfig;
 import ruiseki.integratedcrafting.IntegratedCrafting;
 import ruiseki.integratedcrafting.part.aspect.CraftingAspects;
-import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.part.aspect.IAspect;
 import ruiseki.integrateddynamics.core.part.aspect.AspectRegistry;
 import ruiseki.integrateddynamics.core.part.write.PartStateWriterBase;
@@ -46,11 +45,6 @@ public class PartTypeCraftingWriter
     @Override
     public ModBase getMod() {
         return IntegratedCrafting._instance;
-    }
-
-    @Override
-    public ModBase getModGui() {
-        return IntegratedDynamics._instance;
     }
 
     public static class State extends PartStateWriterBase<PartTypeCraftingWriter> {

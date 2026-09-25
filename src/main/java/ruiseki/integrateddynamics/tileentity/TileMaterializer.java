@@ -1,9 +1,12 @@
 package ruiseki.integrateddynamics.tileentity;
 
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
+
+import org.jetbrains.annotations.Nullable;
 
 import com.google.common.collect.Sets;
 
@@ -22,19 +25,23 @@ import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeVariableFacade
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
 import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
 import ruiseki.integrateddynamics.core.tileentity.TileActiveVariableBase;
+import ruiseki.integrateddynamics.inventory.container.ContainerMaterializer;
 import ruiseki.integrateddynamics.network.MaterializerNetworkElement;
 import ruiseki.okcore.capabilities.resolver.BasicCapabilityResolver;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
 import ruiseki.okcore.helper.LangHelpers;
+import ruiseki.okcore.inventory.IGuiConstructor;
+import ruiseki.okcore.inventory.container.ContainerExtended;
 
 /**
  * A part entity for the variable materializer.
  *
  * @author rubensworks
  */
-public class TileMaterializer extends TileActiveVariableBase<MaterializerNetworkElement> {
+public class TileMaterializer extends TileActiveVariableBase<MaterializerNetworkElement> implements IGuiConstructor {
 
+    public static final int INVENTORY_SIZE = 3;
     public static final int SLOT_READ = 0;
     public static final int SLOT_WRITE_IN = 1;
     public static final int SLOT_WRITE_OUT = 2;
@@ -44,7 +51,7 @@ public class TileMaterializer extends TileActiveVariableBase<MaterializerNetwork
     private boolean writeVariable;
 
     public TileMaterializer() {
-        super(3, "materializer");
+        super(INVENTORY_SIZE);
 
         addSlotsToSide(ForgeDirection.UP, Sets.newHashSet(SLOT_READ));
         addSlotsToSide(ForgeDirection.DOWN, Sets.newHashSet(SLOT_READ));
@@ -105,7 +112,7 @@ public class TileMaterializer extends TileActiveVariableBase<MaterializerNetwork
                 getInventory().getStackInSlot(SLOT_WRITE_IN));
             if (outputStack != null) {
                 getInventory().setInventorySlotContents(SLOT_WRITE_OUT, outputStack);
-                getInventory().removeStackFromSlot(SLOT_WRITE_IN);
+                getInventory().decrStackSize(SLOT_WRITE_IN, 99);
             }
         }
     }
@@ -140,5 +147,11 @@ public class TileMaterializer extends TileActiveVariableBase<MaterializerNetwork
             getEvaluator().addError(new LangHelpers.UnlocalizedString(e.getMessage()));
         }
         return null;
+    }
+
+    @Override
+    public @Nullable ContainerExtended createContainer(int windowId, InventoryPlayer playerInventory,
+        EntityPlayer player) {
+        return new ContainerMaterializer(playerInventory, this.getInventory(), this);
     }
 }

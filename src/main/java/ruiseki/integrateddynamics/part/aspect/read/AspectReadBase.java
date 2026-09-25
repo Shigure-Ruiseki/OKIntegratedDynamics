@@ -24,7 +24,6 @@ import ruiseki.integrateddynamics.core.part.aspect.LazyAspectVariable;
 import ruiseki.integrateddynamics.part.aspect.AspectBase;
 import ruiseki.integrateddynamics.part.aspect.Aspects;
 import ruiseki.okcore.helper.MinecraftHelpers;
-import ruiseki.okcore.init.ModBase;
 
 /**
  * Base class for read aspects.
@@ -37,9 +36,9 @@ public abstract class AspectReadBase<V extends IValue, T extends IValueType<V>> 
     private final String unlocalizedTypeSuffix;
     private final AspectUpdateType updateType;
 
-    public AspectReadBase(ModBase mod, ModBase modGui, String unlocalizedTypeSuffix,
-        IAspectProperties defaultProperties, AspectUpdateType updateType) {
-        super(mod, modGui, defaultProperties);
+    public AspectReadBase(String modId, String unlocalizedTypeSuffix, IAspectProperties defaultProperties,
+        AspectUpdateType updateType) {
+        super(modId, defaultProperties);
         this.unlocalizedTypeSuffix = unlocalizedTypeSuffix;
         this.updateType = updateType;
         if (MinecraftHelpers.isClientSide()) {

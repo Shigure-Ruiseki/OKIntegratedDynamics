@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemArmor;
@@ -40,10 +41,11 @@ import ruiseki.integratedterminals.core.terminalstorage.TerminalStorageTabs;
 import ruiseki.integratedterminals.network.packet.TerminalStorageChangeGuiState;
 import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientOpenCraftingJobAmountGuiPacket;
 import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientOpenCraftingPlanGuiPacket;
+import ruiseki.okcore.client.gui.ContainerType;
 import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.helper.ValueNotifierHelpers;
-import ruiseki.okcore.inventory.IGuiContainerProvider;
-import ruiseki.okcore.inventory.container.ExtendedInventoryContainer;
+import ruiseki.okcore.inventory.SimpleInventory;
+import ruiseki.okcore.inventory.container.InventoryContainer;
 import ruiseki.okcore.network.ExtendedBuffer;
 import ruiseki.okcore.network.PacketCodec;
 import ruiseki.okcore.persist.IDirtyMarkListener;
@@ -51,7 +53,7 @@ import ruiseki.okcore.persist.IDirtyMarkListener;
 /**
  * @author rubensworks
  */
-public abstract class ContainerTerminalStorageBase<L> extends ExtendedInventoryContainer implements IDirtyMarkListener {
+public abstract class ContainerTerminalStorageBase<L> extends InventoryContainer implements IDirtyMarkListener {
 
     public static final String BUTTON_SET_DEFAULTS = "button_set_defaults";
 
@@ -74,10 +76,10 @@ public abstract class ContainerTerminalStorageBase<L> extends ExtendedInventoryC
     @SideOnly(Side.CLIENT)
     public GuiTerminalStorage screen;
 
-    public ContainerTerminalStorageBase(EntityPlayer player, IGuiContainerProvider provider,
-        ContainerTerminalStorageBase.InitTabData initTabData, TerminalStorageState terminalStorageState,
+    public ContainerTerminalStorageBase(@Nullable ContainerType<?> type, InventoryPlayer playerInventory,
+        Optional<ContainerTerminalStorageBase.InitTabData> initTabData, TerminalStorageState terminalStorageState,
         Optional<INetwork> network, Optional<ITerminalStorageTabCommon.IVariableInventory> variableInventory) {
-        super(player.inventory, provider);
+        super(type, playerInventory, new SimpleInventory());
 
         this.world = player.getEntityWorld();
         this.tabsClient = Maps.newLinkedHashMap();
@@ -100,16 +102,16 @@ public abstract class ContainerTerminalStorageBase<L> extends ExtendedInventoryC
 
         // Add all tabs from the registry
         for (ITerminalStorageTab tab : TerminalStorageTabs.REGISTRY.getTabs()) {
-            String id = tab.getName()
+            String tabId = tab.getName()
                 .toString();
-            if (this.world.isRemote) {
-                this.tabsClient.put(id, tab.createClientTab(this, player));
+            if (this.getWorld().isRemote) {
+                this.tabsClient.put(tabId, tab.createClientTab(this, player));
             } else {
-                this.tabsServer.put(id, tab.createServerTab(this, player, network.get()));
+                this.tabsServer.put(tabId, tab.createServerTab(this, player, network.get()));
             }
             ITerminalStorageTabCommon commonTab = tab.createCommonTab(this, player);
             if (commonTab != null) {
-                this.tabsCommon.put(id, commonTab);
+                this.tabsCommon.put(tabId, commonTab);
 
                 int slotStartIndex = this.inventorySlots.size();
                 List<Pair<Slot, ITerminalStorageTabCommon.ISlotPositionCallback>> slots = commonTab
@@ -120,12 +122,9 @@ public abstract class ContainerTerminalStorageBase<L> extends ExtendedInventoryC
                     slots);
                 MinecraftForge.EVENT_BUS.post(loadSlotsEvent);
                 slots = loadSlotsEvent.getSlots();
-                this.tabSlots.put(id, slots);
-                for (Pair<Slot, ITerminalStorageTabCommon.ISlotPositionCallback> slot : slots) {
-                    if (slot.getLeft()
-                        .getSlotIndex() == 0) {
-                        this.addSlotToContainer(slot.getLeft());
-                    }
+                this.tabSlots.put(tabId, slots);
+                for (Pair<Slot, ITerminalStorageTabCommon.ISlotPositionCallback> slotPair : slots) {
+                    this.addSlotToContainer(slotPair.getLeft());
                 }
             }
         }
@@ -151,10 +150,10 @@ public abstract class ContainerTerminalStorageBase<L> extends ExtendedInventoryC
             setSelectedChannel(IPositionedAddonsNetwork.WILDCARD_CHANNEL);
         }
 
-        if (initTabData != null) {
-            setSelectedTab(initTabData.getTabName());
-            setSelectedChannel(initTabData.getChannel());
-        }
+        initTabData.ifPresent(d -> {
+            setSelectedTab(d.getTabName());
+            setSelectedChannel(d.getChannel());
+        });
 
         // Update player's default state
         putButtonAction(ContainerTerminalStorageBase.BUTTON_SET_DEFAULTS, (s, containerExtended) -> {

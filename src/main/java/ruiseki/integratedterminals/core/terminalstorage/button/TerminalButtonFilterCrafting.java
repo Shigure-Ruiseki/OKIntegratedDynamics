@@ -47,15 +47,21 @@ public class TerminalButtonFilterCrafting<T> implements
 
     @Override
     public void reloadFromState() {
-        if (state.hasButton(
-            clientTab.getTabSettingsName()
-                .toString(),
-            this.buttonName)) {
-            NBTTagCompound data = (NBTTagCompound) state.getButton(
-                clientTab.getName()
-                    .toString(),
-                this.buttonName);
-            this.active = FilterType.values()[data.getInteger("active")];
+        String tabName = clientTab.getTabSettingsName()
+            .toString();
+        if (state.hasButton(tabName, this.buttonName)) {
+            NBTTagCompound data = (NBTTagCompound) state.getButton(tabName, this.buttonName);
+            if (data != null && data.hasKey("active")) {
+                int activeIndex = data.getInteger("active");
+                FilterType[] values = FilterType.values();
+                if (activeIndex >= 0 && activeIndex < values.length) {
+                    this.active = values[activeIndex];
+                } else {
+                    this.active = FilterType.ALL;
+                }
+            } else {
+                this.active = FilterType.ALL;
+            }
         } else {
             this.active = FilterType.ALL;
         }

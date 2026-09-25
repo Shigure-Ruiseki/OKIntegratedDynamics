@@ -1,26 +1,17 @@
 package ruiseki.integrateddynamics.client.gui;
 
 import net.minecraft.entity.player.InventoryPlayer;
-import net.minecraft.world.World;
 
 import ruiseki.integrateddynamics.inventory.container.ContainerLogicProgrammer;
-import ruiseki.okcore.datastructure.BlockPos;
 
 /**
  * Gui for the {@link ruiseki.integrateddynamics.block.BlockLogicProgrammer}.
- * 
+ *
  * @author rubensworks
  */
-public class GuiLogicProgrammer extends GuiLogicProgrammerBase {
+public class GuiLogicProgrammer extends GuiLogicProgrammerBase<ContainerLogicProgrammer> {
 
-    /**
-     * Make a new instance.
-     * 
-     * @param inventoryPlayer The player inventory.
-     * @param world           The world.
-     * @param blockPos        The position.
-     */
-    public GuiLogicProgrammer(InventoryPlayer inventoryPlayer, World world, BlockPos blockPos) {
-        super(inventoryPlayer, new ContainerLogicProgrammer(inventoryPlayer, world, blockPos));
+    public GuiLogicProgrammer(ContainerLogicProgrammer container, InventoryPlayer inventoryPlayer) {
+        super(container, inventoryPlayer);
     }
 }

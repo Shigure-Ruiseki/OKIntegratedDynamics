@@ -887,8 +887,7 @@ public class TerminalStorageTabIngredientComponentClient<T, M>
                     1,
                     null,
                     containerTerminalStorage.getLocation(),
-                    containerTerminalStorage.getLocationInstance(),
-                    containerTerminalStorage.getGuiState());
+                    containerTerminalStorage.getLocationInstance());
                 if (shift) {
                     containerTerminalStorage.sendOpenCraftingPlanGuiPacketToServer(craftingOptionData);
                 } else {

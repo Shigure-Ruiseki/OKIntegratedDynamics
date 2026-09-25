@@ -1,8 +1,12 @@
 package ruiseki.integrateddynamics.core.inventory.container;
 
 import java.util.List;
+import java.util.Optional;
 
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.entity.player.InventoryPlayer;
+import net.minecraft.inventory.IInventory;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 
@@ -11,32 +15,30 @@ import org.joml.Vector3i;
 
 import com.google.common.collect.Lists;
 
-import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.PartStateException;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartState;
 import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartTarget;
-import ruiseki.integrateddynamics.core.client.gui.ExtendedGuiHandler;
 import ruiseki.integrateddynamics.core.helper.PartHelpers;
 import ruiseki.integrateddynamics.core.inventory.container.slot.SlotVariable;
-import ruiseki.okcore.datastructure.BlockPos;
+import ruiseki.okcore.client.gui.ContainerType;
 import ruiseki.okcore.helper.ValueNotifierHelpers;
-import ruiseki.okcore.inventory.IGuiContainerProvider;
 import ruiseki.okcore.inventory.SimpleInventory;
-import ruiseki.okcore.inventory.container.ExtendedInventoryContainer;
+import ruiseki.okcore.inventory.container.InventoryContainer;
+import ruiseki.okcore.network.ExtendedBuffer;
 
 /**
  * Container for part offsets.
  *
  * @author rubensworks
  */
-public class ContainerPartOffset extends ExtendedInventoryContainer {
+public class ContainerPartOffset extends InventoryContainer {
 
     public static final String BUTTON_SAVE = "button_save";
 
     private final PartTarget target;
-    private final IPartContainer partContainer;
+    private final Optional<IPartContainer> partContainer;
     private final IPartType partType;
     private final World world;
 
@@ -50,9 +52,29 @@ public class ContainerPartOffset extends ExtendedInventoryContainer {
     private final SimpleInventory offsetVariablesInventory;
     private boolean dirtyInv = false;
 
-    public ContainerPartOffset(final EntityPlayer player, PartTarget target, IPartContainer partContainer,
-        IPartType partType) {
-        super(player.inventory, (IGuiContainerProvider) partType);
+    public ContainerPartOffset(InventoryPlayer playerInventory, ExtendedBuffer packetBuffer) {
+        this(
+            playerInventory,
+            new SimpleInventory(0),
+            PartHelpers.readPartTarget(packetBuffer),
+            Optional.empty(),
+            PartHelpers.readPart(packetBuffer));
+    }
+
+    public ContainerPartOffset(InventoryPlayer playerInventory, IInventory inventory, PartTarget target,
+        Optional<IPartContainer> partContainer, IPartType partType) {
+        this(
+            ContainerPartOffsetConfig._instance.getInstance(),
+            playerInventory,
+            inventory,
+            target,
+            partContainer,
+            partType);
+    }
+
+    public ContainerPartOffset(@Nullable ContainerType<?> type, InventoryPlayer playerInventory, IInventory inventory,
+        PartTarget target, Optional<IPartContainer> partContainer, IPartType partType) {
+        super(type, playerInventory, inventory);
         this.target = target;
         this.partContainer = partContainer;
         this.partType = partType;
@@ -72,27 +94,8 @@ public class ContainerPartOffset extends ExtendedInventoryContainer {
         this.maxOffsetId = getNextValueId();
 
         putButtonAction(ContainerPartOffset.BUTTON_SAVE, (s, containerExtended) -> {
-            if (!(getPartType() instanceof IGuiContainerProvider)
-                || ((IGuiContainerProvider) getPartType()).getContainer() != ContainerPartOffset.this.getClass()) {
-                if (!world.isRemote) {
-                    IntegratedDynamics._instance.getGuiHandler()
-                        .setTemporaryData(
-                            ExtendedGuiHandler.PART,
-                            getTarget().getCenter()
-                                .getSide());
-                    BlockPos pos = getTarget().getCenter()
-                        .getPos()
-                        .getBlockPos();
-                    player.openGui(
-                        IntegratedDynamics._instance.getModId(),
-                        ((IGuiContainerProvider) getPartType()).getGuiID(),
-                        world,
-                        pos.getX(),
-                        pos.getY(),
-                        pos.getZ());
-                }
-            } else {
-                player.closeScreen();
+            if (!world.isRemote) {
+                PartHelpers.openContainerPart((EntityPlayerMP) player, target.getCenter(), getPartType());
             }
         });
 
@@ -160,14 +163,15 @@ public class ContainerPartOffset extends ExtendedInventoryContainer {
     }
 
     public IPartState getPartState() {
-        return partContainer.getPartState(
-            getTarget().getCenter()
-                .getSide());
+        return partContainer.get()
+            .getPartState(
+                getTarget().getCenter()
+                    .getSide());
     }
 
     @Override
     public boolean canInteractWith(EntityPlayer player) {
-        return PartHelpers.canInteractWith(getTarget(), player, this.partContainer);
+        return PartHelpers.canInteractWith(getTarget(), player, this.partContainer.get());
     }
 
     @Override

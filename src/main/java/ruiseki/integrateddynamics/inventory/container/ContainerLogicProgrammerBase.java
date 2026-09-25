@@ -29,10 +29,11 @@ import ruiseki.integrateddynamics.core.logicprogrammer.LogicProgrammerElementTyp
 import ruiseki.integrateddynamics.core.persist.world.LabelsWorldStorage;
 import ruiseki.integrateddynamics.item.ItemVariable;
 import ruiseki.integrateddynamics.item.ItemVariableConfig;
+import ruiseki.okcore.client.gui.ContainerType;
 import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
-import ruiseki.okcore.inventory.IGuiContainerProvider;
+import ruiseki.okcore.inventory.ClickType;
 import ruiseki.okcore.inventory.SimpleInventory;
 import ruiseki.okcore.inventory.container.ScrollingInventoryContainer;
 import ruiseki.okcore.inventory.slot.SlotSingleItem;
@@ -82,8 +83,8 @@ public abstract class ContainerLogicProgrammerBase extends ScrollingInventoryCon
 
     private String lastLabel = "";
 
-    public ContainerLogicProgrammerBase(InventoryPlayer inventory, IGuiContainerProvider guiProvider) {
-        super(inventory, guiProvider, getElements(), FILTERER);
+    public ContainerLogicProgrammerBase(ContainerType<?> containerType, InventoryPlayer playerInventory) {
+        super(containerType, playerInventory, new SimpleInventory(0), getElements(), FILTERER);
         this.writeSlot = new SimpleInventory(1, "writeSlot", 1);
         this.filterSlots = new SimpleInventory(3, "filterSlots", 1);
         this.filterSlots.addDirtyMarkListener(new FilterSlotListener());
@@ -356,7 +357,7 @@ public abstract class ContainerLogicProgrammerBase extends ScrollingInventoryCon
     }
 
     @Override
-    public ItemStack slotClick(int slotId, int mouseButton, int clickType, EntityPlayer player) {
+    public ItemStack slotClick(int slotId, int mouseButton, ClickType clickType, EntityPlayer player) {
         // Handle cases where the client may have more (phantom) slots than the server.
         if (slotId >= this.inventorySlots.size() || (this.activeElement != null && this.inventorySlots.size() > slotId
             && slotId >= 0

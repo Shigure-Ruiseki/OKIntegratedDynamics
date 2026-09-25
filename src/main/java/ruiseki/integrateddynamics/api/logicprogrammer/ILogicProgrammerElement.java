@@ -13,6 +13,7 @@ import ruiseki.integrateddynamics.api.client.gui.subgui.IGuiInputElement;
 import ruiseki.integrateddynamics.api.client.gui.subgui.ISubGuiBox;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValueType;
 import ruiseki.integrateddynamics.api.item.IVariableFacade;
+import ruiseki.okcore.inventory.ClickType;
 import ruiseki.okcore.inventory.slot.SlotExtended;
 
 /**
@@ -142,7 +143,7 @@ public interface ILogicProgrammerElement<S extends ISubGuiBox, G extends Gui, C 
      * @param player      The clicking player.
      * @return If further processing of the clicking should stop.
      */
-    boolean slotClick(int slotId, Slot slot, int mouseButton, int clickType, EntityPlayer player);
+    boolean slotClick(int slotId, Slot slot, int mouseButton, ClickType clickType, EntityPlayer player);
 
     /**
      * @return The max stacksize.
@@ -168,7 +169,7 @@ public interface ILogicProgrammerElement<S extends ISubGuiBox, G extends Gui, C 
     /**
      * Set the currently stored value in the given sub gui.
      * This is useful when the gui is reused for multiple elements where the actual value is stored in this element.
-     * 
+     *
      * @param subGui The sub gui to put the currently stored value in.
      */
     @SideOnly(Side.CLIENT)
@@ -177,7 +178,7 @@ public interface ILogicProgrammerElement<S extends ISubGuiBox, G extends Gui, C 
     /**
      * Set the currently stored value in the given container.
      * This is only relevant to values that use things like slots, which must be updated server-side as well.
-     * 
+     *
      * @param container The container to put the currently stored value in.
      */
     public void setValueInContainer(C container);

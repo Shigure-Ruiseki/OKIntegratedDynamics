@@ -1,11 +1,10 @@
 package ruiseki.integrateddynamics.client.gui;
 
-import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.util.ResourceLocation;
 
 import ruiseki.integrateddynamics.inventory.container.ContainerVariablestore;
 import ruiseki.integrateddynamics.tileentity.TileVariablestore;
-import ruiseki.okcore.client.gui.container.GuiContainerConfigurable;
+import ruiseki.okcore.client.gui.container.GuiContainerExtended;
 import ruiseki.okcore.client.renderer.GlStateManager;
 
 /**
@@ -13,16 +12,10 @@ import ruiseki.okcore.client.renderer.GlStateManager;
  *
  * @author rubensworks
  */
-public class GuiVariablestore extends GuiContainerConfigurable<ContainerVariablestore> {
+public class GuiVariablestore extends GuiContainerExtended<ContainerVariablestore> {
 
-    /**
-     * Make a new instance.
-     *
-     * @param inventory The player inventory.
-     * @param tile      The part.
-     */
-    public GuiVariablestore(InventoryPlayer inventory, TileVariablestore tile) {
-        super(new ContainerVariablestore(inventory, tile));
+    public GuiVariablestore(ContainerVariablestore container) {
+        super(container);
     }
 
     @Override

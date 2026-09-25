@@ -1,21 +1,33 @@
 package ruiseki.integratedterminals.part;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.inventory.Container;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumChatFormatting;
 
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import org.apache.commons.lang3.tuple.Triple;
+import org.jetbrains.annotations.Nullable;
+
+import ruiseki.integrateddynamics.api.part.IPartContainer;
+import ruiseki.integrateddynamics.api.part.PartPos;
+import ruiseki.integrateddynamics.api.part.PartTarget;
+import ruiseki.integrateddynamics.core.helper.PartHelpers;
 import ruiseki.integrateddynamics.core.part.PartStateEmpty;
+import ruiseki.integrateddynamics.core.part.PartTypeBase;
 import ruiseki.integratedterminals.GeneralConfig;
-import ruiseki.integratedterminals.client.gui.container.GuiTerminalCraftingJobs;
 import ruiseki.integratedterminals.core.part.PartTypeTerminal;
 import ruiseki.integratedterminals.core.terminalstorage.crafting.TerminalStorageTabIngredientCraftingHandlers;
 import ruiseki.integratedterminals.inventory.container.ContainerTerminalCraftingJobs;
 import ruiseki.okcore.helper.LangHelpers;
+import ruiseki.okcore.inventory.IGuiConstructor;
+import ruiseki.okcore.inventory.container.ContainerExtended;
+import ruiseki.okcore.network.ExtendedBuffer;
+import ruiseki.okcore.network.PacketCodec;
 
 /**
  * A part that exposes a gui using which players can view and manage the active crafting jobs in the network.
@@ -46,14 +58,32 @@ public class PartTypeTerminalCraftingJob
     }
 
     @Override
-    @SideOnly(Side.CLIENT)
-    public Class<? extends GuiScreen> getGui() {
-        return GuiTerminalCraftingJobs.class;
+    public Optional<IGuiConstructor> getContainerProvider(PartPos pos) {
+        return Optional.of(new IGuiConstructor() {
+
+            @Override
+            public @Nullable ContainerExtended createContainer(int windowId, InventoryPlayer playerInventory,
+                EntityPlayer player) {
+                Triple<IPartContainer, PartTypeBase, PartTarget> data = PartHelpers
+                    .getContainerPartConstructionData(pos);
+                return new ContainerTerminalCraftingJobs(
+                    playerInventory,
+                    data.getRight(),
+                    Optional.of(data.getLeft()),
+                    (PartTypeTerminalCraftingJob) data.getMiddle());
+            }
+        });
     }
 
     @Override
-    public Class<? extends Container> getContainer() {
-        return ContainerTerminalCraftingJobs.class;
+    public void writeExtraGuiData(ExtendedBuffer packetBuffer, PartPos pos, EntityPlayerMP player) {
+        try {
+            PacketCodec.getAction(PartPos.class)
+                .encode(pos, packetBuffer);
+            super.writeExtraGuiData(packetBuffer, pos, player);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override

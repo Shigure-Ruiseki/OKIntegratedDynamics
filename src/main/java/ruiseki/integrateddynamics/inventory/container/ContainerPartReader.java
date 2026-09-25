@@ -1,6 +1,9 @@
-package ruiseki.integrateddynamics.core.inventory.container;
+package ruiseki.integrateddynamics.inventory.container;
+
+import java.util.Optional;
 
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
@@ -23,20 +26,22 @@ import ruiseki.integrateddynamics.api.part.read.IPartStateReader;
 import ruiseki.integrateddynamics.api.part.read.IPartTypeReader;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueHelpers;
 import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
+import ruiseki.integrateddynamics.core.helper.PartHelpers;
+import ruiseki.integrateddynamics.core.inventory.container.ContainerMultipartAspects;
 import ruiseki.integrateddynamics.core.inventory.container.slot.SlotVariable;
 import ruiseki.integrateddynamics.core.part.event.PartReaderAspectEvent;
 import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.helper.ValueNotifierHelpers;
-import ruiseki.okcore.inventory.IGuiContainerProvider;
 import ruiseki.okcore.inventory.SimpleInventory;
 import ruiseki.okcore.inventory.slot.SlotRemoveOnly;
+import ruiseki.okcore.network.ExtendedBuffer;
 
 /**
  * Container for reader parts.
  *
  * @author rubensworks
  */
-public class ContainerPartReader<P extends IPartTypeReader<P, S> & IGuiContainerProvider, S extends IPartStateReader<P>>
+public class ContainerPartReader<P extends IPartTypeReader<P, S>, S extends IPartStateReader<P>>
     extends ContainerMultipartAspects<P, S, IAspectRead> {
 
     public static final int ASPECT_BOX_HEIGHT = 36;
@@ -49,16 +54,25 @@ public class ContainerPartReader<P extends IPartTypeReader<P, S> & IGuiContainer
     private final BiMap<Integer, IAspectRead> readValueIds = HashBiMap.create();
     private final BiMap<Integer, IAspectRead> readColorIds = HashBiMap.create();
 
-    /**
-     * Make a new instance.
-     *
-     * @param partTarget    The target.
-     * @param player        The player.
-     * @param partContainer The part container.
-     * @param partType      The part type.
-     */
-    public ContainerPartReader(EntityPlayer player, PartTarget partTarget, IPartContainer partContainer, P partType) {
-        super(player, partTarget, partContainer, partType, partType.getReadAspects());
+    public ContainerPartReader(InventoryPlayer playerInventory, ExtendedBuffer packetBuffer) {
+        this(
+            playerInventory,
+            new SimpleInventory(0),
+            PartHelpers.readPartTarget(packetBuffer),
+            Optional.empty(),
+            PartHelpers.readPart(packetBuffer));
+    }
+
+    public ContainerPartReader(InventoryPlayer playerInventory, IInventory inventory, PartTarget target,
+        Optional<IPartContainer> partContainer, P partType) {
+        super(
+            ContainerPartReaderConfig._instance.getInstance(),
+            playerInventory,
+            inventory,
+            target,
+            partContainer,
+            partType,
+            partType.getReadAspects());
 
         for (int i = 0; i < getUnfilteredItemCount(); i++) {
             addSlotToContainer(new SlotVariable(inputSlots, i, SLOT_IN_X, SLOT_IN_Y + getAspectBoxHeight() * i));
@@ -121,7 +135,8 @@ public class ContainerPartReader<P extends IPartTypeReader<P, S> & IGuiContainer
 
     @Override
     protected int getSizeInventory() {
-        return getUnfilteredItemCount() * 2; // Input and output slots per item
+        return getPartType().getReadAspects()
+            .size() * 2;
     }
 
     @Override
@@ -177,7 +192,7 @@ public class ContainerPartReader<P extends IPartTypeReader<P, S> & IGuiContainer
                 }
             }
         } catch (PartStateException e) {
-            getPlayer().closeScreen();
+            player.closeScreen();
         }
     }
 

@@ -1,8 +1,6 @@
 package ruiseki.integratedterminals.item;
 
 import ruiseki.integratedterminals.IntegratedTerminals;
-import ruiseki.integratedterminals.core.client.gui.ExtendedGuiHandler;
-import ruiseki.okcore.client.gui.GuiHandler;
 import ruiseki.okcore.config.extendedconfig.ItemConfig;
 
 /**
@@ -21,11 +19,11 @@ public class ItemTerminalStoragePortableConfig extends ItemConfig {
      * Make a new instance.
      */
     public ItemTerminalStoragePortableConfig() {
-        super(IntegratedTerminals._instance, true, "terminal_storage_portable", null, ItemTerminalStoragePortable::new);
-    }
-
-    @Override
-    public GuiHandler.GuiType<?> getGuiType() {
-        return ExtendedGuiHandler.TERMINAL_STORAGE_ITEM;
+        super(
+            IntegratedTerminals._instance,
+            true,
+            "terminal_storage_portable",
+            null,
+            itemConfig -> new ItemTerminalStoragePortable());
     }
 }

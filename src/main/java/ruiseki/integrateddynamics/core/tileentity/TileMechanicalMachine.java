@@ -54,7 +54,7 @@ public abstract class TileMechanicalMachine<I extends IInventory, R extends IRec
     private final EnergyHandlerComponent energyHandlerComponent = new EnergyHandlerComponent(this);
 
     public TileMechanicalMachine(int inventorySize) {
-        super(inventorySize, "machine", 64);
+        super(inventorySize, 64);
 
         // Add energy capability
         this.capabilityCache.addCapabilityResolver(

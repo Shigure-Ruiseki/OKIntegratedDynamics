@@ -26,6 +26,6 @@ public class BlockCoalGeneratorConfig extends BlockContainerConfig {
      * Make a new instance.
      */
     public BlockCoalGeneratorConfig() {
-        super(IntegratedDynamics._instance, true, "coal_generator", null, BlockCoalGenerator::new);
+        super(IntegratedDynamics._instance, true, "coal_generator", null, blockConfig -> new BlockCoalGenerator());
     }
 }

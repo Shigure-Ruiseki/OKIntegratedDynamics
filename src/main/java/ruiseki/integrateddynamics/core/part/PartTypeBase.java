@@ -7,6 +7,7 @@ import java.util.Set;
 
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -33,8 +34,8 @@ import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.api.part.PartTypeAdapter;
 import ruiseki.integrateddynamics.client.model.ItemPartRenderer;
 import ruiseki.integrateddynamics.core.block.IgnoredBlock;
-import ruiseki.integrateddynamics.core.client.gui.ExtendedGuiHandler;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
+import ruiseki.integrateddynamics.core.helper.PartHelpers;
 import ruiseki.integrateddynamics.core.item.ItemPart;
 import ruiseki.integrateddynamics.core.network.PartNetworkElement;
 import ruiseki.integrateddynamics.item.ItemEnhancement;
@@ -46,13 +47,12 @@ import ruiseki.okcore.config.extendedconfig.ItemConfig;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
 import ruiseki.okcore.helper.BlockStateHelpers;
-import ruiseki.okcore.helper.Helpers;
 import ruiseki.okcore.helper.ItemNBTHelpers;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.init.IInitListener;
 import ruiseki.okcore.init.ModBase;
-import ruiseki.okcore.inventory.IGuiContainerProvider;
+import ruiseki.okcore.network.ExtendedBuffer;
 
 /**
  * An abstract {@link IPartType} with a default implementation for creating
@@ -60,8 +60,7 @@ import ruiseki.okcore.inventory.IGuiContainerProvider;
  *
  * @author rubensworks
  */
-public abstract class PartTypeBase<P extends IPartType<P, S>, S extends IPartState<P>> extends PartTypeAdapter<P, S>
-    implements IGuiContainerProvider {
+public abstract class PartTypeBase<P extends IPartType<P, S>, S extends IPartState<P>> extends PartTypeAdapter<P, S> {
 
     @Getter
     private final Item item;
@@ -82,17 +81,6 @@ public abstract class PartTypeBase<P extends IPartType<P, S>, S extends IPartSta
         this.partRenderPosition = partRenderPosition;
 
         networkEventActions = constructNetworkEventActions();
-        registerGui();
-    }
-
-    protected void registerGui() {
-        if (hasGui()) {
-            this.guiID = Helpers.getNewId(getModGui(), Helpers.IDType.GUI);
-            getModGui().getGuiHandler()
-                .registerGUI(this, ExtendedGuiHandler.PART);
-        } else {
-            this.guiID = -1;
-        }
     }
 
     @Override
@@ -202,15 +190,6 @@ public abstract class PartTypeBase<P extends IPartType<P, S>, S extends IPartSta
         return new PartNetworkElement(this, PartPos.of(pos, side));
     }
 
-    protected boolean hasGui() {
-        return true;
-    }
-
-    @Override
-    public ModBase getModGui() {
-        return getMod();
-    }
-
     @Override
     public boolean onPartActivated(World world, BlockPos pos, S partState, EntityPlayer player, ItemStack heldItem,
         ForgeDirection side, float hitX, float hitY, float hitZ) {
@@ -226,20 +205,14 @@ public abstract class PartTypeBase<P extends IPartType<P, S>, S extends IPartSta
             }
         }
 
-        if (hasGui()) {
-            openGui(world, pos, partState, player, heldItem, side, hitX, hitY, hitZ);
+        PartPos partPos = PartPos.of(world, pos, side);
+        if (getContainerProvider(partPos).isPresent()) {
+            if (!world.isRemote) {
+                return PartHelpers.openContainerPart((EntityPlayerMP) player, partPos, this);
+            }
             return true;
         }
         return false;
-    }
-
-    protected void openGui(World world, BlockPos pos, S partState, EntityPlayer player, ItemStack heldItem,
-        ForgeDirection side, float hitX, float hitY, float hitZ) {
-        getModGui().getGuiHandler()
-            .setTemporaryData(ExtendedGuiHandler.PART, side); // Pass the side as extra data to the gui
-        if (!world.isRemote && hasGui()) {
-            player.openGui(getModGui().getModId(), getGuiID(), world, pos.getX(), pos.getY(), pos.getZ());
-        }
     }
 
     @Override
@@ -339,6 +312,13 @@ public abstract class PartTypeBase<P extends IPartType<P, S>, S extends IPartSta
     @Override
     public boolean forceLightTransparency(S state) {
         return false;
+    }
+
+    @Override
+    public void writeExtraGuiData(ExtendedBuffer packetBuffer, PartPos pos, EntityPlayerMP player) {
+        packetBuffer.writeString(
+            this.getUniqueName()
+                .toString());
     }
 
     public interface IEventAction<P extends IPartType<P, S>, S extends IPartState<P>, E extends INetworkEvent> {

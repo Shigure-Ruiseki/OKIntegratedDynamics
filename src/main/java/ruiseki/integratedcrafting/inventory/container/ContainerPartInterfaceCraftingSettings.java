@@ -1,8 +1,10 @@
 package ruiseki.integratedcrafting.inventory.container;
 
 import java.util.Map;
+import java.util.Optional;
 
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.InventoryPlayer;
+import net.minecraft.inventory.IInventory;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.util.ForgeDirection;
 
@@ -13,17 +15,14 @@ import com.google.common.collect.Maps;
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
 import ruiseki.integratedcrafting.core.part.PartTypeInterfaceCraftingBase;
 import ruiseki.integratedcrafting.part.PartTypeInterfaceCrafting;
-import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartTarget;
-import ruiseki.integrateddynamics.core.client.gui.ExtendedGuiHandler;
-import ruiseki.integrateddynamics.core.inventory.container.ContainerMultipart;
+import ruiseki.integrateddynamics.core.helper.PartHelpers;
 import ruiseki.integrateddynamics.core.inventory.container.ContainerPartSettings;
-import ruiseki.integrateddynamics.core.part.PartTypeConfigurable;
-import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.helper.ValueNotifierHelpers;
-import ruiseki.okcore.inventory.IGuiContainerProvider;
+import ruiseki.okcore.inventory.SimpleInventory;
+import ruiseki.okcore.network.ExtendedBuffer;
 
 /**
  * @author rubensworks
@@ -35,9 +34,24 @@ public class ContainerPartInterfaceCraftingSettings extends ContainerPartSetting
     private final int lastDisableCraftingCheckValueId;
     private final int lastBlockingModeValueId;
 
-    public ContainerPartInterfaceCraftingSettings(EntityPlayer player, PartTarget target, IPartContainer partContainer,
-        IPartType partType) {
-        super(player, target, partContainer, partType);
+    public ContainerPartInterfaceCraftingSettings(InventoryPlayer playerInventory, ExtendedBuffer packetBuffer) {
+        this(
+            playerInventory,
+            new SimpleInventory(0),
+            PartHelpers.readPartTarget(packetBuffer),
+            Optional.empty(),
+            PartHelpers.readPart(packetBuffer));
+    }
+
+    public ContainerPartInterfaceCraftingSettings(InventoryPlayer playerInventory, IInventory inventory,
+        PartTarget target, Optional<IPartContainer> partContainer, IPartType partType) {
+        super(
+            ContainerPartInterfaceCraftingSettingsConfig._instance.getInstance(),
+            playerInventory,
+            inventory,
+            target,
+            partContainer,
+            partType);
         lastChannelInterfaceCraftingValueId = getNextValueId();
         targetSideOverrideValueIds = Maps.newIdentityHashMap();
 
@@ -47,26 +61,6 @@ public class ContainerPartInterfaceCraftingSettings extends ContainerPartSetting
         }
         lastDisableCraftingCheckValueId = getNextValueId();
         lastBlockingModeValueId = getNextValueId();
-
-        // Expose the offsets gui from within the settings gui,
-        // as some crafting interfaces (such as the attuned one) show the settings gui as their main gui.
-
-        putButtonAction(ContainerMultipart.BUTTON_OFFSETS, (s, containerExtended) -> {
-            if (!player.worldObj.isRemote) {
-                IGuiContainerProvider gui = ((PartTypeConfigurable<?, ?>) getPartType()).getOffsetsGuiProvider();
-                IntegratedDynamics._instance.getGuiHandler()
-                    .setTemporaryData(
-                        ExtendedGuiHandler.PART,
-                        getTarget().getCenter()
-                            .getSide()); // Pass the side as extra data to the gui
-                BlockPos cPos = getTarget().getCenter()
-                    .getPos()
-                    .getBlockPos();
-                ContainerPartInterfaceCraftingSettings.this.player
-                    .openGui(gui.getModGui(), gui.getGuiID(), player.worldObj, cPos.getX(), cPos.getY(), cPos.getZ());
-            }
-        });
-
     }
 
     @Override

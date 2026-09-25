@@ -39,6 +39,7 @@ import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientItemS
 import ruiseki.integratedterminals.proxy.ClientProxy;
 import ruiseki.okcore.client.gui.RenderItemExtendedSlotCount;
 import ruiseki.okcore.client.gui.component.GuiScrollBar;
+import ruiseki.okcore.client.gui.component.button.GuiButtonExtended;
 import ruiseki.okcore.client.gui.component.button.GuiButtonImage;
 import ruiseki.okcore.client.gui.component.input.GuiArrowedListField;
 import ruiseki.okcore.client.gui.component.input.GuiTextFieldExtended;
@@ -383,7 +384,7 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
                 playerInventoryOffsetX,
                 playerInventoryOffsetY);
             for (ITerminalButton button : tab.getButtons()) {
-                GuiButton guiButton = button.createButton(
+                GuiButtonExtended guiButton = button.createButton(
                     button.getX(
                         guiLeft,
                         BUTTONS_OFFSET_X,
@@ -398,7 +399,7 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
                         gridYSize,
                         playerInventoryOffsetX,
                         playerInventoryOffsetY));
-                guiButton.drawButton(mc, mouseX, mouseY);
+                guiButton.drawScreen(mouseX, mouseY, partialTicks);
                 if (button.isInLeftColumn()) {
                     offset += BUTTONS_OFFSET + guiButton.height;
                 }
@@ -900,7 +901,7 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
             int playerInventoryOffsetX = getPlayerInventoryOffsetX();
             int playerInventoryOffsetY = getPlayerInventoryOffsetY();
             for (ITerminalButton button : tab.getButtons()) {
-                GuiButton guiButton = button.createButton(
+                GuiButtonExtended guiButton = button.createButton(
                     button.getX(
                         guiLeft,
                         BUTTONS_OFFSET_X,

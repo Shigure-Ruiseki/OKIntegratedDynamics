@@ -1,23 +1,16 @@
 package ruiseki.integrateddynamics.block;
 
-import net.minecraft.block.Block;
-import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.inventory.Container;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 
-import ruiseki.integrateddynamics.client.gui.GuiCoalGenerator;
 import ruiseki.integrateddynamics.core.block.BlockContainerGuiCabled;
-import ruiseki.integrateddynamics.inventory.container.ContainerCoalGenerator;
 import ruiseki.integrateddynamics.tileentity.TileCoalGenerator;
 import ruiseki.okcore.block.property.BlockProperty;
 import ruiseki.okcore.block.property.BooleanProperty;
 import ruiseki.okcore.block.property.DirectionProperty;
-import ruiseki.okcore.config.extendedconfig.BlockConfig;
-import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.helper.DirectionHelpers;
 import ruiseki.okcore.helper.TileHelpers;
@@ -43,8 +36,8 @@ public class BlockCoalGenerator extends BlockContainerGuiCabled {
     /**
      * Make a new block instance.
      */
-    public BlockCoalGenerator(ExtendedConfig<BlockConfig, Block> eConfig) {
-        super(eConfig, TileCoalGenerator.class);
+    public BlockCoalGenerator() {
+        super(TileCoalGenerator.class);
     }
 
     @Override
@@ -53,16 +46,6 @@ public class BlockCoalGenerator extends BlockContainerGuiCabled {
         BlockState state = super.getStateForPlacement(world, pos, facing, hitX, hitY, hitZ, meta, placer);
         state.setPropertyValue(FACING, DirectionHelpers.yawToDirection4(placer));
         return state;
-    }
-
-    @Override
-    public Class<? extends Container> getContainer() {
-        return ContainerCoalGenerator.class;
-    }
-
-    @Override
-    public Class<? extends GuiScreen> getGui() {
-        return GuiCoalGenerator.class;
     }
 
     @Override

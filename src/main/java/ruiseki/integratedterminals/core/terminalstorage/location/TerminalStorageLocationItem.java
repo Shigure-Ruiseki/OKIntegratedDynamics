@@ -1,20 +1,25 @@
 package ruiseki.integratedterminals.core.terminalstorage.location;
 
+import java.io.IOException;
+
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 
-import org.apache.commons.lang3.tuple.Pair;
+import org.jetbrains.annotations.NotNull;
 
-import ruiseki.integratedterminals.IntegratedTerminals;
 import ruiseki.integratedterminals.Reference;
 import ruiseki.integratedterminals.api.terminalstorage.location.ITerminalStorageLocation;
 import ruiseki.integratedterminals.core.client.gui.CraftingOptionGuiData;
-import ruiseki.integratedterminals.core.client.gui.ExtendedGuiHandler;
 import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorageBase;
-import ruiseki.integratedterminals.network.packet.PacketSetCraftingDataItem;
+import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorageCraftingOptionAmountItem;
+import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorageCraftingPlanItem;
 import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientItemOpenPacket;
-import ruiseki.integratedterminals.proxy.guiprovider.GuiProviders;
+import ruiseki.okcore.helper.PlayerHelpers;
+import ruiseki.okcore.inventory.IGuiConstructor;
+import ruiseki.okcore.inventory.container.ContainerExtended;
 import ruiseki.okcore.network.ExtendedBuffer;
 
 /**
@@ -35,8 +40,7 @@ public class TerminalStorageLocationItem implements ITerminalStorageLocation<Int
             slot,
             new ContainerTerminalStorageBase.InitTabData(
                 craftingOptionGuiData.getTabName(),
-                craftingOptionGuiData.getChannel()),
-            craftingOptionGuiData.getState());
+                craftingOptionGuiData.getChannel()));
     }
 
     @Override
@@ -50,8 +54,7 @@ public class TerminalStorageLocationItem implements ITerminalStorageLocation<Int
             player,
             new ContainerTerminalStorageBase.InitTabData(
                 craftingOptionGuiData.getTabName(),
-                craftingOptionGuiData.getChannel()),
-            craftingOptionGuiData.getState());
+                craftingOptionGuiData.getChannel()));
     }
 
     @Override
@@ -59,19 +62,25 @@ public class TerminalStorageLocationItem implements ITerminalStorageLocation<Int
         World world, EntityPlayerMP player) {
         Integer location = craftingOptionGuiData.getLocationInstance();
 
-        IntegratedTerminals._instance.getGuiHandler()
-            .setTemporaryData(ExtendedGuiHandler.CRAFTING_OPTION_ITEM, Pair.of(location, craftingOptionGuiData));
+        // Create temporary container provider
+        IGuiConstructor containerProvider = new IGuiConstructor() {
 
-        IntegratedTerminals._instance.getPacketHandler()
-            .sendToPlayer(new PacketSetCraftingDataItem(location, craftingOptionGuiData), player);
+            @Override
+            public @NotNull ContainerExtended createContainer(int windowId, InventoryPlayer playerInventory,
+                EntityPlayer player) {
+                return new ContainerTerminalStorageCraftingPlanItem(playerInventory, location, craftingOptionGuiData);
+            }
+        };
 
-        player.openGui(
-            IntegratedTerminals._instance,
-            GuiProviders.ID_GUI_TERMINAL_STORAGE_CRAFTING_PLAN_ITEM,
-            world,
-            (int) player.posX,
-            (int) player.posY,
-            (int) player.posZ);
+        // Trigger gui opening
+        PlayerHelpers.openGui(player, containerProvider, packetBuffer -> {
+            packetBuffer.writeInt(location);
+            try {
+                craftingOptionGuiData.writeToPacketBuffer(packetBuffer);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     @Override
@@ -79,19 +88,28 @@ public class TerminalStorageLocationItem implements ITerminalStorageLocation<Int
         World world, EntityPlayerMP player) {
         Integer location = craftingOptionGuiData.getLocationInstance();
 
-        IntegratedTerminals._instance.getGuiHandler()
-            .setTemporaryData(ExtendedGuiHandler.CRAFTING_OPTION_ITEM, Pair.of(location, craftingOptionGuiData));
+        // Create temporary container provider
+        IGuiConstructor containerProvider = new IGuiConstructor() {
 
-        IntegratedTerminals._instance.getPacketHandler()
-            .sendToPlayer(new PacketSetCraftingDataItem(location, craftingOptionGuiData), player);
+            @Override
+            public @NotNull ContainerExtended createContainer(int windowId, InventoryPlayer playerInventory,
+                EntityPlayer player) {
+                return new ContainerTerminalStorageCraftingOptionAmountItem(
+                    playerInventory,
+                    location,
+                    craftingOptionGuiData);
+            }
+        };
 
-        player.openGui(
-            IntegratedTerminals._instance,
-            GuiProviders.ID_GUI_TERMINAL_STORAGE_CRAFTING_PLAN_ITEM,
-            world,
-            (int) player.posX,
-            (int) player.posY,
-            (int) player.posZ);
+        // Trigger gui opening
+        PlayerHelpers.openGui(player, containerProvider, packetBuffer -> {
+            packetBuffer.writeInt(location);
+            try {
+                craftingOptionGuiData.writeToPacketBuffer(packetBuffer);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     @Override

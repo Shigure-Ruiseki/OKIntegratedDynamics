@@ -5,8 +5,6 @@ import ruiseki.integratedterminals.IntegratedTerminals;
 import ruiseki.integratedterminals.network.packet.CancelCraftingJobPacket;
 import ruiseki.integratedterminals.network.packet.OpenCraftingJobsGuiPacket;
 import ruiseki.integratedterminals.network.packet.OpenCraftingJobsPlanGuiPacket;
-import ruiseki.integratedterminals.network.packet.PacketSetCraftingDataItem;
-import ruiseki.integratedterminals.network.packet.PacketSetCraftingDataPart;
 import ruiseki.integratedterminals.network.packet.TerminalStorageChangeGuiState;
 import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientChangeEventPacket;
 import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientCraftingJobsPacket;
@@ -24,7 +22,6 @@ import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientOpenC
 import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientPartOpenPacket;
 import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientSlotClickPacket;
 import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientUpdateActiveStorageIngredientPacket;
-import ruiseki.integratedterminals.proxy.guiprovider.GuiProviders;
 import ruiseki.okcore.init.ModBase;
 import ruiseki.okcore.network.PacketHandler;
 import ruiseki.okcore.proxy.CommonProxyComponent;
@@ -56,8 +53,6 @@ public class CommonProxy extends CommonProxyComponent {
         packetHandler.register(TerminalStorageIngredientCraftingJobsPacket.class);
         packetHandler.register(TerminalStorageIngredientMaxQuantityPacket.class);
         packetHandler.register(TerminalStorageIngredientSlotClickPacket.class);
-        packetHandler.register(PacketSetCraftingDataPart.class);
-        packetHandler.register(PacketSetCraftingDataItem.class);
         packetHandler.register(TerminalStorageIngredientOpenCraftingPlanGuiPacket.class);
         packetHandler.register(TerminalStorageIngredientOpenCraftingJobAmountGuiPacket.class);
         packetHandler.register(TerminalStorageIngredientUpdateActiveStorageIngredientPacket.class);
@@ -76,7 +71,5 @@ public class CommonProxy extends CommonProxyComponent {
     @Override
     public void registerRenderers() {
         super.registerRenderers();
-
-        GuiProviders.register();
     }
 }

@@ -1,40 +1,42 @@
 package ruiseki.integratedterminals.part;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
-import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.Container;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
-import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
-import net.minecraftforge.common.util.ForgeDirection;
 
-import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.jetbrains.annotations.Nullable;
 
 import com.google.common.collect.Maps;
 
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
+import ruiseki.integrateddynamics.api.part.IPartContainer;
+import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.integrateddynamics.api.part.PartTarget;
+import ruiseki.integrateddynamics.core.helper.PartHelpers;
 import ruiseki.integrateddynamics.core.part.PartStateEmpty;
+import ruiseki.integrateddynamics.core.part.PartTypeBase;
 import ruiseki.integratedterminals.GeneralConfig;
 import ruiseki.integratedterminals.api.terminalstorage.ITerminalStorageTabCommon;
-import ruiseki.integratedterminals.client.gui.container.GuiTerminalStoragePart;
-import ruiseki.integratedterminals.core.client.gui.ExtendedGuiHandler;
 import ruiseki.integratedterminals.core.part.PartTypeTerminal;
 import ruiseki.integratedterminals.core.terminalstorage.TerminalStorageTabIngredientComponentItemStackCrafting;
 import ruiseki.integratedterminals.inventory.container.ContainerTerminalStoragePart;
 import ruiseki.integratedterminals.inventory.container.TerminalStorageState;
-import ruiseki.okcore.datastructure.BlockPos;
-import ruiseki.okcore.helper.Helpers;
 import ruiseki.okcore.helper.ItemHelpers;
+import ruiseki.okcore.inventory.IGuiConstructor;
+import ruiseki.okcore.inventory.container.ContainerExtended;
+import ruiseki.okcore.network.ExtendedBuffer;
+import ruiseki.okcore.network.PacketCodec;
 
 public class PartTypeTerminalStorage extends PartTypeTerminal<PartTypeTerminalStorage, PartTypeTerminalStorage.State> {
 
@@ -53,37 +55,48 @@ public class PartTypeTerminalStorage extends PartTypeTerminal<PartTypeTerminalSt
     }
 
     @Override
-    @SideOnly(Side.CLIENT)
-    public Class<? extends GuiScreen> getGui() {
-        return GuiTerminalStoragePart.class;
+    public Optional<IGuiConstructor> getContainerProvider(PartPos pos) {
+        return Optional.of(new IGuiConstructor() {
+
+            @Override
+            public @Nullable ContainerExtended createContainer(int windowId, InventoryPlayer playerInventory,
+                EntityPlayer player) {
+                Triple<IPartContainer, PartTypeBase, PartTarget> data = PartHelpers
+                    .getContainerPartConstructionData(pos);
+                PartTypeTerminalStorage.State state = (PartTypeTerminalStorage.State) data.getLeft()
+                    .getPartState(
+                        data.getRight()
+                            .getCenter()
+                            .getSide());
+                TerminalStorageState terminalStorageState = state.getPlayerStorageState(player);
+                return new ContainerTerminalStoragePart(
+                    playerInventory,
+                    data.getRight(),
+                    (PartTypeTerminalStorage) data.getMiddle(),
+                    Optional.empty(),
+                    terminalStorageState);
+            }
+        });
     }
 
     @Override
-    public Class<? extends Container> getContainer() {
-        return ContainerTerminalStoragePart.class;
-    }
+    public void writeExtraGuiData(ExtendedBuffer packetBuffer, PartPos pos, EntityPlayerMP player) {
+        try {
+            PacketCodec.getAction(PartPos.class)
+                .encode(pos, packetBuffer);
 
-    @Override
-    protected void openGui(World world, BlockPos pos, State partState, EntityPlayer player, ItemStack heldItem,
-        ForgeDirection side, float hitX, float hitY, float hitZ) {
-        TerminalStorageState terminalStorageState = partState.getPlayerStorageState(player);
-        getModGui().getGuiHandler()
-            .setTemporaryData(
-                ExtendedGuiHandler.TERMINAL_STORAGE_PART,
-                Pair.of(side, Pair.of(null, terminalStorageState)));
-        if (!world.isRemote && hasGui()) {
-            player.openGui(getModGui().getModId(), getGuiID(), world, pos.getX(), pos.getY(), pos.getZ());
-        }
-    }
+            super.writeExtraGuiData(packetBuffer, pos, player);
 
-    @Override
-    public void registerGui() {
-        if (hasGui()) {
-            this.guiID = Helpers.getNewId(getModGui(), Helpers.IDType.GUI);
-            getModGui().getGuiHandler()
-                .registerGUI(this, ExtendedGuiHandler.TERMINAL_STORAGE_PART);
-        } else {
-            this.guiID = -1;
+            // A false to indicate that there will follow no init data object
+            packetBuffer.writeBoolean(false);
+
+            PartTypeTerminalStorage.State state = (PartTypeTerminalStorage.State) PartHelpers
+                .getPartContainerChecked(pos)
+                .getPartState(pos.getSide());
+            TerminalStorageState terminalStorageState = state.getPlayerStorageState(player);
+            terminalStorageState.writeToPacketBuffer(packetBuffer);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 

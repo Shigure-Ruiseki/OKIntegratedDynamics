@@ -40,7 +40,7 @@ public class TileDryingBasin extends TankInventoryTileEntity implements TileEnti
         .createCheck(RecipeTypeDryingBasinConfig._instance.getInstance());
 
     public TileDryingBasin() {
-        super(1, "dryingBasingInventory", 1, FluidHelpers.BUCKET_VOLUME);
+        super(1, 1, FluidHelpers.BUCKET_VOLUME);
 
         addSlotsToSide(ForgeDirection.UP, Sets.newHashSet(0));
         addSlotsToSide(ForgeDirection.DOWN, Sets.newHashSet(0));

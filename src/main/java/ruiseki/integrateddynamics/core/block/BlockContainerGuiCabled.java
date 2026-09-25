@@ -19,8 +19,6 @@ import ruiseki.integrateddynamics.core.helper.CableHelpers;
 import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
 import ruiseki.integrateddynamics.core.helper.WrenchHelpers;
 import ruiseki.okcore.block.BlockTileGui;
-import ruiseki.okcore.config.extendedconfig.BlockConfig;
-import ruiseki.okcore.config.extendedconfig.ExtendedConfig;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.tileentity.TileEntityOK;
 
@@ -36,9 +34,8 @@ public abstract class BlockContainerGuiCabled extends BlockTileGui {
      *
      * @param tileEntity The tile class
      */
-    public BlockContainerGuiCabled(ExtendedConfig<BlockConfig, Block> eConfig,
-        Class<? extends TileEntityOK> tileEntity) {
-        super(eConfig, Material.anvil, tileEntity);
+    public BlockContainerGuiCabled(Class<? extends TileEntityOK> tileEntity) {
+        super(Material.anvil, tileEntity);
 
         setHardness(5.0F);
         setStepSound(soundTypeMetal);

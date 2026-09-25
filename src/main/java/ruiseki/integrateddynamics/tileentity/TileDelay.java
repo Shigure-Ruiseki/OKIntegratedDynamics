@@ -3,11 +3,14 @@ package ruiseki.integrateddynamics.tileentity;
 import java.util.Queue;
 
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
+
+import org.jetbrains.annotations.Nullable;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Queues;
@@ -31,11 +34,14 @@ import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeList;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
 import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
 import ruiseki.integrateddynamics.core.item.DelayVariableFacade;
+import ruiseki.integrateddynamics.inventory.container.ContainerDelay;
 import ruiseki.integrateddynamics.network.DelayNetworkElement;
 import ruiseki.okcore.capabilities.resolver.BasicCapabilityResolver;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
 import ruiseki.okcore.helper.LangHelpers;
+import ruiseki.okcore.inventory.IGuiConstructor;
+import ruiseki.okcore.inventory.container.ContainerExtended;
 import ruiseki.okcore.persist.nbt.NBTPersist;
 
 /**
@@ -43,7 +49,7 @@ import ruiseki.okcore.persist.nbt.NBTPersist;
  *
  * @author rubensworks
  */
-public class TileDelay extends TileProxy {
+public class TileDelay extends TileProxy implements IGuiConstructor {
 
     @NBTPersist
     @Getter
@@ -209,5 +215,11 @@ public class TileDelay extends TileProxy {
             }
             this.variable.invalidate();
         }
+    }
+
+    @Override
+    public @Nullable ContainerExtended createContainer(int windowId, InventoryPlayer playerInventory,
+        EntityPlayer player) {
+        return new ContainerDelay(playerInventory, this.getInventory(), this);
     }
 }

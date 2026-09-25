@@ -3,7 +3,6 @@ package ruiseki.integratedrest.client.gui;
 import java.util.List;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 
@@ -26,8 +25,8 @@ public class GuiHttp extends GuiActiveVariableBase<ContainerHttp, TileHttp> {
 
     private GuiArrowedListField<IValueType> valueTypeSelector = null;
 
-    public GuiHttp(InventoryPlayer inventory, TileHttp tile) {
-        super(new ContainerHttp(inventory, tile));
+    public GuiHttp(ContainerHttp container) {
+        super(container);
     }
 
     @Override

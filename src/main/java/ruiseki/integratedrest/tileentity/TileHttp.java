@@ -2,6 +2,8 @@ package ruiseki.integratedrest.tileentity;
 
 import javax.annotation.Nullable;
 
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
@@ -28,14 +30,17 @@ import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
 import ruiseki.integrateddynamics.tileentity.TileProxy;
 import ruiseki.integratedrest.api.item.IHttpVariableFacade;
 import ruiseki.integratedrest.evaluate.HttpVariableFacadeHandler;
+import ruiseki.integratedrest.inventory.container.ContainerHttp;
 import ruiseki.integratedrest.item.HttpVariableFacade;
 import ruiseki.integratedrest.network.HttpNetworkElement;
 import ruiseki.okcore.capabilities.resolver.BasicCapabilityResolver;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
 import ruiseki.okcore.helper.LangHelpers;
+import ruiseki.okcore.inventory.IGuiConstructor;
+import ruiseki.okcore.inventory.container.ContainerExtended;
 
-public class TileHttp extends TileProxy {
+public class TileHttp extends TileProxy implements IGuiConstructor {
 
     public static final int INVENTORY_SIZE = 2;
 
@@ -176,6 +181,12 @@ public class TileHttp extends TileProxy {
     @Override
     protected void updateReadVariable(boolean sendVariablesUpdateEvent) {
         // Do nothing
+    }
+
+    @Override
+    public @Nullable ContainerExtended createContainer(int windowId, InventoryPlayer playerInventory,
+        EntityPlayer player) {
+        return new ContainerHttp(playerInventory, this.getInventory(), this);
     }
 
     public static class HttpVariableAdapter extends VariableAdapter {

@@ -6,8 +6,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.ResourceLocation;
@@ -18,15 +16,8 @@ import org.lwjgl.input.Keyboard;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
 import ruiseki.integrateddynamics.GeneralConfig;
-import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.Reference;
-import ruiseki.integrateddynamics.api.part.IPartContainer;
-import ruiseki.integrateddynamics.api.part.IPartType;
-import ruiseki.integrateddynamics.api.part.PartTarget;
-import ruiseki.integrateddynamics.core.client.gui.ExtendedGuiHandler;
 import ruiseki.integrateddynamics.core.client.gui.GuiTextFieldDropdown;
 import ruiseki.integrateddynamics.core.client.gui.IDropdownEntry;
 import ruiseki.integrateddynamics.core.inventory.container.ContainerPartSettings;
@@ -43,13 +34,7 @@ import ruiseki.okcore.helper.ValueNotifierHelpers;
  *
  * @author rubensworks
  */
-@EqualsAndHashCode(callSuper = false)
-@Data
 public class GuiPartSettings<C extends ContainerPartSettings> extends GuiContainerExtended<C> {
-
-    private final PartTarget target;
-    private final IPartContainer partContainer;
-    private final IPartType partType;
 
     private GuiNumberField numberFieldUpdateInterval = null;
     private GuiNumberField numberFieldPriority = null;
@@ -57,37 +42,11 @@ public class GuiPartSettings<C extends ContainerPartSettings> extends GuiContain
     private GuiTextFieldDropdown<ForgeDirection> dropdownFieldSide = null;
     private List<SideDropdownEntry> dropdownEntries;
 
-    /**
-     * Make a new instance.
-     *
-     * @param target        The target.
-     * @param player        The player.
-     * @param partContainer The part container.
-     * @param partType      The part type.
-     */
-    public GuiPartSettings(EntityPlayer player, PartTarget target, IPartContainer partContainer, IPartType partType) {
-        this(
-            (C) new ContainerPartSettings(player, target, partContainer, partType),
-            player,
-            target,
-            partContainer,
-            partType);
-    }
-
-    public GuiPartSettings(C containerPartSettings, EntityPlayer player, PartTarget target,
-        IPartContainer partContainer, IPartType partType) {
-        super(containerPartSettings);
-        this.target = target;
-        this.partContainer = partContainer;
-        this.partType = partType;
+    public GuiPartSettings(C container) {
+        super(container);
     }
 
     protected void onSave() {
-        IntegratedDynamics._instance.getGuiHandler()
-            .setTemporaryData(
-                ExtendedGuiHandler.PART,
-                getTarget().getCenter()
-                    .getSide());
         try {
             if (isFieldSideEnabled()) {
                 ForgeDirection selectedSide = dropdownFieldSide.getSelectedDropdownPossibility() == null ? null
@@ -117,12 +76,14 @@ public class GuiPartSettings<C extends ContainerPartSettings> extends GuiContain
     }
 
     protected ForgeDirection getCurrentSide() {
-        return getTarget().getTarget()
+        return getContainer().getTarget()
+            .getTarget()
             .getSide();
     }
 
     protected ForgeDirection getDefaultSide() {
-        return getTarget().getCenter()
+        return getContainer().getTarget()
+            .getCenter()
             .getSide()
             .getOpposite();
     }
@@ -135,14 +96,13 @@ public class GuiPartSettings<C extends ContainerPartSettings> extends GuiContain
     @Override
     public void initGui() {
         super.initGui();
-        Keyboard.enableRepeatEvents(true);
 
         if (isFieldSideEnabled()) {
-            dropdownEntries = Arrays.stream(ForgeDirection.VALID_DIRECTIONS)
+            dropdownEntries = Arrays.stream(ForgeDirection.values())
                 .map(SideDropdownEntry::new)
                 .collect(Collectors.toList());
-            dropdownFieldSide = new GuiTextFieldDropdown(
-                Minecraft.getMinecraft().fontRenderer,
+            dropdownFieldSide = new GuiTextFieldDropdown<>(
+                fontRendererObj,
                 guiLeft + 106,
                 guiTop + getFieldSideY(),
                 70,
@@ -159,7 +119,7 @@ public class GuiPartSettings<C extends ContainerPartSettings> extends GuiContain
 
         if (isFieldUpdateIntervalEnabled()) {
             numberFieldUpdateInterval = new GuiNumberField(
-                Minecraft.getMinecraft().fontRenderer,
+                fontRendererObj,
                 guiLeft + 106,
                 guiTop + getFieldUpdateIntervalY(),
                 70,
@@ -171,16 +131,12 @@ public class GuiPartSettings<C extends ContainerPartSettings> extends GuiContain
             numberFieldUpdateInterval.setVisible(true);
             numberFieldUpdateInterval.setTextColor(16777215);
             numberFieldUpdateInterval.setCanLoseFocus(true);
-
-            ContainerPartSettings container = (ContainerPartSettings) getContainer();
-            numberFieldUpdateInterval.setMinValue(
-                container.getPartType()
-                    .getMinimumUpdateInterval(container.getPartState()));
+            numberFieldUpdateInterval.setMinValue(container.getLastMinUpdateValue());
         }
 
         if (isFieldPriorityEnabled()) {
             numberFieldPriority = new GuiNumberField(
-                Minecraft.getMinecraft().fontRenderer,
+                fontRendererObj,
                 guiLeft + 106,
                 guiTop + getFieldPriorityY(),
                 70,
@@ -197,7 +153,7 @@ public class GuiPartSettings<C extends ContainerPartSettings> extends GuiContain
 
         if (isFieldChannelEnabled()) {
             numberFieldChannel = new GuiNumberField(
-                Minecraft.getMinecraft().fontRenderer,
+                fontRendererObj,
                 guiLeft + 106,
                 guiTop + getFieldChannelY(),
                 70,
@@ -371,7 +327,7 @@ public class GuiPartSettings<C extends ContainerPartSettings> extends GuiContain
 
     @Override
     protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
-        // super.drawGuiContainerForegroundLayer(mouseX, mouseY);
+        // super.drawGuiContainerForegroundLayer(matrixStack, mouseX, mouseY);
         if (!isChannelEnabled()) {
             GuiHelpers.renderTooltip(
                 this,
@@ -417,7 +373,7 @@ public class GuiPartSettings<C extends ContainerPartSettings> extends GuiContain
             numberFieldUpdateInterval.setMinValue(getContainer().getLastMinUpdateValue());
         }
         if (isFieldPriorityEnabled() && valueId == getContainer().getLastPriorityValueId()) {
-            numberFieldPriority.setText(Integer.toString(getContainer().getLastPriorityValueId()));
+            numberFieldPriority.setText(Integer.toString(getContainer().getLastPriorityValue()));
         }
         if (isFieldChannelEnabled() && valueId == getContainer().getLastChannelValueId()) {
             numberFieldChannel.setText(Integer.toString(getContainer().getLastChannelValue()));

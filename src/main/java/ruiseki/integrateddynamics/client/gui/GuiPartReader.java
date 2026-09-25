@@ -3,40 +3,28 @@ package ruiseki.integrateddynamics.client.gui;
 import java.awt.Rectangle;
 
 import net.minecraft.client.renderer.RenderHelper;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 
 import org.apache.commons.lang3.tuple.Pair;
 
-import ruiseki.integrateddynamics.api.part.IPartContainer;
-import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.api.part.aspect.IAspectRead;
 import ruiseki.integrateddynamics.api.part.read.IPartStateReader;
 import ruiseki.integrateddynamics.api.part.read.IPartTypeReader;
 import ruiseki.integrateddynamics.core.client.gui.container.GuiMultipartAspects;
-import ruiseki.integrateddynamics.core.inventory.container.ContainerPartReader;
+import ruiseki.integrateddynamics.inventory.container.ContainerPartReader;
 import ruiseki.integrateddynamics.item.ItemVariableConfig;
 import ruiseki.okcore.helper.RenderHelpers;
-import ruiseki.okcore.inventory.IGuiContainerProvider;
 
 /**
  * Gui for a reader part.
  *
  * @author rubensworks
  */
-public class GuiPartReader<P extends IPartTypeReader<P, S> & IGuiContainerProvider, S extends IPartStateReader<P>>
+public class GuiPartReader<P extends IPartTypeReader<P, S>, S extends IPartStateReader<P>>
     extends GuiMultipartAspects<P, S, IAspectRead, ContainerPartReader<P, S>> {
 
-    /**
-     * Make a new instance.
-     *
-     * @param partTarget    The target.
-     * @param player        The player.
-     * @param partContainer The part container.
-     * @param partType      The targeted part type.
-     */
-    public GuiPartReader(EntityPlayer player, PartTarget partTarget, IPartContainer partContainer, P partType) {
-        super(new ContainerPartReader<P, S>(player, partTarget, partContainer, partType));
+    public GuiPartReader(ContainerPartReader<P, S> container) {
+        super(container);
     }
 
     @Override

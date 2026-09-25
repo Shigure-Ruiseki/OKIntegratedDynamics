@@ -5,16 +5,16 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.regex.Pattern;
+import java.util.Optional;
 
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
-import net.minecraftforge.common.util.ForgeDirection;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.Nullable;
 
 import com.google.common.collect.Lists;
@@ -34,16 +34,13 @@ import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.api.part.aspect.IAspect;
 import ruiseki.integrateddynamics.api.part.aspect.property.IAspectProperties;
 import ruiseki.integrateddynamics.api.part.aspect.property.IAspectPropertyTypeInstance;
-import ruiseki.integrateddynamics.core.client.gui.ExtendedGuiHandler;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueHelpers;
 import ruiseki.integrateddynamics.core.helper.PartHelpers;
 import ruiseki.integrateddynamics.core.item.AspectVariableFacade;
-import ruiseki.integrateddynamics.core.part.PartTypeConfigurable;
 import ruiseki.integrateddynamics.part.aspect.Aspects;
-import ruiseki.okcore.datastructure.BlockPos;
+import ruiseki.okcore.client.gui.ContainerType;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.ValueNotifierHelpers;
-import ruiseki.okcore.inventory.IGuiContainerProvider;
 import ruiseki.okcore.inventory.SimpleInventory;
 import ruiseki.okcore.inventory.container.ScrollingInventoryContainer;
 import ruiseki.okcore.persist.IDirtyMarkListener;
@@ -55,7 +52,7 @@ import ruiseki.okcore.persist.IDirtyMarkListener;
  */
 @EqualsAndHashCode(callSuper = false)
 @Data
-public abstract class ContainerMultipartAspects<P extends IPartType<P, S> & IGuiContainerProvider, S extends IPartState<P>, A extends IAspect>
+public abstract class ContainerMultipartAspects<P extends IPartType<P, S>, S extends IPartState<P>, A extends IAspect>
     extends ScrollingInventoryContainer<A> implements IDirtyMarkListener {
 
     public static String BUTTON_SETTINGS = "button_settings";
@@ -67,82 +64,36 @@ public abstract class ContainerMultipartAspects<P extends IPartType<P, S> & IGui
     private final IPartContainer partContainer;
     private final P partType;
     private final World world;
-    private final BlockPos pos;
     private final Map<IAspect, String> aspectPropertyButtons = Maps.newHashMap();
     private final Map<IAspect, Integer> aspectPropertyValueIds = Maps.newIdentityHashMap();
 
     protected final IInventory inputSlots;
-    protected final EntityPlayer player;
 
-    /**
-     * Make a new instance.
-     *
-     * @param target        The target.
-     * @param player        The player.
-     * @param partContainer The part container.
-     * @param partType      The part type.
-     * @param items         The items.
-     */
-    public ContainerMultipartAspects(EntityPlayer player, PartTarget target, IPartContainer partContainer, P partType,
-        List<A> items) {
-        super(player.inventory, partType, items, new IItemPredicate<A>() {
-
-            @Override
-            public boolean apply(A item, Pattern pattern) {
-                // We could cache this if this would prove to be a bottleneck.
-                // But we have a small amount of aspects, so this shouldn't be a problem.
-                return pattern.matcher(
-                    LangHelpers.localize(item.getUnlocalizedName())
-                        .toLowerCase(Locale.ENGLISH))
-                    .matches();
-            }
+    public ContainerMultipartAspects(@Nullable ContainerType<?> type, InventoryPlayer playerInventory,
+        IInventory inventory, PartTarget target, Optional<IPartContainer> partContainer, P partType, List<A> items) {
+        super(type, playerInventory, inventory, items, (item, pattern) -> {
+            // We could cache this if this would prove to be a bottleneck.
+            // But we have a small amount of aspects, so this shouldn't be a problem.
+            return pattern.matcher(
+                LangHelpers.localize(item.getUnlocalizedName())
+                    .toLowerCase(Locale.ENGLISH))
+                .matches();
         });
         this.target = target;
-        this.partContainer = partContainer;
+        this.partContainer = partContainer.orElseGet(() -> PartHelpers.getPartContainerChecked(target.getCenter()));
         this.partType = partType;
         this.world = player.getEntityWorld();
-        if (target != null && target.getCenter() != null) {
-            this.pos = target.getCenter()
-                .getPos()
-                .getBlockPos();
-        } else {
-            this.pos = new BlockPos(
-                (int) Math.floor(player.posX),
-                (int) Math.floor(player.posY),
-                (int) Math.floor(player.posZ));
-        }
 
         this.inputSlots = constructInputSlotsInventory();
-        this.player = player;
 
         putButtonAction(ContainerMultipartAspects.BUTTON_SETTINGS, (s, containerExtended) -> {
             if (!world.isRemote) {
-                IGuiContainerProvider gui = ((PartTypeConfigurable) getPartType()).getSettingsGuiProvider();
-                IntegratedDynamics._instance.getGuiHandler()
-                    .setTemporaryData(
-                        ExtendedGuiHandler.PART,
-                        getTarget().getCenter()
-                            .getSide());
-                BlockPos cPos = getTarget().getCenter()
-                    .getPos()
-                    .getBlockPos();
-                ContainerMultipartAspects.this.player
-                    .openGui(gui.getModGui(), gui.getGuiID(), world, cPos.getX(), cPos.getY(), cPos.getZ());
+                PartHelpers.openContainerPartSettings((EntityPlayerMP) player, target.getCenter(), partType);
             }
         });
         putButtonAction(ContainerMultipartAspects.BUTTON_OFFSETS, (s, containerExtended) -> {
             if (!world.isRemote) {
-                IGuiContainerProvider gui = ((PartTypeConfigurable<?, ?>) getPartType()).getOffsetsGuiProvider();
-                IntegratedDynamics._instance.getGuiHandler()
-                    .setTemporaryData(
-                        ExtendedGuiHandler.PART,
-                        getTarget().getCenter()
-                            .getSide()); // Pass the side as extra data to the gui
-                BlockPos cPos = getTarget().getCenter()
-                    .getPos()
-                    .getBlockPos();
-                ContainerMultipartAspects.this.player
-                    .openGui(gui.getModGui(), gui.getGuiID(), world, cPos.getX(), cPos.getY(), cPos.getZ());
+                PartHelpers.openContainerPartOffsets((EntityPlayerMP) player, target.getCenter(), partType);
             }
         });
 
@@ -152,19 +103,8 @@ public abstract class ContainerMultipartAspects<P extends IPartType<P, S> & IGui
                 aspectPropertyButtons.put(aspect, buttonId);
                 aspectPropertyValueIds.put(aspect, getNextValueId());
                 putButtonAction(buttonId, (s, containerExtended) -> {
-                    IGuiContainerProvider gui = aspect.getPropertiesGuiProvider();
-                    ForgeDirection side = getTarget().getCenter()
-                        .getSide();
-
-                    IntegratedDynamics._instance.getGuiHandler()
-                        .setTemporaryData(ExtendedGuiHandler.ASPECT, Pair.of(side, aspect));
-
                     if (!world.isRemote) {
-                        BlockPos cPos = getTarget().getCenter()
-                            .getPos()
-                            .getBlockPos();
-                        ContainerMultipartAspects.this.player
-                            .openGui(gui.getModGui(), gui.getGuiID(), world, cPos.getX(), cPos.getY(), cPos.getZ());
+                        PartHelpers.openContainerAspectSettings((EntityPlayerMP) player, target.getCenter(), aspect);
                     }
                 });
             }
@@ -301,11 +241,6 @@ public abstract class ContainerMultipartAspects<P extends IPartType<P, S> & IGui
     protected void enableElementAt(int row, int elementIndex, A element) {
         super.enableElementAt(row, elementIndex, element);
         enableSlot(elementIndex, row);
-    }
-
-    @Override
-    protected int getSizeInventory() {
-        return getUnfilteredItemCount(); // Input and output slots per item
     }
 
     @Override

@@ -8,7 +8,7 @@ import com.google.common.collect.Lists;
 
 import ruiseki.integrateddynamics.core.helper.Helpers;
 import ruiseki.integrateddynamics.core.inventory.container.ContainerMechanicalMachine;
-import ruiseki.okcore.client.gui.container.GuiContainerConfigurable;
+import ruiseki.okcore.client.gui.container.GuiContainerExtended;
 import ruiseki.okcore.helper.GuiHelpers;
 import ruiseki.okcore.item.DamageIndicatedItemComponent;
 
@@ -17,8 +17,7 @@ import ruiseki.okcore.item.DamageIndicatedItemComponent;
  *
  * @author rubensworks
  */
-public abstract class GuiMechanicalMachine<C extends ContainerMechanicalMachine<?>>
-    extends GuiContainerConfigurable<C> {
+public abstract class GuiMechanicalMachine<C extends ContainerMechanicalMachine<?>> extends GuiContainerExtended<C> {
 
     /**
      * Make a new instance.

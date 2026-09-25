@@ -1,11 +1,15 @@
 package ruiseki.integratedterminals.inventory.container;
 
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.world.World;
+
+import org.jetbrains.annotations.Nullable;
 
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integratedterminals.GeneralConfig;
@@ -13,15 +17,16 @@ import ruiseki.integratedterminals.api.terminalstorage.crafting.CraftingJobStart
 import ruiseki.integratedterminals.api.terminalstorage.crafting.ITerminalCraftingPlan;
 import ruiseki.integratedterminals.core.client.gui.CraftingOptionGuiData;
 import ruiseki.integratedterminals.core.terminalstorage.crafting.HandlerWrappedTerminalCraftingOption;
-import ruiseki.okcore.inventory.IGuiContainerProvider;
-import ruiseki.okcore.inventory.container.ExtendedInventoryContainer;
+import ruiseki.okcore.client.gui.ContainerType;
+import ruiseki.okcore.inventory.SimpleInventory;
+import ruiseki.okcore.inventory.container.InventoryContainer;
 
 /**
  * A container for previewing a crafting plan.
  *
  * @author rubensworks
  */
-public abstract class ContainerTerminalStorageCraftingPlanBase<L> extends ExtendedInventoryContainer {
+public abstract class ContainerTerminalStorageCraftingPlanBase<L> extends InventoryContainer {
 
     public static final String BUTTON_START = "start";
     private static final ExecutorService WORKER_POOL = Executors
@@ -35,15 +40,9 @@ public abstract class ContainerTerminalStorageCraftingPlanBase<L> extends Extend
     private boolean calculatedCraftingPlan;
     private ITerminalCraftingPlan craftingPlan;
 
-    /**
-     * Make a new instance.
-     *
-     * @param player                The player.
-     * @param craftingOptionGuiData The job data.
-     */
-    public ContainerTerminalStorageCraftingPlanBase(final EntityPlayer player, IGuiContainerProvider provider,
+    public ContainerTerminalStorageCraftingPlanBase(@Nullable ContainerType<?> type, InventoryPlayer playerInventory,
         CraftingOptionGuiData craftingOptionGuiData) {
-        super(player.inventory, provider);
+        super(type, playerInventory, new SimpleInventory());
 
         this.craftingOptionGuiData = craftingOptionGuiData;
         this.craftingPlanNotifierId = getNextValueId();
@@ -53,7 +52,7 @@ public abstract class ContainerTerminalStorageCraftingPlanBase<L> extends Extend
         putButtonAction(BUTTON_START, (buttonId, container) -> startCraftingJob());
     }
 
-    public abstract INetwork getNetwork();
+    public abstract Optional<INetwork> getNetwork();
 
     public World getWorld() {
         return world;
@@ -84,12 +83,13 @@ public abstract class ContainerTerminalStorageCraftingPlanBase<L> extends Extend
 
     protected void updateCraftingPlan() {
         HandlerWrappedTerminalCraftingOption craftingOptionWrapper = this.craftingOptionGuiData.getCraftingOption();
-        INetwork network = getNetwork();
-        if (GeneralConfig.craftingPlannerEnableMultithreading) {
-            WORKER_POOL.execute(() -> this.updateCraftingPlanJob(craftingOptionWrapper, network));
-        } else {
-            this.updateCraftingPlanJob(craftingOptionWrapper, network);
-        }
+        getNetwork().ifPresent(network -> {
+            if (GeneralConfig.craftingPlannerEnableMultithreading) {
+                WORKER_POOL.execute(() -> { this.updateCraftingPlanJob(craftingOptionWrapper, network); });
+            } else {
+                this.updateCraftingPlanJob(craftingOptionWrapper, network);
+            }
+        });
     }
 
     protected void updateCraftingPlanJob(HandlerWrappedTerminalCraftingOption craftingOptionWrapper, INetwork network) {
@@ -132,24 +132,25 @@ public abstract class ContainerTerminalStorageCraftingPlanBase<L> extends Extend
         if (!getWorld().isRemote) {
             // Start the crafting job
             if (craftingPlan != null) {
-                INetwork network = getNetwork();
-                try {
-                    craftingOptionGuiData.getCraftingOption()
-                        .getHandler()
-                        .startCraftingJob(
-                            network,
-                            craftingOptionGuiData.getChannel(),
-                            craftingPlan,
-                            (EntityPlayerMP) player);
+                getNetwork().ifPresent(network -> {
+                    try {
+                        craftingOptionGuiData.getCraftingOption()
+                            .getHandler()
+                            .startCraftingJob(
+                                network,
+                                craftingOptionGuiData.getChannel(),
+                                craftingPlan,
+                                (EntityPlayerMP) player);
 
-                    // Re-open terminal gui
-                    craftingOptionGuiData.getLocation()
-                        .openContainerFromServer(craftingOptionGuiData, getWorld(), (EntityPlayerMP) player);
-                } catch (CraftingJobStartException e) {
-                    // If the job could not be started, display the error in the plan
-                    craftingPlan.setError(e.getUnlocalizedError());
-                    this.setCraftingPlan(craftingPlan);
-                }
+                        // Re-open terminal gui
+                        craftingOptionGuiData.getLocation()
+                            .openContainerFromServer(craftingOptionGuiData, getWorld(), (EntityPlayerMP) player);
+                    } catch (CraftingJobStartException e) {
+                        // If the job could not be started, display the error in the plan
+                        craftingPlan.setError(e.getUnlocalizedError());
+                        this.setCraftingPlan(craftingPlan);
+                    }
+                });
             }
         }
     }

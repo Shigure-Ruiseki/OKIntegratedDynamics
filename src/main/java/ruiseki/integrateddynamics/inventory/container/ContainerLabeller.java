@@ -1,6 +1,7 @@
 package ruiseki.integrateddynamics.inventory.container;
 
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 
@@ -15,11 +16,11 @@ import ruiseki.integrateddynamics.client.gui.GuiLabeller;
 import ruiseki.integrateddynamics.core.helper.Helpers;
 import ruiseki.integrateddynamics.core.persist.world.LabelsWorldStorage;
 import ruiseki.integrateddynamics.item.ItemLabeller;
-import ruiseki.integrateddynamics.item.ItemLabellerConfig;
 import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.inventory.SimpleInventory;
 import ruiseki.okcore.inventory.container.ItemInventoryContainer;
 import ruiseki.okcore.inventory.slot.SlotExtended;
+import ruiseki.okcore.network.ExtendedBuffer;
 import ruiseki.okcore.persist.IDirtyMarkListener;
 
 /**
@@ -34,14 +35,12 @@ public class ContainerLabeller extends ItemInventoryContainer<ItemLabeller> {
     @SideOnly(Side.CLIENT)
     private GuiLabeller gui;
 
-    /**
-     * Make a new instance.
-     *
-     * @param player    The player.
-     * @param itemIndex The index of the item in use inside the player inventory.
-     */
-    public ContainerLabeller(EntityPlayer player, int itemIndex) {
-        super(player.inventory, (ItemLabeller) ItemLabellerConfig._instance.getInstance(), itemIndex);
+    public ContainerLabeller(InventoryPlayer inventory, ExtendedBuffer packetBuffer) {
+        this(inventory, packetBuffer.readInt());
+    }
+
+    public ContainerLabeller(InventoryPlayer inventory, int itemIndex) {
+        super(ContainerLabellerConfig._instance.getInstance(), inventory, itemIndex);
         this.temporaryInputSlots = new SimpleInventory(1, "temporaryInput", 1);
         addSlotToContainer(new SlotExtended(temporaryInputSlots, 0, 8, 8));
         this.addPlayerInventory(player.inventory, 8, 31);

@@ -1,11 +1,12 @@
 package ruiseki.integratedterminals.inventory.container;
 
 import java.util.List;
+import java.util.Optional;
 
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
-import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
 
 import com.google.common.collect.Lists;
@@ -13,60 +14,63 @@ import com.google.common.collect.Lists;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.IPositionedAddonsNetwork;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
-import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
+import ruiseki.integrateddynamics.core.helper.PartHelpers;
+import ruiseki.integrateddynamics.core.inventory.container.ContainerMultipart;
+import ruiseki.integrateddynamics.core.part.PartStateEmpty;
 import ruiseki.integratedterminals.GeneralConfig;
 import ruiseki.integratedterminals.api.terminalstorage.crafting.ITerminalCraftingPlan;
 import ruiseki.integratedterminals.api.terminalstorage.crafting.ITerminalStorageTabIngredientCraftingHandler;
 import ruiseki.integratedterminals.core.terminalstorage.crafting.HandlerWrappedTerminalCraftingPlan;
 import ruiseki.integratedterminals.core.terminalstorage.crafting.TerminalStorageTabIngredientCraftingHandlers;
-import ruiseki.okcore.inventory.IGuiContainerProvider;
-import ruiseki.okcore.inventory.container.ExtendedInventoryContainer;
+import ruiseki.integratedterminals.part.PartTypeTerminalCraftingJob;
+import ruiseki.okcore.datastructure.LazyOptional;
+import ruiseki.okcore.inventory.SimpleInventory;
+import ruiseki.okcore.network.ExtendedBuffer;
 
 /**
  * Container for the crafting jobs overview gui.
  *
  * @author rubensworks
  */
-public class ContainerTerminalCraftingJobs extends ExtendedInventoryContainer {
+public class ContainerTerminalCraftingJobs
+    extends ContainerMultipart<PartTypeTerminalCraftingJob, PartStateEmpty<PartTypeTerminalCraftingJob>> {
 
-    private final World world;
-    private final PartTarget target;
-    private final IPartContainer partContainer;
-    private final IPartType partType;
-    private final INetwork network;
+    private final LazyOptional<INetwork> network;
     private final int valueIdCraftingJobs;
 
     private long lastUpdate;
     private List<HandlerWrappedTerminalCraftingPlan> craftingJobs;
 
-    /**
-     * Make a new instance.
-     *
-     * @param target        The target.
-     * @param player        The player.
-     * @param partContainer The part container.
-     * @param partType      The part type.
-     */
-    public ContainerTerminalCraftingJobs(final EntityPlayer player, PartTarget target, IPartContainer partContainer,
-        IPartType partType) {
-        super(player.inventory, (IGuiContainerProvider) partType);
+    public ContainerTerminalCraftingJobs(InventoryPlayer playerInventory, ExtendedBuffer packetBuffer) {
+        this(
+            playerInventory,
+            PartHelpers.readPartTarget(packetBuffer),
+            Optional.empty(),
+            PartHelpers.readPart(packetBuffer));
+    }
 
-        this.target = target;
-        this.partContainer = partContainer;
-        this.partType = partType;
-        this.world = player.worldObj;
-        this.network = NetworkHelpers.getNetwork(target.getCenter())
-            .getOrNull();
+    public ContainerTerminalCraftingJobs(InventoryPlayer playerInventory, PartTarget target,
+        Optional<IPartContainer> partContainer, PartTypeTerminalCraftingJob partType) {
+        super(
+            ContainerTerminalCraftingJobsConfig._instance.getInstance(),
+            playerInventory,
+            new SimpleInventory(),
+            Optional.of(target),
+            partContainer,
+            partType);
+
+        this.network = getTarget().map(t -> NetworkHelpers.getNetwork(t.getCenter()))
+            .orElse(LazyOptional.empty());
 
         this.lastUpdate = 0;
         this.craftingJobs = Lists.newArrayList();
         this.valueIdCraftingJobs = getNextValueId();
     }
 
-    public PartTarget getTarget() {
-        return target;
+    public LazyOptional<INetwork> getNetwork() {
+        return network;
     }
 
     public int getChannel() {
@@ -85,27 +89,29 @@ public class ContainerTerminalCraftingJobs extends ExtendedInventoryContainer {
     public void detectAndSendChanges() {
         super.detectAndSendChanges();
 
-        if (!this.world.isRemote && this.lastUpdate < System.currentTimeMillis()) {
-            this.lastUpdate = System.currentTimeMillis() + GeneralConfig.guiTerminalCraftingJobsUpdateFrequency;
+        if (!this.getWorld().isRemote && this.lastUpdate < System.currentTimeMillis()) {
+            getNetwork().ifPresent(network -> {
+                this.lastUpdate = System.currentTimeMillis() + GeneralConfig.guiTerminalCraftingJobsUpdateFrequency;
 
-            // Load crafting jobs
-            int channel = getChannel();
-            this.craftingJobs = Lists.newArrayList();
-            for (ITerminalStorageTabIngredientCraftingHandler<?, ?> handler : TerminalStorageTabIngredientCraftingHandlers.REGISTRY
-                .getHandlers()) {
-                for (ITerminalCraftingPlan craftingJob : handler.getCraftingJobs(network, channel)) {
-                    this.craftingJobs.add(new HandlerWrappedTerminalCraftingPlan(handler, craftingJob.flatten()));
+                // Load crafting jobs
+                int channel = getChannel();
+                this.craftingJobs = Lists.newArrayList();
+                for (ITerminalStorageTabIngredientCraftingHandler<?, ?> handler : TerminalStorageTabIngredientCraftingHandlers.REGISTRY
+                    .getHandlers()) {
+                    for (ITerminalCraftingPlan craftingJob : handler.getCraftingJobs(network, channel)) {
+                        this.craftingJobs.add(new HandlerWrappedTerminalCraftingPlan(handler, craftingJob.flatten()));
+                    }
                 }
-            }
 
-            // Send crafting jobs to client
-            NBTTagList tagList = new NBTTagList();
-            for (HandlerWrappedTerminalCraftingPlan craftingJob : this.craftingJobs) {
-                tagList.appendTag(HandlerWrappedTerminalCraftingPlan.serialize(craftingJob));
-            }
-            NBTTagCompound tag = new NBTTagCompound();
-            tag.setTag("craftingJobs", tagList);
-            setValue(this.valueIdCraftingJobs, tag);
+                // Send crafting jobs to client
+                NBTTagList tagList = new NBTTagList();
+                for (HandlerWrappedTerminalCraftingPlan craftingJob : this.craftingJobs) {
+                    tagList.appendTag(HandlerWrappedTerminalCraftingPlan.serialize(craftingJob));
+                }
+                NBTTagCompound tag = new NBTTagCompound();
+                tag.setTag("craftingJobs", tagList);
+                setValue(this.valueIdCraftingJobs, tag);
+            });
         }
     }
 

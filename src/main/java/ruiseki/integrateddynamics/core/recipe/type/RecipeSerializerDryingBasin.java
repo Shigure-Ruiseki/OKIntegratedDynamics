@@ -77,7 +77,7 @@ public class RecipeSerializerDryingBasin implements IRecipeSerializer<RecipeDryi
         }
 
         // Other stuff
-        int duration = buffer.readVarIntFromBuffer();
+        int duration = buffer.readInt();
 
         return new RecipeDryingBasin(recipeId, inputIngredient, inputFluid, outputItemStack, outputFluid, duration);
     }
@@ -106,6 +106,6 @@ public class RecipeSerializerDryingBasin implements IRecipeSerializer<RecipeDryi
         }
 
         // Other stuff
-        buffer.writeVarIntToBuffer(recipe.getDuration());
+        buffer.writeInt(recipe.getDuration());
     }
 }

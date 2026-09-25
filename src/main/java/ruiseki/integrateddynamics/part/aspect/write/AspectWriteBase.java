@@ -23,7 +23,6 @@ import ruiseki.integrateddynamics.part.aspect.AspectBase;
 import ruiseki.integrateddynamics.part.aspect.Aspects;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
-import ruiseki.okcore.init.ModBase;
 
 /**
  * Base class for write aspects.
@@ -35,9 +34,8 @@ public abstract class AspectWriteBase<V extends IValue, T extends IValueType<V>>
 
     protected final String unlocalizedTypeSuffix;
 
-    public AspectWriteBase(ModBase mod, ModBase modGui, String unlocalizedTypeSuffix,
-        IAspectProperties defaultProperties) {
-        super(mod, modGui, defaultProperties);
+    public AspectWriteBase(String modId, String unlocalizedTypeSuffix, IAspectProperties defaultProperties) {
+        super(modId, defaultProperties);
         this.unlocalizedTypeSuffix = unlocalizedTypeSuffix;
         if (MinecraftHelpers.isClientSide()) {
             registerModelResourceLocation();

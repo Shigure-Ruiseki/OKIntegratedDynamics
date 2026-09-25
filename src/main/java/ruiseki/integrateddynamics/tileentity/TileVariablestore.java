@@ -4,10 +4,14 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
+
+import org.jetbrains.annotations.Nullable;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -25,12 +29,15 @@ import ruiseki.integrateddynamics.capability.variablecontainer.VariableContainer
 import ruiseki.integrateddynamics.capability.variablefacade.VariableFacadeHolderConfig;
 import ruiseki.integrateddynamics.core.network.event.VariableContentsUpdatedEvent;
 import ruiseki.integrateddynamics.core.tileentity.TileCableConnectableInventory;
+import ruiseki.integrateddynamics.inventory.container.ContainerVariablestore;
 import ruiseki.integrateddynamics.network.VariablestoreNetworkElement;
 import ruiseki.okcore.capabilities.resolver.BasicCapabilityResolver;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
 import ruiseki.okcore.helper.CapabilityHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
+import ruiseki.okcore.inventory.IGuiConstructor;
+import ruiseki.okcore.inventory.container.ContainerExtended;
 import ruiseki.okcore.persist.IDirtyMarkListener;
 
 /**
@@ -40,10 +47,11 @@ import ruiseki.okcore.persist.IDirtyMarkListener;
  * @author rubensworks
  */
 public class TileVariablestore extends TileCableConnectableInventory
-    implements IDirtyMarkListener, INetworkEventListener<VariablestoreNetworkElement> {
+    implements IDirtyMarkListener, INetworkEventListener<VariablestoreNetworkElement>, IGuiConstructor {
 
     public static final int ROWS = 5;
     public static final int COLS = 9;
+    public static final int INVENTORY_SIZE = ROWS * COLS;
     private Map<Integer, IVariableFacade> variableCache = Maps.newHashMap();
 
     private final IVariableContainer variableContainer;
@@ -51,7 +59,7 @@ public class TileVariablestore extends TileCableConnectableInventory
     private boolean shouldSendUpdateEvent = false;
 
     public TileVariablestore() {
-        super(ROWS * COLS, "variables", 1);
+        super(INVENTORY_SIZE, 1);
         inventory.addDirtyMarkListener(this);
 
         // Make all sides active for all slots
@@ -91,7 +99,7 @@ public class TileVariablestore extends TileCableConnectableInventory
     }
 
     protected void refreshVariables(boolean sendVariablesUpdateEvent) {
-        variableContainer.refreshVariables(getNetwork(), inventory, sendVariablesUpdateEvent);
+        variableContainer.refreshVariables(getNetwork(), getInventory(), sendVariablesUpdateEvent);
     }
 
     @Override
@@ -136,5 +144,11 @@ public class TileVariablestore extends TileCableConnectableInventory
         if (event instanceof VariableContentsUpdatedEvent) {
             refreshVariables(false);
         }
+    }
+
+    @Override
+    public @Nullable ContainerExtended createContainer(int windowId, InventoryPlayer playerInventory,
+        EntityPlayer player) {
+        return new ContainerVariablestore(playerInventory, this.getInventory());
     }
 }

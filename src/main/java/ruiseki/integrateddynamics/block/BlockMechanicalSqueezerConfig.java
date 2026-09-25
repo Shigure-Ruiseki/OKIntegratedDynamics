@@ -41,6 +41,11 @@ public class BlockMechanicalSqueezerConfig extends BlockContainerConfig {
      * Make a new instance.
      */
     public BlockMechanicalSqueezerConfig() {
-        super(IntegratedDynamics._instance, true, "mechanical_squeezer", null, BlockMechanicalSqueezer::new);
+        super(
+            IntegratedDynamics._instance,
+            true,
+            "mechanical_squeezer",
+            null,
+            blockConfig -> new BlockMechanicalSqueezer());
     }
 }

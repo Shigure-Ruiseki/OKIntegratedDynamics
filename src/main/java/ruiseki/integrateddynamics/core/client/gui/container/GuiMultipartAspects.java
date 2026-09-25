@@ -16,7 +16,6 @@ import com.google.common.collect.Maps;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.Reference;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartState;
@@ -24,7 +23,6 @@ import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.api.part.aspect.IAspect;
 import ruiseki.integrateddynamics.api.part.aspect.property.IAspectPropertyTypeInstance;
-import ruiseki.integrateddynamics.core.client.gui.ExtendedGuiHandler;
 import ruiseki.integrateddynamics.core.inventory.container.ContainerMultipartAspects;
 import ruiseki.integrateddynamics.core.part.PartTypeConfigurable;
 import ruiseki.okcore.client.gui.component.button.GuiButtonImage;
@@ -35,7 +33,6 @@ import ruiseki.okcore.client.renderer.GlStateManager;
 import ruiseki.okcore.helper.Helpers;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.RenderHelpers;
-import ruiseki.okcore.inventory.IGuiContainerProvider;
 
 /**
  * Gui for parts.
@@ -44,7 +41,7 @@ import ruiseki.okcore.inventory.IGuiContainerProvider;
  */
 @EqualsAndHashCode(callSuper = false)
 @Data
-public abstract class GuiMultipartAspects<P extends IPartType<P, S> & IGuiContainerProvider, S extends IPartState<P>, A extends IAspect, C extends ContainerMultipartAspects<P, S, A>>
+public abstract class GuiMultipartAspects<P extends IPartType<P, S>, S extends IPartState<P>, A extends IAspect, C extends ContainerMultipartAspects<P, S, A>>
     extends GuiContainerScrolling<C> {
 
     private static final Rectangle ITEM_POSITION = new Rectangle(8, 17, 18, 18);
@@ -81,29 +78,24 @@ public abstract class GuiMultipartAspects<P extends IPartType<P, S> & IGuiContai
     public void initGui() {
         clearWidgets();
         super.initGui();
-        if (getPartType() instanceof PartTypeConfigurable<?, ?>configurable) {
-            if (configurable.hasSettings()) {
-                addRenderableWidget(
-                    new GuiButtonImage(
-                        this.guiLeft - 20,
-                        this.guiTop + 0,
-                        18,
-                        18,
-                        LangHelpers.localize("gui.integrateddynamics.part_settings"),
-                        createServerPressable(ContainerMultipartAspects.BUTTON_SETTINGS, (button) -> {
-                            IntegratedDynamics._instance.getGuiHandler()
-                                .setTemporaryData(
-                                    ExtendedGuiHandler.PART,
-                                    getTarget().getCenter()
-                                        .getSide()); // Pass the side as extra data to the gui
-                        }),
-                        new IImage[] { ruiseki.integrateddynamics.client.gui.image.Images.BUTTON_BACKGROUND_INACTIVE,
-                            ruiseki.integrateddynamics.client.gui.image.Images.BUTTON_MIDDLE_SETTINGS },
-                        false,
-                        0,
-                        0));
-            }
-            if (configurable.supportsOffsets()) {
+        if (getContainer().getPartType()
+            .getContainerProviderSettings(null)
+            .isPresent()) {
+            addRenderableWidget(
+                new GuiButtonImage(
+                    this.guiLeft - 20,
+                    this.guiTop + 0,
+                    18,
+                    18,
+                    LangHelpers.localize("gui.integrateddynamics.part_settings"),
+                    createServerPressable(ContainerMultipartAspects.BUTTON_SETTINGS, (button) -> {}),
+                    new IImage[] { ruiseki.integrateddynamics.client.gui.image.Images.BUTTON_BACKGROUND_INACTIVE,
+                        ruiseki.integrateddynamics.client.gui.image.Images.BUTTON_MIDDLE_SETTINGS },
+                    false,
+                    0,
+                    0));
+            if (getContainer().getPartType()
+                .supportsOffsets()) {
                 addRenderableWidget(
                     new GuiButtonImage(
                         this.guiLeft - 20,
@@ -111,13 +103,7 @@ public abstract class GuiMultipartAspects<P extends IPartType<P, S> & IGuiContai
                         18,
                         18,
                         LangHelpers.localize("gui.integrateddynamics.part_offsets"),
-                        createServerPressable(ContainerMultipartAspects.BUTTON_OFFSETS, (button) -> {
-                            IntegratedDynamics._instance.getGuiHandler()
-                                .setTemporaryData(
-                                    ExtendedGuiHandler.PART,
-                                    getTarget().getCenter()
-                                        .getSide()); // Pass the side as extra data to the gui
-                        }),
+                        createServerPressable(ContainerMultipartAspects.BUTTON_OFFSETS, (button) -> {}),
                         new IImage[] { ruiseki.integrateddynamics.client.gui.image.Images.BUTTON_BACKGROUND_INACTIVE,
                             ruiseki.integrateddynamics.client.gui.image.Images.BUTTON_MIDDLE_OFFSET },
                         false,
@@ -133,13 +119,7 @@ public abstract class GuiMultipartAspects<P extends IPartType<P, S> & IGuiContai
                 10,
                 10,
                 "+",
-                createServerPressable(entry.getValue(), b -> {
-                    IntegratedDynamics._instance.getGuiHandler()
-                        .setTemporaryData(
-                            ExtendedGuiHandler.PART,
-                            getTarget().getCenter()
-                                .getSide()); // Pass the side as extra data to the gui
-                }),
+                createServerPressable(entry.getValue(), b -> {}),
                 true);
             aspectPropertyButtons.put(entry.getKey(), button);
             addRenderableWidget(button);

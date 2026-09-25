@@ -1,23 +1,28 @@
 package ruiseki.integrateddynamics.core.part;
 
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.inventory.Container;
+import java.io.IOException;
+import java.util.Optional;
 
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
-import lombok.Data;
-import lombok.Getter;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.entity.player.InventoryPlayer;
+
+import org.apache.commons.lang3.tuple.Triple;
+import org.jetbrains.annotations.Nullable;
+
+import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartState;
 import ruiseki.integrateddynamics.api.part.IPartType;
+import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.integrateddynamics.api.part.PartRenderPosition;
-import ruiseki.integrateddynamics.core.client.gui.ExtendedGuiHandler;
-import ruiseki.integrateddynamics.core.client.gui.container.GuiPartOffset;
-import ruiseki.integrateddynamics.core.client.gui.container.GuiPartSettings;
-import ruiseki.integrateddynamics.core.inventory.container.ContainerPartOffset;
+import ruiseki.integrateddynamics.api.part.PartTarget;
+import ruiseki.integrateddynamics.core.helper.PartHelpers;
 import ruiseki.integrateddynamics.core.inventory.container.ContainerPartSettings;
-import ruiseki.okcore.helper.Helpers;
-import ruiseki.okcore.init.ModBase;
-import ruiseki.okcore.inventory.IGuiContainerProvider;
+import ruiseki.okcore.inventory.IGuiConstructor;
+import ruiseki.okcore.inventory.SimpleInventory;
+import ruiseki.okcore.inventory.container.ContainerExtended;
+import ruiseki.okcore.network.ExtendedBuffer;
+import ruiseki.okcore.network.PacketCodec;
 
 /**
  * An abstract {@link IPartType} that can have settings.
@@ -27,80 +32,71 @@ import ruiseki.okcore.inventory.IGuiContainerProvider;
 public abstract class PartTypeConfigurable<P extends IPartType<P, S>, S extends IPartState<P>>
     extends PartTypeBase<P, S> {
 
-    @Getter
-    private final IGuiContainerProvider settingsGuiProvider;
-    @Getter
-    private final IGuiContainerProvider offsetsGuiProvider;
-
     public PartTypeConfigurable(String name, PartRenderPosition partRenderPosition) {
         super(name, partRenderPosition);
-        if (hasSettings()) {
-            int guiIDSettings = Helpers.getNewId(getModGui(), Helpers.IDType.GUI);
-            getModGui().getGuiHandler()
-                .registerGUI(
-                    (settingsGuiProvider = constructSettingsGuiProvider(guiIDSettings)),
-                    ExtendedGuiHandler.PART);
-        } else {
-            settingsGuiProvider = null;
-        }
-
-        if (supportsOffsets()) {
-            int guiIDSettings = Helpers.getNewId(getModGui(), Helpers.IDType.GUI);
-            getModGui().getGuiHandler()
-                .registerGUI(
-                    (offsetsGuiProvider = constructPartOffsetsGuiProvider(guiIDSettings)),
-                    ExtendedGuiHandler.PART);
-        } else {
-            offsetsGuiProvider = null;
-        }
     }
 
-    protected IGuiContainerProvider constructSettingsGuiProvider(int guiId) {
-        return new GuiProviderBase(guiId, getModGui()) {
+    @Override
+    public Optional<IGuiConstructor> getContainerProviderSettings(PartPos pos) {
+        return Optional.of(new IGuiConstructor() {
 
             @Override
-            public Class<? extends Container> getContainer() {
-                return ContainerPartSettings.class;
+            public @Nullable ContainerExtended createContainer(int windowId, InventoryPlayer playerInventory,
+                EntityPlayer player) {
+                Triple<IPartContainer, PartTypeBase, PartTarget> data = PartHelpers
+                    .getContainerPartConstructionData(pos);
+                return new ContainerPartSettings(
+                    playerInventory,
+                    new SimpleInventory(0),
+                    data.getRight(),
+                    Optional.of(data.getLeft()),
+                    data.getMiddle());
             }
-
-            @Override
-            @SideOnly(Side.CLIENT)
-            public Class<? extends GuiScreen> getGui() {
-                return GuiPartSettings.class;
-            }
-        };
+        });
     }
 
-    protected IGuiContainerProvider constructPartOffsetsGuiProvider(int guiId) {
-        return new GuiProviderBase(guiId, getModGui()) {
-
-            @Override
-            public Class<? extends Container> getContainer() {
-                return ContainerPartOffset.class;
-            }
-
-            @Override
-            @SideOnly(Side.CLIENT)
-            public Class<? extends GuiScreen> getGui() {
-                return GuiPartOffset.class;
-            }
-        };
-    }
-
-    public boolean hasSettings() {
-        return true;
-    }
-
-    @Data
-    public static abstract class GuiProviderBase implements IGuiContainerProvider {
-
-        private final int guiID;
-        private final ModBase modGui;
-
-        public GuiProviderBase(int guiID, ModBase modGui) {
-            this.guiID = guiID;
-            this.modGui = modGui;
+    @Override
+    public void writeExtraGuiDataSettings(ExtendedBuffer packetBuffer, PartPos pos, EntityPlayerMP player) {
+        try {
+            PacketCodec.getAction(PartPos.class)
+                .encode(pos, packetBuffer);
+            packetBuffer.writeString(
+                this.getUniqueName()
+                    .toString());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
+    @Override
+    public Optional<IGuiConstructor> getContainerProviderOffsets(PartPos pos) {
+        return Optional.of(new IGuiConstructor() {
+
+            @Override
+            public @Nullable ContainerExtended createContainer(int windowId, InventoryPlayer playerInventory,
+                EntityPlayer player) {
+                Triple<IPartContainer, PartTypeBase, PartTarget> data = PartHelpers
+                    .getContainerPartConstructionData(pos);
+                return new ContainerPartSettings(
+                    playerInventory,
+                    new SimpleInventory(0),
+                    data.getRight(),
+                    Optional.of(data.getLeft()),
+                    data.getMiddle());
+            }
+        });
+    }
+
+    @Override
+    public void writeExtraGuiDataOffsets(ExtendedBuffer packetBuffer, PartPos pos, EntityPlayerMP player) {
+        try {
+            PacketCodec.getAction(PartPos.class)
+                .encode(pos, packetBuffer);
+            packetBuffer.writeString(
+                this.getUniqueName()
+                    .toString());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

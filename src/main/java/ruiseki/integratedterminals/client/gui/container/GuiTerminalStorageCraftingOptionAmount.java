@@ -1,4 +1,4 @@
-package ruiseki.integratedterminals.core.client.gui;
+package ruiseki.integratedterminals.client.gui.container;
 
 import java.util.List;
 
@@ -17,6 +17,8 @@ import ruiseki.integratedterminals.IntegratedTerminals;
 import ruiseki.integratedterminals.Reference;
 import ruiseki.integratedterminals.api.terminalstorage.crafting.ITerminalCraftingOption;
 import ruiseki.integratedterminals.capability.ingredient.IngredientComponentTerminalStorageHandlerConfig;
+import ruiseki.integratedterminals.core.client.gui.CraftingOptionGuiData;
+import ruiseki.integratedterminals.core.client.gui.GuiTerminalStorage;
 import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorageCraftingOptionAmountBase;
 import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientOpenCraftingPlanGuiPacket;
 import ruiseki.okcore.client.gui.component.GuiScrollBar;
@@ -34,7 +36,7 @@ import ruiseki.okcore.helper.RenderHelpers;
  *
  * @author rubensworks
  */
-public class GuiTerminalStorageCraftingOptionAmountBase<L, C extends ContainerTerminalStorageCraftingOptionAmountBase<L>>
+public class GuiTerminalStorageCraftingOptionAmount<L, C extends ContainerTerminalStorageCraftingOptionAmountBase<L>>
     extends GuiContainerExtended<C> {
 
     public static int OUTPUT_SLOT_X = 135;
@@ -47,7 +49,7 @@ public class GuiTerminalStorageCraftingOptionAmountBase<L, C extends ContainerTe
     private int firstRow;
     private GuiButtonText nextButton;
 
-    public GuiTerminalStorageCraftingOptionAmountBase(C container) {
+    public GuiTerminalStorageCraftingOptionAmount(C container) {
         super(container);
 
         this.outputs = Lists.newArrayList();

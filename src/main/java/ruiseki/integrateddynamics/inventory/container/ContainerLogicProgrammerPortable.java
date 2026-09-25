@@ -1,12 +1,13 @@
 package ruiseki.integrateddynamics.inventory.container;
 
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.item.ItemStack;
 
 import ruiseki.integrateddynamics.item.ItemPortableLogicProgrammer;
 import ruiseki.integrateddynamics.item.ItemPortableLogicProgrammerConfig;
 import ruiseki.okcore.helper.InventoryHelpers;
-import ruiseki.okcore.inventory.IGuiContainerProvider;
+import ruiseki.okcore.network.ExtendedBuffer;
 
 /**
  * Container for the {@link ItemPortableLogicProgrammer}.
@@ -17,8 +18,12 @@ public class ContainerLogicProgrammerPortable extends ContainerLogicProgrammerBa
 
     private final int itemIndex;
 
-    public ContainerLogicProgrammerPortable(EntityPlayer player, int itemIndex) {
-        super(player.inventory, (IGuiContainerProvider) ItemPortableLogicProgrammerConfig._instance.getInstance());
+    public ContainerLogicProgrammerPortable(InventoryPlayer playerInventory, ExtendedBuffer packetBuffer) {
+        this(playerInventory, packetBuffer.readInt());
+    }
+
+    public ContainerLogicProgrammerPortable(InventoryPlayer inventoryPlayer, int itemIndex) {
+        super(ContainerLogicProgrammerPortableConfig._instance.getInstance(), inventoryPlayer);
         this.itemIndex = itemIndex;
     }
 

@@ -1,7 +1,6 @@
 package ruiseki.integrateddynamics.client.gui;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 
@@ -28,14 +27,8 @@ public class GuiDelay extends GuiActiveVariableBase<ContainerDelay, TileDelay> {
     private GuiNumberField numberFieldUpdateInterval = null;
     private GuiNumberField numberFieldCapacity = null;
 
-    /**
-     * Make a new instance.
-     *
-     * @param inventory The player inventory.
-     * @param tile      The part.
-     */
-    public GuiDelay(InventoryPlayer inventory, TileDelay tile) {
-        super(new ContainerDelay(inventory, tile));
+    public GuiDelay(ContainerDelay container) {
+        super(container);
     }
 
     @Override

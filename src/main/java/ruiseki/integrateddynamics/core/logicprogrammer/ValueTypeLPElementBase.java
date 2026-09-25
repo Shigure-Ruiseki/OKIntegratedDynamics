@@ -33,6 +33,7 @@ import ruiseki.integrateddynamics.inventory.container.ContainerLogicProgrammerBa
 import ruiseki.integrateddynamics.item.ItemVariableConfig;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
+import ruiseki.okcore.inventory.ClickType;
 
 /**
  * Element for value type.
@@ -167,7 +168,7 @@ public abstract class ValueTypeLPElementBase
     }
 
     @Override
-    public boolean slotClick(int slotId, Slot slot, int mouseButton, int clickType, EntityPlayer player) {
+    public boolean slotClick(int slotId, Slot slot, int mouseButton, ClickType clickType, EntityPlayer player) {
         return false;
     }
 

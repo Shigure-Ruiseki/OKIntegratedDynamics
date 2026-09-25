@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.util.ForgeDirection;
@@ -18,9 +17,6 @@ import com.google.common.collect.Sets;
 import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
 import ruiseki.integratedcrafting.Reference;
 import ruiseki.integratedcrafting.inventory.container.ContainerPartInterfaceCraftingSettings;
-import ruiseki.integrateddynamics.api.part.IPartContainer;
-import ruiseki.integrateddynamics.api.part.IPartType;
-import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.core.client.gui.GuiTextFieldDropdown;
 import ruiseki.integrateddynamics.core.client.gui.container.GuiPartSettings;
 import ruiseki.okcore.client.gui.component.button.GuiButtonCheckbox;
@@ -46,14 +42,8 @@ public class GuiPartInterfaceCraftingSettings extends GuiPartSettings<ContainerP
     private GuiButtonCheckbox checkboxFieldDisabledCraftingCheck = null;
     private GuiButtonCheckbox checkboxFieldBlockingMode = null;
 
-    public GuiPartInterfaceCraftingSettings(EntityPlayer player, PartTarget target, IPartContainer partContainer,
-        IPartType partType) {
-        super(
-            new ContainerPartInterfaceCraftingSettings(player, target, partContainer, partType),
-            player,
-            target,
-            partContainer,
-            partType);
+    public GuiPartInterfaceCraftingSettings(ContainerPartInterfaceCraftingSettings container) {
+        super(container);
     }
 
     @Override

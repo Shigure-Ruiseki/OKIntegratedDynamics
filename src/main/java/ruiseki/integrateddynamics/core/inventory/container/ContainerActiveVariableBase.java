@@ -1,6 +1,9 @@
 package ruiseki.integrateddynamics.core.inventory.container;
 
+import java.util.List;
+
 import net.minecraft.entity.player.InventoryPlayer;
+import net.minecraft.inventory.IInventory;
 
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -8,42 +11,48 @@ import ruiseki.integrateddynamics.api.evaluate.variable.IVariable;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueHelpers;
 import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
 import ruiseki.integrateddynamics.core.tileentity.TileActiveVariableBase;
+import ruiseki.okcore.client.gui.ContainerType;
+import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.ValueNotifierHelpers;
-import ruiseki.okcore.inventory.container.TileInventoryContainerConfigurable;
+import ruiseki.okcore.inventory.container.TileInventoryContainer;
 
 /**
  * Base container for part entities that can hold variables.
  *
  * @author rubensworks
  */
-public class ContainerActiveVariableBase<T extends TileActiveVariableBase<?>>
-    extends TileInventoryContainerConfigurable<T> {
+public class ContainerActiveVariableBase<T extends TileActiveVariableBase<?>> extends TileInventoryContainer<T> {
 
     private final int readValueId;
     private final int readColorId;
+    private final int readErrorsId;
 
-    /**
-     * Make a new instance.
-     *
-     * @param inventory The player inventory.
-     * @param tile      The part.
-     */
-    public ContainerActiveVariableBase(InventoryPlayer inventory, T tile) {
-        super(inventory, tile);
+    public ContainerActiveVariableBase(ContainerType<?> guiType, InventoryPlayer playerInventory, IInventory inventory,
+        T tile) {
+        super(guiType, playerInventory, inventory, tile);
         this.readValueId = getNextValueId();
         this.readColorId = getNextValueId();
+        this.readErrorsId = getNextValueId();
     }
 
     @Override
     public void detectAndSendChanges() {
         super.detectAndSendChanges();
 
-        NetworkHelpers.getPartNetwork(tile.getNetwork())
-            .ifPresent(partNetwork -> {
-                IVariable variable = tile.getVariable(partNetwork);
-                Pair<String, Integer> readValue = ValueHelpers.getSafeReadableValue(variable);
-                ValueNotifierHelpers.setValue(this, readValueId, readValue.getLeft());
-                ValueNotifierHelpers.setValue(this, readColorId, readValue.getRight());
+        this.getTile()
+            .ifPresent(tile -> {
+                NetworkHelpers.getPartNetwork(tile.getNetwork())
+                    .ifPresent(partNetwork -> {
+                        IVariable variable = tile.getVariable(partNetwork);
+                        Pair<String, Integer> readValue = ValueHelpers.getSafeReadableValue(variable);
+                        ValueNotifierHelpers.setValue(this, readValueId, readValue.getLeft());
+                        ValueNotifierHelpers.setValue(this, readColorId, readValue.getRight());
+                        ValueNotifierHelpers.setValueUnlocalizedStringList(
+                            this,
+                            readErrorsId,
+                            tile.getEvaluator()
+                                .getErrors());
+                    });
             });
     }
 
@@ -55,4 +64,7 @@ public class ContainerActiveVariableBase<T extends TileActiveVariableBase<?>>
         return ValueNotifierHelpers.getValueInt(this, readColorId);
     }
 
+    public List<LangHelpers.UnlocalizedString> getReadErrors() {
+        return ValueNotifierHelpers.getValueUnlocalizedStringList(this, readErrorsId);
+    }
 }

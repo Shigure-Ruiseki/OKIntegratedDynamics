@@ -1,16 +1,11 @@
 package ruiseki.integrateddynamics.client.gui;
 
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.GuiButton;
-import net.minecraft.entity.player.EntityPlayer;
 
 import org.lwjgl.input.Keyboard;
 
 import com.google.common.collect.Lists;
 
-import ruiseki.integrateddynamics.api.part.IPartContainer;
-import ruiseki.integrateddynamics.api.part.IPartType;
-import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.core.client.gui.container.GuiMultipart;
 import ruiseki.integrateddynamics.core.part.panel.PartTypePanelVariableDriven;
 import ruiseki.integrateddynamics.inventory.container.ContainerPartPanelVariableDriven;
@@ -27,27 +22,16 @@ import ruiseki.okcore.helper.RenderHelpers;
  *
  * @author rubensworks
  */
-public class GuiPartDisplay<P extends PartTypePanelVariableDriven<P, S>, S extends PartTypePanelVariableDriven.State<P, S>, C extends ContainerPartPanelVariableDriven<P, S>>
-    extends GuiMultipart<P, S, C> {
+public class GuiPartDisplay<P extends PartTypePanelVariableDriven<P, S>, S extends PartTypePanelVariableDriven.State<P, S>>
+    extends GuiMultipart<P, S, ContainerPartPanelVariableDriven<P, S>> {
 
     private static final int ERROR_X = 104;
     private static final int ERROR_Y = 16;
     private static final int OK_X = 104;
     private static final int OK_Y = 16;
 
-    private static final int BUTTON_COPY = 0;
-
-    /**
-     * Make a new instance.
-     *
-     * @param partTarget    The target.
-     * @param player        The player.
-     * @param partContainer The part container.
-     * @param partType      The targeted part type.
-     */
-    public GuiPartDisplay(EntityPlayer player, PartTarget partTarget, IPartContainer partContainer,
-        IPartType partType) {
-        super((C) new ContainerPartPanelVariableDriven<>(player, partTarget, partContainer, partType));
+    public GuiPartDisplay(ContainerPartPanelVariableDriven<P, S> container) {
+        super(container);
     }
 
     @Override
@@ -74,8 +58,8 @@ public class GuiPartDisplay<P extends PartTypePanelVariableDriven<P, S>, S exten
     protected void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY) {
         super.drawGuiContainerBackgroundLayer(partialTicks, mouseX, mouseY);
 
-        String readValue = ((ContainerPartPanelVariableDriven<?, ?>) getContainer()).getReadValue();
-        int readValueColor = ((ContainerPartPanelVariableDriven<?, ?>) getContainer()).getReadValueColor();
+        String readValue = getContainer().getReadValue();
+        int readValueColor = getContainer().getReadValueColor();
         boolean ok = false;
         if (readValue != null) {
             ok = true;
@@ -91,7 +75,7 @@ public class GuiPartDisplay<P extends PartTypePanelVariableDriven<P, S>, S exten
 
         GlStateManager.color(1, 1, 1, 1);
         displayErrors.drawBackground(
-            getPartState().getGlobalErrors(),
+            getContainer().getReadErrors(),
             ERROR_X,
             ERROR_Y,
             OK_X,
@@ -107,7 +91,7 @@ public class GuiPartDisplay<P extends PartTypePanelVariableDriven<P, S>, S exten
         super.drawGuiContainerForegroundLayer(mouseX, mouseY);
         // Render error tooltip
         displayErrors.drawForeground(
-            getPartState().getGlobalErrors(),
+            getContainer().getReadErrors(),
             ERROR_X,
             ERROR_Y,
             mouseX,
@@ -146,16 +130,8 @@ public class GuiPartDisplay<P extends PartTypePanelVariableDriven<P, S>, S exten
         return 128;
     }
 
-    @Override
-    protected void actionPerformed(GuiButton button) {
-        super.actionPerformed(button);
-        if (button.id == BUTTON_COPY) {
-            valueToClipboard();
-        }
-    }
-
     protected void valueToClipboard() {
-        String readValue = ((ContainerPartPanelVariableDriven<?, ?>) getContainer()).getReadValue();
+        String readValue = getContainer().getReadValue();
         if (readValue != null) {
             setClipboardString(readValue);
         }

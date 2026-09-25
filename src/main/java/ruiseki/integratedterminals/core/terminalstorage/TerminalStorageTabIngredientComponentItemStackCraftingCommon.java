@@ -32,8 +32,7 @@ import ruiseki.okcore.persist.IDirtyMarkListener;
 
 /**
  * A common-side storage terminal ingredient tab for crafting with {@link ItemStack} instances.
- * 1.7.10 Backport
- *
+ * 
  * @author rubensworks
  */
 public class TerminalStorageTabIngredientComponentItemStackCraftingCommon
@@ -54,13 +53,14 @@ public class TerminalStorageTabIngredientComponentItemStackCraftingCommon
     public static int getCraftingResultSlotIndex(Container container, ResourceLocation name) {
         ITerminalStorageTabCommon tabCommon = ((ContainerTerminalStorageBase) container).getTabCommon(name.toString());
         TerminalStorageTabIngredientComponentItemStackCraftingCommon tabCommonCrafting = (TerminalStorageTabIngredientComponentItemStackCraftingCommon) tabCommon;
-        return tabCommonCrafting.getSlotCrafting().slotNumber;
+        return tabCommonCrafting.getSlotCrafting()
+            .getSlotIndex();
     }
 
     @Override
     public List<Pair<Slot, ISlotPositionCallback>> loadSlots(Container container, int startIndex, EntityPlayer player,
         Optional<IVariableInventory> variableInventoryOptional) {
-        IVariableInventory variableInventory = variableInventoryOptional.orElse(null);
+        IVariableInventory variableInventory = variableInventoryOptional.get();
         slots = Lists.newArrayListWithCapacity(10);
 
         // Reload the recipe when the input slots are updated
@@ -119,18 +119,17 @@ public class TerminalStorageTabIngredientComponentItemStackCraftingCommon
             }
         }
 
-        if (variableInventory != null) {
-            List<ItemStack> tabItems = variableInventory.getNamedInventory(
-                this.getName()
-                    .toString());
-            if (tabItems != null) {
-                int i = 0;
-                for (ItemStack tabItem : tabItems) {
-                    if (i == 0) {
-                        this.inventoryCraftResult.setInventorySlotContents(i++, tabItem);
-                    } else {
-                        this.inventoryCrafting.setInventorySlotContents(i++ - 1, tabItem);
-                    }
+        // Load the items that were stored in the part state into the crafting grid slots
+        List<ItemStack> tabItems = variableInventory.getNamedInventory(
+            this.getName()
+                .toString());
+        if (tabItems != null) {
+            int i = 0;
+            for (ItemStack tabItem : tabItems) {
+                if (i == 0) {
+                    this.inventoryCraftResult.setInventorySlotContents(i++, tabItem);
+                } else {
+                    this.inventoryCrafting.setInventorySlotContents(i++ - 1, tabItem);
                 }
             }
         }

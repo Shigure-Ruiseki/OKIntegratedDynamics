@@ -1,11 +1,15 @@
 package ruiseki.integratedterminals.inventory.container;
 
+import java.io.IOException;
 import java.util.Optional;
 
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
+
+import org.jetbrains.annotations.Nullable;
 
 import ruiseki.integrateddynamics.api.evaluate.variable.IVariable;
 import ruiseki.integrateddynamics.api.network.INetwork;
@@ -17,9 +21,11 @@ import ruiseki.integratedterminals.api.terminalstorage.location.ITerminalStorage
 import ruiseki.integratedterminals.core.terminalstorage.location.TerminalStorageLocations;
 import ruiseki.integratedterminals.item.ItemTerminalStoragePortable;
 import ruiseki.integratedterminals.item.ItemTerminalStoragePortableConfig;
+import ruiseki.okcore.client.gui.ContainerType;
+import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.helper.InventoryHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
-import ruiseki.okcore.inventory.IGuiContainerProvider;
+import ruiseki.okcore.network.ExtendedBuffer;
 
 /**
  * @author rubensworks
@@ -30,34 +36,53 @@ public class ContainerTerminalStorageItem extends ContainerTerminalStorageBase<I
 
     private final int itemIndex;
 
-    public ContainerTerminalStorageItem(EntityPlayer player, int itemIndex, InitTabData initTabData,
-        TerminalStorageState terminalStorageState) {
-        super(
-            player,
-            ((IGuiContainerProvider) ItemTerminalStoragePortableConfig._instance.getInstance()),
-            initTabData,
-            terminalStorageState,
-            Optional.ofNullable(getNetworkFromItem(InventoryHelpers.getItemFromIndex(player, itemIndex))),
-            getVariableInventoryFromItem(InventoryHelpers.getItemFromIndex(player, itemIndex)));
-        this.itemIndex = itemIndex;
+    public ContainerTerminalStorageItem(InventoryPlayer playerInventory, ExtendedBuffer packetBuffer)
+        throws IOException {
+        this(
+            playerInventory,
+            packetBuffer.readInt(),
+            packetBuffer.readBoolean() ? Optional.of(InitTabData.readFromPacketBuffer(packetBuffer)) : Optional.empty(),
+            TerminalStorageState.readFromPacketBuffer(packetBuffer));
+        getGuiState().setDirtyMarkListener(this::sendGuiStateToServer);
     }
 
-    public static INetwork getNetworkFromItem(ItemStack itemStack) {
+    public ContainerTerminalStorageItem(InventoryPlayer playerInventory, int location,
+        Optional<InitTabData> initTabData, TerminalStorageState terminalStorageState) {
+        this(
+            ContainerTerminalStorageItemConfig._instance.getInstance(),
+            playerInventory,
+            location,
+            initTabData,
+            terminalStorageState);
+    }
+
+    public ContainerTerminalStorageItem(@Nullable ContainerType<?> type, InventoryPlayer playerInventory,
+        int itemLocation, Optional<InitTabData> initTabData, TerminalStorageState terminalStorageState) {
+        super(
+            type,
+            playerInventory,
+            initTabData,
+            terminalStorageState,
+            getNetworkFromItem(InventoryHelpers.getItemFromIndex(playerInventory.player, itemLocation)),
+            getVariableInventoryFromItem(InventoryHelpers.getItemFromIndex(playerInventory.player, itemLocation)));
+        this.itemIndex = itemLocation;
+    }
+
+    public static Optional<INetwork> getNetworkFromItem(ItemStack itemStack) {
         if (MinecraftHelpers.isClientSide()) {
-            return null;
+            return Optional.empty();
         }
         int groupId = ItemTerminalStoragePortable.getGroupId(itemStack);
         if (groupId < 0) {
-            return null;
+            return Optional.empty();
         }
         for (PartPos pos : PartTypeConnectorOmniDirectional.LOADED_GROUPS.getPositions(groupId)) {
-            INetwork network = NetworkHelpers.getNetwork(pos)
-                .getOrNull();
-            if (network != null) {
-                return network;
+            LazyOptional<INetwork> network = NetworkHelpers.getNetwork(pos);
+            if (network.isPresent()) {
+                return network.map(a -> a);
             }
         }
-        return null;
+        return Optional.empty();
     }
 
     public static Optional<ITerminalStorageTabCommon.IVariableInventory> getVariableInventoryFromItem(

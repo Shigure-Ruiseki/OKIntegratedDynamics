@@ -14,10 +14,11 @@ import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.part.IPartState;
 import ruiseki.integrateddynamics.api.part.IPartType;
+import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.api.part.aspect.property.IAspectProperties;
 import ruiseki.integrateddynamics.api.part.aspect.property.IAspectPropertyTypeInstance;
-import ruiseki.okcore.inventory.IGuiContainerProvider;
+import ruiseki.okcore.inventory.IGuiConstructor;
 
 /**
  * An element that can be used inside parts to access a specific aspect of something to read/write.
@@ -116,10 +117,11 @@ public interface IAspect<V extends IValue, T extends IValueType<V>> {
 
     /**
      * This will only be called if this aspect has properties.
-     *
-     * @return The gui container provider for the gui to configure the properties.
+     * 
+     * @return The container type for the screen to configure the properties.
+     * @param pos The part position.
      */
-    public IGuiContainerProvider getPropertiesGuiProvider();
+    public IGuiConstructor getPropertiesContainerProvider(PartPos pos);
 
     /**
      * Use this comparator for any comparisons with aspects.

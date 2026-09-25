@@ -2,18 +2,18 @@ package ruiseki.integratedterminals.api.terminalstorage;
 
 import java.util.List;
 
-import net.minecraft.client.gui.GuiButton;
 import net.minecraft.entity.player.EntityPlayer;
 
 import org.jetbrains.annotations.Nullable;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import ruiseki.okcore.client.gui.component.button.GuiButtonExtended;
 
 /**
  * @author rubensworks
  */
-public interface ITerminalButton<C extends ITerminalStorageTabClient, O extends ITerminalStorageTabCommon, B extends GuiButton> {
+public interface ITerminalButton<C extends ITerminalStorageTabClient, O extends ITerminalStorageTabCommon, B extends GuiButtonExtended> {
 
     /**
      * Reload the button's visual representation based on the container's state.

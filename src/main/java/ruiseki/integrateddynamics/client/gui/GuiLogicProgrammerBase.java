@@ -62,7 +62,7 @@ public class GuiLogicProgrammerBase<T extends ContainerLogicProgrammerBase> exte
     protected int relativeStep = -1;
     protected boolean swallowNextCharacter = false;
 
-    public GuiLogicProgrammerBase(InventoryPlayer inventoryPlayer, T container) {
+    public GuiLogicProgrammerBase(T container, InventoryPlayer inventoryPlayer) {
         super(container);
         container.setGui(this);
 

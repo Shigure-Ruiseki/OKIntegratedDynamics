@@ -2,7 +2,6 @@ package ruiseki.integrateddynamics.core.client.gui.container;
 
 import java.util.List;
 
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.ResourceLocation;
@@ -14,18 +13,12 @@ import com.google.common.collect.Lists;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.Reference;
 import ruiseki.integrateddynamics.api.client.gui.subgui.IGuiInputElement;
 import ruiseki.integrateddynamics.api.client.gui.subgui.IGuiInputElementValueType;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.logicprogrammer.IValueTypeLogicProgrammerElement;
-import ruiseki.integrateddynamics.api.part.IPartContainer;
-import ruiseki.integrateddynamics.api.part.IPartType;
-import ruiseki.integrateddynamics.api.part.PartTarget;
-import ruiseki.integrateddynamics.api.part.aspect.IAspect;
 import ruiseki.integrateddynamics.api.part.aspect.property.IAspectPropertyTypeInstance;
-import ruiseki.integrateddynamics.core.client.gui.ExtendedGuiHandler;
 import ruiseki.integrateddynamics.core.client.gui.subgui.SubGuiHolder;
 import ruiseki.integrateddynamics.core.evaluate.variable.gui.GuiElementValueTypeString;
 import ruiseki.integrateddynamics.core.inventory.container.ContainerAspectSettings;
@@ -50,15 +43,6 @@ public class GuiAspectSettings extends GuiContainerExtended<ContainerAspectSetti
     private static final int OK_WIDTH = 14;
     private static final int OK_HEIGHT = 12;
 
-    private static final int BUTTON_LEFT = 0;
-    private static final int BUTTON_RIGHT = 1;
-    public static final int BUTTON_EXIT = 2;
-
-    private final PartTarget target;
-    private final IPartContainer partContainer;
-    private final IPartType partType;
-    private final IAspect aspect;
-
     private final List<IAspectPropertyTypeInstance> propertyTypes;
     protected final SubGuiHolder subGuiHolder = new SubGuiHolder();
     protected IGuiInputElementValueType<RenderPattern, GuiAspectSettings, ContainerAspectSettings> guiElement = null;
@@ -70,22 +54,8 @@ public class GuiAspectSettings extends GuiContainerExtended<ContainerAspectSetti
     private GuiButtonText buttonExit = null;
     private LangHelpers.UnlocalizedString lastError;
 
-    /**
-     * Make a new instance.
-     *
-     * @param target        The target.
-     * @param player        The player.
-     * @param partContainer The part container.
-     * @param partType      The part type.
-     * @param aspect        The aspect.
-     */
-    public GuiAspectSettings(EntityPlayer player, PartTarget target, IPartContainer partContainer, IPartType partType,
-        IAspect aspect) {
-        super(new ContainerAspectSettings(player, target, partContainer, partType, aspect));
-        this.target = target;
-        this.partContainer = partContainer;
-        this.partType = partType;
-        this.aspect = aspect;
+    public GuiAspectSettings(ContainerAspectSettings container) {
+        super(container);
 
         // noinspection deprecation
         this.propertyTypes = Lists.newArrayList(
@@ -126,14 +96,7 @@ public class GuiAspectSettings extends GuiContainerExtended<ContainerAspectSetti
                 12,
                 10,
                 "<<",
-                createServerPressable(ContainerAspectSettings.BUTTON_EXIT, (button) -> {
-                    saveSetting();
-                    IntegratedDynamics._instance.getGuiHandler()
-                        .setTemporaryData(
-                            ExtendedGuiHandler.PART,
-                            getTarget().getCenter()
-                                .getSide());
-                }),
+                createServerPressable(ContainerAspectSettings.BUTTON_EXIT, (button) -> { saveSetting(); }),
                 true));
         addRenderableWidget(buttonLeft = new GuiButtonText(guiLeft + 21, guiTop + 5, 10, 10, "<", (button) -> {
             saveSetting();

@@ -5,7 +5,7 @@ import ruiseki.okcore.config.extendedconfig.BlockContainerConfig;
 
 /**
  * Config for {@link BlockMaterializer}.
- * 
+ *
  * @author rubensworks
  */
 public class BlockMaterializerConfig extends BlockContainerConfig {
@@ -19,6 +19,6 @@ public class BlockMaterializerConfig extends BlockContainerConfig {
      * Make a new instance.
      */
     public BlockMaterializerConfig() {
-        super(IntegratedDynamics._instance, true, "materializer", null, BlockMaterializer::new);
+        super(IntegratedDynamics._instance, true, "materializer", null, blockConfig -> new BlockMaterializer());
     }
 }

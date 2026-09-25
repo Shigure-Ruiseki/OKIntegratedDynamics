@@ -45,7 +45,7 @@ import ruiseki.integrateddynamics.client.model.CableRenderState;
 import ruiseki.integrateddynamics.core.helper.CableHelpers;
 import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
 import ruiseki.integrateddynamics.core.helper.PartHelpers;
-import ruiseki.okcore.block.IBlockStateAction;
+import ruiseki.okcore.block.IBlockStateNative;
 import ruiseki.okcore.block.property.BlockStateBuilder;
 import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.capabilities.resolver.BasicCapabilityResolver;
@@ -153,14 +153,7 @@ public class TileMultipartTicking extends TileEntityOK
         EnumFacingMap<Boolean> lastConnected = EnumFacingMap.newMap(connected);
         NBTTagCompound lastFacadeBlockTag = facadeBlockTag;
         boolean lastRealCable = cableFakeable.isRealCable();
-        PartHelpers.readPartsFromNBT(getNetwork(), getPos(), tag, this.partData, getWorldObj());
-        if (tag.hasKey("parts") && !tag.hasKey("partContainer")) {
-            // Backwards compatibility with old part saving.
-            // TODO: remove in next major MC update.
-            PartHelpers.readPartsFromNBT(getNetwork(), getPos(), tag, partContainer.getPartData(), getWorldObj());
-        } else {
-            partContainer.deserializeNBT(tag.getCompoundTag("partContainer"));
-        }
+        partContainer.deserializeNBT(tag.getCompoundTag("partContainer"));
         boolean wasLightTransparent = getWorldObj() != null
             && CableHelpers.isLightTransparent(getWorldObj(), getPos(), null);
 
@@ -173,20 +166,17 @@ public class TileMultipartTicking extends TileEntityOK
             || !Objects.equals(lastFacadeBlockTag, facadeBlockTag)
             || lastRealCable != cableFakeable.isRealCable()
             || wasLightTransparent != isLightTransparent)) {
-            this.worldObj.markBlockForUpdate(this.xCoord, this.yCoord, this.zCoord);
+            BlockHelpers.markForUpdate(getWorldObj(), getPos());
         }
     }
 
     @Override
     public void onUpdateReceived() {
-        this.worldObj.markBlockForUpdate(this.xCoord, this.yCoord, this.zCoord);
         if (!lightLevels.equals(previousLightLevels)) {
             previousLightLevels = lightLevels;
-            this.worldObj.func_147451_t(this.xCoord, this.yCoord, this.zCoord);
         }
         cachedState = null;
         BlockHelpers.markForUpdate(getWorldObj(), getPos());
-
         if (forceLightCheckAtClient) {
             getWorldObj().func_147451_t(this.xCoord, this.yCoord, this.zCoord);
         }
@@ -197,7 +187,7 @@ public class TileMultipartTicking extends TileEntityOK
             return cachedState;
         }
         BlockStateBuilder builder = BlockStateBuilder
-            .builder(((IBlockStateAction) BlockCableConfig._instance.getInstance()).getDefaultState());
+            .builder(((IBlockStateNative) BlockCableConfig._instance.getInstance()).getDefaultState());
         if (partContainer.getPartData() != null) { // Can be null in rare cases where rendering happens before data sync
             builder.withProperty(BlockCable.REALCABLE, cableFakeable.isRealCable());
             if (connected.isEmpty()) {
@@ -242,10 +232,6 @@ public class TileMultipartTicking extends TileEntityOK
         }
     }
 
-    public INetwork getNetwork() {
-        return networkCarrier.getNetwork();
-    }
-
     public void updateRedstoneInfo(ForgeDirection side, boolean strongPower) {
         this.markDirty();
         int targetX = xCoord + side.offsetX;
@@ -262,6 +248,10 @@ public class TileMultipartTicking extends TileEntityOK
 
     public void updateLightInfo() {
         sendUpdate();
+    }
+
+    public INetwork getNetwork() {
+        return networkCarrier.getNetwork();
     }
 
     @Override

@@ -1,23 +1,33 @@
 package ruiseki.integratedterminals.core.terminalstorage.location;
 
 import java.io.IOException;
+import java.util.Optional;
 
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 
-import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
+import org.jetbrains.annotations.Nullable;
 
+import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.PartPos;
-import ruiseki.integratedterminals.IntegratedTerminals;
+import ruiseki.integrateddynamics.api.part.PartTarget;
+import ruiseki.integrateddynamics.core.helper.PartHelpers;
+import ruiseki.integrateddynamics.core.part.PartTypeBase;
 import ruiseki.integratedterminals.Reference;
 import ruiseki.integratedterminals.api.terminalstorage.location.ITerminalStorageLocation;
 import ruiseki.integratedterminals.core.client.gui.CraftingOptionGuiData;
-import ruiseki.integratedterminals.core.client.gui.ExtendedGuiHandler;
-import ruiseki.integratedterminals.network.packet.PacketSetCraftingDataPart;
+import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorageCraftingOptionAmountPart;
+import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorageCraftingPlanPart;
 import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientPartOpenPacket;
-import ruiseki.integratedterminals.proxy.guiprovider.GuiProviders;
-import ruiseki.okcore.datastructure.BlockPos;
+import ruiseki.integratedterminals.part.PartTypeTerminalStorage;
+import ruiseki.integratedterminals.part.TerminalPartTypes;
+import ruiseki.okcore.helper.PlayerHelpers;
+import ruiseki.okcore.inventory.IGuiConstructor;
+import ruiseki.okcore.inventory.container.ContainerExtended;
 import ruiseki.okcore.network.ExtendedBuffer;
 import ruiseki.okcore.network.PacketCodec;
 
@@ -36,8 +46,7 @@ public class TerminalStorageLocationPart implements ITerminalStorageLocation<Par
                 .getBlockPos(),
             partPos.getSide(),
             craftingOptionGuiData.getTabName(),
-            craftingOptionGuiData.getChannel(),
-            craftingOptionGuiData.getState());
+            craftingOptionGuiData.getChannel());
     }
 
     @Override
@@ -51,54 +60,83 @@ public class TerminalStorageLocationPart implements ITerminalStorageLocation<Par
             partPos.getSide(),
             player,
             craftingOptionGuiData.getTabName(),
-            craftingOptionGuiData.getChannel(),
-            craftingOptionGuiData.getState());
+            craftingOptionGuiData.getChannel());
     }
 
     @Override
     public <T, M> void openContainerCraftingPlan(CraftingOptionGuiData<T, M, PartPos> craftingOptionGuiData,
         World world, EntityPlayerMP player) {
-        PartPos partPos = craftingOptionGuiData.getLocationInstance();
-        IntegratedTerminals._instance.getGuiHandler()
-            .setTemporaryData(
-                ExtendedGuiHandler.CRAFTING_OPTION_PART,
-                Pair.of(partPos.getSide(), craftingOptionGuiData));
+        // Create temporary container provider
+        IGuiConstructor containerProvider = new IGuiConstructor() {
 
-        IntegratedTerminals._instance.getPacketHandler()
-            .sendToPlayer(new PacketSetCraftingDataPart(partPos.getSide(), craftingOptionGuiData), player);
+            @Override
+            public @Nullable ContainerExtended createContainer(int windowId, InventoryPlayer playerInventory,
+                EntityPlayer player) {
+                PartPos location = craftingOptionGuiData.getLocationInstance();
+                Triple<IPartContainer, PartTypeBase, PartTarget> data = PartHelpers.getContainerPartConstructionData(
+                    PartPos.of(
+                        world,
+                        location.getPos()
+                            .getBlockPos(),
+                        location.getSide()));
+                return new ContainerTerminalStorageCraftingPlanPart(
+                    playerInventory,
+                    Optional.of(data.getRight()),
+                    Optional.of(data.getLeft()),
+                    (PartTypeTerminalStorage) data.getMiddle(),
+                    craftingOptionGuiData);
+            }
+        };
 
-        BlockPos cPos = partPos.getPos()
-            .getBlockPos();
-        player.openGui(
-            IntegratedTerminals._instance,
-            GuiProviders.ID_GUI_TERMINAL_STORAGE_CRAFTING_PLAN_PART,
-            world,
-            cPos.getX(),
-            cPos.getY(),
-            cPos.getZ());
+        // Trigger gui opening
+        PlayerHelpers.openGui(player, containerProvider, packetBuffer -> {
+            packetBuffer.writeString(
+                TerminalPartTypes.TERMINAL_STORAGE.getUniqueName()
+                    .toString());
+            try {
+                craftingOptionGuiData.writeToPacketBuffer(packetBuffer);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     @Override
     public <T, M> void openContainerCraftingOptionAmount(CraftingOptionGuiData<T, M, PartPos> craftingOptionGuiData,
         World world, EntityPlayerMP player) {
-        PartPos partPos = craftingOptionGuiData.getLocationInstance();
-        IntegratedTerminals._instance.getGuiHandler()
-            .setTemporaryData(
-                ExtendedGuiHandler.CRAFTING_OPTION_PART,
-                Pair.of(partPos.getSide(), craftingOptionGuiData));
+        // Create temporary container provider
+        IGuiConstructor containerProvider = new IGuiConstructor() {
 
-        IntegratedTerminals._instance.getPacketHandler()
-            .sendToPlayer(new PacketSetCraftingDataPart(partPos.getSide(), craftingOptionGuiData), player);
+            @Override
+            public @Nullable ContainerExtended createContainer(int windowId, InventoryPlayer playerInventory,
+                EntityPlayer player) {
+                PartPos location = craftingOptionGuiData.getLocationInstance();
+                Triple<IPartContainer, PartTypeBase, PartTarget> data = PartHelpers.getContainerPartConstructionData(
+                    PartPos.of(
+                        world,
+                        location.getPos()
+                            .getBlockPos(),
+                        location.getSide()));
+                return new ContainerTerminalStorageCraftingOptionAmountPart(
+                    playerInventory,
+                    Optional.of(data.getRight()),
+                    Optional.of(data.getLeft()),
+                    (PartTypeTerminalStorage) data.getMiddle(),
+                    craftingOptionGuiData);
+            }
+        };
 
-        BlockPos cPos = partPos.getPos()
-            .getBlockPos();
-        player.openGui(
-            IntegratedTerminals._instance,
-            GuiProviders.ID_GUI_TERMINAL_STORAGE_CRAFTING_OPTION_AMOUNT_PART,
-            world,
-            cPos.getX(),
-            cPos.getY(),
-            cPos.getZ());
+        // Trigger gui opening
+        PlayerHelpers.openGui(player, containerProvider, packetBuffer -> {
+            packetBuffer.writeString(
+                TerminalPartTypes.TERMINAL_STORAGE.getUniqueName()
+                    .toString());
+            try {
+                craftingOptionGuiData.writeToPacketBuffer(packetBuffer);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     @Override

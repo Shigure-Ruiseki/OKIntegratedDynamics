@@ -2,10 +2,14 @@ package ruiseki.integrateddynamics.tileentity;
 
 import java.util.Collection;
 
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntityFurnace;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
+
+import org.jetbrains.annotations.Nullable;
 
 import com.google.common.collect.Lists;
 
@@ -21,6 +25,7 @@ import ruiseki.integrateddynamics.capability.networkelementprovider.NetworkEleme
 import ruiseki.integrateddynamics.core.helper.EnergyHelpers;
 import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
 import ruiseki.integrateddynamics.core.tileentity.TileCableConnectableInventory;
+import ruiseki.integrateddynamics.inventory.container.ContainerCoalGenerator;
 import ruiseki.integrateddynamics.network.CoalGeneratorNetworkElement;
 import ruiseki.okcore.capabilities.resolver.BasicCapabilityResolver;
 import ruiseki.okcore.datastructure.BlockPos;
@@ -29,6 +34,8 @@ import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.energy.capability.CapabilityEnergy;
 import ruiseki.okcore.energy.component.EnergyProviderComponent;
 import ruiseki.okcore.helper.Helpers;
+import ruiseki.okcore.inventory.IGuiConstructor;
+import ruiseki.okcore.inventory.container.ContainerExtended;
 import ruiseki.okcore.persist.nbt.NBTPersist;
 
 /**
@@ -36,9 +43,12 @@ import ruiseki.okcore.persist.nbt.NBTPersist;
  *
  * @author rubensworks
  */
-public class TileCoalGenerator extends TileCableConnectableInventory implements IEnergyProvider, IEnergyStorage {
+public class TileCoalGenerator extends TileCableConnectableInventory
+    implements IEnergyProvider, IEnergyStorage, IGuiConstructor {
 
+    public static final int INVENTORY_SIZE = 1;
     public static final int MAX_PROGRESS = 13;
+    public static final int ENERGY_PER_TICK = 20;
     public static final int SLOT_FUEL = 0;
 
     @NBTPersist
@@ -53,7 +63,7 @@ public class TileCoalGenerator extends TileCableConnectableInventory implements 
     private final EnergyProviderComponent energyProvider = new EnergyProviderComponent(this);
 
     public TileCoalGenerator() {
-        super(1, "fuel", 64);
+        super(INVENTORY_SIZE, 64);
         this.capabilityCache.addCapabilityResolver(
             BasicCapabilityResolver
                 .create(NetworkElementProviderConfig.CAPABILITY, () -> new NetworkElementProviderSingleton() {
@@ -183,5 +193,11 @@ public class TileCoalGenerator extends TileCableConnectableInventory implements 
     @Override
     public int getMaxEnergyStored() {
         return 0;
+    }
+
+    @Override
+    public @Nullable ContainerExtended createContainer(int windowId, InventoryPlayer playerInventory,
+        EntityPlayer player) {
+        return new ContainerCoalGenerator(playerInventory, this, this);
     }
 }

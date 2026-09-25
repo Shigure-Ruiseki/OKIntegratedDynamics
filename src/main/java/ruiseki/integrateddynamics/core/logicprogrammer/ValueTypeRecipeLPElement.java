@@ -59,6 +59,7 @@ import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
 import ruiseki.okcore.helper.TagHelpers;
+import ruiseki.okcore.inventory.ClickType;
 import ruiseki.okcore.inventory.slot.SlotExtended;
 import ruiseki.okcore.tag.Registries;
 import ruiseki.okcore.tag.TagKey;
@@ -351,7 +352,7 @@ public class ValueTypeRecipeLPElement extends ValueTypeLPElementBase {
     }
 
     @Override
-    public boolean slotClick(int slotId, Slot slot, int mouseButton, int clickType, EntityPlayer player) {
+    public boolean slotClick(int slotId, Slot slot, int mouseButton, ClickType clickType, EntityPlayer player) {
         return slotClickCommon(slotId, slot, mouseButton, clickType, player, getInputStacks(), 9, (i) -> {
             if (MinecraftHelpers.isClientSide()) {
                 lastGui.setPropertySubGui(i);
@@ -363,12 +364,11 @@ public class ValueTypeRecipeLPElement extends ValueTypeLPElementBase {
         }) || super.slotClick(slotId, slot, mouseButton, clickType, player);
     }
 
-    public static boolean slotClickCommon(int slotId, Slot slot, int mouseButton, int clickType, EntityPlayer player,
-        List<ItemMatchProperties> inputStacks, int propertySlotCount, Consumer<Integer> setPropertySubGui,
-        Consumer<Integer> refreshPropertiesGui) {
-        final int CLICK_TYPE_QUICK_MOVE = 1;
+    public static boolean slotClickCommon(int slotId, Slot slot, int mouseButton, ClickType clickType,
+        EntityPlayer player, List<ItemMatchProperties> inputStacks, int propertySlotCount,
+        Consumer<Integer> setPropertySubGui, Consumer<Integer> refreshPropertiesGui) {
         if (slotId >= SLOT_OFFSET && slotId < propertySlotCount + SLOT_OFFSET) {
-            if (clickType == CLICK_TYPE_QUICK_MOVE && mouseButton == 0) {
+            if (clickType == ClickType.QUICK_MOVE && mouseButton == 0) {
                 if (player.worldObj.isRemote) {
                     int id = slotId - SLOT_OFFSET;
                     setPropertySubGui.accept(id);
@@ -379,7 +379,7 @@ public class ValueTypeRecipeLPElement extends ValueTypeLPElementBase {
                 ItemMatchProperties props = inputStacks.get(slotId - SLOT_OFFSET);
                 int quantityCurrent = props.getTagQuantity();
                 int quantityNew;
-                if (clickType == CLICK_TYPE_QUICK_MOVE) {
+                if (clickType == ClickType.QUICK_MOVE) {
                     quantityNew = mouseButton == 0 ? (quantityCurrent + 1) / 2 : quantityCurrent * 2;
                 } else {
                     quantityNew = mouseButton == 0 ? quantityCurrent - 1 : quantityCurrent + 1;

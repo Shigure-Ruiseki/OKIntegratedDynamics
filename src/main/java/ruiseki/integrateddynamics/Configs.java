@@ -49,6 +49,9 @@ import ruiseki.integrateddynamics.capability.path.PathElementConfig;
 import ruiseki.integrateddynamics.capability.valueinterface.ValueInterfaceConfig;
 import ruiseki.integrateddynamics.capability.variablecontainer.VariableContainerConfig;
 import ruiseki.integrateddynamics.capability.variablefacade.VariableFacadeHolderConfig;
+import ruiseki.integrateddynamics.core.inventory.container.ContainerAspectSettingsConfig;
+import ruiseki.integrateddynamics.core.inventory.container.ContainerPartOffsetConfig;
+import ruiseki.integrateddynamics.core.inventory.container.ContainerPartSettingsConfig;
 import ruiseki.integrateddynamics.core.recipe.type.RecipeEnergyContainerCombinationConfig;
 import ruiseki.integrateddynamics.core.recipe.type.RecipeSerializerDryingBasinConfig;
 import ruiseki.integrateddynamics.core.recipe.type.RecipeSerializerMechanicalDryingBasinConfig;
@@ -61,6 +64,19 @@ import ruiseki.integrateddynamics.core.recipe.type.RecipeTypeMechanicalSqueezerC
 import ruiseki.integrateddynamics.core.recipe.type.RecipeTypeSqueezerConfig;
 import ruiseki.integrateddynamics.fluid.FluidLiquidChorusConfig;
 import ruiseki.integrateddynamics.fluid.FluidMenrilResinConfig;
+import ruiseki.integrateddynamics.inventory.container.ContainerCoalGeneratorConfig;
+import ruiseki.integrateddynamics.inventory.container.ContainerDelayConfig;
+import ruiseki.integrateddynamics.inventory.container.ContainerLabellerConfig;
+import ruiseki.integrateddynamics.inventory.container.ContainerLogicProgrammerConfig;
+import ruiseki.integrateddynamics.inventory.container.ContainerLogicProgrammerPortableConfig;
+import ruiseki.integrateddynamics.inventory.container.ContainerMaterializerConfig;
+import ruiseki.integrateddynamics.inventory.container.ContainerMechanicalDryingBasinConfig;
+import ruiseki.integrateddynamics.inventory.container.ContainerMechanicalSqueezerConfig;
+import ruiseki.integrateddynamics.inventory.container.ContainerPartDisplayConfig;
+import ruiseki.integrateddynamics.inventory.container.ContainerPartReaderConfig;
+import ruiseki.integrateddynamics.inventory.container.ContainerPartWriterConfig;
+import ruiseki.integrateddynamics.inventory.container.ContainerProxyConfig;
+import ruiseki.integrateddynamics.inventory.container.ContainerVariablestoreConfig;
 import ruiseki.integrateddynamics.item.ItemBucketLiquidChorusConfig;
 import ruiseki.integrateddynamics.item.ItemBucketMenrilResinConfig;
 import ruiseki.integrateddynamics.item.ItemCrystalizedChorusChunkConfig;
@@ -168,6 +184,24 @@ public class Configs {
 
         // Entities
         // configHandler.add(new EntityItemTargettedConfig());
+
+        // Guis
+        configHandler.add(new ContainerAspectSettingsConfig());
+        configHandler.add(new ContainerCoalGeneratorConfig());
+        configHandler.add(new ContainerDelayConfig());
+        configHandler.add(new ContainerLabellerConfig());
+        configHandler.add(new ContainerLogicProgrammerConfig());
+        configHandler.add(new ContainerLogicProgrammerPortableConfig());
+        configHandler.add(new ContainerMaterializerConfig());
+        configHandler.add(new ContainerMechanicalDryingBasinConfig());
+        configHandler.add(new ContainerMechanicalSqueezerConfig());
+        configHandler.add(new ContainerPartDisplayConfig());
+        configHandler.add(new ContainerPartReaderConfig());
+        configHandler.add(new ContainerPartSettingsConfig());
+        configHandler.add(new ContainerPartOffsetConfig());
+        configHandler.add(new ContainerPartWriterConfig());
+        configHandler.add(new ContainerProxyConfig());
+        configHandler.add(new ContainerVariablestoreConfig());
 
         // Recipe types
         configHandler.add(new RecipeTypeDryingBasinConfig());

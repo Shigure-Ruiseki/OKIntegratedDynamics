@@ -1,6 +1,7 @@
 package ruiseki.integratedterminals.client.gui.container;
 
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.ResourceLocation;
@@ -8,16 +9,12 @@ import net.minecraft.util.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.input.Keyboard;
 
-import ruiseki.integrateddynamics.api.part.IPartContainer;
-import ruiseki.integrateddynamics.api.part.IPartType;
 import ruiseki.integrateddynamics.api.part.PartPos;
-import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integratedterminals.IntegratedTerminals;
 import ruiseki.integratedterminals.Reference;
 import ruiseki.integratedterminals.client.gui.container.component.GuiCraftingPlan;
 import ruiseki.integratedterminals.client.gui.container.component.GuiCraftingPlanFlat;
 import ruiseki.integratedterminals.client.gui.container.component.GuiCraftingPlanToggler;
-import ruiseki.integratedterminals.core.client.gui.CraftingJobGuiData;
 import ruiseki.integratedterminals.inventory.container.ContainerTerminalCraftingJobsPlan;
 import ruiseki.integratedterminals.network.packet.CancelCraftingJobPacket;
 import ruiseki.integratedterminals.network.packet.OpenCraftingJobsGuiPacket;
@@ -43,22 +40,24 @@ public class GuiTerminalCraftingJobsPlan extends GuiContainerExtended<ContainerT
     private boolean craftingPlanInitialized = false;
     private boolean craftingPlanFlatInitialized = false;
 
-    public GuiTerminalCraftingJobsPlan(EntityPlayer player, PartTarget target, IPartContainer partContainer,
-        IPartType partType, CraftingJobGuiData craftingPlanGuiData) {
-        super(new ContainerTerminalCraftingJobsPlan(player, target, partContainer, partType, craftingPlanGuiData));
+    public GuiTerminalCraftingJobsPlan(ContainerTerminalCraftingJobsPlan container, InventoryPlayer inventory) {
+        super(container);
 
-        this.player = player;
+        this.player = inventory.player;
         this.guiCraftingPlanToggler = new GuiCraftingPlanToggler(
             () -> this.getContainer()
-                .getCraftingPlan(),
+                .getCraftingPlan()
+                .orElse(null),
             () -> this.getContainer()
-                .getCraftingPlanFlat(),
+                .getCraftingPlanFlat()
+                .orElse(null),
             () -> {
                 GuiCraftingPlan previousGuiCraftingPlan = this.guiCraftingPlan;
                 this.guiCraftingPlan = new GuiCraftingPlan(
                     this,
                     this.getContainer()
-                        .getCraftingPlan(),
+                        .getCraftingPlan()
+                        .get(),
                     guiLeft,
                     guiTop,
                     9,
@@ -71,15 +70,15 @@ public class GuiTerminalCraftingJobsPlan extends GuiContainerExtended<ContainerT
                 this.guiCraftingPlanFlat = null;
 
                 if (this.getContainer()
-                    .getCraftingPlanFlat() != null) {
+                    .getCraftingPlanFlat()
+                    .isPresent()) {
                     String buttonText = EnumChatFormatting.ITALIC
                         + LangHelpers.localize("gui.integratedterminals.craftingplan.view.flat");
-                    addRenderableWidget(
-                        new GuiButtonText(this.guiLeft + 8, this.guiTop + 198, 80, 20, buttonText, (b) -> {
-                            this.guiCraftingPlanToggler
-                                .setCraftingPlanDisplayMode(GuiCraftingPlanToggler.CraftingPlanDisplayMode.FLAT);
-                            this.initGui();
-                        }, true));
+                    addRenderableWidget(new GuiButtonText(guiLeft + 8, guiTop + 198, 80, 20, buttonText, (b) -> {
+                        this.guiCraftingPlanToggler
+                            .setCraftingPlanDisplayMode(GuiCraftingPlanToggler.CraftingPlanDisplayMode.FLAT);
+                        this.initGui();
+                    }, true));
                 }
             },
             () -> {
@@ -87,7 +86,8 @@ public class GuiTerminalCraftingJobsPlan extends GuiContainerExtended<ContainerT
                 this.guiCraftingPlanFlat = new GuiCraftingPlanFlat(
                     this,
                     this.getContainer()
-                        .getCraftingPlanFlat(),
+                        .getCraftingPlanFlat()
+                        .get(),
                     guiLeft,
                     guiTop,
                     9,
@@ -100,15 +100,15 @@ public class GuiTerminalCraftingJobsPlan extends GuiContainerExtended<ContainerT
                 this.guiCraftingPlan = null;
 
                 if (this.getContainer()
-                    .getCraftingPlan() != null) {
+                    .getCraftingPlan()
+                    .isPresent()) {
                     String buttonText = EnumChatFormatting.ITALIC
                         + LangHelpers.localize("gui.integratedterminals.craftingplan.view.tree");
-                    addRenderableWidget(
-                        new GuiButtonText(this.guiLeft + 8, this.guiTop + 198, 80, 20, buttonText, (b) -> {
-                            this.guiCraftingPlanToggler
-                                .setCraftingPlanDisplayMode(GuiCraftingPlanToggler.CraftingPlanDisplayMode.TREE);
-                            this.initGui();
-                        }, true));
+                    addRenderableWidget(new GuiButtonText(guiLeft + 8, guiTop + 198, 80, 20, buttonText, (b) -> {
+                        this.guiCraftingPlanToggler
+                            .setCraftingPlanDisplayMode(GuiCraftingPlanToggler.CraftingPlanDisplayMode.TREE);
+                        this.initGui();
+                    }, true));
                 }
             },
             () -> {
@@ -181,6 +181,7 @@ public class GuiTerminalCraftingJobsPlan extends GuiContainerExtended<ContainerT
 
     private void returnToOverview() {
         PartPos center = getContainer().getTarget()
+            .get()
             .getCenter();
         OpenCraftingJobsGuiPacket.send(
             center.getPos()

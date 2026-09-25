@@ -1,47 +1,54 @@
 package ruiseki.integrateddynamics.core.part.write;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import net.minecraft.block.Block;
-import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.Container;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.ForgeDirection;
 
+import org.apache.commons.lang3.tuple.Triple;
 import org.jetbrains.annotations.Nullable;
 
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.integrateddynamics.api.evaluate.variable.IValue;
 import ruiseki.integrateddynamics.api.evaluate.variable.IVariable;
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.network.event.INetworkEvent;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
+import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.integrateddynamics.api.part.PartRenderPosition;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.api.part.aspect.IAspect;
 import ruiseki.integrateddynamics.api.part.aspect.IAspectWrite;
 import ruiseki.integrateddynamics.api.part.write.IPartStateWriter;
 import ruiseki.integrateddynamics.api.part.write.IPartTypeWriter;
-import ruiseki.integrateddynamics.client.gui.GuiPartWriter;
 import ruiseki.integrateddynamics.core.block.IgnoredBlock;
 import ruiseki.integrateddynamics.core.block.IgnoredBlockStatus;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
+import ruiseki.integrateddynamics.core.helper.PartHelpers;
 import ruiseki.integrateddynamics.core.network.event.VariableContentsUpdatedEvent;
 import ruiseki.integrateddynamics.core.part.PartTypeAspects;
+import ruiseki.integrateddynamics.core.part.PartTypeBase;
 import ruiseki.integrateddynamics.core.part.event.PartWriterAspectEvent;
 import ruiseki.integrateddynamics.inventory.container.ContainerPartWriter;
 import ruiseki.integrateddynamics.part.aspect.Aspects;
 import ruiseki.okcore.helper.BlockStateHelpers;
 import ruiseki.okcore.helper.LangHelpers;
+import ruiseki.okcore.inventory.IGuiConstructor;
+import ruiseki.okcore.inventory.container.ContainerExtended;
+import ruiseki.okcore.network.ExtendedBuffer;
+import ruiseki.okcore.network.PacketCodec;
 
 /**
  * An abstract {@link IPartTypeWriter}.
@@ -214,11 +221,6 @@ public abstract class PartTypeWriteBase<P extends IPartTypeWriter<P, S>, S exten
     }
 
     @Override
-    public Class<? extends Container> getContainer() {
-        return ContainerPartWriter.class;
-    }
-
-    @Override
     public void loadTooltip(S state, List<String> lines) {
         super.loadTooltip(state, lines);
         IAspectWrite aspectWrite = state.getActiveAspect();
@@ -246,9 +248,42 @@ public abstract class PartTypeWriteBase<P extends IPartTypeWriter<P, S>, S exten
     }
 
     @Override
-    @SideOnly(Side.CLIENT)
-    public Class<? extends GuiScreen> getGui() {
-        return GuiPartWriter.class;
+    public Optional<IGuiConstructor> getContainerProvider(PartPos pos) {
+        return Optional.of(new IGuiConstructor() {
+
+            @Override
+            public @Nullable ContainerExtended createContainer(int windowId, InventoryPlayer playerInventory,
+                EntityPlayer player) {
+                Triple<IPartContainer, PartTypeBase, PartTarget> data = PartHelpers
+                    .getContainerPartConstructionData(pos);
+                S partState = (S) data.getLeft()
+                    .getPartState(
+                        data.getRight()
+                            .getCenter()
+                            .getSide());
+                return new ContainerPartWriter<>(
+                    playerInventory,
+                    partState.getInventory(),
+                    data.getRight(),
+                    Optional.of(data.getLeft()),
+                    (PartTypeWriteBase) data.getMiddle());
+            }
+        });
+    }
+
+    @Override
+    public void writeExtraGuiData(ExtendedBuffer packetBuffer, PartPos pos, EntityPlayerMP player) {
+        try {
+            // Write inventory size
+            packetBuffer.writeInt(getWriteAspects().size());
+            // Write part position
+            PacketCodec.getAction(PartPos.class)
+                .encode(pos, packetBuffer);
+
+            super.writeExtraGuiData(packetBuffer, pos, player);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override

@@ -1,28 +1,24 @@
 package ruiseki.integrateddynamics.client.gui;
 
-import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.util.ResourceLocation;
 
 import ruiseki.integrateddynamics.Reference;
 import ruiseki.integrateddynamics.inventory.container.ContainerCoalGenerator;
 import ruiseki.integrateddynamics.tileentity.TileCoalGenerator;
-import ruiseki.okcore.client.gui.container.GuiContainerConfigurable;
+import ruiseki.okcore.client.gui.container.GuiContainerExtended;
 
 /**
  * Gui for the coal generator.
  *
  * @author rubensworks
  */
-public class GuiCoalGenerator extends GuiContainerConfigurable<ContainerCoalGenerator> {
+public class GuiCoalGenerator extends GuiContainerExtended<ContainerCoalGenerator> {
 
     /**
      * Make a new instance.
-     *
-     * @param inventory The player inventory.
-     * @param tile      The part.
      */
-    public GuiCoalGenerator(InventoryPlayer inventory, TileCoalGenerator tile) {
-        super(new ContainerCoalGenerator(inventory, tile));
+    public GuiCoalGenerator(ContainerCoalGenerator container) {
+        super(container);
     }
 
     @Override
@@ -43,5 +39,4 @@ public class GuiCoalGenerator extends GuiContainerConfigurable<ContainerCoalGene
                 TileCoalGenerator.MAX_PROGRESS - lastProgress + 1);
         }
     }
-
 }

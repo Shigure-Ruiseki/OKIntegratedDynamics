@@ -1,23 +1,27 @@
 package ruiseki.integratedterminals.inventory.container;
 
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.InventoryPlayer;
+
+import org.jetbrains.annotations.Nullable;
 
 import ruiseki.integratedterminals.core.client.gui.CraftingOptionGuiData;
-import ruiseki.okcore.inventory.IGuiContainerProvider;
-import ruiseki.okcore.inventory.container.ExtendedInventoryContainer;
+import ruiseki.okcore.client.gui.ContainerType;
+import ruiseki.okcore.inventory.SimpleInventory;
+import ruiseki.okcore.inventory.container.InventoryContainer;
 
 /**
  * A container for setting the amount for a given crafting option.
  *
  * @author rubensworks
  */
-public class ContainerTerminalStorageCraftingOptionAmountBase<L> extends ExtendedInventoryContainer {
+public class ContainerTerminalStorageCraftingOptionAmountBase<L> extends InventoryContainer {
 
     private final CraftingOptionGuiData<?, ?, L> craftingOptionGuiData;
 
-    public ContainerTerminalStorageCraftingOptionAmountBase(final EntityPlayer player, IGuiContainerProvider provider,
-        CraftingOptionGuiData craftingOptionGuiData) {
-        super(player.inventory, provider);
+    public ContainerTerminalStorageCraftingOptionAmountBase(@Nullable ContainerType<?> type,
+        InventoryPlayer playerInventory, CraftingOptionGuiData craftingOptionGuiData) {
+        super(type, playerInventory, new SimpleInventory());
 
         addPlayerInventory(player.inventory, 9, 80);
 

@@ -2,10 +2,11 @@ package ruiseki.integrateddynamics.core.part.panel;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
-import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.Container;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
@@ -14,6 +15,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
+import org.apache.commons.lang3.tuple.Triple;
 import org.apache.logging.log4j.Level;
 import org.jetbrains.annotations.Nullable;
 
@@ -33,8 +35,8 @@ import ruiseki.integrateddynamics.api.network.IPartNetwork;
 import ruiseki.integrateddynamics.api.network.event.INetworkEvent;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.IPartTypeActiveVariable;
+import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.integrateddynamics.api.part.PartTarget;
-import ruiseki.integrateddynamics.client.gui.GuiPartDisplay;
 import ruiseki.integrateddynamics.core.block.IgnoredBlock;
 import ruiseki.integrateddynamics.core.block.IgnoredBlockStatus;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueHelpers;
@@ -42,15 +44,20 @@ import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypeList;
 import ruiseki.integrateddynamics.core.evaluate.variable.ValueTypes;
 import ruiseki.integrateddynamics.core.helper.L10NValues;
 import ruiseki.integrateddynamics.core.helper.NetworkHelpers;
+import ruiseki.integrateddynamics.core.helper.PartHelpers;
 import ruiseki.integrateddynamics.core.helper.WrenchHelpers;
 import ruiseki.integrateddynamics.core.network.event.NetworkElementAddEvent;
 import ruiseki.integrateddynamics.core.network.event.VariableContentsUpdatedEvent;
 import ruiseki.integrateddynamics.core.part.PartStateActiveVariableBase;
+import ruiseki.integrateddynamics.core.part.PartTypeBase;
 import ruiseki.integrateddynamics.inventory.container.ContainerPartPanelVariableDriven;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.helper.BlockHelpers;
 import ruiseki.okcore.helper.BlockStateHelpers;
 import ruiseki.okcore.helper.LangHelpers;
+import ruiseki.okcore.inventory.IGuiConstructor;
+import ruiseki.okcore.inventory.container.ContainerExtended;
+import ruiseki.okcore.network.ExtendedBuffer;
 
 /**
  * A panel part that is driven by a contained variable.
@@ -190,18 +197,40 @@ public abstract class PartTypePanelVariableDriven<P extends PartTypePanelVariabl
     }
 
     @Override
-    protected boolean hasGui() {
-        return true;
+    public Optional<IGuiConstructor> getContainerProvider(PartPos pos) {
+        return Optional.of(new IGuiConstructor() {
+
+            @Override
+            public @Nullable ContainerExtended createContainer(int windowId, InventoryPlayer playerInventory,
+                EntityPlayer player) {
+                Triple<IPartContainer, PartTypeBase, PartTarget> data = PartHelpers
+                    .getContainerPartConstructionData(pos);
+                PartTypePanelVariableDriven.State partState = (PartTypePanelVariableDriven.State) data.getLeft()
+                    .getPartState(
+                        data.getRight()
+                            .getCenter()
+                            .getSide());
+                return new ContainerPartPanelVariableDriven(
+                    playerInventory,
+                    partState.getInventory(),
+                    Optional.of(data.getRight()),
+                    Optional.of(data.getLeft()),
+                    (PartTypePanelVariableDriven<?, ?>) data.getMiddle());
+            }
+        });
     }
 
     @Override
-    public Class<? extends Container> getContainer() {
-        return ContainerPartPanelVariableDriven.class;
-    }
+    public void writeExtraGuiData(ExtendedBuffer packetBuffer, PartPos pos, EntityPlayerMP player) {
+        // Write inventory size
+        IPartContainer partContainer = PartHelpers.getPartContainerChecked(pos);
+        PartTypePanelVariableDriven.State partState = (PartTypePanelVariableDriven.State) partContainer
+            .getPartState(pos.getSide());
+        packetBuffer.writeInt(
+            partState.getInventory()
+                .getSizeInventory());
 
-    @Override
-    public Class<? extends GuiScreen> getGui() {
-        return GuiPartDisplay.class;
+        super.writeExtraGuiData(packetBuffer, pos, player);
     }
 
     protected IgnoredBlockStatus.Status getStatus(PartTypePanelVariableDriven.State state) {

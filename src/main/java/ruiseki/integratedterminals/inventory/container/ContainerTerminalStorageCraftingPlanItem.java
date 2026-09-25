@@ -1,13 +1,19 @@
 package ruiseki.integratedterminals.inventory.container;
 
+import java.io.IOException;
+import java.util.Optional;
+
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.item.ItemStack;
+
+import org.jetbrains.annotations.Nullable;
 
 import ruiseki.integrateddynamics.api.network.INetwork;
 import ruiseki.integratedterminals.core.client.gui.CraftingOptionGuiData;
-import ruiseki.integratedterminals.item.ItemTerminalStoragePortableConfig;
+import ruiseki.okcore.client.gui.ContainerType;
 import ruiseki.okcore.helper.InventoryHelpers;
-import ruiseki.okcore.inventory.IGuiContainerProvider;
+import ruiseki.okcore.network.ExtendedBuffer;
 
 /**
  * @author rubensworks
@@ -18,13 +24,24 @@ public class ContainerTerminalStorageCraftingPlanItem extends ContainerTerminalS
 
     private final int itemIndex;
 
-    public ContainerTerminalStorageCraftingPlanItem(EntityPlayer player, int itemIndex,
+    public ContainerTerminalStorageCraftingPlanItem(InventoryPlayer playerInventory, ExtendedBuffer packetBuffer)
+        throws IOException {
+        this(playerInventory, packetBuffer.readInt(), CraftingOptionGuiData.readFromPacketBuffer(packetBuffer));
+    }
+
+    public ContainerTerminalStorageCraftingPlanItem(InventoryPlayer playerInventory, int itemLocation,
         CraftingOptionGuiData craftingOptionGuiData) {
-        super(
-            player,
-            ((IGuiContainerProvider) ItemTerminalStoragePortableConfig._instance.getInstance()),
+        this(
+            ContainerTerminalStorageCraftingPlanItemConfig._instance.getInstance(),
+            playerInventory,
+            itemLocation,
             craftingOptionGuiData);
-        this.itemIndex = itemIndex;
+    }
+
+    public ContainerTerminalStorageCraftingPlanItem(@Nullable ContainerType<?> type, InventoryPlayer playerInventory,
+        int itemLocation, CraftingOptionGuiData craftingOptionGuiData) {
+        super(type, playerInventory, craftingOptionGuiData);
+        this.itemIndex = itemLocation;
     }
 
     public ItemStack getItemStack(EntityPlayer player) {
@@ -32,7 +49,7 @@ public class ContainerTerminalStorageCraftingPlanItem extends ContainerTerminalS
     }
 
     @Override
-    public INetwork getNetwork() {
+    public Optional<INetwork> getNetwork() {
         return ContainerTerminalStorageItem.getNetworkFromItem(getItemStack(player));
     }
 }
