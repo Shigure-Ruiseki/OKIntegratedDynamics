@@ -307,7 +307,7 @@ public class GeneralConfig extends DummyConfig {
         comment = "If the ingredient network observer can work on separate thread.",
         isCommandable = true,
         configLocation = ConfigLocation.SERVER)
-    public static boolean ingredientNetworkObserverEnableMultithreading = false;
+    public static boolean ingredientNetworkObserverEnableMultithreading = true;
 
     @ConfigurableProperty(
         category = "core",
