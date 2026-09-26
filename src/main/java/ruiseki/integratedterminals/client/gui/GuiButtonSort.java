@@ -23,11 +23,10 @@ public class GuiButtonSort extends GuiButtonImage {
 
     @Override
     protected void drawButtonInner(int mouseX, int mouseY, boolean mouseOver) {
-        (active ? Images.BUTTON_BACKGROUND_ACTIVE : Images.BUTTON_BACKGROUND_INACTIVE).draw(this, xPosition, yPosition);
+        (active ? Images.BUTTON_BACKGROUND_ACTIVE : Images.BUTTON_BACKGROUND_INACTIVE).draw(this, x, y);
         super.drawButtonInner(mouseX, mouseY, mouseOver);
         if (active) {
-            (descending ? Images.BUTTON_OVERLAY_DESCENDING : Images.BUTTON_OVERLAY_ASCENDING)
-                .draw(this, xPosition, yPosition);
+            (descending ? Images.BUTTON_OVERLAY_DESCENDING : Images.BUTTON_OVERLAY_ASCENDING).draw(this, x, y);
         }
     }
 }
