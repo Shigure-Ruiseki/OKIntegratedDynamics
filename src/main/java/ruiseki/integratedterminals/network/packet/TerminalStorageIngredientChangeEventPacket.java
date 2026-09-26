@@ -1,5 +1,6 @@
 package ruiseki.integratedterminals.network.packet;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
@@ -7,8 +8,9 @@ import net.minecraft.world.World;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
+import ruiseki.commoncapabilities.IngredientComponents;
 import ruiseki.integrateddynamics.api.ingredient.IIngredientComponentStorageObservable;
+import ruiseki.integratedterminals.GeneralConfig;
 import ruiseki.integratedterminals.core.terminalstorage.TerminalStorageTabIngredientComponentClient;
 import ruiseki.integratedterminals.core.terminalstorage.TerminalStorageTabIngredientComponentItemStackCrafting;
 import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorageBase;
@@ -53,34 +55,36 @@ public class TerminalStorageIngredientChangeEventPacket extends PacketCodec {
 
     @Override
     public boolean isAsync() {
-        return false;
+        return GeneralConfig.packetDeserializationEnableMultithreading;
     }
 
     @Override
     @SideOnly(Side.CLIENT)
     public void actionClient(World world, EntityPlayer player) {
-        if (player.openContainer instanceof ContainerTerminalStorageBase) {
-            ContainerTerminalStorageBase container = ((ContainerTerminalStorageBase) player.openContainer);
-            IIngredientComponentStorageObservable.Change changeType = IIngredientComponentStorageObservable.Change
-                .values()[changeData.getInteger("changeType")];
-            IngredientArrayList ingredients = IngredientCollections.deserialize(changeData);
+        IIngredientComponentStorageObservable.Change changeType = IIngredientComponentStorageObservable.Change
+            .values()[changeData.getInteger("changeType")];
+        IngredientArrayList ingredients = IngredientCollections.deserialize(changeData);
+        // Run the following code in the render thread, since this packet runs in a different thread. (isAsync is true)
+        Minecraft.getMinecraft()
+            .func_152344_a(() -> {
+                if (player.openContainer instanceof ContainerTerminalStorageBase container) {
+                    TerminalStorageTabIngredientComponentClient<?, ?> tab = (TerminalStorageTabIngredientComponentClient<?, ?>) container
+                        .getTabClient(tabId);
+                    tab.onChange(channel, changeType, ingredients, enabled);
 
-            TerminalStorageTabIngredientComponentClient<?, ?> tab = (TerminalStorageTabIngredientComponentClient<?, ?>) container
-                .getTabClient(tabId);
-            tab.onChange(channel, changeType, ingredients, enabled);
+                    // Hard-coded crafting tab
+                    // TODO: abstract this as "auxiliary" tabs
+                    if (tabId.equals(
+                        IngredientComponents.ITEMSTACK.getName()
+                            .toString())) {
+                        TerminalStorageTabIngredientComponentClient<?, ?> tabCrafting = (TerminalStorageTabIngredientComponentClient<?, ?>) container
+                            .getTabClient(TerminalStorageTabIngredientComponentItemStackCrafting.NAME.toString());
+                        tabCrafting.onChange(channel, changeType, ingredients, enabled);
+                    }
 
-            // Hard-coded crafting tab
-            // TODO: abstract this as "auxiliary" tabs
-            if (tabId.equals(
-                IngredientComponent.ITEMSTACK.getName()
-                    .toString())) {
-                TerminalStorageTabIngredientComponentClient<?, ?> tabCrafting = (TerminalStorageTabIngredientComponentClient<?, ?>) container
-                    .getTabClient(TerminalStorageTabIngredientComponentItemStackCrafting.NAME.toString());
-                tabCrafting.onChange(channel, changeType, ingredients, enabled);
-            }
-
-            container.refreshChannelStrings();
-        }
+                    container.refreshChannelStrings();
+                }
+            });
     }
 
     @Override

@@ -102,19 +102,19 @@ public class GeneralConfig extends DummyConfig {
         comment = "If the crafting planners can work on separate thread.",
         isCommandable = true,
         configLocation = ConfigLocation.SERVER)
-    public static boolean craftingPlannerEnableMultithreading = false;
+    public static boolean craftingPlannerEnableMultithreading = true;
     @ConfigurableProperty(
         category = "core",
         comment = "If client-directed packets should be serialized in a separate thread.",
         isCommandable = true,
         configLocation = ConfigLocation.SERVER)
-    public static boolean packetSerializationEnableMultithreading = false;
+    public static boolean packetSerializationEnableMultithreading = true;
     @ConfigurableProperty(
         category = "core",
         comment = "If client-received packets should be deserialized in a separate thread.",
         isCommandable = true,
         configLocation = ConfigLocation.CLIENT)
-    public static boolean packetDeserializationEnableMultithreading = false;
+    public static boolean packetDeserializationEnableMultithreading = true;
 
     @ConfigurableProperty(
         category = "general",

@@ -538,7 +538,8 @@ public class TerminalStorageTabIngredientComponentServer<T, M>
                         channel,
                         channeledCraftingOptions,
                         reset,
-                        firstChannel),
+                        firstChannel,
+                        ingredientComponent),
                     player);
         } else {
             List<Pair<Boolean, List<HandlerWrappedTerminalCraftingOption<T>>>> chunks = Lists.newArrayList();
