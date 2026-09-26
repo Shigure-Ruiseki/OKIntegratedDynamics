@@ -3,7 +3,6 @@ package ruiseki.integratedterminals.client.gui.container;
 import java.util.List;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiButton;
 import net.minecraft.util.ResourceLocation;
 
 import org.lwjgl.input.Keyboard;
@@ -175,7 +174,7 @@ public class GuiTerminalStorageCraftingOptionAmount<L, C extends ContainerTermin
             .openContainerFromClient(data);
     }
 
-    public void buttonChangeQuantity(GuiButton button) {
+    public void buttonChangeQuantity(GuiButtonExtended button) {
         if (button instanceof GuiButtonChangeQuantity) {
             int diff = ((GuiButtonChangeQuantity) button).getDiff();
             setAmount(getAmount() + diff);
@@ -281,16 +280,16 @@ public class GuiTerminalStorageCraftingOptionAmount<L, C extends ContainerTermin
         protected void drawButtonInner(int i, int i1, boolean b) {
             GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
             int color = 14737632;
-            if (!this.enabled) {
+            if (!this.active) {
                 color = 10526880;
-            } else if (this.func_146115_a()) {
+            } else if (this.isHovered()) {
                 color = 16777120;
             }
             this.drawCenteredString(
                 Minecraft.getMinecraft().fontRenderer,
-                this.displayString,
-                this.xPosition + this.width / 2,
-                this.yPosition + (this.height - 8) / 2,
+                this.narrationMessage,
+                this.x + this.width / 2,
+                this.y + (this.height - 8) / 2,
                 color);
         }
 

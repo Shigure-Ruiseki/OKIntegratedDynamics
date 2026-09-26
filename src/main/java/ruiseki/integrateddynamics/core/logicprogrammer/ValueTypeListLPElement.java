@@ -5,7 +5,6 @@ import java.util.Map;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.item.ItemStack;
 
@@ -403,7 +402,7 @@ public class ValueTypeListLPElement extends ValueTypeLPElementBase {
         }
 
         @Override
-        protected void actionPerformed(GuiButton guibutton) {
+        protected void actionPerformed(GuiButtonExtended guibutton) {
             super.actionPerformed(guibutton);
             if (guibutton == arrowAdd) {
                 element.setLength(element.length + 1);
@@ -447,7 +446,7 @@ public class ValueTypeListLPElement extends ValueTypeLPElementBase {
             IValueType newType = valueTypeSelector.getActiveElement();
             element.setListValueType(newType);
             if (arrowAdd != null) {
-                arrowAdd.enabled = newType != ValueTypes.CATEGORY_ANY;
+                arrowAdd.active = newType != ValueTypes.CATEGORY_ANY;
             }
         }
 
@@ -521,9 +520,9 @@ public class ValueTypeListLPElement extends ValueTypeLPElementBase {
                     "-",
                     b -> element.removeElement(element.activeElement),
                     true));
-            arrowLeft.enabled = element.activeElement > 0;
-            arrowRight.enabled = element.activeElement < element.length - 1;
-            arrowRemove.enabled = element.length > 0;
+            arrowLeft.active = element.activeElement > 0;
+            arrowRight.active = element.activeElement < element.length - 1;
+            arrowRemove.active = element.length > 0;
             container.getTemporaryInputSlots()
                 .removeDirtyMarkListener(container);
             subElement.setValueInGui(subGui);

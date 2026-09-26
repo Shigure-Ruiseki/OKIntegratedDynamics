@@ -76,8 +76,8 @@ public class GuiAspectSettings extends GuiContainerExtended<ContainerAspectSetti
     }
 
     protected void refreshButtonEnabled() {
-        buttonLeft.enabled = getActivePropertyIndex() > 0;
-        buttonRight.enabled = getActivePropertyIndex() < propertyTypes.size() - 1;
+        buttonLeft.active = getActivePropertyIndex() > 0;
+        buttonRight.active = getActivePropertyIndex() < propertyTypes.size() - 1;
     }
 
     @Override

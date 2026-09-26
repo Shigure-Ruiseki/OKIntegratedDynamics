@@ -5,7 +5,6 @@ import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
-import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.util.ResourceLocation;
 
@@ -158,7 +157,7 @@ public abstract class SubGuiBox extends Gui implements ISubGuiBox {
         for (int i = 0; i < this.buttonList.size(); ++i) {
             GuiButtonExtended guibutton = this.buttonList.get(i);
             if (guibutton.mouseClicked(mouseX, mouseY, mouseButton)) {
-                guibutton.func_146113_a(
+                guibutton.playDownSound(
                     Minecraft.getMinecraft()
                         .getSoundHandler());
                 this.actionPerformed(guibutton);
@@ -168,7 +167,7 @@ public abstract class SubGuiBox extends Gui implements ISubGuiBox {
         return false;
     }
 
-    protected void actionPerformed(GuiButton guibutton) {
+    protected void actionPerformed(GuiButtonExtended guibutton) {
 
     }
 

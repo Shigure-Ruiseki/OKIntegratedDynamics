@@ -149,7 +149,7 @@ public class GuiTerminalStorageCraftingPlan<L, C extends ContainerTerminalStorag
                 EnumChatFormatting.YELLOW + LangHelpers.localize("gui.integratedterminals.terminal_storage.step.craft"),
                 createServerPressable(ContainerTerminalStorageCraftingPlanBase.BUTTON_START, (b) -> {}),
                 true));
-        buttonConfirm.enabled = (this.guiCraftingPlan != null && this.guiCraftingPlan.isValid())
+        buttonConfirm.active = (this.guiCraftingPlan != null && this.guiCraftingPlan.isValid())
             || (this.guiCraftingPlanFlat != null && this.guiCraftingPlanFlat.isValid());
     }
 

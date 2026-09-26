@@ -7,7 +7,6 @@ import java.util.Set;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.PositionedSoundRecord;
-import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.entity.RenderItem;
@@ -640,7 +639,7 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
                 playerInventoryOffsetX,
                 playerInventoryOffsetY);
             for (ITerminalButton button : tab.getButtons()) {
-                GuiButton guiButton = button.createButton(
+                GuiButtonExtended guiButton = button.createButton(
                     button.getX(
                         guiLeft,
                         BUTTONS_OFFSET_X,
@@ -708,8 +707,8 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
 
         // Draw save defaults button
         if (buttonSetDefaults != null && buttonSetDefaults.visible) {
-            int buttonX = buttonSetDefaults.xPosition - guiLeft;
-            int buttonY = buttonSetDefaults.yPosition - guiTop;
+            int buttonX = buttonSetDefaults.x - guiLeft;
+            int buttonY = buttonSetDefaults.y - guiTop;
 
             if (func_146978_c(buttonX, buttonY, buttonSetDefaults.width, buttonSetDefaults.height, mouseX, mouseY)) {
                 List<String> lines = Lists.newArrayList();

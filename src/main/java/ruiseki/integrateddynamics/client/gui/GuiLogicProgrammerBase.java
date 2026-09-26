@@ -563,8 +563,8 @@ public class GuiLogicProgrammerBase<T extends ContainerLogicProgrammerBase> exte
             this.searchField.yPosition = guiTop + searchY;
 
             if (hasLabeller()) {
-                button.xPosition = guiLeft + 220;
-                button.yPosition = guiTop + 111;
+                button.x = guiLeft + 220;
+                button.y = guiTop + 111;
             }
         }
 

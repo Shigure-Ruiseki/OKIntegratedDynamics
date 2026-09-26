@@ -7,7 +7,6 @@ import java.util.stream.Collectors;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.item.ItemStack;
 
@@ -473,7 +472,7 @@ public class ValueTypeIngredientsLPElement extends ValueTypeLPElementBase {
         }
 
         @Override
-        protected void actionPerformed(GuiButton guibutton) {
+        protected void actionPerformed(GuiButtonExtended guibutton) {
             super.actionPerformed(guibutton);
             if (guibutton == arrowAdd) {
                 element.setLength(element.getLength() + 1);
@@ -574,9 +573,9 @@ public class ValueTypeIngredientsLPElement extends ValueTypeLPElementBase {
                     "-",
                     b -> element.removeElement(element.activeElement),
                     true));
-            arrowLeft.enabled = element.activeElement > 0;
-            arrowRight.enabled = element.activeElement < element.getLength() - 1;
-            arrowRemove.enabled = element.getLength() > 0;
+            arrowLeft.active = element.activeElement > 0;
+            arrowRight.active = element.activeElement < element.getLength() - 1;
+            arrowRemove.active = element.getLength() > 0;
             subElement.setValueInGui(subGui);
             subElement.setValueInContainer(subGui.container);
         }
