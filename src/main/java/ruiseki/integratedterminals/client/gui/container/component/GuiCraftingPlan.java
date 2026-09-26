@@ -12,7 +12,6 @@ import java.util.stream.Collectors;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.init.Blocks;
@@ -34,11 +33,9 @@ import ruiseki.integratedterminals.api.terminalstorage.crafting.ITerminalCraftin
 import ruiseki.integratedterminals.api.terminalstorage.crafting.TerminalCraftingJobStatus;
 import ruiseki.integratedterminals.capability.ingredient.IngredientComponentTerminalStorageHandlerConfig;
 import ruiseki.integratedterminals.core.client.gui.GuiTerminalStorage;
-import ruiseki.okcore.client.gui.IGuiEventListener;
 import ruiseki.okcore.client.gui.RenderItemExtendedSlotCount;
 import ruiseki.okcore.client.gui.component.GuiScrollBar;
-import ruiseki.okcore.client.gui.component.IWidgetEventListener;
-import ruiseki.okcore.client.gui.component.IWidgetRenderable;
+import ruiseki.okcore.client.gui.component.GuiWidget;
 import ruiseki.okcore.client.gui.image.Image;
 import ruiseki.okcore.client.gui.image.Images;
 import ruiseki.okcore.client.renderer.GlStateManager;
@@ -59,7 +56,7 @@ import ruiseki.okcore.helper.RenderHelpers;
  *
  * @author rubensworks
  */
-public class GuiCraftingPlan extends Gui implements IWidgetRenderable, IWidgetEventListener, IGuiEventListener {
+public class GuiCraftingPlan extends GuiWidget {
 
     public static final int ELEMENT_WIDTH = 221;
     private static final int ELEMENT_HEIGHT = 16;
@@ -70,8 +67,6 @@ public class GuiCraftingPlan extends Gui implements IWidgetRenderable, IWidgetEv
     private final GuiContainer parentGui;
     private final int guiLeft;
     private final int guiTop;
-    private int x;
-    private int y;
     private final List<GuiCraftingPlan.Element> elements;
     private final List<GuiCraftingPlan.Element> visibleElements;
     private final boolean valid;
@@ -86,11 +81,10 @@ public class GuiCraftingPlan extends Gui implements IWidgetRenderable, IWidgetEv
 
     public GuiCraftingPlan(GuiContainer parentGui, ITerminalCraftingPlan<?> craftingPlan, int guiLeft, int guiTop,
         int x, int y, int visibleRows) {
+        super(x, y, 0, 0, "");
         this.parentGui = parentGui;
         this.guiLeft = guiLeft;
         this.guiTop = guiTop;
-        this.x = x;
-        this.y = y;
         this.elements = getElements(craftingPlan);
         this.visibleElements = Lists.newArrayList(this.elements);
         this.valid = craftingPlan.getStatus()
@@ -472,7 +466,7 @@ public class GuiCraftingPlan extends Gui implements IWidgetRenderable, IWidgetEv
                             Object instance = matcher.withQuantity(
                                 prototypedIngredient.getPrototype(),
                                 matcher.getQuantity(prototypedIngredient.getPrototype())
-                                    * craftingPlan.getCraftingQuantity());
+                                    - craftingPlan.getCraftingQuantity());
                             return new PrototypedIngredient(
                                 prototypedIngredient.getComponent(),
                                 instance,
@@ -594,50 +588,5 @@ public class GuiCraftingPlan extends Gui implements IWidgetRenderable, IWidgetEv
         public TerminalCraftingJobStatus getStatus() {
             return status;
         }
-    }
-
-    @Override
-    public int getX() {
-        return x;
-    }
-
-    @Override
-    public int getY() {
-        return y;
-    }
-
-    @Override
-    public void setX(int x) {
-        this.x = x;
-    }
-
-    @Override
-    public void setY(int y) {
-        this.y = y;
-    }
-
-    @Override
-    public int getWidth() {
-        return 0;
-    }
-
-    @Override
-    public int getHeight() {
-        return 0;
-    }
-
-    @Override
-    public String getTooltip() {
-        return "";
-    }
-
-    @Override
-    public void setFocused(boolean focused) {
-
-    }
-
-    @Override
-    public boolean isFocused() {
-        return false;
     }
 }

@@ -4,7 +4,6 @@ import java.util.List;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.init.Blocks;
@@ -22,11 +21,9 @@ import ruiseki.commoncapabilities.api.ingredient.IngredientComponent;
 import ruiseki.integratedterminals.api.terminalstorage.crafting.ITerminalCraftingPlanFlat;
 import ruiseki.integratedterminals.capability.ingredient.IngredientComponentTerminalStorageHandlerConfig;
 import ruiseki.integratedterminals.core.client.gui.GuiTerminalStorage;
-import ruiseki.okcore.client.gui.IGuiEventListener;
 import ruiseki.okcore.client.gui.RenderItemExtendedSlotCount;
 import ruiseki.okcore.client.gui.component.GuiScrollBar;
-import ruiseki.okcore.client.gui.component.IWidgetEventListener;
-import ruiseki.okcore.client.gui.component.IWidgetRenderable;
+import ruiseki.okcore.client.gui.component.GuiWidget;
 import ruiseki.okcore.client.renderer.GlStateManager;
 import ruiseki.okcore.helper.Helpers;
 import ruiseki.okcore.helper.LangHelpers;
@@ -46,7 +43,7 @@ import ruiseki.okcore.helper.RenderHelpers;
  *
  * @author rubensworks
  */
-public class GuiCraftingPlanFlat extends Gui implements IWidgetRenderable, IWidgetEventListener, IGuiEventListener {
+public class GuiCraftingPlanFlat extends GuiWidget {
 
     private static final int COLUMNS = 2;
     private static final int COLUMN_PADDING = 2;
@@ -59,8 +56,6 @@ public class GuiCraftingPlanFlat extends Gui implements IWidgetRenderable, IWidg
     private final GuiContainer parentGui;
     private final int guiLeft;
     private final int guiTop;
-    private int x;
-    private int y;
     private final List<GuiCraftingPlanFlat.Element> elements;
     private final List<GuiCraftingPlanFlat.Element> visibleElements;
     private final boolean valid;
@@ -75,11 +70,10 @@ public class GuiCraftingPlanFlat extends Gui implements IWidgetRenderable, IWidg
 
     public GuiCraftingPlanFlat(GuiContainer parentGui, ITerminalCraftingPlanFlat<?> craftingPlan, int guiLeft,
         int guiTop, int x, int y, int visibleRows) {
+        super(x, y, 0, 0, "");
         this.parentGui = parentGui;
         this.guiLeft = guiLeft;
         this.guiTop = guiTop;
-        this.x = x;
-        this.y = y;
         this.elements = getElements(craftingPlan);
         this.visibleElements = Lists.newArrayList(this.elements);
         this.valid = craftingPlan.getStatus()
@@ -443,50 +437,5 @@ public class GuiCraftingPlanFlat extends Gui implements IWidgetRenderable, IWidg
             }
             return Helpers.RGBAToInt(43, 231, 47, 150);
         }
-    }
-
-    @Override
-    public int getX() {
-        return x;
-    }
-
-    @Override
-    public int getY() {
-        return y;
-    }
-
-    @Override
-    public void setX(int x) {
-        this.x = x;
-    }
-
-    @Override
-    public void setY(int y) {
-        this.y = y;
-    }
-
-    @Override
-    public int getWidth() {
-        return 0;
-    }
-
-    @Override
-    public int getHeight() {
-        return 0;
-    }
-
-    @Override
-    public String getTooltip() {
-        return "";
-    }
-
-    @Override
-    public void setFocused(boolean focused) {
-
-    }
-
-    @Override
-    public boolean isFocused() {
-        return false;
     }
 }

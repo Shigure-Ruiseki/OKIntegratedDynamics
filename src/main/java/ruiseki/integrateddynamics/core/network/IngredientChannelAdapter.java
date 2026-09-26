@@ -39,6 +39,7 @@ public abstract class IngredientChannelAdapter<T, M> implements INetworkIngredie
     public IngredientChannelAdapter(PositionedAddonsNetworkIngredients<T, M> network, int channel) {
         this.network = network;
         this.channel = channel;
+
         this.limitsEnabled = true;
     }
 
@@ -95,7 +96,7 @@ public abstract class IngredientChannelAdapter<T, M> implements INetworkIngredie
     public long getMaxQuantity() {
         long sum = 0;
         Iterator<PartPos> it = getAllPositions();
-        while (it.hasNext()) {
+        while (it.hasNext() && sum < Long.MAX_VALUE) {
             PartPos pos = it.next();
             // Skip if the position is not loaded
             if (!pos.getPos()
@@ -103,12 +104,17 @@ public abstract class IngredientChannelAdapter<T, M> implements INetworkIngredie
                 continue;
             }
             this.network.disablePosition(pos);
-            sum = Math.addExact(
-                sum,
-                this.network.getPositionedStorage(pos)
-                    .getMaxQuantity());
+            try {
+                sum = Math.addExact(
+                    sum,
+                    this.network.getPositionedStorage(pos)
+                        .getMaxQuantity());
+            } catch (ArithmeticException e) {
+                sum = Long.MAX_VALUE; // If we had an overflow, we're already at max quantity.
+            }
             this.network.enablePosition(pos);
         }
+
         // Schedule an observation, as since this method is called, there may be a need for changes later on.
         scheduleObservation();
 
@@ -269,6 +275,7 @@ public abstract class IngredientChannelAdapter<T, M> implements INetworkIngredie
         if (!simulate) {
             savePartPosIteratorHandler(partPosIteratorData.getLeft());
         }
+
         // Schedule an observation if nothing was extracted, because the index may not be initialized yet.
         scheduleObservation();
 
@@ -407,7 +414,6 @@ public abstract class IngredientChannelAdapter<T, M> implements INetworkIngredie
         IIngredientMatcher<T, M> matcher = getComponent().getMatcher();
         long extractedCount = value.getLeft()
             .get();
-
         if (!simulate && extractedCount > 0) {
             long toExtract = extractedCount;
             for (PartPos pos : value.getRight()) {
@@ -425,7 +431,7 @@ public abstract class IngredientChannelAdapter<T, M> implements INetworkIngredie
             // Quick heuristic check to see if 'storage' did not lie during its simulation
             if (toExtract != 0) {
                 /*
-                 * IntegratedDynamics.clog(Level.WARN, String.format(
+                 * IntegratedDynamics.clog(org.apache.logging.log4j.Level.WARN, String.format(
                  * "A storage resulted in inconsistent simulated and non-simulated output. Storages: %s",
                  * value.getRight()));
                  */
@@ -440,4 +446,5 @@ public abstract class IngredientChannelAdapter<T, M> implements INetworkIngredie
     protected void scheduleObservation() {
         this.network.scheduleObservation();
     }
+
 }

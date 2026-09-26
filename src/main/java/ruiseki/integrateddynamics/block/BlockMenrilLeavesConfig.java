@@ -3,12 +3,14 @@ package ruiseki.integrateddynamics.block;
 import java.util.ArrayList;
 import java.util.Random;
 
-import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.Reference;
 import ruiseki.integrateddynamics.item.ItemMenrilBerriesConfig;
@@ -20,7 +22,6 @@ import ruiseki.okcore.config.extendedconfig.BlockConfig;
  * Config for the Menril Leaves.
  *
  * @author rubensworks
- *
  */
 public class BlockMenrilLeavesConfig extends BlockConfig {
 
@@ -46,6 +47,17 @@ public class BlockMenrilLeavesConfig extends BlockConfig {
         super(IntegratedDynamics._instance, true, "menril_leaves", null, config -> new BlockLeavesBase() {
 
             @Override
+            @SideOnly(Side.CLIENT)
+            public int colorMultiplier(IBlockAccess worldIn, int x, int y, int z) {
+                return 0xFFFFFF;
+            }
+
+            @Override
+            public int getRenderColor(int meta) {
+                return 0xFFFFFF;
+            }
+
+            @Override
             public Item getItemDropped(int meta, Random random, int i1) {
                 return Item.getItemFromBlock(BlockMenrilSaplingConfig._instance.getInstance());
             }
@@ -53,7 +65,7 @@ public class BlockMenrilLeavesConfig extends BlockConfig {
             @Override
             public ArrayList<ItemStack> getDrops(World world, int x, int y, int z, int metadata, int fortune) {
                 ArrayList<ItemStack> drops = super.getDrops(world, x, y, z, metadata, fortune);
-                if (!world.isRemote) {
+                if (!world.isRemote && berriesDropChance > 0) {
                     if (world.rand.nextInt(berriesDropChance) == 0) {
                         drops.add(new ItemStack(ItemMenrilBerriesConfig._instance.getInstance()));
                     }
@@ -65,10 +77,7 @@ public class BlockMenrilLeavesConfig extends BlockConfig {
             protected ItemStack createStackedBlock(int meta) {
                 return new ItemStack(this);
             }
-        }.setHardness(0.2F)
-            .setLightLevel(0.65F)
-            .setLightOpacity(1)
-            .setStepSound(Block.soundTypeGrass));
+        });
     }
 
     @Override
