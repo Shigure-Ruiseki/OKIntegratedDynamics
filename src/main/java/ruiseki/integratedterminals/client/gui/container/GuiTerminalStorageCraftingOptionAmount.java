@@ -287,7 +287,7 @@ public class GuiTerminalStorageCraftingOptionAmount<L, C extends ContainerTermin
             }
             this.drawCenteredString(
                 Minecraft.getMinecraft().fontRenderer,
-                this.narrationMessage,
+                this.message,
                 this.x + this.width / 2,
                 this.y + (this.height - 8) / 2,
                 color);

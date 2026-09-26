@@ -13,7 +13,7 @@ import org.jetbrains.annotations.Nullable;
 
 import com.google.common.collect.Lists;
 
-import ruiseki.integratedcrafting.core.part.PartTypeInterfaceCraftingVariableBase;
+import ruiseki.integratedcrafting.part.PartTypeInterfaceCrafting;
 import ruiseki.integrateddynamics.api.item.IVariableFacade;
 import ruiseki.integrateddynamics.api.part.IPartContainer;
 import ruiseki.integrateddynamics.api.part.PartTarget;
@@ -35,12 +35,8 @@ import ruiseki.okcore.network.ExtendedBuffer;
  *
  * @author rubensworks
  */
-public class ContainerPartInterfaceCrafting<P extends PartTypeInterfaceCraftingVariableBase<P, S>, S extends PartTypeInterfaceCraftingVariableBase.State<P, S>>
-    extends ContainerMultipart<P, S> {
-
-    public static final int GUI_WIDTH = 176;
-    // Value of GuiHelpers.SLOT_SIZE, duplicated because GuiHelpers is client-only.
-    public static final int SLOT_SIZE = 18;
+public class ContainerPartInterfaceCrafting
+    extends ContainerMultipart<PartTypeInterfaceCrafting, PartTypeInterfaceCrafting.State> {
 
     private final List<Integer> readSlotValidIds;
     private final List<Integer> readSlotErrorIds;
@@ -51,11 +47,11 @@ public class ContainerPartInterfaceCrafting<P extends PartTypeInterfaceCraftingV
             new SimpleInventory(packetBuffer.readInt(), 1),
             Optional.empty(),
             Optional.empty(),
-            (P) PartHelpers.readPart(packetBuffer));
+            PartHelpers.readPart(packetBuffer));
     }
 
     public ContainerPartInterfaceCrafting(InventoryPlayer playerInventory, IInventory inventory,
-        Optional<PartTarget> target, Optional<IPartContainer> partContainer, P partType) {
+        Optional<PartTarget> target, Optional<IPartContainer> partContainer, PartTypeInterfaceCrafting partType) {
         super(
             ContainerPartInterfaceCraftingConfig._instance.getInstance(),
             playerInventory,
@@ -64,13 +60,7 @@ public class ContainerPartInterfaceCrafting<P extends PartTypeInterfaceCraftingV
             partContainer,
             partType);
 
-        addInventory(
-            inventory,
-            0,
-            getVariableSlotsX(inventory.getSizeInventory()),
-            22,
-            1,
-            inventory.getSizeInventory());
+        addInventory(inventory, 0, 8, 22, 1, inventory.getSizeInventory());
         addPlayerInventory(player.inventory, 8, 59);
 
         getPartState().ifPresent(p -> p.setLastPlayer(player));
@@ -108,10 +98,6 @@ public class ContainerPartInterfaceCrafting<P extends PartTypeInterfaceCraftingV
                     partState.getRecipeSlotUnlocalizedMessage(i));
             }
         });
-    }
-
-    public static int getVariableSlotsX(int slotCount) {
-        return (GUI_WIDTH - slotCount * SLOT_SIZE) / 2 + 1;
     }
 
     public boolean isRecipeSlotValid(int slot) {
