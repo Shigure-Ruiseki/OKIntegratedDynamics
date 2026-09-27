@@ -5,6 +5,8 @@ import java.io.IOException;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.InventoryPlayer;
 
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.integratedterminals.IntegratedTerminals;
 import ruiseki.integratedterminals.core.client.gui.GuiTerminalStorage;
 import ruiseki.okcore.client.gui.ContainerType;
@@ -41,6 +43,7 @@ public class ContainerTerminalStorageItemConfig extends GuiConfig<ContainerTermi
     }
 
     @Override
+    @SideOnly(Side.CLIENT)
     public <U extends GuiScreen & IContainerAccess<ContainerTerminalStorageItem>> GuiScreens.ScreenConstructor<ContainerTerminalStorageItem, U> getScreenFactory() {
         return new ScreenFactorySafe<>(
             new GuiScreens.ScreenConstructor<ContainerTerminalStorageItem, GuiTerminalStorage<Integer, ContainerTerminalStorageItem>>() {

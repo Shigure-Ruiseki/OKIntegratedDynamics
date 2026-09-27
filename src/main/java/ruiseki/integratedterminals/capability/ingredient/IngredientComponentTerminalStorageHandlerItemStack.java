@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Locale;
 
 import net.minecraft.client.gui.inventory.GuiContainer;
+import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.entity.RenderItem;
 import net.minecraft.entity.player.EntityPlayer;
@@ -74,7 +75,6 @@ public class IngredientComponentTerminalStorageHandlerItemStack
     public void drawInstance(@Nullable ItemStack instance, long maxQuantity, @Nullable String label, GuiContainer gui,
         GuiTerminalStorage.DrawLayer layer, float partialTick, int x, int y, int mouseX, int mouseY,
         @Nullable List<String> additionalTooltipLines) {
-
         // GUARD: Early return if instance is null or invalid
         if (instance == null || instance.getItem() == null) {
             return;
@@ -88,14 +88,18 @@ public class IngredientComponentTerminalStorageHandlerItemStack
 
         RenderItemExtendedSlotCount renderItem = RenderItemExtendedSlotCount.getInstance();
         GlStateManager.pushMatrix();
-        GlStateManager.enableBlend();
-        GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-        RenderHelper.enableGUIStandardItemLighting();
-        GlStateManager.enableRescaleNormal();
-        GlStateManager.enableDepth();
-        GL11.glEnable(GL11.GL_DEPTH_TEST);
 
         if (layer == GuiTerminalStorage.DrawLayer.BACKGROUND) {
+            GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+            GlStateManager.enableBlend();
+            GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+            GlStateManager.enableDepth();
+            GlStateManager.enableRescaleNormal();
+
+            RenderHelper.enableGUIStandardItemLighting();
+            OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, 240.0F, 240.0F);
+
+            // 3. Render Item
             RenderItem.getInstance()
                 .renderItemAndEffectIntoGUI(
                     TerminalClientUtils.getFontRenderer(),
@@ -110,8 +114,9 @@ public class IngredientComponentTerminalStorageHandlerItemStack
                 x,
                 y,
                 label);
+            RenderHelper.disableStandardItemLighting();
+            GlStateManager.disableLighting();
         } else {
-            GuiHelpers.preItemToolTip(instanceCopy);
             GuiHelpers.renderTooltip(
                 gui,
                 x,
@@ -121,7 +126,6 @@ public class IngredientComponentTerminalStorageHandlerItemStack
                 mouseX,
                 mouseY,
                 () -> {
-                    // Safe call to getTooltip
                     List<String> lines = TerminalClientUtils.getTooltip(instanceCopy);
                     if (lines == null) {
                         lines = Lists.newArrayList();
@@ -132,9 +136,7 @@ public class IngredientComponentTerminalStorageHandlerItemStack
                     addQuantityTooltip(lines, instanceCopy);
                     return lines;
                 });
-            GuiHelpers.postItemToolTip();
         }
-        RenderHelper.disableStandardItemLighting();
         GlStateManager.popMatrix();
     }
 

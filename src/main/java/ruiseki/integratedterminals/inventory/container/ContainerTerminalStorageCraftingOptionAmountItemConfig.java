@@ -5,6 +5,8 @@ import java.io.IOException;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.InventoryPlayer;
 
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.integratedterminals.IntegratedTerminals;
 import ruiseki.integratedterminals.client.gui.container.GuiTerminalStorageCraftingOptionAmount;
 import ruiseki.okcore.client.gui.ContainerType;
@@ -42,6 +44,7 @@ public class ContainerTerminalStorageCraftingOptionAmountItemConfig
     }
 
     @Override
+    @SideOnly(Side.CLIENT)
     public <U extends GuiScreen & IContainerAccess<ContainerTerminalStorageCraftingOptionAmountItem>> GuiScreens.ScreenConstructor<ContainerTerminalStorageCraftingOptionAmountItem, U> getScreenFactory() {
         return new ScreenFactorySafe<>(
             new GuiScreens.ScreenConstructor<ContainerTerminalStorageCraftingOptionAmountItem, GuiTerminalStorageCraftingOptionAmount<Integer, ContainerTerminalStorageCraftingOptionAmountItem>>() {

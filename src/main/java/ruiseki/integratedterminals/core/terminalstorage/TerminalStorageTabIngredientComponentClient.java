@@ -238,9 +238,9 @@ public class TerminalStorageTabIngredientComponentClient<T, M>
     @Override
     public String getInstanceFilter(int channel) {
         if (container.getGuiState()
-            .hasSearch(getName().toString(), channel)) {
+            .hasSearch(getTabSettingsName().toString(), channel)) {
             return container.getGuiState()
-                .getSearch(getName().toString(), channel);
+                .getSearch(getTabSettingsName().toString(), channel);
         }
         return "";
     }

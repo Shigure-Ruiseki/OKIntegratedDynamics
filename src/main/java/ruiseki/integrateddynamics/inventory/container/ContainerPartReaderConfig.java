@@ -32,6 +32,7 @@ public class ContainerPartReaderConfig extends GuiConfig<ContainerPartReader> {
     }
 
     @Override
+    @SideOnly(Side.CLIENT)
     public <U extends GuiScreen & IContainerAccess<ContainerPartReader>> GuiScreens.ScreenConstructor<ContainerPartReader, U> getScreenFactory() {
         // Due to our use of generics, we have to delegate to a separate function.
         return new ScreenFactorySafe<>((GuiScreens.ScreenConstructor) createScreenFactory());

@@ -32,6 +32,7 @@ public class ContainerPartDisplayConfig extends GuiConfig<ContainerPartPanelVari
     }
 
     @Override
+    @SideOnly(Side.CLIENT)
     public <U extends GuiScreen & IContainerAccess<ContainerPartPanelVariableDriven>> GuiScreens.ScreenConstructor<ContainerPartPanelVariableDriven, U> getScreenFactory() {
         // Due to our use of generics, we have to delegate to a separate function.
         return new ScreenFactorySafe<>((GuiScreens.ScreenConstructor) createScreenFactory());
