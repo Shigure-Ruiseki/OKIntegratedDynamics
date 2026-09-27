@@ -2,6 +2,8 @@ package ruiseki.integrateddynamics.inventory.container;
 
 import net.minecraft.client.gui.GuiScreen;
 
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.client.gui.GuiVariablestore;
 import ruiseki.okcore.client.gui.ContainerType;
@@ -28,6 +30,7 @@ public class ContainerVariablestoreConfig extends GuiConfig<ContainerVariablesto
     }
 
     @Override
+    @SideOnly(Side.CLIENT)
     public <U extends GuiScreen & IContainerAccess<ContainerVariablestore>> GuiScreens.ScreenConstructor<ContainerVariablestore, U> getScreenFactory() {
         return new ScreenFactorySafe<ContainerVariablestore, U>(
             (container, inventoryPlayer) -> new GuiVariablestore(container));

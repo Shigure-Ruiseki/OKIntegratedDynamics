@@ -2,6 +2,8 @@ package ruiseki.integratedcrafting.inventory.container;
 
 import net.minecraft.client.gui.GuiScreen;
 
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.integratedcrafting.client.gui.GuiPartInterfaceCrafting;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.okcore.client.gui.ContainerType;
@@ -29,6 +31,7 @@ public class ContainerPartInterfaceCraftingConfig extends GuiConfig<ContainerPar
     }
 
     @Override
+    @SideOnly(Side.CLIENT)
     public <U extends GuiScreen & IContainerAccess<ContainerPartInterfaceCrafting>> GuiScreens.ScreenConstructor<ContainerPartInterfaceCrafting, U> getScreenFactory() {
         return new ScreenFactorySafe<ContainerPartInterfaceCrafting, U>(
             (container, inventoryPlayer) -> new GuiPartInterfaceCrafting(container));

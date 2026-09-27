@@ -2,6 +2,8 @@ package ruiseki.integrateddynamics.inventory.container;
 
 import net.minecraft.client.gui.GuiScreen;
 
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.client.gui.GuiMechanicalDryingBasin;
 import ruiseki.okcore.client.gui.ContainerType;
@@ -28,6 +30,7 @@ public class ContainerMechanicalDryingBasinConfig extends GuiConfig<ContainerMec
     }
 
     @Override
+    @SideOnly(Side.CLIENT)
     public <U extends GuiScreen & IContainerAccess<ContainerMechanicalDryingBasin>> GuiScreens.ScreenConstructor<ContainerMechanicalDryingBasin, U> getScreenFactory() {
         return new ScreenFactorySafe<ContainerMechanicalDryingBasin, U>(
             (container, inventoryPlayer) -> new GuiMechanicalDryingBasin(container));

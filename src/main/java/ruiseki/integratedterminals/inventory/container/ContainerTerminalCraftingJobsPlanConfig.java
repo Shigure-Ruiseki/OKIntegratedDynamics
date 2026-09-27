@@ -4,6 +4,8 @@ import java.io.IOException;
 
 import net.minecraft.client.gui.GuiScreen;
 
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.integratedterminals.IntegratedTerminals;
 import ruiseki.integratedterminals.client.gui.container.GuiTerminalCraftingJobsPlan;
 import ruiseki.okcore.client.gui.ContainerType;
@@ -40,6 +42,7 @@ public class ContainerTerminalCraftingJobsPlanConfig extends GuiConfig<Container
     }
 
     @Override
+    @SideOnly(Side.CLIENT)
     public <U extends GuiScreen & IContainerAccess<ContainerTerminalCraftingJobsPlan>> GuiScreens.ScreenConstructor<ContainerTerminalCraftingJobsPlan, U> getScreenFactory() {
         return new ScreenFactorySafe<>(GuiTerminalCraftingJobsPlan::new);
     }

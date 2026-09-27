@@ -2,6 +2,8 @@ package ruiseki.integrateddynamics.inventory.container;
 
 import net.minecraft.client.gui.GuiScreen;
 
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.client.gui.GuiCoalGenerator;
 import ruiseki.okcore.client.gui.ContainerType;
@@ -28,6 +30,7 @@ public class ContainerCoalGeneratorConfig extends GuiConfig<ContainerCoalGenerat
     }
 
     @Override
+    @SideOnly(Side.CLIENT)
     public <U extends GuiScreen & IContainerAccess<ContainerCoalGenerator>> GuiScreens.ScreenConstructor<ContainerCoalGenerator, U> getScreenFactory() {
         return new ScreenFactorySafe<ContainerCoalGenerator, U>(
             (container, inventoryPlayer) -> new GuiCoalGenerator(container));

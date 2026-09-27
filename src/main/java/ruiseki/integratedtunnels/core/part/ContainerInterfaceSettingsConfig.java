@@ -2,6 +2,8 @@ package ruiseki.integratedtunnels.core.part;
 
 import net.minecraft.client.gui.GuiScreen;
 
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.core.inventory.container.ContainerAspectSettings;
 import ruiseki.okcore.client.gui.GuiScreens;
@@ -33,6 +35,7 @@ public class ContainerInterfaceSettingsConfig extends GuiConfig<ContainerInterfa
     }
 
     @Override
+    @SideOnly(Side.CLIENT)
     public <U extends GuiScreen & IContainerAccess<ContainerInterfaceSettings>> GuiScreens.ScreenConstructor<ContainerInterfaceSettings, U> getScreenFactory() {
         return new ScreenFactorySafe<ContainerInterfaceSettings, U>(
             (container, inventoryPlayer) -> new GuiInterfaceSettings(container));

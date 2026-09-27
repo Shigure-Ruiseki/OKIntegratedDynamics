@@ -2,6 +2,8 @@ package ruiseki.integratedrest.inventory.container;
 
 import net.minecraft.client.gui.GuiScreen;
 
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.integratedrest.IntegratedRest;
 import ruiseki.integratedrest.client.gui.GuiHttp;
 import ruiseki.okcore.client.gui.ContainerType;
@@ -12,7 +14,7 @@ import ruiseki.okcore.config.extendedconfig.GuiConfig;
 
 /**
  * Config for {@link ContainerHttp}.
- * 
+ *
  * @author rubensworks
  */
 public class ContainerHttpConfig extends GuiConfig<ContainerHttp> {
@@ -32,6 +34,7 @@ public class ContainerHttpConfig extends GuiConfig<ContainerHttp> {
     }
 
     @Override
+    @SideOnly(Side.CLIENT)
     public <U extends GuiScreen & IContainerAccess<ContainerHttp>> GuiScreens.ScreenConstructor<ContainerHttp, U> getScreenFactory() {
         return new ScreenFactorySafe<ContainerHttp, U>((container, inventoryPlayer) -> new GuiHttp(container));
     }

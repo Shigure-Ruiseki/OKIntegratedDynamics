@@ -71,7 +71,6 @@ public class TerminalStorageTabIngredientComponentItemStackCraftingClient
     }
 
     protected boolean isCraftingGridCenter() {
-        ;
         return TerminalStorageScreenSizeEvent.getWidthHeight()
             .getLeft() < 374
             || getRowColumnProvider().getRowsAndColumns()

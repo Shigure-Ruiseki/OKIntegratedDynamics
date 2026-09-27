@@ -2,6 +2,8 @@ package ruiseki.integrateddynamics.inventory.container;
 
 import net.minecraft.client.gui.GuiScreen;
 
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.client.gui.GuiDelay;
 import ruiseki.okcore.client.gui.ContainerType;
@@ -28,6 +30,7 @@ public class ContainerDelayConfig extends GuiConfig<ContainerDelay> {
     }
 
     @Override
+    @SideOnly(Side.CLIENT)
     public <U extends GuiScreen & IContainerAccess<ContainerDelay>> GuiScreens.ScreenConstructor<ContainerDelay, U> getScreenFactory() {
         return new ScreenFactorySafe<ContainerDelay, U>((container, inventoryPlayer) -> new GuiDelay(container));
     }

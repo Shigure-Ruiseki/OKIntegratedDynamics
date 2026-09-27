@@ -2,6 +2,8 @@ package ruiseki.integratedterminals.inventory.container;
 
 import net.minecraft.client.gui.GuiScreen;
 
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.integratedterminals.IntegratedTerminals;
 import ruiseki.integratedterminals.client.gui.container.GuiTerminalCraftingJobs;
 import ruiseki.okcore.client.gui.ContainerType;
@@ -12,7 +14,7 @@ import ruiseki.okcore.config.extendedconfig.GuiConfig;
 
 /**
  * Config for {@link ContainerTerminalCraftingJobs}.
- * 
+ *
  * @author rubensworks
  */
 public class ContainerTerminalCraftingJobsConfig extends GuiConfig<ContainerTerminalCraftingJobs> {
@@ -34,6 +36,7 @@ public class ContainerTerminalCraftingJobsConfig extends GuiConfig<ContainerTerm
     }
 
     @Override
+    @SideOnly(Side.CLIENT)
     public <U extends GuiScreen & IContainerAccess<ContainerTerminalCraftingJobs>> GuiScreens.ScreenConstructor<ContainerTerminalCraftingJobs, U> getScreenFactory() {
         return new ScreenFactorySafe<>(GuiTerminalCraftingJobs::new);
     }
