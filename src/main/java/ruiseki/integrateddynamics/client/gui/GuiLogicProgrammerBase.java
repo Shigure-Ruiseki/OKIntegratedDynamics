@@ -605,9 +605,11 @@ public class GuiLogicProgrammerBase<T extends ContainerLogicProgrammerBase> exte
         @Override
         public boolean keyPressed(int typedChar, int keyCode, int modifiers) {
             if (this.searchField.isFocused() && typedChar != Keyboard.KEY_ESCAPE) {
-                this.searchField.keyPressed(typedChar, keyCode, modifiers);
-                label(this.searchField.getValue());
-                return true;
+                if (this.searchField.keyPressed(typedChar, keyCode, modifiers)) {
+                    label(this.searchField.getValue());
+                    return true;
+                }
+                return false;
             }
             return super.keyPressed(typedChar, keyCode, modifiers);
         }

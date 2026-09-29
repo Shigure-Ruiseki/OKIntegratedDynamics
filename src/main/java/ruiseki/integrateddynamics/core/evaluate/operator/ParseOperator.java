@@ -42,15 +42,14 @@ public class ParseOperator<T2 extends IValueType<V2>, V2 extends IValue> extends
 
     @Override
     protected String getUnlocalizedPrefix() {
-        return "operator.operators." + getModId() + "." + getUnlocalizedType();
+        return "operator." + getModId() + "." + getUnlocalizedType();
     }
 
     @Override
     public void loadTooltip(List<String> lines, boolean appendOptionalInfo) {
         lines.add(
-            LangHelpers.localize(
-                "operator.operators.integrateddynamics.parse.tooltip",
-                LangHelpers.localize(to.getUnlocalizedName())));
+            LangHelpers
+                .localize("operator.integrateddynamics.parse.tooltip", LangHelpers.localize(to.getUnlocalizedName())));
         super.loadTooltip(lines, appendOptionalInfo);
     }
 

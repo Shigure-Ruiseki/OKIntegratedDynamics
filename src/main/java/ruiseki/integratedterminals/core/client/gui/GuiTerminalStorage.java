@@ -1169,6 +1169,7 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
                     tab -> tab.setInstanceFilter(getContainer().getSelectedChannel(), fieldSearch.getValue()));
                 return true;
             }
+            return false;
         }
         return handleKeyCodeLast(keyCode, scanCode) || super.charTyped(keyCode, scanCode);
     }
@@ -1185,6 +1186,7 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
                         tab -> tab.setInstanceFilter(getContainer().getSelectedChannel(), fieldSearch.getValue()));
                     return true;
                 }
+                return false;
             }
             if (handleKeyCodeLast(keyCode, scanCode)) {
                 return true;

@@ -45,14 +45,14 @@ public class ItemEnhancement extends ItemBase {
                             itemStack.stackSize--;
                             player.addChatComponentMessage(
                                 new ChatComponentTranslation(
-                                    "item.items.integrateddynamics.enhancement_offset.increased",
+                                    "item.integrateddynamics.enhancement_offset.increased",
                                     newValue));
                         }
                         return true;
                     }
                     player.addChatComponentMessage(
                         new ChatComponentTranslation(
-                            "item.items.integrateddynamics.enhancement_offset.limit",
+                            "item.integrateddynamics.enhancement_offset.limit",
                             GeneralConfig.maxPartOffset));
                     return false;
                 }
@@ -76,7 +76,7 @@ public class ItemEnhancement extends ItemBase {
     public void addInformation(ItemStack itemStack, EntityPlayer entityPlayer, List<String> list, boolean flag) {
         list.add(
             LangHelpers.localize(
-                EnumChatFormatting.GRAY + "item.items.integrateddynamics.enhancement_offset.tooltip",
+                EnumChatFormatting.GRAY + "item.integrateddynamics.enhancement_offset.tooltip",
                 getEnhancementValue(itemStack)));
         super.addInformation(itemStack, entityPlayer, list, flag);
     }

@@ -42,8 +42,8 @@ public class GuiLabeller extends GuiContainerExtended<ContainerLabeller> {
             new GuiButtonText(
                 this.guiLeft + 133,
                 this.guiTop + 8,
-                LangHelpers.localize("item.items.integrateddynamics.labeller.button.write"),
-                LangHelpers.localize("item.items.integrateddynamics.labeller.button.write"),
+                LangHelpers.localize("item.integrateddynamics.labeller.button.write"),
+                LangHelpers.localize("item.integrateddynamics.labeller.button.write"),
                 button -> {
                     ItemStack itemStack = getContainer().getItemStack();
                     if (!ItemHelpers.isEmpty(itemStack)) {

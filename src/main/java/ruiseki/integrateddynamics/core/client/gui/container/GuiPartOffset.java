@@ -128,12 +128,12 @@ public class GuiPartOffset<T extends ContainerPartOffset> extends GuiContainerEx
 
     @Override
     public boolean charTyped(char typedChar, int modifiers) {
-        if (this.numberFieldX.charTyped(typedChar, modifiers) || this.numberFieldY.charTyped(typedChar, modifiers)
-            || this.numberFieldZ.charTyped(typedChar, modifiers)) {
-            this.onSave();
-            return true;
+        if (!this.numberFieldX.charTyped(typedChar, modifiers) && !this.numberFieldY.charTyped(typedChar, modifiers)
+            && !this.numberFieldZ.charTyped(typedChar, modifiers)) {
+            onSave();
+            return super.charTyped(typedChar, modifiers);
         }
-        return super.charTyped(typedChar, modifiers);
+        return true;
     }
 
     @Override
@@ -145,8 +145,10 @@ public class GuiPartOffset<T extends ContainerPartOffset> extends GuiContainerEx
                 onSave();
                 return true;
             }
+            return false;
+        } else {
+            return super.keyPressed(typedChar, keyCode, modifiers);
         }
-        return super.keyPressed(typedChar, keyCode, modifiers);
     }
 
     @Override

@@ -167,25 +167,25 @@ public class GuiPartInterfaceCraftingSettings extends GuiPartSettings<ContainerP
     }
 
     @Override
-    public boolean charTyped(char typedChar, int keyCode) {
-        if (!this.numberFieldChannelInterfaceCrafting.charTyped(typedChar, keyCode)
-            && !this.dropdownFieldSide.charTyped(typedChar, keyCode)) {
-            return super.charTyped(typedChar, keyCode);
+    public boolean charTyped(char typedChar, int modifiers) {
+        if (!this.numberFieldChannelInterfaceCrafting.charTyped(typedChar, modifiers)
+            && !this.dropdownFieldSide.charTyped(typedChar, modifiers)) {
+            return super.charTyped(typedChar, modifiers);
         }
         return true;
     }
 
     @Override
-    public boolean keyPressed(int typedChar, int keyCode, int modifiers) {
-        if (typedChar != Keyboard.KEY_ESCAPE) {
-            if (this.numberFieldChannelInterfaceCrafting.keyPressed(typedChar, keyCode, modifiers)) {
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if (keyCode != Keyboard.KEY_ESCAPE) {
+            if (this.numberFieldChannelInterfaceCrafting.keyPressed(keyCode, scanCode, modifiers)) {
                 return true;
             }
-            if (this.dropdownFieldSide.keyPressed(typedChar, keyCode, modifiers)) {
+            if (this.dropdownFieldSide.keyPressed(keyCode, scanCode, modifiers)) {
                 return true;
             }
         }
-        return super.keyPressed(typedChar, keyCode, modifiers);
+        return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
     @Override

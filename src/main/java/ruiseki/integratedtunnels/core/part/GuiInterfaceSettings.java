@@ -87,21 +87,21 @@ public class GuiInterfaceSettings extends GuiPartSettings<ContainerInterfaceSett
     }
 
     @Override
-    public boolean charTyped(char typedChar, int keyCode) {
-        if (!this.numberFieldChannelInterface.charTyped(typedChar, keyCode)) {
-            return super.charTyped(typedChar, keyCode);
+    public boolean charTyped(char typedChar, int modifiers) {
+        if (!this.numberFieldChannelInterface.charTyped(typedChar, modifiers)) {
+            return super.charTyped(typedChar, modifiers);
         }
         return true;
     }
 
     @Override
-    public boolean keyPressed(int typedChar, int keyCode, int modifiers) {
-        if (typedChar != Keyboard.KEY_ESCAPE) {
-            if (this.numberFieldChannelInterface.keyPressed(typedChar, keyCode, modifiers)) {
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if (keyCode != Keyboard.KEY_ESCAPE) {
+            if (this.numberFieldChannelInterface.keyPressed(keyCode, scanCode, modifiers)) {
                 return true;
             }
         }
-        return super.keyPressed(typedChar, keyCode, modifiers);
+        return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
     @Override

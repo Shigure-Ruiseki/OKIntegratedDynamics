@@ -18,10 +18,10 @@ import ruiseki.okcore.helper.LangHelpers;
 /**
  * Immutable builder for operators.
  * Appending the kinds "a", "b" and "c" for example will result in the base localization key of
- * "operator.operators.MOD_ID.a.b.c.".
+ * "operator.MOD_ID.a.b.c.".
  * This base key then will be suffixed with {"name", "basename"}.
  * If the operator name would be "xyz", then you'll also need the localization keys
- * "operator.operators.MOD_ID.a.b.c.xyz."{"name", "info"}.
+ * "operator.MOD_ID.a.b.c.xyz."{"name", "info"}.
  *
  * The actual operator function can either be set by calling {@link OperatorBuilder#function} or by
  * doing any number of calls to {@link OperatorBuilder#handle(IOperatorValuePropagator)} with value propagators.

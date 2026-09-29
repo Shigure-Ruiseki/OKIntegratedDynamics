@@ -99,6 +99,7 @@ public class GuiElementValueTypeDropdownListRenderPattern<T, S extends ISubGuiBo
                 onTyped();
                 return true;
             }
+            return false;
         }
         return super.charTyped(typedChar, keyCode);
     }
@@ -106,9 +107,11 @@ public class GuiElementValueTypeDropdownListRenderPattern<T, S extends ISubGuiBo
     @Override
     public boolean keyPressed(int typedChar, int keyCode, int modifiers) {
         if (searchField.isFocused()) {
-            searchField.keyPressed(typedChar, keyCode, modifiers);
-            onTyped();
-            return true;
+            if (searchField.keyPressed(typedChar, keyCode, modifiers)) {
+                onTyped();
+                return true;
+            }
+            return false;
         }
         return super.keyPressed(typedChar, keyCode, modifiers);
     }

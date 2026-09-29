@@ -48,7 +48,7 @@ public class ItemWrench extends ItemBase {
             incrementMode(itemStack);
             player.addChatMessage(
                 new ChatComponentTranslation(
-                    "item.items.integrateddynamics.wrench.mode",
+                    "item.integrateddynamics.wrench.mode",
                     new ChatComponentTranslation(getMode(itemStack).getLabel())));
             return itemStack;
         }
@@ -68,7 +68,7 @@ public class ItemWrench extends ItemBase {
                     if (!world.isRemote) {
                         player.addChatMessage(
                             new ChatComponentTranslation(
-                                "item.items.integrateddynamics.wrench.mode.offset.saved",
+                                "item.integrateddynamics.wrench.mode.offset.saved",
                                 x + ", " + y + ", " + z));
                     }
                     return true;
@@ -82,7 +82,7 @@ public class ItemWrench extends ItemBase {
                     if (!world.isRemote) {
                         player.addChatMessage(
                             new ChatComponentTranslation(
-                                "item.items.integrateddynamics.wrench.mode.offset_side.saved",
+                                "item.integrateddynamics.wrench.mode.offset_side.saved",
                                 x + ", " + y + ", " + z,
                                 ForgeDirection.getOrientation(side)
                                     .name()));
@@ -147,7 +147,7 @@ public class ItemWrench extends ItemBase {
         Mode mode = getMode(itemStack);
         list.add(
             new ChatComponentTranslation(
-                "item.items.integrateddynamics.wrench.mode",
+                "item.integrateddynamics.wrench.mode",
                 new ChatComponentTranslation(mode.getLabel())).getUnformattedText());
 
         if (itemStack.hasTagCompound()) {
@@ -156,13 +156,13 @@ public class ItemWrench extends ItemBase {
                 String posStr = tag.getInteger("posX") + ", " + tag.getInteger("posY") + ", " + tag.getInteger("posZ");
                 list.add(
                     EnumChatFormatting.GRAY
-                        + new ChatComponentTranslation("item.items.integrateddynamics.wrench.mode.offset.pos", posStr)
+                        + new ChatComponentTranslation("item.integrateddynamics.wrench.mode.offset.pos", posStr)
                             .getUnformattedText());
             }
             if (tag.hasKey("side")) {
                 list.add(
                     EnumChatFormatting.GRAY + new ChatComponentTranslation(
-                        "item.items.integrateddynamics.wrench.mode.offset_side.side",
+                        "item.integrateddynamics.wrench.mode.offset_side.side",
                         ForgeDirection.getOrientation(tag.getInteger("side"))
                             .name()).getUnformattedText());
             }
@@ -181,9 +181,9 @@ public class ItemWrench extends ItemBase {
 
     public enum Mode {
 
-        DEFAULT("integrateddynamics:default", "item.items.integrateddynamics.wrench.mode.default.name"),
-        OFFSET("integrateddynamics:offset", "item.items.integrateddynamics.wrench.mode.offset.name"),
-        OFFSET_SIDE("integrateddynamics:offset_side", "item.items.integrateddynamics.wrench.mode.offset_side.name");
+        DEFAULT("integrateddynamics:default", "item.integrateddynamics.wrench.mode.default.name"),
+        OFFSET("integrateddynamics:offset", "item.integrateddynamics.wrench.mode.offset.name"),
+        OFFSET_SIDE("integrateddynamics:offset_side", "item.integrateddynamics.wrench.mode.offset_side.name");
 
         private final String name;
         private final String label;

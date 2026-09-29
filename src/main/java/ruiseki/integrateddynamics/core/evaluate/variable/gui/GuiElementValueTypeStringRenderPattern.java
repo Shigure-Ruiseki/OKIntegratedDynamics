@@ -91,6 +91,7 @@ public class GuiElementValueTypeStringRenderPattern<S extends ISubGuiBox, G exte
                 onTyped();
                 return true;
             }
+            return false;
         }
         return super.charTyped(typedChar, keyCode);
     }
@@ -102,6 +103,7 @@ public class GuiElementValueTypeStringRenderPattern<S extends ISubGuiBox, G exte
                 onTyped();
                 return true;
             }
+            return false;
         }
         return super.keyPressed(typedChar, keyCode, modifiers);
     }

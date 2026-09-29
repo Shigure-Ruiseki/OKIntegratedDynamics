@@ -226,46 +226,42 @@ public class GuiPartSettings<C extends ContainerPartSettings> extends GuiContain
 
     @Override
     public boolean charTyped(char typedChar, int modifiers) {
-        if (isFieldUpdateIntervalEnabled() && this.numberFieldUpdateInterval.charTyped(typedChar, modifiers)) {
-            return true;
+        if (!(isFieldUpdateIntervalEnabled() && this.numberFieldUpdateInterval.charTyped(typedChar, modifiers))
+            && !(isFieldPriorityEnabled() && this.numberFieldPriority.charTyped(typedChar, modifiers))
+            && !(isFieldChannelEnabled() && this.numberFieldChannel.charTyped(typedChar, modifiers))
+            && !(isFieldSideEnabled() && this.dropdownFieldSide.charTyped(typedChar, modifiers))) {
+            return super.charTyped(typedChar, modifiers);
         }
-        if (isFieldPriorityEnabled() && this.numberFieldPriority.charTyped(typedChar, modifiers)) {
-            return true;
-        }
-        if (isFieldChannelEnabled() && this.numberFieldChannel.charTyped(typedChar, modifiers)) {
-            return true;
-        }
-        if (isFieldSideEnabled() && this.dropdownFieldSide.charTyped(typedChar, modifiers)) {
-            return true;
-        }
-        return super.charTyped(typedChar, modifiers);
+        return true;
     }
 
     @Override
-    public boolean keyPressed(int typedChar, int keyCode, int modifiers) {
-        if (typedChar != Keyboard.KEY_ESCAPE) {
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if (keyCode != Keyboard.KEY_ESCAPE) {
             if (isFieldSideEnabled()) {
-                if (this.dropdownFieldSide.keyPressed(typedChar, keyCode, modifiers)) {
+                if (this.dropdownFieldSide.keyPressed(keyCode, scanCode, modifiers)) {
                     return true;
                 }
             }
             if (isFieldUpdateIntervalEnabled()) {
-                if (this.numberFieldUpdateInterval.keyPressed(typedChar, keyCode, modifiers)) {
+                if (this.numberFieldUpdateInterval.keyPressed(keyCode, scanCode, modifiers)) {
                     return true;
                 }
             }
             if (isFieldPriorityEnabled()) {
-                if (this.numberFieldPriority.keyPressed(typedChar, keyCode, modifiers)) {
+                if (this.numberFieldPriority.keyPressed(keyCode, scanCode, modifiers)) {
                     return true;
                 }
             }
             if (isFieldChannelEnabled()) {
-                if (this.numberFieldChannel.keyPressed(typedChar, keyCode, modifiers)) {
+                if (this.numberFieldChannel.keyPressed(keyCode, scanCode, modifiers)) {
                     return true;
                 }
             }
+            return false;
+        } else {
+            return super.keyPressed(keyCode, scanCode, modifiers);
         }
-        return super.keyPressed(typedChar, keyCode, modifiers);
     }
 
     @Override

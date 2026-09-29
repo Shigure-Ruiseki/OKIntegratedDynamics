@@ -118,7 +118,7 @@ public class TerminalStorageSlotIngredient<T, M> implements ITerminalStorageSlot
                 getIngredientComponentViewHandler().formatQuantity(pendingCraftingJobOutput.getInstance())));
         String unlocalizedStatus = "gui.integratedterminals.craftingplan.status." + pendingCraftingJobOutput.getStatus()
             .name()
-            .toLowerCase(Locale.ENGLISH);
+            .toLowerCase(Locale.ENGLISH) + ".name";
         tooltipLines.add(
             EnumChatFormatting.GRAY + LangHelpers
                 .localize("gui.integratedterminals.craftingplan.status", LangHelpers.localize(unlocalizedStatus)));

@@ -71,12 +71,12 @@ public class ItemTerminalStoragePortable extends ItemGui {
                 } else {
                     player.addChatComponentMessage(
                         new ChatComponentTranslation(
-                            "item.items.integratedterminals.terminal_storage_portable.status.invalid_network"));
+                            "item.integratedterminals.terminal_storage_portable.status.invalid_network"));
                 }
             } else {
                 player.addChatComponentMessage(
                     new ChatComponentTranslation(
-                        "item.items.integratedterminals.terminal_storage_portable.status.no_network"));
+                        "item.integratedterminals.terminal_storage_portable.status.no_network"));
             }
         }
     }
@@ -130,7 +130,7 @@ public class ItemTerminalStoragePortable extends ItemGui {
                         setGroupId(stack, state.getGroupId());
                         player.addChatMessage(
                             new ChatComponentTranslation(
-                                "item.items.integratedterminals.terminal_storage_portable.status.linked"));
+                                "item.integratedterminals.terminal_storage_portable.status.linked"));
                         return true;
                     }
                 }
