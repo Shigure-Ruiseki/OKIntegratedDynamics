@@ -71,9 +71,7 @@ public abstract class ValueTypeRecipeAdapterLPElementPropertiesSubGui<E extends 
                 }
                 saveGuiToState();
                 loadStateToGui();
-            },
-            false);
-        this.buttonList.add(this.inputNbt);
+            });
         this.inputReusable = new GuiButtonCheckbox(
             guiLeft + getX() + 2,
             guiTop + getY() + 12,
@@ -83,8 +81,7 @@ public abstract class ValueTypeRecipeAdapterLPElementPropertiesSubGui<E extends 
             (entry) -> {
                 saveGuiToState();
                 loadStateToGui();
-            },
-            false);
+            });
         this.inputTags = new GuiButtonCheckbox(
             guiLeft + getX() + 2,
             guiTop + getY() + 22,
@@ -101,8 +98,7 @@ public abstract class ValueTypeRecipeAdapterLPElementPropertiesSubGui<E extends 
                 if (this.inputTags.isChecked()) {
                     this.inputTagsDropdown.setFocused(true);
                 }
-            },
-            false);
+            });
         this.inputTagsDropdown = new GuiTextFieldDropdown<>(
             Minecraft.getMinecraft().fontRenderer,
             guiLeft + getX() + 2,
@@ -113,9 +109,9 @@ public abstract class ValueTypeRecipeAdapterLPElementPropertiesSubGui<E extends 
             true,
             Sets.newHashSet());
         this.inputTagsDropdown.setDropdownEntryListener((entry) -> saveGuiToState());
-        this.inputTagsDropdown.setMaxStringLength(64);
+        this.inputTagsDropdown.setMaxLength(64);
         this.inputTagsDropdown.setDropdownSize(4);
-        this.inputTagsDropdown.setEnableBackgroundDrawing(false);
+        this.inputTagsDropdown.setBordered(false);
         this.inputTagsDropdown.setTextColor(16777215);
         this.inputTagsDropdown.setCanLoseFocus(true);
         this.inputSave = new GuiButtonImage(
@@ -196,14 +192,14 @@ public abstract class ValueTypeRecipeAdapterLPElementPropertiesSubGui<E extends 
                 }
             }
         } else {
-            this.inputTagsDropdown.setText("");
+            this.inputTagsDropdown.setValue("");
             this.inputTagsDropdown.setPossibilities(Collections.emptySet());
         }
     }
 
     public void saveGuiToState() {
         boolean nbt = this.inputNbt.isChecked();
-        String tag = this.inputTags.isChecked() ? this.inputTagsDropdown.getText() : null;
+        String tag = this.inputTags.isChecked() ? this.inputTagsDropdown.getValue() : null;
         getSlotProperties().setNbt(nbt);
         getSlotProperties().setItemTag(tag);
         getSlotProperties().setReusable(this.inputReusable.isChecked());

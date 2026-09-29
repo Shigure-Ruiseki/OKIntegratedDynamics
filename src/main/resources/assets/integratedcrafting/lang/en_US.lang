@@ -23,42 +23,42 @@ advancement.integratedcrafting.craft_planks=Effective Auto-Planking
 advancement.integratedcrafting.craft_planks.desc=Use a Crafting Writer to start a crafting job for Oak Planks
 
 # Part types
-parttype.parttypes.integratedcrafting.interface_crafting.name=Crafting Interface
-parttype.parttypes.integratedcrafting.interface_crafting.info=Holds crafting variables for crafting in the target machine.
-parttype.parttypes.integratedcrafting.interface_crafting_attuned=Attuned Crafting Interface
-parttype.parttypes.integratedcrafting.interface_crafting_attuned.info=Handles crafting for all recipes exposed by the target machine.
-parttype.parttypes.integratedcrafting.interface_crafting_attuned.unsupported=The target machine does not support recipe handling.
+parttype.integratedcrafting.interface_crafting.name=Crafting Interface
+parttype.integratedcrafting.interface_crafting.info=Holds crafting variables for crafting in the target machine.
+parttype.integratedcrafting.interface_crafting_attuned=Attuned Crafting Interface
+parttype.integratedcrafting.interface_crafting_attuned.info=Handles crafting for all recipes exposed by the target machine.
+parttype.integratedcrafting.interface_crafting_attuned.unsupported=The target machine does not support recipe handling.
 
-parttype.parttypes.integratedcrafting.crafting_writer.name=Crafting Writer
-parttype.parttypes.integratedcrafting.crafting_writer.info=Starts crafting jobs
+parttype.integratedcrafting.crafting_writer.name=Crafting Writer
+parttype.integratedcrafting.crafting_writer.info=Starts crafting jobs
 
 # Aspect property types
-aspect.aspecttypes.integratedcrafting.boolean.ignorestorage.name=Ignore storage contents
-aspect.aspecttypes.integratedcrafting.boolean.ignorecrafting.name=Ignore crafting jobs
-aspect.aspecttypes.integratedcrafting.boolean.craftmissing.name=Craft missing ingredients
-aspect.aspecttypes.integratedcrafting.integer.craftamount.name=Craft amount
-aspect.aspecttypes.integratedcrafting.integer.craftdelay=Storage contents craft delay
-aspect.aspecttypes.integratedcrafting.integer.craftdelay.info=Only craft if ingredient is missing from storage for this duration
+aspect.integratedcrafting.boolean.ignorestorage.name=Ignore storage contents
+aspect.integratedcrafting.boolean.ignorecrafting.name=Ignore crafting jobs
+aspect.integratedcrafting.boolean.craftmissing.name=Craft missing ingredients
+aspect.integratedcrafting.integer.craftamount.name=Craft amount
+aspect.integratedcrafting.integer.craftdelay=Storage contents craft delay
+aspect.integratedcrafting.integer.craftdelay.info=Only craft if ingredient is missing from storage for this duration
 
 # Aspects
 
 ## Network
-aspect.aspects.integratedcrafting.read.list.network.recipes.name=Recipes
-aspect.aspects.integratedcrafting.read.list.network.recipes.info=A list of all available recipes.
-aspect.aspects.integratedcrafting.read.list.network.craftingjobs.name=Active Crafting Jobs
-aspect.aspects.integratedcrafting.read.list.network.craftingjobs.info=A list of all active crafting job as recipes.
-aspect.aspects.integratedcrafting.read.list.network.craftingingredients.name=Crafting Ingredients
-aspect.aspects.integratedcrafting.read.list.network.craftingingredients.info=A list of all ingredients that are being crafted.
+aspect.integratedcrafting.read.list.network.recipes.name=Recipes
+aspect.integratedcrafting.read.list.network.recipes.info=A list of all available recipes.
+aspect.integratedcrafting.read.list.network.craftingjobs.name=Active Crafting Jobs
+aspect.integratedcrafting.read.list.network.craftingjobs.info=A list of all active crafting job as recipes.
+aspect.integratedcrafting.read.list.network.craftingingredients.name=Crafting Ingredients
+aspect.integratedcrafting.read.list.network.craftingingredients.info=A list of all ingredients that are being crafted.
 
 ## Crafting
-aspect.aspects.integratedcrafting.write.recipe.craft.name=Craft Recipe
-aspect.aspects.integratedcrafting.write.recipe.craft.info=Craft the given recipe
-aspect.aspects.integratedcrafting.write.itemstack.craft.name=Craft Item
-aspect.aspects.integratedcrafting.write.itemstack.craft.info=Craft the given item
-aspect.aspects.integratedcrafting.write.fluidstack.craft.name=Craft Fluid
-aspect.aspects.integratedcrafting.write.fluidstack.craft.info=Craft the given fluid
-aspect.aspects.integratedcrafting.write.integer.craft.name=Craft Energy
-aspect.aspects.integratedcrafting.write.integer.craft.info=Craft the given energy amount
+aspect.integratedcrafting.write.recipe.craft.name=Craft Recipe
+aspect.integratedcrafting.write.recipe.craft.info=Craft the given recipe
+aspect.integratedcrafting.write.itemstack.craft.name=Craft Item
+aspect.integratedcrafting.write.itemstack.craft.info=Craft the given item
+aspect.integratedcrafting.write.fluidstack.craft.name=Craft Fluid
+aspect.integratedcrafting.write.fluidstack.craft.info=Craft the given fluid
+aspect.integratedcrafting.write.integer.craft.name=Craft Energy
+aspect.integratedcrafting.write.integer.craft.info=Craft the given energy amount
 
 ## Config categories
 config.integratedcrafting.general=General settings

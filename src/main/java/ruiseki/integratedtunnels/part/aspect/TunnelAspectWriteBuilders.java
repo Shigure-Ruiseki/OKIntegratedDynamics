@@ -201,34 +201,34 @@ public class TunnelAspectWriteBuilders {
 
     public static final IAspectPropertyTypeInstance<ValueTypeBoolean, ValueTypeBoolean.ValueBoolean> PROP_BLACKLIST = new AspectPropertyTypeInstance<>(
         ValueTypes.BOOLEAN,
-        "aspect.aspecttypes.integratedtunnels.boolean.blacklist.name");
+        "aspect.integratedtunnels.boolean.blacklist.name");
     public static final IAspectPropertyTypeInstance<ValueTypeInteger, ValueTypeInteger.ValueInteger> PROP_CHANNEL = new AspectPropertyTypeInstance<>(
         ValueTypes.INTEGER,
-        "aspect.aspecttypes.integrateddynamics.integer.channel.name");
+        "aspect.integrateddynamics.integer.channel.name");
     public static final IAspectPropertyTypeInstance<ValueTypeBoolean, ValueTypeBoolean.ValueBoolean> PROP_ROUNDROBIN = new AspectPropertyTypeInstance<>(
         ValueTypes.BOOLEAN,
-        "aspect.aspecttypes.integratedtunnels.boolean.roundrobin.name");
+        "aspect.integratedtunnels.boolean.roundrobin.name");
     public static final IAspectPropertyTypeInstance<ValueTypeBoolean, ValueTypeBoolean.ValueBoolean> PROP_EXACTAMOUNT = new AspectPropertyTypeInstance<>(
         ValueTypes.BOOLEAN,
-        "aspect.aspecttypes.integratedtunnels.boolean.exactamount.name");
+        "aspect.integratedtunnels.boolean.exactamount.name");
     public static final IAspectPropertyTypeInstance<ValueTypeBoolean, ValueTypeBoolean.ValueBoolean> PROP_EMPTYISANY = new AspectPropertyTypeInstance<>(
         ValueTypes.BOOLEAN,
-        "aspect.aspecttypes.integratedtunnels.boolean.emptyisany.name");
+        "aspect.integratedtunnels.boolean.emptyisany.name");
     public static final IAspectPropertyTypeInstance<ValueTypeBoolean, ValueTypeBoolean.ValueBoolean> PROP_CRAFT = new AspectPropertyTypeInstance<>(
         ValueTypes.BOOLEAN,
-        "aspect.aspecttypes.integratedtunnels.boolean.craft.name");
+        "aspect.integratedtunnels.boolean.craft.name");
     public static final IAspectPropertyTypeInstance<ValueTypeBoolean, ValueTypeBoolean.ValueBoolean> PROP_PASSIVE_IO = new AspectPropertyTypeInstance<>(
         ValueTypes.BOOLEAN,
-        "aspect.aspecttypes.integratedtunnels.boolean.passiveio.name");
+        "aspect.integratedtunnels.boolean.passiveio.name");
     public static final IAspectPropertyTypeInstance<ValueTypeBoolean, ValueTypeBoolean.ValueBoolean> PROP_FILTER_APPLY_TO_INSERTIONS = new AspectPropertyTypeInstance<>(
         ValueTypes.BOOLEAN,
-        "aspect.aspecttypes.integratedtunnels.boolean.filter.applytoinsert.name");
+        "aspect.integratedtunnels.boolean.filter.applytoinsert.name");
     public static final IAspectPropertyTypeInstance<ValueTypeBoolean, ValueTypeBoolean.ValueBoolean> PROP_FILTER_APPLY_TO_EXTRACTIONS = new AspectPropertyTypeInstance<>(
         ValueTypes.BOOLEAN,
-        "aspect.aspecttypes.integratedtunnels.boolean.filter.applytoextract.name");
+        "aspect.integratedtunnels.boolean.filter.applytoextract.name");
     public static final IAspectPropertyTypeInstance<ValueTypeBoolean, ValueTypeBoolean.ValueBoolean> PROP_FILTER_ALLOW_ALL_IF_NOT_APPLIED = new AspectPropertyTypeInstance<>(
         ValueTypes.BOOLEAN,
-        "aspect.aspecttypes.integratedtunnels.boolean.filter.allowallifnotapplied.name");
+        "aspect.integratedtunnels.boolean.filter.allowallifnotapplied.name");
     public static final IAspectProperties PROPERTIES_CHANNEL = new AspectProperties(
         ImmutableList.<IAspectPropertyTypeInstance>of(PROP_CHANNEL, PROP_ROUNDROBIN));
     static {
@@ -296,11 +296,11 @@ public class TunnelAspectWriteBuilders {
             .getRawValue() <= ruiseki.integrateddynamics.GeneralConfig.energyRateLimit;
         public static final IAspectPropertyTypeInstance<ValueTypeInteger, ValueTypeInteger.ValueInteger> PROP_RATE = new AspectPropertyTypeInstance<>(
             ValueTypes.INTEGER,
-            "aspect.aspecttypes.integratedtunnels.integer.energy.rate.name",
+            "aspect.integratedtunnels.integer.energy.rate.name",
             Predicates.and(AspectReadBuilders.VALIDATOR_INTEGER_POSITIVE, VALIDATOR_INTEGER_MAXRATE));
         public static final IAspectPropertyTypeInstance<ValueTypeBoolean, ValueTypeBoolean.ValueBoolean> PROP_CHECK_AMOUNT = new AspectPropertyTypeInstance<>(
             ValueTypes.BOOLEAN,
-            "aspect.aspecttypes.integratedtunnels.boolean.energy.checkamount.name");
+            "aspect.integratedtunnels.boolean.energy.checkamount.name");
         public static final IAspectProperties PROPERTIES_RATE = new AspectProperties(
             ImmutableList.<IAspectPropertyTypeInstance>of(PROP_CHANNEL, PROP_ROUNDROBIN, PROP_RATE
             // , PROP_EXACTAMOUNT
@@ -484,35 +484,35 @@ public class TunnelAspectWriteBuilders {
 
         public static final IAspectPropertyTypeInstance<ValueTypeInteger, ValueTypeInteger.ValueInteger> PROP_RATE = new AspectPropertyTypeInstance<>(
             ValueTypes.INTEGER,
-            "aspect.aspecttypes.integratedtunnels.integer.item.rate.name",
+            "aspect.integratedtunnels.integer.item.rate.name",
             AspectReadBuilders.VALIDATOR_INTEGER_POSITIVE);
         public static final IAspectPropertyTypeInstance<ValueTypeInteger, ValueTypeInteger.ValueInteger> PROP_SLOT = new AspectPropertyTypeInstance<>(
             ValueTypes.INTEGER,
-            "aspect.aspecttypes.integratedtunnels.integer.item.slot.name");
+            "aspect.integratedtunnels.integer.item.slot.name");
         public static final IAspectPropertyTypeInstance<ValueTypeBoolean, ValueTypeBoolean.ValueBoolean> PROP_CHECK_STACKSIZE = new AspectPropertyTypeInstance<>(
             ValueTypes.BOOLEAN,
-            "aspect.aspecttypes.integratedtunnels.boolean.item.checkstacksize.name");
+            "aspect.integratedtunnels.boolean.item.checkstacksize.name");
         public static final IAspectPropertyTypeInstance<ValueTypeBoolean, ValueTypeBoolean.ValueBoolean> PROP_CHECK_DAMAGE = new AspectPropertyTypeInstance<>(
             ValueTypes.BOOLEAN,
-            "aspect.aspecttypes.integratedtunnels.boolean.item.checkdamage.name");
+            "aspect.integratedtunnels.boolean.item.checkdamage.name");
         public static final IAspectPropertyTypeInstance<ValueTypeBoolean, ValueTypeBoolean.ValueBoolean> PROP_CHECK_NBT = new AspectPropertyTypeInstance<>(
             ValueTypes.BOOLEAN,
-            "aspect.aspecttypes.integratedtunnels.boolean.item.checknbt.name");
+            "aspect.integratedtunnels.boolean.item.checknbt.name");
         public static final IAspectPropertyTypeInstance<ValueTypeBoolean, ValueTypeBoolean.ValueBoolean> PROP_NBT_SUBSET = new AspectPropertyTypeInstance<>(
             ValueTypes.BOOLEAN,
-            "aspect.aspecttypes.integratedtunnels.boolean.item.nbtsubset.name");
+            "aspect.integratedtunnels.boolean.item.nbtsubset.name");
         public static final IAspectPropertyTypeInstance<ValueTypeBoolean, ValueTypeBoolean.ValueBoolean> PROP_NBT_SUPERSET = new AspectPropertyTypeInstance<>(
             ValueTypes.BOOLEAN,
-            "aspect.aspecttypes.integratedtunnels.boolean.item.nbtsuperset.name");
+            "aspect.integratedtunnels.boolean.item.nbtsuperset.name");
         public static final IAspectPropertyTypeInstance<ValueTypeBoolean, ValueTypeBoolean.ValueBoolean> PROP_NBT_REQUIRE = new AspectPropertyTypeInstance<>(
             ValueTypes.BOOLEAN,
-            "aspect.aspecttypes.integratedtunnels.boolean.item.nbtrequire.name");
+            "aspect.integratedtunnels.boolean.item.nbtrequire.name");
         public static final IAspectPropertyTypeInstance<ValueTypeBoolean, ValueTypeBoolean.ValueBoolean> PROP_NBT_RECURSIVE = new AspectPropertyTypeInstance<>(
             ValueTypes.BOOLEAN,
-            "aspect.aspecttypes.integratedtunnels.boolean.item.nbtrecursive.name");
+            "aspect.integratedtunnels.boolean.item.nbtrecursive.name");
         public static final IAspectPropertyTypeInstance<ValueTypeBoolean, ValueTypeBoolean.ValueBoolean> PROP_PREDICATE_SLOTBASED = new AspectPropertyTypeInstance<>(
             ValueTypes.BOOLEAN,
-            "aspect.aspecttypes.integratedtunnels.boolean.item.predicateslotbased.name");
+            "aspect.integratedtunnels.boolean.item.predicateslotbased.name");
         public static final IAspectProperties PROPERTIES_RATESLOT = new AspectProperties(
             ImmutableList.<IAspectPropertyTypeInstance>of(
                 PROP_CHANNEL,
@@ -1146,29 +1146,29 @@ public class TunnelAspectWriteBuilders {
             .getRawValue() <= GeneralConfig.fluidRateLimit;
         public static final IAspectPropertyTypeInstance<ValueTypeInteger, ValueTypeInteger.ValueInteger> PROP_RATE = new AspectPropertyTypeInstance<>(
             ValueTypes.INTEGER,
-            "aspect.aspecttypes.integratedtunnels.integer.fluid.rate.name",
+            "aspect.integratedtunnels.integer.fluid.rate.name",
             Predicates.and(AspectReadBuilders.VALIDATOR_INTEGER_POSITIVE, VALIDATOR_INTEGER_MAXRATE));
         public static final IAspectPropertyTypeInstance<ValueTypeBoolean, ValueTypeBoolean.ValueBoolean> PROP_CHECK_AMOUNT = new AspectPropertyTypeInstance<>(
             ValueTypes.BOOLEAN,
-            "aspect.aspecttypes.integratedtunnels.boolean.fluid.checkamount.name");
+            "aspect.integratedtunnels.boolean.fluid.checkamount.name");
         public static final IAspectPropertyTypeInstance<ValueTypeBoolean, ValueTypeBoolean.ValueBoolean> PROP_CHECK_NBT = new AspectPropertyTypeInstance<>(
             ValueTypes.BOOLEAN,
-            "aspect.aspecttypes.integratedtunnels.boolean.fluid.checknbt.name");
+            "aspect.integratedtunnels.boolean.fluid.checknbt.name");
         public static final IAspectPropertyTypeInstance<ValueTypeBoolean, ValueTypeBoolean.ValueBoolean> PROP_NBT_SUBSET = new AspectPropertyTypeInstance<>(
             ValueTypes.BOOLEAN,
-            "aspect.aspecttypes.integratedtunnels.boolean.fluid.nbtsubset.name");
+            "aspect.integratedtunnels.boolean.fluid.nbtsubset.name");
         public static final IAspectPropertyTypeInstance<ValueTypeBoolean, ValueTypeBoolean.ValueBoolean> PROP_NBT_SUPERSET = new AspectPropertyTypeInstance<>(
             ValueTypes.BOOLEAN,
-            "aspect.aspecttypes.integratedtunnels.boolean.fluid.nbtsuperset.name");
+            "aspect.integratedtunnels.boolean.fluid.nbtsuperset.name");
         public static final IAspectPropertyTypeInstance<ValueTypeBoolean, ValueTypeBoolean.ValueBoolean> PROP_NBT_REQUIRE = new AspectPropertyTypeInstance<>(
             ValueTypes.BOOLEAN,
-            "aspect.aspecttypes.integratedtunnels.boolean.fluid.nbtrequire.name");
+            "aspect.integratedtunnels.boolean.fluid.nbtrequire.name");
         public static final IAspectPropertyTypeInstance<ValueTypeBoolean, ValueTypeBoolean.ValueBoolean> PROP_NBT_RECURSIVE = new AspectPropertyTypeInstance<>(
             ValueTypes.BOOLEAN,
-            "aspect.aspecttypes.integratedtunnels.boolean.fluid.nbtrecursive.name");
+            "aspect.integratedtunnels.boolean.fluid.nbtrecursive.name");
         public static final IAspectPropertyTypeInstance<ValueTypeBoolean, ValueTypeBoolean.ValueBoolean> PROP_PREDICATE_SLOTBASED = new AspectPropertyTypeInstance<>(
             ValueTypes.BOOLEAN,
-            "aspect.aspecttypes.integratedtunnels.boolean.fluid.predicateslotbased.name");
+            "aspect.integratedtunnels.boolean.fluid.predicateslotbased.name");
 
         public static final IAspectProperties PROPERTIES = new AspectProperties(
             ImmutableList.<IAspectPropertyTypeInstance>of(PROP_CHANNEL, PROP_EXACTAMOUNT, PROP_CHECK_AMOUNT));
@@ -1627,60 +1627,60 @@ public class TunnelAspectWriteBuilders {
 
         public static final IAspectPropertyTypeInstance<ValueTypeBoolean, ValueTypeBoolean.ValueBoolean> PROP_BLOCK_UPDATE = new AspectPropertyTypeInstance<>(
             ValueTypes.BOOLEAN,
-            "aspect.aspecttypes.integratedtunnels.boolean.world.blockupdate.name");
+            "aspect.integratedtunnels.boolean.world.blockupdate.name");
         public static final IAspectPropertyTypeInstance<ValueTypeBoolean, ValueTypeBoolean.ValueBoolean> PROP_HAND_RIGHT = new AspectPropertyTypeInstance<>(
             ValueTypes.BOOLEAN,
-            "aspect.aspecttypes.integratedtunnels.boolean.world.righthand.name");
+            "aspect.integratedtunnels.boolean.world.righthand.name");
         public static final IAspectPropertyTypeInstance<ValueTypeBoolean, ValueTypeBoolean.ValueBoolean> PROP_SILK_TOUCH = new AspectPropertyTypeInstance<>(
             ValueTypes.BOOLEAN,
-            "aspect.aspecttypes.integratedtunnels.boolean.world.silktouch.name");
+            "aspect.integratedtunnels.boolean.world.silktouch.name");
         public static final IAspectPropertyTypeInstance<ValueTypeBoolean, ValueTypeBoolean.ValueBoolean> PROP_IGNORE_REPLACABLE = new AspectPropertyTypeInstance<>(
             ValueTypes.BOOLEAN,
-            "aspect.aspecttypes.integratedtunnels.boolean.world.ignorereplacable.name");
+            "aspect.integratedtunnels.boolean.world.ignorereplacable.name");
         public static final IAspectPropertyTypeInstance<ValueTypeBoolean, ValueTypeBoolean.ValueBoolean> PROP_BREAK_ON_NO_DROPS = new AspectPropertyTypeInstance<>(
             ValueTypes.BOOLEAN,
-            "aspect.aspecttypes.integratedtunnels.boolean.world.breaknodrops.name");
+            "aspect.integratedtunnels.boolean.world.breaknodrops.name");
         public static final IAspectPropertyTypeInstance<ValueTypeBoolean, ValueTypeBoolean.ValueBoolean> PROP_IGNORE_PICK_UP_DELAY = new AspectPropertyTypeInstance<>(
             ValueTypes.BOOLEAN,
-            "aspect.aspecttypes.integratedtunnels.boolean.world.ignorepickupdelay.name");
+            "aspect.integratedtunnels.boolean.world.ignorepickupdelay.name");
         public static final IAspectPropertyTypeInstance<ValueTypeBoolean, ValueTypeBoolean.ValueBoolean> PROP_DISPENSE = new AspectPropertyTypeInstance<>(
             ValueTypes.BOOLEAN,
-            "aspect.aspecttypes.integratedtunnels.boolean.world.dispense.name");
+            "aspect.integratedtunnels.boolean.world.dispense.name");
         public static final IAspectPropertyTypeInstance<ValueTypeDouble, ValueTypeDouble.ValueDouble> PROP_OFFSET_X = new AspectPropertyTypeInstance<>(
             ValueTypes.DOUBLE,
-            "aspect.aspecttypes.integratedtunnels.double.world.offsetx.name",
+            "aspect.integratedtunnels.double.world.offsetx.name",
             VALIDATOR_DOUBLE_OFFSET);
         public static final IAspectPropertyTypeInstance<ValueTypeDouble, ValueTypeDouble.ValueDouble> PROP_OFFSET_Y = new AspectPropertyTypeInstance<>(
             ValueTypes.DOUBLE,
-            "aspect.aspecttypes.integratedtunnels.double.world.offsety.name",
+            "aspect.integratedtunnels.double.world.offsety.name",
             VALIDATOR_DOUBLE_OFFSET);
         public static final IAspectPropertyTypeInstance<ValueTypeDouble, ValueTypeDouble.ValueDouble> PROP_OFFSET_Z = new AspectPropertyTypeInstance<>(
             ValueTypes.DOUBLE,
-            "aspect.aspecttypes.integratedtunnels.double.world.offsetz.name",
+            "aspect.integratedtunnels.double.world.offsetz.name",
             VALIDATOR_DOUBLE_OFFSET);
         public static final IAspectPropertyTypeInstance<ValueTypeInteger, ValueTypeInteger.ValueInteger> PROP_LIFESPAN = new AspectPropertyTypeInstance<>(
             ValueTypes.INTEGER,
-            "aspect.aspecttypes.integratedtunnels.boolean.world.lifespan.name",
+            "aspect.integratedtunnels.boolean.world.lifespan.name",
             AspectReadBuilders.VALIDATOR_INTEGER_POSITIVE);
         public static final IAspectPropertyTypeInstance<ValueTypeInteger, ValueTypeInteger.ValueInteger> PROP_DELAY_BEFORE_PICKUP = new AspectPropertyTypeInstance<>(
             ValueTypes.INTEGER,
-            "aspect.aspecttypes.integratedtunnels.boolean.world.delaybeforepickup.name",
+            "aspect.integratedtunnels.boolean.world.delaybeforepickup.name",
             AspectReadBuilders.VALIDATOR_INTEGER_POSITIVE);
         public static final IAspectPropertyTypeInstance<ValueTypeDouble, ValueTypeDouble.ValueDouble> PROP_VELOCITY = new AspectPropertyTypeInstance<>(
             ValueTypes.DOUBLE,
-            "aspect.aspecttypes.integratedtunnels.double.world.velocity.name",
+            "aspect.integratedtunnels.double.world.velocity.name",
             input -> input.getRawValue() >= 0 && input.getRawValue() <= 25D);
         public static final IAspectPropertyTypeInstance<ValueTypeDouble, ValueTypeDouble.ValueDouble> PROP_YAW = new AspectPropertyTypeInstance<>(
             ValueTypes.DOUBLE,
-            "aspect.aspecttypes.integratedtunnels.double.world.yaw.name",
+            "aspect.integratedtunnels.double.world.yaw.name",
             VALIDATOR_DOUBLE_ANGLE);
         public static final IAspectPropertyTypeInstance<ValueTypeDouble, ValueTypeDouble.ValueDouble> PROP_PITCH = new AspectPropertyTypeInstance<>(
             ValueTypes.DOUBLE,
-            "aspect.aspecttypes.integratedtunnels.double.world.pitch.name",
+            "aspect.integratedtunnels.double.world.pitch.name",
             VALIDATOR_DOUBLE_ANGLE);
         public static final IAspectPropertyTypeInstance<ValueTypeInteger, ValueTypeInteger.ValueInteger> PROPERTY_ENTITYINDEX = new AspectPropertyTypeInstance<>(
             ValueTypes.INTEGER,
-            "aspect.aspecttypes.integratedtunnels.integer.entityindex.name");
+            "aspect.integratedtunnels.integer.entityindex.name");
 
         public static final class Energy {
 
@@ -2831,13 +2831,13 @@ public class TunnelAspectWriteBuilders {
 
         public static final IAspectPropertyTypeInstance<ValueTypeBoolean, ValueTypeBoolean.ValueBoolean> PROP_RIGHT_CLICK = new AspectPropertyTypeInstance<>(
             ValueTypes.BOOLEAN,
-            "aspect.aspecttypes.integratedtunnels.boolean.player.rightclick.name");
+            "aspect.integratedtunnels.boolean.player.rightclick.name");
         public static final IAspectPropertyTypeInstance<ValueTypeBoolean, ValueTypeBoolean.ValueBoolean> PROP_CONTINUOUS_CLICK = new AspectPropertyTypeInstance<>(
             ValueTypes.BOOLEAN,
-            "aspect.aspecttypes.integratedtunnels.boolean.player.continuousclick.name");
+            "aspect.integratedtunnels.boolean.player.continuousclick.name");
         public static final IAspectPropertyTypeInstance<ValueTypeBoolean, ValueTypeBoolean.ValueBoolean> PROP_SNEAK = new AspectPropertyTypeInstance<>(
             ValueTypes.BOOLEAN,
-            "aspect.aspecttypes.integratedtunnels.boolean.player.sneak.name");
+            "aspect.integratedtunnels.boolean.player.sneak.name");
 
         public static final IAspectProperties PROPERTIES_CLICK_EMPTY = new AspectProperties(
             ImmutableList.<IAspectPropertyTypeInstance>of(

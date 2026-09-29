@@ -17,6 +17,7 @@ import ruiseki.integrateddynamics.api.part.PartPos;
 import ruiseki.integrateddynamics.api.part.PartRenderPosition;
 import ruiseki.integrateddynamics.api.part.PartTarget;
 import ruiseki.integrateddynamics.core.helper.PartHelpers;
+import ruiseki.integrateddynamics.core.inventory.container.ContainerPartOffset;
 import ruiseki.integrateddynamics.core.inventory.container.ContainerPartSettings;
 import ruiseki.okcore.inventory.IGuiConstructor;
 import ruiseki.okcore.inventory.SimpleInventory;
@@ -77,7 +78,7 @@ public abstract class PartTypeConfigurable<P extends IPartType<P, S>, S extends 
                 EntityPlayer player) {
                 Triple<IPartContainer, PartTypeBase, PartTarget> data = PartHelpers
                     .getContainerPartConstructionData(pos);
-                return new ContainerPartSettings(
+                return new ContainerPartOffset(
                     playerInventory,
                     new SimpleInventory(0),
                     data.getRight(),

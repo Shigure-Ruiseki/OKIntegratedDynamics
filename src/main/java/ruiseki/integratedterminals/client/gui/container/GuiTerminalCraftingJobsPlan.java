@@ -74,11 +74,12 @@ public class GuiTerminalCraftingJobsPlan extends GuiContainerExtended<ContainerT
                     .isPresent()) {
                     String buttonText = EnumChatFormatting.ITALIC
                         + LangHelpers.localize("gui.integratedterminals.craftingplan.view.flat");
-                    addRenderableWidget(new GuiButtonText(guiLeft + 8, guiTop + 198, 80, 20, buttonText, (b) -> {
-                        this.guiCraftingPlanToggler
-                            .setCraftingPlanDisplayMode(GuiCraftingPlanToggler.CraftingPlanDisplayMode.FLAT);
-                        this.initGui();
-                    }, true));
+                    addRenderableWidget(
+                        new GuiButtonText(guiLeft + 8, guiTop + 198, 80, 20, buttonText, buttonText, (b) -> {
+                            this.guiCraftingPlanToggler
+                                .setCraftingPlanDisplayMode(GuiCraftingPlanToggler.CraftingPlanDisplayMode.FLAT);
+                            this.initGui();
+                        }, true));
                 }
             },
             () -> {
@@ -104,11 +105,12 @@ public class GuiTerminalCraftingJobsPlan extends GuiContainerExtended<ContainerT
                     .isPresent()) {
                     String buttonText = EnumChatFormatting.ITALIC
                         + LangHelpers.localize("gui.integratedterminals.craftingplan.view.tree");
-                    addRenderableWidget(new GuiButtonText(guiLeft + 8, guiTop + 198, 80, 20, buttonText, (b) -> {
-                        this.guiCraftingPlanToggler
-                            .setCraftingPlanDisplayMode(GuiCraftingPlanToggler.CraftingPlanDisplayMode.TREE);
-                        this.initGui();
-                    }, true));
+                    addRenderableWidget(
+                        new GuiButtonText(guiLeft + 8, guiTop + 198, 80, 20, buttonText, buttonText, (b) -> {
+                            this.guiCraftingPlanToggler
+                                .setCraftingPlanDisplayMode(GuiCraftingPlanToggler.CraftingPlanDisplayMode.TREE);
+                            this.initGui();
+                        }, true));
                 }
             },
             () -> {
@@ -163,6 +165,7 @@ public class GuiTerminalCraftingJobsPlan extends GuiContainerExtended<ContainerT
                     guiTop + 198,
                     100,
                     20,
+                    LangHelpers.localize("gui.integratedterminals.terminal_crafting_job.craftingplan.cancel"),
                     LangHelpers.localize("gui.integratedterminals.terminal_crafting_job.craftingplan.cancel"),
                     (b) -> cancelCraftingJob(),
                     true));

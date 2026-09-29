@@ -79,13 +79,14 @@ public class GuiLogicProgrammerBase<T extends ContainerLogicProgrammerBase> exte
                 this.guiLeft + 87,
                 this.guiTop + 4,
                 LangHelpers.localize(L10NValues.GUI_LOGICPROGRAMMER_RESET),
+                LangHelpers.localize(L10NValues.GUI_LOGICPROGRAMMER_RESET),
                 button -> {
                     if (container.getActiveElement() != null) {
                         container.returnWriteItemToPlayer();
                         handleElementActivation(container.getActiveElement(), true);
                     }
                 }));
-        this.resetButton.height = 12;
+        this.resetButton.setHeight(12);
         resetButton.visible = false;
 
         subGuiHolder.initGui(this.guiLeft, this.guiTop);
@@ -400,7 +401,7 @@ public class GuiLogicProgrammerBase<T extends ContainerLogicProgrammerBase> exte
             boolean isElementFocused = container.getActiveElement() != null && container.getActiveElement()
                 .isFocused(operatorConfigPattern);
 
-            if (ClientProxy.FOCUS_LP_SEARCH.isActiveAndMatches(keyCode)) {
+            if (ClientProxy.FOCUS_LP_SEARCH.isActiveAndMatches(keyCode) && !isSearchFieldFocussed()) {
                 // Focus search field
                 setSearchFieldFocussed(true);
                 swallowNextCharacter = true;
@@ -533,7 +534,15 @@ public class GuiLogicProgrammerBase<T extends ContainerLogicProgrammerBase> exte
 
             if (hasLabeller()) {
                 addRenderableWidget(
-                    button = new GuiButtonText(0, 0, 6, 10, "E", (button) -> onButtonEditClick(), true));
+                    button = new GuiButtonText(
+                        0,
+                        0,
+                        6,
+                        10,
+                        LangHelpers.localize("gui.integrateddynamics.button.edit"),
+                        "E",
+                        (button) -> onButtonEditClick(),
+                        true));
             }
 
             int searchWidth = 113;
@@ -543,15 +552,15 @@ public class GuiLogicProgrammerBase<T extends ContainerLogicProgrammerBase> exte
                 0,
                 searchWidth,
                 11,
-                LangHelpers.localize("gui.cyclopscore.search"),
+                LangHelpers.localize("gui.okcore.search"),
                 true);
-            this.searchField.setMaxStringLength(64);
-            this.searchField.setEnableBackgroundDrawing(true);
+            this.searchField.setMaxLength(64);
+            this.searchField.setBordered(true);
             this.searchField.setVisible(false);
             this.searchField.setTextColor(16777215);
             this.searchField.setCanLoseFocus(true);
-            this.searchField.setText("");
-            this.searchField.width = searchWidth;
+            this.searchField.setValue("");
+            this.searchField.setWidth(searchWidth);
         }
 
         @Override
@@ -559,8 +568,8 @@ public class GuiLogicProgrammerBase<T extends ContainerLogicProgrammerBase> exte
             super.initGui(guiLeft, guiTop);
             int searchX = 90;
             int searchY = 110;
-            this.searchField.xPosition = guiLeft + searchX;
-            this.searchField.yPosition = guiTop + searchY;
+            this.searchField.setX(guiLeft + searchX);
+            this.searchField.setY(guiTop + searchY);
 
             if (hasLabeller()) {
                 button.x = guiLeft + 220;
@@ -588,7 +597,7 @@ public class GuiLogicProgrammerBase<T extends ContainerLogicProgrammerBase> exte
             if (!this.searchField.isFocused() || !this.searchField.charTyped(typedChar, keyCode)) {
                 return super.charTyped(typedChar, keyCode);
             } else {
-                label(this.searchField.getText());
+                label(this.searchField.getValue());
                 return true;
             }
         }
@@ -597,7 +606,7 @@ public class GuiLogicProgrammerBase<T extends ContainerLogicProgrammerBase> exte
         public boolean keyPressed(int typedChar, int keyCode, int modifiers) {
             if (this.searchField.isFocused() && typedChar != Keyboard.KEY_ESCAPE) {
                 this.searchField.keyPressed(typedChar, keyCode, modifiers);
-                label(this.searchField.getText());
+                label(this.searchField.getValue());
                 return true;
             }
             return super.keyPressed(typedChar, keyCode, modifiers);
@@ -635,7 +644,7 @@ public class GuiLogicProgrammerBase<T extends ContainerLogicProgrammerBase> exte
             this.searchField.setVisible(!this.searchField.isVisible());
             if (this.searchField.isVisible()) {
                 this.searchField.setFocused(true);
-                label(this.searchField.getText());
+                label(this.searchField.getValue());
             } else {
                 label("");
             }

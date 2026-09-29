@@ -113,6 +113,7 @@ public abstract class GuiMultipartAspects<P extends IPartType<P, S>, S extends I
                 -20,
                 10,
                 10,
+                LangHelpers.localize("gui.integrateddynamics.aspect_settings"),
                 "+",
                 createServerPressable(entry.getValue(), b -> {}),
                 true);

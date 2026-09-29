@@ -63,7 +63,7 @@ public class GuiElementValueTypeString<G extends Gui, C extends Container>
     public void setValueInGui(GuiElementValueTypeStringRenderPattern subGui, boolean sendToServer) {
         if (subGui != null) {
             subGui.getTextField()
-                .setText(String.valueOf(inputString));
+                .setValue(String.valueOf(inputString));
             if (sendToServer) {
                 subGui.sendValueToServer();
             }

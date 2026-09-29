@@ -470,7 +470,7 @@ public interface IPartType<P extends IPartType<P, S>, S extends IPartState<P>>
 
     /**
      * {@link #writeExtraGuiData(ExtendedBuffer, PartPos, EntityPlayerMP)}.
-     * 
+     *
      * @return The optional container provider for the part type gui.
      * @param pos The part position. May be null when called client-side, for checking presence.
      */
@@ -480,7 +480,7 @@ public interface IPartType<P extends IPartType<P, S>, S extends IPartState<P>>
 
     /**
      * This method can be overridden for cases when additional data needs to be sent to clients when opening containers.
-     * 
+     *
      * @param packetBuffer A packet buffer that can be written to.
      * @param pos          A part position.
      * @param player       The player opening the gui.
@@ -491,7 +491,7 @@ public interface IPartType<P extends IPartType<P, S>, S extends IPartState<P>>
 
     /**
      * {@link #writeExtraGuiDataSettings(ExtendedBuffer, PartPos, EntityPlayerMP)}.
-     * 
+     *
      * @return The optional container provider for the part settings gui.
      * @param pos The part position. May be null when called client-side, for checking presence.
      */
@@ -501,18 +501,18 @@ public interface IPartType<P extends IPartType<P, S>, S extends IPartState<P>>
 
     /**
      * {@link #writeExtraGuiDataOffsets(ExtendedBuffer, PartPos, EntityPlayerMP)}.
-     * 
+     *
      * @return The optional container provider for the part offsets gui.
      * @param pos The part position. May be null when called client-side, for checking presence.
      */
     public default Optional<IGuiConstructor> getContainerProviderOffsets(PartPos pos) {
         return Optional.empty();
-    };
+    }
 
     /**
      * This method can be overridden for cases when additional data needs to be sent to clients
      * when opening settings containers.
-     * 
+     *
      * @param packetBuffer A packet buffer that can be written to.
      * @param pos          A part position.
      * @param player       The player opening the settings gui.
@@ -524,7 +524,7 @@ public interface IPartType<P extends IPartType<P, S>, S extends IPartState<P>>
     /**
      * This method can be overridden for cases when additional data needs to be sent to clients
      * when opening offsets containers.
-     * 
+     *
      * @param packetBuffer A packet buffer that can be written to.
      * @param pos          A part position.
      * @param player       The player opening the offsets gui.

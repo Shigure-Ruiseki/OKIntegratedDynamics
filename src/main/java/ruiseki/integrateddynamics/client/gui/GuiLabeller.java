@@ -43,10 +43,11 @@ public class GuiLabeller extends GuiContainerExtended<ContainerLabeller> {
                 this.guiLeft + 133,
                 this.guiTop + 8,
                 LangHelpers.localize("item.items.integrateddynamics.labeller.button.write"),
+                LangHelpers.localize("item.items.integrateddynamics.labeller.button.write"),
                 button -> {
                     ItemStack itemStack = getContainer().getItemStack();
                     if (!ItemHelpers.isEmpty(itemStack)) {
-                        String name = StringUtils.isBlank(searchField.getText()) ? "" : searchField.getText();
+                        String name = StringUtils.isBlank(searchField.getValue()) ? "" : searchField.getValue();
                         IntegratedDynamics._instance.getPacketHandler()
                             .sendToServer(new ItemStackRenamePacket(name));
                         getContainer().setItemStackName(name);
@@ -65,15 +66,15 @@ public class GuiLabeller extends GuiContainerExtended<ContainerLabeller> {
             this.fontRendererObj.FONT_HEIGHT,
             LangHelpers.localize("gui.okcore.search"),
             true);
-        this.searchField.setMaxStringLength(64);
-        this.searchField.setEnableBackgroundDrawing(false);
+        this.searchField.setMaxLength(64);
+        this.searchField.setBordered(false);
         this.searchField.setVisible(true);
         this.searchField.setFocused(true);
         this.searchField.setTextColor(16777215);
         this.searchField.setCanLoseFocus(false);
-        this.searchField.setText("");
+        this.searchField.setValue("");
         this.searchField.width = searchWidth;
-        this.searchField.xPosition = this.guiLeft + (searchX + searchWidth) - this.searchField.width;
+        this.searchField.setX(this.guiLeft + (searchX + searchWidth) - this.searchField.width);
     }
 
     @Override
@@ -112,11 +113,11 @@ public class GuiLabeller extends GuiContainerExtended<ContainerLabeller> {
     @Override
     protected void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY) {
         super.drawGuiContainerBackgroundLayer(partialTicks, mouseX, mouseY);
-        this.searchField.drawTextBox();
+        this.searchField.drawWidget(mouseX, mouseY, partialTicks);
     }
 
     public void setText(String text) {
-        this.searchField.setText(text);
+        this.searchField.setValue(text);
     }
 
 }

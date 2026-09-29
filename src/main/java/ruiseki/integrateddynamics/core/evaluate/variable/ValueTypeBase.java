@@ -59,7 +59,7 @@ public abstract class ValueTypeBase<V extends IValue> implements IValueType<V> {
     }
 
     protected String getUnlocalizedPrefix() {
-        return "valuetype.valuetypes." + getModId() + getTypeNamespace() + getTypeName();
+        return "valuetype." + getModId() + getTypeNamespace() + getTypeName();
     }
 
     protected String getTypeNamespace() {

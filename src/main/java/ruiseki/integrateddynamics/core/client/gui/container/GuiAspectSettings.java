@@ -69,6 +69,12 @@ public class GuiAspectSettings extends GuiContainerExtended<ContainerAspectSetti
         return new ResourceLocation(Reference.MOD_ID, "textures/gui/aspect_settings.png");
     }
 
+    @Override
+    public void updateScreen() {
+        super.updateScreen();
+        subGuiHolder.tick();
+    }
+
     protected void saveSetting() {
         if (guiElement != null && lastError == null) {
             container.setValue(getActiveProperty(), guiElement.getValue());
@@ -95,23 +101,42 @@ public class GuiAspectSettings extends GuiContainerExtended<ContainerAspectSetti
                 guiTop + 5,
                 12,
                 10,
+                LangHelpers.localize("gui.okcore.up"),
                 "<<",
                 createServerPressable(ContainerAspectSettings.BUTTON_EXIT, (button) -> { saveSetting(); }),
                 true));
-        addRenderableWidget(buttonLeft = new GuiButtonText(guiLeft + 21, guiTop + 5, 10, 10, "<", (button) -> {
-            saveSetting();
-            if (getActivePropertyIndex() > 0) {
-                setActiveProperty(getActivePropertyIndex() - 1);
-                refreshButtonEnabled();
-            }
-        }, true));
-        addRenderableWidget(buttonRight = new GuiButtonText(guiLeft + 159, guiTop + 5, 10, 10, ">", (button) -> {
-            saveSetting();
-            if (getActivePropertyIndex() < propertyTypes.size()) {
-                setActiveProperty(getActivePropertyIndex() + 1);
-                refreshButtonEnabled();
-            }
-        }, true));
+        addRenderableWidget(
+            buttonLeft = new GuiButtonText(
+                guiLeft + 21,
+                guiTop + 5,
+                10,
+                10,
+                LangHelpers.localize("gui.okcore.left"),
+                "<",
+                (button) -> {
+                    saveSetting();
+                    if (getActivePropertyIndex() > 0) {
+                        setActiveProperty(getActivePropertyIndex() - 1);
+                        refreshButtonEnabled();
+                    }
+                },
+                true));
+        addRenderableWidget(
+            buttonRight = new GuiButtonText(
+                guiLeft + 159,
+                guiTop + 5,
+                10,
+                10,
+                LangHelpers.localize("gui.okcore.right"),
+                ">",
+                (button) -> {
+                    saveSetting();
+                    if (getActivePropertyIndex() < propertyTypes.size()) {
+                        setActiveProperty(getActivePropertyIndex() + 1);
+                        refreshButtonEnabled();
+                    }
+                },
+                true));
         refreshButtonEnabled();
 
         setActiveProperty(activePropertyIndex);

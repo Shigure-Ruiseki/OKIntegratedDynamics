@@ -70,15 +70,15 @@ public class GuiTextFieldDropdown<T> extends GuiTextFieldExtended {
 
     public void refreshDropdownList() {
         // Remove all colors and formatting when changing text
-        if (getText().contains("§")) {
-            setText(getText().replaceAll("§.", ""));
+        if (getValue().contains("§")) {
+            setValue(getValue().replaceAll("§.", ""));
         }
         if (!possibilities.isEmpty()) {
             visiblePossibilities = Lists.newArrayList();
             for (IDropdownEntry<T> possibility : possibilities) {
                 if (possibility.getMatchString()
                     .toLowerCase()
-                    .contains(getText().toLowerCase())) {
+                    .contains(getValue().toLowerCase())) {
                     visiblePossibilities.add(possibility);
                 }
             }
@@ -87,7 +87,7 @@ public class GuiTextFieldDropdown<T> extends GuiTextFieldExtended {
                 selectedDropdownPossibility = visiblePossibilities.stream()
                     .filter(
                         e -> e.getMatchString()
-                            .equals(getText()))
+                            .equals(getValue()))
                     .findFirst()
                     .orElse(null);
             }
@@ -159,7 +159,7 @@ public class GuiTextFieldDropdown<T> extends GuiTextFieldExtended {
 
     public void selectPossibility(@Nullable IDropdownEntry<T> entry) {
         selectedDropdownPossibility = entry;
-        setText(selectedDropdownPossibility != null ? selectedDropdownPossibility.getDisplayString() : "");
+        setValue(selectedDropdownPossibility != null ? selectedDropdownPossibility.getDisplayString() : "");
         visiblePossibilities = Lists.newArrayList();
         visiblePossibilitiesIndex = -1;
         if (dropdownEntryListener != null) {
@@ -178,8 +178,8 @@ public class GuiTextFieldDropdown<T> extends GuiTextFieldExtended {
             FontRenderer fontRenderer = Minecraft.getMinecraft().fontRenderer;
             int yOffset = fontRenderer.FONT_HEIGHT + 3;
 
-            int x = this.xPosition;
-            int y = this.yPosition + yOffset;
+            int x = this.getX();
+            int y = this.getY() + yOffset;
             int width = this.getWidth() + 9;
             int startIndex = Math
                 .max(0, Math.min(visiblePossibilitiesIndex, visiblePossibilities.size() - getDropdownSize()));
@@ -259,8 +259,8 @@ public class GuiTextFieldDropdown<T> extends GuiTextFieldExtended {
         FontRenderer fontRenderer = Minecraft.getMinecraft().fontRenderer;
         int yOffset = fontRenderer.FONT_HEIGHT + 3;
 
-        int x = this.xPosition;
-        int y = this.yPosition + yOffset;
+        int x = this.getX();
+        int y = this.getY() + yOffset;
         int startIndex = Math
             .max(0, Math.min(visiblePossibilitiesIndex, visiblePossibilities.size() - getDropdownSize()));
         int endIndex = Math.min(startIndex + getDropdownSize(), visiblePossibilities.size());

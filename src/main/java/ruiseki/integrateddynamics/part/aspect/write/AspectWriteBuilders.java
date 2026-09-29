@@ -158,15 +158,15 @@ public class AspectWriteBuilders {
 
         public static final IAspectPropertyTypeInstance<ValueTypeDouble, ValueTypeDouble.ValueDouble> PROP_VOLUME = new AspectPropertyTypeInstance<>(
             ValueTypes.DOUBLE,
-            "aspect.aspecttypes.integrateddynamics.double.volume.name",
+            "aspect.integrateddynamics.double.volume.name",
             AspectReadBuilders.VALIDATOR_DOUBLE_POSITIVE);
         public static final IAspectPropertyTypeInstance<ValueTypeDouble, ValueTypeDouble.ValueDouble> PROP_FREQUENCY = new AspectPropertyTypeInstance<>(
             ValueTypes.DOUBLE,
-            "aspect.aspecttypes.integrateddynamics.double.frequency.name",
+            "aspect.integrateddynamics.double.frequency.name",
             AspectReadBuilders.VALIDATOR_DOUBLE_POSITIVE);
         public static final IAspectPropertyTypeInstance<ValueTypeInteger, ValueTypeInteger.ValueInteger> PROP_RANGE = new AspectPropertyTypeInstance<>(
             ValueTypes.INTEGER,
-            "aspect.aspecttypes.integrateddynamics.integer.range.name",
+            "aspect.integrateddynamics.integer.range.name",
             AspectReadBuilders.VALIDATOR_INTEGER_POSITIVE);
         public static final IAspectProperties PROPERTIES_NOTE = new AspectProperties(
             Sets.<IAspectPropertyTypeInstance>newHashSet(PROP_VOLUME));
@@ -265,32 +265,32 @@ public class AspectWriteBuilders {
 
         public static final IAspectPropertyTypeInstance<ValueTypeDouble, ValueTypeDouble.ValueDouble> PROP_OFFSET_X = new AspectPropertyTypeInstance<>(
             ValueTypes.DOUBLE,
-            "aspect.aspecttypes.integrateddynamics.double.offset_x");
+            "aspect.integrateddynamics.double.offset_x");
         public static final IAspectPropertyTypeInstance<ValueTypeDouble, ValueTypeDouble.ValueDouble> PROP_OFFSET_Y = new AspectPropertyTypeInstance<>(
             ValueTypes.DOUBLE,
-            "aspect.aspecttypes.integrateddynamics.double.offset_y");
+            "aspect.integrateddynamics.double.offset_y");
         public static final IAspectPropertyTypeInstance<ValueTypeDouble, ValueTypeDouble.ValueDouble> PROP_OFFSET_Z = new AspectPropertyTypeInstance<>(
             ValueTypes.DOUBLE,
-            "aspect.aspecttypes.integrateddynamics.double.offset_z");
+            "aspect.integrateddynamics.double.offset_z");
         public static final IAspectPropertyTypeInstance<ValueTypeInteger, ValueTypeInteger.ValueInteger> PROP_PARTICLES = new AspectPropertyTypeInstance<>(
             ValueTypes.INTEGER,
-            "aspect.aspecttypes.integrateddynamics.integer.particles.name",
+            "aspect.integrateddynamics.integer.particles.name",
             AspectReadBuilders.VALIDATOR_INTEGER_POSITIVE);
         public static final IAspectPropertyTypeInstance<ValueTypeDouble, ValueTypeDouble.ValueDouble> PROP_SPREAD_X = new AspectPropertyTypeInstance<>(
             ValueTypes.DOUBLE,
-            "aspect.aspecttypes.integrateddynamics.double.spread_x.name",
+            "aspect.integrateddynamics.double.spread_x.name",
             AspectReadBuilders.VALIDATOR_DOUBLE_POSITIVE);
         public static final IAspectPropertyTypeInstance<ValueTypeDouble, ValueTypeDouble.ValueDouble> PROP_SPREAD_Y = new AspectPropertyTypeInstance<>(
             ValueTypes.DOUBLE,
-            "aspect.aspecttypes.integrateddynamics.double.spread_y.name",
+            "aspect.integrateddynamics.double.spread_y.name",
             AspectReadBuilders.VALIDATOR_DOUBLE_POSITIVE);
         public static final IAspectPropertyTypeInstance<ValueTypeDouble, ValueTypeDouble.ValueDouble> PROP_SPREAD_Z = new AspectPropertyTypeInstance<>(
             ValueTypes.DOUBLE,
-            "aspect.aspecttypes.integrateddynamics.double.spread_z.name",
+            "aspect.integrateddynamics.double.spread_z.name",
             AspectReadBuilders.VALIDATOR_DOUBLE_POSITIVE);
         public static final IAspectPropertyTypeInstance<ValueTypeBoolean, ValueTypeBoolean.ValueBoolean> PROP_FORCE = new AspectPropertyTypeInstance<>(
             ValueTypes.BOOLEAN,
-            "aspect.aspecttypes.integrateddynamics.boolean.force_particle.name");
+            "aspect.integrateddynamics.boolean.force_particle.name");
         public static final IAspectProperties PROPERTIES_PARTICLE = new AspectProperties(
             ImmutableList.<IAspectPropertyTypeInstance>of(
                 PROP_OFFSET_X,
@@ -327,10 +327,10 @@ public class AspectWriteBuilders {
 
         public static final IAspectPropertyTypeInstance<ValueTypeBoolean, ValueTypeBoolean.ValueBoolean> PROP_STRONG_POWER = new AspectPropertyTypeInstance<>(
             ValueTypes.BOOLEAN,
-            "aspect.aspecttypes.integrateddynamics.boolean.strong_power.name");
+            "aspect.integrateddynamics.boolean.strong_power.name");
         public static final IAspectPropertyTypeInstance<ValueTypeInteger, ValueTypeInteger.ValueInteger> PROP_PULSE_EMIT_VALUE = new AspectPropertyTypeInstance<>(
             ValueTypes.INTEGER,
-            "aspect.aspecttypes.integrateddynamics.integer.pulse_emit_value.name",
+            "aspect.integrateddynamics.integer.pulse_emit_value.name",
             (v) -> v.getRawValue() >= 0 && v.getRawValue() <= 15);
         public static final IAspectProperties PROPERTIES_REDSTONE = new AspectProperties(
             ImmutableList.<IAspectPropertyTypeInstance>of(PROP_STRONG_POWER));

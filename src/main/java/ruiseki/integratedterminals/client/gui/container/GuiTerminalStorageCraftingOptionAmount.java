@@ -21,6 +21,7 @@ import ruiseki.integratedterminals.core.client.gui.GuiTerminalStorage;
 import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorageCraftingOptionAmountBase;
 import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientOpenCraftingPlanGuiPacket;
 import ruiseki.okcore.client.gui.component.GuiScrollBar;
+import ruiseki.okcore.client.gui.component.button.GuiButton;
 import ruiseki.okcore.client.gui.component.button.GuiButtonExtended;
 import ruiseki.okcore.client.gui.component.button.GuiButtonText;
 import ruiseki.okcore.client.gui.component.input.GuiNumberField;
@@ -96,13 +97,13 @@ public class GuiTerminalStorageCraftingOptionAmount<L, C extends ContainerTermin
             LangHelpers.localize("gui.integratedterminals.amount"),
             true);
         numberField.setPositiveOnly(true);
-        numberField.setMaxStringLength(5);
+        numberField.setMaxLength(5);
         numberField.setMaxValue(10000);
         numberField.setMinValue(1);
         numberField.setVisible(true);
         numberField.setTextColor(16777215);
         numberField.setCanLoseFocus(true);
-        numberField.setText(
+        numberField.setValue(
             Integer.toString(
                 numberField.validateNumber(
                     getContainer().getCraftingOptionGuiData()
@@ -135,6 +136,7 @@ public class GuiTerminalStorageCraftingOptionAmount<L, C extends ContainerTermin
                 50,
                 20,
                 LangHelpers.localize("gui.integratedterminals.terminal_storage.step.next"),
+                LangHelpers.localize("gui.integratedterminals.terminal_storage.step.next"),
                 (bb) -> calculateCraftingJob(),
                 true));
 
@@ -143,6 +145,7 @@ public class GuiTerminalStorageCraftingOptionAmount<L, C extends ContainerTermin
             guiTop + 33,
             15,
             20,
+            LangHelpers.localize("gui.integratedterminals.terminal_storage.step.back"),
             "<",
             (bb) -> returnToTerminalStorage(),
             true);
@@ -174,7 +177,7 @@ public class GuiTerminalStorageCraftingOptionAmount<L, C extends ContainerTermin
             .openContainerFromClient(data);
     }
 
-    public void buttonChangeQuantity(GuiButtonExtended button) {
+    public void buttonChangeQuantity(GuiButton button) {
         if (button instanceof GuiButtonChangeQuantity) {
             int diff = ((GuiButtonChangeQuantity) button).getDiff();
             setAmount(getAmount() + diff);
@@ -219,7 +222,7 @@ public class GuiTerminalStorageCraftingOptionAmount<L, C extends ContainerTermin
     }
 
     private void setAmount(int amount) {
-        this.numberField.setText(Integer.toString(this.numberField.validateNumber(amount)));
+        this.numberField.setValue(Integer.toString(this.numberField.validateNumber(amount)));
     }
 
     protected void drawOutputSlots(int x, int y, float partialTicks, int mouseX, int mouseY,

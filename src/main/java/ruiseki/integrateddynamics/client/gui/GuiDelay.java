@@ -65,8 +65,8 @@ public class GuiDelay extends GuiActiveVariableBase<ContainerDelay, TileDelay> {
             LangHelpers.localize("gui.integrateddynamics.partsettings.update_interval"),
             true);
         numberFieldUpdateInterval.setPositiveOnly(true);
-        numberFieldUpdateInterval.setMaxStringLength(64);
-        numberFieldUpdateInterval.setMaxStringLength(15);
+        numberFieldUpdateInterval.setMaxLength(64);
+        numberFieldUpdateInterval.setMaxLength(15);
         numberFieldUpdateInterval.setVisible(true);
         numberFieldUpdateInterval.setTextColor(16777215);
         numberFieldUpdateInterval.setCanLoseFocus(true);
@@ -82,8 +82,8 @@ public class GuiDelay extends GuiActiveVariableBase<ContainerDelay, TileDelay> {
             true);
         numberFieldCapacity.setMinValue(1);
         numberFieldCapacity.setMaxValue(BlockDelayConfig.maxHistoryCapacity);
-        numberFieldCapacity.setMaxStringLength(64);
-        numberFieldCapacity.setMaxStringLength(15);
+        numberFieldCapacity.setMaxLength(64);
+        numberFieldCapacity.setMaxLength(15);
         numberFieldCapacity.setVisible(true);
         numberFieldCapacity.setTextColor(16777215);
         numberFieldCapacity.setCanLoseFocus(true);
@@ -160,10 +160,10 @@ public class GuiDelay extends GuiActiveVariableBase<ContainerDelay, TileDelay> {
     @Override
     public void onUpdate(int valueId, NBTTagCompound value) {
         if (valueId == getContainer().getLastUpdateValueId()) {
-            numberFieldUpdateInterval.setText(Integer.toString(getContainer().getLastUpdateValue()));
+            numberFieldUpdateInterval.setValue(Integer.toString(getContainer().getLastUpdateValue()));
         }
-        if (valueId == ((ContainerDelay) getContainer()).getLastCapacityValueId()) {
-            numberFieldCapacity.setText(Integer.toString(((ContainerDelay) getContainer()).getLastCapacityValue()));
+        if (valueId == getContainer().getLastCapacityValueId()) {
+            numberFieldCapacity.setValue(Integer.toString(getContainer().getLastCapacityValue()));
         }
     }
 }

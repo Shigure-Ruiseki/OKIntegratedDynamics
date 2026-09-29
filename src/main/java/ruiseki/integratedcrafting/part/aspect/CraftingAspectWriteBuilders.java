@@ -41,22 +41,22 @@ public class CraftingAspectWriteBuilders {
 
     public static final IAspectPropertyTypeInstance<ValueTypeInteger, ValueTypeInteger.ValueInteger> PROP_CHANNEL = new AspectPropertyTypeInstance<>(
         ValueTypes.INTEGER,
-        "aspect.aspecttypes.integrateddynamics.integer.channel.name");
+        "aspect.integrateddynamics.integer.channel.name");
     public static final IAspectPropertyTypeInstance<ValueTypeBoolean, ValueTypeBoolean.ValueBoolean> PROP_IGNORE_STORAGE = new AspectPropertyTypeInstance<>(
         ValueTypes.BOOLEAN,
-        "aspect.aspecttypes.integratedcrafting.boolean.ignorestorage.name");
+        "aspect.integratedcrafting.boolean.ignorestorage.name");
     public static final IAspectPropertyTypeInstance<ValueTypeBoolean, ValueTypeBoolean.ValueBoolean> PROP_IGNORE_CRAFTING = new AspectPropertyTypeInstance<>(
         ValueTypes.BOOLEAN,
-        "aspect.aspecttypes.integratedcrafting.boolean.ignorecrafting.name");
+        "aspect.integratedcrafting.boolean.ignorecrafting.name");
     public static final IAspectPropertyTypeInstance<ValueTypeBoolean, ValueTypeBoolean.ValueBoolean> PROP_CRAFT_MISSING = new AspectPropertyTypeInstance<>(
         ValueTypes.BOOLEAN,
-        "aspect.aspecttypes.integratedcrafting.boolean.craftmissing.name");
+        "aspect.integratedcrafting.boolean.craftmissing.name");
     public static final IAspectPropertyTypeInstance<ValueTypeInteger, ValueTypeInteger.ValueInteger> PROP_CRAFT_AMOUNT = new AspectPropertyTypeInstance<>(
         ValueTypes.INTEGER,
-        "aspect.aspecttypes.integratedcrafting.integer.craftamount.name");
+        "aspect.integratedcrafting.integer.craftamount.name");
     public static final IAspectPropertyTypeInstance<ValueTypeInteger, ValueTypeInteger.ValueInteger> PROP_CRAFT_DELAY = new AspectPropertyTypeInstance<>(
         ValueTypes.INTEGER,
-        "aspect.aspecttypes.integratedcrafting.integer.craftdelay");
+        "aspect.integratedcrafting.integer.craftdelay");
     public static final IAspectProperties PROPERTIES_CRAFTING_RECIPE = new AspectProperties(
         ImmutableList.<IAspectPropertyTypeInstance>of(
             PROP_CHANNEL,

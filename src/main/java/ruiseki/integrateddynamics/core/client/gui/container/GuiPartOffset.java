@@ -70,7 +70,7 @@ public class GuiPartOffset<T extends ContainerPartOffset> extends GuiContainerEx
             true,
             LangHelpers.localize("gui.integrateddynamics.partsettings.partoffset.x"),
             true);
-        numberFieldX.setMaxStringLength(4);
+        numberFieldX.setMaxLength(4);
         numberFieldX.setVisible(true);
         numberFieldX.setTextColor(16777215);
         numberFieldX.setCanLoseFocus(true);
@@ -84,7 +84,7 @@ public class GuiPartOffset<T extends ContainerPartOffset> extends GuiContainerEx
             true,
             LangHelpers.localize("gui.integrateddynamics.partsettings.partoffset.y"),
             true);
-        numberFieldY.setMaxStringLength(4);
+        numberFieldY.setMaxLength(4);
         numberFieldY.setVisible(true);
         numberFieldY.setTextColor(16777215);
         numberFieldY.setCanLoseFocus(true);
@@ -98,7 +98,7 @@ public class GuiPartOffset<T extends ContainerPartOffset> extends GuiContainerEx
             true,
             LangHelpers.localize("gui.integrateddynamics.partsettings.partoffset.z"),
             true);
-        numberFieldZ.setMaxStringLength(4);
+        numberFieldZ.setMaxLength(4);
         numberFieldZ.setVisible(true);
         numberFieldZ.setTextColor(16777215);
         numberFieldZ.setCanLoseFocus(true);
@@ -110,6 +110,7 @@ public class GuiPartOffset<T extends ContainerPartOffset> extends GuiContainerEx
                 this.guiTop + 6,
                 this.fontRendererObj.getStringWidth(save) + 6,
                 16,
+                save,
                 save,
                 createServerPressable(ContainerPartOffset.BUTTON_SAVE, b -> onSave()),
                 true));
@@ -126,13 +127,13 @@ public class GuiPartOffset<T extends ContainerPartOffset> extends GuiContainerEx
     }
 
     @Override
-    public boolean charTyped(char typedChar, int keyCode) {
-        if (!this.numberFieldX.charTyped(typedChar, keyCode) && !this.numberFieldY.charTyped(typedChar, keyCode)
-            && !this.numberFieldZ.charTyped(typedChar, keyCode)) {
-            onSave();
-            return super.charTyped(typedChar, keyCode);
+    public boolean charTyped(char typedChar, int modifiers) {
+        if (this.numberFieldX.charTyped(typedChar, modifiers) || this.numberFieldY.charTyped(typedChar, modifiers)
+            || this.numberFieldZ.charTyped(typedChar, modifiers)) {
+            this.onSave();
+            return true;
         }
-        return true;
+        return super.charTyped(typedChar, modifiers);
     }
 
     @Override
@@ -144,10 +145,8 @@ public class GuiPartOffset<T extends ContainerPartOffset> extends GuiContainerEx
                 onSave();
                 return true;
             }
-            return true;
-        } else {
-            return super.keyPressed(typedChar, keyCode, modifiers);
         }
+        return super.keyPressed(typedChar, keyCode, modifiers);
     }
 
     @Override
@@ -236,18 +235,18 @@ public class GuiPartOffset<T extends ContainerPartOffset> extends GuiContainerEx
     @Override
     public void onUpdate(int valueId, NBTTagCompound value) {
         if (valueId == getContainer().getLastXValueId()) {
-            numberFieldX.setText(Integer.toString(getContainer().getLastXValue()));
+            numberFieldX.setValue(Integer.toString(getContainer().getLastXValue()));
         }
         if (valueId == getContainer().getLastYValueId()) {
-            numberFieldY.setText(Integer.toString(getContainer().getLastYValue()));
+            numberFieldY.setValue(Integer.toString(getContainer().getLastYValue()));
         }
         if (valueId == getContainer().getLastZValueId()) {
-            numberFieldZ.setText(Integer.toString(getContainer().getLastZValue()));
+            numberFieldZ.setValue(Integer.toString(getContainer().getLastZValue()));
         }
 
-        numberFieldX.setEnabled(!getContainer().isOffsetVariableFilled(0));
-        numberFieldY.setEnabled(!getContainer().isOffsetVariableFilled(1));
-        numberFieldZ.setEnabled(!getContainer().isOffsetVariableFilled(2));
+        numberFieldX.setEditable(!getContainer().isOffsetVariableFilled(0));
+        numberFieldY.setEditable(!getContainer().isOffsetVariableFilled(1));
+        numberFieldZ.setEditable(!getContainer().isOffsetVariableFilled(2));
 
         if (valueId == getContainer().getMaxOffsetId()) {
             int max = getContainer().getMaxOffset();

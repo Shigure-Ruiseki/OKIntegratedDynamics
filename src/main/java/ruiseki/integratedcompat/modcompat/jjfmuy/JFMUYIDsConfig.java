@@ -162,13 +162,13 @@ public class JFMUYIDsConfig implements IModPlugin {
                 .ifPresent(tab -> {
                     if (TerminalButtonItemStackCraftingGridSearchSync.isSearchSynced(tab)) {
                         GuiTextFieldExtended fieldSearch = screen.getFieldSearch();
-                        fieldSearch.setText(
+                        fieldSearch.setValue(
                             jfmuyRuntime.getIngredientFilter()
                                 .getFilterText());
                         tab.setInstanceFilter(
                             screen.getContainer()
                                 .getSelectedChannel(),
-                            fieldSearch.getText() + "");
+                            fieldSearch.getValue() + "");
                     }
                 });
         }

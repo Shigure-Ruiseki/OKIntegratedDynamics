@@ -45,6 +45,7 @@ public class GuiPartDisplay<P extends PartTypePanelVariableDriven<P, S>, S exten
                 30,
                 12,
                 LangHelpers.localize("gui.integrateddynamics.button.copy"),
+                LangHelpers.localize("gui.integrateddynamics.button.copy"),
                 (button) -> valueToClipboard(),
                 true));
     }

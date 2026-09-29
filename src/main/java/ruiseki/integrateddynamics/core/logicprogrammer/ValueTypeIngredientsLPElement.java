@@ -462,7 +462,15 @@ public class ValueTypeIngredientsLPElement extends ValueTypeLPElementBase {
             int x = guiLeft + getX();
             int y = guiTop + getY();
             buttonList.add(
-                arrowAdd = new GuiButtonText(x + getWidth() - 13, y + getHeight() - 13, 12, 12, "+", (b) -> {}, true));
+                arrowAdd = new GuiButtonText(
+                    x + getWidth() - 13,
+                    y + getHeight() - 13,
+                    12,
+                    12,
+                    LangHelpers.localize("gui.integrateddynamics.button.add"),
+                    "+",
+                    (b) -> {},
+                    true));
         }
 
         @Override
@@ -570,6 +578,7 @@ public class ValueTypeIngredientsLPElement extends ValueTypeLPElementBase {
                     y + getHeight() - 13,
                     12,
                     12,
+                    LangHelpers.localize("gui.integrateddynamics.button.remove"),
                     "-",
                     b -> element.removeElement(element.activeElement),
                     true));

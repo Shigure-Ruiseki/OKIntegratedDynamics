@@ -135,11 +135,11 @@ item.items.integratedterminals.terminal_storage_portable.status.no_network=No ne
 item.items.integratedterminals.terminal_storage_portable.status.invalid_network=The linked network could not be found
 item.items.integratedterminals.terminal_storage_portable.status.linked=Linked to network
 # Part types
-parttype.parttypes.integratedterminals.terminal_storage.name=Storage Terminal
-parttype.parttypes.integratedterminals.terminal_storage.info=Visually interact with the ingredients stored in the network.
-parttype.parttypes.integratedterminals.terminal_crafting_job.name=Crafting Job Terminal
-parttype.parttypes.integratedterminals.terminal_crafting_job.info=Manage and overview all crafting jobs in the network.
-parttype.parttypes.integratedterminals.terminal_crafting_job.tooltip.nohandlers=WARNING: No crafting handlers available. This will become usable when other mods such as Integrated Crafting are installed.
+parttype.integratedterminals.terminal_storage.name=Storage Terminal
+parttype.integratedterminals.terminal_storage.info=Visually interact with the ingredients stored in the network.
+parttype.integratedterminals.terminal_crafting_job.name=Crafting Job Terminal
+parttype.integratedterminals.terminal_crafting_job.info=Manage and overview all crafting jobs in the network.
+parttype.integratedterminals.terminal_crafting_job.tooltip.nohandlers=WARNING: No crafting handlers available. This will become usable when other mods such as Integrated Crafting are installed.
 
 # Configuration
 config.integratedterminals=%s configuration

@@ -54,7 +54,7 @@ public class GuiTerminalStorageCraftingPlan<L, C extends ContainerTerminalStorag
                     String buttonText = EnumChatFormatting.ITALIC
                         + LangHelpers.localize("gui.integratedterminals.craftingplan.view.flat");
                     addRenderableWidget(
-                        new GuiButtonText(this.guiLeft + 8, this.guiTop + 198, 80, 20, buttonText, (b) -> {
+                        new GuiButtonText(this.guiLeft + 8, this.guiTop + 198, 80, 20, buttonText, buttonText, (b) -> {
                             this.guiCraftingPlanToggler
                                 .setCraftingPlanDisplayMode(GuiCraftingPlanToggler.CraftingPlanDisplayMode.FLAT);
                             this.initGui();
@@ -76,7 +76,7 @@ public class GuiTerminalStorageCraftingPlan<L, C extends ContainerTerminalStorag
                     String buttonText = EnumChatFormatting.ITALIC
                         + LangHelpers.localize("gui.integratedterminals.craftingplan.view.tree");
                     addRenderableWidget(
-                        new GuiButtonText(this.guiLeft + 8, this.guiTop + 198, 80, 20, buttonText, (b) -> {
+                        new GuiButtonText(this.guiLeft + 8, this.guiTop + 198, 80, 20, buttonText, buttonText, (b) -> {
                             this.guiCraftingPlanToggler
                                 .setCraftingPlanDisplayMode(GuiCraftingPlanToggler.CraftingPlanDisplayMode.TREE);
                             this.initGui();
@@ -137,6 +137,7 @@ public class GuiTerminalStorageCraftingPlan<L, C extends ContainerTerminalStorag
                 50,
                 20,
                 LangHelpers.localize("gui.integratedterminals.terminal_storage.step.back"),
+                LangHelpers.localize("gui.integratedterminals.terminal_storage.step.back"),
                 (b) -> returnToCraftingOptionAmount(),
                 true));
 
@@ -146,6 +147,7 @@ public class GuiTerminalStorageCraftingPlan<L, C extends ContainerTerminalStorag
                 guiTop + 198,
                 50,
                 20,
+                LangHelpers.localize("gui.integratedterminals.terminal_storage.step.craft"),
                 EnumChatFormatting.YELLOW + LangHelpers.localize("gui.integratedterminals.terminal_storage.step.craft"),
                 createServerPressable(ContainerTerminalStorageCraftingPlanBase.BUTTON_START, (b) -> {}),
                 true));

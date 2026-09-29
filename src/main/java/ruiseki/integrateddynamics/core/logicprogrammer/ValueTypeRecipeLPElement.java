@@ -165,7 +165,7 @@ public class ValueTypeRecipeLPElement extends ValueTypeLPElementBase {
     protected void refreshPropertiesGui(int slot) {
         if (this.lastGui != null && this.lastGui.subGuiRecipe.getInputFluidAmountBox() != null) {
             this.lastGui.subGuiRecipe.getInputFluidAmountBox()
-                .setText(inputFluidAmount);
+                .setValue(inputFluidAmount);
         }
     }
 
@@ -173,7 +173,7 @@ public class ValueTypeRecipeLPElement extends ValueTypeLPElementBase {
     protected void refreshInputFluidAmountBox() {
         if (this.lastGui != null && this.lastGui.subGuiRecipe.getInputFluidAmountBox() != null) {
             this.lastGui.subGuiRecipe.getInputFluidAmountBox()
-                .setText(inputFluidAmount);
+                .setValue(inputFluidAmount);
         }
     }
 
@@ -181,7 +181,7 @@ public class ValueTypeRecipeLPElement extends ValueTypeLPElementBase {
     protected void refreshOutputFluidAmountBox() {
         if (this.lastGui != null && this.lastGui.subGuiRecipe.getOutputFluidAmountBox() != null) {
             this.lastGui.subGuiRecipe.getOutputFluidAmountBox()
-                .setText(outputFluidAmount);
+                .setValue(outputFluidAmount);
         }
     }
 
@@ -706,13 +706,13 @@ public class ValueTypeRecipeLPElement extends ValueTypeLPElementBase {
         setValueInContainer(gui.container);
         if (gui.getInputFluidAmountBox() != null) {
             gui.getInputFluidAmountBox()
-                .setText(this.inputFluidAmount);
+                .setValue(this.inputFluidAmount);
             gui.getInputEnergyBox()
-                .setText(this.inputEnergy);
+                .setValue(this.inputEnergy);
             gui.getOutputFluidAmountBox()
-                .setText(this.outputFluidAmount);
+                .setValue(this.outputFluidAmount);
             gui.getOutputEnergyBox()
-                .setText(this.outputEnergy);
+                .setValue(this.outputEnergy);
         }
     }
 
