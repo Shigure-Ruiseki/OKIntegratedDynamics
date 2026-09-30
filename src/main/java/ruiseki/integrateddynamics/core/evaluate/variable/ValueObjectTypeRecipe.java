@@ -74,8 +74,7 @@ public class ValueObjectTypeRecipe extends ValueObjectTypeBase<ValueObjectTypeRe
                     i++;
                 }
             }
-            String str = sb.toString();
-            return str.length() >= 2 ? str.substring(0, str.length() - 2) : "";
+            return sb.toString();
         }
         return "";
     }

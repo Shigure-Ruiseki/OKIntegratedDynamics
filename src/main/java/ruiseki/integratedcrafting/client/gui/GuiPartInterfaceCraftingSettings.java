@@ -184,6 +184,7 @@ public class GuiPartInterfaceCraftingSettings extends GuiPartSettings<ContainerP
             if (this.dropdownFieldSide.keyPressed(keyCode, scanCode, modifiers)) {
                 return true;
             }
+            return false;
         }
         return super.keyPressed(keyCode, scanCode, modifiers);
     }

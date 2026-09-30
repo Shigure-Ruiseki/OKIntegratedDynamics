@@ -302,6 +302,7 @@ public abstract class ValueTypeRecipeAdapterLPElementPropertiesSubGui<E extends 
             if (inputTagsDropdown.charTyped(typedChar, keyCode)) {
                 return true;
             }
+            return false;
         }
         return super.charTyped(typedChar, keyCode);
     }
@@ -309,8 +310,10 @@ public abstract class ValueTypeRecipeAdapterLPElementPropertiesSubGui<E extends 
     @Override
     public boolean keyPressed(int typedChar, int keyCode, int modifiers) {
         if (inputTagsDropdown.isFocused()) {
-            inputTagsDropdown.keyPressed(typedChar, keyCode, modifiers);
-            return true;
+            if (inputTagsDropdown.keyPressed(typedChar, keyCode, modifiers)) {
+                return true;
+            }
+            return false;
         }
         return super.keyPressed(typedChar, keyCode, modifiers);
     }
