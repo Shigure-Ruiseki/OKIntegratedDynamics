@@ -26,7 +26,7 @@ public class ContainerMechanicalSqueezerConfig extends GuiConfig<ContainerMechan
             "mechanical_squeezer",
             null,
             eConfig -> new ContainerType<>(
-                (i, inventoryPlayer, extendedBuffer) -> new ContainerMechanicalSqueezer(inventoryPlayer)));
+                (id, inventoryPlayer, extendedBuffer) -> new ContainerMechanicalSqueezer(id, inventoryPlayer)));
     }
 
     @Override

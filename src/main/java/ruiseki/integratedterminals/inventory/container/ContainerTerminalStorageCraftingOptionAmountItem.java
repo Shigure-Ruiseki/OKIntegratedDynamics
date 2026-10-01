@@ -8,6 +8,7 @@ import org.jetbrains.annotations.Nullable;
 
 import ruiseki.integratedterminals.core.client.gui.CraftingOptionGuiData;
 import ruiseki.okcore.client.gui.ContainerType;
+import ruiseki.okcore.inventory.ItemLocation;
 import ruiseki.okcore.network.ExtendedBuffer;
 
 /**
@@ -18,26 +19,31 @@ public class ContainerTerminalStorageCraftingOptionAmountItem
 
     // Based on ItemInventoryContainer
 
-    private final int location;
+    private final ItemLocation itemLocation;
 
-    public ContainerTerminalStorageCraftingOptionAmountItem(InventoryPlayer playerInventory,
+    public ContainerTerminalStorageCraftingOptionAmountItem(int id, InventoryPlayer playerInventory,
         ExtendedBuffer packetBuffer) throws IOException {
-        this(playerInventory, packetBuffer.readInt(), CraftingOptionGuiData.readFromPacketBuffer(packetBuffer));
+        this(
+            id,
+            playerInventory,
+            ItemLocation.readFromPacketBuffer(packetBuffer),
+            CraftingOptionGuiData.readFromPacketBuffer(packetBuffer));
     }
 
-    public ContainerTerminalStorageCraftingOptionAmountItem(InventoryPlayer playerInventory, int location,
-        CraftingOptionGuiData craftingOptionGuiData) {
+    public ContainerTerminalStorageCraftingOptionAmountItem(int id, InventoryPlayer playerInventory,
+        ItemLocation location, CraftingOptionGuiData craftingOptionGuiData) {
         this(
             ContainerTerminalStorageCraftingOptionAmountItemConfig._instance.getInstance(),
+            id,
             playerInventory,
             location,
             craftingOptionGuiData);
     }
 
-    public ContainerTerminalStorageCraftingOptionAmountItem(@Nullable ContainerType<?> type,
-        InventoryPlayer playerInventory, int location, CraftingOptionGuiData craftingOptionGuiData) {
-        super(type, playerInventory, craftingOptionGuiData);
-        this.location = location;
+    public ContainerTerminalStorageCraftingOptionAmountItem(@Nullable ContainerType<?> type, int id,
+        InventoryPlayer playerInventory, ItemLocation itemLocation, CraftingOptionGuiData craftingOptionGuiData) {
+        super(type, id, playerInventory, craftingOptionGuiData);
+        this.itemLocation = itemLocation;
     }
 
 }

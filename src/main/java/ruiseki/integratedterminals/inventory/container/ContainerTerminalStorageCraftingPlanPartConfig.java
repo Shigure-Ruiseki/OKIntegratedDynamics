@@ -35,9 +35,9 @@ public class ContainerTerminalStorageCraftingPlanPartConfig
             true,
             "part_terminal_storage_crafting_plan_part",
             null,
-            eConfig -> new ContainerType<>((i, inventoryPlayer, extendedBuffer) -> {
+            eConfig -> new ContainerType<>((id, inventoryPlayer, extendedBuffer) -> {
                 try {
-                    return new ContainerTerminalStorageCraftingPlanPart(inventoryPlayer, extendedBuffer);
+                    return new ContainerTerminalStorageCraftingPlanPart(id, inventoryPlayer, extendedBuffer);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }

@@ -41,8 +41,9 @@ public class ContainerPartInterfaceCrafting
     private final List<Integer> readSlotValidIds;
     private final List<Integer> readSlotErrorIds;
 
-    public ContainerPartInterfaceCrafting(InventoryPlayer playerInventory, ExtendedBuffer packetBuffer) {
+    public ContainerPartInterfaceCrafting(int id, InventoryPlayer playerInventory, ExtendedBuffer packetBuffer) {
         this(
+            id,
             playerInventory,
             new SimpleInventory(packetBuffer.readInt(), 1),
             Optional.empty(),
@@ -50,10 +51,11 @@ public class ContainerPartInterfaceCrafting
             PartHelpers.readPart(packetBuffer));
     }
 
-    public ContainerPartInterfaceCrafting(InventoryPlayer playerInventory, IInventory inventory,
+    public ContainerPartInterfaceCrafting(int id, InventoryPlayer playerInventory, IInventory inventory,
         Optional<PartTarget> target, Optional<IPartContainer> partContainer, PartTypeInterfaceCrafting partType) {
         super(
             ContainerPartInterfaceCraftingConfig._instance.getInstance(),
+            id,
             playerInventory,
             inventory,
             target,

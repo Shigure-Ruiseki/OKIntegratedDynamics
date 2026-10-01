@@ -26,7 +26,7 @@ public class ContainerMaterializerConfig extends GuiConfig<ContainerMaterializer
             "materializer",
             null,
             eConfig -> new ContainerType<>(
-                (i, inventoryPlayer, extendedBuffer) -> new ContainerMaterializer(inventoryPlayer)));
+                (id, inventoryPlayer, extendedBuffer) -> new ContainerMaterializer(id, inventoryPlayer)));
     }
 
     @Override

@@ -34,8 +34,10 @@ public class ContainerPartInterfaceCraftingSettings extends ContainerPartSetting
     private final int lastDisableCraftingCheckValueId;
     private final int lastBlockingModeValueId;
 
-    public ContainerPartInterfaceCraftingSettings(InventoryPlayer playerInventory, ExtendedBuffer packetBuffer) {
+    public ContainerPartInterfaceCraftingSettings(int id, InventoryPlayer playerInventory,
+        ExtendedBuffer packetBuffer) {
         this(
+            id,
             playerInventory,
             new SimpleInventory(0),
             PartHelpers.readPartTarget(packetBuffer),
@@ -43,10 +45,11 @@ public class ContainerPartInterfaceCraftingSettings extends ContainerPartSetting
             PartHelpers.readPart(packetBuffer));
     }
 
-    public ContainerPartInterfaceCraftingSettings(InventoryPlayer playerInventory, IInventory inventory,
+    public ContainerPartInterfaceCraftingSettings(int id, InventoryPlayer playerInventory, IInventory inventory,
         PartTarget target, Optional<IPartContainer> partContainer, IPartType partType) {
         super(
             ContainerPartInterfaceCraftingSettingsConfig._instance.getInstance(),
+            id,
             playerInventory,
             inventory,
             target,

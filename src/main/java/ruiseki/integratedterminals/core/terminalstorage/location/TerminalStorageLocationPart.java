@@ -26,7 +26,7 @@ import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientPartO
 import ruiseki.integratedterminals.part.PartTypeTerminalStorage;
 import ruiseki.integratedterminals.part.TerminalPartTypes;
 import ruiseki.okcore.helper.PlayerHelpers;
-import ruiseki.okcore.inventory.IGuiConstructor;
+import ruiseki.okcore.inventory.IContainerConstructor;
 import ruiseki.okcore.inventory.container.ContainerExtended;
 import ruiseki.okcore.network.ExtendedBuffer;
 import ruiseki.okcore.network.PacketCodec;
@@ -67,10 +67,10 @@ public class TerminalStorageLocationPart implements ITerminalStorageLocation<Par
     public <T, M> void openContainerCraftingPlan(CraftingOptionGuiData<T, M, PartPos> craftingOptionGuiData,
         World world, EntityPlayerMP player) {
         // Create temporary container provider
-        IGuiConstructor containerProvider = new IGuiConstructor() {
+        IContainerConstructor containerProvider = new IContainerConstructor() {
 
             @Override
-            public @Nullable ContainerExtended createContainer(int windowId, InventoryPlayer playerInventory,
+            public @Nullable ContainerExtended createContainer(int id, InventoryPlayer playerInventory,
                 EntityPlayer player) {
                 PartPos location = craftingOptionGuiData.getLocationInstance();
                 Triple<IPartContainer, PartTypeBase, PartTarget> data = PartHelpers.getContainerPartConstructionData(
@@ -80,6 +80,7 @@ public class TerminalStorageLocationPart implements ITerminalStorageLocation<Par
                             .getBlockPos(),
                         location.getSide()));
                 return new ContainerTerminalStorageCraftingPlanPart(
+                    id,
                     playerInventory,
                     Optional.of(data.getRight()),
                     Optional.of(data.getLeft()),
@@ -105,10 +106,10 @@ public class TerminalStorageLocationPart implements ITerminalStorageLocation<Par
     public <T, M> void openContainerCraftingOptionAmount(CraftingOptionGuiData<T, M, PartPos> craftingOptionGuiData,
         World world, EntityPlayerMP player) {
         // Create temporary container provider
-        IGuiConstructor containerProvider = new IGuiConstructor() {
+        IContainerConstructor containerProvider = new IContainerConstructor() {
 
             @Override
-            public @Nullable ContainerExtended createContainer(int windowId, InventoryPlayer playerInventory,
+            public @Nullable ContainerExtended createContainer(int id, InventoryPlayer playerInventory,
                 EntityPlayer player) {
                 PartPos location = craftingOptionGuiData.getLocationInstance();
                 Triple<IPartContainer, PartTypeBase, PartTarget> data = PartHelpers.getContainerPartConstructionData(
@@ -118,6 +119,7 @@ public class TerminalStorageLocationPart implements ITerminalStorageLocation<Par
                             .getBlockPos(),
                         location.getSide()));
                 return new ContainerTerminalStorageCraftingOptionAmountPart(
+                    id,
                     playerInventory,
                     Optional.of(data.getRight()),
                     Optional.of(data.getLeft()),

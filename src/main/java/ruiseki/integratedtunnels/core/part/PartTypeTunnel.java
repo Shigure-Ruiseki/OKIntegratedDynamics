@@ -21,7 +21,7 @@ import ruiseki.integrateddynamics.core.inventory.container.ContainerPartOffset;
 import ruiseki.integrateddynamics.core.part.PartTypeBase;
 import ruiseki.integratedtunnels.IntegratedTunnels;
 import ruiseki.okcore.init.ModBase;
-import ruiseki.okcore.inventory.IGuiConstructor;
+import ruiseki.okcore.inventory.IContainerConstructor;
 import ruiseki.okcore.inventory.SimpleInventory;
 import ruiseki.okcore.inventory.container.ContainerExtended;
 import ruiseki.okcore.network.ExtendedBuffer;
@@ -49,15 +49,16 @@ public abstract class PartTypeTunnel<P extends IPartType<P, S>, S extends IPartS
     }
 
     @Override
-    public Optional<IGuiConstructor> getContainerProviderSettings(PartPos pos) {
-        return Optional.of(new IGuiConstructor() {
+    public Optional<IContainerConstructor> getContainerProviderSettings(PartPos pos) {
+        return Optional.of(new IContainerConstructor() {
 
             @Override
-            public @Nullable ContainerExtended createContainer(int windowId, InventoryPlayer playerInventory,
+            public @Nullable ContainerExtended createContainer(int id, InventoryPlayer playerInventory,
                 EntityPlayer player) {
                 Triple<IPartContainer, PartTypeBase, PartTarget> data = PartHelpers
                     .getContainerPartConstructionData(pos);
                 return new ContainerInterfaceSettings(
+                    id,
                     playerInventory,
                     new SimpleInventory(0),
                     data.getRight(),
@@ -68,15 +69,16 @@ public abstract class PartTypeTunnel<P extends IPartType<P, S>, S extends IPartS
     }
 
     @Override
-    public Optional<IGuiConstructor> getContainerProviderOffsets(PartPos pos) {
-        return Optional.of(new IGuiConstructor() {
+    public Optional<IContainerConstructor> getContainerProviderOffsets(PartPos pos) {
+        return Optional.of(new IContainerConstructor() {
 
             @Override
-            public @Nullable ContainerExtended createContainer(int windowId, InventoryPlayer playerInventory,
+            public @Nullable ContainerExtended createContainer(int id, InventoryPlayer playerInventory,
                 EntityPlayer player) {
                 Triple<IPartContainer, PartTypeBase, PartTarget> data = PartHelpers
                     .getContainerPartConstructionData(pos);
                 return new ContainerPartOffset(
+                    id,
                     playerInventory,
                     new SimpleInventory(0),
                     data.getRight(),

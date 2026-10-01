@@ -43,18 +43,20 @@ public class ContainerTerminalCraftingJobs
     private long lastUpdate;
     private List<HandlerWrappedTerminalCraftingPlan> craftingJobs;
 
-    public ContainerTerminalCraftingJobs(InventoryPlayer playerInventory, ExtendedBuffer packetBuffer) {
+    public ContainerTerminalCraftingJobs(int id, InventoryPlayer playerInventory, ExtendedBuffer packetBuffer) {
         this(
+            id,
             playerInventory,
             PartHelpers.readPartTarget(packetBuffer),
             Optional.empty(),
             PartHelpers.readPart(packetBuffer));
     }
 
-    public ContainerTerminalCraftingJobs(InventoryPlayer playerInventory, PartTarget target,
+    public ContainerTerminalCraftingJobs(int id, InventoryPlayer playerInventory, PartTarget target,
         Optional<IPartContainer> partContainer, PartTypeTerminalCraftingJob partType) {
         super(
             ContainerTerminalCraftingJobsConfig._instance.getInstance(),
+            id,
             playerInventory,
             new SimpleInventory(),
             Optional.of(target),

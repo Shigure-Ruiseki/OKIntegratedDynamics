@@ -85,7 +85,7 @@ public class PartStateOffsetHandler<P extends IPartType> {
     }
 
     public SimpleInventory getOffsetVariablesInventory(IPartState<P> partState) {
-        SimpleInventory offsetVariablesInventory = new SimpleInventory(3, "", 1);
+        SimpleInventory offsetVariablesInventory = new SimpleInventory(3, 1);
         partState.loadInventoryNamed("offsetVariablesInventory", offsetVariablesInventory);
         return offsetVariablesInventory;
     }

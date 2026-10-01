@@ -28,7 +28,7 @@ import ruiseki.integrateddynamics.api.network.IPartNetworkElement;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
 import ruiseki.okcore.init.IInitListener;
-import ruiseki.okcore.inventory.IGuiConstructor;
+import ruiseki.okcore.inventory.IContainerConstructor;
 import ruiseki.okcore.network.ExtendedBuffer;
 
 /**
@@ -474,7 +474,7 @@ public interface IPartType<P extends IPartType<P, S>, S extends IPartState<P>>
      * @return The optional container provider for the part type gui.
      * @param pos The part position. May be null when called client-side, for checking presence.
      */
-    public default Optional<IGuiConstructor> getContainerProvider(PartPos pos) {
+    public default Optional<IContainerConstructor> getContainerProvider(PartPos pos) {
         return Optional.empty();
     };
 
@@ -495,7 +495,7 @@ public interface IPartType<P extends IPartType<P, S>, S extends IPartState<P>>
      * @return The optional container provider for the part settings gui.
      * @param pos The part position. May be null when called client-side, for checking presence.
      */
-    public default Optional<IGuiConstructor> getContainerProviderSettings(PartPos pos) {
+    public default Optional<IContainerConstructor> getContainerProviderSettings(PartPos pos) {
         return Optional.empty();
     };
 
@@ -505,7 +505,7 @@ public interface IPartType<P extends IPartType<P, S>, S extends IPartState<P>>
      * @return The optional container provider for the part offsets gui.
      * @param pos The part position. May be null when called client-side, for checking presence.
      */
-    public default Optional<IGuiConstructor> getContainerProviderOffsets(PartPos pos) {
+    public default Optional<IContainerConstructor> getContainerProviderOffsets(PartPos pos) {
         return Optional.empty();
     }
 

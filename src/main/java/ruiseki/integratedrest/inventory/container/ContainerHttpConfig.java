@@ -30,7 +30,8 @@ public class ContainerHttpConfig extends GuiConfig<ContainerHttp> {
             true,
             "http",
             null,
-            eConfig -> new ContainerType<>((i, inventoryPlayer, extendedBuffer) -> new ContainerHttp(inventoryPlayer)));
+            eConfig -> new ContainerType<>(
+                (id, inventoryPlayer, extendedBuffer) -> new ContainerHttp(id, inventoryPlayer)));
     }
 
     @Override

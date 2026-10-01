@@ -7,7 +7,8 @@ import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
 import ruiseki.integrateddynamics.inventory.container.ContainerLabeller;
-import ruiseki.okcore.inventory.IGuiConstructor;
+import ruiseki.okcore.inventory.IContainerConstructor;
+import ruiseki.okcore.inventory.ItemLocation;
 import ruiseki.okcore.inventory.container.ContainerExtended;
 import ruiseki.okcore.inventory.container.NamedContainerProviderItem;
 import ruiseki.okcore.item.ItemGui;
@@ -27,10 +28,8 @@ public class ItemLabeller extends ItemGui {
     }
 
     @Override
-    public @Nullable IGuiConstructor getGuiProvider(World world, EntityPlayer player, int itemIndex) {
-        return new NamedContainerProviderItem(
-            itemIndex,
-            (id, inventoryPlayer, index) -> new ContainerLabeller(inventoryPlayer, index));
+    public @Nullable IContainerConstructor getContainer(World world, EntityPlayer player, ItemLocation itemLocation) {
+        return new NamedContainerProviderItem(itemLocation, ContainerLabeller::new);
     }
 
     @Override

@@ -21,18 +21,19 @@ public class ContainerHttp extends ContainerActiveVariableBase<TileHttp> {
 
     private final int valueTypeId;
 
-    public ContainerHttp(InventoryPlayer playerInventory) {
-        this(playerInventory, new SimpleInventory(TileHttp.INVENTORY_SIZE), null);
+    public ContainerHttp(int id, InventoryPlayer playerInventory) {
+        this(id, playerInventory, new SimpleInventory(TileHttp.INVENTORY_SIZE), Optional.empty());
     }
 
-    public ContainerHttp(InventoryPlayer playerInventory, IInventory inventory, TileHttp tileSupplier) {
-        super(ContainerHttpConfig._instance.getInstance(), playerInventory, inventory, tileSupplier);
+    public ContainerHttp(int id, InventoryPlayer playerInventory, IInventory inventory,
+        Optional<TileHttp> tileSupplier) {
+        super(ContainerHttpConfig._instance.getInstance(), id, playerInventory, inventory, tileSupplier);
         addSlotToContainer(new SlotVariable(inventory, TileHttp.SLOT_WRITE_IN, 56, 63));
         addSlotToContainer(new SlotRemoveOnly(inventory, TileHttp.SLOT_WRITE_OUT, 104, 63));
         addPlayerInventory(playerInventory, offsetX + 9, offsetY + 92);
 
         valueTypeId = getNextValueId();
-        tile.setLastPlayer(playerInventory.player);
+        tile.ifPresent(tileHttp -> tileHttp.setLastPlayer(playerInventory.player));
     }
 
     @Override

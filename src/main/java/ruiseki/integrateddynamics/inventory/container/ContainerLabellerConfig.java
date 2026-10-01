@@ -25,8 +25,7 @@ public class ContainerLabellerConfig extends GuiConfig<ContainerLabeller> {
             true,
             "labeller",
             null,
-            eConfig -> new ContainerType<>(
-                (i, inventoryPlayer, extendedBuffer) -> new ContainerLabeller(inventoryPlayer, extendedBuffer)));
+            eConfig -> new ContainerType<>(ContainerLabeller::new));
     }
 
     @Override

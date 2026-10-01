@@ -6,11 +6,11 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.integrateddynamics.IntegratedDynamics;
 import ruiseki.integrateddynamics.core.client.gui.container.GuiAspectSettings;
+import ruiseki.okcore.client.gui.ContainerType;
 import ruiseki.okcore.client.gui.GuiScreens;
 import ruiseki.okcore.client.gui.IContainerAccess;
 import ruiseki.okcore.client.gui.ScreenFactorySafe;
 import ruiseki.okcore.config.extendedconfig.GuiConfig;
-import ruiseki.okcore.inventory.container.ContainerTypeData;
 
 /**
  * Config for {@link ContainerAspectSettings}.
@@ -30,8 +30,7 @@ public class ContainerAspectSettingsConfig extends GuiConfig<ContainerAspectSett
             true,
             "aspect_settings",
             null,
-            eConfig -> new ContainerTypeData<>(
-                (windowId, playerInv, extraData) -> new ContainerAspectSettings(playerInv, extraData)));
+            eConfig -> new ContainerType<>(ContainerAspectSettings::new));
     }
 
     @Override

@@ -26,7 +26,7 @@ public class ContainerCoalGeneratorConfig extends GuiConfig<ContainerCoalGenerat
             "coal_generator",
             null,
             eConfig -> new ContainerType<>(
-                (i, inventoryPlayer, extendedBuffer) -> new ContainerCoalGenerator(inventoryPlayer)));
+                (id, inventoryPlayer, extendedBuffer) -> new ContainerCoalGenerator(id, inventoryPlayer)));
     }
 
     @Override

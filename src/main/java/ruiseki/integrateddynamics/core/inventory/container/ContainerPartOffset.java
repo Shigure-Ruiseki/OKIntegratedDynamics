@@ -52,8 +52,9 @@ public class ContainerPartOffset extends InventoryContainer {
     private final SimpleInventory offsetVariablesInventory;
     private boolean dirtyInv = false;
 
-    public ContainerPartOffset(InventoryPlayer playerInventory, ExtendedBuffer packetBuffer) {
+    public ContainerPartOffset(int id, InventoryPlayer playerInventory, ExtendedBuffer packetBuffer) {
         this(
+            id,
             playerInventory,
             new SimpleInventory(0),
             PartHelpers.readPartTarget(packetBuffer),
@@ -61,10 +62,11 @@ public class ContainerPartOffset extends InventoryContainer {
             PartHelpers.readPart(packetBuffer));
     }
 
-    public ContainerPartOffset(InventoryPlayer playerInventory, IInventory inventory, PartTarget target,
+    public ContainerPartOffset(int id, InventoryPlayer playerInventory, IInventory inventory, PartTarget target,
         Optional<IPartContainer> partContainer, IPartType partType) {
         this(
             ContainerPartOffsetConfig._instance.getInstance(),
+            id,
             playerInventory,
             inventory,
             target,
@@ -72,9 +74,9 @@ public class ContainerPartOffset extends InventoryContainer {
             partType);
     }
 
-    public ContainerPartOffset(@Nullable ContainerType<?> type, InventoryPlayer playerInventory, IInventory inventory,
-        PartTarget target, Optional<IPartContainer> partContainer, IPartType partType) {
-        super(type, playerInventory, inventory);
+    public ContainerPartOffset(@Nullable ContainerType<?> type, int id, InventoryPlayer playerInventory,
+        IInventory inventory, PartTarget target, Optional<IPartContainer> partContainer, IPartType partType) {
+        super(type, id, playerInventory, inventory);
         this.target = target;
         this.partContainer = partContainer;
         this.partType = partType;
@@ -99,7 +101,7 @@ public class ContainerPartOffset extends InventoryContainer {
             }
         });
 
-        offsetVariablesInventory = new SimpleInventory(3, "", 1);
+        offsetVariablesInventory = new SimpleInventory(3, 1);
         offsetVariablesInventory.addDirtyMarkListener(() -> dirtyInv = true);
         if (!player.worldObj.isRemote) {
             getPartState().loadInventoryNamed("offsetVariablesInventory", offsetVariablesInventory);

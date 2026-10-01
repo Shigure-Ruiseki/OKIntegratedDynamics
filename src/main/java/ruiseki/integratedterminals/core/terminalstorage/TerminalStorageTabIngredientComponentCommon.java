@@ -73,7 +73,7 @@ public class TerminalStorageTabIngredientComponentCommon<T, M>
         List<Pair<Slot, ITerminalStorageTabCommon.ISlotPositionCallback>> slots = Lists.newArrayList();
 
         variableSlotNumberStart = startIndex;
-        inventory = new SimpleInventory(3, "inv", 1);
+        inventory = new SimpleInventory(3, 1);
 
         if (variableInventoryOptional.isPresent()) {
             variableInventoryOptional.get()

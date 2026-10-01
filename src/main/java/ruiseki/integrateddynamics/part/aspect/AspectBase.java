@@ -27,7 +27,7 @@ import ruiseki.integrateddynamics.core.helper.PartHelpers;
 import ruiseki.integrateddynamics.core.inventory.container.ContainerAspectSettings;
 import ruiseki.integrateddynamics.core.part.PartTypeBase;
 import ruiseki.okcore.helper.LangHelpers;
-import ruiseki.okcore.inventory.IGuiConstructor;
+import ruiseki.okcore.inventory.IContainerConstructor;
 import ruiseki.okcore.inventory.SimpleInventory;
 import ruiseki.okcore.inventory.container.ContainerExtended;
 
@@ -112,15 +112,16 @@ public abstract class AspectBase<V extends IValue, T extends IValueType<V>> impl
     }
 
     @Override
-    public IGuiConstructor getPropertiesContainerProvider(PartPos pos) {
-        return new IGuiConstructor() {
+    public IContainerConstructor getPropertiesContainerProvider(PartPos pos) {
+        return new IContainerConstructor() {
 
             @Override
-            public @Nullable ContainerExtended createContainer(int windowId, InventoryPlayer playerInventory,
+            public @Nullable ContainerExtended createContainer(int id, InventoryPlayer playerInventory,
                 EntityPlayer player) {
                 Triple<IPartContainer, PartTypeBase, PartTarget> data = PartHelpers
                     .getContainerPartConstructionData(pos);
                 return new ContainerAspectSettings(
+                    id,
                     playerInventory,
                     new SimpleInventory(0),
                     Optional.of(data.getRight()),

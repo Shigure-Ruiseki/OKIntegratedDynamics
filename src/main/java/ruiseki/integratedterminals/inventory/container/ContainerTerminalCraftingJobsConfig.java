@@ -30,9 +30,7 @@ public class ContainerTerminalCraftingJobsConfig extends GuiConfig<ContainerTerm
             true,
             "part_terminal_crafting_jobs",
             null,
-            eConfig -> new ContainerType<>(
-                (i, inventoryPlayer,
-                    extendedBuffer) -> new ContainerTerminalCraftingJobs(inventoryPlayer, extendedBuffer)));
+            eConfig -> new ContainerType<>(ContainerTerminalCraftingJobs::new));
     }
 
     @Override

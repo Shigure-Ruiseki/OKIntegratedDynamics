@@ -27,8 +27,7 @@ public class ContainerPartWriterConfig extends GuiConfig<ContainerPartWriter> {
             true,
             "part_writer",
             null,
-            eConfig -> new ContainerType<>(
-                (i, inventoryPlayer, extendedBuffer) -> new ContainerPartWriter<>(inventoryPlayer, extendedBuffer)));
+            eConfig -> new ContainerType<>(ContainerPartWriter::new));
     }
 
     @Override

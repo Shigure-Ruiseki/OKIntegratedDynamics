@@ -45,7 +45,7 @@ import ruiseki.integrateddynamics.inventory.container.ContainerPartWriter;
 import ruiseki.integrateddynamics.part.aspect.Aspects;
 import ruiseki.okcore.helper.BlockStateHelpers;
 import ruiseki.okcore.helper.LangHelpers;
-import ruiseki.okcore.inventory.IGuiConstructor;
+import ruiseki.okcore.inventory.IContainerConstructor;
 import ruiseki.okcore.inventory.container.ContainerExtended;
 import ruiseki.okcore.network.ExtendedBuffer;
 import ruiseki.okcore.network.PacketCodec;
@@ -248,11 +248,11 @@ public abstract class PartTypeWriteBase<P extends IPartTypeWriter<P, S>, S exten
     }
 
     @Override
-    public Optional<IGuiConstructor> getContainerProvider(PartPos pos) {
-        return Optional.of(new IGuiConstructor() {
+    public Optional<IContainerConstructor> getContainerProvider(PartPos pos) {
+        return Optional.of(new IContainerConstructor() {
 
             @Override
-            public @Nullable ContainerExtended createContainer(int windowId, InventoryPlayer playerInventory,
+            public @Nullable ContainerExtended createContainer(int id, InventoryPlayer playerInventory,
                 EntityPlayer player) {
                 Triple<IPartContainer, PartTypeBase, PartTarget> data = PartHelpers
                     .getContainerPartConstructionData(pos);
@@ -262,6 +262,7 @@ public abstract class PartTypeWriteBase<P extends IPartTypeWriter<P, S>, S exten
                             .getCenter()
                             .getSide());
                 return new ContainerPartWriter<>(
+                    id,
                     playerInventory,
                     partState.getInventory(),
                     data.getRight(),

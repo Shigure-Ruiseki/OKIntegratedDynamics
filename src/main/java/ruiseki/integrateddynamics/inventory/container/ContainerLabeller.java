@@ -18,6 +18,7 @@ import ruiseki.integrateddynamics.core.persist.world.LabelsWorldStorage;
 import ruiseki.integrateddynamics.item.ItemLabeller;
 import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
+import ruiseki.okcore.inventory.ItemLocation;
 import ruiseki.okcore.inventory.SimpleInventory;
 import ruiseki.okcore.inventory.container.ItemInventoryContainer;
 import ruiseki.okcore.inventory.slot.SlotExtended;
@@ -36,13 +37,13 @@ public class ContainerLabeller extends ItemInventoryContainer<ItemLabeller> {
     @SideOnly(Side.CLIENT)
     private GuiLabeller gui;
 
-    public ContainerLabeller(InventoryPlayer inventory, ExtendedBuffer packetBuffer) {
-        this(inventory, packetBuffer.readInt());
+    public ContainerLabeller(int id, InventoryPlayer inventory, ExtendedBuffer packetBuffer) {
+        this(id, inventory, ItemLocation.readFromPacketBuffer(packetBuffer));
     }
 
-    public ContainerLabeller(InventoryPlayer inventory, int itemIndex) {
-        super(ContainerLabellerConfig._instance.getInstance(), inventory, itemIndex);
-        this.temporaryInputSlots = new SimpleInventory(1, "temporaryInput", 1);
+    public ContainerLabeller(int id, InventoryPlayer inventory, ItemLocation location) {
+        super(ContainerLabellerConfig._instance.getInstance(), id, inventory, location);
+        this.temporaryInputSlots = new SimpleInventory(1, 1);
         addSlotToContainer(new SlotExtended(temporaryInputSlots, 0, 8, 8));
         this.addPlayerInventory(player.inventory, 8, 31);
 

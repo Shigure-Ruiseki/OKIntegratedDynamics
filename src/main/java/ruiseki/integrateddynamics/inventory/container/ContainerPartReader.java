@@ -54,8 +54,9 @@ public class ContainerPartReader<P extends IPartTypeReader<P, S>, S extends IPar
     private final BiMap<Integer, IAspectRead> readValueIds = HashBiMap.create();
     private final BiMap<Integer, IAspectRead> readColorIds = HashBiMap.create();
 
-    public ContainerPartReader(InventoryPlayer playerInventory, ExtendedBuffer packetBuffer) {
+    public ContainerPartReader(int id, InventoryPlayer playerInventory, ExtendedBuffer packetBuffer) {
         this(
+            id,
             playerInventory,
             new SimpleInventory(0),
             PartHelpers.readPartTarget(packetBuffer),
@@ -63,10 +64,11 @@ public class ContainerPartReader<P extends IPartTypeReader<P, S>, S extends IPar
             PartHelpers.readPart(packetBuffer));
     }
 
-    public ContainerPartReader(InventoryPlayer playerInventory, IInventory inventory, PartTarget target,
+    public ContainerPartReader(int id, InventoryPlayer playerInventory, IInventory inventory, PartTarget target,
         Optional<IPartContainer> partContainer, P partType) {
         super(
             ContainerPartReaderConfig._instance.getInstance(),
+            id,
             playerInventory,
             inventory,
             target,
@@ -79,7 +81,7 @@ public class ContainerPartReader<P extends IPartTypeReader<P, S>, S extends IPar
             disableSlot(i);
         }
 
-        this.outputSlots = new SimpleInventory(getUnfilteredItemCount(), "temporaryOutputSlots", 1);
+        this.outputSlots = new SimpleInventory(getUnfilteredItemCount(), 1);
         for (int i = 0; i < getUnfilteredItemCount(); i++) {
             addSlotToContainer(new SlotRemoveOnly(outputSlots, i, SLOT_OUT_X, SLOT_OUT_Y + getAspectBoxHeight() * i));
             disableSlot(i + getUnfilteredItemCount());

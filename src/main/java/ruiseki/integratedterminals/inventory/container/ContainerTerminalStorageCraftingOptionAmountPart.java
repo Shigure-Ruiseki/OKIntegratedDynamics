@@ -26,9 +26,10 @@ public class ContainerTerminalStorageCraftingOptionAmountPart
     private final Optional<IPartContainer> partContainer;
     private final PartTypeTerminalStorage partType;
 
-    public ContainerTerminalStorageCraftingOptionAmountPart(InventoryPlayer playerInventory,
+    public ContainerTerminalStorageCraftingOptionAmountPart(int id, InventoryPlayer playerInventory,
         ExtendedBuffer packetBuffer) throws IOException {
         this(
+            id,
             playerInventory,
             Optional.empty(),
             Optional.empty(),
@@ -36,11 +37,12 @@ public class ContainerTerminalStorageCraftingOptionAmountPart
             CraftingOptionGuiData.readFromPacketBuffer(packetBuffer));
     }
 
-    public ContainerTerminalStorageCraftingOptionAmountPart(InventoryPlayer playerInventory,
+    public ContainerTerminalStorageCraftingOptionAmountPart(int id, InventoryPlayer playerInventory,
         Optional<PartTarget> target, Optional<IPartContainer> partContainer, PartTypeTerminalStorage partType,
         CraftingOptionGuiData craftingOptionGuiData) {
         this(
             ContainerTerminalStorageCraftingOptionAmountPartConfig._instance.getInstance(),
+            id,
             playerInventory,
             target,
             partContainer,
@@ -48,10 +50,10 @@ public class ContainerTerminalStorageCraftingOptionAmountPart
             craftingOptionGuiData);
     }
 
-    public ContainerTerminalStorageCraftingOptionAmountPart(@Nullable ContainerType<?> type,
+    public ContainerTerminalStorageCraftingOptionAmountPart(@Nullable ContainerType<?> type, int id,
         InventoryPlayer playerInventory, Optional<PartTarget> target, Optional<IPartContainer> partContainer,
         PartTypeTerminalStorage partType, CraftingOptionGuiData craftingOptionGuiData) {
-        super(type, playerInventory, craftingOptionGuiData);
+        super(type, id, playerInventory, craftingOptionGuiData);
         this.target = target;
         this.partType = partType;
         this.partContainer = partContainer;

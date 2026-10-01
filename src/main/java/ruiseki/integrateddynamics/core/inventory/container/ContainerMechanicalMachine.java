@@ -1,5 +1,6 @@
 package ruiseki.integrateddynamics.core.inventory.container;
 
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import net.minecraft.entity.player.InventoryPlayer;
@@ -21,9 +22,9 @@ public class ContainerMechanicalMachine<T extends TileMechanicalMachine<?, ?>> e
     private final Supplier<Integer> variableMaxEnergy;
     private final Supplier<Integer> variableEnergy;
 
-    public ContainerMechanicalMachine(ContainerType<?> containerType, InventoryPlayer inventoryPlayer,
-        IInventory inventory, T tile) {
-        super(containerType, inventoryPlayer, inventory, tile);
+    public ContainerMechanicalMachine(ContainerType<?> containerType, int id, InventoryPlayer inventoryPlayer,
+        IInventory inventory, Optional<T> tile) {
+        super(containerType, id, inventoryPlayer, inventory, tile);
         this.variableMaxProgress = registerSyncedVariable(
             Integer.class,
             () -> getTile().map(t -> t.getMaxProgress())

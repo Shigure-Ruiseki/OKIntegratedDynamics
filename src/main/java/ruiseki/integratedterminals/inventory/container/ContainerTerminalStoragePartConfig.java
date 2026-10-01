@@ -34,9 +34,9 @@ public class ContainerTerminalStoragePartConfig extends GuiConfig<ContainerTermi
             true,
             "part_terminal_storage_part",
             null,
-            eConfig -> new ContainerType<>((i, inventoryPlayer, extendedBuffer) -> {
+            eConfig -> new ContainerType<>((id, inventoryPlayer, extendedBuffer) -> {
                 try {
-                    return new ContainerTerminalStoragePart(inventoryPlayer, extendedBuffer);
+                    return new ContainerTerminalStoragePart(id, inventoryPlayer, extendedBuffer);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }

@@ -31,7 +31,7 @@ public class ContainerLogicProgrammerConfig extends GuiConfig<ContainerLogicProg
             "logic_programmer",
             null,
             eConfig -> new ContainerType<>(
-                (i, inventoryPlayer, extendedBuffer) -> new ContainerLogicProgrammer(inventoryPlayer)));
+                (id, inventoryPlayer, extendedBuffer) -> new ContainerLogicProgrammer(id, inventoryPlayer)));
     }
 
     @Override

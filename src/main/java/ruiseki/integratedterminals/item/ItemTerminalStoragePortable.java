@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ChatComponentTranslation;
@@ -31,11 +32,11 @@ import ruiseki.okcore.block.collidable.ICollidable;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.NonNullList;
 import ruiseki.okcore.datastructure.Wrapper;
-import ruiseki.okcore.helper.InventoryHelpers;
 import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.helper.ItemNBTHelpers;
 import ruiseki.okcore.helper.LangHelpers;
-import ruiseki.okcore.inventory.IGuiConstructor;
+import ruiseki.okcore.inventory.IContainerConstructor;
+import ruiseki.okcore.inventory.ItemLocation;
 import ruiseki.okcore.inventory.container.ContainerExtended;
 import ruiseki.okcore.inventory.container.NamedContainerProviderItem;
 import ruiseki.okcore.item.ItemGui;
@@ -58,16 +59,16 @@ public class ItemTerminalStoragePortable extends ItemGui {
     }
 
     @Override
-    public void openGuiForItemIndex(World world, EntityPlayer player, int itemIndex) {
+    public void openGuiForItemIndex(World world, EntityPlayerMP player, ItemLocation itemLocation) {
         if (world.isRemote) {
-            super.openGuiForItemIndex(world, player, itemIndex);
+            super.openGuiForItemIndex(world, player, itemLocation);
         } else {
-            ItemStack itemStack = InventoryHelpers.getItemFromIndex(player, itemIndex);
+            ItemStack itemStack = itemLocation.getItemStack(player);
             int groupId = getGroupId(itemStack);
             if (groupId >= 0) {
                 Optional<INetwork> network = ContainerTerminalStorageItem.getNetworkFromItem(itemStack);
                 if (network.isPresent()) {
-                    super.openGuiForItemIndex(world, player, itemIndex);
+                    super.openGuiForItemIndex(world, player, itemLocation);
                 } else {
                     player.addChatComponentMessage(
                         new ChatComponentTranslation(
@@ -82,14 +83,15 @@ public class ItemTerminalStoragePortable extends ItemGui {
     }
 
     @Override
-    public @Nullable IGuiConstructor getGuiProvider(World world, EntityPlayer player, int itemIndex) {
+    public @Nullable IContainerConstructor getContainer(World world, EntityPlayer player, ItemLocation itemLocation) {
         return new NamedContainerProviderItem(
-            itemIndex,
-            (i, inventoryPlayer, itemIndex1) -> new ContainerTerminalStorageItem(
+            itemLocation,
+            (id, inventoryPlayer, itemLocation1) -> new ContainerTerminalStorageItem(
+                id,
                 inventoryPlayer,
-                itemIndex1,
+                itemLocation1,
                 Optional.empty(),
-                getTerminalStorageState(InventoryHelpers.getItemFromIndex(player, itemIndex), player, itemIndex1)));
+                getTerminalStorageState(itemLocation.getItemStack(player), player, itemLocation1)));
     }
 
     @Override
@@ -98,11 +100,12 @@ public class ItemTerminalStoragePortable extends ItemGui {
     }
 
     @Override
-    public void writeExtraGuiData(ExtendedBuffer packetBuffer, World world, EntityPlayer player, int itemIndex) {
+    public void writeExtraGuiData(ExtendedBuffer packetBuffer, World world, EntityPlayer player,
+        ItemLocation itemLocation) {
         try {
-            super.writeExtraGuiData(packetBuffer, world, player, itemIndex);
+            super.writeExtraGuiData(packetBuffer, world, player, itemLocation);
             packetBuffer.writeBoolean(false);
-            getTerminalStorageState(InventoryHelpers.getItemFromIndex(player, itemIndex), player, itemIndex)
+            getTerminalStorageState(itemLocation.getItemStack(player), player, itemLocation)
                 .writeToPacketBuffer(packetBuffer);
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -195,13 +198,14 @@ public class ItemTerminalStoragePortable extends ItemGui {
         };
     }
 
-    public static TerminalStorageState getTerminalStorageState(ItemStack itemStack, EntityPlayer player, int slot) {
+    public static TerminalStorageState getTerminalStorageState(ItemStack itemStack, EntityPlayer player,
+        ItemLocation itemLocation) {
         // Construct item dirty mark listener
         Wrapper<TerminalStorageState> stateWrapped = new Wrapper<>();
         String playerKey = player.getUniqueID()
             .toString();
         IDirtyMarkListener dirtyMarkListener = () -> {
-            ItemStack currentStack = InventoryHelpers.getItemFromIndex(player, slot);
+            ItemStack currentStack = itemLocation.getItemStack(player);
             if (currentStack != null) {
                 NBTTagCompound tagRoot = ItemNBTHelpers.getNBT(currentStack);
                 if (!tagRoot.hasKey(NBT_KEY_STATES, Constants.NBT.TAG_COMPOUND)) {

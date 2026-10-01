@@ -17,12 +17,12 @@ import ruiseki.okcore.inventory.slot.SlotSingleItem;
  */
 public class ContainerVariablestore extends InventoryContainer {
 
-    public ContainerVariablestore(InventoryPlayer playerInventory) {
-        this(playerInventory, new SimpleInventory(TileVariablestore.INVENTORY_SIZE));
+    public ContainerVariablestore(int id, InventoryPlayer playerInventory) {
+        this(id, playerInventory, new SimpleInventory(TileVariablestore.INVENTORY_SIZE));
     }
 
-    public ContainerVariablestore(InventoryPlayer inventoryPlayer, IInventory inventory) {
-        super(ContainerVariablestoreConfig._instance.getInstance(), inventoryPlayer, inventory);
+    public ContainerVariablestore(int id, InventoryPlayer inventoryPlayer, IInventory inventory) {
+        super(ContainerVariablestoreConfig._instance.getInstance(), id, inventoryPlayer, inventory);
         addInventory(inventory, 0, offsetX + 8, offsetY + 18, TileVariablestore.ROWS, TileVariablestore.COLS);
         addPlayerInventory(inventoryPlayer, offsetX + 8, offsetY + 14 + TileVariablestore.ROWS * 18 + 17);
     }

@@ -1,5 +1,6 @@
 package ruiseki.integrateddynamics.inventory.container;
 
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import net.minecraft.entity.player.InventoryPlayer;
@@ -27,13 +28,13 @@ public class ContainerMechanicalDryingBasin extends ContainerMechanicalMachine<T
     private final Supplier<FluidStack> variableOutputFluidStack;
     private final Supplier<Integer> variableOutputFluidCapacity;
 
-    public ContainerMechanicalDryingBasin(InventoryPlayer playerInventory) {
-        this(playerInventory, new SimpleInventory(TileMechanicalDryingBasin.INVENTORY_SIZE), null);
+    public ContainerMechanicalDryingBasin(int id, InventoryPlayer playerInventory) {
+        this(id, playerInventory, new SimpleInventory(TileMechanicalDryingBasin.INVENTORY_SIZE), Optional.empty());
     }
 
-    public ContainerMechanicalDryingBasin(InventoryPlayer inventoryPlayer, IInventory inventory,
-        TileMechanicalDryingBasin tile) {
-        super(ContainerMechanicalDryingBasinConfig._instance.getInstance(), inventoryPlayer, inventory, tile);
+    public ContainerMechanicalDryingBasin(int id, InventoryPlayer inventoryPlayer, IInventory inventory,
+        Optional<TileMechanicalDryingBasin> tile) {
+        super(ContainerMechanicalDryingBasinConfig._instance.getInstance(), id, inventoryPlayer, inventory, tile);
 
         this.variableInputFluidStack = registerSyncedVariable(
             FluidStack.class,

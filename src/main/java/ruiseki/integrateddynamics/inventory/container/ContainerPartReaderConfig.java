@@ -27,8 +27,7 @@ public class ContainerPartReaderConfig extends GuiConfig<ContainerPartReader> {
             true,
             "part_reader",
             null,
-            eConfig -> new ContainerType<>(
-                (i, inventoryPlayer, extendedBuffer) -> new ContainerPartReader<>(inventoryPlayer, extendedBuffer)));
+            eConfig -> new ContainerType<>(ContainerPartReader::new));
     }
 
     @Override

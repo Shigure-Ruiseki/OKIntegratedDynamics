@@ -30,9 +30,7 @@ public class ContainerLogicProgrammerPortableConfig extends GuiConfig<ContainerL
             true,
             "logic_programmer_portable",
             null,
-            eConfig -> new ContainerType<>(
-                (i, inventoryPlayer,
-                    extendedBuffer) -> new ContainerLogicProgrammerPortable(inventoryPlayer, extendedBuffer)));
+            eConfig -> new ContainerType<>(ContainerLogicProgrammerPortable::new));
     }
 
     @Override

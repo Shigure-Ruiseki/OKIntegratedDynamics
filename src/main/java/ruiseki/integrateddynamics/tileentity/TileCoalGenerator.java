@@ -1,6 +1,7 @@
 package ruiseki.integrateddynamics.tileentity;
 
 import java.util.Collection;
+import java.util.Optional;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
@@ -34,7 +35,7 @@ import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.energy.capability.CapabilityEnergy;
 import ruiseki.okcore.energy.component.EnergyProviderComponent;
 import ruiseki.okcore.helper.Helpers;
-import ruiseki.okcore.inventory.IGuiConstructor;
+import ruiseki.okcore.inventory.IContainerConstructor;
 import ruiseki.okcore.inventory.container.ContainerExtended;
 import ruiseki.okcore.persist.nbt.NBTPersist;
 
@@ -44,7 +45,7 @@ import ruiseki.okcore.persist.nbt.NBTPersist;
  * @author rubensworks
  */
 public class TileCoalGenerator extends TileCableConnectableInventory
-    implements IEnergyProvider, IEnergyStorage, IGuiConstructor {
+    implements IEnergyProvider, IEnergyStorage, IContainerConstructor {
 
     public static final int INVENTORY_SIZE = 1;
     public static final int MAX_PROGRESS = 13;
@@ -196,8 +197,7 @@ public class TileCoalGenerator extends TileCableConnectableInventory
     }
 
     @Override
-    public @Nullable ContainerExtended createContainer(int windowId, InventoryPlayer playerInventory,
-        EntityPlayer player) {
-        return new ContainerCoalGenerator(playerInventory, this, this);
+    public @Nullable ContainerExtended createContainer(int id, InventoryPlayer playerInventory, EntityPlayer player) {
+        return new ContainerCoalGenerator(id, playerInventory, this, Optional.of(this));
     }
 }

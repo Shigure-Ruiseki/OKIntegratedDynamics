@@ -5,7 +5,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.world.World;
 
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.NotNull;
 
 import com.gtnewhorizon.gtnhlib.blockstate.core.BlockState;
 
@@ -14,7 +14,7 @@ import ruiseki.okcore.block.BlockGui;
 import ruiseki.okcore.block.property.BlockProperty;
 import ruiseki.okcore.block.property.DirectionProperty;
 import ruiseki.okcore.datastructure.BlockPos;
-import ruiseki.okcore.inventory.IGuiConstructor;
+import ruiseki.okcore.inventory.IContainerConstructor;
 import ruiseki.okcore.inventory.container.ContainerExtended;
 
 /**
@@ -37,13 +37,13 @@ public class BlockLogicProgrammer extends BlockGui {
     }
 
     @Override
-    public IGuiConstructor getGuiProvider(BlockState blockState, World world, BlockPos blockPos) {
-        return new IGuiConstructor() {
+    public IContainerConstructor getGuiProvider(BlockState blockState, World world, BlockPos blockPos) {
+        return new IContainerConstructor() {
 
             @Override
-            public @Nullable ContainerExtended createContainer(int windowId, InventoryPlayer playerInventory,
+            public @NotNull ContainerExtended createContainer(int id, InventoryPlayer playerInventory,
                 EntityPlayer player) {
-                return new ContainerLogicProgrammer(playerInventory);
+                return new ContainerLogicProgrammer(id, playerInventory);
             }
         };
     }

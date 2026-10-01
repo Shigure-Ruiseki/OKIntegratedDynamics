@@ -1,5 +1,7 @@
 package ruiseki.integrateddynamics.tileentity;
 
+import java.util.Optional;
+
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.IInventory;
@@ -24,13 +26,13 @@ import ruiseki.okcore.fluid.handler.SmartTank;
 import ruiseki.okcore.helper.CapabilityHelpers;
 import ruiseki.okcore.helper.FluidHelpers;
 import ruiseki.okcore.helper.InventoryHelpers;
-import ruiseki.okcore.inventory.IGuiConstructor;
+import ruiseki.okcore.inventory.IContainerConstructor;
 import ruiseki.okcore.inventory.container.ContainerExtended;
 import ruiseki.okcore.persist.nbt.NBTPersist;
 import ruiseki.okcore.recipe.RecipeManager;
 
 public class TileMechanicalSqueezer extends TileMechanicalMachine<IInventory, RecipeMechanicalSqueezer>
-    implements IGuiConstructor {
+    implements IContainerConstructor {
 
     public static final int INVENTORY_SIZE = 5;
     private static final int SLOT_INPUT = 0;
@@ -188,8 +190,7 @@ public class TileMechanicalSqueezer extends TileMechanicalMachine<IInventory, Re
     }
 
     @Override
-    public @Nullable ContainerExtended createContainer(int windowId, InventoryPlayer playerInventory,
-        EntityPlayer player) {
-        return new ContainerMechanicalSqueezer(playerInventory, this.getInventory(), this);
+    public @Nullable ContainerExtended createContainer(int id, InventoryPlayer playerInventory, EntityPlayer player) {
+        return new ContainerMechanicalSqueezer(id, playerInventory, this.getInventory(), Optional.of(this));
     }
 }

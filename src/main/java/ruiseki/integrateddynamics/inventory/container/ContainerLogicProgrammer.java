@@ -12,8 +12,8 @@ import ruiseki.integrateddynamics.block.BlockLogicProgrammer;
  */
 public class ContainerLogicProgrammer extends ContainerLogicProgrammerBase {
 
-    public ContainerLogicProgrammer(InventoryPlayer inventory) {
-        super(ContainerLogicProgrammerConfig._instance.getInstance(), inventory);
+    public ContainerLogicProgrammer(int id, InventoryPlayer inventory) {
+        super(ContainerLogicProgrammerConfig._instance.getInstance(), id, inventory);
     }
 
     @Override

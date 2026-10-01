@@ -42,9 +42,10 @@ public class ContainerTerminalCraftingJobsPlan
     private Optional<ITerminalCraftingPlan> craftingPlan;
     private Optional<ITerminalCraftingPlanFlat> craftingPlanFlat;
 
-    public ContainerTerminalCraftingJobsPlan(InventoryPlayer playerInventory, ExtendedBuffer packetBuffer)
+    public ContainerTerminalCraftingJobsPlan(int id, InventoryPlayer playerInventory, ExtendedBuffer packetBuffer)
         throws IOException {
         this(
+            id,
             playerInventory,
             PartHelpers.readPartTarget(packetBuffer),
             Optional.empty(),
@@ -52,11 +53,12 @@ public class ContainerTerminalCraftingJobsPlan
             CraftingJobGuiData.readFromPacketBuffer(packetBuffer));
     }
 
-    public ContainerTerminalCraftingJobsPlan(InventoryPlayer playerInventory, PartTarget target,
+    public ContainerTerminalCraftingJobsPlan(int id, InventoryPlayer playerInventory, PartTarget target,
         Optional<IPartContainer> partContainer, PartTypeTerminalCraftingJob partType,
         CraftingJobGuiData craftingJobGuiData) {
         super(
             ContainerTerminalCraftingJobsPlanConfig._instance.getInstance(),
+            id,
             playerInventory,
             new SimpleInventory(),
             Optional.of(target),

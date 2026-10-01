@@ -1,5 +1,6 @@
 package ruiseki.integrateddynamics.tileentity;
 
+import java.util.Optional;
 import java.util.Queue;
 
 import net.minecraft.entity.player.EntityPlayer;
@@ -40,7 +41,7 @@ import ruiseki.okcore.capabilities.resolver.BasicCapabilityResolver;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
 import ruiseki.okcore.helper.LangHelpers;
-import ruiseki.okcore.inventory.IGuiConstructor;
+import ruiseki.okcore.inventory.IContainerConstructor;
 import ruiseki.okcore.inventory.container.ContainerExtended;
 import ruiseki.okcore.persist.nbt.NBTPersist;
 
@@ -49,7 +50,7 @@ import ruiseki.okcore.persist.nbt.NBTPersist;
  *
  * @author rubensworks
  */
-public class TileDelay extends TileProxy implements IGuiConstructor {
+public class TileDelay extends TileProxy implements IContainerConstructor {
 
     @NBTPersist
     @Getter
@@ -218,8 +219,7 @@ public class TileDelay extends TileProxy implements IGuiConstructor {
     }
 
     @Override
-    public @Nullable ContainerExtended createContainer(int windowId, InventoryPlayer playerInventory,
-        EntityPlayer player) {
-        return new ContainerDelay(playerInventory, this.getInventory(), this);
+    public @Nullable ContainerExtended createContainer(int id, InventoryPlayer playerInventory, EntityPlayer player) {
+        return new ContainerDelay(id, playerInventory, this.getInventory(), Optional.of(this));
     }
 }

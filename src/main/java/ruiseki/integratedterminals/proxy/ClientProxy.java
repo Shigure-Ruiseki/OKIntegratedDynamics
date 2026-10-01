@@ -2,9 +2,7 @@ package ruiseki.integratedterminals.proxy;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.lwjgl.input.Keyboard;
 
 import cpw.mods.fml.client.registry.ClientRegistry;
@@ -17,7 +15,8 @@ import ruiseki.okcore.client.key.KeyBindingOK;
 import ruiseki.okcore.client.key.KeyConflictContext;
 import ruiseki.okcore.client.key.KeyModifier;
 import ruiseki.okcore.init.ModBase;
-import ruiseki.okcore.inventory.PlayerInventoryIterator;
+import ruiseki.okcore.inventory.ItemLocation;
+import ruiseki.okcore.inventory.PlayerExtendedInventoryIterator;
 import ruiseki.okcore.proxy.ClientProxyComponent;
 
 /**
@@ -85,18 +84,19 @@ public class ClientProxy extends ClientProxyComponent {
         ClientRegistry.registerKeyBinding(TERMINAL_CRAFTINGGRID_CLEARPLAYER);
         ClientRegistry.registerKeyBinding(TERMINAL_CRAFTINGGRID_CLEARSTORAGE);
         ClientRegistry.registerKeyBinding(TERMINAL_CRAFTINGGRID_BALANCE);
+
         keyRegistry.addKeyHandler(TERMINAL_STORAGE_PORTABLE_OPEN, (kb) -> {
             EntityPlayer player = Minecraft.getMinecraft().thePlayer;
-            int found = -1;
-            PlayerInventoryIterator it = new PlayerInventoryIterator(player);
-            while (it.hasNext()) {
-                Pair<Integer, ItemStack> pair = it.nextIndexed();
-                if (pair.getRight() != null && pair.getRight()
+            ItemLocation found = null;
+            PlayerExtendedInventoryIterator it = new PlayerExtendedInventoryIterator(player);
+            while (it.hasNext() && found == null) {
+                ItemLocation pair = it.nextIndexed();
+                if (pair.getItemStack(player)
                     .getItem() instanceof ItemTerminalStoragePortable) {
-                    found = pair.getLeft();
+                    found = pair;
                 }
             }
-            if (found != -1) {
+            if (found != null) {
                 TerminalStorageIngredientItemOpenGenericPacket.send(found);
             }
         });

@@ -54,8 +54,9 @@ public class ContainerPartSettings extends InventoryContainer {
     private final int lastSideValueId;
     private final int lastMinUpdateValueId;
 
-    public ContainerPartSettings(InventoryPlayer playerInventory, ExtendedBuffer packetBuffer) {
+    public ContainerPartSettings(int id, InventoryPlayer playerInventory, ExtendedBuffer packetBuffer) {
         this(
+            id,
             playerInventory,
             new SimpleInventory(0),
             PartHelpers.readPartTarget(packetBuffer),
@@ -63,10 +64,11 @@ public class ContainerPartSettings extends InventoryContainer {
             PartHelpers.readPart(packetBuffer));
     }
 
-    public ContainerPartSettings(InventoryPlayer playerInventory, IInventory inventory, PartTarget target,
+    public ContainerPartSettings(int id, InventoryPlayer playerInventory, IInventory inventory, PartTarget target,
         Optional<IPartContainer> partContainer, IPartType partType) {
         this(
             ContainerPartSettingsConfig._instance.getInstance(),
+            id,
             playerInventory,
             inventory,
             target,
@@ -74,9 +76,9 @@ public class ContainerPartSettings extends InventoryContainer {
             partType);
     }
 
-    public ContainerPartSettings(@Nullable ContainerType<?> type, InventoryPlayer playerInventory, IInventory inventory,
-        PartTarget target, Optional<IPartContainer> partContainer, IPartType partType) {
-        super(type, playerInventory, inventory);
+    public ContainerPartSettings(@Nullable ContainerType<?> type, int id, InventoryPlayer playerInventory,
+        IInventory inventory, PartTarget target, Optional<IPartContainer> partContainer, IPartType partType) {
+        super(type, id, playerInventory, inventory);
         this.target = target;
         this.partContainer = partContainer;
         this.partType = partType;

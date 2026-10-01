@@ -1,5 +1,7 @@
 package ruiseki.integrateddynamics.inventory.container;
 
+import java.util.Optional;
+
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.IInventory;
 
@@ -16,12 +18,12 @@ import ruiseki.okcore.inventory.slot.SlotRemoveOnly;
  */
 public class ContainerProxy extends ContainerActiveVariableBase<TileProxy> {
 
-    public ContainerProxy(InventoryPlayer playerInventory) {
-        this(playerInventory, new SimpleInventory(TileProxy.INVENTORY_SIZE), null);
+    public ContainerProxy(int id, InventoryPlayer playerInventory) {
+        this(id, playerInventory, new SimpleInventory(TileProxy.INVENTORY_SIZE), Optional.empty());
     }
 
-    public ContainerProxy(InventoryPlayer playerInventory, IInventory inventory, TileProxy tile) {
-        super(ContainerProxyConfig._instance.getInstance(), playerInventory, inventory, tile);
+    public ContainerProxy(int id, InventoryPlayer playerInventory, IInventory inventory, Optional<TileProxy> tile) {
+        super(ContainerProxyConfig._instance.getInstance(), id, playerInventory, inventory, tile);
         addSlotToContainer(new SlotVariable(inventory, TileProxy.SLOT_READ, 81, 25));
         addSlotToContainer(new SlotVariable(inventory, TileProxy.SLOT_WRITE_IN, 56, 78));
         addSlotToContainer(new SlotRemoveOnly(inventory, TileProxy.SLOT_WRITE_OUT, 104, 78));

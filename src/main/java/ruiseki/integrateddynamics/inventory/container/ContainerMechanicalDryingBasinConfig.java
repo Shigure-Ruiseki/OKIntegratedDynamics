@@ -26,7 +26,7 @@ public class ContainerMechanicalDryingBasinConfig extends GuiConfig<ContainerMec
             "mechanical_drying_basin",
             null,
             eConfig -> new ContainerType<>(
-                (i, inventoryPlayer, extendedBuffer) -> new ContainerMechanicalDryingBasin(inventoryPlayer)));
+                (id, inventoryPlayer, extendedBuffer) -> new ContainerMechanicalDryingBasin(id, inventoryPlayer)));
     }
 
     @Override

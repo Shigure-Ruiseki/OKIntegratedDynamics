@@ -23,49 +23,52 @@ import ruiseki.integratedterminals.item.ItemTerminalStoragePortable;
 import ruiseki.integratedterminals.item.ItemTerminalStoragePortableConfig;
 import ruiseki.okcore.client.gui.ContainerType;
 import ruiseki.okcore.datastructure.LazyOptional;
-import ruiseki.okcore.helper.InventoryHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
+import ruiseki.okcore.inventory.ItemLocation;
 import ruiseki.okcore.network.ExtendedBuffer;
 
 /**
  * @author rubensworks
  */
-public class ContainerTerminalStorageItem extends ContainerTerminalStorageBase<Integer> {
+public class ContainerTerminalStorageItem extends ContainerTerminalStorageBase<ItemLocation> {
 
     // Based on ItemInventoryContainer
 
-    private final int itemIndex;
+    private final ItemLocation itemLocation;
 
-    public ContainerTerminalStorageItem(InventoryPlayer playerInventory, ExtendedBuffer packetBuffer)
+    public ContainerTerminalStorageItem(int id, InventoryPlayer playerInventory, ExtendedBuffer packetBuffer)
         throws IOException {
         this(
+            id,
             playerInventory,
-            packetBuffer.readInt(),
+            ItemLocation.readFromPacketBuffer(packetBuffer),
             packetBuffer.readBoolean() ? Optional.of(InitTabData.readFromPacketBuffer(packetBuffer)) : Optional.empty(),
             TerminalStorageState.readFromPacketBuffer(packetBuffer));
         getGuiState().setDirtyMarkListener(this::sendGuiStateToServer);
     }
 
-    public ContainerTerminalStorageItem(InventoryPlayer playerInventory, int location,
+    public ContainerTerminalStorageItem(int id, InventoryPlayer playerInventory, ItemLocation itemLocation,
         Optional<InitTabData> initTabData, TerminalStorageState terminalStorageState) {
         this(
             ContainerTerminalStorageItemConfig._instance.getInstance(),
+            id,
             playerInventory,
-            location,
+            itemLocation,
             initTabData,
             terminalStorageState);
     }
 
-    public ContainerTerminalStorageItem(@Nullable ContainerType<?> type, InventoryPlayer playerInventory,
-        int itemLocation, Optional<InitTabData> initTabData, TerminalStorageState terminalStorageState) {
+    public ContainerTerminalStorageItem(@Nullable ContainerType<?> type, int id, InventoryPlayer playerInventory,
+        ItemLocation itemLocation, Optional<InitTabData> initTabData, TerminalStorageState terminalStorageState) {
         super(
             type,
+            id,
             playerInventory,
             initTabData,
             terminalStorageState,
-            getNetworkFromItem(InventoryHelpers.getItemFromIndex(playerInventory.player, itemLocation)),
-            getVariableInventoryFromItem(InventoryHelpers.getItemFromIndex(playerInventory.player, itemLocation)));
-        this.itemIndex = itemLocation;
+            getNetworkFromItem(itemLocation.getItemStack(playerInventory.player)),
+            getVariableInventoryFromItem(itemLocation.getItemStack(playerInventory.player)));
+        this.itemLocation = itemLocation;
     }
 
     public static Optional<INetwork> getNetworkFromItem(ItemStack itemStack) {
@@ -91,7 +94,7 @@ public class ContainerTerminalStorageItem extends ContainerTerminalStorageBase<I
     }
 
     public ItemStack getItemStack(EntityPlayer player) {
-        return InventoryHelpers.getItemFromIndex(player, itemIndex);
+        return this.itemLocation.getItemStack(player);
     }
 
     @Override
@@ -101,13 +104,13 @@ public class ContainerTerminalStorageItem extends ContainerTerminalStorageBase<I
     }
 
     @Override
-    public ITerminalStorageLocation<Integer> getLocation() {
+    public ITerminalStorageLocation<ItemLocation> getLocation() {
         return TerminalStorageLocations.ITEM;
     }
 
     @Override
-    public Integer getLocationInstance() {
-        return itemIndex;
+    public ItemLocation getLocationInstance() {
+        return this.itemLocation;
     }
 
     @Override
@@ -121,7 +124,7 @@ public class ContainerTerminalStorageItem extends ContainerTerminalStorageBase<I
 
             @Override
             public boolean canTakeStack(EntityPlayer playerIn) {
-                return super.canTakeStack(playerIn) && itemIndex != index;
+                return super.canTakeStack(playerIn) && itemLocation.slot() != index;
             }
         };
     }

@@ -23,8 +23,9 @@ public class ContainerInterfaceSettings extends ContainerPartSettings {
 
     private final int lastChannelInterfaceValueId;
 
-    public ContainerInterfaceSettings(InventoryPlayer playerInventory, ExtendedBuffer packetBuffer) {
+    public ContainerInterfaceSettings(int id, InventoryPlayer playerInventory, ExtendedBuffer packetBuffer) {
         this(
+            id,
             playerInventory,
             new SimpleInventory(0),
             PartHelpers.readPartTarget(packetBuffer),
@@ -32,10 +33,11 @@ public class ContainerInterfaceSettings extends ContainerPartSettings {
             PartHelpers.readPart(packetBuffer));
     }
 
-    public ContainerInterfaceSettings(InventoryPlayer playerInventory, IInventory inventory, PartTarget target,
+    public ContainerInterfaceSettings(int id, InventoryPlayer playerInventory, IInventory inventory, PartTarget target,
         Optional<IPartContainer> partContainer, IPartType partType) {
         super(
             ContainerInterfaceSettingsConfig._instance.getInstance(),
+            id,
             playerInventory,
             inventory,
             target,

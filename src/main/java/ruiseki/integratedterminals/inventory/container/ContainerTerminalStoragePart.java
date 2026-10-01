@@ -36,9 +36,10 @@ public class ContainerTerminalStoragePart extends ContainerTerminalStorageBase<P
     private final Optional<IPartContainer> partContainer;
     private final PartTypeTerminalStorage partType;
 
-    public ContainerTerminalStoragePart(InventoryPlayer playerInventory, ExtendedBuffer packetBuffer)
+    public ContainerTerminalStoragePart(int id, InventoryPlayer playerInventory, ExtendedBuffer packetBuffer)
         throws IOException {
         this(
+            id,
             playerInventory,
             PartHelpers.readPartTarget(packetBuffer),
             PartHelpers.readPart(packetBuffer),
@@ -47,11 +48,12 @@ public class ContainerTerminalStoragePart extends ContainerTerminalStorageBase<P
         getGuiState().setDirtyMarkListener(this::sendGuiStateToServer);
     }
 
-    public ContainerTerminalStoragePart(InventoryPlayer playerInventory, PartTarget target,
+    public ContainerTerminalStoragePart(int id, InventoryPlayer playerInventory, PartTarget target,
         PartTypeTerminalStorage partType, Optional<ContainerTerminalStorageBase.InitTabData> initTabData,
         TerminalStorageState terminalStorageState) {
         this(
             ContainerTerminalStoragePartConfig._instance.getInstance(),
+            id,
             playerInventory,
             target,
             Optional.of(
@@ -66,11 +68,12 @@ public class ContainerTerminalStoragePart extends ContainerTerminalStorageBase<P
             terminalStorageState);
     }
 
-    public ContainerTerminalStoragePart(@Nullable ContainerType<?> type, InventoryPlayer playerInventory,
+    public ContainerTerminalStoragePart(@Nullable ContainerType<?> type, int id, InventoryPlayer playerInventory,
         PartTarget target, Optional<IPartContainer> partContainer, PartTypeTerminalStorage partType,
         Optional<ContainerTerminalStorageBase.InitTabData> initTabData, TerminalStorageState terminalStorageState) {
         super(
             type,
+            id,
             playerInventory,
             initTabData,
             terminalStorageState,

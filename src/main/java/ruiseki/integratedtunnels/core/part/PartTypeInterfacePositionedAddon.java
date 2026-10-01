@@ -29,7 +29,7 @@ import ruiseki.integrateddynamics.core.part.PartTypeBase;
 import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.LazyOptional;
-import ruiseki.okcore.inventory.IGuiConstructor;
+import ruiseki.okcore.inventory.IContainerConstructor;
 import ruiseki.okcore.inventory.SimpleInventory;
 import ruiseki.okcore.inventory.container.ContainerExtended;
 import ruiseki.okcore.network.ExtendedBuffer;
@@ -53,15 +53,16 @@ public abstract class PartTypeInterfacePositionedAddon<N extends IPositionedAddo
     }
 
     @Override
-    public Optional<IGuiConstructor> getContainerProvider(PartPos pos) {
-        return Optional.of(new IGuiConstructor() {
+    public Optional<IContainerConstructor> getContainerProvider(PartPos pos) {
+        return Optional.of(new IContainerConstructor() {
 
             @Override
-            public @Nullable ContainerExtended createContainer(int windowId, InventoryPlayer playerInventory,
+            public @Nullable ContainerExtended createContainer(int id, InventoryPlayer playerInventory,
                 EntityPlayer player) {
                 Triple<IPartContainer, PartTypeBase, PartTarget> data = PartHelpers
                     .getContainerPartConstructionData(pos);
                 return new ContainerInterfaceSettings(
+                    id,
                     playerInventory,
                     new SimpleInventory(0),
                     data.getRight(),

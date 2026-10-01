@@ -19,9 +19,9 @@ public class ContainerTerminalStorageCraftingOptionAmountBase<L> extends Invento
 
     private final CraftingOptionGuiData<?, ?, L> craftingOptionGuiData;
 
-    public ContainerTerminalStorageCraftingOptionAmountBase(@Nullable ContainerType<?> type,
+    public ContainerTerminalStorageCraftingOptionAmountBase(@Nullable ContainerType<?> type, int id,
         InventoryPlayer playerInventory, CraftingOptionGuiData craftingOptionGuiData) {
-        super(type, playerInventory, new SimpleInventory());
+        super(type, id, playerInventory, new SimpleInventory());
 
         addPlayerInventory(player.inventory, 9, 80);
 

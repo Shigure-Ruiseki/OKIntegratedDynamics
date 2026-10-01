@@ -219,7 +219,7 @@ public abstract class PartStateActiveVariableBase<P extends IPartType> extends P
          * @param size The amount of slots in the inventory.
          */
         public SingularInventory(int size) {
-            super(size, "stateInventory", 1);
+            super(size, 1);
         }
 
         protected boolean canInsert(int slot) {

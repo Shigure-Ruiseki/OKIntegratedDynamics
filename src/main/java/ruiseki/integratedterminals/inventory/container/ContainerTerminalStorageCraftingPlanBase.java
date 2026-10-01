@@ -40,9 +40,9 @@ public abstract class ContainerTerminalStorageCraftingPlanBase<L> extends Invent
     private boolean calculatedCraftingPlan;
     private ITerminalCraftingPlan craftingPlan;
 
-    public ContainerTerminalStorageCraftingPlanBase(@Nullable ContainerType<?> type, InventoryPlayer playerInventory,
-        CraftingOptionGuiData craftingOptionGuiData) {
-        super(type, playerInventory, new SimpleInventory());
+    public ContainerTerminalStorageCraftingPlanBase(@Nullable ContainerType<?> type, int id,
+        InventoryPlayer playerInventory, CraftingOptionGuiData craftingOptionGuiData) {
+        super(type, id, playerInventory, new SimpleInventory());
 
         this.craftingOptionGuiData = craftingOptionGuiData;
         this.craftingPlanNotifierId = getNextValueId();

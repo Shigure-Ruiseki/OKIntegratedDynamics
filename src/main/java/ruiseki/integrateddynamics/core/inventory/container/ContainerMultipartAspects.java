@@ -69,9 +69,9 @@ public abstract class ContainerMultipartAspects<P extends IPartType<P, S>, S ext
 
     protected final IInventory inputSlots;
 
-    public ContainerMultipartAspects(@Nullable ContainerType<?> type, InventoryPlayer playerInventory,
+    public ContainerMultipartAspects(@Nullable ContainerType<?> type, int id, InventoryPlayer playerInventory,
         IInventory inventory, PartTarget target, Optional<IPartContainer> partContainer, P partType, List<A> items) {
-        super(type, playerInventory, inventory, items, (item, pattern) -> {
+        super(type, id, playerInventory, inventory, items, (item, pattern) -> {
             // We could cache this if this would prove to be a bottleneck.
             // But we have a small amount of aspects, so this shouldn't be a problem.
             return pattern.matcher(
@@ -201,7 +201,7 @@ public abstract class ContainerMultipartAspects<P extends IPartType<P, S>, S ext
     public abstract int getAspectBoxHeight();
 
     protected IInventory constructInputSlotsInventory() {
-        SimpleInventory inventory = new SimpleInventory(getUnfilteredItemCount(), "temporaryInputSlots", 1);
+        SimpleInventory inventory = new SimpleInventory(getUnfilteredItemCount(), 1);
         inventory.addDirtyMarkListener(this);
         return inventory;
     }

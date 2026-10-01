@@ -29,9 +29,10 @@ public class ContainerTerminalStorageCraftingPlanPart extends ContainerTerminalS
     private final Optional<IPartContainer> partContainer;
     private final PartTypeTerminalStorage partType;
 
-    public ContainerTerminalStorageCraftingPlanPart(InventoryPlayer playerInventory, ExtendedBuffer packetBuffer)
-        throws IOException {
+    public ContainerTerminalStorageCraftingPlanPart(int id, InventoryPlayer playerInventory,
+        ExtendedBuffer packetBuffer) throws IOException {
         this(
+            id,
             playerInventory,
             Optional.empty(),
             Optional.empty(),
@@ -39,11 +40,12 @@ public class ContainerTerminalStorageCraftingPlanPart extends ContainerTerminalS
             CraftingOptionGuiData.readFromPacketBuffer(packetBuffer));
     }
 
-    public ContainerTerminalStorageCraftingPlanPart(InventoryPlayer playerInventory, Optional<PartTarget> target,
-        Optional<IPartContainer> partContainer, PartTypeTerminalStorage partType,
+    public ContainerTerminalStorageCraftingPlanPart(int id, InventoryPlayer playerInventory,
+        Optional<PartTarget> target, Optional<IPartContainer> partContainer, PartTypeTerminalStorage partType,
         CraftingOptionGuiData craftingOptionGuiData) {
         this(
             ContainerTerminalStorageCraftingPlanPartConfig._instance.getInstance(),
+            id,
             playerInventory,
             target,
             partContainer,
@@ -51,10 +53,10 @@ public class ContainerTerminalStorageCraftingPlanPart extends ContainerTerminalS
             craftingOptionGuiData);
     }
 
-    public ContainerTerminalStorageCraftingPlanPart(@Nullable ContainerType<?> type, InventoryPlayer playerInventory,
-        Optional<PartTarget> target, Optional<IPartContainer> partContainer, PartTypeTerminalStorage partType,
-        CraftingOptionGuiData craftingOptionGuiData) {
-        super(type, playerInventory, craftingOptionGuiData);
+    public ContainerTerminalStorageCraftingPlanPart(@Nullable ContainerType<?> type, int id,
+        InventoryPlayer playerInventory, Optional<PartTarget> target, Optional<IPartContainer> partContainer,
+        PartTypeTerminalStorage partType, CraftingOptionGuiData craftingOptionGuiData) {
+        super(type, id, playerInventory, craftingOptionGuiData);
         this.target = target;
         this.partType = partType;
         this.partContainer = partContainer;

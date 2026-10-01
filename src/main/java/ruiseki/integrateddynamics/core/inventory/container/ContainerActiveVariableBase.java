@@ -1,6 +1,7 @@
 package ruiseki.integrateddynamics.core.inventory.container;
 
 import java.util.List;
+import java.util.Optional;
 
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.IInventory;
@@ -27,9 +28,9 @@ public class ContainerActiveVariableBase<T extends TileActiveVariableBase<?>> ex
     private final int readColorId;
     private final int readErrorsId;
 
-    public ContainerActiveVariableBase(ContainerType<?> guiType, InventoryPlayer playerInventory, IInventory inventory,
-        T tile) {
-        super(guiType, playerInventory, inventory, tile);
+    public ContainerActiveVariableBase(ContainerType<?> guiType, int id, InventoryPlayer playerInventory,
+        IInventory inventory, Optional<T> tile) {
+        super(guiType, id, playerInventory, inventory, tile);
         this.readValueId = getNextValueId();
         this.readColorId = getNextValueId();
         this.readErrorsId = getNextValueId();

@@ -24,7 +24,7 @@ import ruiseki.integratedterminals.core.part.PartTypeTerminal;
 import ruiseki.integratedterminals.core.terminalstorage.crafting.TerminalStorageTabIngredientCraftingHandlers;
 import ruiseki.integratedterminals.inventory.container.ContainerTerminalCraftingJobs;
 import ruiseki.okcore.helper.LangHelpers;
-import ruiseki.okcore.inventory.IGuiConstructor;
+import ruiseki.okcore.inventory.IContainerConstructor;
 import ruiseki.okcore.inventory.container.ContainerExtended;
 import ruiseki.okcore.network.ExtendedBuffer;
 import ruiseki.okcore.network.PacketCodec;
@@ -58,15 +58,16 @@ public class PartTypeTerminalCraftingJob
     }
 
     @Override
-    public Optional<IGuiConstructor> getContainerProvider(PartPos pos) {
-        return Optional.of(new IGuiConstructor() {
+    public Optional<IContainerConstructor> getContainerProvider(PartPos pos) {
+        return Optional.of(new IContainerConstructor() {
 
             @Override
-            public @Nullable ContainerExtended createContainer(int windowId, InventoryPlayer playerInventory,
+            public @Nullable ContainerExtended createContainer(int id, InventoryPlayer playerInventory,
                 EntityPlayer player) {
                 Triple<IPartContainer, PartTypeBase, PartTarget> data = PartHelpers
                     .getContainerPartConstructionData(pos);
                 return new ContainerTerminalCraftingJobs(
+                    id,
                     playerInventory,
                     data.getRight(),
                     Optional.of(data.getLeft()),

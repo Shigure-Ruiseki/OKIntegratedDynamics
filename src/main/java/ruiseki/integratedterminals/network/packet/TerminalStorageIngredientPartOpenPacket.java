@@ -27,7 +27,7 @@ import ruiseki.integratedterminals.part.PartTypeTerminalStorage;
 import ruiseki.integratedterminals.part.TerminalPartTypes;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.helper.PlayerHelpers;
-import ruiseki.okcore.inventory.IGuiConstructor;
+import ruiseki.okcore.inventory.IContainerConstructor;
 import ruiseki.okcore.inventory.container.ContainerExtended;
 import ruiseki.okcore.network.CodecField;
 import ruiseki.okcore.network.PacketCodec;
@@ -92,12 +92,13 @@ public class TerminalStorageIngredientPartOpenPacket extends PacketCodec {
         TerminalStorageState terminalStorageState = state.getPlayerStorageState(player);
 
         // Create temporary container provider
-        IGuiConstructor containerProvider = new IGuiConstructor() {
+        IContainerConstructor containerProvider = new IContainerConstructor() {
 
             @Override
-            public @Nullable ContainerExtended createContainer(int windowId, InventoryPlayer playerInventory,
+            public @Nullable ContainerExtended createContainer(int id, InventoryPlayer playerInventory,
                 EntityPlayer player) {
                 return new ContainerTerminalStoragePart(
+                    id,
                     playerInventory,
                     data.getRight(),
                     (PartTypeTerminalStorage) data.getMiddle(),

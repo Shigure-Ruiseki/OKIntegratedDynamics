@@ -59,7 +59,7 @@ import ruiseki.okcore.helper.BlockStateHelpers;
 import ruiseki.okcore.helper.CapabilityHelpers;
 import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.helper.LangHelpers;
-import ruiseki.okcore.inventory.IGuiConstructor;
+import ruiseki.okcore.inventory.IContainerConstructor;
 import ruiseki.okcore.inventory.SimpleInventory;
 import ruiseki.okcore.inventory.container.ContainerExtended;
 import ruiseki.okcore.network.ExtendedBuffer;
@@ -84,11 +84,11 @@ public class PartTypeInterfaceCrafting
     }
 
     @Override
-    public Optional<IGuiConstructor> getContainerProvider(PartPos pos) {
-        return Optional.of(new IGuiConstructor() {
+    public Optional<IContainerConstructor> getContainerProvider(PartPos pos) {
+        return Optional.of(new IContainerConstructor() {
 
             @Override
-            public @Nullable ContainerExtended createContainer(int windowId, InventoryPlayer playerInventory,
+            public @Nullable ContainerExtended createContainer(int id, InventoryPlayer playerInventory,
                 EntityPlayer player) {
                 Triple<IPartContainer, PartTypeBase, PartTarget> data = PartHelpers
                     .getContainerPartConstructionData(pos);
@@ -98,6 +98,7 @@ public class PartTypeInterfaceCrafting
                             .getCenter()
                             .getSide());
                 return new ContainerPartInterfaceCrafting(
+                    id,
                     playerInventory,
                     partState.getInventoryVariables(),
                     Optional.of(data.getRight()),
@@ -121,15 +122,16 @@ public class PartTypeInterfaceCrafting
     }
 
     @Override
-    public Optional<IGuiConstructor> getContainerProviderSettings(PartPos pos) {
-        return Optional.of(new IGuiConstructor() {
+    public Optional<IContainerConstructor> getContainerProviderSettings(PartPos pos) {
+        return Optional.of(new IContainerConstructor() {
 
             @Override
-            public @Nullable ContainerExtended createContainer(int windowId, InventoryPlayer playerInventory,
+            public @Nullable ContainerExtended createContainer(int id, InventoryPlayer playerInventory,
                 EntityPlayer player) {
                 Triple<IPartContainer, PartTypeBase, PartTarget> data = PartHelpers
                     .getContainerPartConstructionData(pos);
                 return new ContainerPartInterfaceCraftingSettings(
+                    id,
                     playerInventory,
                     new SimpleInventory(0),
                     data.getRight(),

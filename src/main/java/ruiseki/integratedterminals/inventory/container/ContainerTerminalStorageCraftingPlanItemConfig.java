@@ -14,6 +14,7 @@ import ruiseki.okcore.client.gui.GuiScreens;
 import ruiseki.okcore.client.gui.IContainerAccess;
 import ruiseki.okcore.client.gui.ScreenFactorySafe;
 import ruiseki.okcore.config.extendedconfig.GuiConfig;
+import ruiseki.okcore.inventory.ItemLocation;
 
 /**
  * Config for {@link ContainerTerminalStorageItem}.
@@ -34,9 +35,9 @@ public class ContainerTerminalStorageCraftingPlanItemConfig
             true,
             "part_terminal_storage_crafting_plan_item",
             null,
-            eConfig -> new ContainerType<>((i, inventoryPlayer, extendedBuffer) -> {
+            eConfig -> new ContainerType<>((id, inventoryPlayer, extendedBuffer) -> {
                 try {
-                    return new ContainerTerminalStorageCraftingPlanItem(inventoryPlayer, extendedBuffer);
+                    return new ContainerTerminalStorageCraftingPlanItem(id, inventoryPlayer, extendedBuffer);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -47,10 +48,10 @@ public class ContainerTerminalStorageCraftingPlanItemConfig
     @SideOnly(Side.CLIENT)
     public <U extends GuiScreen & IContainerAccess<ContainerTerminalStorageCraftingPlanItem>> GuiScreens.ScreenConstructor<ContainerTerminalStorageCraftingPlanItem, U> getScreenFactory() {
         return new ScreenFactorySafe<>(
-            new GuiScreens.ScreenConstructor<ContainerTerminalStorageCraftingPlanItem, GuiTerminalStorageCraftingPlan<Integer, ContainerTerminalStorageCraftingPlanItem>>() {
+            new GuiScreens.ScreenConstructor<ContainerTerminalStorageCraftingPlanItem, GuiTerminalStorageCraftingPlan<ItemLocation, ContainerTerminalStorageCraftingPlanItem>>() {
 
                 @Override
-                public GuiTerminalStorageCraftingPlan<Integer, ContainerTerminalStorageCraftingPlanItem> create(
+                public GuiTerminalStorageCraftingPlan<ItemLocation, ContainerTerminalStorageCraftingPlanItem> create(
                     ContainerTerminalStorageCraftingPlanItem container, InventoryPlayer inventoryPlayer) {
                     return new GuiTerminalStorageCraftingPlan<>(container);
                 }

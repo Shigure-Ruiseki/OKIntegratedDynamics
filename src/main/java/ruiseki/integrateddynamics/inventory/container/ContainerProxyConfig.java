@@ -26,7 +26,7 @@ public class ContainerProxyConfig extends GuiConfig<ContainerProxy> {
             "proxy",
             null,
             eConfig -> new ContainerType<>(
-                (i, inventoryPlayer, extendedBuffer) -> new ContainerProxy(inventoryPlayer)));
+                (id, inventoryPlayer, extendedBuffer) -> new ContainerProxy(id, inventoryPlayer)));
     }
 
     @Override

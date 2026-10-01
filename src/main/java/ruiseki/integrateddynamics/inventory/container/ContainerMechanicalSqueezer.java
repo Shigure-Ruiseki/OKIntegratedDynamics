@@ -1,5 +1,6 @@
 package ruiseki.integrateddynamics.inventory.container;
 
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import net.minecraft.entity.player.InventoryPlayer;
@@ -28,13 +29,13 @@ public class ContainerMechanicalSqueezer extends ContainerMechanicalMachine<Tile
     private final Supplier<Integer> variableFluidCapacity;
     private final Supplier<Boolean> variableAutoEject;
 
-    public ContainerMechanicalSqueezer(InventoryPlayer playerInventory) {
-        this(playerInventory, new SimpleInventory(TileMechanicalSqueezer.INVENTORY_SIZE), null);
+    public ContainerMechanicalSqueezer(int id, InventoryPlayer playerInventory) {
+        this(id, playerInventory, new SimpleInventory(TileMechanicalSqueezer.INVENTORY_SIZE), Optional.empty());
     }
 
-    public ContainerMechanicalSqueezer(InventoryPlayer inventoryPlayer, IInventory inventory,
-        TileMechanicalSqueezer tile) {
-        super(ContainerMechanicalSqueezerConfig._instance.getInstance(), inventoryPlayer, inventory, tile);
+    public ContainerMechanicalSqueezer(int id, InventoryPlayer inventoryPlayer, IInventory inventory,
+        Optional<TileMechanicalSqueezer> tile) {
+        super(ContainerMechanicalSqueezerConfig._instance.getInstance(), id, inventoryPlayer, inventory, tile);
 
         this.variableFluidStack = registerSyncedVariable(
             FluidStack.class,

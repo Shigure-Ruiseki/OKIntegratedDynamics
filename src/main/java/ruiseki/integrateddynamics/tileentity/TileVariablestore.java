@@ -36,7 +36,7 @@ import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
 import ruiseki.okcore.helper.CapabilityHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
-import ruiseki.okcore.inventory.IGuiConstructor;
+import ruiseki.okcore.inventory.IContainerConstructor;
 import ruiseki.okcore.inventory.container.ContainerExtended;
 import ruiseki.okcore.persist.IDirtyMarkListener;
 
@@ -47,7 +47,7 @@ import ruiseki.okcore.persist.IDirtyMarkListener;
  * @author rubensworks
  */
 public class TileVariablestore extends TileCableConnectableInventory
-    implements IDirtyMarkListener, INetworkEventListener<VariablestoreNetworkElement>, IGuiConstructor {
+    implements IDirtyMarkListener, INetworkEventListener<VariablestoreNetworkElement>, IContainerConstructor {
 
     public static final int ROWS = 5;
     public static final int COLS = 9;
@@ -147,8 +147,7 @@ public class TileVariablestore extends TileCableConnectableInventory
     }
 
     @Override
-    public @Nullable ContainerExtended createContainer(int windowId, InventoryPlayer playerInventory,
-        EntityPlayer player) {
-        return new ContainerVariablestore(playerInventory, this.getInventory());
+    public @Nullable ContainerExtended createContainer(int id, InventoryPlayer playerInventory, EntityPlayer player) {
+        return new ContainerVariablestore(id, playerInventory, this.getInventory());
     }
 }

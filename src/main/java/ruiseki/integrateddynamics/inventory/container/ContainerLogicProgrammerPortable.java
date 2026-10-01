@@ -6,7 +6,7 @@ import net.minecraft.item.ItemStack;
 
 import ruiseki.integrateddynamics.item.ItemPortableLogicProgrammer;
 import ruiseki.integrateddynamics.item.ItemPortableLogicProgrammerConfig;
-import ruiseki.okcore.helper.InventoryHelpers;
+import ruiseki.okcore.inventory.ItemLocation;
 import ruiseki.okcore.network.ExtendedBuffer;
 
 /**
@@ -16,19 +16,19 @@ import ruiseki.okcore.network.ExtendedBuffer;
  */
 public class ContainerLogicProgrammerPortable extends ContainerLogicProgrammerBase {
 
-    private final int itemIndex;
+    private final ItemLocation itemLocation;
 
-    public ContainerLogicProgrammerPortable(InventoryPlayer playerInventory, ExtendedBuffer packetBuffer) {
-        this(playerInventory, packetBuffer.readInt());
+    public ContainerLogicProgrammerPortable(int id, InventoryPlayer playerInventory, ExtendedBuffer packetBuffer) {
+        this(id, playerInventory, ItemLocation.readFromPacketBuffer(packetBuffer));
     }
 
-    public ContainerLogicProgrammerPortable(InventoryPlayer inventoryPlayer, int itemIndex) {
-        super(ContainerLogicProgrammerPortableConfig._instance.getInstance(), inventoryPlayer);
-        this.itemIndex = itemIndex;
+    public ContainerLogicProgrammerPortable(int id, InventoryPlayer inventoryPlayer, ItemLocation itemLocation) {
+        super(ContainerLogicProgrammerPortableConfig._instance.getInstance(), id, inventoryPlayer);
+        this.itemLocation = itemLocation;
     }
 
     public ItemStack getItemStack(EntityPlayer player) {
-        return InventoryHelpers.getItemFromIndex(player, itemIndex);
+        return itemLocation.getItemStack(player);
     }
 
     @Override

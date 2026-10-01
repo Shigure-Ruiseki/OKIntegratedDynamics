@@ -26,7 +26,7 @@ public class ContainerVariablestoreConfig extends GuiConfig<ContainerVariablesto
             "variablestore",
             null,
             eConfig -> new ContainerType<>(
-                (i, inventoryPlayer, extendedBuffer) -> new ContainerVariablestore(inventoryPlayer)));
+                (id, inventoryPlayer, extendedBuffer) -> new ContainerVariablestore(id, inventoryPlayer)));
     }
 
     @Override

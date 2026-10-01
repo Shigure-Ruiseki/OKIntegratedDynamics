@@ -56,8 +56,9 @@ public class ContainerAspectSettings extends InventoryContainer {
 
     private final BiMap<Integer, IAspectPropertyTypeInstance> propertyIds = HashBiMap.create();
 
-    public ContainerAspectSettings(InventoryPlayer playerInventory, ExtendedBuffer packetBuffer) {
+    public ContainerAspectSettings(int id, InventoryPlayer playerInventory, ExtendedBuffer packetBuffer) {
         this(
+            id,
             playerInventory,
             new SimpleInventory(0),
             Optional.empty(),
@@ -74,9 +75,10 @@ public class ContainerAspectSettings extends InventoryContainer {
             String.format("Could not find an aspect by name %s", name));
     }
 
-    public ContainerAspectSettings(InventoryPlayer playerInventory, IInventory inventory, Optional<PartTarget> target,
-        Optional<IPartContainer> partContainer, Optional<IPartType> partType, IAspect<?, ?> aspect) {
-        super(ContainerAspectSettingsConfig._instance.getInstance(), playerInventory, inventory);
+    public ContainerAspectSettings(int id, InventoryPlayer playerInventory, IInventory inventory,
+        Optional<PartTarget> target, Optional<IPartContainer> partContainer, Optional<IPartType> partType,
+        IAspect<?, ?> aspect) {
+        super(ContainerAspectSettingsConfig._instance.getInstance(), id, playerInventory, inventory);
         this.target = target;
         this.partContainer = partContainer;
         this.partType = partType;

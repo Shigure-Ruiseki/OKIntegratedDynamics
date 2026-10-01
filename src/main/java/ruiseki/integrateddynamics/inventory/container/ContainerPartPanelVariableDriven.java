@@ -48,8 +48,9 @@ public class ContainerPartPanelVariableDriven<P extends PartTypePanelVariableDri
     private final int readColorId;
     private final int readErrorsId;
 
-    public ContainerPartPanelVariableDriven(InventoryPlayer playerInventory, ExtendedBuffer packetBuffer) {
+    public ContainerPartPanelVariableDriven(int id, InventoryPlayer playerInventory, ExtendedBuffer packetBuffer) {
         this(
+            id,
             playerInventory,
             new SimpleInventory(packetBuffer.readInt()),
             Optional.empty(),
@@ -57,10 +58,11 @@ public class ContainerPartPanelVariableDriven<P extends PartTypePanelVariableDri
             PartHelpers.readPart(packetBuffer));
     }
 
-    public ContainerPartPanelVariableDriven(InventoryPlayer playerInventory, IInventory inventory,
+    public ContainerPartPanelVariableDriven(int id, InventoryPlayer playerInventory, IInventory inventory,
         Optional<PartTarget> target, Optional<IPartContainer> partContainer, P partType) {
         super(
             ContainerPartDisplayConfig._instance.getInstance(),
+            id,
             playerInventory,
             inventory,
             target,

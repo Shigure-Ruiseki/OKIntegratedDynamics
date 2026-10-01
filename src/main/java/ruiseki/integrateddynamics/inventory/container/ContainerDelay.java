@@ -1,5 +1,7 @@
 package ruiseki.integrateddynamics.inventory.container;
 
+import java.util.Optional;
+
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.nbt.NBTTagCompound;
@@ -22,12 +24,12 @@ public class ContainerDelay extends ContainerActiveVariableBase<TileDelay> {
     private final int lastUpdateValueId;
     private final int lastCapacityValueId;
 
-    public ContainerDelay(InventoryPlayer playerInventory) {
-        this(playerInventory, new SimpleInventory(TileDelay.INVENTORY_SIZE), null);
+    public ContainerDelay(int id, InventoryPlayer playerInventory) {
+        this(id, playerInventory, new SimpleInventory(TileDelay.INVENTORY_SIZE), Optional.empty());
     }
 
-    public ContainerDelay(InventoryPlayer playerInventory, IInventory inventory, TileDelay tile) {
-        super(ContainerDelayConfig._instance.getInstance(), playerInventory, inventory, tile);
+    public ContainerDelay(int id, InventoryPlayer playerInventory, IInventory inventory, Optional<TileDelay> tile) {
+        super(ContainerDelayConfig._instance.getInstance(), id, playerInventory, inventory, tile);
         addSlotToContainer(new SlotVariable(inventory, TileProxy.SLOT_READ, 81, 25));
         addSlotToContainer(new SlotVariable(inventory, TileProxy.SLOT_WRITE_IN, 56, 78));
         addSlotToContainer(new SlotRemoveOnly(inventory, TileProxy.SLOT_WRITE_OUT, 104, 78));

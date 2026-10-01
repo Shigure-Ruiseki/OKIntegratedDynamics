@@ -75,10 +75,10 @@ public abstract class ContainerTerminalStorageBase<L> extends InventoryContainer
     @SideOnly(Side.CLIENT)
     public GuiTerminalStorage screen;
 
-    public ContainerTerminalStorageBase(@Nullable ContainerType<?> type, InventoryPlayer playerInventory,
+    public ContainerTerminalStorageBase(@Nullable ContainerType<?> type, int id, InventoryPlayer playerInventory,
         Optional<ContainerTerminalStorageBase.InitTabData> initTabData, TerminalStorageState terminalStorageState,
         Optional<INetwork> network, Optional<ITerminalStorageTabCommon.IVariableInventory> variableInventory) {
-        super(type, playerInventory, new SimpleInventory());
+        super(type, id, playerInventory, new SimpleInventory());
 
         this.world = player.getEntityWorld();
         this.tabsClient = Maps.newLinkedHashMap();

@@ -1,5 +1,7 @@
 package ruiseki.integratedrest.tileentity;
 
+import java.util.Optional;
+
 import javax.annotation.Nullable;
 
 import net.minecraft.entity.player.EntityPlayer;
@@ -37,10 +39,10 @@ import ruiseki.okcore.capabilities.resolver.BasicCapabilityResolver;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
 import ruiseki.okcore.helper.LangHelpers;
-import ruiseki.okcore.inventory.IGuiConstructor;
+import ruiseki.okcore.inventory.IContainerConstructor;
 import ruiseki.okcore.inventory.container.ContainerExtended;
 
-public class TileHttp extends TileProxy implements IGuiConstructor {
+public class TileHttp extends TileProxy implements IContainerConstructor {
 
     public static final int INVENTORY_SIZE = 2;
 
@@ -184,9 +186,8 @@ public class TileHttp extends TileProxy implements IGuiConstructor {
     }
 
     @Override
-    public @Nullable ContainerExtended createContainer(int windowId, InventoryPlayer playerInventory,
-        EntityPlayer player) {
-        return new ContainerHttp(playerInventory, this.getInventory(), this);
+    public @Nullable ContainerExtended createContainer(int id, InventoryPlayer playerInventory, EntityPlayer player) {
+        return new ContainerHttp(id, playerInventory, this.getInventory(), Optional.of(this));
     }
 
     public static class HttpVariableAdapter extends VariableAdapter {

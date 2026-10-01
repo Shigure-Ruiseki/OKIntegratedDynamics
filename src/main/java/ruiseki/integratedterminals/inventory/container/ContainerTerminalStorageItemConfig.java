@@ -14,6 +14,7 @@ import ruiseki.okcore.client.gui.GuiScreens;
 import ruiseki.okcore.client.gui.IContainerAccess;
 import ruiseki.okcore.client.gui.ScreenFactorySafe;
 import ruiseki.okcore.config.extendedconfig.GuiConfig;
+import ruiseki.okcore.inventory.ItemLocation;
 
 /**
  * Config for {@link ContainerTerminalStorageItem}.
@@ -33,9 +34,9 @@ public class ContainerTerminalStorageItemConfig extends GuiConfig<ContainerTermi
             true,
             "part_terminal_storage_item",
             null,
-            eConfig -> new ContainerType<>((i, inventoryPlayer, extendedBuffer) -> {
+            eConfig -> new ContainerType<>((id, inventoryPlayer, extendedBuffer) -> {
                 try {
-                    return new ContainerTerminalStorageItem(inventoryPlayer, extendedBuffer);
+                    return new ContainerTerminalStorageItem(id, inventoryPlayer, extendedBuffer);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -46,10 +47,10 @@ public class ContainerTerminalStorageItemConfig extends GuiConfig<ContainerTermi
     @SideOnly(Side.CLIENT)
     public <U extends GuiScreen & IContainerAccess<ContainerTerminalStorageItem>> GuiScreens.ScreenConstructor<ContainerTerminalStorageItem, U> getScreenFactory() {
         return new ScreenFactorySafe<>(
-            new GuiScreens.ScreenConstructor<ContainerTerminalStorageItem, GuiTerminalStorage<Integer, ContainerTerminalStorageItem>>() {
+            new GuiScreens.ScreenConstructor<ContainerTerminalStorageItem, GuiTerminalStorage<ItemLocation, ContainerTerminalStorageItem>>() {
 
                 @Override
-                public GuiTerminalStorage<Integer, ContainerTerminalStorageItem> create(
+                public GuiTerminalStorage<ItemLocation, ContainerTerminalStorageItem> create(
                     ContainerTerminalStorageItem container, InventoryPlayer inventoryPlayer) {
                     return new GuiTerminalStorage<>(container);
                 }

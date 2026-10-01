@@ -25,9 +25,7 @@ public class ContainerPartInterfaceCraftingSettingsConfig extends GuiConfig<Cont
             true,
             "part_interface_crafting_settings",
             null,
-            eConfig -> new ContainerType<>(
-                (i, inventoryPlayer,
-                    extendedBuffer) -> new ContainerPartInterfaceCraftingSettings(inventoryPlayer, extendedBuffer)));
+            eConfig -> new ContainerType<>(ContainerPartInterfaceCraftingSettings::new));
     }
 
     @Override

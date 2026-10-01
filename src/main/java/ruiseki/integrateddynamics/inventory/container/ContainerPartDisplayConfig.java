@@ -26,9 +26,7 @@ public class ContainerPartDisplayConfig extends GuiConfig<ContainerPartPanelVari
             true,
             "part_display",
             null,
-            eConfig -> new ContainerType<>(
-                (i, inventoryPlayer,
-                    extendedBuffer) -> new ContainerPartPanelVariableDriven(inventoryPlayer, extendedBuffer)));
+            eConfig -> new ContainerType<>(ContainerPartPanelVariableDriven::new));
     }
 
     @Override

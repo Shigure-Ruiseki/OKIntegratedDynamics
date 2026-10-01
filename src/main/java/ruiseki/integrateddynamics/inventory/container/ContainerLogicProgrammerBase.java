@@ -84,14 +84,14 @@ public abstract class ContainerLogicProgrammerBase extends ScrollingInventoryCon
 
     private String lastLabel = "";
 
-    public ContainerLogicProgrammerBase(ContainerType<?> containerType, InventoryPlayer playerInventory) {
-        super(containerType, playerInventory, new SimpleInventory(0), getElements(), FILTERER);
-        this.writeSlot = new SimpleInventory(1, "writeSlot", 1);
-        this.filterSlots = new SimpleInventory(3, "filterSlots", 1);
+    public ContainerLogicProgrammerBase(ContainerType<?> containerType, int id, InventoryPlayer playerInventory) {
+        super(containerType, id, playerInventory, new SimpleInventory(0), getElements(), FILTERER);
+        this.writeSlot = new SimpleInventory(1, 1);
+        this.filterSlots = new SimpleInventory(3, 1);
         this.filterSlots.addDirtyMarkListener(new FilterSlotListener());
         this.writeSlot.addDirtyMarkListener(this);
         this.writeSlot.addDirtyMarkListener(loadConfigListener = new LoadConfigListener());
-        this.temporaryInputSlots = new SimpleInventory(0, "temporaryInput", 1);
+        this.temporaryInputSlots = new SimpleInventory(0, 1);
         initializeSlotsPre();
         initializeSlotsPost();
     }
@@ -205,7 +205,6 @@ public abstract class ContainerLogicProgrammerBase extends ScrollingInventoryCon
             element == null ? 0
                 : element.getRenderPattern()
                     .getSlotPositions().length,
-            "temporaryInput",
             element == null ? 0 : element.getItemStackSizeLimit());
         temporaryInputSlots.addDirtyMarkListener(this);
         this.temporarySlotsElement = element;

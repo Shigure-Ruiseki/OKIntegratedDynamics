@@ -9,18 +9,19 @@ import cpw.mods.fml.relauncher.SideOnly;
 import ruiseki.integratedterminals.IntegratedTerminals;
 import ruiseki.integratedterminals.item.ItemTerminalStoragePortable;
 import ruiseki.integratedterminals.item.ItemTerminalStoragePortableConfig;
+import ruiseki.okcore.inventory.ItemLocation;
 import ruiseki.okcore.network.CodecField;
 import ruiseki.okcore.network.PacketCodec;
 
 public class TerminalStorageIngredientItemOpenGenericPacket extends PacketCodec {
 
     @CodecField
-    private int slotIndex;
+    private ItemLocation itemLocation;
 
     public TerminalStorageIngredientItemOpenGenericPacket() {}
 
-    public TerminalStorageIngredientItemOpenGenericPacket(int slotIndex) {
-        this.slotIndex = slotIndex;
+    public TerminalStorageIngredientItemOpenGenericPacket(ItemLocation itemLocation) {
+        this.itemLocation = itemLocation;
     }
 
     @Override
@@ -31,25 +32,21 @@ public class TerminalStorageIngredientItemOpenGenericPacket extends PacketCodec 
     @Override
     @SideOnly(Side.CLIENT)
     public void actionClient(World world, EntityPlayer player) {
-        ((ItemTerminalStoragePortable) ItemTerminalStoragePortableConfig._instance.getInstance())
-            .openGuiForItemIndex(world, player, slotIndex);
+
     }
 
     @Override
     public void actionServer(World world, EntityPlayerMP player) {
-        openServer(world, slotIndex, player);
-
-        IntegratedTerminals._instance.getPacketHandler()
-            .sendToPlayer(new TerminalStorageIngredientItemOpenGenericPacket(slotIndex), player);
+        openServer(world, itemLocation, player);
     }
 
-    public static void openServer(World world, int slotIndex, EntityPlayerMP player) {
+    public static void openServer(World world, ItemLocation itemLocation, EntityPlayerMP player) {
         ((ItemTerminalStoragePortable) ItemTerminalStoragePortableConfig._instance.getInstance())
-            .openGuiForItemIndex(world, player, slotIndex);
+            .openGuiForItemIndex(world, player, itemLocation);
     }
 
-    public static void send(int slotIndex) {
+    public static void send(ItemLocation itemLocation) {
         IntegratedTerminals._instance.getPacketHandler()
-            .sendToServer(new TerminalStorageIngredientItemOpenGenericPacket(slotIndex));
+            .sendToServer(new TerminalStorageIngredientItemOpenGenericPacket(itemLocation));
     }
 }

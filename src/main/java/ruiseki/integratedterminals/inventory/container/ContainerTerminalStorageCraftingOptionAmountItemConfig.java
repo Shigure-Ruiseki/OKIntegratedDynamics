@@ -34,9 +34,9 @@ public class ContainerTerminalStorageCraftingOptionAmountItemConfig
             true,
             "part_terminal_storage_crafting_option_amount_item",
             null,
-            eConfig -> new ContainerType<>((i, inventoryPlayer, extendedBuffer) -> {
+            eConfig -> new ContainerType<>((id, inventoryPlayer, extendedBuffer) -> {
                 try {
-                    return new ContainerTerminalStorageCraftingOptionAmountItem(inventoryPlayer, extendedBuffer);
+                    return new ContainerTerminalStorageCraftingOptionAmountItem(id, inventoryPlayer, extendedBuffer);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }

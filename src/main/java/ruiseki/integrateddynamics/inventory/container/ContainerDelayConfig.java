@@ -26,7 +26,7 @@ public class ContainerDelayConfig extends GuiConfig<ContainerDelay> {
             "delay",
             null,
             eConfig -> new ContainerType<>(
-                (i, inventoryPlayer, extendedBuffer) -> new ContainerDelay(inventoryPlayer)));
+                (id, inventoryPlayer, extendedBuffer) -> new ContainerDelay(id, inventoryPlayer)));
     }
 
     @Override

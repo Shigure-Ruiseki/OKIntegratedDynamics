@@ -33,7 +33,7 @@ import ruiseki.integratedterminals.core.terminalstorage.TerminalStorageTabIngred
 import ruiseki.integratedterminals.inventory.container.ContainerTerminalStoragePart;
 import ruiseki.integratedterminals.inventory.container.TerminalStorageState;
 import ruiseki.okcore.helper.ItemHelpers;
-import ruiseki.okcore.inventory.IGuiConstructor;
+import ruiseki.okcore.inventory.IContainerConstructor;
 import ruiseki.okcore.inventory.container.ContainerExtended;
 import ruiseki.okcore.network.ExtendedBuffer;
 import ruiseki.okcore.network.PacketCodec;
@@ -55,11 +55,11 @@ public class PartTypeTerminalStorage extends PartTypeTerminal<PartTypeTerminalSt
     }
 
     @Override
-    public Optional<IGuiConstructor> getContainerProvider(PartPos pos) {
-        return Optional.of(new IGuiConstructor() {
+    public Optional<IContainerConstructor> getContainerProvider(PartPos pos) {
+        return Optional.of(new IContainerConstructor() {
 
             @Override
-            public @Nullable ContainerExtended createContainer(int windowId, InventoryPlayer playerInventory,
+            public @Nullable ContainerExtended createContainer(int id, InventoryPlayer playerInventory,
                 EntityPlayer player) {
                 Triple<IPartContainer, PartTypeBase, PartTarget> data = PartHelpers
                     .getContainerPartConstructionData(pos);
@@ -70,6 +70,7 @@ public class PartTypeTerminalStorage extends PartTypeTerminal<PartTypeTerminalSt
                             .getSide());
                 TerminalStorageState terminalStorageState = state.getPlayerStorageState(player);
                 return new ContainerTerminalStoragePart(
+                    id,
                     playerInventory,
                     data.getRight(),
                     (PartTypeTerminalStorage) data.getMiddle(),

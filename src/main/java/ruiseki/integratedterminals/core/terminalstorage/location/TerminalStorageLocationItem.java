@@ -18,14 +18,15 @@ import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorageC
 import ruiseki.integratedterminals.inventory.container.ContainerTerminalStorageCraftingPlanItem;
 import ruiseki.integratedterminals.network.packet.TerminalStorageIngredientItemOpenPacket;
 import ruiseki.okcore.helper.PlayerHelpers;
-import ruiseki.okcore.inventory.IGuiConstructor;
+import ruiseki.okcore.inventory.IContainerConstructor;
+import ruiseki.okcore.inventory.ItemLocation;
 import ruiseki.okcore.inventory.container.ContainerExtended;
 import ruiseki.okcore.network.ExtendedBuffer;
 
 /**
  * @author rubensworks
  */
-public class TerminalStorageLocationItem implements ITerminalStorageLocation<Integer> {
+public class TerminalStorageLocationItem implements ITerminalStorageLocation<ItemLocation> {
 
     @Override
     public ResourceLocation getName() {
@@ -33,8 +34,8 @@ public class TerminalStorageLocationItem implements ITerminalStorageLocation<Int
     }
 
     @Override
-    public <T, M> void openContainerFromClient(CraftingOptionGuiData<T, M, Integer> craftingOptionGuiData) {
-        Integer slot = craftingOptionGuiData.getLocationInstance();
+    public <T, M> void openContainerFromClient(CraftingOptionGuiData<T, M, ItemLocation> craftingOptionGuiData) {
+        ItemLocation slot = craftingOptionGuiData.getLocationInstance();
 
         TerminalStorageIngredientItemOpenPacket.send(
             slot,
@@ -44,9 +45,9 @@ public class TerminalStorageLocationItem implements ITerminalStorageLocation<Int
     }
 
     @Override
-    public <T, M> void openContainerFromServer(CraftingOptionGuiData<T, M, Integer> craftingOptionGuiData, World world,
-        EntityPlayerMP player) {
-        Integer slot = craftingOptionGuiData.getLocationInstance();
+    public <T, M> void openContainerFromServer(CraftingOptionGuiData<T, M, ItemLocation> craftingOptionGuiData,
+        World world, EntityPlayerMP player) {
+        ItemLocation slot = craftingOptionGuiData.getLocationInstance();
 
         TerminalStorageIngredientItemOpenPacket.openServer(
             world,
@@ -58,43 +59,18 @@ public class TerminalStorageLocationItem implements ITerminalStorageLocation<Int
     }
 
     @Override
-    public <T, M> void openContainerCraftingPlan(CraftingOptionGuiData<T, M, Integer> craftingOptionGuiData,
+    public <T, M> void openContainerCraftingPlan(CraftingOptionGuiData<T, M, ItemLocation> craftingOptionGuiData,
         World world, EntityPlayerMP player) {
-        Integer location = craftingOptionGuiData.getLocationInstance();
+        ItemLocation location = craftingOptionGuiData.getLocationInstance();
 
         // Create temporary container provider
-        IGuiConstructor containerProvider = new IGuiConstructor() {
+        IContainerConstructor containerProvider = new IContainerConstructor() {
 
             @Override
-            public @NotNull ContainerExtended createContainer(int windowId, InventoryPlayer playerInventory,
+            public @NotNull ContainerExtended createContainer(int id, InventoryPlayer playerInventory,
                 EntityPlayer player) {
-                return new ContainerTerminalStorageCraftingPlanItem(playerInventory, location, craftingOptionGuiData);
-            }
-        };
-
-        // Trigger gui opening
-        PlayerHelpers.openGui(player, containerProvider, packetBuffer -> {
-            packetBuffer.writeInt(location);
-            try {
-                craftingOptionGuiData.writeToPacketBuffer(packetBuffer);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        });
-    }
-
-    @Override
-    public <T, M> void openContainerCraftingOptionAmount(CraftingOptionGuiData<T, M, Integer> craftingOptionGuiData,
-        World world, EntityPlayerMP player) {
-        Integer location = craftingOptionGuiData.getLocationInstance();
-
-        // Create temporary container provider
-        IGuiConstructor containerProvider = new IGuiConstructor() {
-
-            @Override
-            public @NotNull ContainerExtended createContainer(int windowId, InventoryPlayer playerInventory,
-                EntityPlayer player) {
-                return new ContainerTerminalStorageCraftingOptionAmountItem(
+                return new ContainerTerminalStorageCraftingPlanItem(
+                    id,
                     playerInventory,
                     location,
                     craftingOptionGuiData);
@@ -103,8 +79,8 @@ public class TerminalStorageLocationItem implements ITerminalStorageLocation<Int
 
         // Trigger gui opening
         PlayerHelpers.openGui(player, containerProvider, packetBuffer -> {
-            packetBuffer.writeInt(location);
             try {
+                ItemLocation.writeToPacketBuffer(packetBuffer, location);
                 craftingOptionGuiData.writeToPacketBuffer(packetBuffer);
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -113,12 +89,42 @@ public class TerminalStorageLocationItem implements ITerminalStorageLocation<Int
     }
 
     @Override
-    public void writeToPacketBuffer(ExtendedBuffer packetBuffer, Integer location) {
-        packetBuffer.writeInt(location);
+    public <T, M> void openContainerCraftingOptionAmount(
+        CraftingOptionGuiData<T, M, ItemLocation> craftingOptionGuiData, World world, EntityPlayerMP player) {
+        ItemLocation location = craftingOptionGuiData.getLocationInstance();
+
+        // Create temporary container provider
+        IContainerConstructor containerProvider = new IContainerConstructor() {
+
+            @Override
+            public @NotNull ContainerExtended createContainer(int id, InventoryPlayer playerInventory,
+                EntityPlayer player) {
+                return new ContainerTerminalStorageCraftingOptionAmountItem(
+                    id,
+                    playerInventory,
+                    location,
+                    craftingOptionGuiData);
+            }
+        };
+
+        // Trigger gui opening
+        PlayerHelpers.openGui(player, containerProvider, packetBuffer -> {
+            try {
+                ItemLocation.writeToPacketBuffer(packetBuffer, location);
+                craftingOptionGuiData.writeToPacketBuffer(packetBuffer);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     @Override
-    public Integer readFromPacketBuffer(ExtendedBuffer packetBuffer) {
-        return packetBuffer.readInt();
+    public void writeToPacketBuffer(ExtendedBuffer packetBuffer, ItemLocation location) {
+        ItemLocation.writeToPacketBuffer(packetBuffer, location);
+    }
+
+    @Override
+    public ItemLocation readFromPacketBuffer(ExtendedBuffer packetBuffer) {
+        return ItemLocation.readFromPacketBuffer(packetBuffer);
     }
 }

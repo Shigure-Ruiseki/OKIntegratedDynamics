@@ -54,8 +54,9 @@ public class ContainerPartWriter<P extends IPartTypeWriter<P, S>, S extends IPar
     private final int valueId, colorId, enabledId, activeAspectId;
     private final Map<IAspectWrite, Integer> aspectErrorIds;
 
-    public ContainerPartWriter(InventoryPlayer playerInventory, ExtendedBuffer packetBuffer) {
+    public ContainerPartWriter(int id, InventoryPlayer playerInventory, ExtendedBuffer packetBuffer) {
         this(
+            id,
             playerInventory,
             new SimpleInventory(packetBuffer.readInt(), 1),
             PartHelpers.readPartTarget(packetBuffer),
@@ -63,10 +64,11 @@ public class ContainerPartWriter<P extends IPartTypeWriter<P, S>, S extends IPar
             PartHelpers.readPart(packetBuffer));
     }
 
-    public ContainerPartWriter(InventoryPlayer playerInventory, IInventory inventory, PartTarget target,
+    public ContainerPartWriter(int id, InventoryPlayer playerInventory, IInventory inventory, PartTarget target,
         Optional<IPartContainer> partContainer, P partType) {
         super(
             ContainerPartWriterConfig._instance.getInstance(),
+            id,
             playerInventory,
             inventory,
             target,

@@ -32,9 +32,9 @@ public class ContainerTerminalCraftingJobsPlanConfig extends GuiConfig<Container
             true,
             "part_terminal_crafting_jobs_plan",
             null,
-            eConfig -> new ContainerType<>((i, inventoryPlayer, extendedBuffer) -> {
+            eConfig -> new ContainerType<>((id, inventoryPlayer, extendedBuffer) -> {
                 try {
-                    return new ContainerTerminalCraftingJobsPlan(inventoryPlayer, extendedBuffer);
+                    return new ContainerTerminalCraftingJobsPlan(id, inventoryPlayer, extendedBuffer);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }

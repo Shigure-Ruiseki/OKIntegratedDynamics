@@ -1,5 +1,7 @@
 package ruiseki.integrateddynamics.tileentity;
 
+import java.util.Optional;
+
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.item.ItemStack;
@@ -31,7 +33,7 @@ import ruiseki.okcore.capabilities.resolver.BasicCapabilityResolver;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
 import ruiseki.okcore.helper.LangHelpers;
-import ruiseki.okcore.inventory.IGuiConstructor;
+import ruiseki.okcore.inventory.IContainerConstructor;
 import ruiseki.okcore.inventory.container.ContainerExtended;
 
 /**
@@ -39,7 +41,8 @@ import ruiseki.okcore.inventory.container.ContainerExtended;
  *
  * @author rubensworks
  */
-public class TileMaterializer extends TileActiveVariableBase<MaterializerNetworkElement> implements IGuiConstructor {
+public class TileMaterializer extends TileActiveVariableBase<MaterializerNetworkElement>
+    implements IContainerConstructor {
 
     public static final int INVENTORY_SIZE = 3;
     public static final int SLOT_READ = 0;
@@ -150,8 +153,7 @@ public class TileMaterializer extends TileActiveVariableBase<MaterializerNetwork
     }
 
     @Override
-    public @Nullable ContainerExtended createContainer(int windowId, InventoryPlayer playerInventory,
-        EntityPlayer player) {
-        return new ContainerMaterializer(playerInventory, this.getInventory(), this);
+    public @Nullable ContainerExtended createContainer(int id, InventoryPlayer playerInventory, EntityPlayer player) {
+        return new ContainerMaterializer(id, playerInventory, this.getInventory(), Optional.of(this));
     }
 }

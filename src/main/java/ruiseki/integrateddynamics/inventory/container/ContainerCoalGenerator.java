@@ -1,5 +1,6 @@
 package ruiseki.integrateddynamics.inventory.container;
 
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import net.minecraft.entity.player.InventoryPlayer;
@@ -20,8 +21,8 @@ public class ContainerCoalGenerator extends TileInventoryContainer<TileCoalGener
 
     private final Supplier<Integer> variableProgress;
 
-    public ContainerCoalGenerator(InventoryPlayer playerInventory) {
-        this(playerInventory, new SimpleInventory(TileCoalGenerator.INVENTORY_SIZE), null);
+    public ContainerCoalGenerator(int id, InventoryPlayer playerInventory) {
+        this(id, playerInventory, new SimpleInventory(TileCoalGenerator.INVENTORY_SIZE), Optional.empty());
     }
 
     /**
@@ -29,8 +30,9 @@ public class ContainerCoalGenerator extends TileInventoryContainer<TileCoalGener
      *
      * @param inventory The player inventory.
      */
-    public ContainerCoalGenerator(InventoryPlayer playerInventory, IInventory inventory, TileCoalGenerator tile) {
-        super(ContainerCoalGeneratorConfig._instance.getInstance(), playerInventory, inventory, tile);
+    public ContainerCoalGenerator(int id, InventoryPlayer playerInventory, IInventory inventory,
+        Optional<TileCoalGenerator> tile) {
+        super(ContainerCoalGeneratorConfig._instance.getInstance(), id, playerInventory, inventory, tile);
 
         this.variableProgress = registerSyncedVariable(
             Integer.class,

@@ -41,9 +41,9 @@ public abstract class ContainerMultipart<P extends IPartType<P, S>, S extends IP
     private final P partType;
     private final World world;
 
-    public ContainerMultipart(@Nullable ContainerType<?> type, InventoryPlayer playerInventory, IInventory inventory,
-        Optional<PartTarget> target, Optional<IPartContainer> partContainer, P partType) {
-        super(type, playerInventory, inventory);
+    public ContainerMultipart(@Nullable ContainerType<?> type, int id, InventoryPlayer playerInventory,
+        IInventory inventory, Optional<PartTarget> target, Optional<IPartContainer> partContainer, P partType) {
+        super(type, id, playerInventory, inventory);
         this.target = target;
         this.partType = partType;
         this.partContainer = partContainer;

@@ -1,5 +1,7 @@
 package ruiseki.integrateddynamics.tileentity;
 
+import java.util.Optional;
+
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.item.ItemStack;
@@ -21,7 +23,7 @@ import ruiseki.okcore.fluid.handler.IFluidHandler;
 import ruiseki.okcore.fluid.handler.SmartTank;
 import ruiseki.okcore.helper.FluidHelpers;
 import ruiseki.okcore.helper.InventoryHelpers;
-import ruiseki.okcore.inventory.IGuiConstructor;
+import ruiseki.okcore.inventory.IContainerConstructor;
 import ruiseki.okcore.inventory.IInventoryFluid;
 import ruiseki.okcore.inventory.container.ContainerExtended;
 import ruiseki.okcore.persist.nbt.NBTPersist;
@@ -33,7 +35,7 @@ import ruiseki.okcore.recipe.RecipeManager;
  * @author rubensworks
  */
 public class TileMechanicalDryingBasin extends TileMechanicalMachine<IInventoryFluid, RecipeMechanicalDryingBasin>
-    implements IInventoryFluid, IGuiConstructor {
+    implements IInventoryFluid, IContainerConstructor {
 
     public static final int INVENTORY_SIZE = 5;
     private static final int SLOT_INPUT = 0;
@@ -174,8 +176,7 @@ public class TileMechanicalDryingBasin extends TileMechanicalMachine<IInventoryF
     }
 
     @Override
-    public @Nullable ContainerExtended createContainer(int windowId, InventoryPlayer playerInventory,
-        EntityPlayer player) {
-        return new ContainerMechanicalDryingBasin(playerInventory, this.getInventory(), this);
+    public @Nullable ContainerExtended createContainer(int id, InventoryPlayer playerInventory, EntityPlayer player) {
+        return new ContainerMechanicalDryingBasin(id, playerInventory, this.getInventory(), Optional.of(this));
     }
 }
