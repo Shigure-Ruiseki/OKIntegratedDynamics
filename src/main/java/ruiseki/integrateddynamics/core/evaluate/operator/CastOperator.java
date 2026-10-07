@@ -74,14 +74,14 @@ public class CastOperator<T1 extends IValueType<V1>, T2 extends IValueType<V2>, 
 
     @Override
     protected String getUnlocalizedPrefix() {
-        return "operator.operators." + getModId() + "." + getUnlocalizedType();
+        return "operator." + getModId() + "." + getUnlocalizedType();
     }
 
     @Override
     public void loadTooltip(List<String> lines, boolean appendOptionalInfo) {
         lines.add(
             LangHelpers.localize(
-                "operator.operators.integrateddynamics.cast.tooltip",
+                "operator.integrateddynamics.cast.tooltip",
                 LangHelpers.localize(from.getUnlocalizedName()),
                 LangHelpers.localize(to.getUnlocalizedName())));
         super.loadTooltip(lines, appendOptionalInfo);
