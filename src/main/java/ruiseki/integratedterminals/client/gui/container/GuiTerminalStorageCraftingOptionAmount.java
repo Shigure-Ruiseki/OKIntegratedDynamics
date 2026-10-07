@@ -96,13 +96,13 @@ public class GuiTerminalStorageCraftingOptionAmount<L, C extends ContainerTermin
             LangHelpers.localize("gui.integratedterminals.amount"),
             true);
         numberField.setPositiveOnly(true);
-        numberField.setMaxStringLength(5);
+        numberField.setMaxLength(5);
         numberField.setMaxValue(10000);
         numberField.setMinValue(1);
         numberField.setVisible(true);
         numberField.setTextColor(16777215);
         numberField.setCanLoseFocus(true);
-        numberField.setText(
+        numberField.setValue(
             Integer.toString(
                 numberField.validateNumber(
                     getContainer().getCraftingOptionGuiData()
@@ -219,7 +219,7 @@ public class GuiTerminalStorageCraftingOptionAmount<L, C extends ContainerTermin
     }
 
     private void setAmount(int amount) {
-        this.numberField.setText(Integer.toString(this.numberField.validateNumber(amount)));
+        this.numberField.setValue(Integer.toString(this.numberField.validateNumber(amount)));
     }
 
     protected void drawOutputSlots(int x, int y, float partialTicks, int mouseX, int mouseY,

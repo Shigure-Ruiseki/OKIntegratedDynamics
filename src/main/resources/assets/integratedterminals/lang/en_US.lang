@@ -128,18 +128,20 @@ tile.blocks.integratedterminals.menril_glass.name=Menril Glass
 tile.blocks.integratedterminals.menril_glass.info=Illuminating glass
 tile.blocks.integratedterminals.chorus_glass.name=Chorus Glass
 tile.blocks.integratedterminals.chorus_glass.info=Passable glass
+
 # Items
 item.items.integratedterminals.terminal_storage_portable.name=Portable Storage Terminal
 item.items.integratedterminals.terminal_storage_portable.info=Visually interact with the ingredients stored in the linked network. Right click on Omni-Directional Connector to link.
 item.items.integratedterminals.terminal_storage_portable.status.no_network=No network has been linked. Right click on Omni-Directional Connector to link.
 item.items.integratedterminals.terminal_storage_portable.status.invalid_network=The linked network could not be found
 item.items.integratedterminals.terminal_storage_portable.status.linked=Linked to network
+
 # Part types
-parttype.parttypes.integratedterminals.terminal_storage.name=Storage Terminal
-parttype.parttypes.integratedterminals.terminal_storage.info=Visually interact with the ingredients stored in the network.
-parttype.parttypes.integratedterminals.terminal_crafting_job.name=Crafting Job Terminal
-parttype.parttypes.integratedterminals.terminal_crafting_job.info=Manage and overview all crafting jobs in the network.
-parttype.parttypes.integratedterminals.terminal_crafting_job.tooltip.nohandlers=WARNING: No crafting handlers available. This will become usable when other mods such as Integrated Crafting are installed.
+parttype.integratedterminals.terminal_storage.name=Storage Terminal
+parttype.integratedterminals.terminal_storage.info=Visually interact with the ingredients stored in the network.
+parttype.integratedterminals.terminal_crafting_job.name=Crafting Job Terminal
+parttype.integratedterminals.terminal_crafting_job.info=Manage and overview all crafting jobs in the network.
+parttype.integratedterminals.terminal_crafting_job.tooltip.nohandlers=WARNING: No crafting handlers available. This will become usable when other mods such as Integrated Crafting are installed.
 
 # Configuration
 config.integratedterminals=%s configuration

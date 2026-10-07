@@ -116,7 +116,7 @@ public class GuiTerminalCraftingJobs extends GuiContainerExtended<ContainerTermi
         // Draw plan label
         drawString(
             Minecraft.getMinecraft().fontRenderer,
-            LangHelpers.localize("parttype.parttypes.integratedterminals.terminal_crafting_job.name"),
+            LangHelpers.localize("parttype.integratedterminals.terminal_crafting_job.name"),
             guiLeft + 8,
             guiTop + 5,
             16777215);

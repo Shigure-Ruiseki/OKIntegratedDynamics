@@ -545,13 +545,13 @@ public class GuiLogicProgrammerBase<T extends ContainerLogicProgrammerBase> exte
                 11,
                 LangHelpers.localize("gui.cyclopscore.search"),
                 true);
-            this.searchField.setMaxStringLength(64);
-            this.searchField.setEnableBackgroundDrawing(true);
+            this.searchField.setMaxLength(64);
+            this.searchField.setBordered(true);
             this.searchField.setVisible(false);
             this.searchField.setTextColor(16777215);
             this.searchField.setCanLoseFocus(true);
-            this.searchField.setText("");
-            this.searchField.width = searchWidth;
+            this.searchField.setValue("");
+            this.searchField.setWidth(searchWidth);
         }
 
         @Override
@@ -559,8 +559,8 @@ public class GuiLogicProgrammerBase<T extends ContainerLogicProgrammerBase> exte
             super.initGui(guiLeft, guiTop);
             int searchX = 90;
             int searchY = 110;
-            this.searchField.xPosition = guiLeft + searchX;
-            this.searchField.yPosition = guiTop + searchY;
+            this.searchField.setX(guiLeft + searchX);
+            this.searchField.setY(guiTop + searchY);
 
             if (hasLabeller()) {
                 button.x = guiLeft + 220;
@@ -588,7 +588,7 @@ public class GuiLogicProgrammerBase<T extends ContainerLogicProgrammerBase> exte
             if (!this.searchField.isFocused() || !this.searchField.charTyped(typedChar, keyCode)) {
                 return super.charTyped(typedChar, keyCode);
             } else {
-                label(this.searchField.getText());
+                label(this.searchField.getValue());
                 return true;
             }
         }
@@ -597,7 +597,7 @@ public class GuiLogicProgrammerBase<T extends ContainerLogicProgrammerBase> exte
         public boolean keyPressed(int typedChar, int keyCode, int modifiers) {
             if (this.searchField.isFocused() && typedChar != Keyboard.KEY_ESCAPE) {
                 this.searchField.keyPressed(typedChar, keyCode, modifiers);
-                label(this.searchField.getText());
+                label(this.searchField.getValue());
                 return true;
             }
             return super.keyPressed(typedChar, keyCode, modifiers);
@@ -635,7 +635,7 @@ public class GuiLogicProgrammerBase<T extends ContainerLogicProgrammerBase> exte
             this.searchField.setVisible(!this.searchField.isVisible());
             if (this.searchField.isVisible()) {
                 this.searchField.setFocused(true);
-                label(this.searchField.getText());
+                label(this.searchField.getValue());
             } else {
                 label("");
             }

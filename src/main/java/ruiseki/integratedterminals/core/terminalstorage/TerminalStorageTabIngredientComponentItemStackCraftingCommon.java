@@ -32,7 +32,7 @@ import ruiseki.okcore.persist.IDirtyMarkListener;
 
 /**
  * A common-side storage terminal ingredient tab for crafting with {@link ItemStack} instances.
- * 
+ *
  * @author rubensworks
  */
 public class TerminalStorageTabIngredientComponentItemStackCraftingCommon
@@ -53,8 +53,7 @@ public class TerminalStorageTabIngredientComponentItemStackCraftingCommon
     public static int getCraftingResultSlotIndex(Container container, ResourceLocation name) {
         ITerminalStorageTabCommon tabCommon = ((ContainerTerminalStorageBase) container).getTabCommon(name.toString());
         TerminalStorageTabIngredientComponentItemStackCraftingCommon tabCommonCrafting = (TerminalStorageTabIngredientComponentItemStackCraftingCommon) tabCommon;
-        return tabCommonCrafting.getSlotCrafting()
-            .getSlotIndex();
+        return tabCommonCrafting.getSlotCrafting().slotNumber;
     }
 
     @Override

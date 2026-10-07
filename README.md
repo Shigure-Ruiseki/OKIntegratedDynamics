@@ -8,7 +8,7 @@
 
 ### Required Dependencies:
 
-*   [OKCore (>= 26.09.26.0)](https://github.com/Shigure-Ruiseki/OKCore)
+*   [OKCore (>= 26.10.07.0)](https://github.com/Shigure-Ruiseki/OKCore)
 
 ### Addons:
 *   Integrated Dynamic (1.20 lts): Core Mod

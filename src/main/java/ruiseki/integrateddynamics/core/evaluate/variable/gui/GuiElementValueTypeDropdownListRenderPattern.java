@@ -58,8 +58,8 @@ public class GuiElementValueTypeDropdownListRenderPattern<T, S extends ISubGuiBo
             true,
             getDropdownPossibilities());
         this.searchField.setDropdownEntryListener(this);
-        this.searchField.setMaxStringLength(64);
-        this.searchField.setEnableBackgroundDrawing(false);
+        this.searchField.setMaxLength(64);
+        this.searchField.setBordered(false);
         this.searchField.setVisible(true);
         this.searchField.setTextColor(16777215);
         this.searchField.setCanLoseFocus(true);
@@ -67,9 +67,10 @@ public class GuiElementValueTypeDropdownListRenderPattern<T, S extends ISubGuiBo
         if (value == null) {
             value = "";
         }
-        this.searchField.setText(value);
-        element.setInputString(searchField.getText());
-        this.searchField.xPosition = guiLeft + (searchX + searchWidth) - this.searchField.getWidth();
+        this.searchField.setValue(value);
+        element.setInputString(searchField.getValue());
+        this.searchField.setWidth(searchWidth);
+        this.searchField.setX(guiLeft + (searchX + searchWidth) - this.searchField.getWidth());
     }
 
     protected Set<IDropdownEntry<T>> getDropdownPossibilities() {
@@ -114,7 +115,7 @@ public class GuiElementValueTypeDropdownListRenderPattern<T, S extends ISubGuiBo
     }
 
     public void onTyped() {
-        element.setInputString(searchField.getText());
+        element.setInputString(searchField.getValue());
         if (container instanceof IDirtyMarkListener) {
             ((IDirtyMarkListener) container).onDirty();
         }

@@ -111,7 +111,7 @@ public class GuiPartSettings<C extends ContainerPartSettings> extends GuiContain
                 true,
                 Sets.newHashSet(dropdownEntries));
             setSideInDropdownField(getCurrentSide());
-            dropdownFieldSide.setMaxStringLength(15);
+            dropdownFieldSide.setMaxLength(15);
             dropdownFieldSide.setVisible(true);
             dropdownFieldSide.setTextColor(16777215);
             dropdownFieldSide.setCanLoseFocus(true);
@@ -127,7 +127,7 @@ public class GuiPartSettings<C extends ContainerPartSettings> extends GuiContain
                 true,
                 LangHelpers.localize("gui.integrateddynamics.partsettings.update_interval"),
                 true);
-            numberFieldUpdateInterval.setMaxStringLength(15);
+            numberFieldUpdateInterval.setMaxLength(15);
             numberFieldUpdateInterval.setVisible(true);
             numberFieldUpdateInterval.setTextColor(16777215);
             numberFieldUpdateInterval.setCanLoseFocus(true);
@@ -145,7 +145,7 @@ public class GuiPartSettings<C extends ContainerPartSettings> extends GuiContain
                 LangHelpers.localize("gui.integrateddynamics.partsettings.priority"),
                 true);
             numberFieldPriority.setPositiveOnly(false);
-            numberFieldPriority.setMaxStringLength(15);
+            numberFieldPriority.setMaxLength(15);
             numberFieldPriority.setVisible(true);
             numberFieldPriority.setTextColor(16777215);
             numberFieldPriority.setCanLoseFocus(true);
@@ -162,11 +162,11 @@ public class GuiPartSettings<C extends ContainerPartSettings> extends GuiContain
                 LangHelpers.localize("gui.integrateddynamics.partsettings.channel"),
                 true);
             numberFieldChannel.setPositiveOnly(false);
-            numberFieldChannel.setMaxStringLength(15);
+            numberFieldChannel.setMaxLength(15);
             numberFieldChannel.setVisible(true);
             numberFieldChannel.setTextColor(16777215);
             numberFieldChannel.setCanLoseFocus(true);
-            numberFieldChannel.setEnabled(isChannelEnabled());
+            numberFieldChannel.setEditable(isChannelEnabled());
         }
 
         String save = LangHelpers.localize("gui.integrateddynamics.button.save");
@@ -367,16 +367,16 @@ public class GuiPartSettings<C extends ContainerPartSettings> extends GuiContain
             setSideInDropdownField(side == -1 ? getDefaultSide() : ForgeDirection.values()[side]);
         }
         if (isFieldUpdateIntervalEnabled() && valueId == getContainer().getLastUpdateValueId()) {
-            numberFieldUpdateInterval.setText(Integer.toString(getContainer().getLastUpdateValue()));
+            numberFieldUpdateInterval.setValue(Integer.toString(getContainer().getLastUpdateValue()));
         }
         if (isFieldUpdateIntervalEnabled() && valueId == getContainer().getLastMinUpdateValueId()) {
             numberFieldUpdateInterval.setMinValue(getContainer().getLastMinUpdateValue());
         }
         if (isFieldPriorityEnabled() && valueId == getContainer().getLastPriorityValueId()) {
-            numberFieldPriority.setText(Integer.toString(getContainer().getLastPriorityValue()));
+            numberFieldPriority.setValue(Integer.toString(getContainer().getLastPriorityValue()));
         }
         if (isFieldChannelEnabled() && valueId == getContainer().getLastChannelValueId()) {
-            numberFieldChannel.setText(Integer.toString(getContainer().getLastChannelValue()));
+            numberFieldChannel.setValue(Integer.toString(getContainer().getLastChannelValue()));
         }
     }
 

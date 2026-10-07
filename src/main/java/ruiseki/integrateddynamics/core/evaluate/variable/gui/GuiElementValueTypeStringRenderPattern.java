@@ -53,8 +53,8 @@ public class GuiElementValueTypeStringRenderPattern<S extends ISubGuiBox, G exte
                     .getValueType()
                     .getUnlocalizedName()),
             true);
-        this.textField.setMaxStringLength(512);
-        this.textField.setEnableBackgroundDrawing(false);
+        this.textField.setMaxLength(512);
+        this.textField.setBordered(false);
         this.textField.setVisible(true);
         this.textField.setTextColor(16777215);
         this.textField.setCanLoseFocus(true);
@@ -62,10 +62,10 @@ public class GuiElementValueTypeStringRenderPattern<S extends ISubGuiBox, G exte
         if (value == null) {
             value = element.getDefaultInputString();
         }
-        this.textField.setText(value);
-        element.setInputString(textField.getText());
-        this.textField.width = searchWidth;
-        this.textField.xPosition = guiLeft + (searchX + searchWidth) - this.textField.width;
+        this.textField.setValue(value);
+        element.setInputString(textField.getValue());
+        this.textField.setWidth(searchWidth);
+        this.textField.setX(guiLeft + (searchX + searchWidth) - this.textField.getWidth());
     }
 
     @Override
@@ -106,7 +106,7 @@ public class GuiElementValueTypeStringRenderPattern<S extends ISubGuiBox, G exte
     }
 
     private void onTyped() {
-        element.setInputString(textField.getText());
+        element.setInputString(textField.getValue());
         if (container instanceof IDirtyMarkListener) {
             ((IDirtyMarkListener) container).onDirty();
         }

@@ -56,7 +56,7 @@ public class GuiInterfaceSettings extends GuiPartSettings<ContainerInterfaceSett
             LangHelpers.localize("gui.integratedtunnels.partsettings.channel.interface"),
             true);
         numberFieldChannelInterface.setPositiveOnly(false);
-        numberFieldChannelInterface.setMaxStringLength(15);
+        numberFieldChannelInterface.setMaxLength(15);
         numberFieldChannelInterface.setVisible(true);
         numberFieldChannelInterface.setTextColor(16777215);
         numberFieldChannelInterface.setCanLoseFocus(true);
@@ -138,7 +138,7 @@ public class GuiInterfaceSettings extends GuiPartSettings<ContainerInterfaceSett
     public void onUpdate(int valueId, NBTTagCompound value) {
         super.onUpdate(valueId, value);
         if (valueId == getContainer().getLastChannelInterfaceValueId()) {
-            numberFieldChannelInterface.setText(Integer.toString(getContainer().getLastChannelInterfaceValue()));
+            numberFieldChannelInterface.setValue(Integer.toString(getContainer().getLastChannelInterfaceValue()));
         }
     }
 }

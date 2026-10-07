@@ -57,13 +57,13 @@ public class ValueTypeRecipeLPElementRecipeSubGui
             fontRenderer.FONT_HEIGHT + 3,
             LangHelpers.localize("gui.okcore.search"),
             true);
-        box.setMaxStringLength(10);
-        box.setEnableBackgroundDrawing(false);
+        box.setMaxLength(10);
+        box.setBordered(false);
         box.setVisible(true);
         box.setTextColor(16777215);
         box.setCanLoseFocus(true);
-        box.setText(text);
-        box.width = searchWidth;
+        box.setValue(text);
+        box.setWidth(searchWidth);
         return box;
     }
 
@@ -102,8 +102,8 @@ public class ValueTypeRecipeLPElementRecipeSubGui
                 if (gui.func_146978_c(slotX, slotY, 16, 16, mouseX, mouseY)) {
                     gui.drawTooltip(
                         Lists.newArrayList(
-                            EnumChatFormatting.ITALIC + LangHelpers
-                                .localize("valuetype.valuetypes.integrateddynamics.ingredients.slot.info")),
+                            EnumChatFormatting.ITALIC
+                                + LangHelpers.localize("valuetype.integrateddynamics.ingredients.slot.info")),
                         mouseX - guiLeft,
                         mouseY - guiTop - (slot.getStack() == null ? 0 : 15));
                 }
@@ -145,7 +145,7 @@ public class ValueTypeRecipeLPElementRecipeSubGui
     @Override
     public boolean charTyped(char typedChar, int keyCode) {
         if (inputFluidAmountBox.charTyped(typedChar, keyCode)) {
-            element.setInputFluidAmount(inputFluidAmountBox.getText());
+            element.setInputFluidAmount(inputFluidAmountBox.getValue());
             container.onDirty();
             IntegratedDynamics._instance.getPacketHandler()
                 .sendToServer(
@@ -155,7 +155,7 @@ public class ValueTypeRecipeLPElementRecipeSubGui
             return true;
         }
         if (inputEnergyBox.charTyped(typedChar, keyCode)) {
-            element.setInputEnergy(inputEnergyBox.getText());
+            element.setInputEnergy(inputEnergyBox.getValue());
             container.onDirty();
             IntegratedDynamics._instance.getPacketHandler()
                 .sendToServer(
@@ -165,7 +165,7 @@ public class ValueTypeRecipeLPElementRecipeSubGui
             return true;
         }
         if (outputFluidAmountBox.charTyped(typedChar, keyCode)) {
-            element.setOutputFluidAmount(outputFluidAmountBox.getText());
+            element.setOutputFluidAmount(outputFluidAmountBox.getValue());
             container.onDirty();
             IntegratedDynamics._instance.getPacketHandler()
                 .sendToServer(
@@ -175,7 +175,7 @@ public class ValueTypeRecipeLPElementRecipeSubGui
             return true;
         }
         if (outputEnergyBox.charTyped(typedChar, keyCode)) {
-            element.setOutputEnergy(outputEnergyBox.getText());
+            element.setOutputEnergy(outputEnergyBox.getValue());
             container.onDirty();
             IntegratedDynamics._instance.getPacketHandler()
                 .sendToServer(
@@ -190,7 +190,7 @@ public class ValueTypeRecipeLPElementRecipeSubGui
     @Override
     public boolean keyPressed(int typedChar, int keyCode, int modifiers) {
         if (inputFluidAmountBox.keyPressed(typedChar, keyCode, modifiers)) {
-            element.setInputFluidAmount(inputFluidAmountBox.getText());
+            element.setInputFluidAmount(inputFluidAmountBox.getValue());
             container.onDirty();
             IntegratedDynamics._instance.getPacketHandler()
                 .sendToServer(
@@ -200,7 +200,7 @@ public class ValueTypeRecipeLPElementRecipeSubGui
             return true;
         }
         if (inputEnergyBox.keyPressed(typedChar, keyCode, modifiers)) {
-            element.setInputEnergy(inputEnergyBox.getText());
+            element.setInputEnergy(inputEnergyBox.getValue());
             container.onDirty();
             IntegratedDynamics._instance.getPacketHandler()
                 .sendToServer(
@@ -210,7 +210,7 @@ public class ValueTypeRecipeLPElementRecipeSubGui
             return true;
         }
         if (outputFluidAmountBox.keyPressed(typedChar, keyCode, modifiers)) {
-            element.setOutputFluidAmount(outputFluidAmountBox.getText());
+            element.setOutputFluidAmount(outputFluidAmountBox.getValue());
             container.onDirty();
             IntegratedDynamics._instance.getPacketHandler()
                 .sendToServer(
@@ -220,7 +220,7 @@ public class ValueTypeRecipeLPElementRecipeSubGui
             return true;
         }
         if (outputEnergyBox.keyPressed(typedChar, keyCode, modifiers)) {
-            element.setOutputEnergy(outputEnergyBox.getText());
+            element.setOutputEnergy(outputEnergyBox.getValue());
             container.onDirty();
             IntegratedDynamics._instance.getPacketHandler()
                 .sendToServer(
