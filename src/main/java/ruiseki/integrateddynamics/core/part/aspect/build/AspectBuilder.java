@@ -29,6 +29,7 @@ import ruiseki.integrateddynamics.api.part.write.IPartTypeWriter;
 import ruiseki.integrateddynamics.core.helper.Helpers;
 import ruiseki.integrateddynamics.part.aspect.read.AspectReadBase;
 import ruiseki.integrateddynamics.part.aspect.write.AspectWriteBase;
+import ruiseki.okcore.init.ModBase;
 
 /**
  * Immutable builder for aspects.
@@ -176,10 +177,31 @@ public class AspectBuilder<V extends IValue, T extends IValueType<V>, O> {
     /**
      * Set the mod that provides the aspect.
      *
+     * @param mod The mod.
+     * @return The new builder instance.
+     */
+    public AspectBuilder<V, T, O> byMod(ModBase mod) {
+        return new AspectBuilder<>(
+            this.read,
+            this.valueType,
+            Helpers.joinList(this.kinds, null),
+            this.defaultAspectProperties,
+            Helpers.joinList(this.valuePropagators, null),
+            Helpers.joinList(writeActivators, null),
+            Helpers.joinList(writeDeactivators, null),
+            mod.getModId(),
+            beforeUpdateListeners,
+            afterUpdateListeners,
+            updateType);
+    }
+
+    /**
+     * Set the mod that provides the aspect.
+     *
      * @param modId The mod.
      * @return The new builder instance.
      */
-    public AspectBuilder<V, T, O> byMod(String modId) {
+    public AspectBuilder<V, T, O> byModId(String modId) {
         return new AspectBuilder<>(
             this.read,
             this.valueType,
