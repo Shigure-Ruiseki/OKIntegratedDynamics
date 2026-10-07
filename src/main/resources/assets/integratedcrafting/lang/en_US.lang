@@ -43,22 +43,22 @@ aspect.aspecttypes.integratedcrafting.integer.craftdelay.info=Only craft if ingr
 # Aspects
 
 ## Network
-aspect.aspects.integratedcrafting.read.list.network.recipes.name=Recipes
-aspect.aspects.integratedcrafting.read.list.network.recipes.info=A list of all available recipes.
-aspect.aspects.integratedcrafting.read.list.network.craftingjobs.name=Active Crafting Jobs
-aspect.aspects.integratedcrafting.read.list.network.craftingjobs.info=A list of all active crafting job as recipes.
-aspect.aspects.integratedcrafting.read.list.network.craftingingredients.name=Crafting Ingredients
-aspect.aspects.integratedcrafting.read.list.network.craftingingredients.info=A list of all ingredients that are being crafted.
+aspect.integratedcrafting.read.list.network.recipes.name=Recipes
+aspect.integratedcrafting.read.list.network.recipes.info=A list of all available recipes.
+aspect.integratedcrafting.read.list.network.craftingjobs.name=Active Crafting Jobs
+aspect.integratedcrafting.read.list.network.craftingjobs.info=A list of all active crafting job as recipes.
+aspect.integratedcrafting.read.list.network.craftingingredients.name=Crafting Ingredients
+aspect.integratedcrafting.read.list.network.craftingingredients.info=A list of all ingredients that are being crafted.
 
 ## Crafting
-aspect.aspects.integratedcrafting.write.recipe.craft.name=Craft Recipe
-aspect.aspects.integratedcrafting.write.recipe.craft.info=Craft the given recipe
-aspect.aspects.integratedcrafting.write.itemstack.craft.name=Craft Item
-aspect.aspects.integratedcrafting.write.itemstack.craft.info=Craft the given item
-aspect.aspects.integratedcrafting.write.fluidstack.craft.name=Craft Fluid
-aspect.aspects.integratedcrafting.write.fluidstack.craft.info=Craft the given fluid
-aspect.aspects.integratedcrafting.write.integer.craft.name=Craft Energy
-aspect.aspects.integratedcrafting.write.integer.craft.info=Craft the given energy amount
+aspect.integratedcrafting.write.recipe.craft.name=Craft Recipe
+aspect.integratedcrafting.write.recipe.craft.info=Craft the given recipe
+aspect.integratedcrafting.write.itemstack.craft.name=Craft Item
+aspect.integratedcrafting.write.itemstack.craft.info=Craft the given item
+aspect.integratedcrafting.write.fluidstack.craft.name=Craft Fluid
+aspect.integratedcrafting.write.fluidstack.craft.info=Craft the given fluid
+aspect.integratedcrafting.write.integer.craft.name=Craft Energy
+aspect.integratedcrafting.write.integer.craft.info=Craft the given energy amount
 
 ## Config categories
 config.integratedcrafting.general=General settings

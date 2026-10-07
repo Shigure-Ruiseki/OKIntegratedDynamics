@@ -59,7 +59,7 @@ public abstract class AspectBase<V extends IValue, T extends IValueType<V>> impl
     }
 
     protected String getUnlocalizedPrefix() {
-        return "aspect.aspects." + getModId() + "." + getUnlocalizedType();
+        return "aspect." + getModId() + "." + getUnlocalizedType();
     }
 
     protected abstract String getUnlocalizedType();
@@ -133,7 +133,7 @@ public abstract class AspectBase<V extends IValue, T extends IValueType<V>> impl
 
     /**
      * Creates the default properties for this aspect, only called once.
-     * 
+     *
      * @return The default properties.
      */
     @Deprecated
