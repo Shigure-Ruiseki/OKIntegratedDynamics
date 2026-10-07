@@ -102,8 +102,8 @@ public class ValueTypeRecipeLPElementRecipeSubGui
                 if (gui.func_146978_c(slotX, slotY, 16, 16, mouseX, mouseY)) {
                     gui.drawTooltip(
                         Lists.newArrayList(
-                            EnumChatFormatting.ITALIC + LangHelpers
-                                .localize("valuetype.valuetypes.integrateddynamics.ingredients.slot.info")),
+                            EnumChatFormatting.ITALIC
+                                + LangHelpers.localize("valuetype.integrateddynamics.ingredients.slot.info")),
                         mouseX - guiLeft,
                         mouseY - guiTop - (slot.getStack() == null ? 0 : 15));
                 }

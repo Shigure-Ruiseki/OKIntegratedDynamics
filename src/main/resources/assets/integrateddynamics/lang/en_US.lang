@@ -268,32 +268,32 @@ valuetype.integrateddynamics.error.invalid_operator_signature=The operator value
 valuetype.integrateddynamics.error.block.no_block=The inserted item is no block.
 valuetype.integrateddynamics.error.fluid.no_fluid=The inserted item contains no fluid.
 
-valuetype.valuetypes.integrateddynamics.any.name=Any
-valuetype.valuetypes.integrateddynamics.any.info=Accepts any type of value.
-valuetype.valuetypes.integrateddynamics.number.name=Number
-valuetype.valuetypes.integrateddynamics.number.info=Accepts all number types.
-valuetype.valuetypes.integrateddynamics.named.name=Named
-valuetype.valuetypes.integrateddynamics.named.info=Something that has a name, such as display names of items and blocks.
-valuetype.valuetypes.integrateddynamics.uniquely_named.name=Uniquely Named
-valuetype.valuetypes.integrateddynamics.uniquely_named.info=Something that has a unique name, such as items and blocks.
+valuetype.integrateddynamics.any.name=Any
+valuetype.integrateddynamics.any.info=Accepts any type of value.
+valuetype.integrateddynamics.number.name=Number
+valuetype.integrateddynamics.number.info=Accepts all number types.
+valuetype.integrateddynamics.named.name=Named
+valuetype.integrateddynamics.named.info=Something that has a name, such as display names of items and blocks.
+valuetype.integrateddynamics.uniquely_named.name=Uniquely Named
+valuetype.integrateddynamics.uniquely_named.info=Something that has a unique name, such as items and blocks.
 
-valuetype.valuetypes.integrateddynamics.boolean.name=Boolean
-valuetype.valuetypes.integrateddynamics.integer.name=Integer
-valuetype.valuetypes.integrateddynamics.double.name=Double
-valuetype.valuetypes.integrateddynamics.long.name=Long
-valuetype.valuetypes.integrateddynamics.string.name=String
-valuetype.valuetypes.integrateddynamics.operator.name=Operator
-valuetype.valuetypes.integrateddynamics.nbt.name=NBT
+valuetype.integrateddynamics.boolean.name=Boolean
+valuetype.integrateddynamics.integer.name=Integer
+valuetype.integrateddynamics.double.name=Double
+valuetype.integrateddynamics.long.name=Long
+valuetype.integrateddynamics.string.name=String
+valuetype.integrateddynamics.operator.name=Operator
+valuetype.integrateddynamics.nbt.name=NBT
 
-valuetype.valuetypes.integrateddynamics.list.name=List
-valuetype.valuetypes.integrateddynamics.block.name=Block
-valuetype.valuetypes.integrateddynamics.itemstack.name=Item
-valuetype.valuetypes.integrateddynamics.entity.name=Entity
-valuetype.valuetypes.integrateddynamics.fluidstack.name=Fluid
-valuetype.valuetypes.integrateddynamics.ingredients.name=Ingredients
-valuetype.valuetypes.integrateddynamics.recipe.name=Recipe
+valuetype.integrateddynamics.list.name=List
+valuetype.integrateddynamics.block.name=Block
+valuetype.integrateddynamics.itemstack.name=Item
+valuetype.integrateddynamics.entity.name=Entity
+valuetype.integrateddynamics.fluidstack.name=Fluid
+valuetype.integrateddynamics.ingredients.name=Ingredients
+valuetype.integrateddynamics.recipe.name=Recipe
 
-valuetype.valuetypes.integrateddynamics.ingredients.slot.info=Shift click to configure
+valuetype.integrateddynamics.ingredients.slot.info=Shift click to configure
 
 # Part types
 parttype.integrateddynamics.error.low_energy=Not enough energy
