@@ -217,9 +217,7 @@ public class PartHelpers {
     public static Pair<ForgeDirection, IPartType> readPartTypeFromNBT(@Nullable INetwork network, BlockPos pos,
         NBTTagCompound partTag) {
         String partTypeName = partTag.getString("__partType");
-        if (partTypeName.startsWith("parttypes.")) {
-            partTypeName = partTypeName.substring("parttypes.".length());
-        }
+        partTypeName = partTypeName.replace(".parttypes.", ".");
         IPartType partType = validatePartType(
             network,
             partTypeName,
