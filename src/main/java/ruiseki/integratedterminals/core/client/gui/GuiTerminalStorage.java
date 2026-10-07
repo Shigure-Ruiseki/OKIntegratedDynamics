@@ -121,14 +121,14 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
             LangHelpers.localize("gui.integratedterminals.channel"),
             true,
             getContainer().getChannelStrings());
-        fieldChannel.setMaxStringLength(15);
+        fieldChannel.setMaxLength(15);
         fieldChannel.setVisible(true);
         fieldChannel.setTextColor(16777215);
         fieldChannel.setCanLoseFocus(true);
-        fieldChannel.setEnabled(true);
+        fieldChannel.setEditable(true);
         int activeChannel = getContainer().getSelectedChannel();
         if (activeChannel != IPositionedAddonsNetwork.WILDCARD_CHANNEL) {
-            fieldChannel.setText(Integer.toString(activeChannel));
+            fieldChannel.setValue(Integer.toString(activeChannel));
         }
 
         firstRow = 0;
@@ -166,12 +166,12 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
             getSearchWidth() - 10,
             SEARCH_HEIGHT,
             LangHelpers.localize("gui.okcore.search"));
-        fieldSearch.setMaxStringLength(50);
+        fieldSearch.setMaxLength(50);
         fieldSearch.setVisible(true);
         fieldSearch.setTextColor(16777215);
         fieldSearch.setCanLoseFocus(true);
-        fieldSearch.setEnabled(true);
-        fieldSearch.setEnableBackgroundDrawing(false);
+        fieldSearch.setEditable(true);
+        fieldSearch.setBordered(false);
 
         buttonSetDefaults = addRenderableWidget(
             new GuiButtonImage(
@@ -297,7 +297,7 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
             String filter = getSelectedClientTab().get()
                 .getInstanceFilter(getContainer().getSelectedChannel());
             if (filter != null && !"".equals(filter)) {
-                fieldSearch.setText(filter);
+                fieldSearch.setValue(filter);
                 getSelectedClientTab().get()
                     .setInstanceFilter(getContainer().getSelectedChannel(), filter); // Forces event to be sent
             }
@@ -803,7 +803,7 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
             tab.resetActiveSlot();
 
             // Update the filter
-            fieldSearch.setText(tab.getInstanceFilter(getContainer().getSelectedChannel()));
+            fieldSearch.setValue(tab.getInstanceFilter(getContainer().getSelectedChannel()));
         });
 
         // Reset scrollbar
@@ -847,7 +847,7 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
             scrollBar.scrollTo(0); // Reset scrollbar
 
             // Update the filter
-            tabOptional.ifPresent(tab -> fieldSearch.setText(tab.getInstanceFilter(finalChannel)));
+            tabOptional.ifPresent(tab -> fieldSearch.setValue(tab.getInstanceFilter(finalChannel)));
 
             playButtonClickSound();
 
@@ -1165,9 +1165,10 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
         if (fieldSearch.isFocused()) {
             if (fieldSearch.charTyped(keyCode, scanCode)) {
                 getSelectedClientTab().ifPresent(
-                    tab -> tab.setInstanceFilter(getContainer().getSelectedChannel(), fieldSearch.getText()));
+                    tab -> tab.setInstanceFilter(getContainer().getSelectedChannel(), fieldSearch.getValue()));
+                return true;
             }
-            return true;
+            return false;
         }
         return handleKeyCodeLast(keyCode, scanCode) || super.charTyped(keyCode, scanCode);
     }
@@ -1181,9 +1182,10 @@ public class GuiTerminalStorage<L, C extends ContainerTerminalStorageBase<L>> ex
             if (fieldSearch.isFocused()) {
                 if (this.fieldSearch.keyPressed(keyCode, scanCode, modifiers)) {
                     getSelectedClientTab().ifPresent(
-                        tab -> tab.setInstanceFilter(getContainer().getSelectedChannel(), fieldSearch.getText()));
+                        tab -> tab.setInstanceFilter(getContainer().getSelectedChannel(), fieldSearch.getValue()));
+                    return true;
                 }
-                return true;
+                return false;
             }
             if (handleKeyCodeLast(keyCode, scanCode)) {
                 return true;

@@ -127,7 +127,7 @@ public class GuiPartInterfaceCraftingSettings extends GuiPartSettings<ContainerP
         setSideInDropdownField(
             selectedIngredientComponent,
             container.getTargetSideOverrideValue(selectedIngredientComponent));
-        dropdownFieldSide.setMaxStringLength(15);
+        dropdownFieldSide.setMaxLength(15);
         dropdownFieldSide.setVisible(true);
         dropdownFieldSide.setTextColor(16777215);
         dropdownFieldSide.setCanLoseFocus(true);
@@ -142,7 +142,7 @@ public class GuiPartInterfaceCraftingSettings extends GuiPartSettings<ContainerP
             LangHelpers.localize("gui.integrateddynamics.partsettings.update_interval"),
             true);
         numberFieldChannelInterfaceCrafting.setPositiveOnly(false);
-        numberFieldChannelInterfaceCrafting.setMaxStringLength(15);
+        numberFieldChannelInterfaceCrafting.setMaxLength(15);
         numberFieldChannelInterfaceCrafting.setVisible(true);
         numberFieldChannelInterfaceCrafting.setTextColor(16777215);
         numberFieldChannelInterfaceCrafting.setCanLoseFocus(true);
@@ -276,7 +276,7 @@ public class GuiPartInterfaceCraftingSettings extends GuiPartSettings<ContainerP
         }
         if (valueId == getContainer().getLastChannelInterfaceCraftingValueId()) {
             numberFieldChannelInterfaceCrafting
-                .setText(Integer.toString(getContainer().getLastChannelInterfaceValue()));
+                .setValue(Integer.toString(getContainer().getLastChannelInterfaceValue()));
         }
         if (valueId == getContainer().getLastDisableCraftingCheckValueId()) {
             checkboxFieldDisabledCraftingCheck.setChecked(getContainer().getLastDisableCraftingCheckValue());
