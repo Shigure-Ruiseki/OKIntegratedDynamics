@@ -92,8 +92,8 @@ public class PartTypeTerminalCraftingJob
         if (TerminalStorageTabIngredientCraftingHandlers.REGISTRY.getHandlers()
             .isEmpty()) {
             lines.add(
-                EnumChatFormatting.GOLD + LangHelpers
-                    .localize("parttype.parttypes.integratedterminals.terminal_crafting_job.tooltip.nohandlers"));
+                EnumChatFormatting.GOLD
+                    + LangHelpers.localize("parttype.integratedterminals.terminal_crafting_job.tooltip.nohandlers"));
         }
     }
 }
