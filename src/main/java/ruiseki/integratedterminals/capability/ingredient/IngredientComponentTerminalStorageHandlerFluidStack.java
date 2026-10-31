@@ -36,7 +36,6 @@ import ruiseki.okcore.client.gui.RenderItemExtendedSlotCount;
 import ruiseki.okcore.client.renderer.GlStateManager;
 import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
 import ruiseki.okcore.fluid.handler.IFluidHandlerItem;
-import ruiseki.okcore.fluid.handler.IFluidTankProperties;
 import ruiseki.okcore.helper.CapabilityHelpers;
 import ruiseki.okcore.helper.FluidHelpers;
 import ruiseki.okcore.helper.GuiHelpers;
@@ -126,30 +125,16 @@ public class IngredientComponentTerminalStorageHandlerFluidStack
 
     @Override
     public FluidStack getInstance(ItemStack itemStack) {
-        IFluidHandlerItem fluidHandler = CapabilityHelpers
-            .getCapability(itemStack, CapabilityFluidHandler.FLUID_HANDLER_ITEM)
-            .getOrNull();
-        if (fluidHandler != null) {
-            IFluidTankProperties[] props = fluidHandler.getTankProperties();
-            if (props.length > 0) {
-                return props[0].getContents();
-            }
-        }
-        return null;
+        return CapabilityHelpers.getCapability(itemStack, CapabilityFluidHandler.FLUID_HANDLER_ITEM)
+            .map(fluidHandler -> fluidHandler.getTanks() > 0 ? fluidHandler.getFluidInTank(0) : FluidHelpers.EMPTY)
+            .orElse(FluidHelpers.EMPTY);
     }
 
     @Override
     public long getMaxQuantity(ItemStack itemStack) {
-        IFluidHandlerItem fluidHandler = CapabilityHelpers
-            .getCapability(itemStack, CapabilityFluidHandler.FLUID_HANDLER_ITEM)
-            .getOrNull();
-        if (fluidHandler != null) {
-            IFluidTankProperties[] props = fluidHandler.getTankProperties();
-            if (props.length > 0) {
-                return props[0].getCapacity();
-            }
-        }
-        return 0;
+        return CapabilityHelpers.getCapability(itemStack, CapabilityFluidHandler.FLUID_HANDLER_ITEM)
+            .map(fluidHandler -> fluidHandler.getTanks() > 0 ? fluidHandler.getTankCapacity(0) : 0)
+            .orElse(0);
     }
 
     @Override
@@ -259,16 +244,11 @@ public class IngredientComponentTerminalStorageHandlerFluidStack
     @Override
     public long getActivePlayerStackQuantity(InventoryPlayer playerInventory) {
         ItemStack toMoveStack = playerInventory.getItemStack();
-        IFluidHandlerItem fluidHandler = CapabilityHelpers
-            .getCapability(toMoveStack, CapabilityFluidHandler.FLUID_HANDLER_ITEM)
-            .getOrNull();
-        if (fluidHandler != null) {
-            IFluidTankProperties[] props = fluidHandler.getTankProperties();
-            if (props.length > 0) {
-                return FluidHelpers.getAmount(props[0].getContents());
-            }
-        }
-        return 0;
+        return CapabilityHelpers.getCapability(toMoveStack, CapabilityFluidHandler.FLUID_HANDLER_ITEM)
+            .map(
+                fluidHandler -> fluidHandler.getTanks() > 0 ? FluidHelpers.getAmount(fluidHandler.getFluidInTank(0))
+                    : 0)
+            .orElse(0);
     }
 
     @Override

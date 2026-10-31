@@ -1,6 +1,5 @@
 package ruiseki.integratedcompat.modcompat.nei.logicprogrammer;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -15,6 +14,8 @@ import com.google.common.collect.Lists;
 import codechicken.nei.PositionedStack;
 import codechicken.nei.api.IOverlayHandler;
 import codechicken.nei.recipe.IRecipeHandler;
+import it.unimi.dsi.fastutil.longs.LongIterator;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import ruiseki.integratedcompat.GeneralConfig;
 import ruiseki.integratedcompat.IntegratedCompat;
 import ruiseki.integratedcompat.network.packet.CPacketSetSlot;
@@ -23,9 +24,7 @@ import ruiseki.integrateddynamics.api.logicprogrammer.ILogicProgrammerElement;
 import ruiseki.integrateddynamics.core.ingredient.ItemMatchProperties;
 import ruiseki.integrateddynamics.core.logicprogrammer.ValueTypeRecipeLPElement;
 import ruiseki.integrateddynamics.inventory.container.ContainerLogicProgrammerBase;
-import ruiseki.okcore.helper.Helpers;
 import ruiseki.okcore.helper.TagHelpers;
-import ruiseki.okcore.tag.TagEntry;
 import ruiseki.okcore.tag.TagKey;
 import ruiseki.okcore.tag.TagManager;
 
@@ -52,12 +51,12 @@ public class LogicProgrammerOverlayHandler implements IOverlayHandler {
             return null;
         }
 
-        ItemStack[] ingredients = positionedStack.items;
-        if (ingredients == null || ingredients.length <= 1) {
+        List<ItemStack> ingredients = positionedStack.getFilteredPermutations();
+        if (ingredients == null || ingredients.size() <= 1) {
             return null;
         }
 
-        ItemStack firstStack = ingredients[0];
+        ItemStack firstStack = ingredients.getFirst();
         Set<TagKey<Item>> candidateTags = TagHelpers.getTags(firstStack);
 
         if (candidateTags.isEmpty()) {
@@ -67,29 +66,31 @@ public class LogicProgrammerOverlayHandler implements IOverlayHandler {
         TagManager tagManager = TagManager.getManager();
 
         for (TagKey<Item> tagKey : candidateTags) {
-            Set<TagEntry> tagEntries = tagManager.getEntries(tagKey);
-            if (tagEntries.size() != ingredients.length) {
+            LongSet members = tagManager.getPackedMembers(tagKey);
+            if (members.size() != ingredients.size()) {
                 continue;
             }
+            boolean match = true;
 
-            boolean match = Arrays.stream(ingredients)
-                .allMatch(stack -> {
-                    if (stack == null || stack.getItem() == null) return false;
-
-                    ResourceLocation itemId = Helpers.getLocation(stack.getItem());
-                    int meta = stack.getItemDamage();
-
-                    for (TagEntry entry : tagEntries) {
-                        if (entry.id()
-                            .equals(itemId)) {
-                            if (entry.meta() == TagEntry.WILDCARD || entry.meta() == meta) {
-                                return true;
-                            }
-                        }
+            for (ItemStack stack : ingredients) {
+                if (stack == null || stack.getItem() == null) {
+                    match = false;
+                    break;
+                }
+                long packed = TagHelpers.pack(stack);
+                boolean found = false;
+                LongIterator iterator = members.iterator();
+                while (iterator.hasNext()) {
+                    if (TagHelpers.matchesSoft(iterator.nextLong(), packed)) {
+                        found = true;
+                        break;
                     }
-                    return false;
-                });
-
+                }
+                if (!found) {
+                    match = false;
+                    break;
+                }
+            }
             if (match) {
                 return tagKey.location();
             }

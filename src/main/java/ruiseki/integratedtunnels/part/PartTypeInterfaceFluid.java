@@ -10,7 +10,6 @@ import ruiseki.integratedtunnels.core.part.PartTypeInterfacePositionedAddon;
 import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
 import ruiseki.okcore.fluid.handler.IFluidHandler;
-import ruiseki.okcore.fluid.handler.IFluidTankProperties;
 import ruiseki.okcore.helper.FluidHelpers;
 
 /**
@@ -73,12 +72,45 @@ public class PartTypeInterfaceFluid extends
         }
 
         @Override
-        public IFluidTankProperties[] getTankProperties() {
+        public int getTanks() {
             if (!state.isNetworkAndPositionValid()) {
-                return new IFluidTankProperties[0];
+                return 0;
             }
             state.disablePosition();
-            IFluidTankProperties[] ret = getFluidHandler().getTankProperties();
+            int ret = getFluidHandler().getTanks();
+            state.enablePosition();
+            return ret;
+        }
+
+        @Override
+        public FluidStack getFluidInTank(int tank) {
+            if (!state.isNetworkAndPositionValid()) {
+                return FluidHelpers.EMPTY;
+            }
+            state.disablePosition();
+            FluidStack ret = getFluidHandler().getFluidInTank(tank);
+            state.enablePosition();
+            return ret;
+        }
+
+        @Override
+        public int getTankCapacity(int tank) {
+            if (!state.isNetworkAndPositionValid()) {
+                return 0;
+            }
+            state.disablePosition();
+            int ret = getFluidHandler().getTankCapacity(tank);
+            state.enablePosition();
+            return ret;
+        }
+
+        @Override
+        public boolean isFluidValid(int tank, FluidStack stack) {
+            if (!state.isNetworkAndPositionValid()) {
+                return false;
+            }
+            state.disablePosition();
+            boolean ret = getFluidHandler().isFluidValid(tank, stack);
             state.enablePosition();
             return ret;
         }

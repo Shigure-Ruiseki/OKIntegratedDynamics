@@ -1,3 +1,4 @@
+
 package ruiseki.integrateddynamics.core.recipe.type;
 
 import net.minecraft.item.ItemStack;
@@ -5,7 +6,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraftforge.fluids.FluidStack;
 
-import ruiseki.okcore.fluid.handler.IFluidTankProperties;
+import ruiseki.okcore.fluid.handler.IFluidHandler;
 import ruiseki.okcore.inventory.IInventoryFluid;
 import ruiseki.okcore.recipe.IRecipeOK;
 import ruiseki.okcore.recipe.IRecipeSerializer;
@@ -75,13 +76,12 @@ public class RecipeDryingBasin implements IRecipeOK<IInventoryFluid> {
         }
 
         if (inputFluid != null) {
-            IFluidTankProperties[] properties = inv.getFluidHandler()
-                .getTankProperties();
-            if (properties == null || properties.length == 0 || properties[0] == null) {
+            IFluidHandler fluidHandler = inv.getFluidHandler();
+            if (fluidHandler.getTanks() <= 0) {
                 return false;
             }
 
-            FluidStack contents = properties[0].getContents();
+            FluidStack contents = fluidHandler.getFluidInTank(0);
             if (contents == null || contents.getFluid() == null) {
                 return false;
             }
