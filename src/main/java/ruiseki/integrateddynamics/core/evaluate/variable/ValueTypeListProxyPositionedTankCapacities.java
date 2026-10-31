@@ -1,3 +1,4 @@
+
 package ruiseki.integrateddynamics.core.evaluate.variable;
 
 import net.minecraftforge.common.util.ForgeDirection;
@@ -5,7 +6,6 @@ import net.minecraftforge.common.util.ForgeDirection;
 import ruiseki.okcore.datastructure.DimPos;
 import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
 import ruiseki.okcore.fluid.handler.IFluidHandler;
-import ruiseki.okcore.fluid.handler.IFluidTankProperties;
 import ruiseki.okcore.helper.CapabilityHelpers;
 import ruiseki.okcore.persist.nbt.INBTProvider;
 
@@ -31,18 +31,15 @@ public class ValueTypeListProxyPositionedTankCapacities
     @Override
     public int getLength() {
         IFluidHandler tank = getTank();
-        if (tank == null) {
-            return 0;
-        }
-        IFluidTankProperties[] tanks = tank.getTankProperties();
-        if (tanks == null) {
-            return 0;
-        }
-        return tanks.length;
+        return tank == null ? 0 : tank.getTanks();
     }
 
     @Override
     public ValueTypeInteger.ValueInteger get(int index) {
-        return ValueTypeInteger.ValueInteger.of(getTank().getTankProperties()[index].getCapacity());
+        IFluidHandler tank = getTank();
+        if (tank == null || index < 0 || index >= tank.getTanks()) {
+            return ValueTypeInteger.ValueInteger.of(0);
+        }
+        return ValueTypeInteger.ValueInteger.of(tank.getTankCapacity(index));
     }
 }

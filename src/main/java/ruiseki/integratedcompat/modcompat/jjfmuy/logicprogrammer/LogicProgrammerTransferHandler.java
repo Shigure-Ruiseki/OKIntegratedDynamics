@@ -18,6 +18,8 @@ import org.jetbrains.annotations.Nullable;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
+import it.unimi.dsi.fastutil.longs.LongIterator;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import ruiseki.integratedcompat.GeneralConfig;
 import ruiseki.integratedcompat.IntegratedCompat;
 import ruiseki.integratedcompat.network.packet.CPacketSetSlot;
@@ -35,10 +37,8 @@ import ruiseki.jfmuy.gui.TooltipRenderer;
 import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
 import ruiseki.okcore.fluid.handler.IFluidHandlerItem;
 import ruiseki.okcore.helper.CapabilityHelpers;
-import ruiseki.okcore.helper.Helpers;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.TagHelpers;
-import ruiseki.okcore.tag.TagEntry;
 import ruiseki.okcore.tag.TagKey;
 import ruiseki.okcore.tag.TagManager;
 
@@ -100,28 +100,31 @@ public class LogicProgrammerTransferHandler<T extends ContainerLogicProgrammerBa
         TagManager tagManager = TagManager.getManager();
 
         for (TagKey<Item> tagKey : candidateTags) {
-            Set<TagEntry> tagEntries = tagManager.getEntries(tagKey);
-            if (tagEntries.size() != ingredients.size()) {
+            LongSet members = tagManager.getPackedMembers(tagKey);
+            if (members.size() != ingredients.size()) {
                 continue;
             }
 
-            boolean match = ingredients.stream()
-                .allMatch(stack -> {
-                    if (stack == null || stack.getItem() == null) return false;
-
-                    ResourceLocation itemId = Helpers.getLocation(stack.getItem());
-                    int meta = stack.getItemDamage();
-
-                    for (TagEntry entry : tagEntries) {
-                        if (entry.id()
-                            .equals(itemId)) {
-                            if (entry.meta() == TagEntry.WILDCARD || entry.meta() == meta) {
-                                return true;
-                            }
-                        }
+            boolean match = true;
+            for (ItemStack stack : ingredients) {
+                if (stack == null || stack.getItem() == null) {
+                    match = false;
+                    break;
+                }
+                long packed = TagHelpers.pack(stack);
+                boolean found = false;
+                LongIterator iterator = members.iterator();
+                while (iterator.hasNext()) {
+                    if (TagHelpers.matchesSoft(iterator.nextLong(), packed)) {
+                        found = true;
+                        break;
                     }
-                    return false;
-                });
+                }
+                if (!found) {
+                    match = false;
+                    break;
+                }
+            }
 
             if (match) {
                 return tagKey.location();

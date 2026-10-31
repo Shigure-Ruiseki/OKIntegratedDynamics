@@ -2,7 +2,6 @@ package ruiseki.integrateddynamics.part.aspect.read;
 
 import java.util.List;
 import java.util.Locale;
-import java.util.Optional;
 
 import net.minecraft.entity.item.EntityItemFrame;
 import net.minecraft.init.Blocks;
@@ -65,10 +64,11 @@ import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
 import ruiseki.okcore.energy.capability.CapabilityEnergy;
 import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
+import ruiseki.okcore.fluid.capability.EmptyFluidHandler;
 import ruiseki.okcore.fluid.handler.IFluidHandler;
-import ruiseki.okcore.fluid.handler.IFluidTankProperties;
 import ruiseki.okcore.helper.BlockStateHelpers;
 import ruiseki.okcore.helper.CapabilityHelpers;
+import ruiseki.okcore.helper.FluidHelpers;
 import ruiseki.okcore.item.capability.CapabilityItemHandler;
 import ruiseki.okcore.item.handler.IItemHandler;
 
@@ -286,7 +286,7 @@ public class AspectReadBuilders {
 
         public static final IAspectPropertyTypeInstance<ValueTypeInteger, ValueTypeInteger.ValueInteger> PROP_TANKID = new AspectPropertyTypeInstance<>(
             ValueTypes.INTEGER,
-            "aspect.aspecttypes.integrateddynamics.integer.tankid.name",
+            "aspect.aspecttypes.integrateddynamics.integer.tankid",
             VALIDATOR_INTEGER_POSITIVE);
         public static final IAspectProperties PROPERTIES = new AspectProperties(
             ImmutableList.<IAspectPropertyTypeInstance>of(PROP_TANKID));
@@ -296,64 +296,46 @@ public class AspectReadBuilders {
                                                                                    // how to set default values.
         }
 
-        public static final IAspectValuePropagator<Pair<PartTarget, IAspectProperties>, IFluidTankProperties[]> PROP_GET = new IAspectValuePropagator<Pair<PartTarget, IAspectProperties>, IFluidTankProperties[]>() {
-
-            @Override
-            public IFluidTankProperties[] getOutput(Pair<PartTarget, IAspectProperties> input) {
-                DimPos dimPos = input.getLeft()
+        public static final IAspectValuePropagator<Pair<PartTarget, IAspectProperties>, IFluidHandler> PROP_GET = input -> {
+            DimPos dimPos = input.getLeft()
+                .getTarget()
+                .getPos();
+            return CapabilityHelpers.getCapability(
+                dimPos,
+                CapabilityFluidHandler.FLUID_HANDLER,
+                input.getLeft()
                     .getTarget()
-                    .getPos();
-                IFluidHandler fluidHandler = CapabilityHelpers
-                    .getCapability(
-                        dimPos,
-                        CapabilityFluidHandler.FLUID_HANDLER,
-                        input.getLeft()
-                            .getTarget()
-                            .getSide())
-                    .getOrNull();
-                if (fluidHandler != null) {
-                    return fluidHandler.getTankProperties();
+                    .getSide())
+                .orElse(EmptyFluidHandler.INSTANCE);
+        };
+        public static final IAspectValuePropagator<Pair<PartTarget, IAspectProperties>, Pair<IFluidHandler, Integer>> PROP_GET_ACTIVATABLE = input -> {
+            DimPos dimPos = input.getLeft()
+                .getTarget()
+                .getPos();
+            IFluidHandler fluidHandler = CapabilityHelpers
+                .getCapability(
+                    dimPos,
+                    CapabilityFluidHandler.FLUID_HANDLER,
+                    input.getLeft()
+                        .getTarget()
+                        .getSide())
+                .getOrNull();
+            if (fluidHandler != null) {
+                int i = input.getRight()
+                    .getValue(PROP_TANKID)
+                    .getRawValue();
+                if (i < fluidHandler.getTanks()) {
+                    return Pair.of(fluidHandler, i);
                 }
-                return new IFluidTankProperties[0];
             }
+            return null;
         };
-        public static final IAspectValuePropagator<Pair<PartTarget, IAspectProperties>, IFluidTankProperties> PROP_GET_ACTIVATABLE = new IAspectValuePropagator<Pair<PartTarget, IAspectProperties>, IFluidTankProperties>() {
-
-            @Override
-            public IFluidTankProperties getOutput(Pair<PartTarget, IAspectProperties> input) {
-                DimPos dimPos = input.getLeft()
-                    .getTarget()
-                    .getPos();
-                IFluidHandler fluidHandler = CapabilityHelpers
-                    .getCapability(
-                        dimPos,
-                        CapabilityFluidHandler.FLUID_HANDLER,
-                        input.getLeft()
-                            .getTarget()
-                            .getSide())
-                    .getOrNull();
-                if (fluidHandler != null) {
-                    IFluidTankProperties[] tankInfo = fluidHandler.getTankProperties();
-                    int i = input.getRight()
-                        .getValue(PROP_TANKID)
-                        .getRawValue();
-                    if (tankInfo != null && i < tankInfo.length) {
-                        return tankInfo[i];
-                    }
-                }
-                return null;
-            }
-        };
-        public static final IAspectValuePropagator<IFluidTankProperties, FluidStack> PROP_GET_FLUIDSTACK = new IAspectValuePropagator<IFluidTankProperties, FluidStack>() {
-
-            @Override
-            public FluidStack getOutput(IFluidTankProperties tankInfo) {
-                return Optional.ofNullable(tankInfo)
-                    .map(IFluidTankProperties::getContents)
-                    .map(FluidStack::copy)
-                    .orElse(null);
-            }
-        };
+        public static final IAspectValuePropagator<Pair<IFluidHandler, Integer>, FluidStack> PROP_GET_FLUIDSTACK = tankInfo -> tankInfo
+            != null
+                ? tankInfo.getLeft()
+                    .getFluidInTank(tankInfo.getRight())
+                    .copy()
+                : FluidHelpers.EMPTY;
         public static final IAspectValuePropagator<Pair<PartTarget, IAspectProperties>, ValueTypeList.ValueList> PROP_GET_LIST_FLUIDSTACKS = new IAspectValuePropagator<Pair<PartTarget, IAspectProperties>, ValueTypeList.ValueList>() {
 
             @Override
@@ -383,14 +365,14 @@ public class AspectReadBuilders {
             }
         };
 
-        public static final AspectBuilder<ValueTypeBoolean.ValueBoolean, ValueTypeBoolean, IFluidTankProperties[]> BUILDER_BOOLEAN = AspectReadBuilders.BUILDER_BOOLEAN
+        public static final AspectBuilder<ValueTypeBoolean.ValueBoolean, ValueTypeBoolean, IFluidHandler> BUILDER_BOOLEAN = AspectReadBuilders.BUILDER_BOOLEAN
             .handle(PROP_GET, "fluid");
-        public static final AspectBuilder<ValueTypeInteger.ValueInteger, ValueTypeInteger, IFluidTankProperties[]> BUILDER_INTEGER = AspectReadBuilders.BUILDER_INTEGER
+        public static final AspectBuilder<ValueTypeInteger.ValueInteger, ValueTypeInteger, IFluidHandler> BUILDER_INTEGER = AspectReadBuilders.BUILDER_INTEGER
             .handle(PROP_GET, "fluid");
-        public static final AspectBuilder<ValueTypeInteger.ValueInteger, ValueTypeInteger, IFluidTankProperties> BUILDER_INTEGER_ACTIVATABLE = AspectReadBuilders.BUILDER_INTEGER
+        public static final AspectBuilder<ValueTypeInteger.ValueInteger, ValueTypeInteger, Pair<IFluidHandler, Integer>> BUILDER_INTEGER_ACTIVATABLE = AspectReadBuilders.BUILDER_INTEGER
             .handle(PROP_GET_ACTIVATABLE, "fluid")
             .withProperties(PROPERTIES);
-        public static final AspectBuilder<ValueTypeDouble.ValueDouble, ValueTypeDouble, IFluidTankProperties> BUILDER_DOUBLE_ACTIVATABLE = AspectReadBuilders.BUILDER_DOUBLE
+        public static final AspectBuilder<ValueTypeDouble.ValueDouble, ValueTypeDouble, Pair<IFluidHandler, Integer>> BUILDER_DOUBLE_ACTIVATABLE = AspectReadBuilders.BUILDER_DOUBLE
             .handle(PROP_GET_ACTIVATABLE, "fluid")
             .withProperties(PROPERTIES);
 

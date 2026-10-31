@@ -74,11 +74,10 @@ public class CraftingProcessOverrideCraftingTable implements ICraftingProcessOve
         }
 
         CraftingGrid grid = new CraftingGrid(ingredients, 3, 3);
-        IRecipe recipeCached = CraftingHelpers.findMatchingRecipeCached(
+        IRecipe recipeCached = CraftingHelpers.findRecipeFromCraftingManager(
             grid,
             target.getPos()
-                .getWorld(),
-            true);
+                .getWorld());
 
         if (recipeCached != null) {
             ItemStack result = recipeCached.getCraftingResult(grid);

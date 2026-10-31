@@ -23,7 +23,6 @@ import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
 import ruiseki.okcore.datastructure.NonNullList;
 import ruiseki.okcore.fluid.handler.IFluidHandler;
-import ruiseki.okcore.fluid.handler.IFluidTankProperties;
 import ruiseki.okcore.helper.FluidHelpers;
 import ruiseki.okcore.helper.ItemHelpers;
 import ruiseki.okcore.helper.LangHelpers;
@@ -63,10 +62,8 @@ public final class Helpers {
     public static int getFluidStackCapacity(ItemStack itemStack) {
         IFluidHandler fluidHandler = FluidHelpers.getFluidHandler(itemStack)
             .getOrNull();
-        if (fluidHandler != null) {
-            for (IFluidTankProperties properties : fluidHandler.getTankProperties()) {
-                return properties.getCapacity();
-            }
+        if (fluidHandler != null && fluidHandler.getTanks() > 0) {
+            return fluidHandler.getTankCapacity(0);
         }
         return 0;
     }

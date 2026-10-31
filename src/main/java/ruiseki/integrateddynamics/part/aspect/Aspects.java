@@ -82,9 +82,10 @@ import ruiseki.okcore.block.collidable.ImmutableAxisAlignedBB;
 import ruiseki.okcore.datastructure.BlockPos;
 import ruiseki.okcore.datastructure.DimPos;
 import ruiseki.okcore.fluid.capability.wrapper.BlockLiquidWrapper;
-import ruiseki.okcore.fluid.handler.IFluidTankProperties;
+import ruiseki.okcore.fluid.handler.IFluidHandler;
 import ruiseki.okcore.helper.BlockStateHelpers;
 import ruiseki.okcore.helper.CapabilityHelpers;
+import ruiseki.okcore.helper.FluidHelpers;
 import ruiseki.okcore.helper.LangHelpers;
 import ruiseki.okcore.helper.MinecraftHelpers;
 
@@ -347,9 +348,10 @@ public class Aspects {
             public static final IAspectRead<ValueTypeBoolean.ValueBoolean, ValueTypeBoolean> BOOLEAN_FULL = AspectReadBuilders.Fluid.BUILDER_BOOLEAN
                 .handle(tankInfo -> {
                     boolean allFull = true;
-                    for (IFluidTankProperties tank : tankInfo) {
-                        if (tank.getContents() == null && tank.getCapacity() > 0
-                            || (tank.getContents() != null && tank.getContents().amount < tank.getCapacity())) {
+                    for (int i = 0; i < tankInfo.getTanks(); i++) {
+                        if (FluidHelpers.isEmpty(tankInfo.getFluidInTank(i)) && tankInfo.getTankCapacity(i) > 0
+                            || (!FluidHelpers.isEmpty(tankInfo.getFluidInTank(i))
+                                && FluidHelpers.getAmount(tankInfo.getFluidInTank(i)) < tankInfo.getTankCapacity(i))) {
                             allFull = false;
                         }
                     }
@@ -359,9 +361,10 @@ public class Aspects {
                 .buildRead();
             public static final IAspectRead<ValueTypeBoolean.ValueBoolean, ValueTypeBoolean> BOOLEAN_EMPTY = AspectReadBuilders.Fluid.BUILDER_BOOLEAN
                 .handle(tankInfo -> {
-                    for (IFluidTankProperties tank : tankInfo) {
-                        if (tank.getContents() != null && tank.getCapacity() > 0
-                            || (tank.getContents() != null && tank.getContents().amount < tank.getCapacity())) {
+                    for (int i = 0; i < tankInfo.getTanks(); i++) {
+                        if (!FluidHelpers.isEmpty(tankInfo.getFluidInTank(i)) && tankInfo.getTankCapacity(i) > 0
+                            || (!FluidHelpers.isEmpty(tankInfo.getFluidInTank(i))
+                                && FluidHelpers.getAmount(tankInfo.getFluidInTank(i)) < tankInfo.getTankCapacity(i))) {
                             return false;
                         }
                     }
@@ -372,8 +375,9 @@ public class Aspects {
             public static final IAspectRead<ValueTypeBoolean.ValueBoolean, ValueTypeBoolean> BOOLEAN_NONEMPTY = AspectReadBuilders.Fluid.BUILDER_BOOLEAN
                 .handle(tankInfo -> {
                     boolean hasFluid = false;
-                    for (IFluidTankProperties tank : tankInfo) {
-                        if (tank.getContents() != null && tank.getContents().amount > 0) {
+                    for (int i = 0; i < tankInfo.getTanks(); i++) {
+                        if (!FluidHelpers.isEmpty(tankInfo.getFluidInTank(i))
+                            && FluidHelpers.getAmount(tankInfo.getFluidInTank(i)) > 0) {
                             hasFluid = true;
                         }
                     }
@@ -382,7 +386,7 @@ public class Aspects {
                 .handle(AspectReadBuilders.PROP_GET_BOOLEAN, "nonempty")
                 .buildRead();
             public static final IAspectRead<ValueTypeBoolean.ValueBoolean, ValueTypeBoolean> BOOLEAN_APPLICABLE = AspectReadBuilders.Fluid.BUILDER_BOOLEAN
-                .handle(tankInfo -> tankInfo.length > 0)
+                .handle(tankInfo -> tankInfo.getTanks() > 0)
                 .handle(AspectReadBuilders.PROP_GET_BOOLEAN, "applicable")
                 .buildRead();
 
@@ -394,31 +398,46 @@ public class Aspects {
             public static final IAspectRead<ValueTypeInteger.ValueInteger, ValueTypeInteger> INTEGER_AMOUNTTOTAL = AspectReadBuilders.Fluid.BUILDER_INTEGER
                 .handle(tankInfo -> {
                     int amount = 0;
-                    for (IFluidTankProperties tank : tankInfo) {
-                        if (tank.getContents() != null) {
-                            amount += tank.getContents().amount;
+                    for (int i = 0; i < tankInfo.getTanks(); i++) {
+                        try {
+                            amount = Math.addExact(amount, FluidHelpers.getAmount(tankInfo.getFluidInTank(i)));
+                        } catch (ArithmeticException e) {
+                            amount = Integer.MAX_VALUE;
+                        }
+                        if (amount == Integer.MAX_VALUE) {
+                            break;
                         }
                     }
                     return amount;
                 })
                 .handle(AspectReadBuilders.PROP_GET_INTEGER, "totalamount")
                 .buildRead();
+
             public static final IAspectRead<ValueTypeInteger.ValueInteger, ValueTypeInteger> INTEGER_CAPACITY = AspectReadBuilders.Fluid.BUILDER_INTEGER_ACTIVATABLE
-                .handle(tankInfo -> tankInfo != null ? tankInfo.getCapacity() : 0)
+                .handle(
+                    tankInfo -> tankInfo != null ? tankInfo.getLeft()
+                        .getTankCapacity(tankInfo.getRight()) : 0)
                 .handle(AspectReadBuilders.PROP_GET_INTEGER, "capacity")
                 .buildRead();
             public static final IAspectRead<ValueTypeInteger.ValueInteger, ValueTypeInteger> INTEGER_CAPACITYTOTAL = AspectReadBuilders.Fluid.BUILDER_INTEGER
                 .handle(tankInfo -> {
                     int capacity = 0;
-                    for (IFluidTankProperties tank : tankInfo) {
-                        capacity += tank.getCapacity();
+                    for (int i = 0; i < tankInfo.getTanks(); i++) {
+                        try {
+                            capacity = Math.addExact(capacity, tankInfo.getTankCapacity(i));
+                        } catch (ArithmeticException e) {
+                            capacity = Integer.MAX_VALUE;
+                        }
+                        if (capacity == Integer.MAX_VALUE) {
+                            break;
+                        }
                     }
                     return capacity;
                 })
                 .handle(AspectReadBuilders.PROP_GET_INTEGER, "totalcapacity")
                 .buildRead();
             public static final IAspectRead<ValueTypeInteger.ValueInteger, ValueTypeInteger> INTEGER_TANKS = AspectReadBuilders.Fluid.BUILDER_INTEGER
-                .handle(tankInfo -> tankInfo.length)
+                .handle(IFluidHandler::getTanks)
                 .handle(AspectReadBuilders.PROP_GET_INTEGER, "tanks")
                 .buildRead();
 
@@ -427,8 +446,11 @@ public class Aspects {
                     if (tankInfo == null) {
                         return 0D;
                     }
-                    double amount = tankInfo.getContents() == null ? 0D : tankInfo.getContents().amount;
-                    return amount / (double) tankInfo.getCapacity();
+                    double amount = FluidHelpers.getAmount(
+                        tankInfo.getLeft()
+                            .getFluidInTank(tankInfo.getRight()));
+                    return amount / (double) tankInfo.getLeft()
+                        .getTankCapacity(tankInfo.getRight());
                 })
                 .handle(AspectReadBuilders.PROP_GET_DOUBLE, "fillratio")
                 .buildRead();

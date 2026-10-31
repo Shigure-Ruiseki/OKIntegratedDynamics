@@ -17,7 +17,6 @@ import ruiseki.okcore.capabilities.Capability;
 import ruiseki.okcore.datastructure.LazyOptional;
 import ruiseki.okcore.fluid.capability.CapabilityFluidHandler;
 import ruiseki.okcore.fluid.handler.IFluidHandler;
-import ruiseki.okcore.fluid.handler.IFluidTankProperties;
 import ruiseki.okcore.helper.FluidHelpers;
 
 /**
@@ -49,10 +48,33 @@ public class PartStateFluid<P extends IPartTypeWriter> extends PartStatePosition
     }
 
     @Override
-    public IFluidTankProperties[] getTankProperties() {
+    public int getTanks() {
+        return getPositionedAddonsNetwork() != null && getStorageFilter() != null ? getFluidHandler().getTanks() : 0;
+    }
+
+    @Override
+    public FluidStack getFluidInTank(int tank) {
+        if (getPositionedAddonsNetwork() != null && getStorageFilter() != null) {
+            FluidStack fluidStack = getFluidHandler().getFluidInTank(tank);
+            if (getStorageFilter().testView(fluidStack)) {
+                return fluidStack;
+            }
+        }
+        return FluidHelpers.EMPTY;
+    }
+
+    @Override
+    public int getTankCapacity(int tank) {
         return getPositionedAddonsNetwork() != null && getStorageFilter() != null
-            ? getFluidHandler().getTankProperties()
-            : new IFluidTankProperties[0];
+            ? getFluidHandler().getTankCapacity(tank)
+            : 0;
+    }
+
+    @Override
+    public boolean isFluidValid(int tank, FluidStack stack) {
+        return getPositionedAddonsNetwork() != null && getStorageFilter() != null
+            && getStorageFilter().testInsertion(stack)
+            && getFluidHandler().isFluidValid(tank, stack);
     }
 
     protected FluidStack rateLimitFluid(FluidStack fluidStack) {

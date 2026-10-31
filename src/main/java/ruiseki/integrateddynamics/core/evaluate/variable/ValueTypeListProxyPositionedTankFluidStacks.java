@@ -1,7 +1,6 @@
 package ruiseki.integrateddynamics.core.evaluate.variable;
 
 import net.minecraftforge.common.util.ForgeDirection;
-import net.minecraftforge.fluids.FluidStack;
 
 import ruiseki.okcore.datastructure.DimPos;
 import ruiseki.okcore.datastructure.LazyOptional;
@@ -36,19 +35,16 @@ public class ValueTypeListProxyPositionedTankFluidStacks
 
     @Override
     public int getLength() {
-        return getTank().map(fluidHandler -> fluidHandler.getTankProperties().length)
+        return getTank().map(IFluidHandler::getTanks)
             .orElse(0);
     }
 
     @Override
     public ValueObjectTypeFluidStack.ValueFluidStack get(int index) {
-        FluidStack result = getTank().map(fluidHandler -> {
-            FluidStack stack = fluidHandler.getTankProperties()[index].getContents();
-            FluidStack copy = FluidHelpers.copy(stack);
-            return copy != null ? copy : FluidHelpers.EMPTY;
-        })
-            .orElse(FluidHelpers.EMPTY);
-
-        return ValueObjectTypeFluidStack.ValueFluidStack.of(result);
+        return ValueObjectTypeFluidStack.ValueFluidStack.of(
+            getTank().map(
+                fluidHandler -> fluidHandler.getFluidInTank(index)
+                    .copy())
+                .orElse(FluidHelpers.EMPTY));
     }
 }

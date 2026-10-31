@@ -1,7 +1,5 @@
 package ruiseki.integrateddynamics.core.evaluate.variable;
 
-import java.util.Objects;
-
 import net.minecraft.entity.Entity;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
@@ -36,14 +34,14 @@ public class ValueTypeListProxyEntityFluids extends
 
     @Override
     public int getLength() {
-        return getCapability().map(handler -> handler.getTankProperties().length)
+        return getCapability().map(IFluidHandler::getTanks)
             .orElse(0);
     }
 
     @Override
     public ValueObjectTypeFluidStack.ValueFluidStack get(int index) {
         return ValueObjectTypeFluidStack.ValueFluidStack.of(
-            getCapability().map(handler -> Objects.requireNonNull(handler.getTankProperties()[index].getContents()))
+            getCapability().map(handler -> handler.getFluidInTank(index))
                 .orElse(FluidHelpers.EMPTY));
     }
 }
