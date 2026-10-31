@@ -51,12 +51,12 @@ public class LogicProgrammerOverlayHandler implements IOverlayHandler {
             return null;
         }
 
-        List<ItemStack> ingredients = positionedStack.getFilteredPermutations();
-        if (ingredients == null || ingredients.size() <= 1) {
+        ItemStack[] ingredients = positionedStack.items;
+        if (ingredients == null || ingredients.length <= 1) {
             return null;
         }
 
-        ItemStack firstStack = ingredients.getFirst();
+        ItemStack firstStack = ingredients[0];
         Set<TagKey<Item>> candidateTags = TagHelpers.getTags(firstStack);
 
         if (candidateTags.isEmpty()) {
@@ -67,7 +67,7 @@ public class LogicProgrammerOverlayHandler implements IOverlayHandler {
 
         for (TagKey<Item> tagKey : candidateTags) {
             LongSet members = tagManager.getPackedMembers(tagKey);
-            if (members.size() != ingredients.size()) {
+            if (members.size() != ingredients.length) {
                 continue;
             }
             boolean match = true;
