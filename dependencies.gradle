@@ -46,6 +46,7 @@ dependencies {
     runtimeOnlyNonPublishable("com.github.GTNewHorizons:BetterCrashes:1.4.7-GTNH:dev")
     runtimeOnlyNonPublishable("com.github.GTNewHorizons:ServerUtilities:2.4.10:dev")
     runtimeOnlyNonPublishable("com.github.GTNewHorizons:EnderIO:2.10.45:dev")
+    runtimeOnlyNonPublishable("com.github.GTNewHorizons:ModularUI2:2.3.90-1.7.10:dev")
 
     compileOnly('org.jetbrains:annotations:26.1.0')
     compileOnly("org.projectlombok:lombok:1.18.46")
