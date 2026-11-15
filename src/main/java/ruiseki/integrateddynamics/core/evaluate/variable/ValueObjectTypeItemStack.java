@@ -163,8 +163,7 @@ public class ValueObjectTypeItemStack extends ValueObjectTypeBase<ValueObjectTyp
         public boolean equals(Object o) {
 
             if (this == o) return true;
-            if (!(o instanceof ValueItemStack)) return false;
-            ValueItemStack that = (ValueItemStack) o;
+            if (!(o instanceof ValueItemStack that)) return false;
 
             ItemStack a = this.getRawValue();
             ItemStack b = that.getRawValue();
@@ -180,7 +179,7 @@ public class ValueObjectTypeItemStack extends ValueObjectTypeBase<ValueObjectTyp
 
         @Override
         public int hashCode() {
-            return 37 + (!ItemHelpers.isEmpty(getRawValue()) ? ItemHelpers.getItemStackHashCode(getRawValue()) : 0);
+            return 37 + (!ItemHelpers.isEmpty(getRawValue()) ? ItemHelpers.getHashCode(getRawValue()) : 0);
         }
     }
 }

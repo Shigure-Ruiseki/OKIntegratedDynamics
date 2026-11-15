@@ -78,7 +78,7 @@ public class CraftingGrid extends InventoryCrafting {
         int hash = 11 + getSizeInventory();
         for (int i = 0; i < getSizeInventory(); i++) {
             hash = hash << 1;
-            hash |= ItemHelpers.getItemStackHashCode(getStackInSlot(i));
+            hash |= ItemHelpers.getHashCode(getStackInSlot(i));
         }
         return hash;
     }
